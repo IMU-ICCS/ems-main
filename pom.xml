@@ -72,7 +72,8 @@
         <!--<docker.push>false</docker.push>-->
         <!--<docker.repository/>-->
         <docker.push>true</docker.push>
-        <docker.repository>172.31.1.100:5000/</docker.repository>
+        <!--<docker.repository>172.31.1.100:5000/</docker.repository>-->
+        <docker.repository>88.99.85.63:5000/</docker.repository>
         <docker.imageName>${docker.repository}melodic/${project.name}</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
 

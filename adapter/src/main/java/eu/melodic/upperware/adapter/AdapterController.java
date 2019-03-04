@@ -34,8 +34,7 @@ public class AdapterController {
 
   private DeploymentRequestValidator validator;
 
-  @RequestMapping(value = "/applicationDeployment", method = POST,
-consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+  @RequestMapping(value = "/applicationDeployment", method = POST, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
                                     @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
     validator.validate(request);

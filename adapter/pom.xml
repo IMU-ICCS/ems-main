@@ -249,6 +249,24 @@
       <scope>compile</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.ow2.paasage</groupId>
+      <artifactId>melodic-cache</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-collections4</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.cloudiator.client</groupId>
+      <artifactId>java-rest</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

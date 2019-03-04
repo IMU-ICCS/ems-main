@@ -1,4 +1,4 @@
-package eu.melodic.upperware.adapter;
+package eu.melodic.upperware;
 
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.token.JWTService;
