@@ -112,14 +112,14 @@ public class ModelAnalyzer {
                 .filter(mm -> MetricTypeModel.class.isAssignableFrom(mm.getClass()))
                 .map(mm -> (MetricTypeModel) mm)
                 .collect(Collectors.toList());
-        log.info("  Extracting Metric Type Models from CAMEL model... {}", metricModels);
+        log.info("  Extracting Metric Type Models from CAMEL model... {}", getListElementNames(metricModels));
 
         // for every metric type model...
         metricModels.stream().forEach(mm -> {
             // get metric contexts
             log.info("  Extracting Metric Contexts from Metric Type model {}...", mm.getName());
             EList<MetricContext> contexts = mm.getMetricContexts();
-            log.info("  Extracting Metric Contexts from Metric Type model {}... {}", mm.getName(), contexts);
+            log.info("  Extracting Metric Contexts from Metric Type model {}... {}", mm.getName(), getListElementNames(contexts));
 
             // for every metric context...
             contexts.stream().forEach(mc -> {
@@ -143,7 +143,7 @@ public class ModelAnalyzer {
                 .filter(mm -> MetricTypeModel.class.isAssignableFrom(mm.getClass()))
                 .map(mm -> (MetricTypeModel) mm)
                 .collect(Collectors.toList());
-        log.info("  Extracting Metric Type Models from CAMEL model... {}", metricModels);
+        log.info("  Extracting Metric Type Models from CAMEL model... {}", getListElementNames(metricModels));
 
         // for every metric type model...
         metricModels.stream().forEach(mm -> {
@@ -156,7 +156,7 @@ public class ModelAnalyzer {
                     // ...also filter using method 'isFromVariable()' from melodic-commons
                     .filter(mv -> CamelMetadataTool.isFromVariable((MetricVariableImpl) mv))
                     .collect(Collectors.toList());
-            log.info("  Extracting Metric Variables from Metric Type model {}... {}", mm.getName(), variables);
+            log.info("  Extracting Metric Variables from Metric Type model {}... {}", mm.getName(), getListElementNames(variables));
 
             // for every metric variable...
             variables.stream().forEach(mv -> {
@@ -234,14 +234,14 @@ public class ModelAnalyzer {
                 .filter(mm -> MetricTypeModel.class.isAssignableFrom(mm.getClass()))
                 .map(mm -> (MetricTypeModel) mm)
                 .collect(Collectors.toList());
-        log.info("  Extracting Metric Type Models from CAMEL model... {}", metricModels);
+        log.info("  Extracting Metric Type Models from CAMEL model... {}", getListElementNames(metricModels));
 
         // for every metric type model...
         metricModels.stream().forEach(mm -> {
             // get Function definitions
             log.info("  Extracting Functions from Metric Type model {}...", mm.getName());
             EList<Function> functions = mm.getFunctions();
-            log.info("  Extracting Functions from Metric Type model {}... {}", mm.getName(), functions);
+            log.info("  Extracting Functions from Metric Type model {}... {}", mm.getName(), getListElementNames(functions));
 
             // for every metric context...
             functions.stream().forEach(f -> {
@@ -260,12 +260,12 @@ public class ModelAnalyzer {
         // extract scalability rules
         log.info("  Extracting Scalability Models from CAMEL model...");
         EList<ScalabilityModel> scalabilityModels = camelModel.getScalabilityModels();
-        log.info("  Extracting Scalability Models from CAMEL model... {}", scalabilityModels);
+        log.info("  Extracting Scalability Models from CAMEL model... {}", getListElementNames(scalabilityModels));
 
         scalabilityModels.stream().forEach(sm -> {
             log.info("  Extracting Scalability Rules from Scalability model {}...", sm.getName());
             EList<ScalabilityRule> rules = sm.getRules();
-            log.info("  Extracting Scalability Rules from Scalability model {}... {}", sm.getName(), rules);
+            log.info("  Extracting Scalability Rules from Scalability model {}... {}", sm.getName(), getListElementNames(rules));
             rules.stream().forEach(rule -> {
                 String ruleName = rule.getName();
                 Event ruleEvent = rule.getEvent();
@@ -287,7 +287,7 @@ public class ModelAnalyzer {
         // extract requirement models
         log.info("  Extracting Requirement Models from CAMEL model...");
         EList<RequirementModel> requirementModels = camelModel.getRequirementModels();
-        log.info("  Extracting Requirement Models from CAMEL model... {}", requirementModels);
+        log.info("  Extracting Requirement Models from CAMEL model... {}", getListElementNames(requirementModels));
 
         // for each requirement model...
         requirementModels.stream().forEach(rm -> {
@@ -300,7 +300,7 @@ public class ModelAnalyzer {
                     .filter(req -> OptimisationRequirement.class.isAssignableFrom(req.getClass()))
                     .map(req -> OptimisationRequirement.class.cast(req))
                     .collect(Collectors.toList());
-            log.info("  Extracting Optimisation Requirements from Requirements model {}... {}", rm.getName(), optimisations);
+            log.info("  Extracting Optimisation Requirements from Requirements model {}... {}", rm.getName(), getListElementNames(optimisations));
 
             // for each optimisation requirement...
             optimisations.stream().forEach(optr -> {
@@ -395,7 +395,7 @@ public class ModelAnalyzer {
         // extract requirement models
         log.info("  Extracting Requirement Models (for SLO) from CAMEL model...");
         EList<RequirementModel> requirementModels = camelModel.getRequirementModels();
-        log.info("  Extracting Requirement Models (for SLO) from CAMEL model... {}", requirementModels);
+        log.info("  Extracting Requirement Models (for SLO) from CAMEL model... {}", getListElementNames(requirementModels));
 
         // for each requirement model...
         requirementModels.stream().forEach(rm -> {
@@ -405,7 +405,7 @@ public class ModelAnalyzer {
                     .filter(req -> ServiceLevelObjective.class.isAssignableFrom(req.getClass()))
                     .map(req -> ServiceLevelObjective.class.cast(req))
                     .collect(Collectors.toList());
-            log.info("  Extracting Service Level Objectives from Requirements model {}... {}", rm.getName(), slos);
+            log.info("  Extracting Service Level Objectives from Requirements model {}... {}", rm.getName(), getListElementNames(slos));
 
             // for each Service Level Objective...
             slos.stream().forEach(slo -> {
@@ -543,7 +543,7 @@ public class ModelAnalyzer {
         // extract constraint models
         log.info("  Extracting Constraint Models from CAMEL model...");
         EList<ConstraintModel> constraintModels = camelModel.getConstraintModels();
-        log.info("  Extracting Constraint Models from CAMEL model... {}", constraintModels);
+        log.info("  Extracting Constraint Models from CAMEL model... {}", getListElementNames(constraintModels));
 
         // for each constraint model...
         constraintModels.stream().forEach(cm -> {
@@ -551,7 +551,7 @@ public class ModelAnalyzer {
             log.info("  Extracting Constraints from Constraints model {}...", cm.getName());
             List<Constraint> constraints = cm.getConstraints().stream()
                     .collect(Collectors.toList());
-            log.info("  Extracting Constraints from Constraints model {}... {}", cm.getName(), constraints);
+            log.info("  Extracting Constraints from Constraints model {}... {}", cm.getName(), getListElementNames(constraints));
 
             // for each Constraint...
             constraints.stream().forEach(con -> {
@@ -732,7 +732,7 @@ public class ModelAnalyzer {
         log.info("  _decomposeLogicalConstraint(): {} :: {}", constraint.getName(), constraint.getClass().getName());
         EList<Constraint> componentConstraints = constraint.getConstraints();
         LogicalOperatorType operator = constraint.getLogicalOperator();
-        log.info("  _decomposeLogicalConstraint(): {} ==> operator: {}, component-constraints: {}", constraint.getName(), operator.getName(), componentConstraints);
+        log.info("  _decomposeLogicalConstraint(): {} ==> operator: {}, component-constraints: {}", constraint.getName(), operator.getName(), getListElementNames(componentConstraints));
 
         componentConstraints.forEach(lc -> _TC.DAG.addNode(constraint, lc).setGrouping(getGrouping(lc)) );
 
