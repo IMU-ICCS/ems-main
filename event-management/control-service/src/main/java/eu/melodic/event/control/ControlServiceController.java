@@ -130,7 +130,7 @@ public class ControlServiceController {
         if (log.isDebugEnabled()) {
             log.debug("ControlServiceController.getSensors(): Printing monitors for Request: {}", requestUuid);
             sensors.forEach(m -> {
-                log.debug("ControlServiceController.getSensors():     Monitor: metric={}, component={}, additional-properties={}",
+                log.debug("ControlServiceController.getSensors():     Monitor: metric/topic={}, component={}, additional-properties={}",
                         m.getMetric(), m.getComponent(), m.getAdditionalProperties());
                 Sensor s = m.getSensor();
                 if (s.isPushSensor())

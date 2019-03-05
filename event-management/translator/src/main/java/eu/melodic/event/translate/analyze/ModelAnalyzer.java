@@ -1002,9 +1002,11 @@ public class ModelAnalyzer {
             log.info("    + _createMonitorsForSensor(): sensor={} :: parent-node={}", sensor.getName(), parent.getName());
             RawMetricContext rmc = (RawMetricContext) parent.getElement();
             log.info("    + _createMonitorsForSensor(): sensor={} :: context={}", sensor.getName(), rmc.getName());
-            Metric metric = rmc.getMetric();
+            /*Metric metric = rmc.getMetric();
             String monitorMetric = metric.getName();
-            log.info("    + _createMonitorsForSensor(): sensor={} :: metric={}, component={}", sensor.getName(), monitorMetric, monitorComponent);
+            log.info("    + _createMonitorsForSensor(): sensor={} :: metric={}, component={}", sensor.getName(), monitorMetric, monitorComponent);*/
+            String monitorMetric = sensor.getName();
+            log.info("    + _createMonitorsForSensor(): sensor={} :: metric/topic={}, component={}", sensor.getName(), monitorMetric, monitorComponent);
 
             // Get interval (if PullSensor)
             if (isPull) {
