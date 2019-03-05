@@ -21,8 +21,6 @@ import static java.lang.String.format;
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
-    private static final List<Node.StateEnum> ACCEPTED_STATES = Arrays.asList(Node.StateEnum.RUNNING, Node.StateEnum.PENDING);
-
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
                      ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
         super(task, predecessors, api, context, executor, colosseumExecutorFactory);
@@ -40,7 +38,18 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                     .nodeCandidate(taskBody.getNodeCandidate())
                     .requirements(new NodeRequirements().requirements(Collections.emptyList())));
 
-            Queue watch = watch(queue.getId());
+            Queue watch = watch(queue.getId(), id -> {
+                String nodeGroupId = getId(id);
+                try {
+                    return api.getNodeGroup(nodeGroupId)
+                            .orElseThrow(() -> new AdapterException("Could not find NodeGroup for " + nodeGroupId))
+                            .getNodes()
+                            .stream()
+                            .noneMatch(node -> Node.StateEnum.PENDING.equals(node.getState()));
+                } catch (ApiException e) {
+                    throw new AdapterException("Could not getNodeGroup for " + nodeGroupId, e);
+                }
+            });
             log.info("Response from queue {} successfully reached. New node is created", queue.getId());
 
             String nodeGroupId = getId(watch.getLocation());
@@ -50,7 +59,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             boolean isNodeRunning = nodeGroup
                     .getNodes()
                     .stream()
-                    .allMatch(node -> ACCEPTED_STATES.contains(node.getState()));
+                    .allMatch(node -> Node.StateEnum.RUNNING.equals(node.getState()));
 
             if (isNodeRunning) {
                 log.info("New nodeGroup has been created: name: {}, nodeId: {}", nodeGroup.getId(),
@@ -65,7 +74,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                 String errorMessage = nodeGroup
                         .getNodes()
                         .stream()
-                        .filter(node -> !ACCEPTED_STATES.contains(node.getState()))
+                        .filter(node -> !Node.StateEnum.RUNNING.equals(node.getState()))
                         .map(node -> format("Node %s (id: %s) is in %s state", node.getName(), node.getId(), node.getState()))
                         .collect(Collectors.joining(", ", "NodeGroup " + nodeGroupId + " has been created but ", "."));
 
