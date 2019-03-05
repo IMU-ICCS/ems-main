@@ -77,7 +77,7 @@ public class DlmsControllerApplication {
 
 				Timer timer = new Timer();
 				timer.schedule(timerTask, DELAY_AFTER_CREATION, (long) (algo.getInterval() * 1000));
-				log.info("Started timer with delay = {} sec. and interval = {} sec.", DELAY_AFTER_CREATION / 1000,
+				log.debug("Started timer with delay = {} sec. and interval = {} sec.", DELAY_AFTER_CREATION / 1000,
 						algo.getInterval());
 			}
 		};
@@ -86,7 +86,7 @@ public class DlmsControllerApplication {
 	private AlgorithmRunner prepareRunnerInstance(Algorithm algo) throws ClassNotFoundException, InstantiationException,
 			IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
-		log.info("preparing algorithm {}", algo.getName());
+		log.debug("preparing algorithm {}", algo.getName());
 
 		@SuppressWarnings("unchecked")
 		Class<AlgorithmRunner> runnerClass = (Class<AlgorithmRunner>) Class.forName(algo.getClassName());
@@ -103,7 +103,7 @@ public class DlmsControllerApplication {
 				int result = runnerInstance.update(algo.getArguments());
 
 				if (result != 0) {
-					log.info("error occured in algorithm {} ", algo.getName());
+					log.debug("error occured in algorithm {} ", algo.getName());
 				}
 			}
 		};
