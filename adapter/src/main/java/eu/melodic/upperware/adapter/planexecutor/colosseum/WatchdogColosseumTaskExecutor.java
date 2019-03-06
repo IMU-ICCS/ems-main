@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
@@ -36,9 +37,14 @@ public abstract class WatchdogColosseumTaskExecutor<T extends Data> extends Colo
 
     @Override
     public Queue watch(String queueId) throws AdapterException {
+        return watch(queueId, str -> true);
+    }
+
+    @Override
+    public Queue watch(String queueId, Function<String, Boolean> function) throws AdapterException {
         String taskName = task.getData().getName();
         try {
-            Future<Queue> queueFuture = submitCallableTask(new CheckFinishTask(task.getType(), new AdapterCheckFinish(queueId, taskName)));
+            Future<Queue> queueFuture = submitCallableTask(new CheckFinishTask(task.getType(), new AdapterCheckFinish(queueId, taskName), function));
             log.info("Waiting for result of the {} from the queue {}", taskName, queueId);
             Queue queue = queueFuture.get();
             log.info("Result of waiting for task {} on queue {} is {}", taskName, queueId, queue);
@@ -56,7 +62,7 @@ public abstract class WatchdogColosseumTaskExecutor<T extends Data> extends Colo
 
     protected String getId(String queueLocation) {
         if (StringUtils.isNotBlank(queueLocation)) {
-            return queueLocation.substring(queueLocation.lastIndexOf("/") + 1);
+            return StringUtils.substringAfterLast(queueLocation, "/");
         }
         throw new AdapterException(format("Could not get id from location %s", queueLocation));
     }
