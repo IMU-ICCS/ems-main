@@ -132,7 +132,7 @@ public class ConstantServiceImpl implements ConstantService {
 
         return searchConstantByValue(constants, (int) value)
                 .orElseGet(() -> {
-                    Constant newConstant = createDoubleConstant(value);
+                    Constant newConstant = createIntegerConstant((int)value);
                     constants.add(newConstant);
                     return newConstant;
                 });
