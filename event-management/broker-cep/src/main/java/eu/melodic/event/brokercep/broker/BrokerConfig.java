@@ -59,7 +59,8 @@ public class BrokerConfig implements InitializingBean {
 
     @Autowired
     private BrokerCepProperties properties;
-
+    @Autowired
+    private PasswordUtil passwordUtil;
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
     private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
@@ -101,7 +102,7 @@ public class BrokerConfig implements InitializingBean {
                 String password = cred.length > 1 ? cred[1].trim() : "";
                 userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
                 log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}",
-                        username, PasswordUtil.encodePassword(password));
+                        username, passwordUtil.encodePassword(password));
             }
 
             // initialize Broker authentication plugin
@@ -165,7 +166,7 @@ public class BrokerConfig implements InitializingBean {
             userList.get(LOCAL_USER_INDEX).setPassword(password);
             brokerAuthenticationPlugin.setUsers(userList);
         }
-        log.debug("BrokerConfig.setBrokerPassword(): password={}", PasswordUtil.encodePassword(password));
+        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordUtil.encodePassword(password));
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
