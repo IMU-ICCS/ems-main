@@ -21,8 +21,10 @@ import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.*;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
@@ -32,6 +34,8 @@ import javax.servlet.Filter;
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
+
+  public static final String INNER_THREAD_POOL_TASK_EXECUTOR_NAME = "innerThreadPoolTaskExecutor";
 
   private AdapterProperties adapterProperties;
 
@@ -57,8 +61,20 @@ public class ApplicationContext {
   }
 
   @Bean
+  @Primary
   public ThreadPoolTaskExecutor getTaskExecutor() {
+    return createThreadPoolTaskExecutor("main-task-executor-");
+  }
+
+  @Bean
+  @Qualifier(INNER_THREAD_POOL_TASK_EXECUTOR_NAME)
+  public ThreadPoolTaskExecutor getInnerTaskExecutor() {
+    return createThreadPoolTaskExecutor("inner-task-executor-");
+  }
+
+  private ThreadPoolTaskExecutor createThreadPoolTaskExecutor(String prefix) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setThreadNamePrefix(prefix);
     AdapterProperties.TaskExecutor taskExecutor = adapterProperties.getTaskExecutor();
     if (taskExecutor != null) {
       Integer corePoolSize = taskExecutor.getCorePoolSize();
