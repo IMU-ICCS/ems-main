@@ -22,8 +22,6 @@ import javax.ws.rs.BadRequestException;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
@@ -31,11 +29,9 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class AdapterController {
 
   private Coordinator coordinator;
-
   private DeploymentRequestValidator validator;
 
-  @RequestMapping(value = "/applicationDeployment", method = POST,
-consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/applicationDeployment", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
                                     @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
     validator.validate(request);
@@ -47,18 +43,17 @@ consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     coordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization);
   }
 
-  @RequestMapping(value = "/autoScaleEvent", method = POST,
-    consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/autoScaleEvent", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
   public void autoScaleEvent() {
     // TODO
   }
 
-  @RequestMapping(value = "/refreshContext", method = GET, produces = APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
   public void refreshContext() {
     coordinator.refreshContext();
   }
 
-  @RequestMapping(value = "/health", method = GET)
+  @GetMapping(value = "/health")
   public void health() {
   }
 

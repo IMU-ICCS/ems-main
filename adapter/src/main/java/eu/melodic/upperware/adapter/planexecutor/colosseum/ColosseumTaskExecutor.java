@@ -21,7 +21,6 @@ import java.util.concurrent.Future;
 public abstract class ColosseumTaskExecutor<T extends Data> extends RunnableTaskExecutor<T> {
 
   protected ColosseumApi api;
-
   protected ColosseumContext context;
 
   ColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context) {
