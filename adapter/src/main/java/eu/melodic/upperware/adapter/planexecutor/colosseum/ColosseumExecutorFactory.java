@@ -49,10 +49,12 @@ public class ColosseumExecutorFactory implements InitializingBean {
   private final Function<CheckFinishTask, Callable<Queue>> checkFinishTaskToCallableFunction =
           task -> new CheckFinishTaskExecutor(task, api, adapterProperties.getCloudiatorV2().getDelayBetweenQueueCheck());
 
-  private final Function<Callable<Queue>, Future<Queue>> callableToFutureFunction = callable -> executor.submit(callable);
+  private final Function<Callable<Queue>, Future<Queue>> callableToFutureFunction =
+          callable -> executor.submit(callable);
 
-  private final Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFutureFunction = checkFinishTaskToCallableFunction
-          .andThen(callableToFutureFunction);
+  private final Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFutureFunction =
+          checkFinishTaskToCallableFunction
+                  .andThen(callableToFutureFunction);
 
   RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors) {
     if (task instanceof JobTask) {
@@ -79,6 +81,6 @@ public class ColosseumExecutorFactory implements InitializingBean {
 
   @Override
   public void afterPropertiesSet() throws Exception {
-    log.info("Internal ThredPoolTaskExecutor prefix: {}", executor.getThreadNamePrefix());
+    log.info("Internal ThreadPoolTaskExecutor prefix: {}", executor.getThreadNamePrefix());
   }
 }

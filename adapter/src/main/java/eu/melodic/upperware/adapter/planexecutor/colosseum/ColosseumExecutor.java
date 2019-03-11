@@ -77,6 +77,6 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
 
   @Override
   public void afterPropertiesSet() throws Exception {
-    log.info("External ThredPoolTaskExecutor prefix: {}", executor.getThreadNamePrefix());
+    log.info("External ThreadPoolTaskExecutor prefix: {}", executor.getThreadNamePrefix());
   }
 }
