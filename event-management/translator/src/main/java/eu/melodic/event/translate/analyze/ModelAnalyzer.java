@@ -75,7 +75,6 @@ public class ModelAnalyzer {
         log.debug("ModelAnalyzer.analyzeModel():  Scalability Model analysis completed");
 
         // analyze optimisation requirements
-//XXX:SOS: Should i comment out opt.req. analysis or not???
         _analyzeOptimisationRequirements(_TC, camelModel);
         log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");
 
@@ -821,10 +820,10 @@ public class ModelAnalyzer {
         log.info("  _decomposeMetricContext(): common fields: {} :: metric={}, window={}, schedule={}, object={}",
                 context.getName(), metric.getName(), getElementName(window), getElementName(schedule), getElementName(objContext));
 
-//XXX: Deactivated....
-        //_TC.DAG.addNode(context, metric).setGrouping(getGrouping(metric));
+        // Commented addition in DAG and decomposition of Metrics
+        /*_TC.DAG.addNode(context, metric).setGrouping(getGrouping(metric));
 
-        //_decomposeMetric(_TC, metric, objContext);
+        _decomposeMetric(_TC, metric, objContext);*/
 
         if (context instanceof CompositeMetricContext) {
             CompositeMetricContext cmc = (CompositeMetricContext) context;
