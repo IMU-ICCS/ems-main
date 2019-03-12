@@ -56,10 +56,10 @@ public class Algo_ClusterDataCenters {
 				return -1;
 			}
 		}else {
-			log.info("No historical data between two data centers exist");
+			log.debug("No historical data between two data centers exist");
 			return -1;
 		}
-		log.info("Algo_ClusterDataCenters has finished execution");
+		log.debug("Algo_ClusterDataCenters has finished execution");
 		return 0;
 	}
 	

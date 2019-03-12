@@ -73,7 +73,7 @@ public class Algo_DlmsTotalCostsRunner extends AlgorithmRunner {
 				}
 			}
 		}
-		log.info("Utility for DLMS_TOTAL_COSTS was calculated successfully");
+		log.debug("Utility for DLMS_TOTAL_COSTS was calculated successfully");
 		return (numberConnection > 0 ? utility / numberConnection : 0);
 	}
 
