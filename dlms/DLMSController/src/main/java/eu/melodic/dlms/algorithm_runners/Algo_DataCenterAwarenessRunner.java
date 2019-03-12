@@ -48,7 +48,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		log.info("Calculating utility from Algo_DataCenterAwarenessRunner");
+		log.debug("Calculating utility from Algo_DataCenterAwarenessRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
 		Map<String, List<String>> compConMap = diff.getCompConMap();
 
@@ -81,7 +81,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 				}
 			}
 		}
-		log.info("Utility for DATA_CENTER_AWARENESS was calculated successfully");
+		log.debug("Utility for DATA_CENTER_AWARENESS was calculated successfully");
 		return (numberConnection > 0 ? utility / numberConnection : 0);
 	}
 
