@@ -76,8 +76,8 @@ public class ModelAnalyzer {
 
         // analyze optimisation requirements
 //XXX:SOS: Should i comment out opt.req. analysis or not???
-//        _analyzeOptimisationRequirements(_TC, camelModel);
-//        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");
+        _analyzeOptimisationRequirements(_TC, camelModel);
+        log.debug("ModelAnalyzer.analyzeModel():  Optimisation Requirements analysis completed");
 
         // analyze service level objectives
         _analyzeServiceLevelObjectives(_TC, camelModel);
@@ -317,11 +317,11 @@ public class ModelAnalyzer {
                     Metric m = mc.getMetric();
                     objCtx = mc.getObjectContext();
                     log.trace("    Extracting metrics of metric context: metric={}, metric-class={}, component={}", m.getName(), m.getClass().getName(), getComponentName(objCtx));
-                    if (RawMetric.class.isAssignableFrom(m.getClass())) {
+                    if (m instanceof RawMetric) {
                         formulaMetrics.add(m);
-                    } else if (CompositeMetric.class.isAssignableFrom(m.getClass())) {
+                    } else if (m instanceof CompositeMetric) {
                         formulaMetrics.addAll(_extractMetricsFromFormula(_TC, ((CompositeMetric) m).getFormula()));
-                    } else if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+                    } else if (m instanceof MetricVariable) {
                         formulaMetrics.addAll(_extractMetricsFromFormula(_TC, ((MetricVariable) m).getFormula()));
                     }
                 }
@@ -334,7 +334,7 @@ public class ModelAnalyzer {
 
                 // update DAG and decompose metrics and variables
                 for (Metric m : formulaMetrics) {
-                    if (MetricVariable.class.isAssignableFrom(m.getClass())) {
+                    if (m instanceof MetricVariable) {
                         log.trace("    Processing component metric variable of opt. goal formula: goal={}, variable={}, formula={}", reqName, m.getName(), ((MetricVariable) m).getFormula());
 
                         // add variable to DAG as top-level node
@@ -356,7 +356,10 @@ public class ModelAnalyzer {
                         MetricContext mc_1 = mctx.iterator().next();
 
                         // add metric context to DAG as top-level node
-                        _TC.DAG.addTopLevelNode(mc_1).setGrouping(getGrouping(mc_1));
+                        _TC.DAG.addTopLevelNode(m).setGrouping(getGrouping(m));
+
+                        // add metric context to DAG
+                        _TC.DAG.addNode(m, mc_1).setGrouping(getGrouping(mc_1));
 
                         // decompose metric context
                         _decomposeMetricContext(_TC, mc_1);
@@ -818,9 +821,10 @@ public class ModelAnalyzer {
         log.info("  _decomposeMetricContext(): common fields: {} :: metric={}, window={}, schedule={}, object={}",
                 context.getName(), metric.getName(), getElementName(window), getElementName(schedule), getElementName(objContext));
 
-        _TC.DAG.addNode(context, metric).setGrouping(getGrouping(metric));
+//XXX: Deactivated....
+        //_TC.DAG.addNode(context, metric).setGrouping(getGrouping(metric));
 
-        _decomposeMetric(_TC, metric, objContext);
+        //_decomposeMetric(_TC, metric, objContext);
 
         if (context instanceof CompositeMetricContext) {
             CompositeMetricContext cmc = (CompositeMetricContext) context;

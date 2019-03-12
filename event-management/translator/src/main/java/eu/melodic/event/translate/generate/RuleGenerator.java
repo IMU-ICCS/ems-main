@@ -40,6 +40,7 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -424,7 +425,32 @@ public class RuleGenerator {
             } else
 
             // Generate rules for Metrics and Metric Variables
-            if (elem instanceof camel.metric.CompositeMetric) {
+            if ((elem instanceof camel.metric.RawMetric || elem instanceof camel.metric.CompositeMetric) && _TC.DAG.isTopLevelNode(node)) {
+                log.warn("RuleGenerator.generateRules():      Found a Top-Level Metric element: node={}, elem-name={}", node, elemName);
+                providesTopic = true;
+                Metric m = (Metric) elem;
+
+                // Get metric's context
+                Set<MetricContext> mc = _TC.M2MC.get(m);
+                List<String> mcList = mc.stream().map(item -> item.getName()).collect(Collectors.toList());
+                if (mc.size() != 1) {
+                    log.error("RuleGenerator.generateRules():      Top-Level Metric has 0 or >1 contexts: metric={}, component-contexts={}", m.getName(), mcList);
+                    throw new IllegalArgumentException(String.format("Top-Level Metric has 0 or >1 contexts: metric=%s, component-contexts=%s", m.getName(), mcList));
+                }
+                MetricContext cmc = mc.stream().findFirst().get();
+
+                log.warn("RuleGenerator.generateRules():      Top-Level Metric: node={}, elem-name={}, context={}",
+                        node, elemName, cmc.getName());
+
+                // Require topics in this level
+                _TC.requireGroupingTopicPair(grouping, cmc.getName());
+
+                // Write rule for MET
+                Context context = new Context();
+                context.setVariable("context", cmc.getName());
+                _generateRule(_TC, "TL-MET", grouping, elemName, context);
+
+            } else if (elem instanceof camel.metric.CompositeMetric) {
                 log.warn("RuleGenerator.generateRules():      Found a Composite-Metric element: node={}, elem-name={}", node, elemName);
                 providesTopic = false;
                 // Nothing to do here
