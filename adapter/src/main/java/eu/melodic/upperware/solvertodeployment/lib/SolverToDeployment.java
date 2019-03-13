@@ -7,15 +7,10 @@ package eu.melodic.upperware.solvertodeployment.lib;
 import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.DeploymentTypeModel;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.CacheUtils;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.notification.S2DNotificationSenderImpl;
-import eu.melodic.upperware.solvertodeployment.db.lib.CdoServerS2D;
-import eu.melodic.upperware.solvertodeployment.exception.S2DException;
-import eu.melodic.upperware.solvertodeployment.utils.CamelInstanceService;
-import eu.melodic.upperware.solvertodeployment.utils.DataHolder;
 import eu.melodic.upperware.solvertodeployment.utils.DataUtils;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
@@ -44,14 +39,11 @@ public class SolverToDeployment {
 
 	private CDOClientX cdoClientX;
 	private S2DNotificationSenderImpl s2DNotificationSender;
-	private CdoServerS2D cdoServerS2D;
 	private DataUtils dataUtils;
 	private CacheService<NodeCandidates> cacheService;
-	private CamelInstanceService camelInstanceService;
 
 	@Async
-	public void doWorkTS(String camelModelId, String cdoResourcePath, String notificationUri,  String requestUuid)
-					throws S2DException {
+	public void doWorkTS(String camelModelId, String cdoResourcePath, String notificationUri, String requestUuid) {
 
 		NodeCandidates nodeCandidates = Objects.requireNonNull(cacheService.load(CacheUtils.createCacheKey(cdoResourcePath)));
 
@@ -74,27 +66,15 @@ public class SolverToDeployment {
 
 			Solution solution = CPModelTool.searchLastSolution(constraintProblem.getSolution());
 
-			// Do Work
 			try {
-				DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(camelModel.getDeploymentModels());
-				int dmId = cdoServerS2D.saveNewDeploymentInstanceModel(transaction, camelModelId);
+				DeploymentInstanceModel newDeploymentInstanceModel = dataUtils.computeDatasToRegister(camelModel, solution, nodeCandidates);
 
-				camelInstanceService.setGlobalDMIdx(dmId);
-				camelInstanceService.resetGlobalCount();
-
-				// Generate new instances into this new DM of camel
-
-				DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) camelModel.getDeploymentModels().get(dmId);
-				DataHolder dataholder = dataUtils.computeDatasToRegister(deploymentTypeModel, deploymentInstanceModel,
-						solution, camelModelId, nodeCandidates, transaction);
-
-				if (dataholder==null) {
+				if (newDeploymentInstanceModel == null) {
 					s2DNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
 					return;
 				}
-
-				dataholder.setDmId(dmId);
-				dataUtils.registerDataHolderToCDO(camelModelId, dataholder, transaction); // COPY TO CDO
+				camelModel.getDeploymentModels().add(newDeploymentInstanceModel);
+				transaction.commit();
 
 			} catch (CommitException e) {
 				log.error("Error during commit transaction, Unable to complete data model instances registration", e);

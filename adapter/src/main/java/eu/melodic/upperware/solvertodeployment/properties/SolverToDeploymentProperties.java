@@ -27,10 +27,6 @@ public class SolverToDeploymentProperties {
     @NotNull
     private Server server;
 
-    @Valid
-    @NotNull
-    private Endpoint endpoint;
-
     @Getter
     @Setter
     public static class Esb {
@@ -45,10 +41,4 @@ public class SolverToDeploymentProperties {
         private String port;
     }
 
-    @Getter
-    @Setter
-    public static class Endpoint {
-        @NotBlank
-        private String amazon;
-    }
 }

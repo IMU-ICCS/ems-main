@@ -16,13 +16,15 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@Configuration //TODO - czy to jest potrzebne?
 @EnableAsync
-@ComponentScan(basePackages = {"eu.melodic.upperware.adapter", "eu.melodic.upperware.solvertodeployment","eu.melodic.upperware.notification",
-        "eu.melodic.security.authorization.util.properties", "eu.melodic.cache"})
+@ComponentScan(basePackages = {
+        "eu.melodic.upperware.adapter",
+        "eu.melodic.upperware.solvertodeployment",
+        "eu.melodic.upperware.notification",
+        "eu.melodic.security.authorization.util.properties",
+        "eu.melodic.cache"})
 @SpringBootApplication
 @EnableConfigurationProperties({MelodicSecurityProperties.class, AuthorizationServiceClientProperties.class, CacheProperties.class})
 public class AdapterApplication {

@@ -14,11 +14,9 @@ import eu.melodic.upperware.solvertodeployment.lib.SolverToDeployment;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -27,7 +25,7 @@ public class SolverToDeploymentController {
 
   private SolverToDeployment solverToDeployment;
 
-  @RequestMapping(value = "/applySolution", method = POST)
+  @PostMapping(value = "/applySolution")
   public void applySolution(@RequestBody ApplySolutionRequestImpl request) {
     String applicationId = request.getApplicationId();
     String cdoResourcePath = request.getCdoModelsPath();

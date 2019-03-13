@@ -1,123 +1,112 @@
 package eu.melodic.upperware.solvertodeployment.utils;
 
+import camel.core.CamelModel;
+import camel.core.Feature;
 import camel.deployment.*;
 import com.google.gson.Gson;
-import eu.melodic.upperware.solvertodeployment.exception.S2DException;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.lang.String.format;
-
 @Service
 @Slf4j
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CamelInstanceServiceImpl implements CamelInstanceService {
 
     private ProviderEnricherService providerEnricherService;
 
-    private AtomicInteger globalCount = new AtomicInteger(0);
-    private AtomicInteger localCount = new AtomicInteger(-1);
-
     @Override
-    public void resetGlobalCount() {
-        globalCount = new AtomicInteger(0);
+    public DeploymentInstanceModel createDeploymentInstanceModel(DeploymentTypeModel deploymentTypeModel, List<SoftwareInstanceDetail> softwareInstanceDetails) {
+
+        CamelModel camelModel = (CamelModel) deploymentTypeModel.eContainer();
+        int dmId = camelModel.getDeploymentModels().size();
+
+        Counters counters = new Counters(dmId);
+
+        DeploymentInstanceModel deploymentInstanceModel = DeploymentFactory.eINSTANCE.createDeploymentInstanceModel();
+        deploymentInstanceModel.setName(deploymentTypeModel.getName() + "_" + dmId);
+        deploymentInstanceModel.setType(deploymentTypeModel);
+
+        softwareInstanceDetails.stream()
+                .map(softwareInstanceDetail -> createSoftwareComponentInstances(softwareInstanceDetail, counters))
+                .forEach(softwareComponentInstances -> deploymentInstanceModel.getSoftwareComponentInstances().addAll(softwareComponentInstances));
+
+        deploymentTypeModel.getCommunications()
+                .stream()
+                .map(communication -> createCommunicationInstanceFromDemand(communication, deploymentInstanceModel, deploymentInstanceModel.getSoftwareComponentInstances()))
+                .forEach(communicationInstances -> deploymentInstanceModel.getCommunicationInstances().addAll(communicationInstances));
+
+        changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
+
+        return deploymentInstanceModel;
     }
 
-    @Override
-    public void setGlobalDMIdx(int idx) {
-        localCount = new AtomicInteger(idx);
+    private List<SoftwareComponentInstance> createSoftwareComponentInstances(SoftwareInstanceDetail softwareInstanceDetail, Counters counters){
+        return IntStream.range(0, softwareInstanceDetail.getCardinality())
+                .mapToObj(value -> createSoftwareComponentInstance(softwareInstanceDetail.getSoftwareComponent(), counters))
+                .peek(softwareComponentInstance -> providerEnricherService.enrich(softwareComponentInstance, "nodeCandidate", new Gson().toJson(softwareInstanceDetail.getNodeCandidate())))
+                .collect(Collectors.toList());
     }
 
-    private int getGlobalDMIdx() {
-        return localCount.get();
-    }
-
-    private int getGlobalCount() {
-        return globalCount.getAndIncrement();
-    }
-
-    private String getGlobalSuffix() {
-        return getGlobalDMIdx() + "_" + getGlobalCount();
-    }
-
-    @Override
-    public SoftwareComponentInstance createSCInstance(SoftwareComponent softwareComponent) {
+    private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent, Counters counters) {
         // Create Instance + name + type
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
-        softwareComponentInstance.setName(softwareComponent.getName() + "Instance_" + getGlobalSuffix());
+        softwareComponentInstance.setName(softwareComponent.getName() + "_Instance_" + counters.getGlobalCount() + "_" + counters.getLocalCount());
         softwareComponentInstance.setType(softwareComponent);
 
         //Create ProvidedCommunicationInstance
         softwareComponent.getProvidedCommunications()
                 .stream()
-                .map(this::createProvidedCommunicationInstance)
+                .map((ProvidedCommunication providedCommunication) -> createProvidedCommunicationInstance(providedCommunication, counters))
                 .forEach(providedCommunicationInstance -> softwareComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance));
 
         //Create RequiredCommunicationInstance
         softwareComponent.getRequiredCommunications()
                 .stream()
-                .map(this::createRequiredCommunicationInstance)
+                .map((RequiredCommunication requiredCommunication) -> createRequiredCommunicationInstance(requiredCommunication, counters))
                 .forEach(requiredCommunicationInstance -> softwareComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance));
 
         //Create RequiredHostInstance
-        softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent));
+        softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent, counters));
 
         return softwareComponentInstance;
     }
 
-    private RequiredHostInstance getRequiredHostInstance(SoftwareComponent softwareComponent) {
+    private RequiredHostInstance getRequiredHostInstance(SoftwareComponent softwareComponent, Counters counters) {
         RequiredHostInstance requiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
         requiredHostInstance.setType(softwareComponent.getRequiredHost());
-        requiredHostInstance.setName(softwareComponent.getName() + "RequiredHostInstance_" + getGlobalCount());
+        requiredHostInstance.setName(softwareComponent.getName() + "_RequiredHostInstance_" +  counters.getLocalCount());
         return requiredHostInstance;
     }
 
-    private RequiredCommunicationInstance createRequiredCommunicationInstance(RequiredCommunication requiredCommunication) {
+    private RequiredCommunicationInstance createRequiredCommunicationInstance(RequiredCommunication requiredCommunication, Counters counters) {
         RequiredCommunicationInstance requiredCommunicationInstance = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
         requiredCommunicationInstance.setType(requiredCommunication);
-        requiredCommunicationInstance.setName(requiredCommunication.getName() + "ReqCommunicationInstance_" + getGlobalCount());
+        requiredCommunicationInstance.setName(requiredCommunication.getName() + "_ReqCommunicationInstance_" + counters.getLocalCount());
         return requiredCommunicationInstance;
     }
 
-    private ProvidedCommunicationInstance createProvidedCommunicationInstance(ProvidedCommunication providedCommunication) {
+    private ProvidedCommunicationInstance createProvidedCommunicationInstance(ProvidedCommunication providedCommunication, Counters counters) {
         ProvidedCommunicationInstance providedCommunicationInstance = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
         providedCommunicationInstance.setType(providedCommunication);
-        providedCommunicationInstance.setName(providedCommunication.getName() + "ProvidedCommunicationInstance_" + getGlobalCount());
+        providedCommunicationInstance.setName(providedCommunication.getName() + "_ProvidedCommunicationInstance_" + counters.getLocalCount());
         return providedCommunicationInstance;
     }
 
-    @Override
-    public List<SoftwareComponentInstance> createSoftwareComponentInstances(String componentName, DeploymentTypeModel deploymentTypeModel, int cardinality, NodeCandidate nodeCandidate) throws S2DException {
-        SoftwareComponent softwareComponent = findSoftwareComponent(deploymentTypeModel, componentName);
-        return IntStream.range(0, cardinality)
-                .mapToObj(value -> createSCInstance(softwareComponent))
-                .peek(softwareComponentInstance -> providerEnricherService.enrich(softwareComponentInstance, "nodeCandidate", new Gson().toJson(nodeCandidate)))
-                .collect(Collectors.toList());
-    }
-
-    private SoftwareComponent findSoftwareComponent(DeploymentTypeModel deploymentTypeModel, String componentName) throws S2DException {
-        return deploymentTypeModel.getSoftwareComponents().stream()
-                .filter(internalComponent -> internalComponent.getName().equalsIgnoreCase(componentName))
-                .findFirst()
-                .orElseThrow(() -> new S2DException(format("Unable to find %s component in camel model", componentName)));
-    }
-
-    @Override
-    public List<CommunicationInstance> createCommunicationInstanceFromDemand(Communication com, DeploymentInstanceModel deploymentInstanceModel,
-                                                                             List<SoftwareComponentInstance> softwareComponentInstances) throws S2DException {
+    private List<CommunicationInstance> createCommunicationInstanceFromDemand(Communication com, DeploymentInstanceModel deploymentInstanceModel,
+                                                                             List<SoftwareComponentInstance> softwareComponentInstances) {
         // Gathering information
         FullCommunication fullCommunication = FullCommunication.fromCommunication(com);
-
-        List<CommunicationInstance> communicationInstances = new ArrayList<>();
 
         List<SoftwareComponentInstance> reqInstances = null;
         List<SoftwareComponentInstance> provInstances = null;
@@ -135,39 +124,33 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         }
 
         log.debug("Looking for ComPI...");
-        List<CommunicationPortInstance> providedCommunicationPortInstances = new ArrayList<>();
-        List<CommunicationPortInstance> requiredCommunicationPortInstances = new ArrayList<>();
+        List<CommunicationPortInstance> providedCommunicationPortInstances = provInstances.stream()
+                .map(softwareComponentInstance -> findCommunicationPortInstanceFor(fullCommunication.communication.getProvidedCommunication(), softwareComponentInstance.getProvidedCommunicationInstances()))
+                .peek(communicationPortInstance -> {
+                    if (Objects.isNull(communicationPortInstance)) {
+                        log.error("Unable to find providedCommunicationPortInstance for communication {}", com.getName());
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        for (SoftwareComponentInstance iCI : provInstances) {
-            CommunicationPortInstance providedCommunicationPortInstance = findCommunicationPortInstanceFor(fullCommunication.communication.getProvidedCommunication(), iCI.getProvidedCommunicationInstances());
-            if (providedCommunicationPortInstance!=null) {
-                providedCommunicationPortInstances.add(providedCommunicationPortInstance);
-            } else {
-                log.error("Unable to find providedCommunicationPortInstance for {} for communication {}", iCI.getName(), com.getName());
-            }
-        }
-
-        for (SoftwareComponentInstance iCI : reqInstances) {
-            CommunicationPortInstance requiredCommunicationPortInstance = findCommunicationPortInstanceFor(fullCommunication.communication.getRequiredCommunication(), iCI.getRequiredCommunicationInstances());
-            if (requiredCommunicationPortInstance!=null) {
-                requiredCommunicationPortInstances.add(requiredCommunicationPortInstance);
-            } else {
-                log.error("Unable to find requiredCommunicationPortInstance for {} for communication {}", iCI.getName(), com.getName());
-            }
-        }
+        List<CommunicationPortInstance> requiredCommunicationPortInstances = provInstances.stream()
+                .map(softwareComponentInstance -> findCommunicationPortInstanceFor(fullCommunication.communication.getRequiredCommunication(), softwareComponentInstance.getRequiredCommunicationInstances()))
+                .peek(communicationPortInstance -> {
+                    if (Objects.isNull(communicationPortInstance)) {
+                        log.error("Unable to find requiredCommunicationPortInstance for communication {}", com.getName());
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         // Creating Communication Instances
+        List<CommunicationInstance> communicationInstances = new ArrayList<>();
+
         int cnt=0;
         for(CommunicationPortInstance providedPI : providedCommunicationPortInstances) {
             for(CommunicationPortInstance requiredPI : requiredCommunicationPortInstances) {
-                CommunicationInstance communicationInstance = DeploymentFactory.eINSTANCE.createCommunicationInstance();
-                communicationInstance.setName(fullCommunication.communication.getName() + "Instance_" + cnt);
-                communicationInstance.setProvidedCommunicationInstance((ProvidedCommunicationInstance) providedPI);
-                communicationInstance.setRequiredCommunicationInstance((RequiredCommunicationInstance) requiredPI);
-                communicationInstance.setType(fullCommunication.communication);
-
-                log.debug("Creating CommunicationInstance {}", communicationInstance.getName());
-
+                CommunicationInstance communicationInstance = getCommunicationInstance(fullCommunication, fullCommunication.communication.getName() + "Instance_" + cnt, (ProvidedCommunicationInstance) providedPI, (RequiredCommunicationInstance) requiredPI);
                 communicationInstances.add(communicationInstance);
                 cnt++;
             }
@@ -176,44 +159,40 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         return communicationInstances;
     }
 
-    private static List<SoftwareComponentInstance> findComponentInstanceFromDeploymentInstanceModels(Component component, DeploymentInstanceModel deploymentInstanceModel) {
-        List<SoftwareComponentInstance> softwareCIs = new ArrayList<>();
+    private CommunicationInstance getCommunicationInstance(FullCommunication fullCommunication, String name, ProvidedCommunicationInstance providedPI, RequiredCommunicationInstance requiredPI) {
+        CommunicationInstance communicationInstance = DeploymentFactory.eINSTANCE.createCommunicationInstance();
+        communicationInstance.setName(name);
+        communicationInstance.setProvidedCommunicationInstance(providedPI);
+        communicationInstance.setRequiredCommunicationInstance(requiredPI);
+        communicationInstance.setType(fullCommunication.communication);
 
-        log.debug("Looking for ComponentInstance (SoftwareCI from DM) for type: {}", component.getName());
+        log.debug("Creating CommunicationInstance {}", communicationInstance.getName());
+        return communicationInstance;
+    }
+
+    private List<SoftwareComponentInstance> findComponentInstanceFromDeploymentInstanceModels(Component component, DeploymentInstanceModel deploymentInstanceModel) {
+        return findComponentInstanceFromComponents(component, deploymentInstanceModel.getSoftwareComponentInstances());
+    }
+
+    private List<SoftwareComponentInstance> findComponentInstanceFromComponents(Component component, List<SoftwareComponentInstance> softwareComponentInstances) {
         StringBuilder logTxt = new StringBuilder();
-        for (SoftwareComponentInstance softwareComponentInstance : deploymentInstanceModel.getSoftwareComponentInstances()) {
-            log.debug("finComponentInstance: testing {} of type {}", softwareComponentInstance.getName(), softwareComponentInstance.getType().getName());
-            logTxt.append("Compare ").append(softwareComponentInstance.getType()).append(" AND ").append(component);
-            if (softwareComponentInstance.getType().getName().equals(component.getName())) {
-                log.error("Ok Component Instance Find {}", logTxt);
-                softwareCIs.add(softwareComponentInstance);
-            }
-        }
+        List<SoftwareComponentInstance> softwareCIs = softwareComponentInstances
+                .stream()
+                .peek(softwareComponentInstance -> {
+                    log.debug("finComponentInstance: testing {} of type {}", softwareComponentInstance.getName(), softwareComponentInstance.getType().getName());
+                    logTxt.append("Compare ").append(softwareComponentInstance.getType()).append(" AND ").append(component);
+                })
+                .filter(softwareComponentInstance -> softwareComponentInstance.getType().getName().equals(component.getName()))
+                .peek(softwareComponentInstance -> log.error("Ok Component Instance Find {}", logTxt))
+                .collect(Collectors.toList());
+
         if (softwareCIs.isEmpty()) {
             log.info("**WARNING. Component Instance not found for component : {}", component.getName());
         }
         return softwareCIs;
     }
 
-    private static List<SoftwareComponentInstance> findComponentInstanceFromComponents(Component component, List<SoftwareComponentInstance> softwareComponentInstances) {
-        List<SoftwareComponentInstance> internalCIs = new ArrayList<>();
-
-        StringBuilder logTxt = new StringBuilder();
-        log.debug("Looking for ComponentInstance (InternalCI list) for type: {}", component.getName());
-        for (SoftwareComponentInstance internalCI : softwareComponentInstances) {
-            log.debug("finComponentInstance: testing {} of type {}", internalCI.getName(), internalCI.getType().getName());
-//            logTxt.append("Compare ").append(internalCI.getType()).append(" AND ").append(component);
-            if(internalCI.getType().getName().equals(component.getName())) {
-                log.debug("Ok Component Instance Find {}", logTxt);
-                internalCIs.add(internalCI);
-            }
-        }
-        if (internalCIs.isEmpty())
-            log.warn("WARNING. Component Instance not found for component : {}", component.getName());
-        return internalCIs;
-    }
-
-    private static CommunicationPortInstance findCommunicationPortInstanceFor(CommunicationPort communication,
+    private CommunicationPortInstance findCommunicationPortInstanceFor(CommunicationPort communication,
                                                                               List<? extends CommunicationPortInstance> requiredCommunicationInstances) {
         if(communication == null) {
             log.error("Try to find Communication port instance with communication port equal to null!!");
@@ -229,10 +208,68 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                 });
     }
 
+    private void changeNames(List<SoftwareComponentInstance> componentsToRegister, CamelModel camelModel) {
+        CdoTool.getLastElementAsOptional(camelModel.getExecutionModels()).ifPresent(executionModel1 ->
+                CdoTool.getCurrentlyInstalledModel(executionModel1).ifPresent(deploymentInstanceModel -> {
+                    //1. Component
+                    changeNames(componentsToRegister, deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::getInstance);
+                })
+        );
+    }
+
+    private <T extends Feature> Map<VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, VMKey> function) {
+        Map<VMKey, List<T>> result = new HashMap<>();
+
+        for (T instance : vmInstancesToRegister) {
+            VMKey vmKey = function.apply(instance);
+
+            if (!result.containsKey(vmKey)) {
+                result.put(vmKey, new ArrayList<>());
+            }
+            result.get(vmKey).add(instance);
+        }
+        return result;
+    }
+
+    private <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, VMKey> function) {
+        Map<VMKey, List<T>> newVmTemporaryMap = createInstanceMap(newInstances, function);
+        Map<VMKey, List<T>> deployedInstances = createInstanceMap(oldInstances, function);
+        for (VMKey vmKey : deployedInstances.keySet()) {
+            List<T> oldVmInstances = deployedInstances.get(vmKey);
+            List<T> newVmInstances = newVmTemporaryMap.getOrDefault(vmKey, Collections.emptyList());
+
+            for (int i = 0; i < oldVmInstances.size(); i++) {
+                if (newVmInstances.size() > i) {
+                    T newVmInstance = newVmInstances.get(i);
+                    newVmInstance.setName(oldVmInstances.get(i).getName());
+                }
+            }
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @EqualsAndHashCode
+    private static class VMKey {
+
+        private String name;
+
+        private static VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
+            String name = removeSuffixFromInstance(softwareComponentInstance.getName());
+            return new VMKey(name);
+        }
+        private static String removeSuffixFromInstance(String vmName) {
+            //we need to remove everything after last two '_'
+            return removeSuffix(removeSuffix(vmName));
+        }
+
+        private static String removeSuffix(String name) {
+            return StringUtils.substringBeforeLast(name, "_");
+        }
+    }
 
     @Getter
     @Builder
-//    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     private static class FullCommunication {
         private Component provComponent;
         private Component reqComponent;
@@ -258,4 +295,25 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
             return (SoftwareComponent) (com.getRequiredCommunication().eContainer());
         }
     }
+
+    private static class Counters {
+
+        private AtomicInteger globalCounter;
+        private AtomicInteger localCounter;
+
+        Counters(int globalCount) {
+            globalCounter = new AtomicInteger(globalCount);
+            localCounter = new AtomicInteger(0);
+        }
+
+        private int getLocalCount() {
+            return localCounter.getAndIncrement();
+        }
+
+        private int getGlobalCount() {
+            return globalCounter.get();
+        }
+
+    }
+
 }

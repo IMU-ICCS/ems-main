@@ -4,7 +4,7 @@
 
 package eu.melodic.upperware.solvertodeployment.exception;
 
-public class S2DException extends Exception {
+public class S2DException extends RuntimeException {
 
 	private static final long serialVersionUID = 6637252123704611830L;
 
