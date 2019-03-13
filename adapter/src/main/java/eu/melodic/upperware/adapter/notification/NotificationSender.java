@@ -1,4 +1,4 @@
-package eu.melodic.upperware.notification;
+package eu.melodic.upperware.adapter.notification;
 
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;

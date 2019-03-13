@@ -1,10 +1,10 @@
-package eu.melodic.upperware.solvertodeployment.utils;
+package eu.melodic.upperware.adapter.service;
 
 import camel.core.CamelModel;
 import camel.deployment.*;
 import eu.melodic.cache.NodeCandidatePredicates;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.solvertodeployment.exception.S2DException;
+import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.types.LongValueUpperware;
@@ -57,7 +57,7 @@ public class DataUtils {
                 String componentName = entry.getKey();
                 int cardinality = CPModelTool.getIntValue(
                         CPModelTool.getCardinality(entry.getValue())
-                                .orElseThrow(() -> new S2DException(String.format("Could not find cardinality for component %s", entry.getKey()))));
+                                .orElseThrow(() -> new AdapterException(String.format("Could not find cardinality for component %s", entry.getKey()))));
 
                 if (cardinality <= 0) {
                     log.warn("Cardinality is {}. Skipping execution for {}", cardinality, componentName);
@@ -98,12 +98,12 @@ public class DataUtils {
                 .stream()
                 .filter(softwareComponent -> componentName.equals(softwareComponent.getName()))
                 .findFirst()
-                .orElseThrow(()-> new S2DException("Could not find Component for " + componentName));
+                .orElseThrow(()-> new AdapterException("Could not find Component for " + componentName));
     }
 
-    private NodeCandidate getNodeCandidate(NodeCandidates nodeCandidates, Map.Entry<String, List<CpVariableValue>> entry, String componentName) throws S2DException {
+    private NodeCandidate getNodeCandidate(NodeCandidates nodeCandidates, Map.Entry<String, List<CpVariableValue>> entry, String componentName) {
         int providerId = CPModelTool.getIntValue(CPModelTool.getProviderId(entry.getValue())
-                .orElseThrow(() -> new S2DException(String.format("Could not find provider for component %s", entry.getKey()))));
+                .orElseThrow(() -> new AdapterException(String.format("Could not find provider for component %s", entry.getKey()))));
 
         Predicate<NodeCandidate>[] nodeCandidatePredicates = getNodeCandidatePredicates(entry.getValue());
 
@@ -112,7 +112,7 @@ public class DataUtils {
                 .collect(Collectors.joining(",", "Filtering node candidates by component " + componentName + ", provider with id: " + providerId + " and " + nodeCandidatePredicates.length + " predicates [", "]")));
 
         NodeCandidate nodeCandidate = nodeCandidates.getCheapest(componentName, providerId, nodeCandidatePredicates)
-                .orElseThrow(() -> new S2DException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
+                .orElseThrow(() -> new AdapterException(String.format("Could not find cheapest nodeCandidate for component %s, provider with index %d and %d predicates", componentName, providerId, nodeCandidatePredicates.length)));
 
         log.info("Found Node Candidate: {}", nodeCandidate);
         return nodeCandidate;

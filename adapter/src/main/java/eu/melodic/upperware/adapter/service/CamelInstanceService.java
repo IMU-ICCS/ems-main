@@ -1,4 +1,4 @@
-package eu.melodic.upperware.solvertodeployment.utils;
+package eu.melodic.upperware.adapter.service;
 
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentTypeModel;

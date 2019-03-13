@@ -1,4 +1,4 @@
-package eu.melodic.upperware.solvertodeployment.utils;
+package eu.melodic.upperware.adapter.service;
 
 import camel.core.CamelModel;
 import camel.core.Feature;
@@ -23,7 +23,8 @@ import java.util.stream.IntStream;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CamelInstanceServiceImpl implements CamelInstanceService {
 
-    private ProviderEnricherService providerEnricherService;
+    private CamelEnricherService camelEnricherService;
+    private Gson gson;
 
     @Override
     public DeploymentInstanceModel createDeploymentInstanceModel(DeploymentTypeModel deploymentTypeModel, List<SoftwareInstanceDetail> softwareInstanceDetails) {
@@ -54,7 +55,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     private List<SoftwareComponentInstance> createSoftwareComponentInstances(SoftwareInstanceDetail softwareInstanceDetail, Counters counters){
         return IntStream.range(0, softwareInstanceDetail.getCardinality())
                 .mapToObj(value -> createSoftwareComponentInstance(softwareInstanceDetail.getSoftwareComponent(), counters))
-                .peek(softwareComponentInstance -> providerEnricherService.enrich(softwareComponentInstance, "nodeCandidate", new Gson().toJson(softwareInstanceDetail.getNodeCandidate())))
+                .peek(softwareComponentInstance -> camelEnricherService.enrich(softwareComponentInstance, "nodeCandidate", gson.toJson(softwareInstanceDetail.getNodeCandidate())))
                 .collect(Collectors.toList());
     }
 
@@ -183,7 +184,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                     logTxt.append("Compare ").append(softwareComponentInstance.getType()).append(" AND ").append(component);
                 })
                 .filter(softwareComponentInstance -> softwareComponentInstance.getType().getName().equals(component.getName()))
-                .peek(softwareComponentInstance -> log.error("Ok Component Instance Find {}", logTxt))
+                .peek(softwareComponentInstance -> log.info("Ok Component Instance Find {}", logTxt))
                 .collect(Collectors.toList());
 
         if (softwareCIs.isEmpty()) {

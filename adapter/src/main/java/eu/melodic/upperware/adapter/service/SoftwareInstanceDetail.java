@@ -1,4 +1,4 @@
-package eu.melodic.upperware.solvertodeployment.utils;
+package eu.melodic.upperware.adapter.service;
 
 import camel.deployment.SoftwareComponent;
 import io.github.cloudiator.rest.model.NodeCandidate;

@@ -29,7 +29,7 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
-import eu.melodic.upperware.notification.AdapterNotificationSenderImpl;
+import eu.melodic.upperware.adapter.notification.AdapterNotificationSenderImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import io.github.cloudiator.rest.ApiException;
@@ -53,7 +53,7 @@ import static java.lang.String.format;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class Coordinator {
+public class DeployCoordinator {
 
     private static final Map<String, Object> LOCKS = Maps.newConcurrentMap();
 

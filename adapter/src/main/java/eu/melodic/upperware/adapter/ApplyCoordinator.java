@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package eu.melodic.upperware.solvertodeployment.lib;
+package eu.melodic.upperware.adapter;
 
 import camel.core.CamelModel;
 import camel.core.Feature;
@@ -10,8 +10,8 @@ import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.CacheUtils;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.notification.S2DNotificationSenderImpl;
-import eu.melodic.upperware.solvertodeployment.utils.DataUtils;
+import eu.melodic.upperware.adapter.notification.S2DNotificationSenderImpl;
+import eu.melodic.upperware.adapter.service.DataUtils;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Slf4j
-public class SolverToDeployment {
+public class ApplyCoordinator {
 
 	private CDOClientX cdoClientX;
 	private S2DNotificationSenderImpl s2DNotificationSender;

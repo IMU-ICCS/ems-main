@@ -21,8 +21,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @ComponentScan(basePackages = {
         "eu.melodic.upperware.adapter",
-        "eu.melodic.upperware.solvertodeployment",
-        "eu.melodic.upperware.notification",
         "eu.melodic.security.authorization.util.properties",
         "eu.melodic.cache"})
 @SpringBootApplication
