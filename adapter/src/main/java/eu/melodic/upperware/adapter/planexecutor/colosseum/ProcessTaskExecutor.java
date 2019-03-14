@@ -4,17 +4,18 @@ import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
+import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -25,8 +26,8 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
     private static final List<CloudiatorProcess.StateEnum> ACCEPTED_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
 
     ProcessTaskExecutor(ProcessTask task, Collection<Future> predecessors, ColosseumApi api,
-                        ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
+                        ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+        super(task, predecessors, api, context, checkFinishTaskToFuture);
     }
 
     @Override

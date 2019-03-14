@@ -11,34 +11,36 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
 @Slf4j
 public abstract class WatchdogColosseumTaskExecutor<T extends Data> extends ColosseumTaskExecutor<T> implements TaskWatchDog {
 
-    private ThreadPoolTaskExecutor executor;
-    private ColosseumExecutorFactory colosseumExecutorFactory;
+    private Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture;
 
-    WatchdogColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api,
-                                  ColosseumContext context, ThreadPoolTaskExecutor executor,
-                                  ColosseumExecutorFactory colosseumExecutorFactory) {
+
+    WatchdogColosseumTaskExecutor(Task<T> task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context,
+                                  Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
         super(task, predecessors, api, context);
-        this.executor = executor;
-        this.colosseumExecutorFactory = colosseumExecutorFactory;
+        this.checkFinishTaskToFuture = checkFinishTaskToFuture;
     }
 
     @Override
     public Queue watch(String queueId) throws AdapterException {
+        return watch(queueId, str -> true);
+    }
+
+    @Override
+    public Queue watch(String queueId, Function<String, Boolean> function) throws AdapterException {
         String taskName = task.getData().getName();
         try {
-            Future<Queue> queueFuture = submitCallableTask(new CheckFinishTask(task.getType(), new AdapterCheckFinish(queueId, taskName)));
+            Future<Queue> queueFuture = checkFinishTaskToFuture.apply(new CheckFinishTask(task.getType(), new AdapterCheckFinish(queueId, taskName), function));
             log.info("Waiting for result of the {} from the queue {}", taskName, queueId);
             Queue queue = queueFuture.get();
             log.info("Result of waiting for task {} on queue {} is {}", taskName, queueId, queue);
@@ -54,18 +56,11 @@ public abstract class WatchdogColosseumTaskExecutor<T extends Data> extends Colo
         }
     }
 
-    protected String getId(String queueLocation) {
+    String getId(String queueLocation) {
         if (StringUtils.isNotBlank(queueLocation)) {
-            return queueLocation.substring(queueLocation.lastIndexOf("/") + 1);
+            return StringUtils.substringAfterLast(queueLocation, "/");
         }
         throw new AdapterException(format("Could not get id from location %s", queueLocation));
     }
 
-    private Future<Queue> submitCallableTask(Task task) {
-        return executor.submit(createCallableTaskExecutor(task));
-    }
-
-    private Callable createCallableTaskExecutor(Task task) {
-        return colosseumExecutorFactory.createTaskExecutor(task);
-    }
 }

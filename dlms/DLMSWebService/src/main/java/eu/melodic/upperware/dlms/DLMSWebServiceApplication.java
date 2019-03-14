@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
+import alluxio.Configuration;
+import alluxio.PropertyKey;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +36,6 @@ public class DLMSWebServiceApplication {
 	 * Main method for starting. No arguments needed for normal use.
 	 */
 	public static void main(String[] args) {
-		// To use eu.melodic.upperware.dlms.properties instead of application.properties
-//		System.setProperty("spring.config.name", "eu.melodic.upperware.dlms");
 		SpringApplication.run(DLMSWebServiceApplication.class, args);
 	}
 
@@ -50,7 +50,9 @@ public class DLMSWebServiceApplication {
 		return args -> {
 			// TODO remove sample data before go-live
 			log.info("Alluxio master is located at " + env.getProperty("alluxio.master.address"));
-
+			// set master hostname
+			Configuration.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
+			
 			// this is test
 //			dsRepository.save(new DataSource("DS1", DataSourceType.HDFS, "http://master:9000/", "/melodic/ds1"));
 //			dsRepository.save(new DataSource("DS2", DataSourceType.S3, "s3a://bucketferox/", "/melodic/ds2"));

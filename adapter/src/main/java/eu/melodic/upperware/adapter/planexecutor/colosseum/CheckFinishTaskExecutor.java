@@ -23,6 +23,8 @@ public class CheckFinishTaskExecutor implements Callable<Queue> {
     @Override
     public Queue call() throws Exception {
         Queue queuedTask;
+
+        boolean continueChecking = false;
         do {
             queuedTask = api.findQueuedTask(checkFinishTask.getData().getQueueName());
             log.debug("Result of queuedTask {} with queueId {} is {}",
@@ -33,11 +35,18 @@ public class CheckFinishTaskExecutor implements Callable<Queue> {
             }
 
             if (isInStatus(QueueStatus.COMPLETED, queuedTask)) {
-                return queuedTask;
+                String location = queuedTask.getLocation();
+                if (checkFinishTask.getFunction().apply(location)){
+                    return queuedTask;
+                } else {
+                    continueChecking = true;
+                }
+                log.debug("Result of queuedTask {} with queueId {} is {} but check function return false",
+                        checkFinishTask.getData().getName(), checkFinishTask.getData().getQueueName(), queuedTask.toString());
             }
             //waiting
             Thread.sleep(delayBetweenCheck);
-        } while (isInStatus(QueueStatus.RUNNING, queuedTask) || isInStatus(QueueStatus.SCHEDULED, queuedTask));
+        } while (isInStatus(QueueStatus.RUNNING, queuedTask) || isInStatus(QueueStatus.SCHEDULED, queuedTask) || continueChecking);
         throw new AdapterException("Something is wrong, and I don't know why...");
     }
 

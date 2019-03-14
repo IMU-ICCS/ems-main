@@ -5,15 +5,17 @@ import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.planexecutor.TaskWatchDog;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
+import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -21,11 +23,9 @@ import static java.lang.String.format;
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
-    private static final List<Node.StateEnum> ACCEPTED_STATES = Arrays.asList(Node.StateEnum.RUNNING, Node.StateEnum.PENDING);
-
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
+                     ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+        super(task, predecessors, api, context, checkFinishTaskToFuture);
     }
 
     @Override
@@ -40,7 +40,18 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                     .nodeCandidate(taskBody.getNodeCandidate())
                     .requirements(new NodeRequirements().requirements(Collections.emptyList())));
 
-            Queue watch = watch(queue.getId());
+            Queue watch = watch(queue.getId(), id -> {
+                String nodeGroupId = getId(id);
+                try {
+                    return api.getNodeGroup(nodeGroupId)
+                            .orElseThrow(() -> new AdapterException("Could not find NodeGroup for " + nodeGroupId))
+                            .getNodes()
+                            .stream()
+                            .noneMatch(node -> Node.StateEnum.PENDING.equals(node.getState()));
+                } catch (ApiException e) {
+                    throw new AdapterException("Could not getNodeGroup for " + nodeGroupId, e);
+                }
+            });
             log.info("Response from queue {} successfully reached. New node is created", queue.getId());
 
             String nodeGroupId = getId(watch.getLocation());
@@ -50,7 +61,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             boolean isNodeRunning = nodeGroup
                     .getNodes()
                     .stream()
-                    .allMatch(node -> ACCEPTED_STATES.contains(node.getState()));
+                    .allMatch(node -> Node.StateEnum.RUNNING.equals(node.getState()));
 
             if (isNodeRunning) {
                 log.info("New nodeGroup has been created: name: {}, nodeId: {}", nodeGroup.getId(),
@@ -65,7 +76,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                 String errorMessage = nodeGroup
                         .getNodes()
                         .stream()
-                        .filter(node -> !ACCEPTED_STATES.contains(node.getState()))
+                        .filter(node -> !Node.StateEnum.RUNNING.equals(node.getState()))
                         .map(node -> format("Node %s (id: %s) is in %s state", node.getName(), node.getId(), node.getState()))
                         .collect(Collectors.joining(", ", "NodeGroup " + nodeGroupId + " has been created but ", "."));
 

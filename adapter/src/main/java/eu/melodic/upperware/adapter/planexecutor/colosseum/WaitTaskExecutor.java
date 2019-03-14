@@ -3,19 +3,21 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterWaitData;
+import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.WaitTask;
+import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 @Slf4j
 public class WaitTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterWaitData> {
 
     WaitTaskExecutor(WaitTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
+                     ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+        super(task, predecessors, api, context, checkFinishTaskToFuture);
     }
 
     @Override

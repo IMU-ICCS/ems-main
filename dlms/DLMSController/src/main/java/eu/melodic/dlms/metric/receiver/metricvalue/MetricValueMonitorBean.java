@@ -74,7 +74,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	public void subscribe() {
 		// Check if Pub/Sub should be activated
 		if (!properties.getPubsub().isOn()) {
-			log.info("*****   Pub/Sub is SWITCHED OFF");
+			log.debug("*****   Pub/Sub is SWITCHED OFF");
 			return;
 		}
 		// Subscribe to configured topics
@@ -108,7 +108,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	public void subscribe(String url, String topicName, String clientId, TopicType type) {
 		// Check if Pub/Sub should be activated
 		if (!properties.getPubsub().isOn()) {
-			log.info("*****   Pub/Sub is SWITCHED OFF");
+			log.debug("*****   Pub/Sub is SWITCHED OFF");
 			return;
 		}
 
@@ -173,7 +173,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 			cconf.getConnection().start();
 			log.trace("*****   SUBSCRIBE: connection started");
 
-			log.info("*****   SUBSCRIBE: ok");
+			log.debug("*****   SUBSCRIBE: ok");
 
 		} catch (Exception e) {
 			log.error("*****   SUBSCRIBE: ERROR: {}", e);
@@ -231,7 +231,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 				}
 			}
 
-			log.info("*****   UN-SUBSCRIBE: ok");
+			log.debug("*****   UN-SUBSCRIBE: ok");
 
 		} catch (Exception e) {
 			log.error("*****   SUBSCRIBE: ERROR: {}", e);
