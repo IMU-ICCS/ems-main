@@ -100,7 +100,7 @@ public class ModelAnalyzer {
 							compConMap.put(fromComponent.getName(), toComponentList);
 						}
 					}
-					log.info("CamelModel was loaded succesfully: {} ", camelModel);
+					log.debug("CamelModel was loaded succesfully: {} ", camelModel);
 				} else
 					log.debug("Deployment model is missing");
 			} else {
