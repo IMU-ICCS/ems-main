@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.metasolver;
 
+import eu.melodic.upperware.metasolver.util.CpModelHelper;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
@@ -45,6 +46,7 @@ public class Coordinator implements ApplicationContextAware {
 
     private String cacheAppId;
     private String cacheCpModelPath;
+    private Map<String,String> mvvToCurrentConfigVarsMap;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -175,6 +177,11 @@ public class Coordinator implements ApplicationContextAware {
         CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
         Pair<Integer,Integer> newPos = helper.updateSolutionIdsInCpModel(applicationId, cpModelPath, success);
 
+        // Copy values of MVVs to Current Config. variables
+        if (mvvToCurrentConfigVarsMap!=null) {
+            helper.copyVarValuesFromDeployedSolution(cacheAppId, cacheCpModelPath, mvvToCurrentConfigVarsMap);
+        }
+
 		// Notify EMS about new solution acceptance
 		notifyEMS(cpModelPath);
 		
@@ -260,6 +267,12 @@ public class Coordinator implements ApplicationContextAware {
             log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
         }
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");
+    }
+
+    public void updateMvvMap(Map<String,String> mvvMap) {
+        log.info("MetaSolver.Coordinator: updateMvvMap(): map={}", mvvMap);
+        mvvToCurrentConfigVarsMap = mvvMap;
+        log.info("MetaSolver.Coordinator: updateMvvMap(): 'mvvToCurrentConfigVarsMap' updated");
     }
 
     private void notifyEMS(String cpModelPath) {

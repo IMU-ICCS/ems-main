@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,9 +75,9 @@ public class MetaSolverController {
         log.info("Received request: " + applicationId + " " + cdoModelsPath + " " + requestUuid);
 
         // Evaluate new solution
-        log.info("Evaluate current sulution: ");
+        log.info("Evaluate current solution: ");
         SolutionEvaluationResponse.EvaluationResultType solutionEvaluation = coordinator.evaluateSolution(applicationId, cdoModelsPath);
-        log.info("Evaluate current sulution: {}", solutionEvaluation);
+        log.info("Evaluate current solution: {}", solutionEvaluation);
 
         // Prepare and return response
         SolutionEvaluationResponseImpl response = new SolutionEvaluationResponseImpl();
@@ -110,16 +112,21 @@ public class MetaSolverController {
         return response;
     }
 
-    @RequestMapping(value = "/updateSubscriptions", method = POST)
-    public String updateSubscriptions(@RequestBody String subscrConfig) throws ConcurrentAccessException {
-        log.info("updateSubscriptions: json={}", subscrConfig);
+    @RequestMapping(value = "/updateConfiguration", method = POST)
+    public String updateConfiguration(@RequestBody String configStr) throws ConcurrentAccessException {
+        log.info("updateConfiguration: json={}", configStr);
 
-        // Unserialize subscription configurations from JSON
+        // Unserialize configuration from JSON
         com.google.gson.Gson gson = new com.google.gson.Gson();
-        Set<Map> subscriptions = gson.fromJson(subscrConfig, Set.class);
-        log.info("updateSubscriptions: subscriptions={}", subscriptions);
+        Map<String,Object> configuration = gson.fromJson(configStr, Map.class);
+        log.info("updateConfiguration: new configuration={}", configuration);
+
+        // Update MetaSolver MVV-map
+        Map<String,String> mvvMap = (Map<String,String>) configuration.get("mvv");
+        coordinator.updateMvvMap(mvvMap);
 
         // Update MetaSolver subscriptions
+        Set<Map> subscriptions = new HashSet<>( (Collection<Map>)configuration.get("subscriptions") );
         coordinator.updateSubscriptions(subscriptions);
 
         return "OK";
