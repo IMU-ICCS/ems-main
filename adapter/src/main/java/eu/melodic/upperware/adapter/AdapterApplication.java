@@ -7,7 +7,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware;
+package eu.melodic.upperware.adapter;
 
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;

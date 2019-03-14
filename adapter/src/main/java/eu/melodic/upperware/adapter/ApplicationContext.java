@@ -70,7 +70,6 @@ public class ApplicationContext {
 
   @Bean
   public CDOClientX getCdoClient() {
-//    return new CDOClientXImpl();
     return new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
             TypePackage.eINSTANCE, OrganisationPackage.eINSTANCE, DeploymentPackage.eINSTANCE));
   }
