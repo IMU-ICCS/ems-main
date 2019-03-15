@@ -150,7 +150,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             return;
         }
 
-        log.info("Going to remove monitor {}", taskBody.getMetricName());
+        log.info("Going to remove monitor {} with MonitoringTarget({}, {})", taskBody.getMetricName(), monitoringTarget.getType(), monitoringTarget.getIdentifier());
 
         try {
             api.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
