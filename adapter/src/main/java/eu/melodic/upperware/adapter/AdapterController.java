@@ -10,6 +10,7 @@
 package eu.melodic.upperware.adapter;
 
 import eu.melodic.models.interfaces.adapter.ApplicationDeploymentRequestImpl;
+import eu.melodic.models.interfaces.solverToDeployment.ApplySolutionRequestImpl;
 import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,39 +29,54 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class AdapterController {
 
-  private Coordinator coordinator;
-  private DeploymentRequestValidator validator;
+    private DeployCoordinator deployCoordinator;
+    private ApplyCoordinator applyCoordinator;
 
-  @PostMapping(value = "/applicationDeployment", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-  public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
-                                    @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
-    validator.validate(request);
+    private DeploymentRequestValidator validator;
 
-    String resourceName = request.getApplicationId();
-    String notificationUri = request.getNotificationURI();
-    String requestUuid = request.getWatermark().getUuid();
+    @PostMapping(value = "/applicationDeployment", consumes = APPLICATION_JSON_VALUE)
+    public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
+                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+        validator.validate(request);
 
-    coordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization);
-  }
+        String resourceName = request.getApplicationId();
+        String notificationUri = request.getNotificationURI();
+        String requestUuid = request.getWatermark().getUuid();
 
-  @PostMapping(value = "/autoScaleEvent", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-  public void autoScaleEvent() {
-    // TODO
-  }
+        deployCoordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization);
+    }
 
-  @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
-  public void refreshContext() {
-    coordinator.refreshContext();
-  }
+    @PostMapping(value = "/applySolution", consumes = APPLICATION_JSON_VALUE)
+    public void applySolution(@RequestBody ApplySolutionRequestImpl request) {
 
-  @GetMapping(value = "/health")
-  public void health() {
-  }
+        String applicationId = request.getApplicationId();
+        String cdoResourcePath = request.getCdoModelsPath();
+        String notificationUri = request.getNotificationURI();
+        String requestUuid = request.getWatermark().getUuid();
 
-  @ExceptionHandler
-  @ResponseStatus(BAD_REQUEST)
-  public String handleException(BadRequestException exception) {
-    log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
-    return exception.getMessage();
-  }
+        log.info("Received request: {} {} {} {}", applicationId, cdoResourcePath, notificationUri, requestUuid);
+
+        applyCoordinator.doWorkTS(applicationId, cdoResourcePath, notificationUri, requestUuid);
+    }
+
+    @PostMapping(value = "/autoScaleEvent", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public void autoScaleEvent() {
+        // TODO
+    }
+
+    @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
+    public void refreshContext() {
+        deployCoordinator.refreshContext();
+    }
+
+    @GetMapping(value = "/health")
+    public void health() {
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(BAD_REQUEST)
+    public String handleException(BadRequestException exception) {
+        log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
+        return exception.getMessage();
+    }
 }

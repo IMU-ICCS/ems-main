@@ -25,7 +25,6 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
 
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 

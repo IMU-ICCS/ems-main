@@ -2,9 +2,11 @@ package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.SoftwareComponentInstance;
+import com.google.gson.Gson;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
-import eu.melodic.upperware.adapter.service.ProviderInfoSupplier;
+import eu.melodic.upperware.adapter.service.CamelEnricherService;
 import io.github.cloudiator.rest.model.IdentifierRequirement;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,8 @@ import static java.util.stream.Collectors.toSet;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class RequirementsConverter implements ModelConverter<DeploymentInstanceModel, Collection<AdapterRequirement>> {
 
-    private ProviderInfoSupplier providerInfoSupplier;
+    private CamelEnricherService camelEnricherService;
+    private Gson gson;
 
     @Override
     public Collection<AdapterRequirement> toComparableModel(DeploymentInstanceModel model) {
@@ -35,7 +38,7 @@ public class RequirementsConverter implements ModelConverter<DeploymentInstanceM
                 .builder()
                 .type(IdentifierRequirement.class.getSimpleName())
                 .nodeName(softwareComponentInstance.getName())
-                .nodeCandidate(providerInfoSupplier.getNodeCandidate(softwareComponentInstance))
+                .nodeCandidate(gson.fromJson(camelEnricherService.fetch("nodeCandidate", softwareComponentInstance), NodeCandidate.class))
                 .build();
     }
 }

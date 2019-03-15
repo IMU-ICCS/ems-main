@@ -18,12 +18,6 @@ import camel.type.TypeFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import eu.melodic.models.commons.NotificationResult;
-import eu.melodic.models.commons.NotificationResultImpl;
-import eu.melodic.models.commons.Watermark;
-import eu.melodic.models.commons.WatermarkImpl;
-import eu.melodic.models.services.adapter.DeploymentNotificationRequest;
-import eu.melodic.models.services.adapter.DeploymentNotificationRequestImpl;
 import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
@@ -35,6 +29,7 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
+import eu.melodic.upperware.adapter.notification.AdapterNotificationSenderImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import io.github.cloudiator.rest.ApiException;
@@ -47,22 +42,18 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
-import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
 import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 import static java.lang.String.format;
 
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class Coordinator {
+public class DeployCoordinator {
 
     private static final Map<String, Object> LOCKS = Maps.newConcurrentMap();
 
@@ -73,7 +64,6 @@ public class Coordinator {
     private CdoServerUpdater cdoServerUpdater;
 
     private ContextOperations context;
-    private RestTemplate restTemplate;
     private AdapterProperties properties;
     private CDOClientX cdoClientX;
 
@@ -83,13 +73,15 @@ public class Coordinator {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    private AdapterNotificationSenderImpl adapterNotificationSenderImpl;
+
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
         try {
             acquireLock(resourceName);
         } catch (Exception e) {
             log.error("An exception occurred during acquiring lock for application {}", resourceName, e);
-            notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+            adapterNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
             return;
         }
         log.info("Starting new model deployment process");
@@ -97,7 +89,7 @@ public class Coordinator {
             run(resourceName, notificationUri, uuid, authorization);
         } catch (Exception e) {
             log.error("An exception occurred during deployment process", e);
-            notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+            adapterNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
         } finally {
             releaseLock(resourceName);
         }
@@ -157,21 +149,21 @@ public class Coordinator {
 
                 planExecutor.executePlan(plan);
                 cdoServerUpdater.updateCamelModel(resourceName);
-                notifyPlanApplied(resourceName, notificationUri, uuid);
+                adapterNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
             } else {
                 log.info("Deployment plan authorized failed...");
-                notifyPlanRejected(resourceName, notificationUri, uuid);
+                adapterNotificationSenderImpl.notifyPlanRejected(resourceName, notificationUri, uuid);
             }
 
         } catch (Exception ex) {
             log.error("Error: ", ex);
-            notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
+            adapterNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
         }
     }
 
     private void enrichMonitors(DeploymentInstanceModel targetModel, String uuid, String authorization, String resourceName) {
         String attributeName = "monitors";
-        List<Monitor> monitors = emsClientApi.getMonitors(resourceName, prepareWatermark(uuid), authorization);
+        List<Monitor> monitors = emsClientApi.getMonitors(resourceName, adapterNotificationSenderImpl.prepareWatermark(uuid), authorization);
         if (CollectionUtils.isEmpty(monitors)) {
             log.info("There is no monitors defined for CamelModel {}", resourceName);
             return;
@@ -209,69 +201,6 @@ public class Coordinator {
         StringValue stringValue = TypeFactory.eINSTANCE.createStringValue();
         stringValue.setValue(attributeValue);
         return stringValue;
-    }
-
-    private void notifyPlanApplied(String resourceName, String notificationUri, String uuid) {
-        log.info("Sending plan applied notification");
-        NotificationResult result = prepareSuccessNotificationResult();
-        DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
-        sendNotification(notification, notificationUri);
-    }
-
-    private void notifyPlanRejected(String resourceName, String notificationUri, String uuid) {
-        log.info("Sending plan rejected notification");
-        NotificationResult result = prepareErrorNotificationResult("Built plan was rejected by Plan Validator");
-        DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
-        sendNotification(notification, notificationUri);
-    }
-
-    private void notifyErrorOccurred(String resourceName, String notificationUri, String uuid, Exception e) {
-        String errorMsg = e.getMessage();
-        log.error("Sending error notification: {}", errorMsg);
-        NotificationResult result = prepareErrorNotificationResult(errorMsg);
-        DeploymentNotificationRequest notification = prepareNotification(resourceName, result, uuid);
-        sendNotification(notification, notificationUri);
-    }
-
-    private NotificationResult prepareSuccessNotificationResult() {
-        NotificationResult result = new NotificationResultImpl();
-        result.setStatus(SUCCESS);
-        return result;
-    }
-
-    private NotificationResult prepareErrorNotificationResult(String errorMsg) {
-        NotificationResult result = new NotificationResultImpl();
-        result.setErrorDescription(errorMsg);
-        result.setStatus(ERROR);
-        return result;
-    }
-
-    private DeploymentNotificationRequest prepareNotification(String resourceName, NotificationResult result, String uuid) {
-        DeploymentNotificationRequest notification = new DeploymentNotificationRequestImpl();
-        notification.setApplicationId(resourceName);
-        notification.setResult(result);
-        notification.setWatermark(prepareWatermark(uuid));
-        return notification;
-    }
-
-    private Watermark prepareWatermark(String uuid) {
-        Watermark watermark = new WatermarkImpl();
-        watermark.setUser("adapter");
-        watermark.setSystem("adapter");
-        watermark.setDate(new Date());
-        watermark.setUuid(uuid);
-        return watermark;
-    }
-
-    private void sendNotification(DeploymentNotificationRequest notification, String notificationUri) {
-        String esbUrl = properties.getEsb().getUrl();
-        if (esbUrl.endsWith("/")) {
-            esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
-        }
-        if (notificationUri.startsWith("/")) {
-            notificationUri = notificationUri.substring(1);
-        }
-        restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
     }
 
     private static void acquireLock(String resourceName) {

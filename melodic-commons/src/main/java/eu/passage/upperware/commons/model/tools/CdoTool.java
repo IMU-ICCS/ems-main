@@ -56,6 +56,7 @@ public final class CdoTool {
     }
 
     public static Optional<DeploymentInstanceModel> getCurrentlyInstalledModel(ExecutionModel executionModel){
+        //TODO - isn't it double checked?
         List<HistoryRecord> historyRecords = ListUtils.emptyIfNull(executionModel.getHistoryRecords());
         if (CollectionUtils.isEmpty(historyRecords)){
             return Optional.empty();
