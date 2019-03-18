@@ -76,8 +76,8 @@ public class DLMSConverter implements ArgumentConverter {
             log.warn("DLMS utility result for type: {} is null, returning 0 as a DLMS utility value", type.camelName);
             return 0;
         }
-        log.info("DLMSUtility:");
-        dlmsUtility.getResults().forEach((attribute, value) -> log.info("{} = {}", attribute, value));
+        log.debug("DLMSUtility:");
+        dlmsUtility.getResults().forEach((attribute, value) -> log.debug("{} = {}", attribute, value));
         return dlmsUtilityResult;
     }
 }
