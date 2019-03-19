@@ -13,10 +13,10 @@ import java.util.function.Supplier;
 
 @Service
 @Slf4j
-public class AdapterNotificationSenderImpl extends NotificationSender<DeploymentNotificationRequest> {
+public class DeploymentNotificationSenderImpl extends NotificationSender<DeploymentNotificationRequest> {
 
     @Autowired
-    public AdapterNotificationSenderImpl(RestTemplate restTemplate, Environment env) {
+    public DeploymentNotificationSenderImpl(RestTemplate restTemplate, Environment env) {
         super(restTemplate, env);
     }
 

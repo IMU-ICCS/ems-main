@@ -29,7 +29,7 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
-import eu.melodic.upperware.adapter.notification.AdapterNotificationSenderImpl;
+import eu.melodic.upperware.adapter.notification.DeploymentNotificationSenderImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import io.github.cloudiator.rest.ApiException;
@@ -73,7 +73,7 @@ public class DeployCoordinator {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private AdapterNotificationSenderImpl adapterNotificationSenderImpl;
+    private DeploymentNotificationSenderImpl deploymentNotificationSenderImpl;
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
@@ -81,7 +81,7 @@ public class DeployCoordinator {
             acquireLock(resourceName);
         } catch (Exception e) {
             log.error("An exception occurred during acquiring lock for application {}", resourceName, e);
-            adapterNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+            deploymentNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
             return;
         }
         log.info("Starting new model deployment process");
@@ -89,7 +89,7 @@ public class DeployCoordinator {
             run(resourceName, notificationUri, uuid, authorization);
         } catch (Exception e) {
             log.error("An exception occurred during deployment process", e);
-            adapterNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
+            deploymentNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
         } finally {
             releaseLock(resourceName);
         }
@@ -149,21 +149,21 @@ public class DeployCoordinator {
 
                 planExecutor.executePlan(plan);
                 cdoServerUpdater.updateCamelModel(resourceName);
-                adapterNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
+                deploymentNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
             } else {
                 log.info("Deployment plan authorized failed...");
-                adapterNotificationSenderImpl.notifyPlanRejected(resourceName, notificationUri, uuid);
+                deploymentNotificationSenderImpl.notifyPlanRejected(resourceName, notificationUri, uuid);
             }
 
         } catch (Exception ex) {
             log.error("Error: ", ex);
-            adapterNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
+            deploymentNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, ex);
         }
     }
 
     private void enrichMonitors(DeploymentInstanceModel targetModel, String uuid, String authorization, String resourceName) {
         String attributeName = "monitors";
-        List<Monitor> monitors = emsClientApi.getMonitors(resourceName, adapterNotificationSenderImpl.prepareWatermark(uuid), authorization);
+        List<Monitor> monitors = emsClientApi.getMonitors(resourceName, deploymentNotificationSenderImpl.prepareWatermark(uuid), authorization);
         if (CollectionUtils.isEmpty(monitors)) {
             log.info("There is no monitors defined for CamelModel {}", resourceName);
             return;

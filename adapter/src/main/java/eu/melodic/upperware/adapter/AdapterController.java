@@ -10,7 +10,7 @@
 package eu.melodic.upperware.adapter;
 
 import eu.melodic.models.interfaces.adapter.ApplicationDeploymentRequestImpl;
-import eu.melodic.models.interfaces.solverToDeployment.ApplySolutionRequestImpl;
+import eu.melodic.models.interfaces.adapter.ApplySolutionRequestImpl;
 import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,11 +57,6 @@ public class AdapterController {
         log.info("Received request: {} {} {} {}", applicationId, cdoResourcePath, notificationUri, requestUuid);
 
         applyCoordinator.doWorkTS(applicationId, cdoResourcePath, notificationUri, requestUuid);
-    }
-
-    @PostMapping(value = "/autoScaleEvent", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
-    public void autoScaleEvent() {
-        // TODO
     }
 
     @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
