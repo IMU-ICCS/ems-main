@@ -10,7 +10,7 @@ import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.CacheUtils;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.adapter.notification.S2DNotificationSenderImpl;
+import eu.melodic.upperware.adapter.notification.ApplySolutionNotificationSenderImpl;
 import eu.melodic.upperware.adapter.service.DataUtils;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class ApplyCoordinator {
 
 	private CDOClientX cdoClientX;
-	private S2DNotificationSenderImpl s2DNotificationSender;
+	private ApplySolutionNotificationSenderImpl applySolutionNotificationSender;
 	private DataUtils dataUtils;
 	private CacheService<NodeCandidates> cacheService;
 
@@ -60,7 +60,7 @@ public class ApplyCoordinator {
 			// Checking if there is a solution
 			if (CollectionUtils.isEmpty(constraintProblem.getSolution())) {
 				log.info("No solution available in Constraint Problem!");
-				s2DNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
+				applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
 				return;
 			}
 
@@ -70,7 +70,7 @@ public class ApplyCoordinator {
 				DeploymentInstanceModel newDeploymentInstanceModel = dataUtils.computeDatasToRegister(camelModel, solution, nodeCandidates);
 
 				if (newDeploymentInstanceModel == null) {
-					s2DNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
+					applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
 					return;
 				}
 				camelModel.getDeploymentModels().add(newDeploymentInstanceModel);
@@ -78,13 +78,13 @@ public class ApplyCoordinator {
 
 			} catch (CommitException e) {
 				log.error("Error during commit transaction, Unable to complete data model instances registration", e);
-				s2DNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
+				applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
 				return;
 			}
 			dumpDM(camelModel, 2);
 		} catch (RuntimeException exception) {
 			log.error("RuntimeException", exception);
-			s2DNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
+			applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
 			return;
 		} finally {
 			if (transaction != null && !transaction.isClosed()){
@@ -92,7 +92,7 @@ public class ApplyCoordinator {
 			}
 			session.closeSession();
 		}
-		s2DNotificationSender.notifySolutionApplied(camelModelId, notificationUri, requestUuid);
+		applySolutionNotificationSender.notifySolutionApplied(camelModelId, notificationUri, requestUuid);
 	}
 
 	private void dumpDM(CamelModel cm, int level) {

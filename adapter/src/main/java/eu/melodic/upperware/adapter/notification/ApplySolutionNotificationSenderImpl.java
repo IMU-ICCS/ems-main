@@ -1,8 +1,9 @@
 package eu.melodic.upperware.adapter.notification;
 
 import eu.melodic.models.commons.NotificationResult;
-import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequest;
-import eu.melodic.models.services.solverToDeployment.ApplySolutionNotificationRequestImpl;
+
+import eu.melodic.models.services.adapter.ApplySolutionNotificationRequest;
+import eu.melodic.models.services.adapter.ApplySolutionNotificationRequestImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -13,10 +14,10 @@ import java.util.function.Supplier;
 
 @Service
 @Slf4j
-public class S2DNotificationSenderImpl extends NotificationSender<ApplySolutionNotificationRequest> {
+public class ApplySolutionNotificationSenderImpl extends NotificationSender<ApplySolutionNotificationRequest> {
 
     @Autowired
-    public S2DNotificationSenderImpl(RestTemplate restTemplate, Environment env) {
+    public ApplySolutionNotificationSenderImpl(RestTemplate restTemplate, Environment env) {
         super(restTemplate, env);
     }
 
@@ -46,6 +47,6 @@ public class S2DNotificationSenderImpl extends NotificationSender<ApplySolutionN
 
     @Override
     String getComponentName() {
-        return "SolverToDeployment";
+        return "Adapter";
     }
 }

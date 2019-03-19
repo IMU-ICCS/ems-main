@@ -47,7 +47,7 @@ public class DataUtils {
                 .stream()
                 .filter(requiredCommunication -> !providedPorts.contains(requiredCommunication.getPortNumber()))
                 .forEach(requiredCommunication -> {
-                    log.error("Problem with S2D: Port number {} required by {} is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName());
+                    log.error("Port number {} required by {} is not provided by any component", requiredCommunication.getPortNumber(), softwareComponent.getName());
                 }));
 
         List<SoftwareInstanceDetail> softwareInstanceDetails = new ArrayList<>();
@@ -87,7 +87,7 @@ public class DataUtils {
             return camelInstanceService.createDeploymentInstanceModel(deploymentTypeModel, softwareInstanceDetails);
 
         } catch (Exception e) {
-            log.error("Problem with S2D: ", e);
+            log.error("Problem with Applying Solution: ", e);
         }
         return null;
     }
