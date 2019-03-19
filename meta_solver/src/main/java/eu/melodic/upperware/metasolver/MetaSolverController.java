@@ -98,6 +98,9 @@ public class MetaSolverController {
         String requestUuid = request.getWatermark().getUuid();
         log.info("Received request: " + applicationId + " " + cdoModelsPath + " " + requestUuid);
 
+        // Set metric values in CP model
+        coordinator.setMetricValuesInCpModel(applicationId, cdoModelsPath);
+
         // Update deployed and candidate solution Ids (positions) in CP model
         log.info("Update solution: ");
         Pair<Integer,Integer> pos = coordinator.updateSolutionIdsInCpModel(applicationId, cdoModelsPath, success);
