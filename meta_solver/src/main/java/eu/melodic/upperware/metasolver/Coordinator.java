@@ -192,12 +192,17 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
 
-    public void requestStartProcessForScaling() {
+    public void requestStartProcessForScaling() throws ConcurrentAccessException {
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
         log.info("MetaSolver.Coordinator: requestStartProcessForScaling(): Cached appId={}, Cached cp-model={}", appId, cpModelPath);
 
+        // Set metric values in CP model
+        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
+        setMetricValuesInCpModel(appId, cpModelPath);
+        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
+		
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request", notification);
