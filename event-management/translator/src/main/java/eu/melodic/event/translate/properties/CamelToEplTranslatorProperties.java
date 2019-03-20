@@ -36,8 +36,10 @@ public class CamelToEplTranslatorProperties {
     @Value("${translator.sensor-default-interval}")
     private long sensorDefaultInterval;
 
-    @Value("${translator.prune-mvv}")
+    @Value("${translator.prune-mvv:true}")
     private boolean pruneMvv;
+    @Value("${translator.add-top-level-metrics:true}")
+    private boolean addTopLevelMetric;
     @Value("${translator.full-name-pattern}")
     private String fullNamePattern;
     @Value("${translator.formula-check-enabled:true}")
