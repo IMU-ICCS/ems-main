@@ -105,7 +105,7 @@ public class CpModelHelper {
                     }
                     c.setValue(newVal);
                 } else {
-                    log.info("Skipped metric update (no value): {}", mvName);
+                    log.debug("Skipped metric update (no value): {}", mvName);
                 }
             }
 
