@@ -52,6 +52,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -139,6 +140,7 @@ public class CpModelHelper {
         CDOView view = null;
         try {
             // retrieve CP model (open view)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             view = session.openView();
             CDOResource resource = view.getResource(cpModelPath);
@@ -198,6 +200,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -254,6 +257,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -306,6 +310,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
