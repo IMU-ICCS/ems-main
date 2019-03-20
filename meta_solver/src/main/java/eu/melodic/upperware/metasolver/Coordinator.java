@@ -202,7 +202,7 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
         setMetricValuesInCpModel(appId, cpModelPath);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
-		
+
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request", notification);
