@@ -382,7 +382,7 @@ public class CpModelHelper {
                 // Copy value (clone) to Target metric
                 toMetric.setValue(toValue);
 
-                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Copied from {} to {}: value={}", fromName, toName, numericValueUpperwareToDouble(fromValue));
+                log.info("CpModelHelper.copyVarValuesFromDeployedSolution(): Copied from {} to {}: value={}", fromName, toName, numericValueUpperwareToDouble(fromValue));
             }
 
             // commit changes
