@@ -7,6 +7,10 @@
 
 package eu.melodic.upperware.dlms;
 
+import java.util.List;
+
+import javax.annotation.PreDestroy;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -31,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DLMSWebServiceApplication {
 
 	private final Environment env;
+	private final DLMSServiceImpl dlmsService;
 
 	/**
 	 * Main method for starting. No arguments needed for normal use.
@@ -52,12 +57,26 @@ public class DLMSWebServiceApplication {
 			log.info("Alluxio master is located at " + env.getProperty("alluxio.master.address"));
 			// set master hostname
 			Configuration.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
-			
+
 			// this is test
 //			dsRepository.save(new DataSource("DS1", DataSourceType.HDFS, "http://master:9000/", "/melodic/ds1"));
 //			dsRepository.save(new DataSource("DS2", DataSourceType.S3, "s3a://bucketferox/", "/melodic/ds2"));
-//			log.info("Sample data sources added");
 		};
+	}
+
+	/**
+	 * On termination all the mounted storage should be removed This should not
+	 * happen during one Application lifetime in Melodic. But it is useful for
+	 * testing.
+	 */
+	@PreDestroy
+	public void onExit() {
+		log.debug("terminated and deletng data sources now");
+		List<DataSource> dsList = dlmsService.getAllDataSources();
+		for (DataSource ds : dsList) {
+			dlmsService.deleteByName(ds.getName());
+		}
+		log.debug("Unmounted and deleted the data sources from the database");
 	}
 
 	@Bean
