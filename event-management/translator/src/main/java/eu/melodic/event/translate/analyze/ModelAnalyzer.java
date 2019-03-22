@@ -468,7 +468,7 @@ public class ModelAnalyzer {
                 Component component = mv.getComponent();
                 String formula = mv.getFormula();
                 List<Metric> componentMetrics = ListUtils.emptyIfNull(mv.getComponentMetrics());
-                boolean containsMetrics = (componentMetrics != null && componentMetrics.size() > 0);
+                boolean containsMetrics = componentMetrics.isEmpty();
                 log.info("  Processing Metric Variable {} from Metric Type model {}: template={}, is-current-configuration={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}...",
                         mvName, mm.getName(), getElementName(template), isCurrConfig, isOnNodeCand, getElementName(component), formula, getListElementNames(componentMetrics), containsMetrics);
 
@@ -589,7 +589,7 @@ public class ModelAnalyzer {
             constraints.forEach(con -> {
                 // extract constraint name and metric variable
                 String conName = con.getName();
-                log.info("  Processing Metric Variable Constraint {} from Constraints model {}: ...", con.getName(), cm.getName());
+                log.info("  Processing Metric Variable Constraint {} from Constraints model {}: ...", conName, cm.getName());
 
                 MetricVariable mv = con.getMetricVariable();
                 log.info("  Metric Variable Constraint {}: metric variable: {}", con.getName(), mv.getName());
@@ -786,7 +786,8 @@ public class ModelAnalyzer {
                     MetricVariable mv = (MetricVariable) m;
                     log.debug("  _decomposeMetricVariable(): {} :: Component composite metric variable found: {}", mvar.getName(), mv.getName());
                     _TC.DAG.addNode(mvar, mv).setGrouping(getGrouping(mv));
-                    if (_decomposeMetricVariable(_TC, mv)) hasNonMVVComponents = true;
+                    //if (_decomposeMetricVariable(_TC, mv)) hasNonMVVComponents = true;
+                    _decomposeMetricVariable(_TC, mv);
                 } else
                 // check if it is an MVV
                 if (_TC.MVV.contains(m.getName())) {
@@ -1217,7 +1218,7 @@ public class ModelAnalyzer {
     }
 
     private List<String> getListElementNames(List list) {
-        ArrayList<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<>();
         for (Object elem : ListUtils.emptyIfNull(list)) {
             if (elem instanceof NamedElement) {
                 names.add(((NamedElement) elem).getName());
@@ -1227,7 +1228,7 @@ public class ModelAnalyzer {
     }
 
     private Set<String> getSetElementNames(Set set) {
-        if (set == null) return null;
+        if (set == null) return Collections.emptySet();
         HashSet<String> names = new HashSet<>();
         for (Object elem : set) {
             if (elem instanceof NamedElement) {
@@ -1238,8 +1239,8 @@ public class ModelAnalyzer {
     }
 
     private Map<String, Set<String>> getMapSetElementNames(Map map) {
-        if (map == null) return null;
-        HashMap<String, Set<String>> results = new HashMap<>();
+        if (map == null) return Collections.emptyMap();
+        Map<String, Set<String>> results = new HashMap<>();
         for (Object key : map.keySet()) {
             Object value = map.get(key); //entry.getValue();
             if (key instanceof NamedElement && value instanceof Set) {

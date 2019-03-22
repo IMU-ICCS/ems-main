@@ -274,10 +274,10 @@ public class Coordinator implements ApplicationContextAware {
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");
     }
 
-    public void updateMvvMap(Map<String,String> mvvMap) {
-        log.info("MetaSolver.Coordinator: updateMvvMap(): map={}", mvvMap);
+    public void setMvvMap(Map<String,String> mvvMap) {
+        log.info("MetaSolver.Coordinator: setMvvMap(): map={}", mvvMap);
         mvvToCurrentConfigVarsMap = mvvMap;
-        log.info("MetaSolver.Coordinator: updateMvvMap(): 'mvvToCurrentConfigVarsMap' updated");
+        log.info("MetaSolver.Coordinator: setMvvMap(): 'mvvToCurrentConfigVarsMap' updated");
     }
 
     private void notifyEMS(String cpModelPath) {

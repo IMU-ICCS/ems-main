@@ -210,29 +210,21 @@ public class CamelToEplTranslator implements Translator {
 		String ident2 = startIdent+"  ";
 		String ident3 = startIdent+"    ";
 		String ident4 = startIdent+"\n      ";
-		map.entrySet().forEach(
-				e -> {
-					String groupingName = e.getKey();
-					sb.append(startIdent).append("-----------------------\n");
-					sb.append(startIdent).append(groupingName).append(": \n");
-					Map<String, Set<String>> groupingTopics = e.getValue();
-					groupingTopics.entrySet().forEach(
-							e2 -> {
-								String topicName = e2.getKey();
-								sb.append(ident2).append(topicName).append(": \n");
-								Set<String> topicRules = e2.getValue();
-								topicRules.forEach(
-										ruleStr -> {
-											ruleStr = ruleStr
-													.replace("\r\n", ident4)
-													.replace("\n", ident4);
-											sb.append(ident3).append("- ").append(ruleStr).append("\n");
-										}
-								);
-							}
-					);
-				}
-		);
+		map.forEach((groupingName, groupingTopics) -> {
+			sb.append(startIdent).append("-----------------------\n");
+			sb.append(startIdent).append(groupingName).append(": \n");
+			groupingTopics.forEach((topicName, topicRules) -> {
+				sb.append(ident2).append(topicName).append(": \n");
+				topicRules.forEach(
+						ruleStr -> {
+							ruleStr = ruleStr
+									.replace("\r\n", ident4)
+									.replace("\n", ident4);
+							sb.append(ident3).append("- ").append(ruleStr).append("\n");
+						}
+				);
+			});
+		});
 		return sb.toString();
 	}
 	

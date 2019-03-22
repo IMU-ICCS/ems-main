@@ -23,9 +23,12 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Component
 @Slf4j
@@ -310,7 +313,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
-            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+            this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -341,14 +344,14 @@ public class CpModelHelper {
 
             // get variable values from deployed solution
             final EList<CpVariableValue> valuesList = depSol.getVariableValue();
-            Map<String,CpVariableValue> valuesMap = new HashMap<>();
-            for (CpVariableValue val : valuesList) valuesMap.put(val.getVariable().getId(), val);
+            Map<String,CpVariableValue> valuesMap = valuesList.stream()
+                    .collect(Collectors.toMap(o -> o.getVariable().getId(), Function.identity()));
             log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution Variable Values: {}", valuesMap.keySet());
 
             // get target metrics from cp model
             final EList<CpMetric> cpMetrics = cpModel.getCpMetrics();
-            Map<String,CpMetric> metricsMap = new HashMap<>();
-            for (CpMetric met : cpMetrics) metricsMap.put(met.getId(), met);
+            Map<String,CpMetric> metricsMap = cpMetrics.stream()
+                    .collect(Collectors.toMap(o -> o.getId(), Function.identity()));
             log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model Metrics: {}", metricsMap.keySet());
 
             // Copy values

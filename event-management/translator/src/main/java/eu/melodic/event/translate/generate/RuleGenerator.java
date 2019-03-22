@@ -432,7 +432,7 @@ public class RuleGenerator {
 
                 // Get metric's context
                 Set<MetricContext> mc = _TC.M2MC.get(m);
-                List<String> mcList = mc.stream().map(item -> item.getName()).collect(Collectors.toList());
+                List<String> mcList = mc.stream().map(NamedElement::getName).collect(Collectors.toList());
                 if (mc.size() != 1) {
                     log.error("RuleGenerator.generateRules():      Top-Level Metric has 0 or >1 contexts: metric={}, component-contexts={}", m.getName(), mcList);
                     throw new IllegalArgumentException(String.format("Top-Level Metric has 0 or >1 contexts: metric=%s, component-contexts=%s", m.getName(), mcList));
@@ -467,8 +467,8 @@ public class RuleGenerator {
                 String compName = comp != null ? comp.getName() : null;
                 String formula = mvar.getFormula();
                 EList<Metric> _componentMetrics = mvar.getComponentMetrics();
-                List<String> _componentMetricNames = _componentMetrics.stream().map(item -> item.getName()).collect(Collectors.toList());
-                boolean _containsMetrics = (_componentMetrics.size() > 0);
+                List<String> _componentMetricNames = _componentMetrics.stream().map(NamedElement::getName).collect(Collectors.toList());
+                boolean _containsMetrics = _componentMetrics.size() > 0;
 
                 log.warn("RuleGenerator.generateRules():      Metric-Variable: node={}, elem-name={}, is-current-config={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}",
                         node, elemName, isCurrConfig, isOnNodeCand, compName, formula, _componentMetricNames, _containsMetrics);

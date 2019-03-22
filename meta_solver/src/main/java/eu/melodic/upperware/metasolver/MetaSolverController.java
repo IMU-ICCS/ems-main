@@ -126,7 +126,7 @@ public class MetaSolverController {
 
         // Update MetaSolver MVV-map
         Map<String,String> mvvMap = (Map<String,String>) configuration.get("mvv");
-        coordinator.updateMvvMap(mvvMap);
+        coordinator.setMvvMap(mvvMap);
 
         // Update MetaSolver subscriptions
         Set<Map> subscriptions = new HashSet<>( (Collection<Map>)configuration.get("subscriptions") );
