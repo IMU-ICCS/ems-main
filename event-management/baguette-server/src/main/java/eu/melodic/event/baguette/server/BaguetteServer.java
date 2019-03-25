@@ -29,6 +29,8 @@ import java.util.*;
 public class BaguetteServer {
     @Autowired
     private BaguetteServerProperties config;
+    @Autowired
+    private PasswordUtil passwordUtil;
 
     private Sshd server;
 
@@ -147,7 +149,7 @@ public class BaguetteServer {
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password={}",
-                brokerUsername, PasswordUtil.encodePassword(brokerPassword));
+                brokerUsername, passwordUtil.encodePassword(brokerPassword));
 
         // Stop any running instance of SSH server
         stopServer();

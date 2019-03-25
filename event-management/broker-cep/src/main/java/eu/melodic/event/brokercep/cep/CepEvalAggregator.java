@@ -34,9 +34,28 @@ public class CepEvalAggregator implements AggregationMethod {
     }
 
     public void leave(Object value) {
-        boolean deleted = entries.remove(value);
-        log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, removed={}, hash={}", hashCode(), value, deleted, value.hashCode());
+        entries.remove(0);
+        log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, hash={}", hashCode(), value, value.hashCode());
+//XXX: TODO: Improve search
+        /*int p = findEntry((Object[])value);
+        if (p>-1) entries.remove(p);
+        boolean deleted = p>-1;*/
     }
+
+    /*private int findEntry(Object[] value) {
+        int p=-1;
+        for (Object[] arr : entries) {
+            p++;
+            for (int i=2; i<arr.length; i++) {
+                EventMap evt1 = (EventMap) arr[i];
+                EventMap evt2 = (EventMap) value[i];
+                if (evt1.get("metricValue")==evt2.get("metricValue") && evt1.get("timestamp")==evt2.get("timestamp")) {
+                    return p;
+                }
+            }
+        }
+        return -1;
+    }*/
 
     public Object getValue() {
         log.debug("CepEvalAggregator.getValue(): BEGIN");

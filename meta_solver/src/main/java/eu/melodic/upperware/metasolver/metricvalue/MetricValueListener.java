@@ -89,7 +89,11 @@ public class MetricValueListener implements MessageListener {
     }
 
     protected void processScaleEvent(String metricName) {
-        log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
-        coordinator.requestStartProcessForScaling();
+		try {
+			log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
+			coordinator.requestStartProcessForScaling();
+		} catch (Exception ex) {
+            log.error("processScaleEvent: EXCEPTION: ", ex);
+		}
     }
 }

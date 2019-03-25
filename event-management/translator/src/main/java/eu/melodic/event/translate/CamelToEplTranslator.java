@@ -189,7 +189,7 @@ public class CamelToEplTranslator implements Translator {
 		log.info("*********************************************************");
 		log.info("Data-to-Sensor map:\n{}", map2string( _TC.D2S ));
 		log.info("*********************************************************");
-		log.info("Grouping-to-EPL Rules map:\n{}", _TC.G2R);
+		log.info("Grouping-to-EPL Rules map:\n{}", prettifyG2R(_TC.G2R, ""));
 		log.info("*********************************************************");
 		log.info("Grouping-to-Topics map:\n{}", _TC.G2T);
 		log.info("*********************************************************");
@@ -203,6 +203,29 @@ public class CamelToEplTranslator implements Translator {
 		log.info("*********************************************************");
 		log.info("Function Definitions set:\n{}", getElementNames(_TC.FUNC));
 		log.info("*********************************************************");
+	}
+
+	public String prettifyG2R(Map<String, Map<String, Set<String>>> map, String startIdent) {
+		StringBuilder sb = new StringBuilder();
+		String ident2 = startIdent+"  ";
+		String ident3 = startIdent+"    ";
+		String ident4 = startIdent+"\n      ";
+		map.forEach((groupingName, groupingTopics) -> {
+			sb.append(startIdent).append("-----------------------\n");
+			sb.append(startIdent).append(groupingName).append(": \n");
+			groupingTopics.forEach((topicName, topicRules) -> {
+				sb.append(ident2).append(topicName).append(": \n");
+				topicRules.forEach(
+						ruleStr -> {
+							ruleStr = ruleStr
+									.replace("\r\n", ident4)
+									.replace("\n", ident4);
+							sb.append(ident3).append("- ").append(ruleStr).append("\n");
+						}
+				);
+			});
+		});
+		return sb.toString();
 	}
 	
 	protected Map<String,List<String>> map2string(Map map) {

@@ -133,6 +133,13 @@ generator:
           /* RAW-CTX-PER_INSTANCE */ /*INSERT INTO [(${outputStream})]*/
           SELECT * FROM [(${sensor})] [(${scheduleClause})]
           
+    # Metric templates
+    TL-MET:
+      __ANY__:
+        - |
+          /* MET-any */ /*INSERT INTO [(${outputStream})]*/
+          SELECT * FROM [(${context})]
+
     # Metric Variable templates
     VAR:
       __ANY__:
