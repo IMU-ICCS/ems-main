@@ -418,10 +418,10 @@ public class CpModelHelper {
 
     public Number numericValueUpperwareToNumber(NumericValueUpperware value) {
         if (value==null) throw new IllegalArgumentException("Argument is null");
-        if (value instanceof IntegerValueUpperware) return new Integer( ((IntegerValueUpperware)value).getValue() );
-        if (value instanceof FloatValueUpperware) return new Float( ((FloatValueUpperware)value).getValue() );
-        if (value instanceof DoubleValueUpperware) return new Double( ((DoubleValueUpperware)value).getValue() );
-        if (value instanceof LongValueUpperware) return new Long( ((LongValueUpperware)value).getValue() );
+        if (value instanceof IntegerValueUpperware) return ((IntegerValueUpperware)value).getValue();
+        if (value instanceof FloatValueUpperware) return ((FloatValueUpperware)value).getValue();
+        if (value instanceof DoubleValueUpperware) return ((DoubleValueUpperware)value).getValue();
+        if (value instanceof LongValueUpperware) return ((LongValueUpperware)value).getValue();
         throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
     }
 
