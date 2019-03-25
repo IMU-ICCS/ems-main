@@ -468,7 +468,7 @@ public class ModelAnalyzer {
                 Component component = mv.getComponent();
                 String formula = mv.getFormula();
                 List<Metric> componentMetrics = ListUtils.emptyIfNull(mv.getComponentMetrics());
-                boolean containsMetrics = componentMetrics.isEmpty();
+                boolean containsMetrics = (componentMetrics != null && componentMetrics.size() > 0);
                 log.info("  Processing Metric Variable {} from Metric Type model {}: template={}, is-current-configuration={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}...",
                         mvName, mm.getName(), getElementName(template), isCurrConfig, isOnNodeCand, getElementName(component), formula, getListElementNames(componentMetrics), containsMetrics);
 
