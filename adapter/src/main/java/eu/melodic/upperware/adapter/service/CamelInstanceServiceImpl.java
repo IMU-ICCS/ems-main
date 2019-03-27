@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +106,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     }
 
     private List<CommunicationInstance> createCommunicationInstanceFromDemand(Communication com, DeploymentInstanceModel deploymentInstanceModel,
-                                                                             List<SoftwareComponentInstance> softwareComponentInstances) {
+                                                                              List<SoftwareComponentInstance> softwareComponentInstances) {
         // Gathering information
         FullCommunication fullCommunication = FullCommunication.fromCommunication(com);
 
@@ -194,7 +195,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     }
 
     private CommunicationPortInstance findCommunicationPortInstanceFor(CommunicationPort communication,
-                                                                              List<? extends CommunicationPortInstance> requiredCommunicationInstances) {
+                                                                       List<? extends CommunicationPortInstance> requiredCommunicationInstances) {
         if(communication == null) {
             log.error("Try to find Communication port instance with communication port equal to null!!");
             return null;
@@ -213,23 +214,9 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         CdoTool.getLastElementAsOptional(camelModel.getExecutionModels()).ifPresent(executionModel1 ->
                 CdoTool.getCurrentlyInstalledModel(executionModel1).ifPresent(deploymentInstanceModel -> {
                     //1. Component
-                    changeNames(componentsToRegister, deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::getInstance);
+                    changeNames(componentsToRegister, deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::new);
                 })
         );
-    }
-
-    private <T extends Feature> Map<VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, VMKey> function) {
-        Map<VMKey, List<T>> result = new HashMap<>();
-
-        for (T instance : vmInstancesToRegister) {
-            VMKey vmKey = function.apply(instance);
-
-            if (!result.containsKey(vmKey)) {
-                result.put(vmKey, new ArrayList<>());
-            }
-            result.get(vmKey).add(instance);
-        }
-        return result;
     }
 
     private <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, VMKey> function) {
@@ -248,23 +235,39 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         }
     }
 
+    private <T extends Feature> Map<VMKey, List<T>> createInstanceMap(List<T> vmInstancesToRegister, Function<T, VMKey> function) {
+        Map<VMKey, List<T>> result = new HashMap<>();
+
+        for (T instance : vmInstancesToRegister) {
+            VMKey vmKey = function.apply(instance);
+
+            if (!result.containsKey(vmKey)) {
+                result.put(vmKey, new ArrayList<>());
+            }
+            result.get(vmKey).add(instance);
+        }
+        return result;
+    }
+
     @Getter
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode
-    private static class VMKey {
+    private class VMKey {
 
         private String name;
+        private String nodeCandidateMd5;
 
-        private static VMKey getInstance(SoftwareComponentInstance softwareComponentInstance) {
-            String name = removeSuffixFromInstance(softwareComponentInstance.getName());
-            return new VMKey(name);
+        VMKey(SoftwareComponentInstance softwareComponentInstance) {
+            this.name = removeSuffixFromInstance(softwareComponentInstance.getName());
+            String nodeCandidate = camelEnricherService.fetch("nodeCandidate", softwareComponentInstance);
+            this.nodeCandidateMd5 = DigestUtils.md5Hex(nodeCandidate).toUpperCase();
         }
-        private static String removeSuffixFromInstance(String vmName) {
+
+        private String removeSuffixFromInstance(String vmName) {
             //we need to remove everything after last two '_'
             return removeSuffix(removeSuffix(vmName));
         }
 
-        private static String removeSuffix(String name) {
+        private String removeSuffix(String name) {
             return StringUtils.substringBeforeLast(name, "_");
         }
     }
