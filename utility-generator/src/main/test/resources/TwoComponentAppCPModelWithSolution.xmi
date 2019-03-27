@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types" id="TwoComponentApp1546508764897">
+  <constants id="0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="1">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="cardinality_Component_App_min">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="cardinality_Component_App_max">
+    <value xsi:type="types:IntegerValueUpperware" value="10"/>
+  </constants>
+  <constants id="provider_Component_App_min">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="provider_Component_App_max">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="provider_Component_App_0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="cardinality_Component_DB_min">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="cardinality_Component_DB_max">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="provider_Component_DB_min">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="provider_Component_DB_max">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <constants id="provider_Component_DB_0">
+    <value xsi:type="types:IntegerValueUpperware"/>
+  </constants>
+  <constants id="provider_Component_DB_1">
+    <value xsi:type="types:IntegerValueUpperware" value="1"/>
+  </constants>
+  <cpVariables id="cardinality_Component_App" variableType="cardinality" componentId="Component_App">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="1"/>
+      <to xsi:type="types:IntegerValueUpperware" value="10"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="provider_Component_App" variableType="provider" componentId="Component_App">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="cardinality_Component_DB" variableType="cardinality" componentId="Component_DB">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="1"/>
+      <to xsi:type="types:IntegerValueUpperware" value="1"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="provider_Component_DB" variableType="provider" componentId="Component_DB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+    </domain>
+  </cpVariables>
+  <constraints id="c_0" exp1="//@cpVariables.0" exp2="//@constants.2" comparator="greaterOrEqualTo"/>
+  <constraints id="c_1" exp1="//@cpVariables.0" exp2="//@constants.3" comparator="lessOrEqualTo"/>
+  <constraints id="c_2" exp1="//@cpVariables.1" exp2="//@constants.4" comparator="greaterOrEqualTo"/>
+  <constraints id="c_3" exp1="//@cpVariables.1" exp2="//@constants.5" comparator="lessOrEqualTo"/>
+  <constraints id="c_4" exp1="//@cpVariables.2" exp2="//@constants.7" comparator="greaterOrEqualTo"/>
+  <constraints id="c_5" exp1="//@cpVariables.2" exp2="//@constants.8" comparator="lessOrEqualTo"/>
+  <constraints id="c_6" exp1="//@cpVariables.3" exp2="//@constants.9" comparator="greaterOrEqualTo"/>
+  <constraints id="c_7" exp1="//@cpVariables.3" exp2="//@constants.10" comparator="lessOrEqualTo"/>
+
+  <solution timestamp="1543396552898">
+        <variableValue variable="//@cpVariables.0">
+          <value xsi:type="types:IntegerValueUpperware" value="2"/>
+        </variableValue>
+        <variableValue variable="//@cpVariables.1">
+          <value xsi:type="types:IntegerValueUpperware" value="1"/>
+        </variableValue>
+        <variableValue variable="//@cpVariables.2">
+          <value xsi:type="types:IntegerValueUpperware" value="1"/>
+        </variableValue>
+        <variableValue variable="//@cpVariables.3">
+          <value xsi:type="types:IntegerValueUpperware" value="0"/>
+        </variableValue>
+        <utilityValue xsi:type="types:DoubleValueUpperware" value="0.2"/>
+  </solution>
+</cp:ConstraintProblem>

@@ -1,1 +1,0 @@
-VMS server generates and stores the VMS client configuration in this directory (/conf)

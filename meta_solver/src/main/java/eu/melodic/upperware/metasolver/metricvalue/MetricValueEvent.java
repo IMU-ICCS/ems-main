@@ -9,16 +9,15 @@
 
 package eu.melodic.upperware.metasolver.metricvalue;
 
-import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString(doNotUseGetters = true, exclude={"host_name", /*"component_name",*/ "level"})
+@ToString(doNotUseGetters = true)
 public class MetricValueEvent {
-	private String metricValue;
-	//private String cloudName;
-	//private List<String> componentName;
-	private int level;
-	private long timestamp;
+    private String metricValue;
+    //private String cloudName;
+    //private List<String> componentName;
+    private int level;
+    private long timestamp;
 }

@@ -37,7 +37,7 @@ public interface CpFactory extends EFactory {
 	 * @return a new object of class '<em>Variable</em>'.
 	 * @generated
 	 */
-	Variable createVariable();
+	CpVariable createCpVariable();
 
 	/**
 	 * Returns a new object of class '<em>Numeric Domain</em>'.
@@ -130,13 +130,13 @@ public interface CpFactory extends EFactory {
 	BooleanDomain createBooleanDomain();
 
 	/**
-	 * Returns a new object of class '<em>Metric Variable</em>'.
+	 * Returns a new object of class '<em>Metric</em>'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Metric Variable</em>'.
+	 * @return a new object of class '<em>Metric</em>'.
 	 * @generated
 	 */
-	MetricVariable createMetricVariable();
+	CpMetric createCpMetric();
 
 	/**
 	 * Returns a new object of class '<em>Solution</em>'.
@@ -154,16 +154,7 @@ public interface CpFactory extends EFactory {
 	 * @return a new object of class '<em>Variable Value</em>'.
 	 * @generated
 	 */
-	VariableValue createVariableValue();
-
-	/**
-	 * Returns a new object of class '<em>Metric Variable Value</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>Metric Variable Value</em>'.
-	 * @generated
-	 */
-	MetricVariableValue createMetricVariableValue();
+	CpVariableValue createCpVariableValue();
 
 	/**
 	 * Returns a new object of class '<em>Parameter</em>'.
@@ -190,7 +181,7 @@ public interface CpFactory extends EFactory {
 	 * @return a new object of class '<em>Function</em>'.
 	 * @generated
 	 */
-	Function createFunction();
+	CpFunction createCpFunction();
 
 	/**
 	 * Returns a new object of class '<em>Configuration Upperware</em>'.

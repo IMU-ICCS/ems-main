@@ -9,23 +9,46 @@
 
 package eu.melodic.upperware.adapter;
 
-import de.uniulm.omi.cloudiator.colosseum.client.Client;
-import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
+import camel.deployment.DeploymentPackage;
+import camel.organisation.OrganisationPackage;
+import camel.type.TypePackage;
+import com.google.gson.Gson;
+import eu.melodic.cache.properties.CacheProperties;
+import eu.melodic.security.authorization.client.AuthorizationServiceClient;
+import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import io.github.cloudiator.rest.ApiClient;
+import io.github.cloudiator.rest.api.*;
 import lombok.AllArgsConstructor;
+import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.MemcachedClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import javax.servlet.Filter;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
+
+  public static final String INNER_THREAD_POOL_TASK_EXECUTOR_NAME = "innerThreadPoolTaskExecutor";
 
   private AdapterProperties adapterProperties;
 
@@ -46,23 +69,26 @@ public class ApplicationContext {
   }
 
   @Bean
-  public CDOClient getCdoClient() {
-    return new CDOClient();
+  public CDOClientX getCdoClient() {
+    return new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE, TypesPackage.eINSTANCE,
+            TypePackage.eINSTANCE, OrganisationPackage.eINSTANCE, DeploymentPackage.eINSTANCE));
   }
 
   @Bean
-  public Client getClient() {
-    AdapterProperties.Colosseum colosseum = adapterProperties.getColosseum();
-    AdapterProperties.Colosseum.Auth colosseumAuth = colosseum.getAuth();
-    return ClientBuilder.getNew()
-      .url(colosseum.getUrl())
-      .credentials(colosseumAuth.getEmail(), colosseumAuth.getTenant(), colosseumAuth.getPassword())
-      .build();
-  }
-
-  @Bean
+  @Primary
   public ThreadPoolTaskExecutor getTaskExecutor() {
+    return createThreadPoolTaskExecutor("main-task-executor-");
+  }
+
+  @Bean
+  @Qualifier(INNER_THREAD_POOL_TASK_EXECUTOR_NAME)
+  public ThreadPoolTaskExecutor getInnerTaskExecutor() {
+    return createThreadPoolTaskExecutor("inner-task-executor-");
+  }
+
+  private ThreadPoolTaskExecutor createThreadPoolTaskExecutor(String prefix) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setThreadNamePrefix(prefix);
     AdapterProperties.TaskExecutor taskExecutor = adapterProperties.getTaskExecutor();
     if (taskExecutor != null) {
       Integer corePoolSize = taskExecutor.getCorePoolSize();
@@ -79,5 +105,61 @@ public class ApplicationContext {
       }
     }
     return executor;
+  }
+
+  @Bean
+  public AuthorizationServiceClient getAuthorizationServiceClient(AuthorizationServiceClientProperties authorizationServiceClientProperties) {
+    return new AuthorizationServiceClient(authorizationServiceClientProperties);
+  }
+
+  @Bean
+  public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
+    return new JWTServiceImpl(melodicSecurityProperties);
+  }
+
+  @Bean
+  public JobApi jobApi(ApiClient apiClient) {
+    return new JobApi(apiClient);
+  }
+
+  @Bean
+  public NodeApi nodeApi(ApiClient apiClient) {
+    return new NodeApi(apiClient);
+  }
+
+  @Bean
+  public QueueApi queueApi(ApiClient apiClient) {
+    return new QueueApi(apiClient);
+  }
+
+  @Bean
+  public ProcessApi processApi(ApiClient apiClient) {
+    return new ProcessApi(apiClient);
+  }
+
+  @Bean
+  public MonitoringApi monitoringApi(ApiClient apiClient) {
+    return new MonitoringApi(apiClient);
+  }
+
+  @Bean
+  public ApiClient apiClient() {
+    ApiClient apiClient = new ApiClient();
+    apiClient.setBasePath(adapterProperties.getCloudiatorV2().getUrl());
+    apiClient.setApiKey(adapterProperties.getCloudiatorV2().getApiKey());
+    apiClient.setReadTimeout(adapterProperties.getCloudiatorV2().getHttpReadTimeout());
+    return apiClient;
+  }
+
+  @Bean
+  public Gson gson() {
+    return new Gson();
+  }
+
+  @Bean
+  public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+    String host = cacheProperties.getCache().getHost();
+    Integer port = cacheProperties.getCache().getPort();
+    return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
   }
 }

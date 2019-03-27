@@ -1,0 +1,173 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.melodic.event</groupId>
+        <artifactId>event-management</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>baguette-client</artifactId>
+	<name>Upperware - EMS - Baguette Client</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>eu.melodic.event</groupId>
+			<artifactId>broker-cep</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.melodic.event</groupId>
+			<artifactId>broker-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Spring-Boot dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
+		<dependency>
+			<groupId>org.apache.sshd</groupId>
+			<artifactId>apache-sshd</artifactId>
+			<version>1.6.0</version>
+			<type>pom</type>
+			<exclusions>
+				<exclusion> 
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+			</exclusions> 
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.20</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/net.nicoulaj.maven.plugins/checksum-maven-plugin -->
+		<dependency>
+			<groupId>net.nicoulaj.maven.plugins</groupId>
+			<artifactId>checksum-maven-plugin</artifactId>
+			<version>1.8</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>eu.melodic.event.baguette.client.BaguetteClient</mainClass>
+					<executable>maven</executable>
+				</configuration>
+			</plugin>
+
+			<!-- Assembly Maven plugin (https://maven.apache.org/plugin-developers/cookbook/generate-assembly.html) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptor>src/assembly/vm.xml</descriptor>
+					<finalName>baguette-client</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Checksum Maven plugin (http://checksum-maven-plugin.nicoulaj.net) -->
+			<plugin>
+				<groupId>net.nicoulaj.maven.plugins</groupId>
+				<artifactId>checksum-maven-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>files</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<fileSets>
+						<fileSet>
+							<directory>${project.basedir}/target</directory>
+							<!--<directory>target</directory>-->
+							<includes>
+								<include>*.zip</include>
+								<include>*.tar</include>
+								<include>*.tar.gz</include>
+								<include>*.tgz</include>
+							</includes>
+							<excludes>
+								<exclude>*.jar</exclude>
+							</excludes>
+						</fileSet>
+					</fileSets>
+					<algorithms>
+						<algorithm>MD5</algorithm>
+					</algorithms>
+					<individualFiles>true</individualFiles>
+					<failOnError>true</failOnError>
+					<failIfNoFiles>false</failIfNoFiles>
+				</configuration>
+			</plugin>
+
+			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>copy-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<sourceFile>target/baguette-client-vm.tgz</sourceFile>
+									<destinationFile>../config-files/resources/baguette-client.tgz</destinationFile>
+								</fileSet>
+								<fileSet>
+									<sourceFile>target/baguette-client-vm.tgz.md5</sourceFile>
+									<destinationFile>../config-files/resources/baguette-client.tgz.md5</destinationFile>
+								</fileSet>
+								<fileSet>
+									<sourceFile>bin/install.sh</sourceFile>
+                                    <destinationFile>../config-files/resources/install.sh</destinationFile>
+								</fileSet>
+							</fileSets>
+							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+							<overWrite>true</overWrite>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+	
+</project>

@@ -9,155 +9,59 @@
 
 package eu.melodic.upperware.metasolver.util;
 
-import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
-
-import java.util.HashSet;
-import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.util.ConcurrentAccessException;
+import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import org.eclipse.emf.cdo.eresource.CDOResource;
-import org.eclipse.emf.cdo.net4j.CDONet4jSession;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.XMIResource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.eclipse.net4j.Net4jUtil;
-import org.eclipse.net4j.connector.IConnector;
-import org.eclipse.net4j.tcp.TCPUtil;
-import org.eclipse.net4j.util.container.ContainerUtil;
-import org.eclipse.net4j.util.container.IManagedContainer;
-
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-//import eu.paasage.upperware.metamodel.cp.DeltaUtility;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.MetricVariable;
-import eu.paasage.upperware.metamodel.cp.Variable;
-import eu.paasage.upperware.metamodel.cp.Solution;
-//import eu.paasage.upperware.metamodel.cp.*;
-//import eu.paasage.upperware.metamodel.types.*;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
-import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
-import eu.paasage.upperware.metamodel.types.FloatValueUpperware;
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.LongValueUpperware;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
-import eu.paasage.upperware.metamodel.types.TypesFactory;
-
-// From: eu.paasage.mddb.cdo.client.CDOClient
-import org.eclipse.emf.cdo.eresource.EresourcePackage;
-import org.eclipse.emf.ecore.EPackage;
-
-import eu.paasage.camel.CamelFactory;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.Model;
-import eu.paasage.camel.requirement.Requirement;
-import eu.paasage.camel.requirement.OptimisationRequirement;
-import eu.paasage.camel.requirement.RequirementModel;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.deployment.DeploymentPackage;
-//import eu.paasage.camel.dsl.CamelDslStandaloneSetup;
-import eu.paasage.camel.execution.ExecutionModel;
-import eu.paasage.camel.execution.ExecutionPackage;
-import eu.paasage.camel.location.Country;
-import eu.paasage.camel.location.Location;
-import eu.paasage.camel.location.LocationFactory;
-import eu.paasage.camel.location.LocationModel;
-import eu.paasage.camel.location.LocationPackage;
-import eu.paasage.camel.metric.MetricModel;
-import eu.paasage.camel.metric.MetricPackage;
-import eu.paasage.camel.organisation.CloudProvider;
-import eu.paasage.camel.organisation.DataCenter;
-import eu.paasage.camel.organisation.ExternalIdentifier;
-import eu.paasage.camel.organisation.OrganisationFactory;
-import eu.paasage.camel.organisation.OrganisationModel;
-import eu.paasage.camel.organisation.OrganisationPackage;
-import eu.paasage.camel.organisation.PaaSageCredentials;
-import eu.paasage.camel.organisation.Role;
-import eu.paasage.camel.organisation.RoleAssignment;
-import eu.paasage.camel.organisation.User;
-import eu.paasage.camel.organisation.UserGroup;
-import eu.paasage.camel.provider.ProviderModel;
-import eu.paasage.camel.provider.ProviderPackage;
-import eu.paasage.camel.scalability.ScalabilityModel;
-import eu.paasage.camel.scalability.ScalabilityPackage;
-import eu.paasage.camel.security.SecurityModel;
-import eu.paasage.camel.security.SecurityPackage;
-import eu.paasage.camel.requirement.RequirementPackage;
-import eu.paasage.camel.type.TypeModel;
-import eu.paasage.camel.type.TypePackage;
-import eu.paasage.camel.unit.UnitModel;
-import eu.paasage.camel.unit.UnitPackage;
-
-import eu.paasage.camel.Application;
-//import eu.paasage.camel.deployment.Component;
-import eu.paasage.camel.metric.Metric;
-import eu.paasage.camel.metric.MetricContext;
-import eu.paasage.camel.metric.Property;
-
-import eu.paasage.upperware.metamodel.application.ApplicationPackage;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
-import eu.paasage.upperware.metamodel.types.typesPaasage.TypesPaasagePackage;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Component
 @Slf4j
 public class CpModelHelper {
-	
-	protected HashSet<String> LOCKS = new HashSet<>();
-	
-	protected static int counter = 0;
-	
-    @Autowired
-	private MetaSolverProperties properties;
-	
-	private int id;
-	private CDONet4jSession cdoSession;
-	
-	public CpModelHelper() {
-		id = ++counter;
-		//log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
-	}
-	
-	public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String,String> metricValues) throws ConcurrentAccessException {
-		log.debug("CpModelHelper.updateCpModelWithMetricValues(): BEGIN: helper-id={}, app-id={}, cp-path={}, mvv={}", id, applicationId, cpModelPath, metricValues);
-		
-		// lock resource
-		lockCpModel(cpModelPath, "updateCpModelWithMetricValues()");
-		
-		CDOTransaction transaction = null;
-		try {
-			// retrieve CP model (open transaction)
-			transaction = cdoSession.openTransaction();
-			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);	//0: PaasageConfiguration, 1: ConstraintProblem  (see cp_generator, class :
-																							//  eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator)
-			
-			// check if all metric variable names in CP model exist in 'metricValues' map
+
+    protected static int counter = 0;
+    protected final HashSet<String> LOCKS = new HashSet<>();
+    private int id;
+    private CDOClientXImpl cdoClient;
+
+    public CpModelHelper() {
+        id = ++counter;
+        this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+        log.trace("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
+    }
+
+    public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String, String> metricValues) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.updateCpModelWithMetricValues(): BEGIN: helper-id={}, app-id={}, cp-path={}, mvv={}", id, applicationId, cpModelPath, metricValues);
+
+        // lock resource
+        lockCpModel(cpModelPath, "updateCpModelWithMetricValues()");
+
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        try {
+            // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
+            CDOResource resource = transaction.getResource(cpModelPath);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);    // one element in list - 0: ConstraintProblem  (see cp_generator, class :
+
+            // check if all metric variable names in CP model exist in 'metricValues' map
 			/*EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
 			boolean allfound = true;
 			for (MetricVariable mv : cpMetricVarList) {
@@ -173,316 +77,411 @@ public class CpModelHelper {
 				log.debug("CpModelHelper.updateCpModelWithMetricValues(): END: helper-id={}, message=Missing MVV", id);
 				return false;
 			}*/
-			
-			
-			// add metric variable values for all (extracted) metric variable names
-			//XXX: R1.5 hack: metric variable are stored as Constants in CP model, with their Id's prefixed with 'METRIC_'
-			EList<Constant> cpConstList = cpModel.getConstants();
-			for (Constant c : cpConstList) {
-				String id = c.getId().trim();
-				if (id.startsWith("METRIC_") && !id.startsWith("METRIC_UTILITYTYPE_")) {
-					String mvName = id.substring("METRIC_".intern().length());
-					String mvValue = metricValues.get(mvName);
-					if (mvValue!=null && !mvValue.isEmpty()) {
-						BasicTypeEnum type = c.getType();
-						NumericValueUpperware newVal = null;
-						switch (type) {
-							case INTEGER: newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware(); ((IntegerValueUpperware)newVal).setValue( (int)Double.parseDouble(mvValue) ); break;
-							case FLOAT:	  newVal = TypesFactory.eINSTANCE.createFloatValueUpperware(); ((FloatValueUpperware)newVal).setValue( (float)Double.parseDouble(mvValue) ); break;
-							case DOUBLE:  newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware(); ((DoubleValueUpperware)newVal).setValue( Double.parseDouble(mvValue) ); break;
-							case LONG:    newVal = TypesFactory.eINSTANCE.createLongValueUpperware(); ((LongValueUpperware)newVal).setValue( (long)Double.parseDouble(mvValue) ); break;
-						}
-						c.setValue(newVal);
-					}
-				}
-			}
 
-			
-			// commit changes
-			transaction.commit();
-			transaction = null;
-		} catch (Exception ex) {
-			log.error("CpModelHelper.updateCpModelWithMetricValues(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			return false;
-		} finally {
-			if (transaction!=null) { transaction.rollback(); transaction.close(); }
-			
-			// release resource
-			releaseCpModel(cpModelPath, "updateCpModelWithMetricValues()");
-		}
-		
-		// return timestamp
-		log.debug("CpModelHelper.updateCpModelWithMetricValues(): END: helper-id={}", id);
-		return true;
-	}
-	
-	public double[] getSolutionUtilities(String applicationId, String cpModelPath) throws ConcurrentAccessException {
-		log.debug("CpModelHelper.getSolutionUtilities(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
-		
-		// lock resource
-		lockCpModel(cpModelPath, "getSolutionUtilities()");
-		
-		CDOView view = null;
-		try {
-			// retrieve CP model (open view)
-			view = cdoSession.openView();
-			CDOResource resource = view.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
-			
-			// get solutions list
-			EList<Solution> solutions = cpModel.getSolution();
-			int size = solutions.size();
-			
-			double[] retUv = new double[2];
-			
-			// No solutions in CP model
-			if (size==0) {
-				retUv[0] = retUv[1] = -2;
-				return retUv;
-			}
-			
-			// get deployed and candidate solution positions in list
-			int depPos = cpModel.getDeployedSolutionId();
-			int newPos = cpModel.getCandidateSolutionId();
-			
-			// get deployed solution's utility value, if a deployed solution exists
-			if (depPos<size && depPos>=0) {
-				Solution depSol = solutions.get( depPos );
-				retUv[0] = ((DoubleValueUpperware)depSol.getUtilityValue()).getValue();
-			} else 
-				retUv[0] = -1;
-			
-			// get new solution's utility value
-			if (newPos<size && newPos>=0) {
-				Solution newSol = solutions.get( newPos );
-				retUv[1] = ((DoubleValueUpperware)newSol.getUtilityValue()).getValue();
-			} else 
-				retUv[1] = -1;
-			
-			log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}, solution-utilities={}", id, retUv);
-			return retUv;
-			
-		} catch (Exception ex) {
-			log.error("CpModelHelper.getSolutionUtilities(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			return null;
-		} finally {
-			if (view!=null) view.close();
-			
-			// release resource
-			releaseCpModel(cpModelPath, "getSolutionUtilities()");
-		}
-	}
-	
-	public int[] updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
-		log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}, success={}", id, applicationId, cpModelPath, success);
-		
-		// lock resource
-		lockCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
-		
-		CDOTransaction transaction = null;
-		try {
-			// retrieve CP model (open transaction)
-			transaction = cdoSession.openTransaction();
-			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
-			
-			// get solutions list
-			/*EList<Solution> solutions = cpModel.getSolution();
-			int size = solutions.size();*/
-			
-			// get current solution Ids
-			int depSolPos = cpModel.getDeployedSolutionId();
-			int canSolPos = cpModel.getCandidateSolutionId();
-			log.debug("updateSolutionIdsInCpModel(): depSolPos={}, canSolPos={}", depSolPos, canSolPos);
-			
-			// update solution Ids
-			if (success && canSolPos>=0) {
-				// set deployed solution id to candidate solution id
-				cpModel.setDeployedSolutionId( canSolPos );
-				log.trace("updateSolutionIdsInCpModel(): deployed solution id set: {}", canSolPos);
-			} else
-			if (success) {
-				log.warn("updateSolutionIdsInCpModel(): No candidate solution found");
-			}
-			// clear candidate solution id
-			cpModel.setCandidateSolutionId(-1);
-			log.trace("updateSolutionIdsInCpModel(): candidate solution id cleared: -1");
-			
-			// get new solution Ids
-			int[] retPos = new int[2];
-			retPos[0] = cpModel.getDeployedSolutionId();
-			retPos[1] = cpModel.getCandidateSolutionId();
-			log.debug("updateSolutionIdsInCpModel(): new solution id's: {}", retPos);
-			
-			// commit changes
-			transaction.commit();
-			transaction = null;
-			
-			log.debug("CpModelHelper.updateSolutionIdsInCpModel(): END: helper-id={}, solution-id's={}", id, retPos);
-			return retPos;
-			
-		} catch (Exception ex) {
-			log.error("CpModelHelper.updateSolutionIdsInCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			return null;
-		} finally {
-			if (transaction!=null) { transaction.rollback(); transaction.close(); }
-			
-			// release resource
-			releaseCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
-		}
-	}
-	
-	public int findAndSetCandidateSolutionIdInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
-		log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
-		
-		// lock resource
-		lockCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
-		
-		CDOTransaction transaction = null;
-		try {
-			// retrieve CP model (open transaction)
-			transaction = cdoSession.openTransaction();
-			CDOResource resource = transaction.getResource(cpModelPath);
-			ConstraintProblem cpModel = (ConstraintProblem)resource.getContents().get(1);
-			
-			// get current candidate solution Id
-			int oldPos = cpModel.getCandidateSolutionId();
-			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldPos);
-			
-			// find new candidate solution id
-			EList<Solution> solutions = cpModel.getSolution();
-			int size = solutions.size();
-			int position = size-1;
-			
-			// update candidate solution Id
-			cpModel.setCandidateSolutionId(position);
-			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, new-candidate-solution-position={}", id, position);
-			
-			// get new candidate solution id
-			int retPos = cpModel.getCandidateSolutionId();
-			
-			// commit changes
-			transaction.commit();
-			transaction = null;
-			
-			log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): END: helper-id={}, new-candidate-id={}", id, retPos);
-			return retPos;
-			
-		} catch (Exception ex) {
-			log.error("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
-			return -2;
-		} finally {
-			if (transaction!=null) { transaction.rollback(); transaction.close(); }
-			
-			// release resource
-			releaseCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
-		}
-	}
-	
-	// ------------------------------------------------------------------------
-	
-	@PostConstruct
-	public void registerCpPackage() {
-		CpPackage.eINSTANCE.eClass();
-	}
-	
-	@PreDestroy
-	public void cleanup() {
-		disconnect();
-	}
-	
-	public void connect() {
-		log.debug("CpModelHelper.connect(): helper #{}", id);
-		cdoSession = openCdoSession();
-	}
-	
-	public void disconnect() {
-		log.debug("CpModelHelper.disconnect(): helper #{}", id);
-		cdoSession.close();
-	}
 
-	protected CDONet4jSession openCdoSession() {
-		log.debug("CpModelHelper.openCdoSession: CDO configuration: {}", properties.getCdo());
-		MetaSolverProperties.CdoConfig config = properties.getCdo();
-		
-		String host = config.getHost().trim();
-		int port = config.getPort();
-		String connectionStr = host+":"+port;
-		String repoName = config.getRepositoryName();
-		boolean logging = config.isLogging();
-		boolean auth = config.isSecure();
-		String username = config.getUsername();
-		String password = config.getPassword();
-		
-		return openCdoSession(connectionStr, repoName, logging, auth, username, password);
-	}
-	
-	protected CDONet4jSession openCdoSession(String connectionStr, String repoName) {
-		return openCdoSession(connectionStr, repoName, false, false, null, null);
-	}
-	
-	protected CDONet4jSession openCdoSession(String connectionStr, String repoName, boolean logging, boolean requiresAuth, String cdoUsername, String cdoPassword) {
-		log.debug("CpModelHelper.openCdoSession: Arguments: conn-str={}, repos={}, log={}, auth={}, username={}", connectionStr, repoName, logging, requiresAuth, cdoUsername);
-		
-		// initialize and activate a container
-		final IManagedContainer container = ContainerUtil.createContainer();
-		Net4jUtil.prepareContainer(container);
-		TCPUtil.prepareContainer(container);
-		// CDONet4jUtil.prepareContainer(container);
-		container.activate();
+            // add metric variable values for all (extracted) metric variable names
+            EList<CpMetric> cpMetricList = cpModel.getCpMetrics();
+            for (CpMetric c : cpMetricList) {
+                String mvName = c.getId().trim();
+                String mvValue = metricValues.get(mvName);
+                if (mvValue != null && !mvValue.isEmpty()) {
+                    log.info("Updating metric: {} with value: {} in CP model.", mvName, mvValue);
+                    BasicTypeEnum type = c.getType();
+                    NumericValueUpperware newVal = null;
+                    switch (type) {
+                        case INTEGER:
+                            newVal = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+                            ((IntegerValueUpperware) newVal).setValue((int) Double.parseDouble(mvValue));
+                            break;
+                        case FLOAT:
+                            newVal = TypesFactory.eINSTANCE.createFloatValueUpperware();
+                            ((FloatValueUpperware) newVal).setValue((float) Double.parseDouble(mvValue));
+                            break;
+                        case DOUBLE:
+                            newVal = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+                            ((DoubleValueUpperware) newVal).setValue(Double.parseDouble(mvValue));
+                            break;
+                        case LONG:
+                            newVal = TypesFactory.eINSTANCE.createLongValueUpperware();
+                            ((LongValueUpperware) newVal).setValue((long) Double.parseDouble(mvValue));
+                            break;
+                    }
+                    c.setValue(newVal);
+                } else {
+                    log.debug("Skipped metric update (no value): {}", mvName);
+                }
+            }
 
-		// create a Net4j TCP connector
-		final IConnector connector = (IConnector) TCPUtil.getConnector(container, connectionStr);
+            // commit changes
+            transaction.commit();
+            transaction = null;
+        } catch (Exception ex) {
+            log.error("CpModelHelper.updateCpModelWithMetricValues(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+            return false;
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
+                transaction.close();
+            }
 
-		// create the session configuration
-		CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
-		config.setConnector(connector);
-		config.setRepositoryName(repoName);
+            // release resource
+            releaseCpModel(cpModelPath, "updateCpModelWithMetricValues()");
+        }
 
-		// setup authentication
-		if (requiresAuth) {
-			log.info("** CDO server requires authentication - Username: %s\n", cdoUsername);
-			org.eclipse.net4j.util.security.PasswordCredentialsProvider credentialsProvider = new org.eclipse.net4j.util.security.PasswordCredentialsProvider(cdoUsername, cdoPassword);
-			config.setCredentialsProvider(credentialsProvider);
-		}
+        // return timestamp
+        log.debug("CpModelHelper.updateCpModelWithMetricValues(): END: helper-id={}", id);
+        return true;
+    }
 
-		// create the actual session with the repository
-		CDONet4jSession cdoSession = config.openNet4jSession();
+    public double[] getSolutionUtilities(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.getSolutionUtilities(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
 
-		// register CAMEL packages
-		cdoSession.getPackageRegistry().putEPackage(EresourcePackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(CamelPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(ScalabilityPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(DeploymentPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(OrganisationPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(ProviderPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(SecurityPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(ExecutionPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(TypePackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(RequirementPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(MetricPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(UnitPackage.eINSTANCE);
-		cdoSession.getPackageRegistry().putEPackage(LocationPackage.eINSTANCE);
+        // lock resource
+        lockCpModel(cpModelPath, "getSolutionUtilities()");
 
-		return cdoSession;
-	}
-	
-	protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
-		synchronized (LOCKS) {
-			if (! LOCKS.contains(cpModelPath)) {
-				LOCKS.add(cpModelPath);
-			} else {
-				throw new ConcurrentAccessException("CpModelHelper."+caller+"->lockCpModel: Resource is locked: "+cpModelPath);
-				//return null;
-			}
-		}
-		log.debug("CpModelHelper.{}->lockCpModel(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
-	}
-	
-	protected void releaseCpModel(String cpModelPath, String caller) {
-		synchronized (LOCKS) {
-			LOCKS.remove(cpModelPath);
-		}
-		log.debug("CpModelHelper.{}->releaseCpModel(): RELEASED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
-	}
+        CDOSessionX session = null;
+        CDOView view = null;
+        try {
+            // retrieve CP model (open view)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+            session = cdoClient.getSession();
+            view = session.openView();
+            CDOResource resource = view.getResource(cpModelPath);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+
+            // get solutions list
+            EList<Solution> solutions = cpModel.getSolution();
+            int size = solutions.size();
+
+            double[] retUv = new double[2];
+
+            // No solutions in CP model
+            if (size == 0) {
+                retUv[0] = retUv[1] = -2;
+                return retUv;
+            }
+
+            // get deployed and candidate solution positions in list
+            int depPos = cpModel.getDeployedSolutionId();
+            int newPos = cpModel.getCandidateSolutionId();
+
+            // get deployed solution's utility value, if a deployed solution exists
+            if (depPos < size && depPos >= 0) {
+                Solution depSol = solutions.get(depPos);
+                retUv[0] = ((DoubleValueUpperware) depSol.getUtilityValue()).getValue();
+            } else
+                retUv[0] = -1;
+
+            // get new solution's utility value
+            if (newPos < size && newPos >= 0) {
+                Solution newSol = solutions.get(newPos);
+                retUv[1] = ((DoubleValueUpperware) newSol.getUtilityValue()).getValue();
+            } else
+                retUv[1] = -1;
+
+            log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}, solution-utilities={}", id, retUv);
+            return retUv;
+
+        } catch (Exception ex) {
+            log.error("CpModelHelper.getSolutionUtilities(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+            return null;
+        } finally {
+            if (view != null) view.close();
+
+            // release resource
+            releaseCpModel(cpModelPath, "getSolutionUtilities()");
+        }
+    }
+
+    public Pair<Integer,Integer> updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}, success={}", id, applicationId, cpModelPath, success);
+
+        // lock resource
+        lockCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
+
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        try {
+            // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
+            CDOResource resource = transaction.getResource(cpModelPath);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+
+            // get current solution Ids
+            int depSolPos = cpModel.getDeployedSolutionId();
+            int canSolPos = cpModel.getCandidateSolutionId();
+            log.debug("updateSolutionIdsInCpModel(): depSolPos={}, canSolPos={}", depSolPos, canSolPos);
+
+            // update solution Ids
+            if (success && canSolPos >= 0) {
+                // set deployed solution id to candidate solution id
+                cpModel.setDeployedSolutionId(canSolPos);
+                log.trace("updateSolutionIdsInCpModel(): deployed solution id set: {}", canSolPos);
+            } else if (success) {
+                log.warn("updateSolutionIdsInCpModel(): No candidate solution found");
+            }
+            // clear candidate solution id
+            cpModel.setCandidateSolutionId(-1);
+            log.trace("updateSolutionIdsInCpModel(): candidate solution id cleared: -1");
+
+            // get new solution Ids
+            Pair<Integer,Integer> retPos = Pair.<Integer, Integer>of(cpModel.getDeployedSolutionId(), cpModel.getCandidateSolutionId());
+            log.debug("updateSolutionIdsInCpModel(): new solution id's: {}", retPos);
+
+            // commit changes
+            transaction.commit();
+            transaction = null;
+
+            log.debug("CpModelHelper.updateSolutionIdsInCpModel(): END: helper-id={}, solution-id's={}", id, retPos);
+            return retPos;
+
+        } catch (Exception ex) {
+            log.error("CpModelHelper.updateSolutionIdsInCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+            return null;
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
+                transaction.close();
+            }
+            // release resource
+            releaseCpModel(cpModelPath, "updateSolutionIdsInCpModel()");
+        }
+    }
+
+    public int findAndSetCandidateSolutionIdInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+
+        // lock resource
+        lockCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
+
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        try {
+            // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
+            CDOResource resource = transaction.getResource(cpModelPath);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+
+            // get current candidate solution Id
+            int oldPos = cpModel.getCandidateSolutionId();
+            log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldPos);
+
+            // find new candidate solution id
+            EList<Solution> solutions = cpModel.getSolution();
+            int size = solutions.size();
+            int position = size - 1;
+
+            // update candidate solution Id
+            cpModel.setCandidateSolutionId(position);
+            log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, new-candidate-solution-position={}", id, position);
+
+            // get new candidate solution id
+            int retPos = cpModel.getCandidateSolutionId();
+
+            // commit changes
+            transaction.commit();
+            transaction = null;
+
+            log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): END: helper-id={}, new-candidate-id={}", id, retPos);
+            return retPos;
+
+        } catch (Exception ex) {
+            log.error("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+            return -2;
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
+                transaction.close();
+            }
+
+            // release resource
+            releaseCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
+        }
+    }
+
+    public void copyVarValuesFromDeployedSolution(String applicationId, String cpModelPath, Map<String,String> fromToMap) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): BEGIN: helper-id={}, app-id={}, cp-path={}, from-to-map={}", id, applicationId, cpModelPath, fromToMap);
+
+        // lock resource
+        lockCpModel(cpModelPath, "copyVarValuesFromDeployedSolution()");
+
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        try {
+            // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
+            CDOResource resource = transaction.getResource(cpModelPath);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+
+            // get solutions list
+            EList<Solution> solutions = cpModel.getSolution();
+            int size = solutions.size();
+
+            // No solutions in CP model
+            if (size == 0) {
+                log.warn("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model contains no solutions");
+                return;
+            }
+
+            // get deployed solution position in list
+            int depPos = cpModel.getDeployedSolutionId();
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution id: {}", depPos);
+            if (depPos >= size || depPos < 0) {
+                log.warn("CpModelHelper.copyVarValuesFromDeployedSolution(): Invalid deployed solution id: size={}, id={}", size, depPos);
+                return;
+            }
+
+            // find deployed solution
+            Solution depSol = solutions.get(depPos);
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution: id={}, timestamp={}, utility={}",
+                    depPos, depSol.getTimestamp(), depSol.getUtilityValue());
+
+            // get variable values from deployed solution
+            final EList<CpVariableValue> valuesList = depSol.getVariableValue();
+            Map<String,CpVariableValue> valuesMap = valuesList.stream()
+                    .collect(Collectors.toMap(o -> o.getVariable().getId(), Function.identity()));
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution Variable Values: {}", valuesMap.keySet());
+
+            // get target metrics from cp model
+            final EList<CpMetric> cpMetrics = cpModel.getCpMetrics();
+            Map<String,CpMetric> metricsMap = cpMetrics.stream()
+                    .collect(Collectors.toMap(o -> o.getId(), Function.identity()));
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model Metrics: {}", metricsMap.keySet());
+
+            // Copy values
+            for (Map.Entry<String,String> e : fromToMap.entrySet()) {
+                String fromName = e.getKey();
+                String toName = e.getValue();
+                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Coping from {} to {}", fromName, toName);
+
+                // From variable value
+                final CpVariableValue fromVarValue = valuesMap.get(fromName);
+                if (fromVarValue==null) {
+                    log.warn("CpModelHelper.copyVarValuesFromDeployedSolution():   From Var.Value not found: {}", fromName);
+                    continue;
+                }
+                final NumericValueUpperware fromValue = fromVarValue.getValue();
+
+                // get Target metric
+                CpMetric toMetric = metricsMap.get(toName);
+                if (toMetric==null) {
+                    log.warn("CpModelHelper.copyVarValuesFromDeployedSolution():   To Metric not found: {}", toName);
+                    continue;
+                }
+
+                // create a copy of the value
+                double value = numericValueUpperwareToDouble(fromValue);
+                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Value: {} {}", numericValueUpperwareType(fromValue), value);
+
+                NumericValueUpperware toValue = createNumericValueUpperware(numericValueUpperwareType(fromValue), value);
+                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): toValue: {}", toValue);
+
+                // Copy value (clone) to Target metric
+                toMetric.setValue(toValue);
+
+                log.info("CpModelHelper.copyVarValuesFromDeployedSolution(): Copied from {} to {}: value={}", fromName, toName, numericValueUpperwareToDouble(fromValue));
+            }
+
+            // commit changes
+            transaction.commit();
+            transaction = null;
+
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): END: helper-id={}", id);
+
+        } catch (Exception ex) {
+            log.error("CpModelHelper.copyVarValuesFromDeployedSolution(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
+                transaction.close();
+            }
+
+            // release resource
+            releaseCpModel(cpModelPath, "copyVarValuesFromDeployedSolution()");
+        }
+    }
+
+    public double numericValueUpperwareToDouble(NumericValueUpperware value) {
+        if (value==null) throw new IllegalArgumentException("Argument is null");
+        if (value instanceof IntegerValueUpperware) return ((IntegerValueUpperware)value).getValue();
+        if (value instanceof FloatValueUpperware) return ((FloatValueUpperware)value).getValue();
+        if (value instanceof DoubleValueUpperware) return ((DoubleValueUpperware)value).getValue();
+        if (value instanceof LongValueUpperware) return ((LongValueUpperware)value).getValue();
+        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+    }
+
+    public Number numericValueUpperwareToNumber(NumericValueUpperware value) {
+        if (value==null) throw new IllegalArgumentException("Argument is null");
+        if (value instanceof IntegerValueUpperware) return ((IntegerValueUpperware)value).getValue();
+        if (value instanceof FloatValueUpperware) return ((FloatValueUpperware)value).getValue();
+        if (value instanceof DoubleValueUpperware) return ((DoubleValueUpperware)value).getValue();
+        if (value instanceof LongValueUpperware) return ((LongValueUpperware)value).getValue();
+        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+    }
+
+    public BasicTypeEnum numericValueUpperwareType(NumericValueUpperware value) {
+        if (value==null) throw new IllegalArgumentException("Argument is null");
+        if (value instanceof IntegerValueUpperware) return BasicTypeEnum.INTEGER;
+        if (value instanceof FloatValueUpperware) return BasicTypeEnum.FLOAT;
+        if (value instanceof DoubleValueUpperware) return BasicTypeEnum.DOUBLE;
+        if (value instanceof LongValueUpperware) return BasicTypeEnum.LONG;
+        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+    }
+
+    public NumericValueUpperware createNumericValueUpperware(BasicTypeEnum type, double value) {
+        if (type==null) throw new IllegalArgumentException("Argument #0 is null");
+        NumericValueUpperware newValue = null;
+        switch (type) {
+            case INTEGER:
+                IntegerValueUpperware intValue = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+                intValue.setValue((int)value);
+                newValue = intValue;
+                break;
+            case DOUBLE:
+                DoubleValueUpperware doubleValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+                doubleValue.setValue(value);
+                newValue = doubleValue;
+                break;
+            case FLOAT:
+                FloatValueUpperware floatValue = TypesFactory.eINSTANCE.createFloatValueUpperware();
+                floatValue.setValue((float)value);
+                newValue = floatValue;
+                break;
+            case LONG:
+                LongValueUpperware longValue = TypesFactory.eINSTANCE.createLongValueUpperware();
+                longValue.setValue((long)value);
+                newValue = longValue;
+                break;
+            default:
+                throw new IllegalArgumentException("Argument #0 is not Integer/Float/Double/LongValueUpperware: "+type);
+        }
+        return newValue;
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected void lockCpModel(String cpModelPath, String caller) throws ConcurrentAccessException {
+        synchronized (LOCKS) {
+            if (!LOCKS.contains(cpModelPath)) {
+                LOCKS.add(cpModelPath);
+            } else {
+                throw new ConcurrentAccessException("CpModelHelper." + caller + "->lockCpModel: Resource is locked: " + cpModelPath);
+                //return null;
+            }
+        }
+        log.debug("CpModelHelper.{}->lockCpModel(): ACQUIRED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
+    }
+
+    protected void releaseCpModel(String cpModelPath, String caller) {
+        synchronized (LOCKS) {
+            LOCKS.remove(cpModelPath);
+        }
+        log.debug("CpModelHelper.{}->releaseCpModel(): RELEASED LOCK ON: helper-id={}, cp-path={}", caller, id, cpModelPath);
+    }
 }

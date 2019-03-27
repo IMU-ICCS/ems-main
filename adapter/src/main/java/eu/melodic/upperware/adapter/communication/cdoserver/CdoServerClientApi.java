@@ -9,34 +9,34 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
-import eu.paasage.camel.Application;
-import eu.paasage.camel.CamelModel;
-import eu.paasage.camel.CamelPackage;
-import eu.paasage.camel.deployment.DeploymentModel;
-import eu.paasage.camel.execution.ExecutionContext;
-import eu.paasage.camel.execution.ExecutionFactory;
-import eu.paasage.camel.execution.ExecutionModel;
-import eu.paasage.camel.requirement.*;
-import eu.paasage.mddb.cdo.client.CDOClient;
+import camel.core.Attribute;
+import camel.core.CamelModel;
+import camel.core.CoreFactory;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentModel;
+import camel.deployment.DeploymentTypeModel;
+import camel.execution.*;
+import camel.requirement.RequirementModel;
+import camel.type.StringValue;
+import camel.type.TypeFactory;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.XMIResource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import static java.lang.String.format;
 
@@ -45,48 +45,29 @@ import static java.lang.String.format;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CdoServerClientApi implements CdoServerApi {
 
-  private CDOClient cdoClient;
-
-
-  private static Map<String, Object> opts = new HashMap<>();
-
-  static {
-    XMIResToResFact();
-    opts.put(XMIResource.OPTION_SCHEMA_LOCATION, true);
-  }
-
-
-  private static void XMIResToResFact(){
-    Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap( ).put
-            ("*",
-                    new XMIResourceFactoryImpl() {
-                      public Resource createResource(URI uri) {
-                        return new XMIResourceImpl(uri);
-                      }
-                    }
-            );
-  }
-
+  private CDOClientX cdoClient;
 
   @Override
-  public DeploymentModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
+  public DeploymentInstanceModel getModelToDeploy(@NonNull String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
     if (CollectionUtils.isNotEmpty(contents)) {
       CamelModel model = CdoTool.getLastCamelModel(contents)
-              .orElseThrow(() -> new IllegalStateException(String.format("Could not find Camel Model for resourceName=%s", resourceName)));
-      if (model != null) {
-        EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
-        if (CollectionUtils.isNotEmpty(deploymentModels)) {
-          return deploymentModels.get(deploymentModels.size() - 1);
+              .orElseThrow(() -> new IllegalStateException(format("Could not find Camel Model for resourceName=%s", resourceName)));
+
+      EList<DeploymentModel> deploymentModels = model.getDeploymentModels();
+      if (CollectionUtils.isNotEmpty(deploymentModels)) {
+        DeploymentModel deploymentModel = deploymentModels.get(deploymentModels.size() - 1);
+        if (deploymentModel instanceof DeploymentInstanceModel) {
+          return (DeploymentInstanceModel) deploymentModel;
         }
       }
     }
-    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
+    throw new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
       "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
 
   @Override
-  public DeploymentModel getDeployedModel(String resourceName, CDOTransaction tr) {
+  public DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr) {
     EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
 
     if (CollectionUtils.isNotEmpty(contents)) {
@@ -95,83 +76,148 @@ public class CdoServerClientApi implements CdoServerApi {
       for (int i = numberOfCamelModels-1; i > -1 ; i--) {
           CamelModel model = (CamelModel) contents.get(i);
 
-          if(model != null) {
-            EList<ExecutionModel> executionModels = model.getExecutionModels();
-            int numberOfExecModels = executionModels.size();
-
-            for (int j = numberOfExecModels - 1; j > -1; j--) {
-              EList<ExecutionContext> executionContexts = executionModels.get(j).getExecutionContexts();
-              if (!executionContexts.isEmpty()) {
-                exportModel(model, "~/"+resourceName+".xmi");
-                return executionContexts.get(executionContexts.size()-1).getDeploymentModel();
-              }
-            }
+        Optional<DeploymentTypeModel> deploymentTypeModelOpt = getDeploymentTypeModel(model);
+        if (deploymentTypeModelOpt.isPresent()) {
+          Optional<ExecutionModel> executionModelOpt = getExecutionModel(model, deploymentTypeModelOpt.get());
+          if (executionModelOpt.isPresent()){
+            return CdoTool.getCurrentlyInstalledModel(executionModelOpt.get()).orElse(null);
           }
+        }
       }
       return null;
     }
-    throw new IllegalArgumentException(String.format("Cannot load Camel Deployment Model for resourceName=%s. " +
+    throw new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
       "Check the value is valid and the model is available in CDO Server.", resourceName));
   }
 
+  @Override
+  public void setExecutionContext(DeploymentInstanceModel newDeploymentModel) {
 
-  public boolean exportModel(EObject model, String filePath){
-    try{
-      final ResourceSet rs = new ResourceSetImpl();
-      rs.getPackageRegistry().put(CamelPackage.eNS_URI, CamelPackage.eINSTANCE);
-      Resource res = rs.createResource(URI.createFileURI(filePath));
-      res.getContents().add(model);
-      res.save(opts);
-      return true;
+    CamelModel camelModel = (CamelModel) newDeploymentModel.eContainer();
+    Optional<DeploymentTypeModel> deploymentTypeModelOpt = getDeploymentTypeModel(camelModel);
+
+    if (deploymentTypeModelOpt.isPresent()) {
+      DeploymentTypeModel deploymentTypeModel = deploymentTypeModelOpt.get();
+      ExecutionModel executionModel = getExecutionModel(camelModel, deploymentTypeModel).orElseGet(() -> {
+        ExecutionModel executionModelNew = createExecutionModel(deploymentTypeModel);
+        camelModel.getExecutionModels().add(executionModelNew);
+        return executionModelNew;
+      });
+
+
+      DeploymentInstanceModel oldModel = null;
+      Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
+      if (lastHistoryRecordOpt.isPresent()) {
+        HistoryRecord lastHistoryRecord = lastHistoryRecordOpt.get();
+        oldModel = lastHistoryRecord.getToDeploymentInstanceModel();
+        lastHistoryRecord.setEndTime(new Date());
+      }
+
+      executionModel.getHistoryRecords().add(createHistoryRecord(oldModel, newDeploymentModel));
+      log.info("History record has been added to ExecutionModel");
     }
-    catch(Exception e){
-      log.error("Something went wrong while exporting model: " + model + " at path: " + filePath,e);
+  }
+
+  private ExecutionModel createExecutionModel(DeploymentTypeModel deploymentTypeModel) {
+    ExecutionModel executionModel = ExecutionFactory.eINSTANCE.createExecutionModel();
+    executionModel.setName(getUniqueExecutionName());
+    executionModel.setStartTime(new Date());
+    executionModel.setDeploymentTypeModel(deploymentTypeModel);
+    executionModel.setRequirementModel(getRequirementModel(deploymentTypeModel).orElseThrow(() -> new IllegalStateException("Missing required RequirementModel")));
+    return executionModel;
+  }
+
+    private Optional<RequirementModel> getRequirementModel(DeploymentTypeModel deploymentTypeModel) {
+        EList<RequirementModel> requirementModels = ((CamelModel) deploymentTypeModel.eContainer()).getRequirementModels();
+        if (CollectionUtils.isNotEmpty(requirementModels)){
+            return Optional.of(requirementModels.get(0));
+        }
+        return Optional.empty();
     }
-    return false;
+
+    private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
+    Attribute type = createType();
+    newModel.getAttributes().add(type);
+
+    HistoryRecord historyRecord = ExecutionFactory.eINSTANCE.createHistoryRecord();
+    historyRecord.setName(getUniqueHistoryName());
+    historyRecord.setStartTime(new Date());
+    historyRecord.setEndTime(new Date());
+    historyRecord.setFromDeploymentInstanceModel(oldModel);
+    historyRecord.setToDeploymentInstanceModel(newModel);
+    historyRecord.setType(type);
+    historyRecord.setCause(createCause());
+    return historyRecord;
   }
 
+  private Cause createCause() {
+    RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
+    Cause cause = ExecutionFactory.eINSTANCE.createCause();
+    String name = "Cause_" + generator.generate(10);
+    cause.setName(name);
+    cause.setDescription(name);
+    return cause;
+  }
 
+  private Attribute createType() {
+    StringValue stringValue = TypeFactory.eINSTANCE.createStringValue();
+    stringValue.setValue("DUMMY VALUE");
+
+    Attribute attribute = CoreFactory.eINSTANCE.createAttribute();
+    attribute.setName(getUniqueAttributeName());
+    attribute.setValue(stringValue);
+
+    return attribute;
+  }
+
+  private Optional<HistoryRecord> getLastHistoryRecord(ExecutionModel executionModel){
+    EList<HistoryRecord> historyRecords = executionModel.getHistoryRecords();
+    if (CollectionUtils.isNotEmpty(historyRecords)) {
+      return Optional.of(historyRecords.get(historyRecords.size() - 1));
+    }
+    return Optional.empty();
+  }
 
   @Override
-  public void setExecutionContext(DeploymentModel deploymentModel, String execContextName, String requirementGroupName, CDOTransaction tr) {
-    CamelModel camelModel = (CamelModel) deploymentModel.eContainer();
-    Collection<ExecutionModel> execModels = camelModel.getExecutionModels();
-    Application app = camelModel.getApplications().get(0);
-
-    Optional<RequirementGroup> requirementGroupOpt = getRequirementGroup(camelModel.getRequirementModels());
-    RequirementGroup requirementGroup = requirementGroupOpt
-            .orElseThrow(() -> new IllegalArgumentException(format("Could not find RequirementGroup for %s application", app.getName())));
-
-      ExecutionModel newExecModel = ExecutionFactory.eINSTANCE.createExecutionModel();
-      newExecModel.setName(execContextName);
-
-      ExecutionContext execContext = ExecutionFactory.eINSTANCE.createExecutionContext();
-      execContext.setName(execContextName);
-      execContext.setApplication(app);
-      execContext.setDeploymentModel(deploymentModel);
-      execContext.setRequirementGroup(requirementGroup);
-
-      newExecModel.getExecutionContexts().add(execContext);
-
-      execModels.add(newExecModel);
+  public CDOSessionX openSession() {
+    return cdoClient.getSession();
   }
 
-  private Optional<RequirementGroup> getRequirementGroup(EList<RequirementModel> requirementModels) {
-    return requirementModels.stream()
-            .map(RequirementModel::getRequirements)
-            .flatMap(Collection::stream)
-            .filter(requirement -> requirement instanceof RequirementGroup)
-            .map(requirement -> (RequirementGroup) requirement)
-            .findFirst();
+  private Optional<ExecutionModel> getExecutionModel(CamelModel camelModel, DeploymentTypeModel deploymentTypeModel){
+    EList<ExecutionModel> executionModels = camelModel.getExecutionModels();
+    for (int i = executionModels.size() - 1; i >= 0; i--) {
+      ExecutionModel executionModel = executionModels.get(0);
+      if (executionModel.getDeploymentTypeModel().equals(deploymentTypeModel)){
+        return Optional.of(executionModel);
+      }
+    }
+    return Optional.empty();
   }
 
-  @Override
-  public CDOTransaction openTransaction() {
-    return cdoClient.openTransaction();
+  private Optional<DeploymentTypeModel> getDeploymentTypeModel(CamelModel camelModel) {
+    List<DeploymentModel> deploymentModels = ListUtils.emptyIfNull((camelModel.getDeploymentModels()));
+    for (int i = deploymentModels.size() - 1; i >= 0; i--) {
+      DeploymentModel deploymentModel = deploymentModels.get(0);
+      if (deploymentModel instanceof DeploymentTypeModel) {
+        return Optional.of((DeploymentTypeModel)  deploymentModel);
+      }
+    }
+    return Optional.empty();
   }
 
-  @Override
-  public void closeTransaction(CDOTransaction tr) {
-    tr.close();
+  private String getUniqueAttributeName(){
+    return getUniqueName("Attribute");
+  }
+
+  private String getUniqueHistoryName(){
+    return getUniqueName("HistoryRecord");
+  }
+
+  private String getUniqueExecutionName(){
+    return getUniqueName("ExecutionModel");
+  }
+
+  private String getUniqueName(String name){
+    return name + System.currentTimeMillis();
   }
 }

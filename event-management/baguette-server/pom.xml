@@ -1,0 +1,91 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.melodic.event</groupId>
+        <artifactId>event-management</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>baguette-server</artifactId>
+	<name>Upperware - EMS - Baguette Server</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>eu.melodic.event</groupId>
+			<artifactId>broker-cep</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
+		<dependency>
+			<groupId>org.apache.sshd</groupId>
+			<artifactId>apache-sshd</artifactId>
+			<version>1.6.0</version>
+			<type>pom</type>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.20</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>2.0.1.Final</version>
+		</dependency>
+
+		<!-- Cloudiator -->
+		<dependency>
+			<groupId>io.github.cloudiator</groupId>
+			<artifactId>colosseum-client</artifactId>
+			<version>0.2.0-SNAPSHOT</version>
+		</dependency>
+		
+		<!-- StatefulJ FSM -->
+		<dependency>
+			<groupId>org.statefulj</groupId>
+			<artifactId>statefulj-fsm</artifactId>
+			<version>3.0</version>
+		</dependency>
+
+		<!-- Apache Common text -->
+		<dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.6</version>
+            <scope>compile</scope>
+        </dependency>
+	</dependencies>
+	
+	<repositories>
+		<!-- Cloudiator -->
+		<repository>
+			<id>ossrh.snapshots</id>
+			<name>OSSRH snapshots repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+</project>

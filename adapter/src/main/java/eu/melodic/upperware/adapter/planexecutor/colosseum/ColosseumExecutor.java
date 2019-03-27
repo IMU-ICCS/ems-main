@@ -10,16 +10,17 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.alg.DirectedNeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,14 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
-public class ColosseumExecutor implements PlanExecutor {
+public class ColosseumExecutor implements PlanExecutor, InitializingBean {
 
   private ColosseumExecutorFactory factory;
-
   private ThreadPoolTaskExecutor executor;
 
   @Override
@@ -62,11 +64,7 @@ public class ColosseumExecutor implements PlanExecutor {
   }
 
   private Set<Future> getDependentFeatures(Map<Task, Future> taskToFeatureMap, Set<Task> predecessors) {
-    Set<Future> futures = Sets.newHashSet();
-    for (Task predecessor : predecessors) {
-      futures.add(taskToFeatureMap.get(predecessor));
-    }
-    return futures;
+    return predecessors.stream().map(taskToFeatureMap::get).collect(Collectors.toSet());
   }
 
   private Future submitTask(Task task, Set<Future> predecessors) {
@@ -75,5 +73,10 @@ public class ColosseumExecutor implements PlanExecutor {
 
   private RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors) {
     return factory.createTaskExecutor(task, predecessors);
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    log.info("External ThreadPoolTaskExecutor prefix: {}", executor.getThreadNamePrefix());
   }
 }

@@ -54,10 +54,10 @@ public class CPSolverExecutor {
   }
 
   @Async
-  public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid, Boolean useExternalOptimizer) {
+  public void generateCPSolution(String applicationId, String cdoResourcePath, String notificationUri, String requestUuid) {
     try {
       NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cdoResourcePath));
-      CPSolver cpSolver = new CPSolver(cdoResourcePath, null, useExternalOptimizer, nodeCandidates, utilityGeneratorProperties);
+      CPSolver cpSolver = new CPSolver(applicationId, cdoResourcePath, null, false, nodeCandidates, utilityGeneratorProperties);
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {
         log.info("Solution has been produced");
@@ -72,10 +72,10 @@ public class CPSolverExecutor {
     }
   }
 
-  public void generateCPSolutionFromFile(String applicationId, String filePath, String nodeCandidatesFilePath, String requestUuid, Boolean useExternalOptimizer) throws Exception {
+  public void generateCPSolutionFromFile(String applicationId, String camelModelFilePath, String filePath, String nodeCandidatesFilePath, String requestUuid) throws Exception {
 
     NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
-    CPSolver cpSolver = new CPSolver(null,filePath, useExternalOptimizer, nodeCandidates, utilityGeneratorProperties);
+    CPSolver cpSolver = new CPSolver(applicationId, filePath, camelModelFilePath, true, nodeCandidates, utilityGeneratorProperties);
 
       boolean hasSolution = cpSolver.solve();
       if (hasSolution) {

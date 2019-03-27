@@ -2,8 +2,9 @@ package eu.melodic.cache.properties;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -13,7 +14,8 @@ import org.springframework.validation.annotation.Validated;
 @Getter
 @Setter
 @Validated
-@Configuration
+@Component
+@ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.cache.properties")
 public class CacheProperties {
 

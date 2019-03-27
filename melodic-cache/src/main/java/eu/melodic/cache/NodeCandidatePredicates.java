@@ -42,12 +42,12 @@ public final class NodeCandidatePredicates {
         };
     }
 
-    public static Predicate<NodeCandidate> getStoragePredicate(Double value) {
+    public static Predicate<NodeCandidate> getStoragePredicate(Integer value) {
         Objects.requireNonNull(value);
         return new Predicate<NodeCandidate>() {
             @Override
             public boolean test(NodeCandidate nodeCandidate) {
-                return value.equals(nodeCandidate.getHardware().getDisk());
+                return value.equals(nodeCandidate.getHardware().getDisk().intValue());
             }
 
             @Override

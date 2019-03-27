@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.ow2.paasage</groupId>
+        <artifactId>upperware</artifactId>
+        <version>2.1.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>eu.melodic.event</groupId>
+    <artifactId>event-management</artifactId>
+    <version>2.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Upperware - Event Management System</name>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- Gson version -->
+        <gson.version>2.8.5</gson.version>
+        <!-- Apache Commons Lang3 version -->
+        <commons-lang3.version>3.8.1</commons-lang3.version>
+        <!-- Esper version -->
+        <esper-version>7.1.0</esper-version>
+        <!-- MathParser version -->
+        <mathparser-version>4.2.0</mathparser-version>
+    </properties>
+
+    <modules>
+        <module>util</module>
+        <module>broker-client</module>
+        <module>broker-cep</module>
+        <module>baguette-client</module>
+        <module>baguette-client-install</module>
+        <module>baguette-server</module>
+        <module>translator</module>
+        <module>control-service</module>
+    </modules>
+</project>

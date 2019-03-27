@@ -9,31 +9,31 @@
 
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
-import com.google.common.collect.Lists;
 import eu.melodic.upperware.adapter.graphlogger.ToLogGraphLogger;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.MelodicGraph;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.jgrapht.alg.CycleDetector;
-import org.jgrapht.alg.DirectedNeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
 import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.RECONFIG;
-import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.*;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.CREATE;
+import static eu.melodic.upperware.adapter.plangenerator.tasks.Type.DELETE;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -41,361 +41,177 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<ComparableModel> {
 
-  private ToLogGraphLogger toLogGraphLogger;
+    private ToLogGraphLogger toLogGraphLogger;
+    private AdapterProperties adapterProperties;
 
-  @Override
-  public SimpleDirectedGraph<Task, DefaultEdge> generateConfigGraph(ComparableModel model) {
-    log.info("Building configuration graph from prepared model");
+    // compare two the same instances
+    private static final BiPredicate<AdapterProcess, AdapterProcess> PROCESS_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getNodeName().equals(oldReq.getNodeName()) &&
+                    newReq.getScheduleName().equals((oldReq.getScheduleName())) &&
+                    newReq.getJobName().equals(oldReq.getJobName()) &&
+                    newReq.getTaskName().equals(oldReq.getTaskName());
 
-    MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, CONFIG);
+    private static final BiPredicate<AdapterMonitor, AdapterMonitor> MONITOR_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getMetricName().equals(oldReq.getMetricName()) &&
+                    newReq.getNodeName().equals(oldReq.getNodeName());
 
-    Collection<CloudApiTask> cloudApiTasks = genCloudApiConfigTasks(
-      graph, model.getCloudApis());
-    Collection<CloudTask> cloudTasks = genCloudConfigTasks(
-      graph, cloudApiTasks, model.getClouds());
-    Collection<CloudPropertyTask> cloudPropertyTasks = genCloudPropertyConfigTasks(
-      graph, cloudTasks,model.getCloudProperties());
-    Collection<CloudCredentialTask> cloudCredentialTasks = genCloudCredentialConfigTasks(
-      graph, cloudTasks, model.getCloudCredentials());
-
-    ApplicationTask appTask = genAppConfigTask(graph, model.getApplication());
-    ApplicationInstanceTask appInstTask = genAppInstConfigTask(graph, appTask, model.getApplicationInstance());
-
-    Collection<LifecycleComponentTask> lcTasks = genLcConfigTasks(graph, model.getLifecycleComponents());
-
-    Collection<VirtualMachineTask> vmTasks = genVmConfigTasks(
-      graph, cloudTasks, model.getVirtualMachines());
-
-    Collection<ApplicationComponentTask> acTasks = genAcConfigTasks(
-      graph, appTask, lcTasks, vmTasks, model.getApplicationComponents());
-
-    Collection<PortProvidedTask> portProvTasks = genPortProvConfigTasks(
-            graph, acTasks, model.getPortsProvided());
-    Collection<PortRequiredTask> portReqTasks = genPortReqConfigTasks(
-            graph, acTasks, model.getPortsRequired());
-    Collection<CommunicationTask> commTasks = genCommConfigTasks(
-            graph, portProvTasks, portReqTasks, model.getCommunications());
-
-    Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstConfigTasks(
-            graph, vmTasks, commTasks, model.getVirtualMachineInstances());
-
-    Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstConfigTasks(
-      graph, appInstTask, acTasks, vmInstTasks, commTasks, model.getApplicationComponentInstances());
-
-    genVmInstMonitorConfigTasks(graph, vmInstTasks, model.getVirtualMachineInstanceMonitors());
-    genAcInstMonitorConfigTasks(graph, acInstTasks, model.getApplicationComponentInstanceMonitors());
-
-    setSequentiallyVirtualMachineTasks(graph, vmTasks);
-
-    log.info("Built graph: {}", graph);
-
-    return graph;
-  }
-
-  @Override
-  public SimpleDirectedGraph<Task, DefaultEdge> generateReconfigGraph(ComparableModel oldModel, ComparableModel newModel) {
-    log.info("Building reconfiguration graph from prepared models");
-
-    MelodicGraph<Task, DefaultEdge> graph = new MelodicGraph<>(DefaultEdge.class, RECONFIG);
-    Collection<CloudTask> cloudTasks = Collections.emptyList();
-    ApplicationTask appTask = genReconfigAppTask(graph, oldModel.getApplication(), newModel.getApplication());
-
-    Collection<VirtualMachineTask> vmTasks = genVmReconfigTasks(
-            graph, cloudTasks, oldModel.getVirtualMachines(), newModel.getVirtualMachines());
-
-    //TAK
-    Collection<VirtualMachineInstanceTask> vmInstTasks = genVmInstReconfigTasks(
-            graph, vmTasks, oldModel.getVirtualMachineInstances(), newModel.getVirtualMachineInstances());
+    private static final BiPredicate<AdapterRequirement, AdapterRequirement> NODE_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getNodeName().equals(oldReq.getNodeName());
 
 
-    Collection<ApplicationComponentTask> acTasks = Collections.emptyList();
+    //link different tasks
+    private static final BiPredicate<NodeTask, ProcessTask> NODE_TO_PROCESS_BI_PREDICATE = (nodeTask, processTask) ->
+            nodeTask.getData().getNodeName().equals(processTask.getData().getNodeName()) &&
+                    nodeTask.getType().equals(processTask.getType());
 
-    Collection<ApplicationComponentInstanceTask> acInstTasks = genAcInstReconfigTasks(
-            graph, acTasks, vmInstTasks, oldModel.getApplicationComponentInstances(), newModel.getApplicationComponentInstances());
+    private static final BiPredicate<ProcessTask, NodeTask> PROCESS_TO_NODE_BI_PREDICATE = (processTask, nodeTask) ->
+            nodeTask.getData().getNodeName().equals(processTask.getData().getNodeName()) &&
+                    nodeTask.getType().equals(processTask.getType());
 
-    Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = genVmInstMonitorReconfigTasks(
-            graph, vmInstTasks, oldModel.getVirtualMachineInstanceMonitors(), newModel.getVirtualMachineInstanceMonitors());
+    private static final BiPredicate<ProcessTask, MonitorTask> PROCESS_TO_MONITOR_BI_PREDICATE = (processTask, monitorTask) ->
+            processTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
+                    processTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()) &&
+                    processTask.getType().equals(monitorTask.getType());
 
-    Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = genAcInstMonitorReconfigTasks(
-            graph, acInstTasks, oldModel.getApplicationComponentInstanceMonitors(),
-            newModel.getApplicationComponentInstanceMonitors());
+    private static final BiPredicate<MonitorTask, ProcessTask> MONITOR_TO_PROCESS_BI_PREDICATE = (monitorTask, processTask) ->
+            processTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
+                    processTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()) &&
+                    processTask.getType().equals(monitorTask.getType());
 
-    toLogGraphLogger.logGraph(graph);
 
-    setSequentiallyVirtualMachineTasks(graph, vmTasks);
-    setMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks);
-
-    log.info("Built graph: {}", graph);
-
-    return graph;
-  }
-
-  private Collection<CloudApiTask> genCloudApiConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudApi> cloudApis) {
-    return genCloudApiTasks(graph, CREATE, cloudApis);
-  }
-
-  private Collection<CloudTask> genCloudConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudApiTask> cloudApiTasks, Collection<Cloud> clouds) {
-    return genCloudTasks(graph, CREATE, cloudApiTasks, clouds);
-  }
-
-  private Collection<CloudPropertyTask> genCloudPropertyConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudTask> cloudTasks, Collection<CloudProperty> cloudProperties) {
-    return genCloudPropertyTasks(graph, CREATE, cloudTasks, cloudProperties);
-  }
-
-  private Collection<CloudCredentialTask> genCloudCredentialConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudTask> cloudTasks, Collection<CloudCredential> cloudCredentials) {
-    return genCloudCredentialTasks(graph, CREATE, cloudTasks, cloudCredentials);
-  }
-
-  private ApplicationTask genAppConfigTask(MelodicGraph<Task, DefaultEdge> graph, Application app) {
-    return genAppTask(graph, CREATE, app);
-  }
-
-  private ApplicationTask genReconfigAppTask(MelodicGraph<Task, DefaultEdge> graph, Application oldApp, Application newApp) {
-    if (!newApp.equals(oldApp)) {
-      newApp.setOldName(oldApp.getName());
-      return genAppTask(graph, UPDATE, newApp);
-    }
-    return null;
-  }
-
-  private ApplicationInstanceTask genAppInstConfigTask(MelodicGraph<Task, DefaultEdge> graph, ApplicationTask appTask,
-          ApplicationInstance appInst) {
-    return genAppInstTask(graph, CREATE, appTask, appInst);
-  }
-
-  private Collection<LifecycleComponentTask> genLcConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<LifecycleComponent> lcs) {
-    return genLcTasks(graph, CREATE, lcs);
-  }
-
-  private Collection<LifecycleComponentTask> genLcReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<LifecycleComponent> oldLcs, Collection<LifecycleComponent> newLcs) {
-    Collection<LifecycleComponentTask> lcTasks = Lists.newArrayList();
-
-    lcTasks.addAll(genLcTasks(graph, CREATE,
-      newLcs.stream().filter(newLc -> !oldLcs.contains(newLc)).collect(toList())));
-    lcTasks.addAll(genLcTasks(graph, DELETE,
-      oldLcs.stream().filter(oldLc -> !newLcs.contains(oldLc)).collect(toList())));
-
-    return lcTasks;
-  }
-
-  private Collection<VirtualMachineTask> genVmConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudTask> cloudTasks, Collection<VirtualMachine> vms) {
-    return genVmTasks(graph, CREATE, cloudTasks, vms);
-  }
-
-  private Collection<VirtualMachineTask> genVmReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<CloudTask> cloudTasks, Collection<VirtualMachine> oldVms, Collection<VirtualMachine> newVms) {
-    Collection<VirtualMachineTask> vmTasks = Lists.newArrayList();
-
-    vmTasks.addAll(genVmTasks(graph, CREATE, cloudTasks,
-      newVms.stream().filter(newVm -> !oldVms.contains(newVm)).collect(toList())));
-    vmTasks.addAll(genVmTasks(graph, DELETE, cloudTasks,
-      oldVms.stream().filter(oldVm -> !newVms.contains(oldVm)).collect(toList())));
-
-    return vmTasks;
-  }
-
-  private Collection<VirtualMachineInstanceTask> genVmInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<VirtualMachineTask> vmTasks, Collection<CommunicationTask> commTasks, Collection<VirtualMachineInstance> vmInsts) {
-    return genVmInstTasks(graph, CREATE, vmTasks, commTasks, vmInsts);
-  }
-
-  private Collection<VirtualMachineInstanceTask> genVmInstReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<VirtualMachineTask> vmTasks, Collection<VirtualMachineInstance> oldVmInsts,
-          Collection<VirtualMachineInstance> newVmInsts) {
-    Collection<VirtualMachineInstanceTask> vmInstTasks = Lists.newArrayList();
-
-    vmInstTasks.addAll(genVmInstTasks(graph, CREATE, vmTasks, Collections.emptyList(),
-      newVmInsts.stream().filter(newVmInst -> !oldVmInsts.contains(newVmInst)).collect(toList())));
-    vmInstTasks.addAll(genVmInstTasks(graph, DELETE, vmTasks, Collections.emptyList(),
-      oldVmInsts.stream().filter(oldVmInst -> !newVmInsts.contains(oldVmInst)).collect(toList())));
-
-    return vmInstTasks;
-  }
-
-  private Collection<ApplicationComponentTask> genAcConfigTasks(MelodicGraph<Task, DefaultEdge> graph, ApplicationTask appTask,
-          Collection<LifecycleComponentTask> lcTasks, Collection<VirtualMachineTask> vmTasks,
-          Collection<ApplicationComponent> acs) {
-    return genAcTasks(graph, CREATE, appTask, lcTasks, vmTasks, acs);
-  }
-
-  private Collection<ApplicationComponentInstanceTask> genAcInstConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-      ApplicationInstanceTask appInstTask, Collection<ApplicationComponentTask> acTasks,
-      Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<CommunicationTask> commTasks, Collection<ApplicationComponentInstance> acInsts) {
-    return genAcInstTasks(graph, CREATE, appInstTask, acTasks, vmInstTasks, commTasks, acInsts);
-  }
-
-  private Collection<ApplicationComponentInstanceTask> genAcInstReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentTask> acTasks, Collection<VirtualMachineInstanceTask> vmInstTasks,
-          Collection<ApplicationComponentInstance> oldAcInsts, Collection<ApplicationComponentInstance> newAcInsts) {
-    Collection<ApplicationComponentInstanceTask> acInstTasks = Lists.newArrayList();
-
-    acInstTasks.addAll(genAcInstTasks(graph, CREATE, null, acTasks, vmInstTasks, Lists.newArrayList(),
-      newAcInsts.stream().filter(newAcInst -> !oldAcInsts.contains(newAcInst)).collect(toList())));
-    acInstTasks.addAll(genAcInstTasks(graph, DELETE, null, acTasks, vmInstTasks, Lists.newArrayList(),
-      oldAcInsts.stream().filter(oldAcInst -> !newAcInsts.contains(oldAcInst)).collect(toList())));
-
-    return acInstTasks;
-  }
-
-  private Collection<PortProvidedTask> genPortProvConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentTask> acTasks, Collection<PortProvided> portsProv) {
-    return genPortProvTasks(graph, CREATE, acTasks, portsProv);
-  }
-
-  private Collection<PortRequiredTask> genPortReqConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentTask> acTasks, Collection<PortRequired> portsReq) {
-    return genPortReqTasks(graph, CREATE, acTasks, portsReq);
-  }
-
-  private Collection<CommunicationTask> genCommConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<PortProvidedTask> portProvTasks, Collection<PortRequiredTask> portReqTasks,
-          Collection<Communication> comms) {
-    return genCommTasks(graph, CREATE, portProvTasks, portReqTasks, comms);
-  }
-
-  private Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<VirtualMachineInstanceMonitor> vmInstMonitors) {
-    return genVmInstMonitorTasks(graph, CREATE, vmInstTasks, vmInstMonitors);
-  }
-
-  private Collection<VirtualMachineInstanceMonitorTask> genVmInstMonitorReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<VirtualMachineInstanceTask> vmInstTasks, Collection<VirtualMachineInstanceMonitor> oldVmInstMonitors,
-          Collection<VirtualMachineInstanceMonitor> newVmInstMonitors){
-    Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks = Lists.newArrayList();
-
-    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))){
-
-      Predicate<VirtualMachineInstanceMonitor> monitorIsConnectedWithCreateNewInstanceTask =
-        vmInstMonitor -> vmInstTasks.stream()
-          .anyMatch(acInstTask -> acInstTask.getData().getName().equals(vmInstMonitor.getVmInstName()));
-
-      vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldVmInstMonitors));
-      vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, CREATE, Lists.newArrayList(),
-        newVmInstMonitors.stream().filter(monitorIsConnectedWithCreateNewInstanceTask).collect(toList()))
-      );
-    }
-    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))){
-
-      vmInstMonitorTasks.addAll(genVmInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newVmInstMonitors));
+    @Override
+    public SimpleDirectedGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel) {
+        return generateGraph(newComparableModel, ComparableModel.builder().build(), () -> new MelodicGraph<>(DefaultEdge.class, CONFIG));
     }
 
-    return vmInstMonitorTasks;
-  }
-
-  private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorConfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> acInstMonitors) {
-    return genAcInstMonitorTasks(graph, CREATE, acInstTasks, acInstMonitors);
-  }
-
-  private Collection<ApplicationComponentInstanceMonitorTask> genAcInstMonitorReconfigTasks(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<ApplicationComponentInstanceTask> acInstTasks, Collection<ApplicationComponentInstanceMonitor> oldAcInstMonitors,
-          Collection<ApplicationComponentInstanceMonitor> newAcInstMonitors) {
-          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks = Lists.newArrayList();
-
-    if (graph.vertexSet().stream().anyMatch(v -> !DELETE.equals(v.getType()))) {
-
-      Predicate<ApplicationComponentInstanceMonitor> monitorIsConnectedWithCreateNewInstanceTask =
-        acInstMonitor -> acInstTasks.stream()
-          .anyMatch(acInstTask -> acInstTask.getData().getName().equals(acInstMonitor.getAcInstName()));
-
-      acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(), oldAcInstMonitors));
-      acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, CREATE, Lists.newArrayList(),
-        newAcInstMonitors.stream().filter(monitorIsConnectedWithCreateNewInstanceTask).collect(toList())));
+    @Override
+    public SimpleDirectedGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel, ComparableModel oldComparableModel) {
+        return generateGraph(newComparableModel, oldComparableModel, () -> new MelodicGraph<>(DefaultEdge.class, RECONFIG));
     }
 
-    if (graph.vertexSet().stream().anyMatch(v -> DELETE.equals(v.getType()))) {
-      acInstMonitorTasks.addAll(genAcInstMonitorTasks(graph, DELETE, Lists.newArrayList(), newAcInstMonitors));
-    }
+    private MelodicGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel, ComparableModel oldComparableModel, Supplier<MelodicGraph<Task, DefaultEdge>> graphSupplier) {
+        MelodicGraph<Task, DefaultEdge> graph = graphSupplier.get();
 
-    return acInstMonitorTasks;
-  }
-
-  private void setMonitors(MelodicGraph<Task, DefaultEdge> graph,
-          Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
-          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks) {
-
-    toLogGraphLogger.logCount(graph);
-
-    DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);
-    TopologicalOrderIterator<Task, DefaultEdge> it = new TopologicalOrderIterator(graph);
-
-    while (it.hasNext()) {
-      Task task = it.next();
-      if (task instanceof VirtualMachineInstanceMonitorTask
-        || task instanceof ApplicationComponentInstanceMonitorTask) {
-        continue;
-      }
-
-      setMonitorsAfterTask(graph, vmInstMonitorTasks, acInstMonitorTasks, task, neighbors.successorsOf(task));
-      setDeleteTaskAfterMonitors(graph, vmInstMonitorTasks, acInstMonitorTasks, task, neighbors.predecessorsOf(task));
-
-      log.info("Current task {}", task.toString());
-      toLogGraphLogger.logCount(graph);
-      toLogGraphLogger.logCycles(graph);
-
-      if (new CycleDetector<>(graph).detectCycles()){
-        throw new IllegalArgumentException("Graph contains cycles!");
-      }
-    }
-  }
-
-  private void setMonitorsAfterTask(MelodicGraph<Task, DefaultEdge> graph, Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
-          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks, Task task, Set<Task> successors){
-
-    if (CollectionUtils.isEmpty(successors)) {
-      Type monitorType = DELETE.equals(task.getType()) ? DELETE : CREATE;
-
-      setMonitorsAfterTask(vmInstMonitorTasks, task, monitorType, graph);
-      setMonitorsAfterTask(acInstMonitorTasks, task, monitorType, graph);
-    }
-
-  }
-
-  private <T extends ConfigurationTask> void setMonitorsAfterTask(Collection<T> tasks, Task task, Type monitorType, MelodicGraph<Task, DefaultEdge> graph){
-    tasks.stream()
-            .filter(t -> monitorType.equals(t.getType()))
-            .forEach(t -> setDependencies(graph, CREATE, task, t));
-  }
-
-  private void setDeleteTaskAfterMonitors(MelodicGraph<Task, DefaultEdge> graph, Collection<VirtualMachineInstanceMonitorTask> vmInstMonitorTasks,
-          Collection<ApplicationComponentInstanceMonitorTask> acInstMonitorTasks, Task task, Set<Task> predecessors) {
-
-    if (DELETE.equals(task.getType()) && CollectionUtils.isEmpty(predecessors)) {
-      setDeleteTaskAfterMonitors(vmInstMonitorTasks, task, graph);
-      setDeleteTaskAfterMonitors(acInstMonitorTasks, task, graph);
-    }
-  }
-
-  private <T extends ConfigurationTask> void setDeleteTaskAfterMonitors(Collection<T> tasks, Task task, MelodicGraph<Task, DefaultEdge> graph){
-    tasks.stream()
-            .filter(t -> CREATE.equals(t.getType()))
-            .forEach(t -> setDependencies(graph, CREATE, t, task));
-  }
-
-  private void setSequentiallyVirtualMachineTasks(MelodicGraph<Task, DefaultEdge> graph,
-    Collection<VirtualMachineTask> vmTasks){
-
-    Iterator<VirtualMachineTask> it = vmTasks.iterator();
-
-    if (it.hasNext()){
-      VirtualMachineTask prevTask = it.next();
-
-      while (it.hasNext()) {
-        VirtualMachineTask task = it.next();
-        if (task.getType().equals(prevTask.getType())){
-          setDependencies(graph, task.getType(), prevTask, task);
+        //Job
+        AdapterJob newAdapterJob = newComparableModel.getAdapterJob();
+        AdapterJob oldAdapterJob = oldComparableModel.getAdapterJob();
+        JobTask jobTask = null;
+        if (!newAdapterJob.equals(oldAdapterJob)) {
+            jobTask = createTask(graph, newAdapterJob, JobTask.JOB_TASK_CREATE);
         }
-        prevTask = task;
+        Optional<JobTask> jobTaskOpt = Optional.ofNullable(jobTask);
 
-      }
+        //Node
+        List<AdapterRequirement> nodesToCreate = getDataToCreate(newComparableModel.getAdapterRequirements(), oldComparableModel.getAdapterRequirements(), NODE_BI_PREDICATE);
+        List<NodeTask> nodeTasksToCreate = createTasks(graph, nodesToCreate, NodeTask.NODE_TASK_CREATE);
+
+        //Job -> Schedule
+        AdapterSchedule newAdapterSchedule = newComparableModel.getAdapterSchedule();
+        AdapterSchedule oldAdapterSchedule = oldComparableModel.getAdapterSchedule();
+
+        ScheduleTask scheduleTask = null;
+        if (!newAdapterSchedule.equals(oldAdapterSchedule)) {
+            scheduleTask = createTask(graph, newAdapterSchedule, ScheduleTask.SCHEDULE_TASK_CREATE);
+            addEdge(graph, jobTask, scheduleTask, jobTaskOpt::isPresent);
+        }
+        Optional<ScheduleTask> scheduleTaskOpt = Optional.ofNullable(scheduleTask);
+
+        //Node, Schedule -> Process
+        List<AdapterProcess> processesToCreate = getDataToCreate(newComparableModel.getAdapterProcesses(), oldComparableModel.getAdapterProcesses(), PROCESS_BI_PREDICATE);
+        List<ProcessTask> processTasksToCreate = createTasks(graph, processesToCreate, ProcessTask.PROCESS_TASK_CREATE);
+        addEdge(graph, scheduleTask, processTasksToCreate, scheduleTaskOpt::isPresent);
+        addEdge(graph, nodeTasksToCreate, processTasksToCreate, NODE_TO_PROCESS_BI_PREDICATE);
+
+        //Process -> Monitors
+        if (adapterProperties.getEms().isEnabled()) {
+            List<AdapterMonitor> monitorsToCreate = getDataToCreate(newComparableModel.getAdapterMonitors(), oldComparableModel.getAdapterMonitors(), MONITOR_BI_PREDICATE);
+            List<MonitorTask> monitorTasksToCreate = createTasks(graph, monitorsToCreate, MonitorTask.MONITOR_TASK_CREATE);
+            addReverseEdge(graph, processTasksToCreate, monitorTasksToCreate, PROCESS_TO_MONITOR_BI_PREDICATE);
+        }
+
+        //Monitors, Process -> Wait
+        //connect monitors to last tasks
+        List<Task> tasksToCreateWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, CREATE);
+        addWaitEdge(graph, () -> createTask(graph, new AdapterWaitData(), WaitTask.WAIT_TASK_CREATE), tasksToCreateWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToCreateWithoutOutgoingEdges));
+
+        //Wait -> Monitors (D)
+        List<Task> lastCreateTasks = getTasksWithoutOutgoingEdges(graph, CREATE);
+        Task lastCreateTask = CollectionUtils.isNotEmpty(lastCreateTasks) ? lastCreateTasks.get(0) : null;
+
+        List<MonitorTask>  monitorTasksToDelete = Collections.emptyList();
+        if (adapterProperties.getEms().isEnabled()) {
+            List<AdapterMonitor> monitorsToDelete = getDataToDelete(newComparableModel.getAdapterMonitors(), oldComparableModel.getAdapterMonitors(), MONITOR_BI_PREDICATE);
+            monitorTasksToDelete = createTasks(graph, monitorsToDelete, MonitorTask.MONITOR_TASK_DELETE);
+            addEdge(graph, lastCreateTask, monitorTasksToDelete, () -> lastCreateTask != null);
+        }
+
+        //Monitors (D) -> Process (D)
+        List<AdapterProcess> processesToDelete = getDataToDelete(newComparableModel.getAdapterProcesses(), oldComparableModel.getAdapterProcesses(), PROCESS_BI_PREDICATE);
+        List<ProcessTask> processTasksToDelete = createTasks(graph, processesToDelete, ProcessTask.PROCESS_TASK_DELETE);
+
+        if (CollectionUtils.isNotEmpty(monitorTasksToDelete)){
+            addEdge(graph, monitorTasksToDelete, processTasksToDelete, MONITOR_TO_PROCESS_BI_PREDICATE);
+        } else {
+            addEdge(graph, lastCreateTask, processTasksToDelete, () -> lastCreateTask != null);
+        }
+
+        //Process (D) -> Nodes(D)
+        List<AdapterRequirement> nodesToDelete = getDataToDelete(newComparableModel.getAdapterRequirements(), oldComparableModel.getAdapterRequirements(), NODE_BI_PREDICATE);
+        List<NodeTask> nodeTasksToDelete = createTasks(graph, nodesToDelete, NodeTask.NODE_TASK_DELETE);
+        addEdge(graph, processTasksToDelete, nodeTasksToDelete, PROCESS_TO_NODE_BI_PREDICATE);
+
+        //Process (D) -> Schedule (D)
+        //NOT implemented yet
+
+        // Schedule (D) -> Job (D)
+        //NOT implemented yet
+
+        // Job (D) -> Wait (D)
+        //NOT implemented yet
+        List<Task> tasksToDeleteWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, DELETE);
+
+        addWaitEdge(graph, () -> createTask(graph, new AdapterWaitData(), WaitTask.WAIT_TASK_DELETE), tasksToDeleteWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToDeleteWithoutOutgoingEdges));
+
+        toLogGraphLogger.logGraph(graph);
+        log.info("Built {} graph: {}", graph.getType(), graph);
+        return graph;
     }
-  }
+
+    private List<Task> getTasksWithoutOutgoingEdges(MelodicGraph<Task, DefaultEdge> graph, Type create) {
+        return graph.vertexSet()
+                .stream()
+                .filter(task -> graph.outgoingEdgesOf(task).isEmpty())
+                .filter(task -> create.equals(task.getType()))
+                .collect(toList());
+    }
+
+    private <T extends Data> List<T> getDataToCreate(Collection<T> p1, Collection<T> p2, BiPredicate<T, T> biPredicate) {
+        return getData(p1, p2, biPredicate);
+    }
+
+    private <T extends Data> List<T> getDataToDelete(Collection<T> p1, Collection<T> p2, BiPredicate<T, T> biPredicate) {
+        //we need to change arguments
+        return getData(p2, p1, biPredicate);
+    }
+
+    private <T extends Data> List<T> getData(Collection<T> p1, Collection<T> p2, BiPredicate<T, T> biPredicate) {
+        return p1.stream()
+                .filter(oldReq -> p2.stream().noneMatch(newReq -> biPredicate.test(newReq, oldReq)))
+                .collect(toList());
+    }
+
+    private <T extends Data, U extends Task> U createTask(MelodicGraph<Task, DefaultEdge> graph, T data, Function<T, U> function) {
+        U task = function.apply(data);
+        addVertex(graph, task);
+        return task;
+    }
+
+    private <T extends Data, U extends Task> List<U> createTasks(MelodicGraph<Task, DefaultEdge> graph, List<T> data, Function<T, U> function) {
+
+        return CollectionUtils.emptyIfNull(data)
+                .stream()
+                .map(t -> createTask(graph, t, function))
+                .collect(toList());
+    }
 
 }

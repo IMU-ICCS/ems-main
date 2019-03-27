@@ -9,167 +9,100 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.utilitygenerator.model.*;
+import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.ConstraintProblemExtractor;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.MetricsConverter;
+import eu.melodic.upperware.utilitygenerator.dlms.DLMSConverter;
+import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
+import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
 import lombok.extern.slf4j.Slf4j;
+import org.mariuszgromada.math.mxparser.Argument;
 
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.*;
-import static java.util.Objects.isNull;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertDeployedSolutionToNodeCandidates;
+import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolutionToNodeCandidates;
+import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.createUtilityFunctionCostFormula;
+import static eu.melodic.upperware.utilitygenerator.utils.Printer.printSolution;
 
 @Slf4j
-public abstract class UtilityFunctionEvaluator {
+public class UtilityFunctionEvaluator {
 
-    boolean isReconfig;
-    Collection<ConfigurationElement> actConfiguration;
-
-    private double maxUtility;
-    private Collection<ConfigurationElement> configurationWithMaxUtility;
-    private Collection<Var> solutionWithMaxUtility;
-
+    private UtilityFunction function;
+    private Collection<String> unmoveableComponents;
+    private Collection<ConfigurationElement> deployedConfiguration;
+    private Collection<VariableDTO> variablesFromConstraintProblem;
     private NodeCandidates nodeCandidates;
-    private List<VariableDTO> variables;
 
-    private final String notReconfigurableComponentSuffix;
+    private Collection<ArgumentConverter> converters;
 
-    private final static String NOT_RECONFIGURABLE_COMPONENT_SUFFIX = "_CTITRRR"; //only for tests
+    public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties) {
 
-    private final Predicate<Var> varPredicate = var -> variables.stream().anyMatch(v -> v.getId().equals(var.getName()));
-
-
-    UtilityFunctionEvaluator(List<VariableDTO> variables, UtilityGeneratorProperties properties, List<Var> deployedSolution, NodeCandidates nodeCandidates) {
+        Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
-        this.variables = Objects.requireNonNull(variables, "List of Variables could not be null");
 
-        this.notReconfigurableComponentSuffix = properties.getUtilityGenerator().getSuffixNotReconfigurableComponent();
-        log.debug("Suffix for not reconfigurable component: {}", this.notReconfigurableComponentSuffix);
+        FromCamelModelExtractor fromCamelModelExtractor = new FromCamelModelExtractor(camelModelFilePath, readFromFile);
+        ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, readFromFile);
 
-        log.debug("Creating Utility Function Evaluator from Constraint Problem");
-        log.debug("Variables from Constraint Problem:");
-        for (VariableDTO v : variables) {
-            log.debug("{}, type: {}", v.getId(), v.getType());
-        }
+        this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
+        log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
+        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
-        this.isReconfig = isReconfig(deployedSolution);
-        if (isReconfig) {
-            printSolution(deployedSolution);
-            this.actConfiguration = convertActualDeployment(deployedSolution);
-        }
+        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
+        String formula = prepareUtilityFunction(fromCamelModelExtractor);
+        log.info("Formula of the utility function: {}", formula);
 
-        this.maxUtility = 0.0;
+        this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter);
+        this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
+
+        fromCamelModelExtractor.endWorkWithCamelModel();
+        constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    public abstract double evaluate(Collection<ConfigurationElement> newConfiguration);
+    private Collection<ArgumentConverter> createConverters(UtilityGeneratorProperties properties, FromCamelModelExtractor fromCamelModelExtractor, String formula, NodeCandidatesConverter nodeCandidatesConverter) {
+        Collection<ArgumentConverter> argConverters = new ArrayList<>();
+        argConverters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, this.deployedConfiguration));
+        argConverters.add(new VariableConverter(this.variablesFromConstraintProblem, formula));
+        argConverters.add(nodeCandidatesConverter);
+        return argConverters;
+    }
 
-    public double evaluate(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
-        printSolutionForDebug(newConfigurationInt, newConfigurationReal);
+    public double evaluate(Collection<VariableValueDTO> solution) {
+        printSolution(variablesFromConstraintProblem, solution);
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
-        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(newConfigurationInt, newConfigurationReal);
-
-        if (isNull(newConfiguration)) {
-            log.debug("Returning utility value = 0");
+        if (newConfiguration.isEmpty()) {
+            log.info("No Node Candidate for the evaluated solution, returning 0");
+            return 0;
+        } else if (!this.deployedConfiguration.isEmpty() && EvaluatingUtils.areUnmoveableComponentsMoved(this.unmoveableComponents, this.deployedConfiguration, newConfiguration)) {
+            log.info("Proposed solution moves the unmoveable component, returning 0");
             return 0;
         }
 
-        if (notReconfigurableComponentsAreChanged(newConfiguration)) {
-            log.debug("This solution changes not reconfigurable components, returning 0");
-            return 0;
-        }
+        Collection<Argument> allArguments = this.converters.stream()
+                .map(converter -> converter.convertToArguments(solution, newConfiguration))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
 
-        double utility = evaluate(newConfiguration);
-
-        if (utility > maxUtility) {
-            maxUtility = utility;
-            configurationWithMaxUtility = newConfiguration;
-            solutionWithMaxUtility = convertSolution(newConfigurationInt, newConfigurationReal);
-            log.debug("Actualized configuration with Max Utility");
-        }
-        log.debug("Utility = {} ", utility);
-        return utility;
-
+        return function.evaluateFunction(allArguments);
     }
 
-    public double evaluateActualSolution() {
-        return evaluate(actConfiguration);
+    private String prepareUtilityFunction(FromCamelModelExtractor fromCamelModelExtractor) {
+        return fromCamelModelExtractor.getUtilityFormula().orElse(createUtilityFunctionCostFormula(this.variablesFromConstraintProblem));
     }
 
-    public void printConfigurationWithMaximumUtility() {
-        log.info("Configuration with maximum utility:");
-        log.info(configurationWithMaxUtility.toString());
+    private Collection<Argument> createConstantValuesForOneReasoning(MetricsConverter metricsConverter, NodeCandidatesConverter nodeCandidatesConverter) {
+        Collection<Argument> arguments = metricsConverter.convertToArguments(Collections.emptyList(), this.deployedConfiguration);
+        arguments.addAll(nodeCandidatesConverter.convertCurrentConfigAttributesOfNodeCandidates(this.deployedConfiguration));
+        return arguments;
     }
-
-
-    //fixme - RealVar
-    private Collection<ConfigurationElement> convertActualDeployment(Collection<Var> deployedSolution) {
-        return convertSolutionToNodeCandidates(deployedSolution.stream().map(s -> (IntVar) s).collect(Collectors.toList()), new ArrayList<>());
-    }
-
-
-    private Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<IntVar> newConfigurationInt, Collection<RealVar> newConfigurationReal) {
-
-        log.debug("Converting solution to Node Candidates");
-
-        Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
-        Map<String, Integer> cardinalitiesForComponent = getCardinalitiesForComponent(newConfigurationInt, variables);
-
-        for (String componentId : cardinalitiesForComponent.keySet()) {
-            log.debug("Converting solution for component {}", componentId);
-            int provider = getProviderValue(componentId, variables, newConfigurationInt);
-            Predicate<NodeCandidate>[] requirementsForComponent = makePredicatesFromSolution(componentId, newConfigurationInt, newConfigurationReal, variables);
-            NodeCandidate theCheapest = nodeCandidates.getCheapest(componentId, provider, requirementsForComponent).orElse(null);
-
-            if (isNull(theCheapest)) {
-                log.debug("Node Candidates for component {} with provider {} is not found", componentId, provider);
-                return null;
-            }
-            log.debug("Got the cheapest Node Candidate from component {} with provider {}", componentId, provider);
-            newConfiguration.add(new ConfigurationElement(componentId, theCheapest, cardinalitiesForComponent.get(componentId)));
-
-        }
-        return newConfiguration;
-    }
-
-
-    private void printSolution(Collection<Var> solution) {
-        log.info("Converting deployed solution:");
-        solution.stream()
-                .filter(varPredicate)
-                .forEach(filteredVar -> log.info("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
-    }
-
-    private void printSolutionForDebug(Collection<IntVar> solutionInt, Collection<RealVar> solutionReal) {
-        log.debug("Evaluating solution:");
-        Stream.concat(solutionInt.stream(), solutionReal.stream())
-                .filter(varPredicate)
-                .forEach(filteredVar -> log.debug("{} = {} ", filteredVar.getName(), filteredVar.getValue()));
-    }
-
-    private boolean isReconfig(List<Var> deployedSolution) {
-        return deployedSolution != null;
-    }
-
-
-    private boolean notReconfigurableComponentsAreChanged(Collection<ConfigurationElement> newConfiguration) {
-
-        return isReconfig && checkIfNotReconfigurableComponentsAreChanged(notReconfigurableComponentSuffix, actConfiguration, newConfiguration);
-
-    }
-
-
-    /* ------------------------------------ only for tests - to delete later  -------------------*/
-
-    UtilityFunctionEvaluator(Collection<ConfigurationElement> actConfiguration, boolean isReconfig) {
-
-        this.isReconfig = isReconfig;
-        if (isReconfig) {
-            this.actConfiguration = actConfiguration;
-        }
-        this.notReconfigurableComponentSuffix = NOT_RECONFIGURABLE_COMPONENT_SUFFIX;
-    }
-
 }

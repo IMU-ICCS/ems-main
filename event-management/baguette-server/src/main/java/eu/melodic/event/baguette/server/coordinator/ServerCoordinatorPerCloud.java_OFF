@@ -1,0 +1,191 @@
+/*
+ * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
+ */
+
+package eu.melodic.event.baguette.server.coordinator;
+
+import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.ServerCoordinator;
+import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.baguette.server.util.CloudiatorUtil;
+import eu.melodic.event.util.NetUtil;
+import lombok.extern.slf4j.Slf4j;
+
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Vector;
+
+//import java.util.Properties;
+
+@Slf4j
+public class ServerCoordinatorPerCloud implements ServerCoordinator {
+    private BaguetteServer server;
+    private BaguetteServerProperties config;
+    private Runnable callback;
+    private boolean started;
+    private int numClients;
+    private int phase;
+    private Vector<ClientShellCommand> clients;
+    private int readyClients;
+    //private String brokerCfgIpAddressCmd;
+    //private String brokerCfgPortCmd;
+
+    private HashMap<String, Vector<ClientShellCommand>> vmGroupsMap;
+
+    public void initialize(BaguetteServer server, Runnable callback) {
+        this.server = server;
+        this.config = server.getConfiguration();
+        this.callback = callback;
+        this.clients = new Vector<>();
+        this.vmGroupsMap = new HashMap<String, Vector<ClientShellCommand>>();
+    }
+
+    public void start() {
+        log.info("ServerCoordinatorPerCloud: START");
+        started = true;
+    }
+
+    public void stop() {
+        log.info("ServerCoordinatorPerCloud: STOP");
+        started = false;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public int getPhase() {
+        return phase;
+    }
+
+    public synchronized void register(ClientShellCommand c) {
+        log.info("BEGIN register");
+        if (!started) return;
+        log.debug("COORDINATOR HAS BEEN STARTED");
+
+        // Get new client IP address (from session)
+        String clientIpAddr = c.getClientIpAddress();
+        int clientPort = c.getClientPort();
+        log.info("{}--> Client connection : {}:{}", c.getId(), clientIpAddr, clientPort);
+
+        // Query cloudiator for new client's cloud and location (using IP address)
+        String vmGroup;
+        try {
+            CloudiatorUtil.VmCloudInfo vmInfo = CloudiatorUtil.getInstance().findVmInfoUsingIpAddress(clientIpAddr, true);
+            if (vmInfo == null) {
+                log.error("{}--> No VM info from Cloudiator: throwing exception...", c.getId());
+                throw new RuntimeException("No VM info from Cloudiator: client-id: " + c.getId());
+            }
+
+            String vmGroupPart1;
+            if (vmInfo.cloud != null && vmInfo.providerName != null)
+                vmGroupPart1 = vmInfo.cloud.getId() + "/" + vmInfo.providerName;
+            else if (vmInfo.cloud != null) vmGroupPart1 = vmInfo.cloud.getId() + "/" + vmInfo.cloud.getEndpoint();
+            else vmGroupPart1 = "";
+
+            String vmGroupPart2;
+            if (vmInfo.location != null && vmInfo.locationName != null)
+                vmGroupPart2 = vmInfo.location.getId() + "/" + vmInfo.locationName;
+            else if (vmInfo.location != null) vmGroupPart2 = vmInfo.location.getId() + "/" + vmInfo.location.getName();
+            else vmGroupPart2 = "";
+
+            vmGroup = (!vmGroupPart2.isEmpty()) ? vmGroupPart1 + " @ " + vmGroupPart2 : vmGroupPart1;
+            log.info("{}--> Client VM group : {}", c.getId(), vmGroup);
+        } catch (Exception ex) {
+            log.error("{}--> Could not retrieve VM info from Cloudiator: {}", c.getId(), ex);
+            throw ex;
+        }
+
+        // Add client in VM group
+        Vector<ClientShellCommand> group;
+        boolean isFirst;
+        int order;
+        synchronized (vmGroupsMap) {
+            group = vmGroupsMap.get(vmGroup);
+            if (group == null) {
+                group = new Vector<ClientShellCommand>();
+                vmGroupsMap.put(vmGroup, group);
+            }
+            isFirst = group.size() == 0;
+            group.add(c);
+            order = group.size();
+        }
+        log.info("{}--> Client is the #{} in VM group {}", c.getId(), order, vmGroup);
+        if (isFirst) log.info("{}--> Client will become the broker of VM group {}", c.getId(), vmGroup);
+        log.info("Current VM group topology:\n{}", vmGroupsMap);
+
+        //if (phase!=0) return;
+        clients.add(c);
+        numClients++;
+        log.info("ServerCoordinatorPerCloud: register: {} VMs registered", numClients);
+
+        // Send client role & configuration
+        if (isFirst) {
+            // configure broker
+            log.info("BEFORE BROKER CONFIG");
+            //XXX: OBSOLETE CODE: Needs to be re-implemented
+            /*String thirdLevelAddr = config.getThirdLevelAddress();
+            if (thirdLevelAddr.isEmpty() || thirdLevelAddr.equalsIgnoreCase("autodetect")) {
+                thirdLevelAddr = NetUtil.getIpAddress();
+            }
+            String thirdLevelPort = Integer.toString(config.getThirdLevelPort());
+            String tplFile = config.getBrokerConfigTemplate();
+            String outFile = config.getBrokerConfigFile();
+            if (!thirdLevelAddr.isEmpty() && !thirdLevelPort.isEmpty() && !tplFile.isEmpty() && !outFile.isEmpty()) {
+                c.sendToClient(String.format("SET-PARAM %s THIRD_LEVEL_IP_ADDR %s %s", tplFile, thirdLevelAddr, outFile));
+                c.sendToClient(String.format("SET-PARAM %s THIRD_LEVEL_PORT %s %s", outFile, thirdLevelPort, outFile));
+            }*/
+            log.info("AFTER BROKER CONFIG");
+
+            // assign broker role
+            c.sendToClient("ROLE BROKER");
+        } else {
+            // configure client
+            log.info("BEFORE CLIENT CONFIG");
+            String vmGroupBrokerIpAddress = ((InetSocketAddress) group.get(0).getSession().getIoSession().getRemoteAddress()).getAddress().getHostAddress();
+
+            //XXX: OBSOLETE CODE: Needs to be re-implemented
+            /*String brokerAddr = config.getBrokerAddressOverride();
+            if (brokerAddr.isEmpty()) brokerAddr = vmGroupBrokerIpAddress;
+            String brokerPort = Integer.toString(config.getBrokerPort());
+            String tplFile = config.getClientConfigTemplate();
+            String outFile = config.getClientConfigFile();
+            if (!brokerAddr.isEmpty() && !brokerPort.isEmpty() && !tplFile.isEmpty() && !outFile.isEmpty()) {
+                c.sendToClient(String.format("SET-PARAM %s BROKER_IP_ADDR %s %s", tplFile, brokerAddr, outFile));
+                c.sendToClient(String.format("SET-PARAM %s BROKER_PORT %s %s", outFile, brokerPort, outFile));
+            }*/
+            log.info("AFTER CLIENT CONFIG");
+
+            // assign client role
+            c.sendToClient("ROLE CLIENT");
+        }
+    }
+
+    public synchronized void unregister(ClientShellCommand c) {
+        if (!started) return;
+        //if (phase!=0) return;
+        clients.remove(c);
+        numClients--;
+        log.info("ServerCoordinatorPerCloud: unregister: {} clients registered", numClients);
+    }
+
+    public synchronized void brokerReady(ClientShellCommand c) {
+        // Not used
+    }
+
+    public synchronized void clientReady(ClientShellCommand c) {
+        if (!started) return;
+        readyClients++;
+        log.info("ServerCoordinatorPerCloud: {} of {} clients are ready", readyClients, numClients);
+    }
+
+    protected void signalTopologyReady() {
+        // Not used
+    }
+}
