@@ -17,7 +17,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/jwtserver</docker.imageName>
+        <docker.imageName>jwtserver</docker.imageName>
     </properties>
 
     <dependencies>
@@ -97,6 +97,14 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
