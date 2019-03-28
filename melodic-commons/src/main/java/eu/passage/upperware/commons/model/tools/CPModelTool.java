@@ -135,6 +135,37 @@ public class CPModelTool {
         return ((DoubleValueUpperware) variableValue.getValue()).getValue();
     }
 
+    public static IntegerValueUpperware createIntegerValueUpperware(int value){
+        IntegerValueUpperware result = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+        result.setValue(value);
+        return result;
+    }
+
+    public static LongValueUpperware createLongValueUpperware(long value){
+        LongValueUpperware result = TypesFactory.eINSTANCE.createLongValueUpperware();
+        result.setValue(value);
+        return result;
+    }
+
+    public static FloatValueUpperware createFloatValueUpperware(float value){
+        FloatValueUpperware result = TypesFactory.eINSTANCE.createFloatValueUpperware();
+        result.setValue(value);
+        return result;
+    }
+
+    public static DoubleValueUpperware createDoubleValueUpperware(double value){
+        DoubleValueUpperware result = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+        result.setValue(value);
+        return result;
+    }
+
+    public static CpVariableValue createCpVariableValue(CpVariable cpVariable, NumericValueUpperware numericValueUpperware) {
+        CpVariableValue result = CpFactory.eINSTANCE.createCpVariableValue();
+        result.setVariable(cpVariable);
+        result.setValue(numericValueUpperware);
+        return result;
+    }
+
     public static void printCpModel(ConstraintProblem cp){
         log.info("ConstraintProblem: {}", cp.getId());
 
@@ -376,11 +407,11 @@ public class CPModelTool {
         return CollectionUtils.emptyIfNull(elements).stream().filter(predicate).findFirst();
     }
 
-    public static Solution createSolution(ConstraintProblem cp) {
+    public static Solution createSolution(double maxUtility, List<CpVariableValue> values) {
         Solution sol = CpFactory.eINSTANCE.createSolution();
         sol.setTimestamp(System.currentTimeMillis());
-        cp.getSolution().add(sol);
-
+        sol.setUtilityValue(CPModelTool.createDoubleValueUpperware(maxUtility));
+        sol.getVariableValue().addAll(values);
         return sol;
     }
 

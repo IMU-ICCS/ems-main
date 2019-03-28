@@ -11,7 +11,7 @@ package eu.melodic.upperware.cpsolver;
 
 import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionFromFileRequestImpl;
 import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionRequestImpl;
-import eu.melodic.upperware.cpsolver.lib.CPSolverExecutor;
+import eu.melodic.upperware.cpsolver.solver.CPSolverCoordinator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CPSolverController {
 
-  private CPSolverExecutor executor;
+  private CPSolverCoordinator cpSolverCoordinator;
 
   @RequestMapping(value = "/constraintProblemSolution", method = POST)
   public void applySolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
@@ -36,7 +36,7 @@ public class CPSolverController {
     String requestUuid = request.getWatermark().getUuid();
     log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
 
-    executor.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
+    cpSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
     log.info("Sleeping...");
   }
 
@@ -48,8 +48,9 @@ public class CPSolverController {
     String requestUuid = request.getWatermark().getUuid();
     String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
     log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + camelModelfilePath + " " + filePath + " " +requestUuid);
-    executor.generateCPSolutionFromFile(applicationId, camelModelfilePath, filePath, nodeCandidatesFilePath, requestUuid);
-  }
 
+    cpSolverCoordinator.generateCPSolutionFromFile(applicationId, camelModelfilePath, filePath, nodeCandidatesFilePath);
+    log.info("Sleeping...");
+  }
 
 }
