@@ -13,11 +13,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.push>true</docker.push>
-        <docker.repository>172.31.1.100:5000/</docker.repository>
-        <docker.imageName>${docker.repository}melodic/ems-server-rc2.0</docker.imageName>
-        <!--<docker.imageTag>testing</docker.imageTag>-->
-        <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
+        <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
     </properties>
 
@@ -147,76 +143,36 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.10</version>
-                <executions>
-                    <execution>
-                        <id>execution</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                            <imageName>${docker.imageName}</imageName>
-                            <pushImage>${docker.push}</pushImage>
-                            <!--<imageTags>
-                                <imageTag>${docker.imageTag}</imageTag>
-                            </imageTags>-->
-                            <resources>
-                                <resource>
-                                    <targetPath>/</targetPath>
-                                    <directory>${project.build.directory}</directory>
-                                    <include>${docker.jarToInclude}</include>
-                                    <include>${docker.esperJarToInclude}</include>
-                                    <include>${project.basedir}/../run.sh</include>
-                                </resource>
-                                <resource>
-                                    <targetPath>/config</targetPath>
-                                    <directory>${project.basedir}/../config-files</directory>
-                                </resource>
-                                <resource>
-                                    <targetPath>/resources</targetPath>
-                                    <directory>${project.basedir}/../config-files/resources</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${docker.jarToInclude}</include>
+                            <include>${docker.esperJarToInclude}</include>
+                            <include>${project.basedir}/../run.sh</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/config</targetPath>
+                            <directory>${project.basedir}/../config-files</directory>
+                        </resource>
+                        <resource>
+                            <targetPath>/resources</targetPath>
+                            <directory>${project.basedir}/../config-files/resources</directory>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>without-docker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>execution</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>docker-local</id>
-            <properties>
-                <docker.push>false</docker.push>
-                <docker.repository>127.0.0.1:5000/</docker.repository>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>docker-remote</id>
-        </profile>
-
-    </profiles>
 
 </project>

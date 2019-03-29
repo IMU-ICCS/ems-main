@@ -17,7 +17,7 @@
 	</parent>
 
 	<properties>
-		<docker.imageName>${docker.repository}melodic/dlms-webservice</docker.imageName>
+		<docker.imageName>dlms-webservice</docker.imageName>
 	</properties>
 
 	<dependencies>
@@ -127,7 +127,14 @@
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 			</plugin>
-
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.groovy.maven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+			</plugin>
 		</plugins>
 	</build>
 

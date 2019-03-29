@@ -16,7 +16,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>${docker.repository}melodic/cpsolver</docker.imageName>
+        <docker.imageName>cpsolver</docker.imageName>
     </properties>
 
     <dependencies>
@@ -105,6 +105,14 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
