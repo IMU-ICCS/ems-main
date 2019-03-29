@@ -10,6 +10,10 @@
 package eu.melodic.upperware.cpsolver;
 
 import eu.melodic.cache.properties.CacheProperties;
+import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
@@ -24,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -48,4 +53,10 @@ public class CpSolverContext {
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);
     }
+
+    @Bean
+    public CDOClientX cDOClientX() {
+         return new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
+    }
+
 }

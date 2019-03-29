@@ -4,7 +4,6 @@ import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.paasage.upperware.metamodel.types.*;
-import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.ConstantService;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import eu.paasage.upperware.profiler.generator.service.camel.TypesFactoryService;
@@ -18,8 +17,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.lang.String.format;
 
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -126,13 +123,18 @@ public class ConstantServiceImpl implements ConstantService {
     @Override
     public Constant searchOrCreateConstantByValue(EList<Constant> constants, double value) {
         boolean isInteger = (value % 1) == 0;
-        if (!isInteger){
-            throw new GeneratorException(format("Could not use %f - only integer/long values coud be used in Expression", value));
+        if (isInteger) {
+            return searchConstantByValue(constants, (int) value)
+                    .orElseGet(() -> {
+                        Constant newConstant = createIntegerConstant((int)value);
+                        constants.add(newConstant);
+                        return newConstant;
+                    });
         }
 
-        return searchConstantByValue(constants, (int) value)
+        return searchConstantByValue(constants, value)
                 .orElseGet(() -> {
-                    Constant newConstant = createIntegerConstant((int)value);
+                    Constant newConstant = createDoubleConstant(value);
                     constants.add(newConstant);
                     return newConstant;
                 });
