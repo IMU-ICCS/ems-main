@@ -468,7 +468,7 @@ public class ModelAnalyzer {
                 Component component = mv.getComponent();
                 String formula = mv.getFormula();
                 List<Metric> componentMetrics = ListUtils.emptyIfNull(mv.getComponentMetrics());
-                boolean containsMetrics = (componentMetrics != null && componentMetrics.size() > 0);
+                boolean containsMetrics = ! componentMetrics.isEmpty();
                 log.info("  Processing Metric Variable {} from Metric Type model {}: template={}, is-current-configuration={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}...",
                         mvName, mm.getName(), getElementName(template), isCurrConfig, isOnNodeCand, getElementName(component), formula, getListElementNames(componentMetrics), containsMetrics);
 
@@ -1007,7 +1007,7 @@ public class ModelAnalyzer {
         }
 
         // Get additional configuration
-        String SensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
+        String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
         List<KeyValuePair> keyValuePairs = null;
         Optional<Feature> sensorConfig = sensor.getSubFeatures().stream()
                 .filter(f ->
@@ -1020,8 +1020,8 @@ public class ModelAnalyzer {
                                 //annPath.insert(0, o.getName() + ".");
                                 annIdPath.insert(0, o.getId() + ".");
                             }
-                            //return annPath.toString().equals(SensorConfigAnnotation);
-                            return annIdPath.toString().equals(SensorConfigAnnotation);
+                            //return annPath.toString().equals(sensorConfigAnnotation);
+                            return annIdPath.toString().equals(sensorConfigAnnotation);
                         })
                 )
                 .findFirst();
