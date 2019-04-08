@@ -9,10 +9,9 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeploymentResponse {
-
-    private ProcessCreationResultItem processCreationResult;
-    private Object createCloudsResponse;
-    private int processAuthorizationStatus;
-    private Object ncQueryResponse;
+public class NcQueryErrorResponse {
+    private String providerName;
+    private String username;
+    private String status;
+    private String error;
 }
