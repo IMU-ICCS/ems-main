@@ -39,10 +39,10 @@ public interface ColosseumApi {
 
     Queue addNode(NodeRequest nodeRequest) throws ApiException;
 
-
-    Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException;
-
     Queue deleteNode(String nodeId) throws ApiException;
+
+    Optional<Node> getNode(String nodeId) throws ApiException;
+
 
     Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
 

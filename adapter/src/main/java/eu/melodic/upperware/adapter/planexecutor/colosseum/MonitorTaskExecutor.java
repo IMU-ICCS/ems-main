@@ -22,7 +22,7 @@ import static java.lang.String.format;
 @Slf4j
 public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMonitor> {
 
-    public MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
+    MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
                                ColosseumApi api, ColosseumContext context,
                                Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
 
@@ -32,14 +32,14 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
     @Override
     public void create(AdapterMonitor taskBody) {
 
-        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
+        Node node = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
 
-        String fistNodeId = getFistNodeId(nodeGroup);
+        String nodeId = node.getId();
 
-        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
+        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(nodeId);
         if (!processGroupByNodeId.isPresent()) {
-            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
+            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
             return;
         }
         ProcessGroup processGroup = processGroupByNodeId.get();
@@ -65,10 +65,6 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     private Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
         return context.getProcessGroupByNodeId(nodeId);
-    }
-
-    private String getFistNodeId(NodeGroup nodeGroup){
-        return nodeGroup.getNodes().get(0).getId();
     }
 
     private String getFistProcessId(ProcessGroup processGroup){
@@ -131,14 +127,15 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     @Override
     public void delete(AdapterMonitor taskBody) {
-        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
-        String fistNodeId = getFistNodeId(nodeGroup);
+        Node node = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
 
-        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
+        String nodeId = node.getId();
+
+        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(nodeId);
         if (!processGroupByNodeId.isPresent()) {
-            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
+            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
             return;
         }
         ProcessGroup processGroup = processGroupByNodeId.get();
@@ -156,7 +153,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             api.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
             context.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
         } catch (ApiException e) {
-            log.error("Could not delete Monitor with metricName. Error code: {}, Response body: {}, ResponseHeaders: {}",
+            log.error("Could not delete Monitor with metricName {}. Error code: {}, Response body: {}, ResponseHeaders: {}",
                     taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
         }
     }

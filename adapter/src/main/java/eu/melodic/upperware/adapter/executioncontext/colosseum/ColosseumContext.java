@@ -51,7 +51,7 @@ public class ColosseumContext implements ContextOperations {
 
     private final AdapterProperties adapterProperties;
 
-    private final List<NodeGroup> nodeGroups = synchronizedList();
+    private final List<Node> nodes = synchronizedList();
     private final List<Schedule> schedules = synchronizedList();
     private final List<ProcessGroup> processGroups = synchronizedList();
     private final List<Job> jobs = synchronizedList();
@@ -61,21 +61,18 @@ public class ColosseumContext implements ContextOperations {
 
     private BiPredicate<MonitoringTarget, MonitoringTarget> monitoringTargetBiPredicate = (mt1, mt2) -> mt1.getType().equals(mt2.getType()) && mt1.getIdentifier().equals(mt2.getIdentifier());
 
-    public synchronized void addNodeGroup(@NonNull NodeGroup nodeGroup) {
-        nodeGroups.add(nodeGroup);
+    public synchronized void addNode(@NonNull Node node) {
+        nodes.add(node);
     }
 
-    public synchronized Optional<NodeGroup> getNodeGroup(String name) {
-        return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()), createAmbiguousResultException(NodeGroup.class, name));
+    public synchronized Optional<Node> getNode(String nodeName) {
+        Objects.requireNonNull(nodeName);
+        return getElement(nodes, node -> nodeName.equals(node.getName()),
+                () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one node with the same name=%s", nodeName)));
     }
 
-    public synchronized Optional<NodeGroup> getNodeGroupByNodeName(String name) {
-        return getElement(nodeGroups, nodeGroup -> nodeGroup.getNodes().stream().map(Node::getName).anyMatch(nodeName -> nodeName.endsWith(name)),
-                createAmbiguousResultException(NodeGroup.class, name));
-    }
-
-    public synchronized void deleteNodeGroup(String nodeGroupId) {
-        nodeGroups.removeIf(nodeGroup -> nodeGroupId.equals(nodeGroup.getId()));
+    public synchronized void deleteNode(String nodeId) {
+        nodes.removeIf(node -> nodeId.equals(node.getId()));
     }
 
     public synchronized void addSchedule(@NonNull Schedule schedule) {
@@ -98,8 +95,8 @@ public class ColosseumContext implements ContextOperations {
         return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
     }
 
-    public synchronized Optional<ProcessGroup> getProcessGroup(String nodeGroupId, String scheduleId, String taskName) throws ApiException {
-        Objects.requireNonNull(nodeGroupId);
+    public synchronized Optional<ProcessGroup> getProcessGroup(String nodeId, String scheduleId, String taskName) throws ApiException {
+        Objects.requireNonNull(nodeId);
         Objects.requireNonNull(scheduleId);
         Objects.requireNonNull(taskName);
 
@@ -110,19 +107,19 @@ public class ColosseumContext implements ContextOperations {
                                 .stream()
                                 .anyMatch(cloudiatorProcess -> scheduleId.equals(cloudiatorProcess.getSchedule()) &&
                                         taskName.equals(cloudiatorProcess.getTask()) &&
-                                        checkProcess(cloudiatorProcess, nodeGroupId)))
+                                        checkProcess(cloudiatorProcess, nodeId)))
                 .findFirst();
     }
 
-    private synchronized boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeGroupId) {
+    private synchronized boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {
         if (cloudiatorProcess instanceof SingleProcess) {
             String nodeName = ((SingleProcess) cloudiatorProcess).getNode();
-
-            return getNodeGroup(nodeGroupId)
-                    .filter(ng -> ng.getNodes().stream().anyMatch(node -> node.getId().equals(nodeName)))
-                    .isPresent();
+            return nodeId.equals(nodeName);
         } else if (cloudiatorProcess instanceof ClusterProcess) {
-            return ((ClusterProcess) cloudiatorProcess).getNodeGroup().equals(nodeGroupId);
+            return ((ClusterProcess) cloudiatorProcess)
+                    .getNodes()
+                    .stream()
+                    .anyMatch(s -> s.equals(nodeId));
         }
         log.warn("Cloudiator process is neither SingleProcess nor ClusterProcess but: {}", cloudiatorProcess.getClass().getSimpleName());
         return false;
@@ -223,8 +220,8 @@ public class ColosseumContext implements ContextOperations {
     public void refreshContext() throws ApiException {
         log.info("Refreshing Colosseum context");
 
-        nodeGroups.clear();
-        nodeGroups.addAll(nodeApi.findNodeGroups());
+        nodes.clear();
+        nodes.addAll(nodeApi.findNodes());
 
         schedules.clear();
         schedules.addAll(processApi.getSchedules());
