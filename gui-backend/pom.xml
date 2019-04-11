@@ -16,6 +16,8 @@
         <java.version>1.8</java.version>
         <cdo.version>2.1.0-SNAPSHOT</cdo.version>
         <upperware.version>2.1.0-SNAPSHOT</upperware.version>
+        <!--DOCKER plugin properties-->
+        <docker.imageName>gui-backend</docker.imageName>
     </properties>
 
     <dependencies>
@@ -76,11 +78,26 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!--docker image building plugins start-->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+            </plugin>
+            <!--docker image building plugins end-->
         </plugins>
     </build>
 
