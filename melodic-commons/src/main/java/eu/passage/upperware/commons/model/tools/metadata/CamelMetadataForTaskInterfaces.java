@@ -22,7 +22,9 @@ public enum CamelMetadataForTaskInterfaces {
     FAAS_RUNTIME("Runtime"),
     FAAS_LIMITS("Limits"),
     FAAS_TIMEOUT("maxDuration"),
-    FAAS_MEMORY("RAM");
+    FAAS_MEMORY("RAM"),
+
+    OS_VERSION("OSVersion");
 
     public String camelName;
 }
