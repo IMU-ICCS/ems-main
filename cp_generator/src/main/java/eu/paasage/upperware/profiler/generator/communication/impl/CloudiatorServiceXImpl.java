@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces.FAAS_RUNTIME;
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces.OS_VERSION;
 
 @Slf4j
 @Component
@@ -178,10 +179,27 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     }
 
     private Collection<? extends Requirement> createOSRequirement(camel.requirement.OSRequirement osRequirement) {
-        if (osRequirement == null || StringUtils.isBlank(osRequirement.getOs())) {
+        if (osRequirement == null) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.IN, prepareOSFamilyValue(osRequirement.getOs())));
+
+        List<Requirement> result = new ArrayList<>();
+        if (StringUtils.isNotBlank(osRequirement.getOs())){
+            result.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.IN, prepareOSFamilyValue(osRequirement.getOs())));
+        }
+
+        List<Attribute> osAttributes = CamelMetadataToolForTaskInterfaces.findAttributesByAnnotation(osRequirement.getAttributes(), OS_VERSION.camelName);
+        String acceptedOsVersions = osAttributes.stream()
+                .map(Attribute::getValue)
+                .filter(value -> value instanceof StringValue)
+                .map(value -> ((StringValue) value).getValue())
+                .collect(Collectors.joining(", "));
+
+        if (StringUtils.isNotEmpty(acceptedOsVersions)){
+            result.add(createRequirement(IMAGE_CLASS, "operatingSystem.version", RequirementOperator.IN, acceptedOsVersions));
+        }
+
+        return result;
     }
 
     private Collection<? extends Requirement> createPaasRequirements(PaaSRequirement paasRequirement) {
