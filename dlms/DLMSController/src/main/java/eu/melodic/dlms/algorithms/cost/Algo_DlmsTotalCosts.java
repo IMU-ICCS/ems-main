@@ -68,7 +68,7 @@ public class Algo_DlmsTotalCosts {
 			}
 		}
 		transfer = size * dist;
-		log.info("The cost of the solution was computed successfully");
+		log.debug("The cost of the solution was computed successfully");
 		return (transfer>0? Norm (transfer, max, min) : -1);
 	}
 

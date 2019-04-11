@@ -343,13 +343,22 @@ public class ControlServiceCoordinator {
                 subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "SCALE"));
             for (String t : metricTopics)
                 subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "MVV"));
-            log.info("ControlServiceCoordinator.processNewModel(): MetaSolver subscription configuration: {}", subscriptionConfigs);
+            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver subscriptions configuration: {}", subscriptionConfigs);
 
-            // POST subscription configurations to MetaSolver
+            // Retrieve MVV to Current-Config MVV map
+            Map<String, String> mvvMap = _TC.MVV_CP;
+            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver MVV configuration: {}", mvvMap);
+
+            // Prepare MetaSolver configuration
+            Map<String,Object> msConfig = new HashMap<>();
+            msConfig.put("subscriptions", subscriptionConfigs);
+            msConfig.put("mvv", mvvMap);
+
+            // POST configuration to MetaSolver
             String metaSolverEndpoint = properties.getMetasolverConfigurationUrl();
             com.google.gson.Gson gson = new com.google.gson.Gson();
-            String json = gson.toJson(subscriptionConfigs);
-            log.info("ControlServiceCoordinator.processNewModel(): MetaSolver subscription configuration in JSON: {}", json);
+            String json = gson.toJson(msConfig);
+            log.info("ControlServiceCoordinator.processNewModel(): MetaSolver configuration in JSON: {}", json);
             try {
                 log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
                 String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
@@ -359,7 +368,7 @@ public class ControlServiceCoordinator {
             }
 
         } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver subscription setup due to configuration");
+            log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver setup due to configuration");
         }
 
         // (Re-)Configure LA Solver

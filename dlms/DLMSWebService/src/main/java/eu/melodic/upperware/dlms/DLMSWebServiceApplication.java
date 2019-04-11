@@ -7,6 +7,10 @@
 
 package eu.melodic.upperware.dlms;
 
+import java.util.List;
+
+import javax.annotation.PreDestroy;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,6 +19,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
+import alluxio.Configuration;
+import alluxio.PropertyKey;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +35,12 @@ import lombok.extern.slf4j.Slf4j;
 public class DLMSWebServiceApplication {
 
 	private final Environment env;
+	private final DLMSServiceImpl dlmsService;
 
 	/**
 	 * Main method for starting. No arguments needed for normal use.
 	 */
 	public static void main(String[] args) {
-		// To use eu.melodic.upperware.dlms.properties instead of application.properties
-//		System.setProperty("spring.config.name", "eu.melodic.upperware.dlms");
 		SpringApplication.run(DLMSWebServiceApplication.class, args);
 	}
 
@@ -50,12 +55,28 @@ public class DLMSWebServiceApplication {
 		return args -> {
 			// TODO remove sample data before go-live
 			log.info("Alluxio master is located at " + env.getProperty("alluxio.master.address"));
+			// set master hostname
+			Configuration.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
 
 			// this is test
 //			dsRepository.save(new DataSource("DS1", DataSourceType.HDFS, "http://master:9000/", "/melodic/ds1"));
 //			dsRepository.save(new DataSource("DS2", DataSourceType.S3, "s3a://bucketferox/", "/melodic/ds2"));
-//			log.info("Sample data sources added");
 		};
+	}
+
+	/**
+	 * On termination all the mounted storage should be removed This should not
+	 * happen during one Application lifetime in Melodic. But it is useful for
+	 * testing.
+	 */
+	@PreDestroy
+	public void onExit() {
+		log.debug("terminated and deletng data sources now");
+		List<DataSource> dsList = dlmsService.getAllDataSources();
+		for (DataSource ds : dsList) {
+			dlmsService.deleteByName(ds.getName());
+		}
+		log.debug("Unmounted and deleted the data sources from the database");
 	}
 
 	@Bean

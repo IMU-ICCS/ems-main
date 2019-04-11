@@ -5,96 +5,77 @@ import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.planexecutor.TaskWatchDog;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
+import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Node;
+import io.github.cloudiator.rest.model.NodeRequest;
 import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
-    private static final List<Node.StateEnum> ACCEPTED_STATES = Arrays.asList(Node.StateEnum.RUNNING, Node.StateEnum.PENDING);
-
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
+                     ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+        super(task, predecessors, api, context, checkFinishTaskToFuture);
     }
 
     @Override
     public void create(AdapterRequirement taskBody) {
-        //TODO - in the future check if node exists
-
         try {
             log.info("Creating Node with NodeCandidateId: {}, groupName: {}", taskBody.getNodeCandidate().getId(), taskBody.getNodeName());
 
             Queue queue = api.addNode(new NodeRequest()
                     .groupName(taskBody.getNodeName())
-                    .nodeCandidate(taskBody.getNodeCandidate())
-                    .requirements(new NodeRequirements().requirements(Collections.emptyList())));
+                    .nodeCandidate(taskBody.getNodeCandidate()));
 
-            Queue watch = watch(queue.getId());
+            Queue watch = watch(queue.getId(), id -> {
+                String nodeId = getId(id);
+                try {
+                    return Node.StateEnum.RUNNING.equals(api.getNode(nodeId)
+                            .orElseThrow(() -> new AdapterException("Could not find Node for " + nodeId))
+                            .getState());
+                } catch (ApiException e) {
+                    throw new AdapterException("Could not getNode for " + nodeId, e);
+                }
+            });
+            String nodeId = getId(watch.getLocation());
+            Node node = api.getNode(nodeId)
+                    .orElseThrow(() -> new AdapterException(format("Could not get Node with id %s", nodeId)));
+            context.addNode(node);
             log.info("Response from queue {} successfully reached. New node is created", queue.getId());
 
-            String nodeGroupId = getId(watch.getLocation());
-            NodeGroup nodeGroup = api.getNodeGroup(nodeGroupId)
-                    .orElseThrow(() -> new AdapterException(format("Could not get NodeGroup with id %s", nodeGroupId)));
-
-            boolean isNodeRunning = nodeGroup
-                    .getNodes()
-                    .stream()
-                    .allMatch(node -> ACCEPTED_STATES.contains(node.getState()));
-
-            if (isNodeRunning) {
-                log.info("New nodeGroup has been created: name: {}, nodeId: {}", nodeGroup.getId(),
-                        nodeGroup
-                                .getNodes()
-                                .stream()
-                                .map(node -> "{nodeId: " + node.getId() + ", name: " + node.getName() + "}")
-                                .collect(Collectors.joining(", ", "[", "]")));
-
-                context.addNodeGroup(nodeGroup);
-            } else {
-                String errorMessage = nodeGroup
-                        .getNodes()
-                        .stream()
-                        .filter(node -> !ACCEPTED_STATES.contains(node.getState()))
-                        .map(node -> format("Node %s (id: %s) is in %s state", node.getName(), node.getId(), node.getState()))
-                        .collect(Collectors.joining(", ", "NodeGroup " + nodeGroupId + " has been created but ", "."));
-
-                throw new AdapterException(errorMessage);
-            }
-
         } catch (ApiException e) {
-            log.error("Could not add NodeGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            log.error("Could not add Node. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Node", e);
         }
     }
 
     @Override
     public void delete(AdapterRequirement taskBody) {
-        Optional<NodeGroup> nodeGroupOptional = context.getNodeGroupByNodeName(taskBody.getNodeName());
+        Optional<Node> nodeOptional = context.getNode(taskBody.getNodeName());
 
         try {
-            if (nodeGroupOptional.isPresent()) {
-                String nodeId = nodeGroupOptional.get().getNodes().get(0).getId();
+            if (nodeOptional.isPresent()) {
+                String nodeId = nodeOptional.get().getId();
                 Queue queue = api.deleteNode(nodeId);
 
                 watch(queue.getId());
                 log.info("Response from queue {} successfully reached. Node {} is deleted", queue.getId(), nodeId);
-                context.deleteNodeGroup(nodeGroupOptional.get().getId());
+                context.deleteNode(nodeId);
             } else {
                 log.warn("Could not find node group with nodeName {} Nothing will be deleted.", taskBody.getNodeName());
             }
         } catch (ApiException e) {
-            log.error("Could not remove NodeGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            log.error("Could not remove Node. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during removing Node", e);
         }
 

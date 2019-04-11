@@ -9,9 +9,13 @@
 
 package eu.melodic.event.translate.transform;
 
+import camel.core.NamedElement;
+import camel.metric.Metric;
+import camel.metric.MetricContext;
 import camel.metric.MetricVariable;
 import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.translate.analyze.Grouping;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,11 +33,18 @@ public class GraphTransformer {
         } else {
             log.debug("GraphTransformer.transformGraph():  MVV pruning from DAG is disabled");
         }
+
+        if (properties.isAddTopLevelMetric()) {
+            addTopLevelMetrics(dag);
+        } else {
+            log.debug("GraphTransformer.transformGraph():  Adding Metric for Top-Level Metric Contexts in DAG is disabled");
+        }
+
         log.debug("GraphTransformer.transformGraph():  Transforming DAG... done");
     }
 
     // Branch pruning when all nodes in branch are MVVs or Metric Variables calculated using exclusively MVVs or other Metric Variables calculated using MVVs
-    protected boolean removeMVV(DAG dag, DAGNode node) {
+    private boolean removeMVV(DAG dag, DAGNode node) {
         log.debug("GraphTransformer.removeMVV():  Checking node {}...", node);
 
         // first process children (i.e. first prune child MVV's)
@@ -63,5 +74,34 @@ public class GraphTransformer {
         // i.e. 'node' is not Metric variable or it has children that are not MVVs
         log.debug("GraphTransformer.removeMVV():  Node is not MVV: node={}", node);
         return false;
+    }
+
+    private void addTopLevelMetrics(DAG dag) {
+        log.debug("GraphTransformer.addTopLevelMetrics():  Adding parent metric to all Top-Level metric contexts...");
+
+        dag.getTopLevelNodes().forEach(tln -> {
+            NamedElement elem = tln.getElement();
+            log.debug("GraphTransformer.addTopLevelMetrics():   - Top-Level node: {}", tln.getName());
+            if (elem!=null) {
+                log.debug("GraphTransformer.addTopLevelMetrics():   - Top-Level node element: {} ({})", elem.getName(), elem.getClass().getName());
+                if (elem instanceof MetricContext) {
+                    MetricContext mc = (MetricContext) elem;
+                    Metric m = mc.getMetric();
+                    log.debug("GraphTransformer.addTopLevelMetrics():   - Top-Level node element is Metric Context: context={}, metric={}", mc.getName(), m.getName());
+
+                    // add Metric as metric context's parent
+                    dag.addTopLevelNode(m).setGrouping(Grouping.GLOBAL);
+                    dag.addNode(m, mc);
+                    dag.removeEdge(dag.getRootNode(), tln);
+                    log.debug("GraphTransformer.addTopLevelMetrics():   - New Top-Level node added for metric {}, instead of metric context {}", m.getName(), mc.getName());
+                } else {
+                    log.debug("GraphTransformer.addTopLevelMetrics():   - Ignoring element: {}", elem.getName());
+                }
+            } else {
+                log.debug("GraphTransformer.addTopLevelMetrics():   - Top-Level node with 'null' element encountered: {}", tln.getName());
+            }
+        });
+
+        log.debug("GraphTransformer.addTopLevelMetrics():  Adding parent metric to all Top-Level metric contexts...ok");
     }
 }

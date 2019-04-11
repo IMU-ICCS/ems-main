@@ -11,10 +11,7 @@ package eu.melodic.upperware.metasolver.util;
 
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpMetric;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.Solution;
+import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,8 +23,12 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Component
 @Slf4j
@@ -54,6 +55,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -82,8 +84,8 @@ public class CpModelHelper {
             for (CpMetric c : cpMetricList) {
                 String mvName = c.getId().trim();
                 String mvValue = metricValues.get(mvName);
-                log.info("Updating metric:" + mvName + " with value:" + mvValue + " in CP model.");
                 if (mvValue != null && !mvValue.isEmpty()) {
+                    log.info("Updating metric: {} with value: {} in CP model.", mvName, mvValue);
                     BasicTypeEnum type = c.getType();
                     NumericValueUpperware newVal = null;
                     switch (type) {
@@ -105,6 +107,8 @@ public class CpModelHelper {
                             break;
                     }
                     c.setValue(newVal);
+                } else {
+                    log.debug("Skipped metric update (no value): {}", mvName);
                 }
             }
 
@@ -139,6 +143,7 @@ public class CpModelHelper {
         CDOView view = null;
         try {
             // retrieve CP model (open view)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             view = session.openView();
             CDOResource resource = view.getResource(cpModelPath);
@@ -198,6 +203,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -254,6 +260,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
         try {
             // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -294,6 +301,167 @@ public class CpModelHelper {
             // release resource
             releaseCpModel(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()");
         }
+    }
+
+    public void copyVarValuesFromDeployedSolution(String applicationId, String cpModelPath, Map<String,String> fromToMap) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): BEGIN: helper-id={}, app-id={}, cp-path={}, from-to-map={}", id, applicationId, cpModelPath, fromToMap);
+
+        // lock resource
+        lockCpModel(cpModelPath, "copyVarValuesFromDeployedSolution()");
+
+        CDOSessionX session = null;
+        CDOTransaction transaction = null;
+        try {
+            // retrieve CP model (open transaction)
+            this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
+            session = cdoClient.getSession();
+            transaction = session.openTransaction();
+            CDOResource resource = transaction.getResource(cpModelPath);
+            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+
+            // get solutions list
+            EList<Solution> solutions = cpModel.getSolution();
+            int size = solutions.size();
+
+            // No solutions in CP model
+            if (size == 0) {
+                log.warn("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model contains no solutions");
+                return;
+            }
+
+            // get deployed solution position in list
+            int depPos = cpModel.getDeployedSolutionId();
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution id: {}", depPos);
+            if (depPos >= size || depPos < 0) {
+                log.warn("CpModelHelper.copyVarValuesFromDeployedSolution(): Invalid deployed solution id: size={}, id={}", size, depPos);
+                return;
+            }
+
+            // find deployed solution
+            Solution depSol = solutions.get(depPos);
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution: id={}, timestamp={}, utility={}",
+                    depPos, depSol.getTimestamp(), depSol.getUtilityValue());
+
+            // get variable values from deployed solution
+            final EList<CpVariableValue> valuesList = depSol.getVariableValue();
+            Map<String,CpVariableValue> valuesMap = valuesList.stream()
+                    .collect(Collectors.toMap(o -> o.getVariable().getId(), Function.identity()));
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution Variable Values: {}", valuesMap.keySet());
+
+            // get target metrics from cp model
+            final EList<CpMetric> cpMetrics = cpModel.getCpMetrics();
+            Map<String,CpMetric> metricsMap = cpMetrics.stream()
+                    .collect(Collectors.toMap(o -> o.getId(), Function.identity()));
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model Metrics: {}", metricsMap.keySet());
+
+            // Copy values
+            for (Map.Entry<String,String> e : fromToMap.entrySet()) {
+                String fromName = e.getKey();
+                String toName = e.getValue();
+                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Coping from {} to {}", fromName, toName);
+
+                // From variable value
+                final CpVariableValue fromVarValue = valuesMap.get(fromName);
+                if (fromVarValue==null) {
+                    log.warn("CpModelHelper.copyVarValuesFromDeployedSolution():   From Var.Value not found: {}", fromName);
+                    continue;
+                }
+                final NumericValueUpperware fromValue = fromVarValue.getValue();
+
+                // get Target metric
+                CpMetric toMetric = metricsMap.get(toName);
+                if (toMetric==null) {
+                    log.warn("CpModelHelper.copyVarValuesFromDeployedSolution():   To Metric not found: {}", toName);
+                    continue;
+                }
+
+                // create a copy of the value
+                double value = numericValueUpperwareToDouble(fromValue);
+                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Value: {} {}", numericValueUpperwareType(fromValue), value);
+
+                NumericValueUpperware toValue = createNumericValueUpperware(numericValueUpperwareType(fromValue), value);
+                log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): toValue: {}", toValue);
+
+                // Copy value (clone) to Target metric
+                toMetric.setValue(toValue);
+
+                log.info("CpModelHelper.copyVarValuesFromDeployedSolution(): Copied from {} to {}: value={}", fromName, toName, numericValueUpperwareToDouble(fromValue));
+            }
+
+            // commit changes
+            transaction.commit();
+            transaction = null;
+
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): END: helper-id={}", id);
+
+        } catch (Exception ex) {
+            log.error("CpModelHelper.copyVarValuesFromDeployedSolution(): EXCEPTION: helper-id={}, Exception={}", id, ex);
+        } finally {
+            if (transaction != null) {
+                transaction.rollback();
+                transaction.close();
+            }
+
+            // release resource
+            releaseCpModel(cpModelPath, "copyVarValuesFromDeployedSolution()");
+        }
+    }
+
+    public double numericValueUpperwareToDouble(NumericValueUpperware value) {
+        if (value==null) throw new IllegalArgumentException("Argument is null");
+        if (value instanceof IntegerValueUpperware) return ((IntegerValueUpperware)value).getValue();
+        if (value instanceof FloatValueUpperware) return ((FloatValueUpperware)value).getValue();
+        if (value instanceof DoubleValueUpperware) return ((DoubleValueUpperware)value).getValue();
+        if (value instanceof LongValueUpperware) return ((LongValueUpperware)value).getValue();
+        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+    }
+
+    public Number numericValueUpperwareToNumber(NumericValueUpperware value) {
+        if (value==null) throw new IllegalArgumentException("Argument is null");
+        if (value instanceof IntegerValueUpperware) return ((IntegerValueUpperware)value).getValue();
+        if (value instanceof FloatValueUpperware) return ((FloatValueUpperware)value).getValue();
+        if (value instanceof DoubleValueUpperware) return ((DoubleValueUpperware)value).getValue();
+        if (value instanceof LongValueUpperware) return ((LongValueUpperware)value).getValue();
+        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+    }
+
+    public BasicTypeEnum numericValueUpperwareType(NumericValueUpperware value) {
+        if (value==null) throw new IllegalArgumentException("Argument is null");
+        if (value instanceof IntegerValueUpperware) return BasicTypeEnum.INTEGER;
+        if (value instanceof FloatValueUpperware) return BasicTypeEnum.FLOAT;
+        if (value instanceof DoubleValueUpperware) return BasicTypeEnum.DOUBLE;
+        if (value instanceof LongValueUpperware) return BasicTypeEnum.LONG;
+        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+    }
+
+    public NumericValueUpperware createNumericValueUpperware(BasicTypeEnum type, double value) {
+        if (type==null) throw new IllegalArgumentException("Argument #0 is null");
+        NumericValueUpperware newValue = null;
+        switch (type) {
+            case INTEGER:
+                IntegerValueUpperware intValue = TypesFactory.eINSTANCE.createIntegerValueUpperware();
+                intValue.setValue((int)value);
+                newValue = intValue;
+                break;
+            case DOUBLE:
+                DoubleValueUpperware doubleValue = TypesFactory.eINSTANCE.createDoubleValueUpperware();
+                doubleValue.setValue(value);
+                newValue = doubleValue;
+                break;
+            case FLOAT:
+                FloatValueUpperware floatValue = TypesFactory.eINSTANCE.createFloatValueUpperware();
+                floatValue.setValue((float)value);
+                newValue = floatValue;
+                break;
+            case LONG:
+                LongValueUpperware longValue = TypesFactory.eINSTANCE.createLongValueUpperware();
+                longValue.setValue((long)value);
+                newValue = longValue;
+                break;
+            default:
+                throw new IllegalArgumentException("Argument #0 is not Integer/Float/Double/LongValueUpperware: "+type);
+        }
+        return newValue;
     }
 
     // ------------------------------------------------------------------------

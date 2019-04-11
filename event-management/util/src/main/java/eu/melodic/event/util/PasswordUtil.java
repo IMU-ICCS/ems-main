@@ -22,19 +22,20 @@ import java.util.function.Supplier;
 @Service
 @Slf4j
 public class PasswordUtil implements InitializingBean {
-    private static PasswordUtil instance;
-
     @Value("${control.password-encoder}")
     private String passwordEncoderClassName;
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        instance = this;
+    public void afterPropertiesSet() {
         log.debug("PasswordUtil: password-encoder-class: {}", passwordEncoderClassName);
         if (passwordEncoderClassName!=null) {
             this.setPasswordEncoder(passwordEncoderClassName);
         }
+    }
+
+    public String encodePassword(String password) {
+        return getPasswordEncoder().encode(password);
     }
 
     public PasswordEncoder getPasswordEncoder() {
@@ -64,14 +65,5 @@ public class PasswordUtil implements InitializingBean {
             log.warn("Could not instantiate PasswordEncoder instance of {}. Default instance of PasswordEncoder will be created", passwordEncoderClassName);
             return passwordEncoderSupplier.get();
         }
-    }
-
-    public static String encodePassword(String password) {
-        if (instance==null) {
-            PasswordUtil pu = new PasswordUtil();
-            pu.setPasswordEncoder("");
-            instance = pu;
-        }
-        return instance.getPasswordEncoder().encode(password);
     }
 }

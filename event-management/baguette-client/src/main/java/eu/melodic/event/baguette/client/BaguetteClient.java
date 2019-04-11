@@ -20,7 +20,9 @@ import java.util.Properties;
 /**
  * Baguette client
  */
-@SpringBootApplication(scanBasePackages = {"eu.melodic.event.baguette.client", "eu.melodic.event.brokercep", "eu.melodic.event.brokerclient"})
+@SpringBootApplication(
+        scanBasePackages = {"eu.melodic.event.baguette.client", "eu.melodic.event.brokercep",
+                "eu.melodic.event.brokerclient", "eu.melodic.event.util"})
 @Slf4j
 public class BaguetteClient {
     public static void main(String[] args) throws IOException {

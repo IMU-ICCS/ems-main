@@ -294,7 +294,8 @@ public class ToLaBasedReasonerFormat
 		
 		if(sol==null)
 		{
-			sol= CPModelTool.createSolution(cp);
+			sol= CPModelTool.createSolution(0.0, null);
+			solutions.add(sol);
 		}
 		
 		buildVariables(cp.getCpVariables(), sol); 
@@ -480,7 +481,8 @@ public class ToLaBasedReasonerFormat
 		
 		if(sol==null)
 		{
-			sol= CPModelTool.createSolution(cp);
+			sol= CPModelTool.createSolution(0.0, null);
+			solutions.add(sol);
 		}
 		
 		
@@ -1373,7 +1375,8 @@ public class ToLaBasedReasonerFormat
 			
 			if(sol==null)
 			{
-				sol= CPModelTool.createSolution(cp);
+				sol= CPModelTool.createSolution(0.0, null);
+				cp.getSolution().add(sol);
 			}
 			
 			try {

@@ -111,10 +111,9 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException {
-    Objects.requireNonNull(nodeGroupId);
-
-    return Optional.ofNullable(nodeApi.getNodeGroup(nodeGroupId));
+  public Optional<Node> getNode(String nodeId) throws ApiException {
+    Objects.requireNonNull(nodeId);
+    return Optional.ofNullable(nodeApi.getNode(nodeId));
   }
 
   @Override
@@ -150,7 +149,7 @@ public class ColosseumClientApi implements ColosseumApi {
   @Override
   public void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) throws ApiException {
     Objects.requireNonNull(metricName);
-    log.info("Deleting monitor with metricName: {}", metricName);
+    log.info("Deleting monitor with metricName: {} and MonitoringTarget({}, {}) ", metricName, monitoringTarget.getType(), monitoringTarget.getIdentifier());
     monitoringApi.deleteMonitor(metricName, monitoringTarget);
   }
 

@@ -23,6 +23,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -49,7 +51,7 @@ public class ColosseumContext implements ContextOperations {
 
     private final AdapterProperties adapterProperties;
 
-    private final List<NodeGroup> nodeGroups = synchronizedList();
+    private final List<Node> nodes = synchronizedList();
     private final List<Schedule> schedules = synchronizedList();
     private final List<ProcessGroup> processGroups = synchronizedList();
     private final List<Job> jobs = synchronizedList();
@@ -57,46 +59,44 @@ public class ColosseumContext implements ContextOperations {
 
     private boolean loaded;
 
-    public void addNodeGroup(@NonNull NodeGroup nodeGroup) {
-        nodeGroups.add(nodeGroup);
+    private BiPredicate<MonitoringTarget, MonitoringTarget> monitoringTargetBiPredicate = (mt1, mt2) -> mt1.getType().equals(mt2.getType()) && mt1.getIdentifier().equals(mt2.getIdentifier());
+
+    public synchronized void addNode(@NonNull Node node) {
+        nodes.add(node);
     }
 
-    public Optional<NodeGroup> getNodeGroup(String name) {
-        return getElement(nodeGroups, nodeGroup -> name.equals(nodeGroup.getId()), createAmbiguousResultException(NodeGroup.class, name));
+    public synchronized Optional<Node> getNode(String nodeName) {
+        Objects.requireNonNull(nodeName);
+        return getElement(nodes, node -> nodeName.equals(node.getName()),
+                () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one node with the same name=%s", nodeName)));
     }
 
-    public Optional<NodeGroup> getNodeGroupByNodeName(String name) {
-        return getElement(nodeGroups, nodeGroup -> nodeGroup.getNodes().stream().map(Node::getName).anyMatch(nodeName -> nodeName.endsWith(name)),
-                createAmbiguousResultException(NodeGroup.class, name));
+    public synchronized void deleteNode(String nodeId) {
+        nodes.removeIf(node -> nodeId.equals(node.getId()));
     }
 
-    public void deleteNodeGroup(String nodeGroupId) {
-        nodeGroups.removeIf(nodeGroup -> nodeGroupId.equals(nodeGroup.getId()));
-    }
-
-    public void addSchedule(@NonNull Schedule schedule) {
+    public synchronized void addSchedule(@NonNull Schedule schedule) {
         schedules.add(schedule);
     }
 
-    public Optional<Schedule> getSchedule(String name) {
+    public synchronized Optional<Schedule> getSchedule(String name) {
         return getElement(schedules, schedule -> name.equals(schedule.getId()), createAmbiguousResultException(Schedule.class, name));
     }
 
-    public Optional<Schedule> getScheduleByJobId(String jobId) {
+    public synchronized Optional<Schedule> getScheduleByJobId(String jobId) {
         return getElement(schedules, schedule -> jobId.equals(schedule.getJob()), () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one schedules with the same jobId=%s", jobId)));
     }
 
-    public void addProcessGroup(@NonNull ProcessGroup processGroup) {
+    public synchronized void addProcessGroup(@NonNull ProcessGroup processGroup) {
         processGroups.add(processGroup);
     }
 
-    public Optional<ProcessGroup> getProcessGroup(String processGroupId) {
+    public synchronized Optional<ProcessGroup> getProcessGroup(String processGroupId) {
         return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
     }
 
-
-    public Optional<ProcessGroup> getProcessGroup(String nodeGroupId, String scheduleId, String taskName) throws ApiException {
-        Objects.requireNonNull(nodeGroupId);
+    public synchronized Optional<ProcessGroup> getProcessGroup(String nodeId, String scheduleId, String taskName) throws ApiException {
+        Objects.requireNonNull(nodeId);
         Objects.requireNonNull(scheduleId);
         Objects.requireNonNull(taskName);
 
@@ -107,33 +107,33 @@ public class ColosseumContext implements ContextOperations {
                                 .stream()
                                 .anyMatch(cloudiatorProcess -> scheduleId.equals(cloudiatorProcess.getSchedule()) &&
                                         taskName.equals(cloudiatorProcess.getTask()) &&
-                                        checkProcess(cloudiatorProcess, nodeGroupId)))
+                                        checkProcess(cloudiatorProcess, nodeId)))
                 .findFirst();
     }
 
-    private boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeGroupId) {
+    private synchronized boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {
         if (cloudiatorProcess instanceof SingleProcess) {
             String nodeName = ((SingleProcess) cloudiatorProcess).getNode();
-
-            return getNodeGroup(nodeGroupId)
-                    .filter(ng -> ng.getNodes().stream().anyMatch(node -> node.getId().equals(nodeName)))
-                    .isPresent();
+            return nodeId.equals(nodeName);
         } else if (cloudiatorProcess instanceof ClusterProcess) {
-            return ((ClusterProcess) cloudiatorProcess).getNodeGroup().equals(nodeGroupId);
+            return ((ClusterProcess) cloudiatorProcess)
+                    .getNodes()
+                    .stream()
+                    .anyMatch(s -> s.equals(nodeId));
         }
         log.warn("Cloudiator process is neither SingleProcess nor ClusterProcess but: {}", cloudiatorProcess.getClass().getSimpleName());
         return false;
     }
 
-    public void deleteProcessGroup(String processGroupId) {
+    public synchronized void deleteProcessGroup(String processGroupId) {
         processGroups.removeIf(processGroup -> processGroupId.equals(processGroup.getId()));
     }
 
-    public void addJob(@NonNull Job job) {
+    public synchronized void addJob(@NonNull Job job) {
         jobs.add(job);
     }
 
-    public Optional<Job> getJob(String name) {
+    public synchronized Optional<Job> getJob(String name) {
         return getElement(jobs, job -> name.equals(job.getName()), createAmbiguousResultException(Job.class, name));
     }
 
@@ -141,14 +141,13 @@ public class ColosseumContext implements ContextOperations {
         return () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one %s with the same id=%s", clazz.getSimpleName(), id));
     }
 
-    public Optional<Monitor> getMonitor(String metricName, MonitoringTarget monitoringTarget){
+    public synchronized Optional<Monitor> getMonitor(String metricName, MonitoringTarget monitoringTarget){
         Objects.requireNonNull(metricName);
         Objects.requireNonNull(monitoringTarget);
+        Objects.requireNonNull(monitoringTarget.getType());
+        Objects.requireNonNull(monitoringTarget.getIdentifier());
         return getElement(monitors, monitor -> metricName.equals(monitor.getMetric()) &&
-                                        monitor.getTargets().stream()
-                                                .anyMatch(mt -> monitoringTarget.getType().equals(mt.getType()) &&
-                                                                monitoringTarget.getIdentifier().equals(mt.getIdentifier())
-                                                        ),
+                                        monitor.getTargets().stream().anyMatch(mt -> monitoringTargetBiPredicate.test(mt, monitoringTarget)),
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
@@ -158,16 +157,7 @@ public class ColosseumContext implements ContextOperations {
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
-    public Optional<ProcessGroup> getProcessGroupByNodeGroupId(String nodeGroupId) {
-        return getElement(processGroups, processGroup -> processGroup.getProcesses()
-                .stream()
-                .filter(ClusterProcess.class::isInstance)
-                .map(ClusterProcess.class::cast)
-                .anyMatch(cloudiatorProcess -> cloudiatorProcess.getNodeGroup().equals(nodeGroupId)),
-                    () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one ProcessGroup containing ClusterProcess with the same nodeGroup=%s", nodeGroupId)));
-    }
-
-    public Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
+    public synchronized Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
         return getElement(processGroups, processGroup -> processGroup.getProcesses()
                 .stream()
                 .filter(SingleProcess.class::isInstance)
@@ -177,32 +167,27 @@ public class ColosseumContext implements ContextOperations {
     }
 
 
-    public void addMonitor(@NonNull Monitor monitor) {
+    public synchronized void addMonitor(@NonNull Monitor monitor) {
         Optional<Monitor> monitorOpt = getMonitor(monitor.getMetric());
         if (!monitorOpt.isPresent()){
             monitors.add(monitor);
         } else {
             Monitor m = monitorOpt.get();
 
-            for (MonitoringTarget target : monitor.getTargets()) {
-                boolean isMissing = m.getTargets().stream().noneMatch(monitoringTarget -> monitoringTarget.getType().equals(target.getType()) &&
-                        monitoringTarget.getIdentifier().equals(target.getIdentifier()));
-
-                if (isMissing) {
-                    m.getTargets().add(target);
-                }
-            }
+            monitor.getTargets()
+                    .stream()
+                    .filter(monitoringTarget -> m.getTargets().stream().noneMatch( mt1 -> monitoringTargetBiPredicate.test(mt1, monitoringTarget)))
+                    .forEach(monitoringTarget ->  m.getTargets().add(monitoringTarget));
         }
     }
 
-    public void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) {
+    public synchronized void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) {
         getMonitor(metricName, monitoringTarget)
                 .ifPresent(monitor -> {
-                    if (monitor.getTargets().size() == 1) {
+                    monitor.getTargets().removeIf(mt1 ->  monitoringTargetBiPredicate.test(mt1, monitoringTarget));
+
+                    if (CollectionUtils.isEmpty(monitor.getTargets())){
                         monitors.remove(monitor);
-                    } else {
-                        monitor.getTargets()
-                                .removeIf(mt -> mt.getType().equals(monitoringTarget.getType()) && mt.getIdentifier().equals(monitoringTarget.getIdentifier()));
                     }
                 });
     }
@@ -235,8 +220,8 @@ public class ColosseumContext implements ContextOperations {
     public void refreshContext() throws ApiException {
         log.info("Refreshing Colosseum context");
 
-        nodeGroups.clear();
-        nodeGroups.addAll(nodeApi.findNodeGroups());
+        nodes.clear();
+        nodes.addAll(nodeApi.findNodes());
 
         schedules.clear();
         schedules.addAll(processApi.getSchedules());

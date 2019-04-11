@@ -122,13 +122,22 @@ public class ConstantServiceImpl implements ConstantService {
 
     @Override
     public Constant searchOrCreateConstantByValue(EList<Constant> constants, double value) {
-        Optional<Constant> constant = searchConstantByValue(constants, value);
+        boolean isInteger = (value % 1) == 0;
+        if (isInteger) {
+            return searchConstantByValue(constants, (int) value)
+                    .orElseGet(() -> {
+                        Constant newConstant = createIntegerConstant((int)value);
+                        constants.add(newConstant);
+                        return newConstant;
+                    });
+        }
 
-        return constant.orElseGet(() -> {
-            Constant newConstant = createDoubleConstant(value);
-            constants.add(newConstant);
-            return newConstant;
-        });
+        return searchConstantByValue(constants, value)
+                .orElseGet(() -> {
+                    Constant newConstant = createDoubleConstant(value);
+                    constants.add(newConstant);
+                    return newConstant;
+                });
     }
 
     private Optional<Constant> searchConstantByValue(EList<Constant> constants, Predicate<Pair<String, String>> predicate){

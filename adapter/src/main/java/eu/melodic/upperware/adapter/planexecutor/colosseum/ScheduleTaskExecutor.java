@@ -4,6 +4,7 @@ import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterSchedule;
+import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScheduleTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.Job;
@@ -11,11 +12,11 @@ import io.github.cloudiator.rest.model.Queue;
 import io.github.cloudiator.rest.model.Schedule;
 import io.github.cloudiator.rest.model.ScheduleNew;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
@@ -24,8 +25,8 @@ import static java.lang.String.format;
 public class ScheduleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterSchedule> {
 
     ScheduleTaskExecutor(ScheduleTask task, Collection<Future> predecessors, ColosseumApi api,
-                         ColosseumContext context, ThreadPoolTaskExecutor executor, ColosseumExecutorFactory colosseumExecutorFactory) {
-        super(task, predecessors, api, context, executor, colosseumExecutorFactory);
+                         ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+        super(task, predecessors, api, context, checkFinishTaskToFuture);
     }
 
     @Override

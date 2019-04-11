@@ -88,7 +88,7 @@ public class DlmsControllerClient {
 				// if some solutions were deployed originally
 				DlmsDiffBundle diffBundle = runDiff(deployed, proposed);
 				if (diffBundle.isEmpty()) {
-					log.info("no diffs found");
+					log.debug("no diffs found");
 					return new UtilityMetrics();
 				}
 			} else {
@@ -97,12 +97,12 @@ public class DlmsControllerClient {
 			}
 			// if original solutions were empty
 			if (proposed.size() > 0) {
-				log.info("Calculating the utility for the proposed solution");
+				log.debug("Calculating the utility for the proposed solution");
 				DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
 				HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);
 				ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
 						UtilityMetrics.class);
-				log.info("Utility was calculated");
+				log.debug("Utility was calculated");
 				return response.getBody();
 			}
 		} catch (URISyntaxException | RestClientException e) {
@@ -114,7 +114,7 @@ public class DlmsControllerClient {
 
 	private void checkSize(Collection<DlmsConfigurationElement> sol, String type) {
 		if (sol.size() == 0)
-			log.info("{} solution is empty", type);
+			log.debug("{} solution is empty", type);
 	}
 
 	private DlmsDiffBundle runDiff(Collection<DlmsConfigurationElement> deployed,
@@ -122,13 +122,13 @@ public class DlmsControllerClient {
 		DlmsDiffBundle diffBundle = new DlmsDiffBundle();
 
 		for (DlmsConfigurationElement deployedElement : deployed) {
-			log.info("handling deployed element: {}", deployedElement.getId());
+			log.debug("handling deployed element: {}", deployedElement.getId());
 
 			for (DlmsConfigurationElement proposedElement : proposed) {
-				log.info("comparing proposed element: {}", proposedElement.getId());
+				log.debug("comparing proposed element: {}", proposedElement.getId());
 
 				if (hasSameId(deployedElement, proposedElement)) {
-					log.info("match found for {}", proposedElement.getId());
+					log.debug("match found for {}", proposedElement.getId());
 					checkElementsForDiff(diffBundle, deployedElement, proposedElement);
 				}
 			}
@@ -139,21 +139,21 @@ public class DlmsControllerClient {
 	private void checkElementsForDiff(DlmsDiffBundle diffBundle, DlmsConfigurationElement deployedElement,
 			DlmsConfigurationElement proposedElement) {
 		if (hasCardinalityDiff(deployedElement, proposedElement)) {
-			log.info("diff found for {} in cardinality", proposedElement.getId());
+			log.debug("diff found for {} in cardinality", proposedElement.getId());
 			registerDiff(diffBundle, deployedElement, proposedElement);
 		} else if (hasValidNodeCandidates(deployedElement, proposedElement)) {
 			NodeCandidate deployedCandidate = deployedElement.getNodeCandidate();
 			NodeCandidate proposedCandidate = proposedElement.getNodeCandidate();
 
 			if (hasLocationDiff(deployedCandidate, proposedCandidate)) {
-				log.info("diff found for {} in location", proposedElement.getId());
+				log.debug("diff found for {} in location", proposedElement.getId());
 				registerDiff(diffBundle, deployedElement, proposedElement);
 			} else if (hasHardwareDiff(deployedCandidate, proposedCandidate)) {
-				log.info("diff found for {} in hardware", proposedElement.getId());
+				log.debug("diff found for {} in hardware", proposedElement.getId());
 				registerDiff(diffBundle, deployedElement, proposedElement);
 			}
 		} else {
-			log.info("node candidate(s) null for {}", proposedElement.getId());
+			log.debug("node candidate(s) null for {}", proposedElement.getId());
 		}
 	}
 

@@ -4,7 +4,7 @@
 #
 # This file makes compiles the files for the LA Reasoner
 # 
-# Author: Geir Horn, 2014
+# Author: Geir Horn, 2014 - 2018
 #
 ###############################################################################
 
@@ -20,8 +20,14 @@ RM = rm -f
 # machines used for this development. Note that the LA framework will be 
 # located differently during a real deployment.
 
-THERON ?= ../Theron
-LA_FRAMEWORK ?= ../LA-Framework/Framework
+THERON ?= ../../Theron++
+LA_FRAMEWORK ?= ../../LA-Framework
+
+# These frameworks contain certain objective functions that must be built 
+# as part of the built process for the solvers.
+
+THERON_OBJECTS = $(THERON)/Actor.o
+LA_OBJECTS = ${LA_FRAMEWORK}/RandomGenerator.o
 
 # Optimisation -O3 is the highest level of optimisation and should be used 
 # with production code. -Og is the code optimising and offering debugging 
@@ -31,20 +37,61 @@ LA_FRAMEWORK ?= ../LA-Framework/Framework
 
 OPTIMISATION_FLAG = 
 
+# It is useful to let the compiler generate the dependencies for the various 
+# files, and the following will produce .d files that can be included at the 
+# end. The -MMD flag is equivalent with -MD, but the latter will include system 
+# headers in the output (which we do not need here). The -MP includes an 
+# empty rule to create the dependencies so that make would not create any errors 
+# if the file name changes.
+
+DEPENDENCY_FLAGS = -MMD -MP
+
+# Options 
+
+GENERAL_OPTIONS = -c -Wall -std=c++1z -ggdb -D_DEBUG -Wformat-truncation=0 -Wno-sign-compare
+INCLUDE_DIRECTORIES = -I. -I/usr/include -I$(THERON) -I$(LA_FRAMEWORK)
+
 # Other library specific flags. 
 
-THERON_FLAGS = -DTHERON_POSIX=1 -DTHERON_BOOST=0 -DTHERON_CPP11=1
+#THERON_FLAGS = -DTHERON_POSIX=1 -DTHERON_BOOST=0 -DTHERON_CPP11=1
 ARMADILLO_FLAGS = -DARMA_USE_CXX11
-GLIB_FLAGS = -D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD
-GENERAL_FLAGS = $(OPTIMISATION_FLAG) -c -Wall -pthread -std=c++11 -ggdb -D_DEBUG
-CFLAGS = $(GENERAL_FLAGS) $(GLIB_FLAGS) $(THERON_FLAGS) $(ARMADILLO_FLAGS)
-LDFLAGS = -Wl,--allow-multiple-definition -pthread -ggdb -D_DEBUG
+GLIB_FLAGS = -D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD -DHAVE_INLINE
+
+# Libraries used - note that the Theron lib should be added to the link command
+# later when the code uses it. The code uses the GNU Scientific Library (GSL)
+# and the math library (m).
+
+MACHINE := $(shell uname --nodename)
+ifeq ($(MACHINE),Glamdring)
+  NLOPT_LIB ?= -lgslcblas -lnlopt_cxx
+else
+  NLOPT_LIB ?= -lgslcblas -lnlopt
+endif
+
+# Then the flags for the compiler can be defined
+
+CFLAGS = $(DEPENDENCY_FLAGS) $(OPTIMISATION_FLAG) $(GENERAL_OPTIONS) \
+         $(GLIB_FLAGS) $(ARMADILLO_FLAGS) $(THERON_FLAGS)
 INCLUDE_FLAGS = -I ${LA_FRAMEWORK} -I ${THERON}/Include
 
-THERON_LIB = ${THERON}/Lib/libtherond.a
-NLOPT_LIB  ?= -lnlopt_cxx
+# The linker needs a separate set of flags and libraries. Note that the 
+# Google protocol buffers library is given directly here.
 
-LD_LIBS    = ${THERON_LIB} ${NLOPT_LIB} -lm
+#THERON_LIB = ${THERON}/Lib/libtherond.a
+LDFLAGS = -Wl,--allow-multiple-definition -pthread -ggdb -D_DEBUG
+LD_LIBS    = ${THERON_LIB} ${NLOPT_LIB} -lprotobuf -lm
+
+#
+# SOLVER MODULES
+#
+# The compiled files that are needed by the linker in order to build the 
+# solver executable.
+
+SOLVER_OBJECTS = 
+
+# And these are needed to build the various targets
+
+ALL_MODULES = $(THERON_OBJECTS) $(LA_OBJECTS) $(SOLVER_OBJECTS)
 
 #
 # TARGETS
@@ -52,36 +99,37 @@ LD_LIBS    = ${THERON_LIB} ${NLOPT_LIB} -lm
 
 clean:
 	${RM} *.o
+	${RM} *.d
 	${RM} *.a
 	${RM} *.pdb
+	${RM} ${LA_FRAMEWORK}/*.o
+	$(RM) ${THERON}/*.o
+	${RM} ${LA_FRAMEWORK}/*.d
+	$(RM) ${THERON}/*.d
+
+# Generic compile targets
+
+%.o : %.cpp
+	$(CC) $(CFLAGS) $< -o $@ $(INCLUDE_DIRECTORIES)
 
 #
-# Build the framework files
+# Test targets 
+#
+# The model file defines the CP-model to be solved by the solver, and it is 
+# mainly a syntax check to ensure that it has been correctly set up.
+
+Model: Model.o Interface.o ${LA_OBJECTS}
+	$(CC) Model.o Interface.o ${LA_OBJECTS} $(LDFLAGS) $(LD_LIBS) -o Model
+
+#
+# Main target
 #
 
-RandomGenerator.o: ${LA_FRAMEWORK}/RandomGenerator.hpp ${LA_FRAMEWORK}/RandomGenerator.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) ${LA_FRAMEWORK}/RandomGenerator.cpp -o RandomGenerator.o
+LASolver: ${ALL_MODULES}
+	$(CC) ${ALL_MODULES} $(LDFLAGS) $(LD_LIBS) -o LASolver
 
 #
-# Build the object files
+# DEPENDENCIES
 #
 
-ContinuousOptimiser.o: Interface.hpp ContinuousOptimiser.hpp ContinuousOptimiser.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) ContinuousOptimiser.cpp -o ContinuousOptimiser.o
-	
-Interface.o: Interface.hpp Variables.model Constraints.model Interface.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) Interface.cpp -o Interface.o
-	
-Metric.o: Interface.hpp Metric.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) Metric.cpp -o Metric.o
-
-CmdParser.o: CommandParser.hpp CommandParser.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) CommandParser.cpp -o CmdParser.o
-
-main.o: Interface.hpp EvaluationActor.hpp PrintResults.hpp main.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) main.cpp -o main.o
-
-LASolver: RandomGenerator.o ContinuousOptimiser.o Interface.o Metric.o  \
-CmdParser.o main.o
-	$(CC) RandomGenerator.o ContinuousOptimiser.o Interface.o Metric.o \
-	CmdParser.o main.o $(LDFLAGS) $(LD_LIBS) -o LASolver
+-include $(ALL_MODULES:.o=.d)
