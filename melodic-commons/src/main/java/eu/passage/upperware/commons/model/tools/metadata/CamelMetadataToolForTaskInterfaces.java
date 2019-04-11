@@ -4,9 +4,11 @@ import camel.core.Attribute;
 import camel.core.Feature;
 import camel.type.StringValue;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,11 +20,19 @@ public class CamelMetadataToolForTaskInterfaces {
     private static final String ATTRIBUTE_PREFIX = "--";
 
     public static Optional<Attribute> findAttributeByAnnotation(EList<Attribute> attributes, String annotation) {
+        List<Attribute> attributesByAnnotation = findAttributesByAnnotation(attributes, annotation);
+        if (CollectionUtils.isEmpty(attributesByAnnotation)){
+            return Optional.empty();
+        }
+        return Optional.of(attributesByAnnotation.get(0));
+    }
+
+    public static List<Attribute> findAttributesByAnnotation(EList<Attribute> attributes, String annotation) {
         return attributes.stream()
                 .filter(attribute -> attribute.getAnnotations()
                         .stream()
                         .anyMatch(mmsObject -> mmsObject.getId().equals(annotation)))
-                .findFirst();
+                .collect(Collectors.toList());
     }
 
     public static Optional<Feature> findFeatureByAnnotation(EList<Feature> features, String annotation) {
