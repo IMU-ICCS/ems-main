@@ -431,7 +431,7 @@ public class CommandExecutor {
                         String subscriberName = "Subscriber_" + cnt++;
                         log.info(" + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}, forward-to-groupings={}", subscriberName, topic, rule, forwardToGroupings);
                         brokerCepService.getCepService().addStatementSubscriber(
-                                new ClientStatementSubscriber().setNameAndStatement(subscriberName, topic, rule, forwardToGroupings, brokerCepService)
+                                new ClientStatementSubscriber().setNameAndStatement(subscriberName, topic, rule, forwardToGroupings, brokerCepService, activeGrouping)
                         );
                     }
                 }
@@ -555,6 +555,7 @@ public class CommandExecutor {
         private String statement;
         private Set<String> forwardToGroupings;
         private BrokerCepService brokerCep;
+        private Grouping activeGrouping;
 
         public String getName() {
             return name;
@@ -572,12 +573,13 @@ public class CommandExecutor {
             return forwardToGroupings;
         }
 
-        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<String> f, BrokerCepService bc) {
+        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<String> f, BrokerCepService bc, Grouping ag) {
             name = n;
             topic = t;
             statement = s;
             forwardToGroupings = f;
             brokerCep = bc;
+            activeGrouping = ag;
             return this;
         }
 
@@ -594,12 +596,14 @@ public class CommandExecutor {
                         name, localBrokerUrl, topic, eventMap);
 
                 // Send new event to the next grouping(s)
+                String username = activeGrouping.getBrokerUsername();
+                String password = activeGrouping.getBrokerPassword();
                 log.info("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
                         name, forwardToGroupings, eventMap);
                 for (String fwdToGrouping : forwardToGroupings) {
-                    brokerCep.publishEvent(fwdToGrouping, topic, eventMap);
-                    log.info("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, topic={}, payload={}",
-                            name, fwdToGrouping, topic, eventMap);
+                    brokerCep.publishEvent(fwdToGrouping, username, password, topic, eventMap);
+                    log.info("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, username={}, topic={}, payload={}",
+                            name, fwdToGrouping, username, topic, eventMap);
                 }
             } catch (Exception ex) {
                 log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, payload={}, exception: ",
