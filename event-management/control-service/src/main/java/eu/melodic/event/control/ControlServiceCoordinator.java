@@ -512,7 +512,7 @@ public class ControlServiceCoordinator {
                         name, localBrokerUrl, topic, eventMap);
 
             } catch (Exception ex) {
-                log.error("- New event: ERROR: subscriber={}, topic={}, exception={}", name, topic, ex);
+                log.error("- New event: ERROR: subscriber={}, topic={}, exception=", name, topic, ex);
             }
         }
     }
