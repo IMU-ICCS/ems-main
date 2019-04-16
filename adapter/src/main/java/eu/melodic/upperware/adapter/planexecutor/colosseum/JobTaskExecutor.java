@@ -65,7 +65,10 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
     private Task convertToTask(AdapterTask adapterTask) {
         return new Task()
                 .name(adapterTask.getName())
-                .taskType(TaskType.valueOf(adapterTask.getTaskType().name()))
+                .behaviour(new ServiceBehaviour()
+                        .restart(true)
+                        .type(ServiceBehaviour.class.getSimpleName())
+                )
                 .ports(convertToPorts(adapterTask.getPorts()))
                 .interfaces(convertToInterfaces(adapterTask.getInterfaces()));
     }
