@@ -18,4 +18,6 @@ RUN cd ibex-lib-ibex-2.8.0 && ./waf install
 
 ENV LD_LIBRARY_PATH /usr/local/lib/
 
-ENTRYPOINT ["/config/wait-for-cdo.sh", "java", "-XX:ErrorFile=/logs/java_error%p.log", "-XX:HeapDumpPath=/logs", "-Duser.timezone=Europe/Warsaw", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005", "-jar", "/cp-solver.jar"]
+COPY ./run.sh .
+RUN bash -c 'chmod +rx run.sh'
+ENTRYPOINT ["./run.sh"]
