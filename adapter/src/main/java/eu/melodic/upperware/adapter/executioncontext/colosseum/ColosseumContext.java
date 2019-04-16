@@ -53,7 +53,7 @@ public class ColosseumContext implements ContextOperations {
 
     private final List<Node> nodes = synchronizedList();
     private final List<Schedule> schedules = synchronizedList();
-    private final List<ProcessGroup> processGroups = synchronizedList();
+    private final List<CloudiatorProcess> cloudiatorProcesses = synchronizedList();
     private final List<Job> jobs = synchronizedList();
     private final List<Monitor> monitors = synchronizedList();
 
@@ -87,46 +87,24 @@ public class ColosseumContext implements ContextOperations {
         return getElement(schedules, schedule -> jobId.equals(schedule.getJob()), () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one schedules with the same jobId=%s", jobId)));
     }
 
-    public synchronized void addProcessGroup(@NonNull ProcessGroup processGroup) {
-        processGroups.add(processGroup);
+    public synchronized void addCloudiatorProcess(@NonNull CloudiatorProcess cloudiatorProcess) {
+        cloudiatorProcesses.add(cloudiatorProcess);
     }
 
-    public synchronized Optional<ProcessGroup> getProcessGroup(String processGroupId) {
-        return getElement(processGroups, processGroup -> processGroupId.equals(processGroup.getId()), createAmbiguousResultException(ProcessGroup.class, processGroupId));
-    }
-
-    public synchronized Optional<ProcessGroup> getProcessGroup(String nodeId, String scheduleId, String taskName) throws ApiException {
+    public synchronized Optional<CloudiatorProcess> getCloudiatorProcess(String nodeId, String scheduleId, String taskName) throws ApiException {
         Objects.requireNonNull(nodeId);
         Objects.requireNonNull(scheduleId);
         Objects.requireNonNull(taskName);
 
-        return processApi.findProcessGroups()
+        return processApi.getProcesses(scheduleId)
                 .stream()
-                .filter(processGroup ->
-                        processGroup.getProcesses()
-                                .stream()
-                                .anyMatch(cloudiatorProcess -> scheduleId.equals(cloudiatorProcess.getSchedule()) &&
-                                        taskName.equals(cloudiatorProcess.getTask()) &&
-                                        checkProcess(cloudiatorProcess, nodeId)))
+                .filter(cloudiatorProcess -> taskName.equals(cloudiatorProcess.getTask()))
+                .filter(cloudiatorProcess -> checkProcess(cloudiatorProcess, nodeId))
                 .findFirst();
     }
 
-    private synchronized boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {
-        if (cloudiatorProcess instanceof SingleProcess) {
-            String nodeName = ((SingleProcess) cloudiatorProcess).getNode();
-            return nodeId.equals(nodeName);
-        } else if (cloudiatorProcess instanceof ClusterProcess) {
-            return ((ClusterProcess) cloudiatorProcess)
-                    .getNodes()
-                    .stream()
-                    .anyMatch(s -> s.equals(nodeId));
-        }
-        log.warn("Cloudiator process is neither SingleProcess nor ClusterProcess but: {}", cloudiatorProcess.getClass().getSimpleName());
-        return false;
-    }
-
-    public synchronized void deleteProcessGroup(String processGroupId) {
-        processGroups.removeIf(processGroup -> processGroupId.equals(processGroup.getId()));
+    public synchronized void deleteCloudiatorProcess(String cloudiatorProcessId) {
+        cloudiatorProcesses.removeIf(cloudiatorProcess -> cloudiatorProcessId.equals(cloudiatorProcess.getId()));
     }
 
     public synchronized void addJob(@NonNull Job job) {
@@ -157,15 +135,24 @@ public class ColosseumContext implements ContextOperations {
                 () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one job with the same name=%s", metricName)));
     }
 
-    public synchronized Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
-        return getElement(processGroups, processGroup -> processGroup.getProcesses()
-                .stream()
-                .filter(SingleProcess.class::isInstance)
-                .map(SingleProcess.class::cast)
-                .anyMatch(cloudiatorProcess -> cloudiatorProcess.getNode().equals(nodeId)),
-                    () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one SingleProcess containing process with the same node=%s", nodeId)));
+    public synchronized Optional<CloudiatorProcess> getSingleProcessByNodeId(String nodeId) {
+        return getElement(cloudiatorProcesses, cloudiatorProcess -> cloudiatorProcess instanceof SingleProcess && checkProcess(cloudiatorProcess, nodeId),
+                () -> new AmbiguousResultException(format("Ambiguous search result - there are more than one CloudiatorProcesses related to Node %s", nodeId)));
     }
 
+    private synchronized boolean checkProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {
+        if (cloudiatorProcess instanceof SingleProcess) {
+            String nodeName = ((SingleProcess) cloudiatorProcess).getNode();
+            return nodeId.equals(nodeName);
+        } else if (cloudiatorProcess instanceof ClusterProcess) {
+            return ((ClusterProcess) cloudiatorProcess)
+                    .getNodes()
+                    .stream()
+                    .anyMatch(s -> s.equals(nodeId));
+        }
+        log.warn("Cloudiator process is neither SingleProcess nor ClusterProcess but: {}", cloudiatorProcess.getClass().getSimpleName());
+        return false;
+    }
 
     public synchronized void addMonitor(@NonNull Monitor monitor) {
         Optional<Monitor> monitorOpt = getMonitor(monitor.getMetric());
@@ -226,8 +213,10 @@ public class ColosseumContext implements ContextOperations {
         schedules.clear();
         schedules.addAll(processApi.getSchedules());
 
-        processGroups.clear();
-        processGroups.addAll(processApi.findProcessGroups());
+        cloudiatorProcesses.clear();
+        for (Schedule schedule : schedules) {
+            cloudiatorProcesses.addAll(processApi.getProcesses(schedule.getId()));
+        }
 
         jobs.clear();
         jobs.addAll(jobApi.findJobs());

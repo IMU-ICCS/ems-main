@@ -43,11 +43,9 @@ public interface ColosseumApi {
 
     Optional<Node> getNode(String nodeId) throws ApiException;
 
+    Optional<CloudiatorProcess> getCloudiatorProcess(String cloudiatorProcessId) throws ApiException;
 
-    Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
-
-    Queue deleteProcess(String processId) throws ApiException;
-
+    Queue deleteCloudiatorProcess(String cloudiatorProcessId) throws ApiException;
 
     Monitor addMonitor(Monitor monitor) throws ApiException;
 
