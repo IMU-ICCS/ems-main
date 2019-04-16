@@ -32,21 +32,18 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
     @Override
     public void create(AdapterMonitor taskBody) {
 
-        Node node = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
+        String nodeId = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
+                .getId();
 
-        String nodeId = node.getId();
-
-        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(nodeId);
-        if (!processGroupByNodeId.isPresent()) {
-            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
+        Optional<CloudiatorProcess> cloudiatorProcessByNodeId = context.getSingleProcessByNodeId(nodeId);
+        if (!cloudiatorProcessByNodeId.isPresent()) {
+            log.warn("Could not find CloudiatorProcess containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
             return;
         }
-        ProcessGroup processGroup = processGroupByNodeId.get();
 
-        String fistProcessId = getFistProcessId(processGroup);
-        Monitor monitor = convertToMonitor(taskBody, fistProcessId);
-        MonitoringTarget monitoringTarget = createMonitoringTarget(getFistProcessId(processGroup));
+        Monitor monitor = convertToMonitor(taskBody, cloudiatorProcessByNodeId.get().getId());
+        MonitoringTarget monitoringTarget = createMonitoringTarget(cloudiatorProcessByNodeId.get().getId());
 
         Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), monitoringTarget);
         if (monitorOpt.isPresent()) {
@@ -61,14 +58,6 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             log.error("Could not add Monitor. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Monitor", e);
         }
-    }
-
-    private Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
-        return context.getProcessGroupByNodeId(nodeId);
-    }
-
-    private String getFistProcessId(ProcessGroup processGroup){
-        return processGroup.getProcesses().get(0).getId();
     }
 
     private Monitor convertToMonitor(AdapterMonitor taskBody, String processGroupId) {
@@ -128,19 +117,16 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
     @Override
     public void delete(AdapterMonitor taskBody) {
 
-        Node node = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
+        String nodeId = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
+                .getId();
 
-        String nodeId = node.getId();
-
-        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(nodeId);
-        if (!processGroupByNodeId.isPresent()) {
-            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
+        Optional<CloudiatorProcess> cloudiatorProcessByNodeId = context.getSingleProcessByNodeId(nodeId);
+        if (!cloudiatorProcessByNodeId.isPresent()) {
+            log.warn("Could not find CloudiatorProcess containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
             return;
         }
-        ProcessGroup processGroup = processGroupByNodeId.get();
-
-        MonitoringTarget monitoringTarget = createMonitoringTarget(getFistProcessId(processGroup));
+        MonitoringTarget monitoringTarget = createMonitoringTarget(cloudiatorProcessByNodeId.get().getId());
 
         if (!context.getMonitor(taskBody.getMetricName(), monitoringTarget).isPresent()) {
             log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());

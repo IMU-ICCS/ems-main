@@ -40,7 +40,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             Queue watch = watch(queue.getId(), id -> {
                 String nodeId = getId(id);
                 try {
-                    return Node.StateEnum.RUNNING.equals(api.getNode(nodeId)
+                    return !Node.StateEnum.PENDING.equals(api.getNode(nodeId)
                             .orElseThrow(() -> new AdapterException("Could not find Node for " + nodeId))
                             .getState());
                 } catch (ApiException e) {
@@ -50,9 +50,15 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             String nodeId = getId(watch.getLocation());
             Node node = api.getNode(nodeId)
                     .orElseThrow(() -> new AdapterException(format("Could not get Node with id %s", nodeId)));
-            context.addNode(node);
-            log.info("Response from queue {} successfully reached. New node is created", queue.getId());
 
+            boolean isRunning = Node.StateEnum.RUNNING.equals(node.getState());
+            if (isRunning) {
+                log.info("Response from queue {} successfully reached. New node is created", queue.getId());
+                context.addNode(node);
+            } else {
+                log.info("Response from queue {} successfully reached. But Node {} is in state {}", queue.getId(), nodeId, node.getState());
+                throw new AdapterException(format("Node %s is in %s state", nodeId, node.getState()));
+            }
         } catch (ApiException e) {
             log.error("Could not add Node. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Node", e);
