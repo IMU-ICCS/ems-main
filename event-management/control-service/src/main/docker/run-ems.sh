@@ -22,4 +22,8 @@ if [[ -z "$LOG_CONFIG_FILE" ]]; then
     LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-spring.xml
 fi
 
+echo "importing mule certificate"
+keytool -noprompt -storepass changeit -import -alias mule -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -file /config/mule-server.crt
+echo "importing mule certificate completed"
+
 $MELODIC_CONFIG_DIR/wait-for-cdo.sh && java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
