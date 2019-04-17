@@ -121,6 +121,7 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .arguments(((AdapterSparkInterface) adapterTaskInterface).getArguments())
                     .sparkArguments(((AdapterSparkInterface) adapterTaskInterface).getSparkArguments())
                     .sparkConfiguration(((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration())
+                    .processMapping(SparkInterface.ProcessMappingEnum.CLUSTER)
                     .type(SparkInterface.class.getSimpleName());
 
         } else if (adapterTaskInterface instanceof AdapterDockerInterface) {
