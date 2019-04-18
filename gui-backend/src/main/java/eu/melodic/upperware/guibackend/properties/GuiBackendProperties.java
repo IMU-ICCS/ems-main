@@ -25,7 +25,11 @@ public class GuiBackendProperties {
 
     @Valid
     @NotNull
-    private Mule mule;
+    private Mule esb;
+
+    @Valid
+    @NotNull
+    private Camunda camunda;
 
     @Valid
     private ProviderProperties aws;
@@ -48,6 +52,14 @@ public class GuiBackendProperties {
     @Getter
     @Setter
     public static class Mule {
+
+        @NotBlank
+        private String url;
+    }
+
+    @Getter
+    @Setter
+    public static class Camunda {
 
         @NotBlank
         private String host;

@@ -2,6 +2,7 @@ package eu.melodic.upperware.guibackend.controller.deployment;
 
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
+import eu.melodic.upperware.guibackend.controller.deployment.response.ProcessVariables;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.deployment.DeploymentService;
 import lombok.AllArgsConstructor;
@@ -33,10 +34,24 @@ public class DeploymentController {
         deploymentService.deleteXmiModel(xmiName);
     }
 
+    @GetMapping(value = "/xmi")
+    @ResponseStatus(HttpStatus.OK)
+    public void getAllXmiModels() {
+        log.info("GET request for all xmi models");
+        deploymentService.getAllXmiModels();
+    }
+
     @PostMapping(value = "/process")
     @ResponseStatus(HttpStatus.CREATED)
     public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest) {
         log.info("POST request for deployment new process");
         return deploymentService.createDeploymentProcess(deploymentRequest);
+    }
+
+    @GetMapping(value = "/process/{processId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ProcessVariables checkProcessVariables(@PathVariable("processId") String processId) {
+        log.info("GET request for check process variables with process id: {}", processId);
+        return deploymentService.getProcessVariables(processId);
     }
 }
