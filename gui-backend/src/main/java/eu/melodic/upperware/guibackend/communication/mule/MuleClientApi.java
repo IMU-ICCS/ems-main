@@ -27,7 +27,7 @@ public class MuleClientApi implements MuleApi {
     public DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest) {
         HttpEntity entity = createHttpEntity(deploymentProcessRequest);
 
-        String muleUrl = "http://" + guiBackendProperties.getMule().getHost() + ":" + guiBackendProperties.getMule().getPort() + "/api/frontend/deploymentProcess";
+        String muleUrl = guiBackendProperties.getEsb().getUrl() + "/api/frontend/deploymentProcess";
         ResponseEntity<DeploymentResponse> processResponse;
 
         try {

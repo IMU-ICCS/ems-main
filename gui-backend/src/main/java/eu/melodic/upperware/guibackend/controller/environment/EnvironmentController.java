@@ -1,13 +1,19 @@
 package eu.melodic.upperware.guibackend.controller.environment;
 
+import eu.melodic.upperware.guibackend.service.environment.EnvironmentService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/environment")
 @Slf4j
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class EnvironmentController {
+
+    private EnvironmentService environmentService;
 
     // todo
     @PutMapping(value = "/restart")
@@ -28,6 +34,7 @@ public class EnvironmentController {
     // todo
     @GetMapping(value = "/status")
     public String checkComponentsStatus() {
-        return "Components in OK status";
+        this.environmentService.checkComponentsStatus();
+        return "Checking components status not implemented";
     }
 }
