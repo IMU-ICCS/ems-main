@@ -64,6 +64,14 @@ public class CdoService {
         }
     }
 
+    // todo
+    public void getAllXmi() {
+        log.info("Getting all models from CDO not implemented yet");
+        CDOClient client = getCdoClient();
+        CDOTransaction cdoTransaction = client.openTransaction();
+        cdoTransaction.close();
+    }
+
     private CDOClient getCdoClient() {
         CDOClient client = new CDOClient();
         registerPackages(client);
