@@ -23,6 +23,10 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>jwt-commons</artifactId>
+        </dependency>
 
         <!-- Dependencies on other EMS modules -->
         <dependency>
