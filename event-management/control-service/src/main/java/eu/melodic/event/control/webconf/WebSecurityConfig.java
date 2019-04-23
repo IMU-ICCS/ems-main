@@ -12,7 +12,6 @@ package eu.melodic.event.control.webconf;
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -29,8 +28,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -81,22 +78,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         if (! StringUtils.isBlank(principalRequestValue)) {
             // initialize API-Key authentication filter
             apiKeyFilter = new APIKeyAuthFilter(principalRequestHeader, principalRequestParam);
-            apiKeyFilter.setAuthenticationManager(new AuthenticationManager() {
-                @Override
-                public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                    log.debug("APIKeyAuthFilter.authenticate(): Authenticating request: {}", authentication);
-                    if (StringUtils.isNotBlank(principalRequestValue)) {
-                        String principal = (String) authentication.getPrincipal();
-                        log.debug("APIKeyAuthFilter.authenticate(): Comparing configured api-key to request principal: api-key={}, principal={}", principalRequestValue, principal);
-                        if (!principalRequestValue.equals(principal)) {
-                            throw new BadCredentialsException("The API key was not found or not the expected value.");
-                        }
-                    }
-                    authentication.setAuthenticated(true);
-                    log.debug("APIKeyAuthFilter.authenticate(): Authenticated");
-                    return authentication;
-                }
-            });
+            apiKeyFilter.setAuthenticationManager(authenticationManager());
         }
 
         // Add JWT-based authentication, if configured
@@ -166,6 +148,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             return source;
         }
         return null;
+    }
+
+    // JWT authentication manager
+    @Bean
+    protected AuthenticationManager authenticationManager() {
+        return authentication -> {
+            log.debug("APIKeyAuthFilter.authenticate(): Authenticating request: {}", authentication);
+            if (StringUtils.isNotBlank(principalRequestValue)) {
+                String principal = (String) authentication.getPrincipal();
+                log.debug("APIKeyAuthFilter.authenticate(): Comparing configured api-key to request principal: api-key={}, principal={}", principalRequestValue, principal);
+                if (!principalRequestValue.equals(principal)) {
+                    throw new BadCredentialsException("The API key was not found or not the expected value.");
+                }
+            }
+            authentication.setAuthenticated(true);
+            log.debug("APIKeyAuthFilter.authenticate(): Authenticated");
+            return authentication;
+        };
     }
 
     // API Key authentication filter
