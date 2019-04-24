@@ -27,6 +27,9 @@ import java.util.Optional;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 @Slf4j
 public class BrokerCepProperties {
+
+    public enum KEY_ENTRY_GENERATE { YES, ALWAYS, NO, NEVER, IF_MISSING, IF_IP_CHANGED };
+
     @Value("${broker-name:broker}")
     private String brokerName;
     @Value("${broker-url:ssl://0.0.0.0:61616}")
@@ -73,6 +76,17 @@ public class BrokerCepProperties {
     private String keystoreType;
     @Value("${brokercep.ssl.keystore.password:}")
     private String keystorePassword;
+    @Value("${brokercep.ssl.certificate.file:}")
+    private String certificateFile;
+
+    @Value("${brokercep.ssl.entry.generate:IF-IP-CHANGED}")
+    private KEY_ENTRY_GENERATE keyEntryGenerate;
+    @Value("${brokercep.ssl.entry.name:ems}")
+    private String keyEntryName;
+    @Value("${brokercep.ssl.entry.dname:CN=ems,OU=Unknown,O=Unknown,L=Unknown,ST=Unknown,C=Unknown}")
+    private String keyEntryDName;
+    @Value("${brokercep.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
+    private String keyEntryExtSAN;
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;
