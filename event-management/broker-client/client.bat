@@ -13,10 +13,7 @@ if not exist target\dependency cmd /C "mvn dependency:copy-dependencies"
 set MELODIC_CONFIG_DIR=.
 
 setlocal
-set JAVA_OPTS= -Djavax.net.ssl.keyStore=..\config-files\broker-keystore.p12 ^
- -Djavax.net.ssl.keyStoreType=pkcs12 ^
- -Djavax.net.ssl.keyStorePassword=melodic ^
- -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 ^
+set JAVA_OPTS= -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
  -Djavax.net.ssl.trustStoreType=pkcs12 
 rem -Djavax.net.debug=all
