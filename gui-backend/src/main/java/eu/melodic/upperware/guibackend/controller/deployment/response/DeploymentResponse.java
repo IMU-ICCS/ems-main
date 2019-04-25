@@ -14,5 +14,4 @@ public class DeploymentResponse {
     private ProcessCreationResultItem processCreationResult;
     private Object createCloudsResponse;
     private int processAuthorizationStatus;
-    private Object ncQueryResponse;
 }

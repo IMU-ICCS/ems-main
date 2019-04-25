@@ -11,7 +11,7 @@ public class ProcessVariables {
 
     private VariableStatus cpCreationResultCode;
     private VariableStatus cpSolutionResultCode;
-    private VariableStatus applySolutionResultCode;
     private VariableStatus applicationDeploymentResultCode;
+    private VariableStatus discoveryServiceResult;
     private ProcessState processState;
 }
