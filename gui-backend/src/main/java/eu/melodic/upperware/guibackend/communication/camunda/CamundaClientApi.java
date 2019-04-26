@@ -49,10 +49,11 @@ public class CamundaClientApi implements CamundaApi {
     private ProcessVariables mapCamundaResponseToProcessVariables(CamundaVariablesResponse camundaVariables) {
         return ProcessVariables.builder()
                 .applicationDeploymentResultCode(camundaVariables.getApplicationDeploymentResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getApplicationDeploymentResultCode().getValue()))
-                .applySolutionResultCode(camundaVariables.getApplySolutionResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getApplySolutionResultCode().getValue()))
                 .cpCreationResultCode(camundaVariables.getCpCreationResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getCpCreationResultCode().getValue()))
                 .cpSolutionResultCode(camundaVariables.getCpSolutionResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getCpSolutionResultCode().getValue()))
+                .discoveryServiceResult(camundaVariables.getDiscoveryServiceResult() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getDiscoveryServiceResult().getValue()))
                 .processState(camundaVariables.getProcessState() == null ? ProcessState.UNKNOWN : ProcessState.valueOf(camundaVariables.getProcessState().getValue()))
                 .build();
     }
+
 }

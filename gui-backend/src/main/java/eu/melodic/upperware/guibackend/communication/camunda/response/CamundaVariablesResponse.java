@@ -12,7 +12,7 @@ import lombok.Setter;
 public class CamundaVariablesResponse {
     private CamundaVariableResponseItem cpCreationResultCode;
     private CamundaVariableResponseItem cpSolutionResultCode;
-    private CamundaVariableResponseItem applySolutionResultCode;
     private CamundaVariableResponseItem applicationDeploymentResultCode;
+    private CamundaVariableResponseItem discoveryServiceResult;
     private CamundaVariableResponseItem processState;
 }

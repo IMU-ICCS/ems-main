@@ -2,12 +2,9 @@ package eu.melodic.upperware.guibackend.communication.mule;
 
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
-import eu.melodic.upperware.guibackend.controller.deployment.response.NcQueryErrorResponse;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -45,16 +42,6 @@ public class MuleClientApi implements MuleApi {
             // Cloudiator service not working
             if (processResponse.getBody() != null && processResponse.getBody().getCreateCloudsResponse() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem in connection with internal service. Please try again or restart Melodic machine.");
-            }
-
-            // empty Node Candidates - invalid provider credentials or slow connection
-            if (processResponse.getBody() != null && processResponse.getBody().getProcessCreationResult() == null) {
-                ObjectMapper mapper = new ObjectMapper();
-                NcQueryErrorResponse ncQueryErrorResponse = mapper.convertValue(processResponse.getBody().getNcQueryResponse(), new TypeReference<NcQueryErrorResponse>() {
-                });
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by getting node candidates for provider %s: %s. " +
-                                "Your provider credentials are invalid or connection is to slow.",
-                        ncQueryErrorResponse.getProviderName(), ncQueryErrorResponse.getError()));
             }
 
             // catch exception if Mule not working
