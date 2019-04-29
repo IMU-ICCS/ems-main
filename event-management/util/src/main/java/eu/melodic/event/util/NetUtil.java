@@ -71,14 +71,25 @@ public class NetUtil {
 
     // ------------------------------------------------------------------------
 
+    private static String publicIpAddress = null;
+
     public static String getPublicIpAddress() {
+        if (publicIpAddress!=null) {
+            log.debug("NetUtil.getPublicIpAddress(): Returning cached Public IP address: {}", publicIpAddress);
+            return publicIpAddress;
+        }
+
         for (String[] service : SERVICES) {
             log.debug("NetUtil.getPublicIpAddress(): Contacting service {}", service[0]);
             String ip = getIpAddressUsingService(service[1]);
             if (StringUtils.isNotBlank(ip)) {
-                return ip.trim();
+                publicIpAddress = ip.trim();
+                log.debug("NetUtil.getPublicIpAddress(): Public IP address: {}", publicIpAddress);
+                return publicIpAddress;
             }
         }
+
+        log.debug("NetUtil.getPublicIpAddress(): No Public IP address or connectivity problems exist");
         return null;
     }
 
@@ -90,10 +101,12 @@ public class NetUtil {
             if (StringUtils.isNotBlank(response)) {
                 return response;
             }
-            log.debug("NetUtil.getIpAddressUsingService(): Response is null or blank");
         } catch (Exception ex) {
-            log.debug("NetUtil.getIpAddressUsingService(): Contacting service failed: url={}, exception={}", url, ex);
+            log.debug("NetUtil.getIpAddressUsingService(): Contacting service FAILED: url={}, EXCEPTION={}", url, ex.toString());
+            log.trace("NetUtil.getIpAddressUsingService(): Exception stack trace: ", ex);
         }
+
+        log.debug("NetUtil.getIpAddressUsingService(): Response is null or blank");
         return null;
     }
 
@@ -105,16 +118,24 @@ public class NetUtil {
 
     // ------------------------------------------------------------------------
 
+    private static String defaultIpAddress = null;
+
     public static String getDefaultIpAddress() {
+        if (defaultIpAddress!=null) {
+            log.debug("NetUtil.getDefaultIpAddress(): Returning cached Default IP address: {}", defaultIpAddress);
+            return defaultIpAddress;
+        }
+
         try {
             log.debug("NetUtil.getDefaultIpAddress(): Datagram address: {}", DATAGRAM_ADDRESS);
-            String address = getIpAddressWithDatagram(DATAGRAM_ADDRESS);
-            log.debug("NetUtil.getDefaultIpAddress(): Response: {}", address);
-            if (StringUtils.isNotBlank(address)) return address;
-            log.debug("NetUtil.getDefaultIpAddress(): Address is null or blank");
+            defaultIpAddress = getIpAddressWithDatagram(DATAGRAM_ADDRESS);
+            log.debug("NetUtil.getDefaultIpAddress(): Response: {}", defaultIpAddress);
+            if (StringUtils.isNotBlank(defaultIpAddress)) return defaultIpAddress;
         } catch (Exception ex) {
             log.debug("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception={}", DATAGRAM_ADDRESS, ex);
         }
+
+        log.debug("NetUtil.getDefaultIpAddress(): Address is null or blank");
         return null;
     }
 

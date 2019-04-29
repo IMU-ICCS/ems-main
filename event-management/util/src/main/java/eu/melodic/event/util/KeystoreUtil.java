@@ -10,6 +10,7 @@
 package eu.melodic.event.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.x509.GeneralNameType;
 import sun.security.tools.keytool.Main;
@@ -58,8 +59,16 @@ public class KeystoreUtil {
     public KeystoreUtil createKeyAndCert(String entryName, String keyGenAlg, int keySize, String startDate, int validity, String dn, String ext) throws Exception {
         boolean hasExt = (ext!=null && !ext.trim().isEmpty());
         if (hasExt) {
-            if (ext.indexOf("%{PUBLIC_IP}%")>=0) ext = ext.replace("%{PUBLIC_IP}%", NetUtil.getPublicIpAddress());
-            if (ext.indexOf("%{DEFAULT_IP}%")>=0) ext = ext.replace("%{DEFAULT_IP}%", NetUtil.getDefaultIpAddress());
+            if (ext.indexOf("%{PUBLIC_IP}%")>=0) {
+                String publicIp = NetUtil.getPublicIpAddress();
+                if (StringUtils.isBlank(publicIp)) publicIp = "127.0.0.1";
+                ext = ext.replace("%{PUBLIC_IP}%", publicIp);
+            }
+            if (ext.indexOf("%{DEFAULT_IP}%")>=0) {
+                String defaultIp = NetUtil.getDefaultIpAddress();
+                if (StringUtils.isBlank(defaultIp)) defaultIp="127.0.0.1";
+                ext = ext.replace("%{DEFAULT_IP}%", defaultIp);
+            }
         }
         String args[] = {
                 "-debug",
