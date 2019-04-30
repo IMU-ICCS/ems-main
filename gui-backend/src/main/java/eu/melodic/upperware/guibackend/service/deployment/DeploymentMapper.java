@@ -10,12 +10,13 @@ import eu.melodic.upperware.guibackend.communication.mule.deployment.CredentialR
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.model.provider.*;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DeploymentMapper {
@@ -31,20 +32,14 @@ public class DeploymentMapper {
     }
 
     private List<Object> mapCloudDefinitionsToRequest(List<CloudDefinition> cloudDefinitions) {
-        List<Object> result = new ArrayList<>();
-        cloudDefinitions.forEach(cloudDefinition -> {
-            CloudDefinitionRequest cloudDefinitionRequest = CloudDefinitionRequest.builder()
-                    .cloudConfiguration(mapCloudConfigurationToRequest(cloudDefinition.getCloudConfiguration()))
-                    .cloudType(cloudDefinition.getCloudType())
-                    .api(mapApiToRequest(cloudDefinition.getApi()))
-                    .credential(mapCredentialToRequest(cloudDefinition.getCredential()))
-                    .endpoint(cloudDefinition.getEndpoint().trim().equals("") ? null : cloudDefinition.getEndpoint())
-                    .id(RandomStringUtils.random(32, true, true))
-                    .build();
-            result.add(cloudDefinitionRequest);
-        });
-
-        return result;
+        return cloudDefinitions.stream().map(cloudDefinition -> CloudDefinitionRequest.builder()
+                .cloudConfiguration(mapCloudConfigurationToRequest(cloudDefinition.getCloudConfiguration()))
+                .cloudType(cloudDefinition.getCloudType())
+                .api(mapApiToRequest(cloudDefinition.getApi()))
+                .credential(mapCredentialToRequest(cloudDefinition.getCredential()))
+                .endpoint(StringUtils.isBlank(cloudDefinition.getEndpoint().trim()) ? null : cloudDefinition.getEndpoint())
+                .id(RandomStringUtils.random(32, true, true))
+                .build()).collect(Collectors.toList());
     }
 
     private CredentialRequest mapCredentialToRequest(Credential credential) {
@@ -68,12 +63,10 @@ public class DeploymentMapper {
     }
 
     private Map<String, String> mapCloudPropertiesToMap(List<ParentProperty> properties) {
-        Map<String, String> result = new HashMap<>();
-        properties.forEach(parentProperty -> parentProperty.getProperties()
-                .forEach(singleProperty -> {
-                    result.put(singleProperty.getKey(), singleProperty.getValue());
-                }));
-        return result;
+        return properties.stream()
+                .map(ParentProperty::getProperties)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(SingleProperty::getKey, SingleProperty::getValue));
     }
 
 }

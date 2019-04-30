@@ -4,6 +4,7 @@ import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -15,12 +16,13 @@ import java.io.File;
 
 @Service
 @Slf4j
+//@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class CdoService {
 
+//    private CDOClient client;
 
     public String getCdoName(String fileName, String fileExtension) {
-        return fileName
-                .substring(0, fileName.indexOf(fileExtension) - 1);
+        return StringUtils.removeEnd(fileName, fileExtension);
     }
 
     public boolean storeFileInCdo(String cdoName, File file) {
@@ -52,9 +54,10 @@ public class CdoService {
             try {
                 cdoTransaction.commit();
             } catch (CommitException e) {
-                cdoTransaction.close();
                 log.error("Error by commit transaction with deleting model", e);
                 return false;
+            } finally {
+                cdoTransaction.close();
             }
             return true;
         } else {
