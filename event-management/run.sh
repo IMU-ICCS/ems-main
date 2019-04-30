@@ -24,6 +24,8 @@ if [[ -z "$JASYPT_PASSWORD" ]]; then
     printf "Configuration Password: "
     read -s JASYPT_PASSWORD
 fi
+# Use this online service to encrypt/decrypt passwords:
+# https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
 # Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
 # BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5

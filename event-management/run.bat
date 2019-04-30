@@ -21,6 +21,8 @@ set JASYPT_PASSWORD=password
 if "%JASYPT_PASSWORD%"=="" (
     set /p JASYPT_PASSWORD="Configuration Password: "
 )
+rem Use this online service to encrypt/decrypt passwords:
+rem https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
 rem Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
 rem set BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
