@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend.communication.camunda;
 
+import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableResponseItem;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariablesResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.ProcessState;
 import eu.melodic.upperware.guibackend.controller.deployment.response.ProcessVariables;
@@ -48,12 +49,15 @@ public class CamundaClientApi implements CamundaApi {
 
     private ProcessVariables mapCamundaResponseToProcessVariables(CamundaVariablesResponse camundaVariables) {
         return ProcessVariables.builder()
-                .applicationDeploymentResultCode(camundaVariables.getApplicationDeploymentResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getApplicationDeploymentResultCode().getValue()))
-                .cpCreationResultCode(camundaVariables.getCpCreationResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getCpCreationResultCode().getValue()))
-                .cpSolutionResultCode(camundaVariables.getCpSolutionResultCode() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getCpSolutionResultCode().getValue()))
-                .discoveryServiceResult(camundaVariables.getDiscoveryServiceResult() == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariables.getDiscoveryServiceResult().getValue()))
+                .applicationDeploymentResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getApplicationDeploymentResultCode()))
+                .cpCreationResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getCpCreationResultCode()))
+                .cpSolutionResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getCpSolutionResultCode()))
+                .discoveryServiceResult(mapCamundaVariableToVariableStatus(camundaVariables.getDiscoveryServiceResult()))
                 .processState(camundaVariables.getProcessState() == null ? ProcessState.UNKNOWN : ProcessState.valueOf(camundaVariables.getProcessState().getValue()))
                 .build();
     }
 
+    private VariableStatus mapCamundaVariableToVariableStatus(CamundaVariableResponseItem camundaVariableResponseItem) {
+        return camundaVariableResponseItem == null ? VariableStatus.UNKOWN : VariableStatus.valueOf(camundaVariableResponseItem.getValue());
+    }
 }

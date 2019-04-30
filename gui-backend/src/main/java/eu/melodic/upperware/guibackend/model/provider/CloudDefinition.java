@@ -1,12 +1,14 @@
 package eu.melodic.upperware.guibackend.model.provider;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-@Builder
 public class CloudDefinition {
 
     private Integer id;

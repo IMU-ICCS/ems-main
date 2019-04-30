@@ -52,7 +52,7 @@ public class DeploymentService {
 
     public UploadXmiResponse uploadXmi(MultipartFile uploadXmiRequest) {
 
-        String cdoName = cdoService.getCdoName(uploadXmiRequest.getResource().getFilename(), "xmi");
+        String cdoName = cdoService.getCdoName(uploadXmiRequest.getResource().getFilename(), ".xmi");
 
         try {
             if (uploadXmiRequest.getOriginalFilename() == null) {

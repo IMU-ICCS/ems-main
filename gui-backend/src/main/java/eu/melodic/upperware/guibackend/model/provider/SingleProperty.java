@@ -1,12 +1,12 @@
 package eu.melodic.upperware.guibackend.model.provider;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Builder
-@Getter
-@Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class SingleProperty {
 
     private long id;
