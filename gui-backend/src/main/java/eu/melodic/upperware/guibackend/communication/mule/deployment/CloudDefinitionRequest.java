@@ -1,11 +1,9 @@
 package eu.melodic.upperware.guibackend.communication.mule.deployment;
 
 import eu.melodic.upperware.guibackend.model.provider.CloudType;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
 @Getter
 @Builder
 public class CloudDefinitionRequest {

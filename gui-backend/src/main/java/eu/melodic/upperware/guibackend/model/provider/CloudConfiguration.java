@@ -1,14 +1,16 @@
 package eu.melodic.upperware.guibackend.model.provider;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Builder
 @Getter
-@Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class CloudConfiguration {
     private long id;
 

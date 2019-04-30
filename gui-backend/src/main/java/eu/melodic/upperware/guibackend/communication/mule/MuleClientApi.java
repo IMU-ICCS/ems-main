@@ -46,7 +46,7 @@ public class MuleClientApi implements MuleApi {
 
             // catch exception if Mule not working
         } catch (ResourceAccessException ex) {
-            log.error("Error by connection with Mule service: {}", ex);
+            log.error("Error by connection with Mule service.", ex);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem in connection with internal service. Please try again or restart Melodic machine");
         }
 
