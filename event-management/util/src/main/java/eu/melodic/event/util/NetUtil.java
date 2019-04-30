@@ -17,12 +17,16 @@ import java.net.*;
 import java.util.*;
 
 /**
- * Event Management Server
+ * Network Utility
  */
 @Slf4j
 public class NetUtil {
 
-    public final static String[] addressFilter = {"127.", /*"192.168.", "10.", "172.16.", "172.31.", "169.254.",*/ "224.", "239.", "255.255.255.255"};
+    public final static String[] addressFilter = {
+            "127.",
+            /*"192.168.", "10.", "172.16.", "172.31.", "169.254.",*/
+            "224.", "239.", "255.255.255.255"
+    };
 
     public final static String DATAGRAM_ADDRESS = "8.8.8.8";
 
@@ -32,7 +36,29 @@ public class NetUtil {
             { "WhatIsMyIpAddress", "http://bot.whatismyipaddress.com/" }
     };
 
+    // ------------------------------------------------------------------------
+
+    protected static boolean cacheAddresses = true;
+
+    public static boolean isCacheAddresses() { return cacheAddresses; }
+    public static void setCacheAddresses(boolean b) { cacheAddresses = b; }
+
+    public static void clearCaches() {
+        ipAddresses = null;
+        publicIpAddress = null;
+        defaultIpAddress = null;
+    }
+
+    // ------------------------------------------------------------------------
+
+    private static List<InetAddress> ipAddresses = null;
+
     public static List<InetAddress> getIpAddresses() throws SocketException {
+        if (cacheAddresses && ipAddresses!=null) {
+            log.debug("NetUtil.getIpAddresses(): Returning cached IP addresses: {}", ipAddresses);
+            return ipAddresses;
+        }
+
         Vector<InetAddress> list = new Vector<>();
         Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
         while (en.hasMoreElements()) {
@@ -52,6 +78,7 @@ public class NetUtil {
                 }
             }
         }
+        if (cacheAddresses) ipAddresses = Collections.unmodifiableList(list);
         return list;
     }
 
@@ -74,7 +101,7 @@ public class NetUtil {
     private static String publicIpAddress = null;
 
     public static String getPublicIpAddress() {
-        if (publicIpAddress!=null) {
+        if (cacheAddresses && publicIpAddress!=null) {
             log.debug("NetUtil.getPublicIpAddress(): Returning cached Public IP address: {}", publicIpAddress);
             return publicIpAddress;
         }
@@ -83,9 +110,10 @@ public class NetUtil {
             log.debug("NetUtil.getPublicIpAddress(): Contacting service {}", service[0]);
             String ip = getIpAddressUsingService(service[1]);
             if (StringUtils.isNotBlank(ip)) {
-                publicIpAddress = ip.trim();
-                log.debug("NetUtil.getPublicIpAddress(): Public IP address: {}", publicIpAddress);
-                return publicIpAddress;
+                String addr = ip.trim();
+                if (cacheAddresses) publicIpAddress = addr;
+                log.debug("NetUtil.getPublicIpAddress(): Public IP address: {}", addr);
+                return addr;
             }
         }
 
@@ -121,16 +149,17 @@ public class NetUtil {
     private static String defaultIpAddress = null;
 
     public static String getDefaultIpAddress() {
-        if (defaultIpAddress!=null) {
+        if (cacheAddresses && defaultIpAddress!=null) {
             log.debug("NetUtil.getDefaultIpAddress(): Returning cached Default IP address: {}", defaultIpAddress);
             return defaultIpAddress;
         }
 
         try {
             log.debug("NetUtil.getDefaultIpAddress(): Datagram address: {}", DATAGRAM_ADDRESS);
-            defaultIpAddress = getIpAddressWithDatagram(DATAGRAM_ADDRESS);
-            log.debug("NetUtil.getDefaultIpAddress(): Response: {}", defaultIpAddress);
-            if (StringUtils.isNotBlank(defaultIpAddress)) return defaultIpAddress;
+            String addr = getIpAddressWithDatagram(DATAGRAM_ADDRESS);
+            if (cacheAddresses) defaultIpAddress = addr;
+            log.debug("NetUtil.getDefaultIpAddress(): Response: {}", addr);
+            if (StringUtils.isNotBlank(defaultIpAddress)) return addr;
         } catch (Exception ex) {
             log.debug("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception={}", DATAGRAM_ADDRESS, ex);
         }
