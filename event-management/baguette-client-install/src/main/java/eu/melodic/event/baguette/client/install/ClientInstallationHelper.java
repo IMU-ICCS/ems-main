@@ -25,6 +25,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -180,7 +181,7 @@ public class ClientInstallationHelper implements InitializingBean {
     private String _prepareUrl(String urlTemplate, String baseUrl) {
         return urlTemplate
                 .replace("%{BASE_URL}%", baseUrl)
-                .replace("%{PUBLIC_IP}%", NetUtil.getPublicIpAddress())
-                .replace("%{DEFAULT_IP}%", NetUtil.getDefaultIpAddress());
+                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(""))
+                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(""));
     }
 }
