@@ -88,6 +88,10 @@ public class BrokerCepProperties {
     @Value("${brokercep.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
     private String keyEntryExtSAN;
 
+    public String getKeyEntryName() { return _prepareUrl(keyEntryName); }
+    public String getKeyEntryDName() { return _prepareUrl(keyEntryDName); }
+    public String getKeyEntryExtSAN() { return _prepareUrl(keyEntryExtSAN); }
+
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;
     @Value("${additional-broker-credentials:}")
