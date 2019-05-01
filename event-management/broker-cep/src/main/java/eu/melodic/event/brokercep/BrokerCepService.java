@@ -126,6 +126,10 @@ public class BrokerCepService {
         } catch (Exception ex) {
             log.error("BrokerCepService.clearState(): Failed to clear Broker state: ", ex);
         }
+
+        // Reset Broker-CEP Consumer connection and session
+        brokerCepBridge.initialize();
+        log.info("BrokerCepService.clearState(): Broker-CEP Consumer has been re-initialized");
     }
 
     public synchronized void addEventTypes(Set<String> eventTypeNames, String[] eventPropertyNames, Class[] eventPropertyTypes) {
@@ -301,6 +305,10 @@ public class BrokerCepService {
     }
 
     public String getBrokerPassword() {
+        return brokerConfig.getBrokerLocalUserPassword();
+    }
+
+    public String getBrokerCertificate() {
         return brokerConfig.getBrokerLocalUserPassword();
     }
 }
