@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +32,10 @@ public class KeystoreUtil {
     public final static int DEFAULT_KEY_SIZE = 2048;
     public final static String DEFAULT_CERT_START_DATE = "-1d";
     public final static int DEFAULT_CERT_VALIDITY = 3650;
+
+    public final static String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+    public final static String END_CERT = "-----END CERTIFICATE-----";
+    public final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private String keystoreFile;
     private String keystoreType;
@@ -179,6 +184,18 @@ public class KeystoreUtil {
             keystore.load(fis, keystorePassword.toCharArray());
         }
         return (X509Certificate)keystore.getCertificate(entryName);
+    }
+
+    public String getEntryCertificatePEM(String entryName) throws Exception {
+        X509Certificate cert = getEntryCertificate(entryName);
+        log.debug("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
+        byte[] certBytes = cert.getEncoded();
+        Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
+        String certEncoded = new String(encoder.encode(certBytes));
+        String certPem =
+                BEGIN_CERT + LINE_SEPARATOR + certEncoded + LINE_SEPARATOR + END_CERT;
+        log.debug("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (PEM):\n{}", certPem);
+        return certPem;
     }
 
     public List<String> getEntryNames(String entryName, boolean onlyIp) throws Exception {
