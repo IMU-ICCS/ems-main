@@ -29,7 +29,11 @@ MELODIC_CONFIG_DIR=$BASEDIR/conf
 PAASAGE_CONFIG_DIR=$BASEDIR/conf
 echo "MELODIC_CONFIG_DIR=$MELODIC_CONFIG_DIR"
 
-JAVA_OPTS= -Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/broker-truststore.p12
+JAVA_OPTS= -Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-
+
+
+
+broker-truststore.p12
 JAVA_OPTS=${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12
 
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR BASEDIR JAVA_OPTS

@@ -16,7 +16,7 @@ set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 
 cd %BASEDIR%
 
-set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\broker-truststore.p12 ^
+set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
  -Djavax.net.ssl.trustStoreType=pkcs12
 
