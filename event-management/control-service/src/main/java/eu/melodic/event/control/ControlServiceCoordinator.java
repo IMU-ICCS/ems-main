@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
@@ -55,6 +56,8 @@ public class ControlServiceCoordinator {
     private BrokerCepService brokerCep;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private PasswordUtil passwordUtil;
 
     private AtomicBoolean inUse = new AtomicBoolean();
     private Map<String, TranslationContext> camelToTcCache = new HashMap<>();
@@ -280,7 +283,7 @@ public class ControlServiceCoordinator {
                         String topicName = topicRules.getKey();
                         for (String rule : topicRules.getValue()) {
                             brokerCep.getCepService().addStatementSubscriber(
-                                    new CscStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep)
+                                    new CscStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
                             );
                         }
                     }
@@ -498,18 +501,21 @@ public class ControlServiceCoordinator {
         private String topic;
         private String statement;
         private BrokerCepService brokerCep;
+        private PasswordUtil passwordUtil;
 
         public void update(java.util.Map<String, Object> eventMap) {
             try {
                 log.info("- New event: subscriber={}, topic={}, payload={}", name, topic, eventMap);
 
                 // Publish new event to Local Broker topic
-                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrl();
-                log.info("- Publishing event to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
-                        name, localBrokerUrl, topic, eventMap);
-                brokerCep.publishEvent(localBrokerUrl, topic, eventMap);
-                log.info("- Event published to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
-                        name, localBrokerUrl, topic, eventMap);
+                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
+                String username = brokerCep.getBrokerUsername();
+                String password = brokerCep.getBrokerPassword();
+                log.info("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+                        name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
+                brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
+                log.info("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+                        name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
 
             } catch (Exception ex) {
                 log.error("- New event: ERROR: subscriber={}, topic={}, exception=", name, topic, ex);
