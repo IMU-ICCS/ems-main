@@ -16,6 +16,7 @@ import org.cryptacular.x509.GeneralNameType;
 import sun.security.tools.keytool.Main;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -179,11 +180,16 @@ public class KeystoreUtil {
     }
 
     public X509Certificate getEntryCertificate(String entryName) throws Exception {
-        KeyStore keystore = KeyStore.getInstance(keystoreType);
-        try (FileInputStream fis = new FileInputStream(keystoreFile)) {
-            keystore.load(fis, keystorePassword.toCharArray());
+        try {
+            KeyStore keystore = KeyStore.getInstance(keystoreType);
+            try (FileInputStream fis = new FileInputStream(keystoreFile)) {
+                keystore.load(fis, keystorePassword.toCharArray());
+            }
+            return (X509Certificate) keystore.getCertificate(entryName);
+        } catch (FileNotFoundException ex) {
+            log.warn("KeystoreUtil.getEntryCertificate(): Keystore file NOT FOUND: {}", keystoreFile);
+            return null;
         }
-        return (X509Certificate)keystore.getCertificate(entryName);
     }
 
     public String getEntryCertificatePEM(String entryName) throws Exception {
