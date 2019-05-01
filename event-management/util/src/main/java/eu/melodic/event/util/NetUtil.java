@@ -116,8 +116,9 @@ public class NetUtil {
                 return addr;
             }
         }
+        if (cacheAddresses) publicIpAddress = "";
 
-        log.debug("NetUtil.getPublicIpAddress(): No Public IP address or connectivity problems exist");
+        log.warn("NetUtil.getPublicIpAddress(): No Public IP address or connectivity problems exist");
         return null;
     }
 
@@ -130,7 +131,7 @@ public class NetUtil {
                 return response;
             }
         } catch (Exception ex) {
-            log.debug("NetUtil.getIpAddressUsingService(): Contacting service FAILED: url={}, EXCEPTION={}", url, ex.toString());
+            log.warn("NetUtil.getIpAddressUsingService(): Contacting service FAILED: url={}, EXCEPTION={}", url, ex.toString());
             log.trace("NetUtil.getIpAddressUsingService(): Exception stack trace: ", ex);
         }
 
@@ -161,10 +162,11 @@ public class NetUtil {
             log.debug("NetUtil.getDefaultIpAddress(): Response: {}", addr);
             if (StringUtils.isNotBlank(defaultIpAddress)) return addr;
         } catch (Exception ex) {
-            log.debug("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception={}", DATAGRAM_ADDRESS, ex);
+            log.warn("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception=", DATAGRAM_ADDRESS, ex);
+            if (cacheAddresses) defaultIpAddress = "";
         }
 
-        log.debug("NetUtil.getDefaultIpAddress(): Address is null or blank");
+        log.warn("NetUtil.getDefaultIpAddress(): Address is null or blank");
         return null;
     }
 

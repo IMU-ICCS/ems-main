@@ -194,7 +194,7 @@ public class KeystoreUtil {
         String certEncoded = new String(encoder.encode(certBytes));
         String certPem =
                 BEGIN_CERT + LINE_SEPARATOR + certEncoded + LINE_SEPARATOR + END_CERT;
-        log.debug("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (PEM):\n{}", certPem);
+        log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (PEM):\n{}", certPem);
         return certPem;
     }
 

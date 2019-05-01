@@ -13,6 +13,7 @@ import eu.melodic.event.util.NetUtil;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -49,10 +50,22 @@ public class BrokerCepProperties {
     private String publicIpAddress;
 
     protected String _prepareUrl(String url) {
-        if (url==null) return null;
-        return url
-                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(publicIpAddress))
-                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(defaultIpAddress));
+        return _prepareValue(url, "");
+    }
+
+    protected String _prepareValue(String value, String defaultValue) {
+        if (value==null) return null;
+        String pubIpAddr = NetUtil.getPublicIpAddress();
+        pubIpAddr = StringUtils.isNotBlank(pubIpAddr)
+                ? pubIpAddr
+                : StringUtils.isNotBlank(this.publicIpAddress) ? this.publicIpAddress : defaultValue;
+        String defIpAddr = NetUtil.getDefaultIpAddress();
+        defIpAddr = StringUtils.isNotBlank(defIpAddr)
+                ? defIpAddr
+                : StringUtils.isNotBlank(this.defaultIpAddress) ? this.defaultIpAddress: defaultValue;
+        return value
+                .replace("%{PUBLIC_IP}%", pubIpAddr)
+                .replace("%{DEFAULT_IP}%", defIpAddr);
     }
 
     @Value("${broker-url-properties:}")
@@ -88,9 +101,9 @@ public class BrokerCepProperties {
     @Value("${brokercep.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
     private String keyEntryExtSAN;
 
-    public String getKeyEntryName() { return _prepareUrl(keyEntryName); }
-    public String getKeyEntryDName() { return _prepareUrl(keyEntryDName); }
-    public String getKeyEntryExtSAN() { return _prepareUrl(keyEntryExtSAN); }
+    public String getKeyEntryNameValue() { return _prepareValue(keyEntryName, "127.0.0.1"); }
+    public String getKeyEntryDNameValue() { return _prepareValue(keyEntryDName, "127.0.0.1"); }
+    public String getKeyEntryExtSANValue() { return _prepareValue(keyEntryExtSAN, "127.0.0.1"); }
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;

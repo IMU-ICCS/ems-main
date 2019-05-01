@@ -74,6 +74,10 @@
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
+    <logger name="eu.melodic.event.util.NetUtil" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="LOG_FILE"/>
+    </logger>
 
     <logger name="eu.melodic.event.control.util.LogPrintStream" level="ALL" additivity="false">
         <appender-ref ref="LOGSTREAM"/>
