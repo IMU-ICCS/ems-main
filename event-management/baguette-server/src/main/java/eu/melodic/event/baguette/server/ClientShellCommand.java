@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
@@ -40,15 +41,16 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private ExitCallback callback;
     private boolean callbackCalled;
 
-    @Getter
-    @Setter
+    @Getter @Setter
     private String id;
-    @Getter
-    @Setter
+    @Getter @Setter
     private boolean echoOn = false;
 
+    private String clientId;
     private String clientIpAddress;
     private int clientPort = -1;
+    @Getter
+    private String clientCertificate;
 
     private ServerCoordinator coordinator;
     private boolean clientAddressOverrideAllowed;
@@ -149,15 +151,38 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     protected void getClientInfoFromGreeting(String greetingInfo) {
-        if (greetingInfo == null) return;
+        if (StringUtils.isBlank(greetingInfo)) return;
         String[] clientInfo = greetingInfo.trim().split(" ");
-        this.id = clientInfo[0].trim();
 
-        if (clientAddressOverrideAllowed) {
-            this.clientIpAddress = clientInfo.length > 1 ? clientInfo[1].trim() : null;
-            try {
-                this.clientPort = clientInfo.length > 2 ? Integer.parseInt(clientInfo[2].trim()) : -1;
-            } catch (Exception ex) {
+        for (String s : clientInfo) {
+            if (StringUtils.isBlank(s)) continue;
+            if (s.startsWith("id=")) {
+                this.clientId = s.substring("id=".length()).replace("~~", " ");
+                log.info("{}--> Client Id: {}", id, clientId);
+            } else
+            if (s.startsWith("address=")) {
+                if (clientAddressOverrideAllowed) {
+                    this.clientIpAddress = s.substring("address=".length());
+                    log.info("{}--> Effective IP: {}", id, clientIpAddress);
+                }
+            } else
+            if (s.startsWith("port=")) {
+                if (clientAddressOverrideAllowed) {
+                    try {
+                        this.clientPort = Integer.parseInt(s.substring("port=".length()));
+                        log.info("{}--> Effective Port: {}", id, clientPort);
+                    } catch (Exception ex) {
+                    }
+                }
+            } else
+            if (s.startsWith("cert=")) {
+                this.clientCertificate = s.substring("cert=".length())
+                        .replace("~~", " ")
+                        .replace("##", "\r\n")
+                        .replace("$$", "\n");
+                log.info("{}--> Client Cert.: {}", id, clientCertificate);
+            } else {
+                log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);
             }
         }
     }

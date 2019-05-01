@@ -309,6 +309,6 @@ public class BrokerCepService {
     }
 
     public String getBrokerCertificate() {
-        return brokerConfig.getBrokerLocalUserPassword();
+        return brokerConfig.getBrokerCertificate();
     }
 }

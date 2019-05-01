@@ -316,7 +316,7 @@ public class ControlServiceCoordinator {
                 baguette.setTopologyConfiguration(_TC.getG2T(), _TC.getG2R(), _TC.getTopicConnections(), constants,
                         _TC.getFunctionDefinitions(), upperwareGrouping,
                         brokerCep.getBrokerCepProperties().getBrokerUrlForClients(),
-                        brokerCep.getBrokerUsername(), brokerCep.getBrokerPassword());
+                        brokerCep);
             } catch (Exception ex) {
                 log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
             }

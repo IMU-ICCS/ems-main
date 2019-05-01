@@ -328,7 +328,7 @@ public class CommandExecutor {
             String password = (String) all.get("common-broker-password");
 
             log.info("SETTING GROUPING CONFIGURATION: grouping={}, configuration={}, event-types={}, rules={}, connections={}, constants={}, function-definitions={}",
-                    groupingName, eventTypes, config, rules, connections, constants, functionDefs);
+                    groupingName, config, eventTypes, rules, connections, constants, functionDefs);
             Grouping grouping = groupings.get(groupingName);
             if (grouping == null) {
                 grouping = new Grouping(groupingName);

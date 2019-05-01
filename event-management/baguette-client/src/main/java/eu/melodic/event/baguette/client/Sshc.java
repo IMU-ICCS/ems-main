@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
@@ -29,6 +30,7 @@ import java.net.SocketAddress;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.Properties;
 
 //import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
@@ -50,6 +52,8 @@ public class Sshc {
     private boolean started = false;
     @Autowired
     private CommandExecutor commandExecutor;
+    @Autowired
+    BrokerCepService brokerCepService;
 
     private InputStream in;
     private PrintStream out;
@@ -207,7 +211,21 @@ public class Sshc {
 
     protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        out.println(String.format("-HELLO FROM CLIENT: %s %s", clientId, config.getProperty("debug.fake-ip-address", "")));
+        String certOneLine = Optional
+                .ofNullable(brokerCepService.getBrokerCertificate())
+                .orElse("")
+                .replace(" ","~~")
+                .replace("\r\n","##")
+                .replace("\n","$$");
+        String clientAddress = config.getProperty("debug.fake-ip-address", "");
+        int clientPort = -1;
+        String zz;
+        out.println(zz=String.format("-HELLO FROM CLIENT: id=%s address=%s port=%d cert=%s",
+                clientId.replace(" ", "~~"),
+                clientAddress,
+                clientPort,
+                certOneLine));
+        out.flush();
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
