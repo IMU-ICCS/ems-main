@@ -73,13 +73,14 @@ public class BrokerConfig implements InitializingBean {
     private String brokerLocalAdminPassword;
     private String brokerUsername;
     private String brokerPassword;
+    private String brokerCert;
 
     @Override
-    public void afterPropertiesSet() {
+    public void afterPropertiesSet() throws Exception {
         _initializeSecurity();
     }
 
-    protected synchronized void _initializeSecurity() {
+    protected synchronized void _initializeSecurity() throws Exception {
         log.debug("BrokerConfig._initializeSecurity(): Initializing broker security: initialize-authentication={}, initialize-authorization={}",
                 properties.isAuthenticationEnabled(), properties.isAuthorizationEnabled());
 
@@ -127,6 +128,98 @@ public class BrokerConfig implements InitializingBean {
                 log.error("BrokerConfig._initializeSecurity(): Authorization will not be configured because authentication is not enabled");
             }
         }
+
+        // Initialize Key pair and Certificate for SSL broker
+        if (getBrokerUrl().startsWith("ssl")) {
+            log.debug("BrokerConfig._initializeSecurity(): Initializing Broker key and certificate...");
+            initializeKeyPairAndCert();
+            log.debug("BrokerConfig._initializeSecurity(): Broker key and certificate initialization has been completed");
+        } else {
+            log.debug("BrokerConfig._initializeSecurity(): Broker key and certificate NOT initialized");
+        }
+    }
+
+    private void initializeKeyPairAndCert() throws Exception {
+        log.debug("BrokerConfig.initializeKeyAndCert(): Key pair and Certificate settings:");
+        log.debug("    Keystore file: {}", properties.getKeystoreFile());
+        log.debug("    Keystore type: {}", properties.getKeystoreType());
+        log.debug("    Keystore password: {}", passwordUtil.encodePassword(properties.getKeystorePassword()));
+        log.debug("    Trust store file: {}", properties.getTruststoreFile());
+        log.debug("    Trust store type: {}", properties.getTruststoreType());
+        log.debug("    Trust store password: {}", passwordUtil.encodePassword(properties.getTruststorePassword()));
+        log.debug("    Certificate file: {}", properties.getCertificateFile());
+        log.debug("    Entry name:  {}", properties.getKeyEntryName());
+        log.debug("    Entry DName: {}", properties.getKeyEntryDName());
+        log.debug("    Entry SAN:   {}", properties.getKeyEntryExtSAN());
+        log.debug("    Entry Gen.:  {}", properties.getKeyEntryGenerate());
+
+        KEY_ENTRY_GENERATE keGen = properties.getKeyEntryGenerate();
+        boolean gen = (keGen==KEY_ENTRY_GENERATE.YES || keGen==KEY_ENTRY_GENERATE.ALWAYS);
+
+        // Check if key entry is missing
+        if (keGen==KEY_ENTRY_GENERATE.IF_MISSING) {
+            boolean containsEntry = KeystoreUtil
+                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .containsEntry(properties.getKeyEntryName());
+            if (containsEntry) {
+                log.debug("    Keystore already contains entry: {}", properties.getKeyEntryName());
+            } else {
+                log.debug("    Keystore does not contain entry: {}", properties.getKeyEntryName());
+                gen = true;
+            }
+        }
+
+        // Check if IP address is in subject CN or SAN list
+        if (keGen==KEY_ENTRY_GENERATE.IF_IP_CHANGED) {
+            // get subject CN and SAN list (IP's only)
+            List<String> addrList = KeystoreUtil
+                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .getEntryNames(properties.getKeyEntryName(), true);
+            log.debug("    Entry addresses: {}", addrList);
+
+            // get current Default and Public IP addresses
+            String defaultIp = NetUtil.getDefaultIpAddress();
+            String publicIp = NetUtil.getPublicIpAddress();
+
+            // check if Default and Public IP addresses are contained in 'addrList'
+            boolean defaultFound = addrList.stream().anyMatch(s -> s.equals(defaultIp));
+            boolean publicFound = addrList.stream().anyMatch(s -> s.equals(publicIp));
+            gen = !defaultFound || !publicFound;
+            log.debug("    Address has changed: {}  (default-ip={}, public-ip={})", gen, defaultFound, publicFound);
+        }
+
+        // Generate new key pair and certificate, and update keystore and trust store
+        if (gen) {
+            log.debug("    Generating new Key pair and Certificate for: {}", properties.getKeyEntryName());
+
+            KeystoreUtil ksUtil = KeystoreUtil
+                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword());
+            if (StringUtils.isBlank(properties.getKeyEntryExtSAN())) {
+                log.debug("    Create/Replace entry (with SAN auto-generate): {}", properties.getKeyEntryName());
+                ksUtil.createOrReplaceKeyAndCertWithSAN(properties.getKeyEntryName(), properties.getKeyEntryDName());
+            } else {
+                log.debug("    Create/Replace entry and SAN: entry={}, san={}", properties.getKeyEntryName(), properties.getKeyEntryExtSAN());
+                String extSAN = "SAN=" + properties.getKeyEntryExtSAN().trim();
+                ksUtil.createOrReplaceKeyAndCert(properties.getKeyEntryName(), properties.getKeyEntryDName(), extSAN);
+            }
+            log.debug("    Exporting certificate to: {}", properties.getCertificateFile());
+            ksUtil.exportCertToFile(properties.getKeyEntryName(), properties.getCertificateFile());
+
+            KeystoreUtil tsUtil = KeystoreUtil
+                    .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword());
+            log.debug("    Importing certificate to trust store: {}", properties.getTruststoreFile());
+            tsUtil.importAndReplaceCertFromFile(properties.getKeyEntryName(), properties.getCertificateFile());
+
+            log.debug("    Key pair and Certificate generation completed");
+        } else {
+            log.debug("    Key pair and Certificate will not be re-generated");
+        }
+
+        // Load PEM certificate
+        brokerCert = KeystoreUtil
+                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .getEntryCertificatePEM(properties.getKeyEntryName());
+        log.debug("    Broker Certificate (PEM):\n{}", brokerCert);
     }
 
     public String getBrokerName() {
@@ -137,6 +230,11 @@ public class BrokerConfig implements InitializingBean {
     public String getBrokerUrl() {
         log.trace("BrokerConfig.getBrokerUrl(): broker-url: {}", properties.getBrokerUrl());
         return properties.getBrokerUrl();
+    }
+
+    public String getBrokerCertificate() {
+        log.trace("BrokerConfig.getBrokerCertificate(): Broker certificate (PEM):\n{}", brokerCert);
+        return brokerCert;
     }
 
     public String getBrokerLocalAdminUsername() {
@@ -279,9 +377,6 @@ public class BrokerConfig implements InitializingBean {
     }
 
     private BrokerService _createSslBrokerService() throws Exception {
-        // Initialize Key pair and Certificate for SSL broker
-        initializeKeyPairAndCert();
-
         // Create new SSL broker service instance
         SslBrokerService brokerService = new SslBrokerService();
 
@@ -293,83 +388,6 @@ public class BrokerConfig implements InitializingBean {
         brokerService.addSslConnector(properties.getBrokerUrl() + props, keystore, truststore, null);
 
         return brokerService;
-    }
-
-    private void initializeKeyPairAndCert() throws Exception {
-        log.debug("BrokerConfig.initializeKeyAndCert(): Key pair and Certificate settings:");
-        log.debug("    Keystore file: {}", properties.getKeystoreFile());
-        log.debug("    Keystore type: {}", properties.getKeystoreType());
-        log.debug("    Keystore password: {}", passwordUtil.encodePassword(properties.getKeystorePassword()));
-        log.debug("    Trust store file: {}", properties.getTruststoreFile());
-        log.debug("    Trust store type: {}", properties.getTruststoreType());
-        log.debug("    Trust store password: {}", passwordUtil.encodePassword(properties.getTruststorePassword()));
-        log.debug("    Certificate file: {}", properties.getCertificateFile());
-        log.debug("    Entry name:  {}", properties.getKeyEntryName());
-        log.debug("    Entry DName: {}", properties.getKeyEntryDName());
-        log.debug("    Entry SAN:   {}", properties.getKeyEntryExtSAN());
-        log.debug("    Entry Gen.:  {}", properties.getKeyEntryGenerate());
-
-        KEY_ENTRY_GENERATE keGen = properties.getKeyEntryGenerate();
-        boolean gen = (keGen==KEY_ENTRY_GENERATE.YES || keGen==KEY_ENTRY_GENERATE.ALWAYS);
-
-        // Check if key entry is missing
-        if (keGen==KEY_ENTRY_GENERATE.IF_MISSING) {
-            boolean containsEntry = KeystoreUtil
-                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
-                    .containsEntry(properties.getKeyEntryName());
-            if (containsEntry) {
-                log.debug("    Keystore already contains entry: {}", properties.getKeyEntryName());
-            } else {
-                log.debug("    Keystore does not contain entry: {}", properties.getKeyEntryName());
-                gen = true;
-            }
-        }
-
-        // Check if IP address is in subject CN or SAN list
-        if (keGen==KEY_ENTRY_GENERATE.IF_IP_CHANGED) {
-            // get subject CN and SAN list (IP's only)
-            List<String> addrList = KeystoreUtil
-                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
-                    .getEntryNames(properties.getKeyEntryName(), true);
-            log.debug("    Entry addresses: {}", addrList);
-
-            // get current Default and Public IP addresses
-            String defaultIp = NetUtil.getDefaultIpAddress();
-            String publicIp = NetUtil.getPublicIpAddress();
-
-            // check if Default and Public IP addresses are contained in 'addrList'
-            boolean defaultFound = addrList.stream().anyMatch(s -> s.equals(defaultIp));
-            boolean publicFound = addrList.stream().anyMatch(s -> s.equals(publicIp));
-            gen = !defaultFound || !publicFound;
-            log.debug("    Address has changed: {}  (default-ip={}, public-ip={})", gen, defaultFound, publicFound);
-        }
-
-        // Generate new key pair and certificate, and update keystore and trust store
-        if (gen) {
-            log.debug("    Generating new Key pair and Certificate for: {}", properties.getKeyEntryName());
-
-            KeystoreUtil ksUtil = KeystoreUtil
-                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword());
-            if (StringUtils.isBlank(properties.getKeyEntryExtSAN())) {
-                log.debug("    Create/Replace entry (with SAN auto-generate): {}", properties.getKeyEntryName());
-                ksUtil.createOrReplaceKeyAndCertWithSAN(properties.getKeyEntryName(), properties.getKeyEntryDName());
-            } else {
-                log.debug("    Create/Replace entry and SAN: entry={}, san={}", properties.getKeyEntryName(), properties.getKeyEntryExtSAN());
-                String extSAN = "SAN=" + properties.getKeyEntryExtSAN().trim();
-                ksUtil.createOrReplaceKeyAndCert(properties.getKeyEntryName(), properties.getKeyEntryDName(), extSAN);
-            }
-            log.debug("    Exporting certificate to: {}", properties.getCertificateFile());
-            ksUtil.exportCertToFile(properties.getKeyEntryName(), properties.getCertificateFile());
-
-            KeystoreUtil tsUtil = KeystoreUtil
-                    .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword());
-            log.debug("    Importing certificate to trust store: {}", properties.getTruststoreFile());
-            tsUtil.importAndReplaceCertFromFile(properties.getKeyEntryName(), properties.getCertificateFile());
-
-            log.debug("    Key pair and Certificate generation completed");
-        } else {
-            log.debug("    Key pair and Certificate will not be re-generated");
-        }
     }
 
     private KeyManager[] readKeystore() throws Exception {
@@ -397,15 +415,14 @@ public class BrokerConfig implements InitializingBean {
     }
 
     /**
-     * Creates an new JMS client connection factory
-     *
-     * @return
+     * Creates a new connection factory
      */
     @Bean
     public ActiveMQConnectionFactory connectionFactory() {
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
         String brokerUrl = properties.getBrokerUrl();
+        //XXX:WHICH-ONE?: String brokerUrl = properties.getBrokerUrlForConsumer();
         if (brokerUrl.startsWith("ssl")) {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
