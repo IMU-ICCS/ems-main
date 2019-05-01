@@ -29,11 +29,14 @@ MELODIC_CONFIG_DIR=$BASEDIR/conf
 PAASAGE_CONFIG_DIR=$BASEDIR/conf
 echo "MELODIC_CONFIG_DIR=$MELODIC_CONFIG_DIR"
 
-export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR BASEDIR
+JAVA_OPTS= -Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/broker-truststore.p12
+JAVA_OPTS=${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12
+
+export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR BASEDIR JAVA_OPTS
 
 # Run Baguette client
 echo "Starting baguette client..."
-java -classpath "conf:jars/*" eu.melodic.event.baguette.client.BaguetteClient $*
+java ${JAVA_OPTS} -classpath "conf:jars/*" eu.melodic.event.baguette.client.BaguetteClient $*
 PID=`jps | grep BaguetteClient | cut -d " " -f 1`
 echo "Baguette client PID: $PID"
 cd $PWD

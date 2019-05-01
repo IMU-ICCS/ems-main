@@ -16,6 +16,10 @@ set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 
 cd %BASEDIR%
 
+set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\broker-truststore.p12 ^
+ -Djavax.net.ssl.trustStorePassword=melodic ^
+ -Djavax.net.ssl.trustStoreType=pkcs12
+
 rem set JAVA_OPTS=-Djavax.net.debug=all
 java %JAVA_OPTS% -classpath "conf;jars\*" eu.melodic.event.baguette.client.BaguetteClient %*
 endlocal
