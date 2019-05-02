@@ -13,8 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.x509.GeneralNameType;
-import sun.security.tools.keytool.Main;
+//import sun.security.tools.keytool.Main;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
@@ -233,11 +234,40 @@ public class KeystoreUtil {
     }
 
     private void execute(String args[]) throws Exception {
+        try {
+            __execute(args);
+        } catch (Exception e) {
+            log.error("KeystoreUtil.execute(): ARGS: {}", Arrays.asList(args));
+            log.error("KeystoreUtil.execute(): EXCEPTION: ", e);
+            throw e;
+        }
+    }
+    private void __execute(String args[]) throws Exception {
+        String[] tmp;
+        System.arraycopy(args, 0, tmp = new String[args.length+1], 1, args.length);
+        args = tmp;
+
+        File f = new File(System.getProperty("java.home"));
+        f = new File(f, "bin");
+        File kt = new File(f, "keytool");
+        if (kt.exists()) {
+            args[0] = kt.getAbsolutePath();
+        } else {
+            kt = new File(f, "keytool.exe");
+            if (kt.exists()) {
+                args[0] = kt.getAbsolutePath();
+            } else
+                throw new RuntimeException("Keytool not found: JAVA_BIN="+f.getAbsolutePath());
+        }
+
         log.debug("KeystoreUtil: Invoking KeyTool: args: {}", Arrays.asList(args));
         long startTm = System.currentTimeMillis();
-        Main.main(args);
+        //Main.main(args);
+        Process p = Runtime.getRuntime().exec(args);
+        int exitCode = p.waitFor();
         long endTm = System.currentTimeMillis();
-        log.debug("KeystoreUtil: Invoking KeyTool: completed in {}ms", endTm-startTm);
+        log.debug("KeystoreUtil: Invoking KeyTool: completed in {}ms with exit code {}", endTm-startTm, exitCode);
+        //if (exitCode!=0) throw new RuntimeException("Keytool exited with error code: "+exitCode);
     }
 
     public static List<String> getCertificateAliases(KeyStore ks) throws KeyStoreException {
