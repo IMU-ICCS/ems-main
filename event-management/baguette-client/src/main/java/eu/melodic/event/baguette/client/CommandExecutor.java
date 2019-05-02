@@ -17,6 +17,7 @@ import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import eu.melodic.event.util.GROUPING;
+import eu.melodic.event.util.KeystoreUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -443,7 +444,8 @@ public class CommandExecutor {
 
             // Update truststore with per-grouping broker certificates
             try {
-                log.debug("Truststore certificates before update: {}", brokerCepService.getCertificateAliasesFromTruststore());
+                log.debug("Truststore certificates before update: {}",
+                        KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
                 for (String g : GROUPING.getNames()) {
                     String groupingBrokerCfg = config.getProperty(g);
                     if (groupingBrokerCfg != null) {
@@ -457,7 +459,8 @@ public class CommandExecutor {
                         brokerCepService.deleteCertificateFromTruststore(g);
                     }
                 }
-                log.debug("Truststore certificates after update: {}", brokerCepService.getCertificateAliasesFromTruststore());
+                log.debug("Truststore certificates after update: {}",
+                        KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
             } catch (Exception ex) {
                 log.error("EXCEPTION while updating Trust store: ", ex);
             }

@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,6 +32,7 @@ import javax.jms.*;
 import javax.management.*;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -313,45 +315,39 @@ public class BrokerCepService {
         return brokerConfig.getBrokerLocalUserPassword();
     }
 
+    public KeyStore getBrokerTruststore() {
+        return brokerConfig.getBrokerTruststore();
+    }
+
     public String getBrokerCertificate() {
         return brokerConfig.getBrokerCertificate();
     }
 
-    public void addOrReplaceCertificateInTruststore(String alias, String certPem) throws CertificateException, IOException, KeyStoreException {
+    public Certificate addOrReplaceCertificateInTruststore(String alias, String certPem) throws CertificateException, IOException, KeyStoreException {
         log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert-PEM=\n{}", alias, certPem);
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         try (InputStream inputStream = new ByteArrayInputStream(certPem.getBytes(Charset.forName("UTF-8")))) {
             Certificate cert = cf.generateCertificate(inputStream);
             log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): X509 Certificate: {}",
                     ((X509Certificate)cert).getSubjectX500Principal().getName());
-            addOrReplaceCertificateInTruststore(alias, cert);
+            return addOrReplaceCertificateInTruststore(alias, cert);
         }
     }
 
-    public void addOrReplaceCertificateInTruststore(String alias, Certificate cert) throws KeyStoreException {
+    public Certificate addOrReplaceCertificateInTruststore(String alias, Certificate cert) throws KeyStoreException {
         log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert=\n{}", alias, cert);
         brokerConfig.getBrokerTruststore().setCertificateEntry(alias, cert);
-        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): Certificate added with alias:  {}", alias);
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): Certificate added with alias: {}", alias);
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
+                KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
+        return cert;
     }
 
     public void deleteCertificateFromTruststore(String alias) throws KeyStoreException {
         log.trace("BrokerCepService.deleteCertificateFromTruststore(): BEGIN: alias={}", alias);
         brokerConfig.getBrokerTruststore().deleteEntry(alias);
-        log.debug("BrokerCepService.deleteCertificateFromTruststore(): Deleted certificate with alias:  {}", alias);
-    }
-
-    public List<String> getCertificateAliasesFromTruststore() throws KeyStoreException {
-        List<String> certAliases = new ArrayList<>();
-        Enumeration<String> en = brokerConfig.getBrokerTruststore().aliases();
-        while (en.hasMoreElements()) {
-            String alias = en.nextElement();
-            log.trace("BrokerCepService.getCertificateAliasesFromTruststore(): Checking alias: {}", alias);
-            if (brokerConfig.getBrokerTruststore().isCertificateEntry(alias)) {
-                certAliases.add(alias);
-                log.trace("BrokerCepService.getCertificateAliasesFromTruststore(): Alias added in results: {}", alias);
-            }
-        }
-        log.debug("BrokerCepService.getCertificateAliasesFromTruststore(): Certificate aliases:  {}", certAliases);
-        return certAliases;
+        log.debug("BrokerCepService.deleteCertificateFromTruststore(): Deleted certificate with alias: {}", alias);
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
+                KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
     }
 }

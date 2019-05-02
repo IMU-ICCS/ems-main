@@ -18,10 +18,12 @@ import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
+import org.cryptacular.util.CertUtil;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 import java.util.*;
 
 @Slf4j
@@ -185,6 +187,23 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         .replace("##", "\r\n")
                         .replace("$$", "\n");
                 log.info("{}--> Broker Cert.: {}", id, clientCertificate);
+
+                // Add certificate to truststore
+                String alias = StringUtils.isNotBlank(clientId)
+                        ? clientId.trim()
+                        : getClientIpAddress();
+                log.info("{}--> Adding/Replacing client certificate in Truststore: alias={}", id, alias);
+                try {
+                    X509Certificate cert = (X509Certificate)coordinator
+                            .getServer()
+                            .getBrokerCepService()
+                            .addOrReplaceCertificateInTruststore(alias, clientCertificate);
+                    log.info("{}--> Added/Replaced client certificate in Truststore: alias={}, CN={}, certificate-names={}",
+                            id, alias, cert.getSubjectDN().getName(), CertUtil.subjectNames(cert));
+                } catch (Exception e) {
+                    log.warn("{}--> EXCEPTION while adding/replacing certificate in Trust store: alias={}, exception: ",
+                            clientId, alias, e);
+                }
             } else {
                 log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);
             }

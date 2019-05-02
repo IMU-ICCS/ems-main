@@ -19,11 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
 
@@ -240,5 +238,20 @@ public class KeystoreUtil {
         Main.main(args);
         long endTm = System.currentTimeMillis();
         log.debug("KeystoreUtil: Invoking KeyTool: completed in {}ms", endTm-startTm);
+    }
+
+    public static List<String> getCertificateAliases(KeyStore ks) throws KeyStoreException {
+        List<String> certAliases = new ArrayList<>();
+        Enumeration<String> en = ks.aliases();
+        while (en.hasMoreElements()) {
+            String alias = en.nextElement();
+            log.trace("KeystoreUtil.getCertificateAliases(): Checking alias: {}", alias);
+            if (ks.isCertificateEntry(alias)) {
+                certAliases.add(alias);
+                log.trace("KeystoreUtil.getCertificateAliases(): Alias added in results: {}", alias);
+            }
+        }
+        log.trace("KeystoreUtil.getCertificateAliases(): Certificate aliases: {}", certAliases);
+        return certAliases;
     }
 }
