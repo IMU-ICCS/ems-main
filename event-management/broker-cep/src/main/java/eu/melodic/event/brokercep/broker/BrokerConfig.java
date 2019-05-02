@@ -75,6 +75,8 @@ public class BrokerConfig implements InitializingBean {
     private String brokerPassword;
     private String brokerCert;
 
+    private KeyStore truststore;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         _initializeSecurity();
@@ -238,6 +240,8 @@ public class BrokerConfig implements InitializingBean {
         log.trace("BrokerConfig.getBrokerCertificate(): Broker certificate (PEM):\n{}", brokerCert);
         return brokerCert;
     }
+
+    public KeyStore getBrokerTruststore() { return truststore; }
 
     public String getBrokerLocalAdminUsername() {
         return brokerLocalAdmin;
@@ -405,13 +409,13 @@ public class BrokerConfig implements InitializingBean {
     }
 
     private TrustManager[] readTruststore() throws Exception {
-        final KeyStore truststore = KeyStore.getInstance(properties.getTruststoreType());
+        this.truststore = KeyStore.getInstance(properties.getTruststoreType());
 
         //final Resource truststoreResource = new ClassPathResource( properties.getTruststoreFile() );
         final FileSystemResource truststoreResource = new FileSystemResource(properties.getTruststoreFile());
-        truststore.load(truststoreResource.getInputStream(), properties.getTruststorePassword().toCharArray());
+        this.truststore.load(truststoreResource.getInputStream(), properties.getTruststorePassword().toCharArray());
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(truststore);
+        trustManagerFactory.init(this.truststore);
         final TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
         return trustManagers;
     }

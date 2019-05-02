@@ -29,9 +29,14 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.*;
 import javax.management.*;
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
@@ -236,7 +241,7 @@ public class BrokerCepService {
 
     private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
-        if (connectionString == null) connectionString = properties.getBrokerUrl();
+        if (connectionString == null) connectionString = properties.getBrokerUrlForConsumer();
         ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
         connectionFactory.setBrokerURL(connectionString);
 
@@ -310,5 +315,43 @@ public class BrokerCepService {
 
     public String getBrokerCertificate() {
         return brokerConfig.getBrokerCertificate();
+    }
+
+    public void addOrReplaceCertificateInTruststore(String alias, String certPem) throws CertificateException, IOException, KeyStoreException {
+        log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert-PEM=\n{}", alias, certPem);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        try (InputStream inputStream = new ByteArrayInputStream(certPem.getBytes(Charset.forName("UTF-8")))) {
+            Certificate cert = cf.generateCertificate(inputStream);
+            log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): X509 Certificate: {}",
+                    ((X509Certificate)cert).getSubjectX500Principal().getName());
+            addOrReplaceCertificateInTruststore(alias, cert);
+        }
+    }
+
+    public void addOrReplaceCertificateInTruststore(String alias, Certificate cert) throws KeyStoreException {
+        log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert=\n{}", alias, cert);
+        brokerConfig.getBrokerTruststore().setCertificateEntry(alias, cert);
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): Certificate added with alias:  {}", alias);
+    }
+
+    public void deleteCertificateFromTruststore(String alias) throws KeyStoreException {
+        log.trace("BrokerCepService.deleteCertificateFromTruststore(): BEGIN: alias={}", alias);
+        brokerConfig.getBrokerTruststore().deleteEntry(alias);
+        log.debug("BrokerCepService.deleteCertificateFromTruststore(): Deleted certificate with alias:  {}", alias);
+    }
+
+    public List<String> getCertificateAliasesFromTruststore() throws KeyStoreException {
+        List<String> certAliases = new ArrayList<>();
+        Enumeration<String> en = brokerConfig.getBrokerTruststore().aliases();
+        while (en.hasMoreElements()) {
+            String alias = en.nextElement();
+            log.trace("BrokerCepService.getCertificateAliasesFromTruststore(): Checking alias: {}", alias);
+            if (brokerConfig.getBrokerTruststore().isCertificateEntry(alias)) {
+                certAliases.add(alias);
+                log.trace("BrokerCepService.getCertificateAliasesFromTruststore(): Alias added in results: {}", alias);
+            }
+        }
+        log.debug("BrokerCepService.getCertificateAliasesFromTruststore(): Certificate aliases:  {}", certAliases);
+        return certAliases;
     }
 }
