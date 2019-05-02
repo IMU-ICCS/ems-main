@@ -420,6 +420,12 @@ public class BrokerConfig implements InitializingBean {
         return trustManagers;
     }
 
+    public void writeTruststore() throws Exception {
+        //final Resource truststoreResource = new ClassPathResource( properties.getTruststoreFile() );
+        final FileSystemResource truststoreResource = new FileSystemResource(properties.getTruststoreFile());
+        this.truststore.store(truststoreResource.getOutputStream(), properties.getTruststorePassword().toCharArray());
+    }
+
     /**
      * Creates a new connection factory
      */

@@ -323,7 +323,7 @@ public class BrokerCepService {
         return brokerConfig.getBrokerCertificate();
     }
 
-    public Certificate addOrReplaceCertificateInTruststore(String alias, String certPem) throws CertificateException, IOException, KeyStoreException {
+    public Certificate addOrReplaceCertificateInTruststore(String alias, String certPem) throws Exception {
         log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert-PEM=\n{}", alias, certPem);
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         try (InputStream inputStream = new ByteArrayInputStream(certPem.getBytes(Charset.forName("UTF-8")))) {
@@ -334,9 +334,10 @@ public class BrokerCepService {
         }
     }
 
-    public Certificate addOrReplaceCertificateInTruststore(String alias, Certificate cert) throws KeyStoreException {
+    public Certificate addOrReplaceCertificateInTruststore(String alias, Certificate cert) throws Exception {
         log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert=\n{}", alias, cert);
         brokerConfig.getBrokerTruststore().setCertificateEntry(alias, cert);
+        brokerConfig.writeTruststore();
         log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): Certificate added with alias: {}", alias);
         log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
                 KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
