@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.util.GROUPING;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -440,13 +441,34 @@ public class CommandExecutor {
                 log.warn("No EPL statements found for active grouping: {}", activeGrouping);
             }
 
+            // Update truststore with per-grouping broker certificates
+            try {
+                log.debug("Truststore certificates before update: {}", brokerCepService.getCertificateAliasesFromTruststore());
+                for (String g : GROUPING.getNames()) {
+                    String groupingBrokerCfg = config.getProperty(g);
+                    if (groupingBrokerCfg != null) {
+                        if (groupingBrokerCfg.indexOf("\n") > 0) {
+                            String brokerCert = groupingBrokerCfg.substring(groupingBrokerCfg.indexOf("\n")).trim();
+                            log.info("Updating broker certificate to truststore for Grouping: {}", g);
+                            brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
+                        }
+                    } else {
+                        log.info("Removing broker certificate from truststore for Grouping (no new certificate provided): {}", g);
+                        brokerCepService.deleteCertificateFromTruststore(g);
+                    }
+                }
+                log.debug("Truststore certificates after update: {}", brokerCepService.getCertificateAliasesFromTruststore());
+            } catch (Exception ex) {
+                log.error("EXCEPTION while updating Trust store: ", ex);
+            }
+
             log.info("Active grouping switch completed: {} -> {}", oldGroupingName, newGroupingName);
         }
     }
 
     protected void sendLocalEvent(String destination, double metricValue) {
         if (activeGrouping != null) {
-            String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrl();
+            String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
             log.info("sendLocalEvent(): local-broker-url={}", brokerUrl);
             sendEvent(brokerUrl, destination, metricValue);
         } else {
@@ -589,7 +611,7 @@ public class CommandExecutor {
 
             try {
                 // Publish new event to Local Broker topic
-                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrl();
+                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
                 log.info("- Publishing event to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
                         name, localBrokerUrl, topic, eventMap);
                 brokerCep.publishEvent(localBrokerUrl, topic, eventMap);
