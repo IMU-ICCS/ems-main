@@ -44,4 +44,12 @@ public interface ServerCoordinator {
         result.put(grouping, (brokerUrl+"\n"+brokerCert).trim());
         return result;
     }
+    default Map<String,String> getUpperwareBrokerConfig(BaguetteServer server) {
+        String grouping = server.getUpperwareGrouping();
+        String brokerUrl = server.getUpperwareBrokerUrl();
+        String brokerCert = server.getBrokerCepService().getBrokerCertificate();
+        Map<String,String> result = new HashMap<>();
+        result.put(grouping, (brokerUrl+"\n"+brokerCert).trim());
+        return result;
+    }
 }

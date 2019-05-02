@@ -79,9 +79,9 @@ public class BaguetteServer {
         return functionDefinitions;
     }
 
-    public String getUpperwareBrokerUrl() {
-        return upperwareBrokerUrl;
-    }
+    public String getUpperwareGrouping() { return upperwareGrouping; }
+
+    public String getUpperwareBrokerUrl() { return upperwareBrokerUrl; }
 
     public String getBrokerUsername() { return brokerCepService.getBrokerUsername(); }
 

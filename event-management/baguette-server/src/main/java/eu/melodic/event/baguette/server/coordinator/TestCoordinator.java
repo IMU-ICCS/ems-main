@@ -13,6 +13,8 @@ import eu.melodic.event.baguette.server.ClientShellCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Map;
+
 @Slf4j
 public class TestCoordinator extends NoopCoordinator {
     @Override
@@ -24,12 +26,12 @@ public class TestCoordinator extends NoopCoordinator {
     protected synchronized void _do_register(ClientShellCommand c) {
         // prepare configuration
         java.util.Properties cfg = new java.util.Properties();
-        String upperwareCfg = server.getUpperwareBrokerUrl()+"\n"+server.getBrokerCepService().getBrokerCertificate();
-        cfg.setProperty("GLOBAL", upperwareCfg.trim());
-        log.trace("TestCoordinator.test(): GLOBAL broker config.: {}", upperwareCfg);
+        Map<String,String> cfgMap;
+        cfg.putAll(cfgMap = getUpperwareBrokerConfig(server));
+        log.trace("TestCoordinator.test(): GLOBAL broker config.: {}", cfgMap);
 
-        cfg.putAll(getGroupingBrokerConfig("PER_CLOUD", c));
-        log.trace("TestCoordinator.test(): {} broker config.: {}", "PER_CLOUD", getGroupingBrokerConfig("PER_CLOUD", c));
+        cfg.putAll(cfgMap = getGroupingBrokerConfig("PER_CLOUD", c));
+        log.trace("TestCoordinator.test(): {} broker config.: {}", "PER_CLOUD", cfgMap);
 
         // prepare Broker-CEP configuration
         log.info("TestCoordinator.test(): --------------------------------------------------");
