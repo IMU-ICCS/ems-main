@@ -194,7 +194,7 @@ public class KeystoreUtil {
 
     public String getEntryCertificatePEM(String entryName) throws Exception {
         X509Certificate cert = getEntryCertificate(entryName);
-        log.debug("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
+        log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
         byte[] certBytes = cert.getEncoded();
         Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
         String certEncoded = new String(encoder.encode(certBytes));
