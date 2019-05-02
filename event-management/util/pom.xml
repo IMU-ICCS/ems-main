@@ -38,13 +38,13 @@
         </dependency>
 
         <!-- Java Runtime JAR -->
-        <dependency>
+        <!--XXX:DEL: <dependency>
             <groupId>sun.jdk</groupId>
             <artifactId>rt.jar</artifactId>
             <version>${maven.compiler.target}</version>
             <scope>system</scope>
             <systemPath>${java.home}/lib/rt.jar</systemPath>
-        </dependency>
+        </dependency>-->
         <!-- Cryptacular -->
         <dependency>
             <groupId>org.cryptacular</groupId>

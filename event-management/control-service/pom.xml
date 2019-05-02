@@ -182,10 +182,10 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
-            <plugin>
+            <!--XXX:DEL: <plugin>
                 <groupId>org.codehaus.groovy.maven</groupId>
                 <artifactId>gmaven-plugin</artifactId>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 
