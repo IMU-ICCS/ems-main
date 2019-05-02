@@ -16,6 +16,8 @@ import java.util.Properties;
 public interface ServerCoordinator {
     void initialize(BaguetteServer server, Runnable callback);
 
+    BaguetteServer getServer();
+
     int getPhase();
 
     void register(ClientShellCommand c);
