@@ -46,11 +46,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter
     private boolean echoOn = false;
 
-    private String clientId;
-    private String clientIpAddress;
-    private int clientPort = -1;
-    @Getter
-    private String clientCertificate;
+    @Getter private String clientId;
+    @Getter private String clientBrokerUrl;
+    @Getter private String clientIpAddress;
+    @Getter private int clientPort = -1;
+    @Getter private String clientCertificate;
 
     private ServerCoordinator coordinator;
     private boolean clientAddressOverrideAllowed;
@@ -160,6 +160,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 this.clientId = s.substring("id=".length()).replace("~~", " ");
                 log.info("{}--> Client Id: {}", id, clientId);
             } else
+            if (s.startsWith("broker=")) {
+                this.clientBrokerUrl = s.substring("broker=".length());
+                log.info("{}--> Broker URL: {}", id, clientBrokerUrl);
+            } else
             if (s.startsWith("address=")) {
                 if (clientAddressOverrideAllowed) {
                     this.clientIpAddress = s.substring("address=".length());
@@ -180,7 +184,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         .replace("~~", " ")
                         .replace("##", "\r\n")
                         .replace("$$", "\n");
-                log.info("{}--> Client Cert.: {}", id, clientCertificate);
+                log.info("{}--> Broker Cert.: {}", id, clientCertificate);
             } else {
                 log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);
             }

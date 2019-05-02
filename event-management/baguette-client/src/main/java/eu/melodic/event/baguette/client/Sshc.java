@@ -219,9 +219,9 @@ public class Sshc {
                 .replace("\n","$$");
         String clientAddress = config.getProperty("debug.fake-ip-address", "");
         int clientPort = -1;
-        String zz;
-        out.println(zz=String.format("-HELLO FROM CLIENT: id=%s address=%s port=%d cert=%s",
+        out.println(String.format("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s",
                 clientId.replace(" ", "~~"),
+                brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
                 clientAddress,
                 clientPort,
                 certOneLine));

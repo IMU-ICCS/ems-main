@@ -24,13 +24,12 @@ public class TestCoordinator extends NoopCoordinator {
     protected synchronized void _do_register(ClientShellCommand c) {
         // prepare configuration
         java.util.Properties cfg = new java.util.Properties();
-        cfg.setProperty("GLOBAL", server.getUpperwareBrokerUrl());    // <-- XXX:SOS: check SCHEME (ssl, tcp) in Upperware Broker-CEP configuration
-        String cert = server.getBrokerCepService().getBrokerCertificate();
-        if (StringUtils.isNotBlank(cert)) cfg.setProperty("GLOBAL-cert", cert);
+        String upperwareCfg = server.getUpperwareBrokerUrl()+"\n"+server.getBrokerCepService().getBrokerCertificate();
+        cfg.setProperty("GLOBAL", upperwareCfg.trim());
+        log.trace("TestCoordinator.test(): GLOBAL broker config.: {}", upperwareCfg);
 
-        cfg.setProperty("PER_CLOUD", "ssl://localhost:61614");        // <-- XXX:SOS: check SCHEME (ssl, tcp)
-        cert = c.getClientCertificate();
-        if (StringUtils.isNotBlank(cert)) cfg.setProperty("PER_CLOUD-cert", cert);
+        cfg.putAll(getGroupingBrokerConfig("PER_CLOUD", c));
+        log.trace("TestCoordinator.test(): {} broker config.: {}", "PER_CLOUD", getGroupingBrokerConfig("PER_CLOUD", c));
 
         // prepare Broker-CEP configuration
         log.info("TestCoordinator.test(): --------------------------------------------------");

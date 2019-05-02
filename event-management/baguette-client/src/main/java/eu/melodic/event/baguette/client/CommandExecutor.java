@@ -422,7 +422,8 @@ public class CommandExecutor {
                             log.info(" + Connections for topic: {} --> {}", topic, activeGrouping.getConnections().get(topic));
                             if (activeGrouping.getConnections() != null && activeGrouping.getConnections().get(topic) != null) {
                                 for (String fwdToGrouping : activeGrouping.getConnections().get(topic)) {
-                                    forwardToGroupings.add(config.getProperty(fwdToGrouping));
+                                    String brokerUrl = config.getProperty(fwdToGrouping).split("\n")[0];    // the remaining lines are Broker Certificate
+                                    forwardToGroupings.add(brokerUrl);
                                 }
                             }
                         }
