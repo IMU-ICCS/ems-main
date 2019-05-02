@@ -24,7 +24,6 @@ import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.xml.bind.DatatypeConverter;
 
 @Slf4j
 public class KeystoreUtil {
@@ -217,7 +216,7 @@ public class KeystoreUtil {
                 .map(e -> {
                     try {
                         return e.startsWith("#") ?
-                                InetAddress.getByAddress(DatatypeConverter.parseHexBinary(e.substring(1))).getHostAddress()
+                                InetAddress.getByAddress(parseHexBinary(e.substring(1)).getBytes()).getHostAddress()
                                 : e;
                     } catch (Exception ex) {
                         log.warn("KeystoreUtil: getEntryNames: entry={}\ncaused {}", e, ex.toString());
@@ -225,6 +224,14 @@ public class KeystoreUtil {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    private String parseHexBinary(String hexValue) {
+        String ip = "";
+        for(int i = 0; i < hexValue.length(); i = i + 2) {
+            ip = ip + Integer.valueOf(hexValue.substring(i, i+2), 16) + ".";
+        }
+        return ip;
     }
 
     private void execute(String cmd) throws Exception {
