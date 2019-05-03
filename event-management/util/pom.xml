@@ -37,42 +37,26 @@
             <version>3.8.1</version>
         </dependency>
 
-        <!-- Java Runtime JAR -->
-        <!--XXX:DEL: <dependency>
-            <groupId>sun.jdk</groupId>
-            <artifactId>rt.jar</artifactId>
-            <version>${maven.compiler.target}</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/lib/rt.jar</systemPath>
-        </dependency>-->
         <!-- Cryptacular -->
         <dependency>
             <groupId>org.cryptacular</groupId>
             <artifactId>cryptacular</artifactId>
             <version>1.2.3</version>
         </dependency>
+
+        <!-- Bouncy Castle cryptography -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.61</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.61</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
-
-    <!--XXX:DEL: <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
-                    <configuration>
-                        <fork>true</fork>
-                        <compilerArgument>-XDignore.symbol.file</compilerArgument>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>-->
 
 </project>

@@ -11,11 +11,15 @@ package eu.melodic.event.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.x509.GeneralNameType;
 
-import javax.security.auth.x500.X500Principal;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -68,13 +72,13 @@ public class KeystoreUtil {
                 .createKeyAndCert(entryName, dn, ext);
     }
 
-    public KeystoreUtil createKeyAndCert(String entryName, String keyGenAlg, int keySize, String sigAlg, int startDateOffset, int endDateOffset, String dn, String ext) throws Exception {
+    public KeystoreUtil createKeyAndCert(String entryName, String keyGenAlg, int keySize, String sigAlg, int startDateOffset, int endDateOffset, String dn, String extSAN) throws Exception {
         // Replace PUBLIC_IP and DEFAULT_IP placeholders with actual values
         dn = _processPlaceholders(dn, "127.0.0.1");
-        ext = _processPlaceholders(ext, "127.0.0.1");
-        boolean hasExt = StringUtils.isNotBlank(ext);
+        extSAN = _processPlaceholders(extSAN, "127.0.0.1");
+        boolean hasExt = StringUtils.isNotBlank(extSAN);
 
-        // Read from file or create keystore
+        // Read keystore from file or create it
         log.trace("KeystoreUtil: Reading keystore from file: {}", keystoreFile);
         KeyStore keystore = null;
         try {
@@ -89,9 +93,9 @@ public class KeystoreUtil {
 
         // Generate new key pair
         log.trace("KeystoreUtil: Creating entry: {}", entryName);
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyGenAlg);
-        kpg.initialize(keySize);
-        KeyPair kp = kpg.generateKeyPair();
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(keyGenAlg);
+        keyPairGen.initialize(keySize);
+        KeyPair keyPair = keyPairGen.generateKeyPair();
 
         // Register Bouncy-Castle provider (if not already)
         if (!bcProviderInitialized) {
@@ -113,27 +117,49 @@ public class KeystoreUtil {
         Date validTo = calendar.getTime();
 
         // Generate new certificate for key pair
-        X509Certificate[] serverChain = new X509Certificate[1];
-        X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-        X500Principal serverSubjectName = new X500Principal(dn);
-        certGen.setSerialNumber(new BigInteger(Long.toString(now)));
-        //X509Certificate caCert=null;
-        certGen.setIssuerDN(serverSubjectName);
-        certGen.setSubjectDN(serverSubjectName);
-        certGen.setNotBefore(validFrom);
-        certGen.setNotAfter(validTo);
-        certGen.setPublicKey(kp.getPublic());
-        certGen.setSignatureAlgorithm(sigAlg);
-        //certGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false,new AuthorityKeyIdentifierStructure(caCert));
-        /*certGen.addExtension(X509Extensions.SubjectKeyIdentifier, false,
-                new SubjectKeyIdentifierStructure(serverPublicKey));
-        certGen.addExtension(X509Extensions.SubjectAlternativeName, false,
-                );*/
-        serverChain[0] = certGen.generateX509Certificate(kp.getPrivate(), "BC"); // note: private key of CA
+        X500Name subjectName = new X500Name(dn);
+        X500Name issuerName = subjectName;
+        BigInteger serialNumber = new BigInteger(Long.toString(now));
+        X509v3CertificateBuilder certBuilder = new X509v3CertificateBuilder(
+                issuerName, serialNumber, validFrom, validTo, subjectName,
+                SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded())
+        );
+
+        // Add certificate extensions
+        JcaX509ExtensionUtils jcaExtUtils = new JcaX509ExtensionUtils();
+        /*X509Certificate caCert = null;
+        certBuilder.addExtension(Extension.authorityKeyIdentifier, false,
+                jcaExtUtils.createAuthorityKeyIdentifier(caCert));*/
+        certBuilder.addExtension(Extension.subjectKeyIdentifier, false,
+                jcaExtUtils.createSubjectKeyIdentifier(keyPair.getPublic()));
+        if (hasExt) {
+            String[] names = extSAN.split(",");
+            List<GeneralName> altNames = new ArrayList<>();
+            for (String name : names) {
+                extSAN = extSAN.replaceAll("[ \t\r\n]]+","");
+                if ("dns:".equalsIgnoreCase(name.substring(4))) {
+                    altNames.add(new GeneralName(GeneralName.dNSName, name.substring("dns:".length())));
+                } else
+                if ("ip:".equalsIgnoreCase(name.substring(3))) {
+                    altNames.add(new GeneralName(GeneralName.iPAddress, name.substring("ip:".length())));
+                } else
+                    log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
+            }
+            GeneralNames subjectAltName = new GeneralNames(altNames.toArray(new GeneralName[altNames.size()]));
+            certBuilder.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
+        }
+
+        // Self-Sign and get certificate
+        JcaContentSignerBuilder builder = new JcaContentSignerBuilder(sigAlg);
+        ContentSigner signer = builder.build(keyPair.getPrivate());
+
+        byte[] certBytes = certBuilder.build(signer).getEncoded();
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        X509Certificate certificate = (X509Certificate)certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));
 
         // Add/Replace key pair and certificate chain to keystore
-        PrivateKey newKey = kp.getPrivate();
-        Certificate[] chain = serverChain;
+        PrivateKey newKey = keyPair.getPrivate();
+        Certificate[] chain = new Certificate[] { certificate };
         keystore.setKeyEntry(entryName, newKey, "".toCharArray(), chain);
         log.debug("KeystoreUtil: Entry created: {}", entryName);
 
@@ -296,50 +322,6 @@ public class KeystoreUtil {
         return ip;
     }
 
-    //XXX:DEL: Keytool invocation methods
-    /*private void execute(String cmd) throws Exception {
-        String command = "-debug " + cmd;
-        String args[] = command.split("\\s+");
-        execute(args);
-    }
-
-    private void execute(String args[]) throws Exception {
-        try {
-            __execute(args);
-        } catch (Exception e) {
-            log.error("KeystoreUtil.execute(): ARGS: {}", Arrays.asList(args));
-            log.error("KeystoreUtil.execute(): EXCEPTION: ", e);
-            throw e;
-        }
-    }
-    private void __execute(String args[]) throws Exception {
-        String[] tmp;
-        System.arraycopy(args, 0, tmp = new String[args.length+1], 1, args.length);
-        args = tmp;
-
-        File f = new File(System.getProperty("java.home"));
-        f = new File(f, "bin");
-        File kt = new File(f, "keytool");
-        if (kt.exists()) {
-            args[0] = kt.getAbsolutePath();
-        } else {
-            kt = new File(f, "keytool.exe");
-            if (kt.exists()) {
-                args[0] = kt.getAbsolutePath();
-            } else
-                throw new RuntimeException("Keytool not found: JAVA_BIN="+f.getAbsolutePath());
-        }
-
-        log.debug("KeystoreUtil: Invoking KeyTool: args: {}", Arrays.asList(args));
-        long startTm = System.currentTimeMillis();
-        sun.security.tools.keytool.Main.main(args);
-        Process p = Runtime.getRuntime().exec(args);
-        int exitCode = p.waitFor();
-        long endTm = System.currentTimeMillis();
-        log.debug("KeystoreUtil: Invoking KeyTool: completed in {}ms with exit code {}", endTm-startTm, exitCode);
-        //if (exitCode!=0) throw new RuntimeException("Keytool exited with error code: "+exitCode);
-    }*/
-
     // Certificate listing methods
     public List<String> getCertificateAliases() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         KeyStore ks = KeystoreUtil.readKeystore(keystoreFile, keystoreType, keystorePassword);
@@ -383,29 +365,5 @@ public class KeystoreUtil {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             keystore.store(fos, password.toCharArray());
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-        /*KeystoreUtil
-                .getKeystore("zzzz.p12", "PKCS12", "")
-                .importCertFromFile("testcert", "config-files/broker.crt");*/
-        //log.info("Certs: {}", KeystoreUtil.getKeystore("zzzz.p12", "PKCS12", "").getCertificateAliases());
-        /*boolean b = KeystoreUtil
-                .getKeystore("zzzz.p12", "PKCS12", "")
-                //.exportCertToFile("testcert", "zz.crt")
-                .containsEntry("TTTtestcert");
-        log.info("Contains testcert: {}", b);*/
-        /*KeyStore ks = KeystoreUtil
-                .readKeystore("zzzz.p12", "PKCS12", "");
-        /*KeystoreUtil
-                .writeKeystore(ks, "zzzz.p12", "PKCS12", "");*/
-        /*KeystoreUtil
-                .getKeystore("zzzz.p12", "PKCS12", "")
-                .deleteEntry("testcert");*/
-        KeystoreUtil
-                .getKeystore("xxxx.p12", "PKCS12", "")
-                //.getEntryCertificateAsDER("testkey");
-                .createOrReplaceKeyAndCert("testkey", "CN=Me,O=UUUUUUU", null);
-        log.info("Test Ok");
     }
 }

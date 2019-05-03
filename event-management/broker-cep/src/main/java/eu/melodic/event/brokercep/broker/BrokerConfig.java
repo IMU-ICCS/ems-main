@@ -219,11 +219,13 @@ public class BrokerConfig implements InitializingBean {
             log.debug("    Key pair and Certificate will not be re-generated");
         }
 
-        // Load PEM certificate
-        brokerCert = KeystoreUtil
+        // Log PEM certificate
+        if (log.isDebugEnabled()) {
+            brokerCert = KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
-                    .getEntryCertificatePEM(properties.getKeyEntryNameValue());
-        log.debug("    Broker Certificate (PEM):\n{}", brokerCert);
+                    .getEntryCertificateAsPEM(properties.getKeyEntryNameValue());
+            log.debug("    Broker Certificate (PEM):\n{}", brokerCert);
+        }
     }
 
     public String getBrokerName() {
