@@ -22,6 +22,3 @@ JAVA_OPTS=${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ss
 
 #java ${JAVA_OPTS} -Deu.paasage.configdir=. -jar target/meta-solver.jar ${LOGGING}
 java ${JAVA_OPTS} -jar target\meta-solver.jar ${LOGGING}
-
-# Run UtilCpModelImport
-#java -classpath "target/classes:target/lib/*:target/dependency/*" eu.melodic.upperware.metasolver.util.UtilCpModelImport $*

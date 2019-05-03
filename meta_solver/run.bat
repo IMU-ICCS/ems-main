@@ -21,6 +21,3 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\broker-truststore
 
 rem java %JAVA_OPTS% -Deu.paasage.configdir=. -jar target\meta-solver.jar %LOGGING%
 java %JAVA_OPTS% -jar target\meta-solver.jar %LOGGING%
-
-rem Run UtilCpModelImport
-rem java -classpath "target\classes;target\lib\*;target\dependency\*" eu.melodic.upperware.metasolver.util.UtilCpModelImport %*
