@@ -51,9 +51,15 @@
             <artifactId>cryptacular</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.61</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
-    <build>
+    <!--XXX:DEL: <build>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -67,6 +73,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-    </build>
+    </build>-->
 
 </project>
