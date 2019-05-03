@@ -216,21 +216,22 @@ public class KeystoreUtil {
                 .map(e -> {
                     try {
                         return e.startsWith("#") ?
-                                InetAddress.getByAddress(parseHexBinary(e.substring(1)).getBytes()).getHostAddress()
+                                InetAddress.getByAddress(parseHexToBinary(e.substring(1))).getHostAddress()
                                 : e;
                     } catch (Exception ex) {
-                        log.warn("KeystoreUtil: getEntryNames: entry={}\ncaused {}", e, ex.toString());
+                        log.warn("KeystoreUtil: getEntryNames: entry={} caused {}", e, ex.toString());
                         return null;
                     }
                 })
                 .collect(Collectors.toList());
     }
 
-    private String parseHexBinary(String hexValue) {
-        String ip = "";
-        for(int i = 0; i < hexValue.length(); i = i + 2) {
-            ip = ip + Integer.valueOf(hexValue.substring(i, i+2), 16) + ".";
+    private byte[] parseHexToBinary(String hexValue) {
+        byte[] ip = new byte[hexValue.length()/2];
+        for(int i = 0, j = 0; i < hexValue.length(); i = i + 2) {
+            ip[j++] = (byte)Integer.parseInt(hexValue.substring(i, i+2), 16);
         }
+        if (log.isTraceEnabled()) log.trace("KeystoreUtil.parseHexBinary(): hex={}, ip={}", hexValue, Arrays.toString(ip));
         return ip;
     }
 
