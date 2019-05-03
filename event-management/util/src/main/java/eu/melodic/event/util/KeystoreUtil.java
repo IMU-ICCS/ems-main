@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.x509.GeneralNameType;
-//import sun.security.tools.keytool.Main;
+//XXX:DEL: import sun.security.tools.keytool.Main;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -269,7 +269,7 @@ public class KeystoreUtil {
 
         log.debug("KeystoreUtil: Invoking KeyTool: args: {}", Arrays.asList(args));
         long startTm = System.currentTimeMillis();
-        //Main.main(args);
+        //XXX:DEL: Main.main(args);
         Process p = Runtime.getRuntime().exec(args);
         int exitCode = p.waitFor();
         long endTm = System.currentTimeMillis();
