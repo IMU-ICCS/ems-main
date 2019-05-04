@@ -60,6 +60,26 @@ public class KeystoreUtil {
         this.keystorePassword = password;
     }
 
+    // Creates a new keystore file if not already exists
+    public KeystoreUtil createIfNotExist() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        File f = new File(keystoreFile);
+        if (! f.exists()) {
+            log.debug("KeystoreUtil: Keystore file not found: {}", keystoreFile);
+            KeyStore keystore = KeyStore.getInstance(keystoreType);
+            keystore.load(null, keystorePassword.toCharArray());
+            writeKeystore(keystore);
+            log.debug("KeystoreUtil: Keystore file created: {}", keystoreFile);
+        } else {
+            log.debug("KeystoreUtil: Keystore file exists: {}", keystoreFile);
+        }
+        return this;
+    }
+
+    public boolean checkIfExist() {
+        File f = new File(keystoreFile);
+        return f.exists();
+    }
+
     // Create/Replace Key pair and Certificate methods
     // If keystore file does not exist it will be created
     public KeystoreUtil createKeyAndCert(String entryName, String dn, String ext) throws Exception {

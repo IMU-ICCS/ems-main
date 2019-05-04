@@ -155,8 +155,17 @@ public class BrokerConfig implements InitializingBean {
         log.debug("    Entry SAN:   {}", properties.getKeyEntryExtSANValue());
         log.debug("    Entry Gen.:  {}", properties.getKeyEntryGenerate());
 
+
         KEY_ENTRY_GENERATE keGen = properties.getKeyEntryGenerate();
         boolean gen = (keGen==KEY_ENTRY_GENERATE.YES || keGen==KEY_ENTRY_GENERATE.ALWAYS);
+
+        // Check if keystore and truststore files exist (and create if they don't)
+        KeystoreUtil
+                .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                .createIfNotExist();
+        KeystoreUtil
+                .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword())
+                .createIfNotExist();
 
         // Check if key entry is missing
         if (keGen==KEY_ENTRY_GENERATE.IF_MISSING) {
