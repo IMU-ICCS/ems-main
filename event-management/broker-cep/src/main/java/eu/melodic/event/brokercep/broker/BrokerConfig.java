@@ -211,7 +211,7 @@ public class BrokerConfig implements InitializingBean {
             } else {
                 log.debug("    Create/Replace entry and SAN: entry={}, san={}",
                         properties.getKeyEntryNameValue(), properties.getKeyEntryExtSANValue());
-                String extSAN = "SAN=" + properties.getKeyEntryExtSANValue().trim();
+                String extSAN = properties.getKeyEntryExtSANValue().trim();
                 ksUtil.createOrReplaceKeyAndCert(properties.getKeyEntryNameValue(), properties.getKeyEntryDNameValue(), extSAN);
             }
             log.debug("    Exporting certificate to: {}", properties.getCertificateFile());
