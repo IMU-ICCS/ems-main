@@ -155,7 +155,6 @@ public class BrokerConfig implements InitializingBean {
         log.debug("    Entry SAN:   {}", properties.getKeyEntryExtSANValue());
         log.debug("    Entry Gen.:  {}", properties.getKeyEntryGenerate());
 
-
         KEY_ENTRY_GENERATE keGen = properties.getKeyEntryGenerate();
         boolean gen = (keGen==KEY_ENTRY_GENERATE.YES || keGen==KEY_ENTRY_GENERATE.ALWAYS);
 
