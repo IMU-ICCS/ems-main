@@ -12,7 +12,10 @@ package eu.melodic.event.util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.operator.ContentSigner;
@@ -117,12 +120,6 @@ public class KeystoreUtil {
         keyPairGen.initialize(keySize);
         KeyPair keyPair = keyPairGen.generateKeyPair();
 
-        // Register Bouncy-Castle provider (if not already)
-        if (!bcProviderInitialized) {
-            bcProviderInitialized = true;
-            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-        }
-
         // Compute validity period of certificate (will be generated next)
         long now = System.currentTimeMillis();
         Date dtNow = new Date(now);
@@ -136,6 +133,12 @@ public class KeystoreUtil {
         calendar.add(Calendar.DATE, endDateOffset);
         Date validTo = calendar.getTime();
 
+        // Register Bouncy-Castle provider (if not already)
+        if (!bcProviderInitialized) {
+            bcProviderInitialized = true;
+            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        }
+
         // Generate new certificate for key pair
         X500Name subjectName = new X500Name(dn);
         X500Name issuerName = subjectName;
@@ -147,20 +150,20 @@ public class KeystoreUtil {
 
         // Add certificate extensions
         JcaX509ExtensionUtils jcaExtUtils = new JcaX509ExtensionUtils();
-        /*X509Certificate caCert = null;
-        certBuilder.addExtension(Extension.authorityKeyIdentifier, false,
-                jcaExtUtils.createAuthorityKeyIdentifier(caCert));*/
+        //X509Certificate caCert = null;
+        //certBuilder.addExtension(Extension.authorityKeyIdentifier, false,
+        //        jcaExtUtils.createAuthorityKeyIdentifier(caCert));
         certBuilder.addExtension(Extension.subjectKeyIdentifier, false,
                 jcaExtUtils.createSubjectKeyIdentifier(keyPair.getPublic()));
         if (hasExt) {
+            extSAN = extSAN.replaceAll("[ \t\r\n]]+","");
             String[] names = extSAN.split(",");
             List<GeneralName> altNames = new ArrayList<>();
             for (String name : names) {
-                extSAN = extSAN.replaceAll("[ \t\r\n]]+","");
-                if ("dns:".equalsIgnoreCase(name.substring(4))) {
+                if ("dns:".equalsIgnoreCase(name.substring(0,"dns:".length()))) {
                     altNames.add(new GeneralName(GeneralName.dNSName, name.substring("dns:".length())));
                 } else
-                if ("ip:".equalsIgnoreCase(name.substring(3))) {
+                if ("ip:".equalsIgnoreCase(name.substring(0,"ip:".length()))) {
                     altNames.add(new GeneralName(GeneralName.iPAddress, name.substring("ip:".length())));
                 } else
                     log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
@@ -176,6 +179,46 @@ public class KeystoreUtil {
         byte[] certBytes = certBuilder.build(signer).getEncoded();
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         X509Certificate certificate = (X509Certificate)certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+
+        // JCA-based certificate creation
+        /*sun.security.x509.X500Name subject = new sun.security.x509.X500Name(dn);
+        sun.security.x509.X500Name issuer = new sun.security.x509.X500Name(dn);
+        BigInteger sn = new BigInteger(64, new SecureRandom());
+
+        X509CertInfo info = new X509CertInfo();
+        info.set(X509CertInfo.VALIDITY, new CertificateValidity(validFrom, validTo));
+        info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
+        info.set(X509CertInfo.SUBJECT, subject);
+        info.set(X509CertInfo.ISSUER, issuer);
+        info.set(X509CertInfo.KEY, new CertificateX509Key(keyPair.getPublic()));
+        info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
+        AlgorithmId algo = new AlgorithmId(AlgorithmId.sha256WithRSAEncryption_oid);
+
+        X509CertImpl cert = new X509CertImpl(info);
+        cert.sign(keyPair.getPrivate(), sigAlg);
+
+        algo = (AlgorithmId)cert.get(X509CertImpl.SIG_ALG);
+        info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
+        cert = new X509CertImpl(info);
+        cert.sign(keyPair.getPrivate(), sigAlg);
+        X509Certificate certificate = cert;*/
+
+        // https://github.com/abdulwaheed18/Self-Signed-Certificate/blob/master/src/com/waheed/create/certificate/SelfSignedCertificate.java
+        /*X509V3CertificateGenerator v3CertGen =  new X509V3CertificateGenerator();
+        v3CertGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
+        v3CertGen.setIssuerDN(new X509Principal(dn));
+        v3CertGen.setNotBefore(validFrom);
+        v3CertGen.setNotAfter(validTo);
+        v3CertGen.setSubjectDN(new X509Principal(dn));
+        v3CertGen.setPublicKey(keyPair.getPublic());
+        v3CertGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
+        Certificate certificate = v3CertGen.generateX509Certificate(keyPair.getPrivate());*/
+
+        // https://github.com/dart-lang/sdk/issues/20830
+        /*CertAndKeyGen keypair = new CertAndKeyGen(keyGenAlg, sigAlg, null);
+        sun.security.x509.X500Name x500Name = new sun.security.x509.X500Name(dn);
+        X509Certificate certificate = keypair.getSelfCertificate(x500Name, new Date(), (long) 3650 * 24 * 60 * 60);
+        */
 
         // Add/Replace key pair and certificate chain to keystore
         PrivateKey newKey = keyPair.getPrivate();
@@ -214,7 +257,7 @@ public class KeystoreUtil {
     }
 
     public KeystoreUtil createKeyAndCertWithSAN(String entryName, String dn) throws Exception {
-        String sanExt = "SAN=dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%";
+        String sanExt = "dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%";
         return createKeyAndCert(entryName, dn, sanExt);
     }
 
