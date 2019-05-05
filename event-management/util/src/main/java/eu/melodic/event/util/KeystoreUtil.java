@@ -325,7 +325,11 @@ public class KeystoreUtil {
 
     // Certificate retrieval methods
     public X509Certificate getEntryCertificate(String entryName) throws Exception {
+        log.trace("KeystoreUtil.getEntryCertificate(): keystore: file={}, type={}, password={}",
+                keystoreFile, keystoreType, keystorePassword);
         KeyStore keystore = readKeystore(keystoreFile, keystoreType, keystorePassword);
+        log.trace("KeystoreUtil.getEntryCertificate(): keystore: {}", keystore);
+        log.trace("KeystoreUtil.getEntryCertificate(): entry-name: {}", entryName);
         return (X509Certificate) keystore.getCertificate(entryName);
     }
 
