@@ -38,6 +38,52 @@ public class NetUtil {
 
     // ------------------------------------------------------------------------
 
+    public static void main(String[] args) throws IOException {
+        for (String arg : args) {
+            if ("-nolog".equalsIgnoreCase(arg)) {
+                loggingOff = true;
+            } else
+            if ("-log-all".equalsIgnoreCase(arg)) {
+                logAll = true;
+            } else
+            if ("public".equalsIgnoreCase(arg)) {
+                printAddress(getPublicIpAddress());
+            } else
+            if ("default".equalsIgnoreCase(arg)) {
+                printAddress(getDefaultIpAddress());
+            } else
+            if ("addresses".equalsIgnoreCase(arg)) {
+                for (InetAddress addr : getIpAddresses()) {
+                    printAddress(addr.getHostAddress());
+                }
+            } else
+            {
+                for (String[] service : SERVICES) {
+                    if (service[0].equalsIgnoreCase(arg)) {
+                        printAddress(queryService(service[1]));
+                    }
+                }
+            }
+        }
+    }
+
+    protected static void printAddress(String addr) {
+        if (logAll) log_info("{}", addr);
+        else System.out.println(addr);
+    }
+
+    // ------------------------------------------------------------------------
+
+    protected static boolean loggingOff = false;
+    protected static boolean logAll = false;
+
+    protected static void log_trace(String s, Object...o) { if (loggingOff) return; log.trace(s, o); }
+    protected static void log_debug(String s, Object...o) { if (loggingOff) return; log.debug(s, o); }
+    protected static void log_info(String s, Object...o) { if (loggingOff) return; log.info(s, o); }
+    protected static void log_warn(String s, Object...o) { if (loggingOff) return; log.warn(s, o); }
+
+    // ------------------------------------------------------------------------
+
     protected static boolean cacheAddresses = true;
 
     public static boolean isCacheAddresses() { return cacheAddresses; }
@@ -55,7 +101,7 @@ public class NetUtil {
 
     public static List<InetAddress> getIpAddresses() throws SocketException {
         if (cacheAddresses && ipAddresses!=null) {
-            log.debug("NetUtil.getIpAddresses(): Returning cached IP addresses: {}", ipAddresses);
+            log_debug("NetUtil.getIpAddresses(): Returning cached IP addresses: {}", ipAddresses);
             return ipAddresses;
         }
 
@@ -71,7 +117,7 @@ public class NetUtil {
                         boolean ok = Arrays.stream(addressFilter)
                                 .noneMatch(addr::startsWith);
                         if (ok) {
-                            log.debug("{}", addr);
+                            log_debug("{}", addr);
                             list.add(inet);
                         }
                     }
@@ -86,12 +132,12 @@ public class NetUtil {
         try {
             List<InetAddress> list = getIpAddresses();
             if (list.size() == 0) {
-                log.debug("NetUtil.getIpAddress(): Returning 'null' because getIpAddresses() returned an empty list");
+                log_debug("NetUtil.getIpAddress(): Returning 'null' because getIpAddresses() returned an empty list");
                 return null;
             }
             return list.get(0).getHostAddress();
         } catch (SocketException se) {
-            log.debug("NetUtil.getIpAddress(): Returning 'null' due to exception: ", se);
+            log_debug("NetUtil.getIpAddress(): Returning 'null' due to exception: ", se);
             return null;
         }
     }
@@ -102,40 +148,40 @@ public class NetUtil {
 
     public static String getPublicIpAddress() {
         if (cacheAddresses && publicIpAddress!=null) {
-            log.debug("NetUtil.getPublicIpAddress(): Returning cached Public IP address: {}", publicIpAddress);
+            log_debug("NetUtil.getPublicIpAddress(): Returning cached Public IP address: {}", publicIpAddress);
             return publicIpAddress;
         }
 
         for (String[] service : SERVICES) {
-            log.debug("NetUtil.getPublicIpAddress(): Contacting service {}", service[0]);
+            log_debug("NetUtil.getPublicIpAddress(): Contacting service {}", service[0]);
             String ip = getIpAddressUsingService(service[1]);
             if (StringUtils.isNotBlank(ip)) {
                 String addr = ip.trim();
                 if (cacheAddresses) publicIpAddress = addr;
-                log.debug("NetUtil.getPublicIpAddress(): Public IP address: {}", addr);
+                log_debug("NetUtil.getPublicIpAddress(): Public IP address: {}", addr);
                 return addr;
             }
         }
         if (cacheAddresses) publicIpAddress = "";
 
-        log.warn("NetUtil.getPublicIpAddress(): No Public IP address or connectivity problems exist");
+        log_warn("NetUtil.getPublicIpAddress(): No Public IP address or connectivity problems exist");
         return null;
     }
 
     private static String getIpAddressUsingService(String url) {
         try {
-            log.debug("NetUtil.getIpAddressUsingService(): Service URL: {}", url);
+            log_debug("NetUtil.getIpAddressUsingService(): Service URL: {}", url);
             String response = queryService(url);
-            log.debug("NetUtil.getIpAddressUsingService(): Service response: {}", response);
+            log_debug("NetUtil.getIpAddressUsingService(): Service response: {}", response);
             if (StringUtils.isNotBlank(response)) {
                 return response;
             }
         } catch (Exception ex) {
-            log.warn("NetUtil.getIpAddressUsingService(): Contacting service FAILED: url={}, EXCEPTION={}", url, ex.toString());
-            log.trace("NetUtil.getIpAddressUsingService(): Exception stack trace: ", ex);
+            log_warn("NetUtil.getIpAddressUsingService(): Contacting service FAILED: url={}, EXCEPTION={}", url, ex.toString());
+            log_trace("NetUtil.getIpAddressUsingService(): Exception stack trace: ", ex);
         }
 
-        log.debug("NetUtil.getIpAddressUsingService(): Response is null or blank");
+        log_debug("NetUtil.getIpAddressUsingService(): Response is null or blank");
         return null;
     }
 
@@ -151,22 +197,22 @@ public class NetUtil {
 
     public static String getDefaultIpAddress() {
         if (cacheAddresses && defaultIpAddress!=null) {
-            log.debug("NetUtil.getDefaultIpAddress(): Returning cached Default IP address: {}", defaultIpAddress);
+            log_debug("NetUtil.getDefaultIpAddress(): Returning cached Default IP address: {}", defaultIpAddress);
             return defaultIpAddress;
         }
 
         try {
-            log.debug("NetUtil.getDefaultIpAddress(): Datagram address: {}", DATAGRAM_ADDRESS);
+            log_debug("NetUtil.getDefaultIpAddress(): Datagram address: {}", DATAGRAM_ADDRESS);
             String addr = getIpAddressWithDatagram(DATAGRAM_ADDRESS);
             if (cacheAddresses) defaultIpAddress = addr;
-            log.debug("NetUtil.getDefaultIpAddress(): Response: {}", addr);
+            log_debug("NetUtil.getDefaultIpAddress(): Response: {}", addr);
             if (StringUtils.isNotBlank(defaultIpAddress)) return addr;
         } catch (Exception ex) {
-            log.warn("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception=", DATAGRAM_ADDRESS, ex);
+            log_warn("NetUtil.getDefaultIpAddress(): Datagram method failed: outgoing-ip-address={}, exception=", DATAGRAM_ADDRESS, ex);
             if (cacheAddresses) defaultIpAddress = "";
         }
 
-        log.warn("NetUtil.getDefaultIpAddress(): Address is null or blank");
+        log_warn("NetUtil.getDefaultIpAddress(): Address is null or blank");
         return null;
     }
 
