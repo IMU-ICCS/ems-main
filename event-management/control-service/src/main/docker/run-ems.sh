@@ -8,6 +8,8 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
+./initialize-keystores.sh
+
 # Read JASYPT password (decrypts encrypted configuration settings)
 JASYPT_PASSWORD=password
 if [[ -z "$JASYPT_PASSWORD" ]]; then

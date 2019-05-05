@@ -8,6 +8,8 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
+./initialize-keystores.sh
+
 # Get EMS home directory
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 MELODIC_CONFIG_DIR=$BASEDIR/config-files

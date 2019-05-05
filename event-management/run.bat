@@ -8,6 +8,8 @@
 :: http://mozilla.org/MPL/2.0/.
 ::
 
+CALL initialize-keystores.bat
+
 setlocal
 set curdir=%~dp0
 set MELODIC_CONFIG_DIR=%curdir%\config-files
