@@ -8,20 +8,30 @@
 :: http://mozilla.org/MPL/2.0/.
 ::
 
-CALL bin\initialize-keystores.bat
-
 setlocal
-set curdir=%~dp0
-set BASEDIR=%curdir%..
+set PWD=%~dp0
+cd %PWD%..
+set BASEDIR=%cd%
 set MELODIC_CONFIG_DIR=%BASEDIR%\conf
 set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 
-cd %BASEDIR%
+:: Copy dependencies if missing
+if exist pom.xml (
+    if not exist %BASEDIR%\target\dependency cmd /C "mvn dependency:copy-dependencies"
+)
 
+:: Initialize keystores and certificate
+CALL bin\initialize-keystores.bat
+
+:: Run Baguette Client
 set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
  -Djavax.net.ssl.trustStoreType=pkcs12
+::set JAVA_OPTS=-Djavax.net.debug=all %JAVA_OPTS%
 
-rem set JAVA_OPTS=-Djavax.net.debug=all
-java %JAVA_OPTS% -classpath "conf;jars\*" eu.melodic.event.baguette.client.BaguetteClient %*
+echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
+echo Starting baguette client...
+java %JAVA_OPTS% -classpath "%MELODIC_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" eu.melodic.event.baguette.client.BaguetteClient %*
+
+cd %PWD%
 endlocal

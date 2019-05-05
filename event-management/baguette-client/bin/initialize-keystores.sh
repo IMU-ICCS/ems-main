@@ -8,18 +8,31 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
+PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
+cd ${BASEDIR}
 MELODIC_CONFIG_DIR=$BASEDIR/conf
 PAASAGE_CONFIG_DIR=$BASEDIR/conf
-#export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
-PWD=$( pwd )
-cd ${BASEDIR}
 
 
 # Get IP addresses
+UTIL_PATH_1=jars/util/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+UTIL_PATH_2=../util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+if [ -f ${UTIL_PATH_1} ]; then
+	UTIL_JAR=${UTIL_PATH_1}
+elif [ -f ${UTIL_PATH_2} ]; then
+	UTIL_JAR=${UTIL_PATH_2}
+else
+	echo "ERROR: Couldn't find 'util-2.1.0-SNAPSHOT-jar-with-dependencies.jar'"
+	echo "ERROR: Skipping keystore initialization"
+	cd ${PREVWORKDIR}
+	exit 1
+fi
+#echo UTIL_JAR location: ${UTIL_JAR}
+
 echo Resolving Public and Default IP addresses...
-PUBLIC_IP=`java -jar jars/util/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar -nolog public`
-DEFAULT_IP=`java -jar jars/util/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar -nolog default`
+PUBLIC_IP=`java -jar ${UTIL_JAR} -nolog public`
+DEFAULT_IP=`java -jar ${UTIL_JAR} -nolog default`
 
 if [[ "${PUBLIC_IP}" == "" || "${PUBLIC_IP}" == "null" ]]; then
     PUBLIC_IP=127.0.0.1
@@ -59,4 +72,4 @@ keytool -delete -alias ${KEY_ALIAS} -keystore ${TRUSTSTORE} -storetype ${KEYSTOR
 keytool -import -noprompt -file ${CERTIFICATE} -alias ${KEY_ALIAS} -keystore ${TRUSTSTORE} -storetype ${KEYSTORE_TYPE} -storepass ${KEYSTORE_PASS}
 
 echo Key store, trust stores and certificate are ready.
-cd $PWD
+cd $PREVWORKDIR

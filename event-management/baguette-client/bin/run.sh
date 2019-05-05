@@ -8,12 +8,13 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
-./bin/initialize-keystores.sh
-
 # Change directory to Baguette client home
+PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
-PWD=$( pwd )
-cd $BASEDIR
+cd ${BASEDIR}
+MELODIC_CONFIG_DIR=${BASEDIR}/conf
+PAASAGE_CONFIG_DIR=${BASEDIR}/conf
+export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 
 # Update path
 PATH=$PATH:/opt/cloudiator/jre8/bin/
@@ -26,19 +27,25 @@ then
     exit 0
 fi
 
-# Setting necessary environment variables
-MELODIC_CONFIG_DIR=$BASEDIR/conf
-PAASAGE_CONFIG_DIR=$BASEDIR/conf
-echo "MELODIC_CONFIG_DIR=$MELODIC_CONFIG_DIR"
+# Copy dependencies if missing
+if [ -f pom.xml ]; then
+	if [ ! -d ${BASEDIR}/target/dependency ]; then
+		mvn dependency:copy-dependencies
+	fi
+fi
 
-JAVA_OPTS=-Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
-JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12"
-
-export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR BASEDIR JAVA_OPTS
+# Initialize keystores and certificate
+./bin/initialize-keystores.sh
 
 # Run Baguette client
+JAVA_OPTS=-Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
+JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12"
+#JAVA_OPTS="-Djavax.net.debug=all ${JAVA_OPTS}"
+
+echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting baguette client..."
-java ${JAVA_OPTS} -classpath "conf:jars/*" eu.melodic.event.baguette.client.BaguetteClient $*
+java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &
 PID=`jps | grep BaguetteClient | cut -d " " -f 1`
 echo "Baguette client PID: $PID"
-cd $PWD
+
+cd $PREVWORKDIR
