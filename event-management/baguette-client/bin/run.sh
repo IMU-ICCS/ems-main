@@ -8,6 +8,8 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
+./bin/initialize-keystores.sh
+
 # Change directory to Baguette client home
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 PWD=$( pwd )
@@ -29,8 +31,8 @@ MELODIC_CONFIG_DIR=$BASEDIR/conf
 PAASAGE_CONFIG_DIR=$BASEDIR/conf
 echo "MELODIC_CONFIG_DIR=$MELODIC_CONFIG_DIR"
 
-JAVA_OPTS= -Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
-JAVA_OPTS=${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12
+JAVA_OPTS=-Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
+JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12"
 
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR BASEDIR JAVA_OPTS
 

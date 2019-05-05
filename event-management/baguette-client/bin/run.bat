@@ -8,6 +8,8 @@
 :: http://mozilla.org/MPL/2.0/.
 ::
 
+CALL bin\initialize-keystores.bat
+
 setlocal
 set curdir=%~dp0
 set BASEDIR=%curdir%..

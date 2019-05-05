@@ -53,6 +53,13 @@
                 <include>*.jar</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <outputDirectory>jars/util</outputDirectory>
+            <directory>../util/target</directory>
+            <includes>
+                <include>*-jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
     </fileSets>
     <!-- use this section if you want to package dependencies -->
     <dependencySets>
