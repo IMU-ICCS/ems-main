@@ -12,6 +12,11 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.net.ssl.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -28,6 +33,10 @@ public class MuleClientApi implements MuleApi {
         ResponseEntity<DeploymentResponse> processResponse;
 
         try {
+            if (!guiBackendProperties.getEsb().isSslVerificationEnabled()) {
+                log.info("Disable SSL verification");
+                disableSslVerification();
+            }
             processResponse = restTemplate.exchange(muleUrl, HttpMethod.POST, entity, DeploymentResponse.class);
 
             if (processResponse.getStatusCode() != HttpStatus.OK) {
@@ -64,4 +73,42 @@ public class MuleClientApi implements MuleApi {
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         return headers;
     }
+
+    private static void disableSslVerification() {
+        try {
+            // Create a trust manager that does not validate certificate chains
+            TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }
+            };
+
+            // Install the all-trusting trust manager
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+            // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
