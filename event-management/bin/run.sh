@@ -17,7 +17,7 @@ PAASAGE_CONFIG_DIR=$BASEDIR/config-files
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 
 # Initialize keystores and certificate
-./initialize-keystores.sh
+./bin/initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
 JASYPT_PASSWORD=password
