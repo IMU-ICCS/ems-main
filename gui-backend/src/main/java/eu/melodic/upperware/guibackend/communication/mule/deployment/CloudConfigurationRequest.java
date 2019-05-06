@@ -1,12 +1,10 @@
 package eu.melodic.upperware.guibackend.communication.mule.deployment;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.util.Map;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
 @Getter
 @Builder
 public class CloudConfigurationRequest {

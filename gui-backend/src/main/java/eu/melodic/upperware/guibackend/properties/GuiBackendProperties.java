@@ -31,13 +31,6 @@ public class GuiBackendProperties {
     @NotNull
     private Camunda camunda;
 
-    @Valid
-    private ProviderProperties aws;
-
-    @Valid
-    private ProviderProperties openStack;
-
-
     @Getter
     @Setter
     public static class Cloudiator {
@@ -66,22 +59,5 @@ public class GuiBackendProperties {
 
         @NotBlank
         private String port;
-    }
-
-    @Getter
-    @Setter
-    public static class ProviderProperties {
-
-        private String endpoint;
-
-        @NotBlank
-        private String user;
-
-        @NotBlank
-        private String secret;
-
-        @NotBlank
-        private String nodeGroup;
-
     }
 }

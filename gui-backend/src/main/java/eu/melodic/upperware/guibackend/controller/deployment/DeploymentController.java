@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/deployment")
 @Slf4j
@@ -36,9 +38,9 @@ public class DeploymentController {
 
     @GetMapping(value = "/xmi")
     @ResponseStatus(HttpStatus.OK)
-    public void getAllXmiModels() {
+    public List<String> getAllXmiModels() {
         log.info("GET request for all xmi models");
-        deploymentService.getAllXmiModels();
+        return deploymentService.getAllXmiModels();
     }
 
     @PostMapping(value = "/process")

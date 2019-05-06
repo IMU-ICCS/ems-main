@@ -1,10 +1,8 @@
 package eu.melodic.upperware.guibackend.communication.mule.deployment;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
 @Getter
 @Builder
 public class CredentialRequest {

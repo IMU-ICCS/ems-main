@@ -1,17 +1,25 @@
 package eu.melodic.upperware.guibackend.service.deployment;
 
+import camel.core.CamelModel;
+import camel.core.NamedElement;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.net4j.db.DBException;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -19,8 +27,7 @@ public class CdoService {
 
 
     public String getCdoName(String fileName, String fileExtension) {
-        return fileName
-                .substring(0, fileName.indexOf(fileExtension) - 1);
+        return StringUtils.removeEnd(fileName, fileExtension);
     }
 
     public boolean storeFileInCdo(String cdoName, File file) {
@@ -52,9 +59,10 @@ public class CdoService {
             try {
                 cdoTransaction.commit();
             } catch (CommitException e) {
-                cdoTransaction.close();
                 log.error("Error by commit transaction with deleting model", e);
                 return false;
+            } finally {
+                cdoTransaction.close();
             }
             return true;
         } else {
@@ -64,12 +72,24 @@ public class CdoService {
         }
     }
 
-    // todo
-    public void getAllXmi() {
-        log.info("Getting all models from CDO not implemented yet");
+    public List<String> getAllXmi() {
         CDOClient client = getCdoClient();
         CDOTransaction cdoTransaction = client.openTransaction();
-        cdoTransaction.close();
+
+        CDOQuery sql = cdoTransaction.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
+        List<String> result = new ArrayList<>();
+        try {
+            result = sql.getResult().stream()
+                    .map(o -> (CamelModel) o)
+                    .map(NamedElement::getName)
+                    .collect(Collectors.toList());
+        } catch (DBException ex) {
+            log.error("Error by getting list of available models: ", ex);
+        } finally {
+            log.info("Closing transaction");
+            cdoTransaction.close();
+        }
+        return result;
     }
 
     private CDOClient getCdoClient() {
