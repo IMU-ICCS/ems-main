@@ -14,14 +14,14 @@ RUN /bin/sh -c "apk add --no-cache bash"
 
 ADD control-service.jar .
 ADD esper-*.jar .
+ADD util-*.jar .
 ADD config ./config
 ADD resources ./resources
 ADD run-ems.sh .
 ADD initialize-keystores.sh .
 
-RUN bash -c 'touch control-service.jar'
-RUN bash -c 'touch esper-*.jar'
-RUN bash -c 'chmod +rx run-ems.sh'
+RUN bash -c 'touch *.jar'
+RUN bash -c 'chmod +rx *.sh'
 RUN mkdir logs
 
 ENTRYPOINT ["./run-ems.sh"]

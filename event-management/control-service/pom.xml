@@ -165,7 +165,8 @@
                             <directory>${project.build.directory}</directory>
                             <include>${docker.jarToInclude}</include>
                             <include>${docker.esperJarToInclude}</include>
-                            <include>${project.basedir}/../run.sh</include>
+                            <include>${project.basedir}/../bin/run.sh</include>
+                            <include>${project.basedir}/../util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar</include>
                         </resource>
                         <resource>
                             <targetPath>/config</targetPath>

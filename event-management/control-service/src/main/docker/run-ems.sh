@@ -16,6 +16,7 @@ cd ${BASEDIR}
 #PAASAGE_CONFIG_DIR=$BASEDIR/config-files
 #export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 
+# Import MULE certificate
 MULE_CERT=/config/mule-server.crt
 if [[ -f ${MULE_CERT} ]]; then
     echo "importing mule certificate"
@@ -44,6 +45,12 @@ if [[ -z "$LOG_CONFIG_FILE" ]]; then
     LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-spring.xml
 fi
 
+# Waiting CDO to come up...
+if [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
+    echo "Waiting CDO server to start..."
+    $MELODIC_CONFIG_DIR/wait-for-cdo.sh
+fi
+
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
 # JAVA_OPTS=-Djavax.net.debug=all
@@ -51,11 +58,8 @@ export JAVA_OPTS
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
-
-if [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
-    $MELODIC_CONFIG_DIR/wait-for-cdo.sh && java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
-else
-    java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
-fi
+#java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
+JAR_PATH=.
+java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -cp ${JAR_PATH}/control-service.jar -Dloader.path=${JAR_PATH}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE 
 
 cd $PREVWORKDIR
