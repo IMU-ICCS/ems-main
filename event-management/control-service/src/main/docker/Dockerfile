@@ -16,11 +16,11 @@ ADD control-service.jar .
 ADD esper-*.jar .
 ADD config ./config
 ADD resources ./resources
-ADD run-ems.sh .
+ADD *.sh .
 
 RUN bash -c 'touch control-service.jar'
 RUN bash -c 'touch esper-*.jar'
 RUN bash -c 'chmod +rx run-ems.sh'
 RUN mkdir logs
 
-ENTRYPOINT ["./run-ems.sh"]
+ENTRYPOINT ["./bin/run-ems.sh"]
