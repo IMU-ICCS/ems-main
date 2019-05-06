@@ -57,7 +57,7 @@ export JAVA_OPTS
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
-JAR_PATH=.
+JAR_PATH=./jars
 # Use when Esper is packaged in control-service.jar
 # java $JAVA_OPTS -jar $JAR_PATH/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 

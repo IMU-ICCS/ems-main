@@ -14,7 +14,6 @@ cd ${BASEDIR}
 #MELODIC_CONFIG_DIR=$BASEDIR/config-files
 #PAASAGE_CONFIG_DIR=$BASEDIR/config-files
 
-
 # Get IP addresses
 UTIL_FILE=util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 UTIL_PATH_0=util/target/${UTIL_FILE}

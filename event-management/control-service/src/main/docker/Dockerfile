@@ -13,17 +13,19 @@ WORKDIR /opt/ems-server
 RUN /bin/sh -c "apk add --no-cache bash"
 
 RUN mkdir bin
+RUN mkdir jars
+RUN mkdir jars/util
 RUN mkdir logs
 
-ADD control-service.jar .
-ADD esper-*.jar .
-ADD util-*.jar .
+ADD control-service.jar ./jars
+ADD esper-*.jar ./jars
+ADD util-*.jar ./jars/util
 ADD config ./config
 ADD resources ./resources
 ADD run-ems.sh ./bin
 ADD initialize-keystores.sh ./bin
 
-RUN bash -c 'touch *.jar'
+RUN bash -c 'touch jars/*.jar'
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
 ENTRYPOINT ["./bin/run-ems.sh"]
