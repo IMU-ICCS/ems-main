@@ -13,7 +13,6 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.net4j.db.DBException;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -83,10 +82,9 @@ public class CdoService {
                     .map(o -> (CamelModel) o)
                     .map(NamedElement::getName)
                     .collect(Collectors.toList());
-        } catch (DBException ex) {
+        } catch (Exception ex) {
             log.error("Error by getting list of available models: ", ex);
         } finally {
-            log.info("Closing transaction");
             cdoTransaction.close();
         }
         return result;
