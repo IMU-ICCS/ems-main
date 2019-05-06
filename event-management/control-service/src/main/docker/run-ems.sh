@@ -16,12 +16,17 @@ cd ${BASEDIR}
 #PAASAGE_CONFIG_DIR=$BASEDIR/config-files
 #export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 
-echo "importing mule certificate"
-keytool -noprompt -storepass changeit -import -alias mule -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -file /config/mule-server.crt
-echo "importing mule certificate completed"
+MULE_CERT=/config/mule-server.crt
+if [[ -f ${MULE_CERT} ]]; then
+    echo "importing mule certificate"
+    keytool -noprompt -storepass changeit -import -alias mule -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -file ${MULE_CERT}
+    echo "importing mule certificate completed"
+else
+    echo "mule certificate not found: ${MULE_CERT}"
+fi
 
 # Initialize keystores and certificate
-./bin/initialize-keystores.sh
+./initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
 JASYPT_PASSWORD=password
@@ -47,6 +52,10 @@ export JAVA_OPTS
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
 
-$MELODIC_CONFIG_DIR/wait-for-cdo.sh && java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
+if [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
+    $MELODIC_CONFIG_DIR/wait-for-cdo.sh && java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
+else
+    java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
+fi
 
 cd $PREVWORKDIR
