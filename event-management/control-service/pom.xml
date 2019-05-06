@@ -15,6 +15,7 @@
         <!--DOCKER plugin properties-->
         <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
+        <docker.utilJarToInclude>util-${project.version}-jar-with-dependencies.jar</docker.utilJarToInclude>
     </properties>
 
     <dependencies>
@@ -165,9 +166,17 @@
                             <directory>${project.build.directory}</directory>
                             <include>${docker.jarToInclude}</include>
                             <include>${docker.esperJarToInclude}</include>
-                            <include>${project.basedir}/../bin/run.sh</include>
-                            <include>${project.basedir}/../util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar</include>
                         </resource>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.parent.basedir}/util/target/</directory>
+                            <include>${docker.utilJarToInclude}</include>
+                        </resource>
+                        <!--<resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>run.sh</include>
+                        </resource>-->
                         <resource>
                             <targetPath>/config</targetPath>
                             <directory>${project.basedir}/../config-files</directory>
