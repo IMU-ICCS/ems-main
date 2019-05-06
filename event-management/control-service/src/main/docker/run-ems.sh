@@ -12,12 +12,11 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-#MELODIC_CONFIG_DIR=$BASEDIR/config-files
-#PAASAGE_CONFIG_DIR=$BASEDIR/config-files
-#export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
+if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config; export MELODIC_CONFIG_DIR; fi
+if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config; export PAASAGE_CONFIG_DIR; fi
 
 # Import MULE certificate
-MULE_CERT=/config/mule-server.crt
+MULE_CERT=$MELODIC_CONFIG_DIR/mule-server.crt
 if [[ -f ${MULE_CERT} ]]; then
     echo "importing mule certificate"
     keytool -noprompt -storepass changeit -import -alias mule -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -file ${MULE_CERT}
@@ -27,7 +26,7 @@ else
 fi
 
 # Initialize keystores and certificate
-./initialize-keystores.sh
+./bin/initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
 JASYPT_PASSWORD=password
@@ -58,8 +57,15 @@ export JAVA_OPTS
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
-#java -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -Dloader.path=esper-7.1.0.jar -cp control-service.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
 JAR_PATH=.
+# Use when Esper is packaged in control-service.jar
+# java $JAVA_OPTS -jar $JAR_PATH/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
+
+# Use when Esper is NOT packaged in control-service.jar
 java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -cp ${JAR_PATH}/control-service.jar -Dloader.path=${JAR_PATH}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE 
+
+# Extra parameters
+# e.g. --spring.config.location=$MELODIC_CONFIG_DIR
+# e.g. --spring.config.name=application.properties
 
 cd $PREVWORKDIR

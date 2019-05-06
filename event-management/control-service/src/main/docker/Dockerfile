@@ -12,16 +12,18 @@ FROM java:8-alpine
 WORKDIR /opt/ems-server
 RUN /bin/sh -c "apk add --no-cache bash"
 
+RUN mkdir bin
+RUN mkdir logs
+
 ADD control-service.jar .
 ADD esper-*.jar .
 ADD util-*.jar .
 ADD config ./config
 ADD resources ./resources
-ADD run-ems.sh .
-ADD initialize-keystores.sh .
+ADD run-ems.sh ./bin
+ADD initialize-keystores.sh ./bin
 
 RUN bash -c 'touch *.jar'
-RUN bash -c 'chmod +rx *.sh'
-RUN mkdir logs
+RUN bash -c 'chmod +rx ./bin/*.sh'
 
-ENTRYPOINT ["./run-ems.sh"]
+ENTRYPOINT ["./bin/run-ems.sh"]
