@@ -22,14 +22,15 @@ ADD esper-*.jar ./jars
 ADD util-*.jar ./jars/util
 ADD config ./config
 ADD resources ./resources
-ADD run-ems.sh ./bin
+ADD run.sh ./bin/run.sh
 ADD initialize-keystores.sh ./bin
 
 RUN bash -c 'touch jars/*.jar'
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
-ENV MELODIC_CONFIG_DIR /opt/ems-server/config
-ENV PAASAGE_CONFIG_DIR /opt/ems-server/config
-ENV JAR_PATH ./jars
+ENV BASEDIR /opt/ems-server
+ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
+ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
+ENV JAR_PATH ${BASEDIR}/jars
 
-ENTRYPOINT ["./bin/run-ems.sh"]
+ENTRYPOINT ["./bin/run.sh"]

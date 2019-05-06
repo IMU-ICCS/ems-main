@@ -11,19 +11,23 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-MELODIC_CONFIG_DIR=$BASEDIR/config-files
-PAASAGE_CONFIG_DIR=$BASEDIR/config-files
+if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; export MELODIC_CONFIG_DIR; fi
+if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 
 # Get IP addresses
-UTIL_PATH_0=util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
-UTIL_PATH_1=jars/util/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
-UTIL_PATH_2=../util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+UTIL_FILE=util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+UTIL_PATH_0=util/target/${UTIL_FILE}
+UTIL_PATH_1=jars/util/${UTIL_FILE}
+UTIL_PATH_2=../util/target/${UTIL_FILE}
+UTIL_PATH_3=./${UTIL_FILE}
 if [ -f ${UTIL_PATH_0} ]; then
 	UTIL_JAR=${UTIL_PATH_0}
 elif [ -f ${UTIL_PATH_1} ]; then
 	UTIL_JAR=${UTIL_PATH_1}
 elif [ -f ${UTIL_PATH_2} ]; then
 	UTIL_JAR=${UTIL_PATH_2}
+elif [ -f ${UTIL_PATH_3} ]; then
+	UTIL_JAR=${UTIL_PATH_3}
 else
 	echo "ERROR: Couldn't find 'util-2.1.0-SNAPSHOT-jar-with-dependencies.jar'"
 	echo "ERROR: Skipping keystore initialization"

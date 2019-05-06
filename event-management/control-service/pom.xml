@@ -162,21 +162,22 @@
                 <configuration>
                     <resources>
                         <resource>
-                            <targetPath>/</targetPath>
+                            <targetPath>/jars</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>${docker.jarToInclude}</include>
                             <include>${docker.esperJarToInclude}</include>
                         </resource>
                         <resource>
-                            <targetPath>/</targetPath>
+                            <targetPath>/jars/util</targetPath>
                             <directory>${project.parent.basedir}/util/target/</directory>
                             <include>${docker.utilJarToInclude}</include>
                         </resource>
-                        <!--<resource>
-                            <targetPath>/</targetPath>
+                        <resource>
+                            <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>run.sh</include>
-                        </resource>-->
+                            <include>initialize-keystores.sh</include>
+                        </resource>
                         <resource>
                             <targetPath>/config</targetPath>
                             <directory>${project.basedir}/../config-files</directory>
