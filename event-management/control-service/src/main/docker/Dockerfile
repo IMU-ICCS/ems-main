@@ -28,4 +28,8 @@ ADD initialize-keystores.sh ./bin
 RUN bash -c 'touch jars/*.jar'
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
+ENV MELODIC_CONFIG_DIR /opt/ems-server/config
+ENV PAASAGE_CONFIG_DIR /opt/ems-server/config
+ENV JAR_PATH ./jars
+
 ENTRYPOINT ["./bin/run-ems.sh"]

@@ -12,8 +12,9 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config; export MELODIC_CONFIG_DIR; fi
-if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config; export PAASAGE_CONFIG_DIR; fi
+if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; export MELODIC_CONFIG_DIR; fi
+if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
+if [[ -z $JAR_PATH ]]; then JAR_PATH=$BASEDIR/control-service/target; export JAR_PATH; fi
 
 # Import MULE certificate
 MULE_CERT=$MELODIC_CONFIG_DIR/mule-server.crt
@@ -57,7 +58,6 @@ export JAVA_OPTS
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
-JAR_PATH=./jars
 # Use when Esper is packaged in control-service.jar
 # java $JAVA_OPTS -jar $JAR_PATH/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
