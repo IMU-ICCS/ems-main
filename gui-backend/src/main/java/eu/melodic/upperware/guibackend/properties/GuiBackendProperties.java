@@ -48,6 +48,9 @@ public class GuiBackendProperties {
 
         @NotBlank
         private String url;
+
+        @NotNull
+        private boolean sslVerificationEnabled;
     }
 
     @Getter
