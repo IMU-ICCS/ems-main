@@ -81,6 +81,11 @@
             <artifactId>upperware-metamodel</artifactId>
             <version>${upperware.version}</version>
         </dependency>
+        <dependency>
+            <groupId>p2.osgi.bundle</groupId>
+            <artifactId>org.eclipse.net4j.db</artifactId>
+            <version>4.6.0.v20170217-1728</version>
+        </dependency>
 
 
     </dependencies>
