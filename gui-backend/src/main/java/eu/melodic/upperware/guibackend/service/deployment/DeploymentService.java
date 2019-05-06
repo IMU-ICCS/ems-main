@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -87,8 +88,10 @@ public class DeploymentService {
         }
     }
 
-    public void getAllXmiModels() {
-        cdoService.getAllXmi();
+    public List<String> getAllXmiModels() {
+        List<String> allXmiModels = cdoService.getAllXmi();
+        allXmiModels.sort(String::compareTo);
+        return allXmiModels;
     }
 
     public ProcessVariables getProcessVariables(String processId) {
