@@ -8,37 +8,46 @@
 :: http://mozilla.org/MPL/2.0/.
 ::
 
-CALL initialize-keystores.bat
-
 setlocal
-set curdir=%~dp0
-set MELODIC_CONFIG_DIR=%curdir%\config-files
-set PAASAGE_CONFIG_DIR=%curdir%\config-files
+set PWD=%~dp0
+cd %PWD%..
+set BASEDIR=%cd%
+set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
+set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
 
-rem Uncomment next line to set JAVA runtime options
-rem set JAVA_OPTS=-Djavax.net.debug=all
-
-rem Read JASYPT password (decrypts encrypted configuration settings)
+:: Read JASYPT password (decrypts encrypted configuration settings)
 set JASYPT_PASSWORD=password
 if "%JASYPT_PASSWORD%"=="" (
     set /p JASYPT_PASSWORD="Configuration Password: "
 )
-rem Use this online service to encrypt/decrypt passwords:
-rem https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
+:: Use this online service to encrypt/decrypt passwords:
+:: https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
-rem Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
-rem set BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
+:: Initialize keystores and certificate
+CALL bin\initialize-keystores.bat
 
+:: Set config. file
 if "%LOG_CONFIG_FILE%"=="" (
     set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-spring.xml
 )
 echo Using logback config.: %LOG_CONFIG_FILE%
 
+rem XXX:DEL: Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
+rem XXX:DEL: set BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
+
+:: Run Baguette Client
+rem set JAVA_OPTS=-Djavax.net.debug=all
+
+echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
+echo Starting EMS server...
 rem Use when Esper is packaged in control-service.jar
 rem java %JAVA_OPTS% -jar %BROKER_CEP_TEST% control-service\target\control-service.jar --logging.config=%MELODIC_CONFIG_DIR%\logback-spring.xml
+
 rem Use when Esper is NOT packaged in control-service.jar
 java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -cp control-service\target\control-service.jar -Dloader.path=control-service\target\esper-7.1.0.jar %BROKER_CEP_TEST% org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE%
+
 rem e.g. --spring.config.location=%MELODIC_CONFIG_DIR%\
 rem e.g. --spring.config.name=application.properties
 
+cd %PWD%
 endlocal

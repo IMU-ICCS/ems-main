@@ -8,17 +8,16 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
-./initialize-keystores.sh
-
-# Get EMS home directory
-BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+# Change directory to EMS home
+PREVWORKDIR=`pwd`
+BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
+cd ${BASEDIR}
 MELODIC_CONFIG_DIR=$BASEDIR/config-files
 PAASAGE_CONFIG_DIR=$BASEDIR/config-files
-
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 
-# Uncomment next line to set JAVA runtime options
-# JAVA_OPTS=-Djavax.net.debug=all
+# Initialize keystores and certificate
+./initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
 JASYPT_PASSWORD=password
@@ -32,13 +31,19 @@ fi
 # Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
 # BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
 
-export JAVA_OPTS BROKER_CEP_TEST
-
 # check logger configuration
 if [[ -z "$LOG_CONFIG_FILE" ]]; then
     LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-spring.xml
 fi
 
+# Run EMS server
+# Uncomment next line to set JAVA runtime options
+# JAVA_OPTS=-Djavax.net.debug=all
+
+export JAVA_OPTS BROKER_CEP_TEST
+
+echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
+echo "Starting EMS server..."
 # Use when Esper is packaged in control-service.jar
 # java $JAVA_OPTS -jar $BROKER_CEP_TEST $BASEDIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
@@ -47,3 +52,5 @@ java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -cp $BASEDIR/contro
 
 # e.g. --spring.config.location=$MELODIC_CONFIG_DIR
 # e.g. --spring.config.name=application.properties
+
+cd $PREVWORKDIR

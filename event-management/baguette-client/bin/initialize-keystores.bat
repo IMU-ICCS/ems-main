@@ -16,18 +16,23 @@ set MELODIC_CONFIG_DIR=%BASEDIR%\conf
 set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 
 :: Get IP addresses
+set UTIL_PATH_0=util\target\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 set UTIL_PATH_1=jars\util\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 set UTIL_PATH_2=..\util\target\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
-if exist %UTIL_PATH_1% (
-    set UTIL_JAR=%UTIL_PATH_1%
+if exist %UTIL_PATH_0% (
+    set UTIL_JAR=%UTIL_PATH_0%
 ) else (
-    if exist %UTIL_PATH_2% (
-        set UTIL_JAR=%UTIL_PATH_2%
-    ) else (
-        echo ERROR: Couldn't find 'util-2.1.0-SNAPSHOT-jar-with-dependencies.jar'
-        echo ERROR: Skipping keystore initialization
-        goto the_end
-    )
+	if exist %UTIL_PATH_1% (
+		set UTIL_JAR=%UTIL_PATH_1%
+	) else (
+		if exist %UTIL_PATH_2% (
+			set UTIL_JAR=%UTIL_PATH_2%
+		) else (
+			echo ERROR: Couldn't find 'util-2.1.0-SNAPSHOT-jar-with-dependencies.jar'
+			echo ERROR: Skipping keystore initialization
+			goto the_end
+		)
+	)
 )
 ::echo UTIL_JAR location: %UTIL_JAR%
 

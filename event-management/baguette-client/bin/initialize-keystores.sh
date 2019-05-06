@@ -16,9 +16,12 @@ PAASAGE_CONFIG_DIR=$BASEDIR/conf
 
 
 # Get IP addresses
+UTIL_PATH_0=util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 UTIL_PATH_1=jars/util/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 UTIL_PATH_2=../util/target/util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
-if [ -f ${UTIL_PATH_1} ]; then
+if [ -f ${UTIL_PATH_0} ]; then
+	UTIL_JAR=${UTIL_PATH_0}
+elif [ -f ${UTIL_PATH_1} ]; then
 	UTIL_JAR=${UTIL_PATH_1}
 elif [ -f ${UTIL_PATH_2} ]; then
 	UTIL_JAR=${UTIL_PATH_2}

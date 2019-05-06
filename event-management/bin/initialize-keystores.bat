@@ -9,18 +9,38 @@
 ::
 
 setlocal
-set curdir=%~dp0
-set MELODIC_CONFIG_DIR=%curdir%\config-files
-set PAASAGE_CONFIG_DIR=%curdir%\config-files
+set PWD=%cd%
+cd %~dp0..
+set BASEDIR=%cd%
+set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
+set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
 
 :: Get IP addresses
-echo Resolving Public and Default IP addresses...
-for /f %%i in ('java -jar util\target\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar -nolog public')  do set {PUBLIC_IP}=%%i
-for /f %%i in ('java -jar util\target\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar -nolog default') do set {DEFAULT_IP}=%%i
+set UTIL_PATH_0=util\target\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+set UTIL_PATH_1=jars\util\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+set UTIL_PATH_2=..\util\target\util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+if exist %UTIL_PATH_0% (
+    set UTIL_JAR=%UTIL_PATH_0%
+) else (
+	if exist %UTIL_PATH_1% (
+		set UTIL_JAR=%UTIL_PATH_1%
+	) else (
+		if exist %UTIL_PATH_2% (
+			set UTIL_JAR=%UTIL_PATH_2%
+		) else (
+			echo ERROR: Couldn't find 'util-2.1.0-SNAPSHOT-jar-with-dependencies.jar'
+			echo ERROR: Skipping keystore initialization
+			goto the_end
+		)
+	)
+)
+::echo UTIL_JAR location: %UTIL_JAR%
 
-IF "%{PUBLIC_IP}%" == "" set {PUBLIC_IP}=127.0.0.1
+echo Resolving Public and Default IP addresses...
+for /f %%i in ('java -jar %UTIL_JAR% -nolog public')  do set {PUBLIC_IP}=%%i
+for /f %%i in ('java -jar %UTIL_JAR% -nolog default') do set {DEFAULT_IP}=%%i
+
 IF "%{PUBLIC_IP}%" == "null" set {PUBLIC_IP}=127.0.0.1
-IF "%{DEFAULT_IP}%" == "" set {DEFAULT_IP}=127.0.0.1
 IF "%{DEFAULT_IP}%" == "null" set {DEFAULT_IP}=127.0.0.1
 
 echo PUBLIC_IP=%{PUBLIC_IP}%
@@ -42,16 +62,18 @@ set KEYSTORE_PASS=melodic
 
 :: Keystores initialization
 echo Generating key pair and certificate...
-keytool -delete -alias %KEY_ALIAS% -keystore %KEYSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS%
+keytool -delete -alias %KEY_ALIAS% -keystore %KEYSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS% > nul 2>&1
 keytool -genkey -keyalg %KEY_GEN_ALG% -keysize %KEY_SIZE% -alias %KEY_ALIAS% -startdate %START_DATE% -validity %VALIDITY% -dname "%DN%" -ext "%EXT_SAN%" -keystore %KEYSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS%
 
 echo Exporting certificate to file...
-del /Q %CERTIFICATE%
+del /Q %CERTIFICATE% > nul 2>&1
 keytool -export -alias %KEY_ALIAS% -file %CERTIFICATE% -keystore %KEYSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS%
 
 echo Importing certificate to trust store...
-keytool -delete -alias %KEY_ALIAS% -keystore %TRUSTSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS%
+keytool -delete -alias %KEY_ALIAS% -keystore %TRUSTSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS% > nul 2>&1
 keytool -import -noprompt -file %CERTIFICATE% -alias %KEY_ALIAS% -keystore %TRUSTSTORE% -storetype %KEYSTORE_TYPE% -storepass %KEYSTORE_PASS%
 
 echo Key store, trust stores and certificate are ready.
+:the_end
+cd %PWD%
 endlocal
