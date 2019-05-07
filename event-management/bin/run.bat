@@ -27,7 +27,9 @@ if exist %MULE_CERT% (
 )
 
 :: Initialize keystores and certificate
-CALL bin\initialize-keystores.bat
+:: Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
+:: Modifying 'initialize-keystores.bat' script you can customize the certificate generation
+::CALL bin\initialize-keystores.bat
 
 :: Read JASYPT password (decrypts encrypted configuration settings)
 set JASYPT_PASSWORD=password

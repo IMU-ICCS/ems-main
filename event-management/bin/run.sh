@@ -27,7 +27,9 @@ else
 fi
 
 # Initialize keystores and certificate
-./bin/initialize-keystores.sh
+# Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
+# Modifying 'initialize-keystores.bat' script you can customize the certificate generation
+#./bin/initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
 JASYPT_PASSWORD=password

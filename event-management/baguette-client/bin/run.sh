@@ -35,7 +35,9 @@ if [ -f pom.xml ]; then
 fi
 
 # Initialize keystores and certificate
-./bin/initialize-keystores.sh
+# Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
+# Modifying 'initialize-keystores.bat' script you can customize the certificate generation
+#./bin/initialize-keystores.sh
 
 # Run Baguette client
 JAVA_OPTS=-Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
