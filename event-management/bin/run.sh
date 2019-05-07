@@ -59,10 +59,10 @@ export JAVA_OPTS
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
 # Use when Esper is packaged in control-service.jar
-# java $JAVA_OPTS -jar $JAR_PATH/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
+# java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar $JAR_PATH/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
 # Use when Esper is NOT packaged in control-service.jar
-java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/./urandom -cp ${JAR_PATH}/control-service.jar -Dloader.path=${JAR_PATH}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE 
+java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp ${JAR_PATH}/control-service.jar -Dloader.path=${JAR_PATH}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE 
 
 # Extra parameters
 # e.g. --spring.config.location=$MELODIC_CONFIG_DIR

@@ -12,8 +12,22 @@ setlocal
 set PWD=%~dp0
 cd %PWD%..
 set BASEDIR=%cd%
-set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
-set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
+IF NOT DEFINED JAR_PATH set JAR_PATH=%BASEDIR%\control-service\target
+
+:: Import MULE certificate
+set MULE_CERT=%MELODIC_CONFIG_DIR%\mule-server.crt
+if exist %MULE_CERT% (
+    echo importing mule certificate
+    keytool -noprompt -storepass changeit -import -alias mule -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file %MULE_CERT%
+    echo importing mule certificate completed
+) else (
+    echo mule certificate not found: %MULE_CERT%
+)
+
+:: Initialize keystores and certificate
+CALL bin\initialize-keystores.bat
 
 :: Read JASYPT password (decrypts encrypted configuration settings)
 set JASYPT_PASSWORD=password
@@ -23,28 +37,29 @@ if "%JASYPT_PASSWORD%"=="" (
 :: Use this online service to encrypt/decrypt passwords:
 :: https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
-:: Initialize keystores and certificate
-CALL bin\initialize-keystores.bat
-
-:: Set config. file
+:: check logger configuration
 if "%LOG_CONFIG_FILE%"=="" (
     set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-spring.xml
 )
 echo Using logback config.: %LOG_CONFIG_FILE%
 
-rem XXX:DEL: Uncomment next line to run a Broker-CEP test scenario (BrokerCepServiceTest1..BrokerCepServiceTest5)
-rem XXX:DEL: set BROKER_CEP_TEST=-Drun-broker-cep-test=BrokerCepServiceTest5
+:: Waiting CDO to come up...
+if exist %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
+    echo "Waiting CDO server to start..."
+    %MELODIC_CONFIG_DIR%\wait-for-cdo.bat
+)
 
-:: Run Baguette Client
+:: Run EMS server
+rem Uncomment next line to set JAVA runtime options
 rem set JAVA_OPTS=-Djavax.net.debug=all
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo Starting EMS server...
 rem Use when Esper is packaged in control-service.jar
-rem java %JAVA_OPTS% -jar %BROKER_CEP_TEST% control-service\target\control-service.jar --logging.config=%MELODIC_CONFIG_DIR%\logback-spring.xml
+rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar %JAR_PATH%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
 
 rem Use when Esper is NOT packaged in control-service.jar
-java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -cp control-service\target\control-service.jar -Dloader.path=control-service\target\esper-7.1.0.jar %BROKER_CEP_TEST% org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE%
+java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp %JAR_PATH%\control-service.jar -Dloader.path=%JAR_PATH%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE%
 
 rem e.g. --spring.config.location=%MELODIC_CONFIG_DIR%\
 rem e.g. --spring.config.name=application.properties

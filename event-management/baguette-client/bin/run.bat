@@ -12,8 +12,8 @@ setlocal
 set PWD=%~dp0
 cd %PWD%..
 set BASEDIR=%cd%
-set MELODIC_CONFIG_DIR=%BASEDIR%\conf
-set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\conf
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 
 :: Copy dependencies if missing
 if exist pom.xml (
