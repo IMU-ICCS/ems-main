@@ -223,7 +223,8 @@ public class KeystoreUtil {
         // Add/Replace key pair and certificate chain to keystore
         PrivateKey newKey = keyPair.getPrivate();
         Certificate[] chain = new Certificate[] { certificate };
-        keystore.setKeyEntry(entryName, newKey, "".toCharArray(), chain);
+        String entryPassword = keystorePassword;
+        keystore.setKeyEntry(entryName, newKey, entryPassword.toCharArray(), chain);
         log.debug("KeystoreUtil: Entry created: {}", entryName);
 
         // Store keystore back to file
