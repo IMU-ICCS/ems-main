@@ -363,7 +363,7 @@ public class BrokerConfig implements InitializingBean {
             log.debug("    MC: UseMBeanServer: {}", mc.isUseMBeanServer());
 
             log.debug("    MC->MBS: DefaultDomain: {}", mc.getMBeanServer().getDefaultDomain());
-            log.debug("    MC->MBS: Domains: {}", mc.getMBeanServer().getDomains());
+            log.debug("    MC->MBS: Domains: {}", (Object[])mc.getMBeanServer().getDomains());
             log.debug("    MC->MBS: MBeanCount: {}", mc.getMBeanServer().getMBeanCount());
         } catch (Exception ex) {
             log.error("    MC: EXCEPTION: ", ex);

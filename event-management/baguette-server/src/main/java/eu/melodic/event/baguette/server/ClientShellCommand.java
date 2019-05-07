@@ -50,8 +50,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     @Getter private String clientId;
     @Getter private String clientBrokerUrl;
-    @Getter private String clientIpAddress;
-    @Getter private int clientPort = -1;
+    private String clientIpAddress;
+    private int clientPort = -1;
     @Getter private String clientCertificate;
 
     private ServerCoordinator coordinator;
