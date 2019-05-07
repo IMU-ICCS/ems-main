@@ -61,6 +61,11 @@
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- Spring-boot dependencies -->
         <dependency>

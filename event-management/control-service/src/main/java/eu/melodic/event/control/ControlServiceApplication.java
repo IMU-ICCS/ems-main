@@ -9,16 +9,23 @@
 
 package eu.melodic.event.control;
 
+import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.LogPrintStream;
+import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.event.Level;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -37,6 +44,11 @@ public class ControlServiceApplication {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
 
+    @Autowired
+    private ControlServiceProperties properties;
+    @Autowired
+    private PasswordUtil passwordUtil;
+
     public static void main(String[] args) {
         if (args.length==0 || !"-nolog".equalsIgnoreCase(args[0].trim())) {
             // Set standard system streams being logged
@@ -48,6 +60,17 @@ public class ControlServiceApplication {
         SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
+    }
+
+    @Bean
+    public ServletWebServerFactory servletWebServerFactory() throws Exception {
+        log.debug("ControlServiceProperties: {}", properties);
+        log.info("Initializing HTTPS keystore, truststore and certificate...");
+        KeystoreUtil.initializeKeystoresAndCertificate(properties, passwordUtil);
+        log.info("Initializing HTTPS keystore, truststore and certificate... done");
+
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        return tomcat;
     }
 
     synchronized static void exitApp(int exitCode, long gracePeriod) {
