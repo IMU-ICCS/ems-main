@@ -77,18 +77,18 @@ public class BrokerCepProperties {
     @Value("${bypass-local-broker:false}")
     private boolean bypassLocalBroker;
 
-    @Value("${brokercep.ssl.truststore.file:}")
-    private String truststoreFile;
-    @Value("${brokercep.ssl.truststore.type:}")
-    private String truststoreType;
-    @Value("${brokercep.ssl.truststore.password:}")
-    private String truststorePassword;
     @Value("${brokercep.ssl.keystore.file:}")
     private String keystoreFile;
     @Value("${brokercep.ssl.keystore.type:}")
     private String keystoreType;
     @Value("${brokercep.ssl.keystore.password:}")
     private String keystorePassword;
+    @Value("${brokercep.ssl.truststore.file:}")
+    private String truststoreFile;
+    @Value("${brokercep.ssl.truststore.type:}")
+    private String truststoreType;
+    @Value("${brokercep.ssl.truststore.password:}")
+    private String truststorePassword;
     @Value("${brokercep.ssl.certificate.file:}")
     private String certificateFile;
 
