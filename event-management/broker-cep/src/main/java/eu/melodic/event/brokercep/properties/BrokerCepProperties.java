@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.properties;
 
+import eu.melodic.event.util.IKeystoreAndCertificateProperties;
 import eu.melodic.event.util.NetUtil;
 import lombok.Data;
 import lombok.ToString;
@@ -27,9 +28,7 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 @Slf4j
-public class BrokerCepProperties {
-
-    public enum KEY_ENTRY_GENERATE { YES, ALWAYS, NO, NEVER, IF_MISSING, IF_IP_CHANGED };
+public class BrokerCepProperties implements IKeystoreAndCertificateProperties {
 
     @Value("${broker-name:broker}")
     private String brokerName;

@@ -14,6 +14,7 @@ import eu.melodic.event.control.util.LogPrintStream;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.Connector;
 import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ExitCodeGenerator;
@@ -56,7 +57,7 @@ public class ControlServiceApplication {
             System.setErr(new LogPrintStream(System.err, Level.ERROR, "ERR"));
         }
 
-        // Start EMS
+        // Start EMS server
         SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
@@ -64,12 +65,21 @@ public class ControlServiceApplication {
 
     @Bean
     public ServletWebServerFactory servletWebServerFactory() throws Exception {
-        log.debug("ControlServiceProperties: {}", properties);
-        log.info("Initializing HTTPS keystore, truststore and certificate...");
-        KeystoreUtil.initializeKeystoresAndCertificate(properties, passwordUtil);
-        log.info("Initializing HTTPS keystore, truststore and certificate... done");
-
-        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+            protected void customizeConnector(Connector connector) {
+                if (this.getSsl() != null && this.getSsl().isEnabled()) {
+                    try {
+                        log.debug("TomcatServletWebServerFactory: ControlServiceProperties: {}", properties);
+                        log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate...");
+                        KeystoreUtil.initializeKeystoresAndCertificate(properties, passwordUtil);
+                        log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate... done");
+                    } catch (Exception e) {
+                        log.error("TomcatServletWebServerFactory: EXCEPTION while initializing HTTPS keystore, truststore and certificate:\n", e);
+                    }
+                }
+                super.customizeConnector(connector);
+            }
+        };
         return tomcat;
     }
 
