@@ -20,11 +20,6 @@ if exist pom.xml (
     if not exist %BASEDIR%\target\dependency cmd /C "mvn dependency:copy-dependencies"
 )
 
-:: Initialize keystores and certificate
-:: Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
-:: Modifying 'initialize-keystores.bat' script you can customize the certificate generation
-::CALL bin\initialize-keystores.bat
-
 :: Run Baguette Client
 set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
