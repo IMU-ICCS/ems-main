@@ -24,7 +24,6 @@ import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -358,8 +357,7 @@ public class BrokerConfig implements InitializingBean {
     public ActiveMQConnectionFactory connectionFactory() {
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
-        //String brokerUrl = properties.getBrokerUrl();
-        String brokerUrl = properties.getBrokerUrlForConsumer();
+        String brokerUrl = properties.getBrokerUrlForClients();
         if (brokerUrl.startsWith("ssl")) {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
