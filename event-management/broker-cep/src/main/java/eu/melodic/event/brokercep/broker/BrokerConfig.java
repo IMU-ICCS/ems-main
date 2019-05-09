@@ -141,12 +141,12 @@ public class BrokerConfig implements InitializingBean {
     private void initializeKeyPairAndCert() throws Exception {
         log.debug("BrokerConfig.initializeKeyAndCert(): BrokerCepProperties: {}", properties);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
-        KeystoreUtil.initializeKeystoresAndCertificate(properties, passwordUtil);
+        KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
 
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
         this.brokerCert = KeystoreUtil
-                .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
-                .getEntryCertificateAsPEM(properties.getKeyEntryNameValue());
+                .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
+                .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryNameValue());
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }
 
@@ -322,22 +322,22 @@ public class BrokerConfig implements InitializingBean {
 
     private KeyManager[] readKeystore() throws Exception {
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        final KeyStore keystore = KeyStore.getInstance(properties.getKeystoreType());
+        final KeyStore keystore = KeyStore.getInstance(properties.getSsl().getKeystoreType());
 
         //final Resource keystoreResource = new ClassPathResource( properties.getKeystoreFile() );
-        final FileSystemResource keystoreResource = new FileSystemResource(properties.getKeystoreFile());
-        keystore.load(keystoreResource.getInputStream(), properties.getKeystorePassword().toCharArray());
-        keyManagerFactory.init(keystore, properties.getKeystorePassword().toCharArray());
+        final FileSystemResource keystoreResource = new FileSystemResource(properties.getSsl().getKeystoreFile());
+        keystore.load(keystoreResource.getInputStream(), properties.getSsl().getKeystorePassword().toCharArray());
+        keyManagerFactory.init(keystore, properties.getSsl().getKeystorePassword().toCharArray());
         final KeyManager[] keystoreManagers = keyManagerFactory.getKeyManagers();
         return keystoreManagers;
     }
 
     private TrustManager[] readTruststore() throws Exception {
-        this.truststore = KeyStore.getInstance(properties.getTruststoreType());
+        this.truststore = KeyStore.getInstance(properties.getSsl().getTruststoreType());
 
         //final Resource truststoreResource = new ClassPathResource( properties.getTruststoreFile() );
-        final FileSystemResource truststoreResource = new FileSystemResource(properties.getTruststoreFile());
-        this.truststore.load(truststoreResource.getInputStream(), properties.getTruststorePassword().toCharArray());
+        final FileSystemResource truststoreResource = new FileSystemResource(properties.getSsl().getTruststoreFile());
+        this.truststore.load(truststoreResource.getInputStream(), properties.getSsl().getTruststorePassword().toCharArray());
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(this.truststore);
         final TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
@@ -346,8 +346,8 @@ public class BrokerConfig implements InitializingBean {
 
     public void writeTruststore() throws Exception {
         //final Resource truststoreResource = new ClassPathResource( properties.getTruststoreFile() );
-        final FileSystemResource truststoreResource = new FileSystemResource(properties.getTruststoreFile());
-        this.truststore.store(truststoreResource.getOutputStream(), properties.getTruststorePassword().toCharArray());
+        final FileSystemResource truststoreResource = new FileSystemResource(properties.getSsl().getTruststoreFile());
+        this.truststore.store(truststoreResource.getOutputStream(), properties.getSsl().getTruststorePassword().toCharArray());
     }
 
     /**
@@ -362,13 +362,13 @@ public class BrokerConfig implements InitializingBean {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
             try {
-                sslConnectionFactory.setTrustStore(properties.getTruststoreFile());
-                sslConnectionFactory.setTrustStoreType(properties.getTruststoreType());
-                sslConnectionFactory.setTrustStorePassword(properties.getTruststorePassword());
-                sslConnectionFactory.setKeyStore(properties.getKeystoreFile());
-                sslConnectionFactory.setKeyStoreType(properties.getKeystoreType());
-                sslConnectionFactory.setKeyStorePassword(properties.getKeystorePassword());
-                //sslConnectionFactory.setKeyStoreKeyPassword( properties........ );
+                sslConnectionFactory.setTrustStore(properties.getSsl().getTruststoreFile());
+                sslConnectionFactory.setTrustStoreType(properties.getSsl().getTruststoreType());
+                sslConnectionFactory.setTrustStorePassword(properties.getSsl().getTruststorePassword());
+                sslConnectionFactory.setKeyStore(properties.getSsl().getKeystoreFile());
+                sslConnectionFactory.setKeyStoreType(properties.getSsl().getKeystoreType());
+                sslConnectionFactory.setKeyStorePassword(properties.getSsl().getKeystorePassword());
+                //sslConnectionFactory.setKeyStoreKeyPassword( properties.getSsl()........ );
 
                 connectionFactory = sslConnectionFactory;
             } catch (final Exception theException) {

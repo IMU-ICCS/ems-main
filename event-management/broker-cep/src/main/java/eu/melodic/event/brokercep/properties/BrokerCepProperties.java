@@ -9,7 +9,6 @@
 
 package eu.melodic.event.brokercep.properties;
 
-import eu.melodic.event.util.IKeystoreAndCertificateProperties;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.ToString;
@@ -25,7 +24,7 @@ import org.springframework.context.annotation.PropertySource;
 @ConfigurationProperties(prefix = "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 @Slf4j
-public class BrokerCepProperties implements IKeystoreAndCertificateProperties {
+public class BrokerCepProperties {
 
     @Value("${broker-name:broker}")
     private String brokerName;
@@ -54,33 +53,8 @@ public class BrokerCepProperties implements IKeystoreAndCertificateProperties {
     @Value("${bypass-local-broker:false}")
     private boolean bypassLocalBroker;
 
-    @Value("${brokercep.ssl.keystore.file:}")
-    private String keystoreFile;
-    @Value("${brokercep.ssl.keystore.type:}")
-    private String keystoreType;
-    @Value("${brokercep.ssl.keystore.password:}")
-    private String keystorePassword;
-    @Value("${brokercep.ssl.truststore.file:}")
-    private String truststoreFile;
-    @Value("${brokercep.ssl.truststore.type:}")
-    private String truststoreType;
-    @Value("${brokercep.ssl.truststore.password:}")
-    private String truststorePassword;
-    @Value("${brokercep.ssl.certificate.file:}")
-    private String certificateFile;
-
-    @Value("${brokercep.ssl.entry.generate:IF-IP-CHANGED}")
-    private KEY_ENTRY_GENERATE keyEntryGenerate;
-    @Value("${brokercep.ssl.entry.name:ems}")
-    private String keyEntryName;
-    @Value("${brokercep.ssl.entry.dname:CN=ems,OU=Unknown,O=Unknown,L=Unknown,ST=Unknown,C=Unknown}")
-    private String keyEntryDName;
-    @Value("${brokercep.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
-    private String keyEntryExtSAN;
-
-    public String getKeyEntryNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
-    public String getKeyEntryDNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryDName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
-    public String getKeyEntryExtSANValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryExtSAN, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
+    // brokercep.ssl.** settings
+    private KeystoreAndCertificateProperties ssl;
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;
