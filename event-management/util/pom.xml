@@ -59,6 +59,7 @@
         </dependency>
     </dependencies>
 
+    <!--Bundles NetUtil into an executable JAR for use in "initialize-keystores" scripts-->
     <build>
         <plugins>
             <plugin>

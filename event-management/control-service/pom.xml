@@ -15,7 +15,6 @@
         <!--DOCKER plugin properties-->
         <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
-        <docker.utilJarToInclude>util-${project.version}-jar-with-dependencies.jar</docker.utilJarToInclude>
     </properties>
 
     <dependencies>
@@ -173,15 +172,9 @@
                             <include>${docker.esperJarToInclude}</include>
                         </resource>
                         <resource>
-                            <targetPath>/jars/util</targetPath>
-                            <directory>${project.parent.basedir}/util/target/</directory>
-                            <include>${docker.utilJarToInclude}</include>
-                        </resource>
-                        <resource>
                             <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>run.sh</include>
-                            <include>initialize-keystores.sh</include>
                         </resource>
                         <resource>
                             <targetPath>/config</targetPath>

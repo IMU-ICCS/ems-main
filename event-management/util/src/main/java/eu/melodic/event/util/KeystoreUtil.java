@@ -180,46 +180,6 @@ public class KeystoreUtil {
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         X509Certificate certificate = (X509Certificate)certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));
 
-        // JCA-based certificate creation
-        /*sun.security.x509.X500Name subject = new sun.security.x509.X500Name(dn);
-        sun.security.x509.X500Name issuer = new sun.security.x509.X500Name(dn);
-        BigInteger sn = new BigInteger(64, new SecureRandom());
-
-        X509CertInfo info = new X509CertInfo();
-        info.set(X509CertInfo.VALIDITY, new CertificateValidity(validFrom, validTo));
-        info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
-        info.set(X509CertInfo.SUBJECT, subject);
-        info.set(X509CertInfo.ISSUER, issuer);
-        info.set(X509CertInfo.KEY, new CertificateX509Key(keyPair.getPublic()));
-        info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
-        AlgorithmId algo = new AlgorithmId(AlgorithmId.sha256WithRSAEncryption_oid);
-
-        X509CertImpl cert = new X509CertImpl(info);
-        cert.sign(keyPair.getPrivate(), sigAlg);
-
-        algo = (AlgorithmId)cert.get(X509CertImpl.SIG_ALG);
-        info.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo);
-        cert = new X509CertImpl(info);
-        cert.sign(keyPair.getPrivate(), sigAlg);
-        X509Certificate certificate = cert;*/
-
-        // https://github.com/abdulwaheed18/Self-Signed-Certificate/blob/master/src/com/waheed/create/certificate/SelfSignedCertificate.java
-        /*X509V3CertificateGenerator v3CertGen =  new X509V3CertificateGenerator();
-        v3CertGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
-        v3CertGen.setIssuerDN(new X509Principal(dn));
-        v3CertGen.setNotBefore(validFrom);
-        v3CertGen.setNotAfter(validTo);
-        v3CertGen.setSubjectDN(new X509Principal(dn));
-        v3CertGen.setPublicKey(keyPair.getPublic());
-        v3CertGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-        Certificate certificate = v3CertGen.generateX509Certificate(keyPair.getPrivate());*/
-
-        // https://github.com/dart-lang/sdk/issues/20830
-        /*CertAndKeyGen keypair = new CertAndKeyGen(keyGenAlg, sigAlg, null);
-        sun.security.x509.X500Name x500Name = new sun.security.x509.X500Name(dn);
-        X509Certificate certificate = keypair.getSelfCertificate(x500Name, new Date(), (long) 3650 * 24 * 60 * 60);
-        */
-
         // Add/Replace key pair and certificate chain to keystore
         PrivateKey newKey = keyPair.getPrivate();
         Certificate[] chain = new Certificate[] { certificate };

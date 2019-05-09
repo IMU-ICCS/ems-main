@@ -9,7 +9,12 @@
 
 FROM java:8-alpine
 
-WORKDIR /opt/ems-server
+ENV BASEDIR /opt/ems-server
+ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
+ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
+ENV JAR_PATH ${BASEDIR}/jars
+
+WORKDIR ${BASEDIR}
 RUN /bin/sh -c "apk add --no-cache bash"
 
 ADD bin ./bin
@@ -20,10 +25,5 @@ ADD resources ./resources
 RUN mkdir logs
 RUN bash -c 'touch jars/*.jar'
 RUN bash -c 'chmod +rx ./bin/*.sh'
-
-ENV BASEDIR /opt/ems-server
-ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
-ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
-ENV JAR_PATH ${BASEDIR}/jars
 
 ENTRYPOINT ["./bin/run.sh"]

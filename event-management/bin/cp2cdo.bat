@@ -1,4 +1,27 @@
 @echo off
-rem mvn dependency:copy-dependencies
-java -classpath control-service/target/classes;control-service/target/dependency/* eu.melodic.event.control.util.CpModelHelper %*
+::
+:: Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+::
+:: This Source Code Form is subject to the terms of the
+:: Mozilla Public License, v. 2.0. If a copy of the MPL
+:: was not distributed with this file, You can obtain one at
+:: http://mozilla.org/MPL/2.0/.
+::
+
+setlocal
+set PWD=%cd%
+cd %~dp0..
+set BASEDIR=%cd%
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
+
+:: Copy dependencies if missing
+if exist pom.xml (
+    if not exist %BASEDIR%\control-service\target\dependency cmd /C "cd control-service && mvn dependency:copy-dependencies"
+)
+
+java -classpath %BASEDIR%/control-service/target/classes;%BASEDIR%/control-service/target/dependency/* eu.melodic.event.control.util.CpModelHelper %*
 rem Usage: cp2cdo <file> <cdo-resource>
+
+cd %PWD%
+endlocal
