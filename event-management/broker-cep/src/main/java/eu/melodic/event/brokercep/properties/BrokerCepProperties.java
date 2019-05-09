@@ -10,17 +10,14 @@
 package eu.melodic.event.brokercep.properties;
 
 import eu.melodic.event.util.IKeystoreAndCertificateProperties;
-import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import java.util.Optional;
 
 @Data
 @ToString(exclude = {"truststorePassword", "keystorePassword"})
@@ -39,33 +36,14 @@ public class BrokerCepProperties implements IKeystoreAndCertificateProperties {
     @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.util.NetUtil).getPublicIpAddress()+':61616' }")
     private String brokerUrlForClients;
 
-    public String getBrokerUrl() { return _prepareUrl(brokerUrl); }
-    public String getBrokerUrlForConsumer() { return _prepareUrl(brokerUrlForConsumer); }
-    public String getBrokerUrlForClients() { return _prepareUrl(brokerUrlForClients); }
+    public String getBrokerUrl() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrl); }
+    public String getBrokerUrlForConsumer() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrlForConsumer); }
+    public String getBrokerUrlForClients() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrlForClients); }
 
     @Value("${default-ip-address:}")
     private String defaultIpAddress;
     @Value("${public-ip-address:}")
     private String publicIpAddress;
-
-    protected String _prepareUrl(String url) {
-        return _prepareValue(url, "");
-    }
-
-    protected String _prepareValue(String value, String defaultValue) {
-        if (value==null) return null;
-        String pubIpAddr = NetUtil.getPublicIpAddress();
-        pubIpAddr = StringUtils.isNotBlank(pubIpAddr)
-                ? pubIpAddr
-                : StringUtils.isNotBlank(this.publicIpAddress) ? this.publicIpAddress : defaultValue;
-        String defIpAddr = NetUtil.getDefaultIpAddress();
-        defIpAddr = StringUtils.isNotBlank(defIpAddr)
-                ? defIpAddr
-                : StringUtils.isNotBlank(this.defaultIpAddress) ? this.defaultIpAddress: defaultValue;
-        return value
-                .replace("%{PUBLIC_IP}%", pubIpAddr)
-                .replace("%{DEFAULT_IP}%", defIpAddr);
-    }
 
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
@@ -100,9 +78,9 @@ public class BrokerCepProperties implements IKeystoreAndCertificateProperties {
     @Value("${brokercep.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
     private String keyEntryExtSAN;
 
-    public String getKeyEntryNameValue() { return _prepareValue(keyEntryName, "127.0.0.1"); }
-    public String getKeyEntryDNameValue() { return _prepareValue(keyEntryDName, "127.0.0.1"); }
-    public String getKeyEntryExtSANValue() { return _prepareValue(keyEntryExtSAN, "127.0.0.1"); }
+    public String getKeyEntryNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
+    public String getKeyEntryDNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryDName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
+    public String getKeyEntryExtSANValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryExtSAN, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;

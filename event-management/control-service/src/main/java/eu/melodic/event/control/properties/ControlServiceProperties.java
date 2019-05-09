@@ -102,7 +102,7 @@ public class ControlServiceProperties implements IKeystoreAndCertificateProperti
     @Value("${control.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
     private String keyEntryExtSAN;
 
-    public String getKeyEntryNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryName, "127.0.0.1"); }
-    public String getKeyEntryDNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryDName, "127.0.0.1"); }
-    public String getKeyEntryExtSANValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryExtSAN, "127.0.0.1"); }
+    public String getKeyEntryNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
+    public String getKeyEntryDNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryDName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
+    public String getKeyEntryExtSANValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryExtSAN, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
 }
