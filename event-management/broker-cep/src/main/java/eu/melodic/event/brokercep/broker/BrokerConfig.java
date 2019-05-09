@@ -10,9 +10,7 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
-import static eu.melodic.event.brokercep.properties.BrokerCepProperties.KEY_ENTRY_GENERATE;
 import eu.melodic.event.util.KeystoreUtil;
-import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -145,6 +143,11 @@ public class BrokerConfig implements InitializingBean {
         log.debug("BrokerConfig.initializeKeyAndCert(): BrokerCepProperties: {}", properties);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
         KeystoreUtil.initializeKeystoresAndCertificate(properties, passwordUtil);
+
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
+        this.brokerCert = KeystoreUtil
+                .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                .getEntryCertificateAsPEM(properties.getKeyEntryNameValue());
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }
 
@@ -355,8 +358,8 @@ public class BrokerConfig implements InitializingBean {
     public ActiveMQConnectionFactory connectionFactory() {
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
-        String brokerUrl = properties.getBrokerUrl();
-        //XXX:WHICH-ONE?: String brokerUrl = properties.getBrokerUrlForConsumer();
+        //String brokerUrl = properties.getBrokerUrl();
+        String brokerUrl = properties.getBrokerUrlForConsumer();
         if (brokerUrl.startsWith("ssl")) {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
