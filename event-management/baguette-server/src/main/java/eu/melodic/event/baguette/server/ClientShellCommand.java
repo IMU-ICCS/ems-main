@@ -318,7 +318,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     public void setClientId(String id) {
-        if (id != null && !id.trim().isEmpty()) sendToClient("SET-ID " + id.trim());
+        if (id != null && !id.trim().isEmpty())
+            sendToClient("SET-ID " + id.trim());
     }
 
     public void setRole(String role) {

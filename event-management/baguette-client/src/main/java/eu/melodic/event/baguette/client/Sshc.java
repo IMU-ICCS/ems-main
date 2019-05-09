@@ -60,15 +60,12 @@ public class Sshc {
     //private PrintStream err;
     private String clientId;
 
-    //public Sshc(Properties config, String idFile) throws IOException {
     public void setConfigAndId(Properties config, String idFile) throws IOException {
         this.config = config;
         this.idFile = idFile;
         this.clientId = config.getProperty("client.id", "");
-        //this.commandExecutor = new CommandExecutor();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
         this.commandExecutor.setConfigAndId(config, idFile);
-//XXX:DEL:        log.debug("Sshc: OS detected: {}", CommandExecutor.getOsName());
     }
 
     public synchronized void start(boolean retry) throws IOException {
@@ -81,7 +78,7 @@ public class Sshc {
                     start();
                 } catch (Exception ex) {
                     log.warn("{}", ex.getMessage());
-                }    //{ log.warn("(Re-)trying to start client: {}", ex.getMessage()); }
+                }
                 if (started) break;
                 log.trace("Failed to start. Sleeping for {}ms...", retryPeriod);
                 try {
@@ -115,7 +112,8 @@ public class Sshc {
 
         //client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
         //client.setServerKeyVerifier(new RequiredServerKeyVerifier(....));
-        client.setServerKeyVerifier(new ServerKeyVerifier() {
+        client.setServerKeyVerifier(new ServerKeyVerifier()
+                {
                     private String serverFingerprint;
                     private String serverPubKey;
 
@@ -123,10 +121,6 @@ public class Sshc {
 
                         // Print server address info
                         log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
-					    /*log.info("verifyServerKey(): remoteAddress: {}: {}",
-                                remoteAddress.getClass().getName(),	//java.net.InetSocketAddress
-						        remoteAddress.toString()
-					            );*/
 
                         // Check that server public key fingerprint matches with the one in configuration
                         String fingerprint = KeyUtils.getFingerPrint(serverKey);
@@ -156,7 +150,7 @@ public class Sshc {
                         return this;
                     }
                 }
-                        .setServerPubKey(serverPubKey, serverFingerprint)
+                .setServerPubKey(serverPubKey, serverFingerprint)
         );
 
         this.simple = SshClient.wrapAsSimpleClient(client);
@@ -235,7 +229,6 @@ public class Sshc {
                 if (exit) break;
             } catch (Exception ex) {
                 log.error("{}", ex);
-                //ex.printStackTrace(System.err);
                 // Report exception back to server
                 out.println(ex);
                 ex.printStackTrace(out);

@@ -20,6 +20,7 @@ import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.KeystoreUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,8 @@ import java.util.function.Consumer;
 @Service
 @Slf4j
 public class CommandExecutor {
+    public final static String DEFAULT_ID_FILE = "cached-id.properties";
+
     @Autowired
     private BrokerCepService brokerCepService;
     @Autowired
@@ -60,7 +63,6 @@ public class CommandExecutor {
         this.config = config;
         this.idFile = idFile;
         this.clientId = config.getProperty("client.id", "");
-//XXX:DEL:        log.debug("CommandExecutor: OS detected: {}", getOsName());
     }
 
     boolean executeCommand(String line, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
@@ -73,8 +75,15 @@ public class CommandExecutor {
         args[0] = "";
 
         if ("EXIT".equals(cmd)) {
-//XXX: PROBABLY NOT A GOOD IDEA TO EXIT CLIENT
-            return true;
+            boolean canExit = false;
+            try { canExit = Boolean.parseBoolean(config.getProperty("exit-command.allowed", "false")); } catch (Exception e) {}
+            if (canExit)
+                return true;    // Signal 'Sshc' to quit
+            else {
+                final String mesg = "Exit is not allowed. Ignoring EXIT command";
+                log.warn(mesg);
+                out.println(mesg);
+            }
         } else if ("CLIENT".equals(cmd)) {
             // Information from server. Don't do anything
         } else if ("ECHO".equals(cmd)) {
@@ -83,57 +92,12 @@ public class CommandExecutor {
             // Respond to server with OK
             out.println("OK");
 
-//XXX: DO WE NEED THIS FUNCTIONALITY?
-//
-/*        } else if ("EXEC".equals(cmd)) {
-            String execCmd = String.join(" ", args);
-            log.info("EXEC COMMAND: {}", execCmd);
-            // Execute command
-            execCmdExec(execCmd, in, out, err);
-            */
-//XXX: DO WE NEED THIS FUNCTIONALITY?
         } else if ("SET-ID".equals(cmd)) {
             if (args.length < 2) return false;
             String id = args[1].trim();
             log.info("SET ID: {}", id);
             // Execute command
             setClientId(id);
-
-//XXX: OBSOLETE: Use setActiveGrouping instead
-//
-/*        } else if ("ROLE".equals(cmd) || "SET-ROLE".equals(cmd)) {
-            if (args.length < 2) return false;
-            String role = args[1].trim();
-            log.info("ASSUMING ROLE: {}", role);
-            // Execute command
-            assumeRole(role, in, out, err);
-            */
-//XXX:TO BE DELETED
-//
-/*        } else if ("SET-PARAM".equals(cmd)) {
-            if (args.length < 5) return false;
-            String tplFile = args[1].trim();
-            String placeholder = args[2].trim();
-            String value = args[3].trim();
-            String outFile = args[4].trim();
-            log.info("SETTING PARAM: '{}' to '{}' in file: {}", placeholder, value, outFile);
-            // Execute command
-            setFileParam(placeholder, value, tplFile, outFile, out);
-        } else if ("SET-PARAMS".equals(cmd)) {
-            if (args.length < 2) return false;
-            String configStr = String.join(" ", args).trim();
-            log.trace("config-base64: {}", configStr);
-            configStr = new String(Base64.getDecoder().decode(configStr), StandardCharsets.UTF_8);
-            log.trace("config-str:  {}", configStr);
-            Properties config = new Properties();
-            try {
-                config.load(new StringReader(configStr));
-            } catch (IOException e) {
-                log.error("Could not unserialize parameters: ", e);
-            }
-            log.info("SETTING PARAMETERS: {}", config);
-            log.warn("+++++++++++ APPLY PARAMETERS +++++++++++++");
-            */
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -195,101 +159,7 @@ public class CommandExecutor {
         return false;
     }
 
-    //XXX: OBSOLETE: Use setActiveGrouping instead
-    /*protected void assumeRole(String role, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
-        // Execute role preparation command
-        role = role.toLowerCase();
-        String cmdProp = role + ".command." + getOsName();
-        String command = config.getProperty(cmdProp);
-        log.debug("Command: {}", command);
-        if (command != null && !(command = command.trim()).isEmpty()) {
-            // Executing command in a separate process
-            log.info("Executing command: {}", command);
-            Process process = Runtime.getRuntime().exec(command);
-            StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), process.getErrorStream(), System.out::println);
-            //Executors.newSingleThreadExecutor().submit(streamGobbler);
-            long timeout = 0;
-            try {
-                timeout = Long.parseLong(config.getProperty("exec.timeout"));
-            } catch (Exception ex) {
-            }
-            log.info("Timeout: " + timeout);
-            int exitCode = -1;
-            if (timeout > 0) {
-                log.warn("Wait for: {}", timeout);
-                if (process.waitFor(timeout, java.util.concurrent.TimeUnit.MILLISECONDS)) {
-                    log.info(">> FINISHED");
-                    exitCode = process.exitValue();
-                } else
-                    log.warn(">> TIMEOUT");
-            } else {
-                log.warn("Wait forever");
-                exitCode = process.waitFor();
-                log.info(">> FINISHED");
-            }
-            log.info("Exit code: " + exitCode);
-
-            // Signaling server when ready
-            if (exitCode == 0) out.println("READY");
-            else out.println("ERROR");
-            return;
-        }
-        // Signaling server for error
-        out.println("ERROR: Missing property " + cmdProp);
-    }*/
-
-    //XXX: DO WE NEED THIS FUNCTIONALITY?
-    /*protected void execCmdExec(String command, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
-        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-        if (isWindows) {
-            command = String.format("cmd.exe /c %s", command);
-        } else {
-            command = String.format("/bin/sh -c %s", command);
-        }
-        Process process = Runtime.getRuntime().exec(command);
-
-        StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), process.getErrorStream(), out::println);
-        //Executors.newSingleThreadExecutor().submit(streamGobbler);
-        int exitCode = process.waitFor();
-        out.println("Command exited with code: " + exitCode);
-    }*/
-
-    //XXX: TO BE DELETED
-    /*protected void setFileParam(String placeholder, String value, String tplFile, String outFile, PrintStream out) {
-        // Read template file contents
-        String contents = null;
-        try (Scanner scanner = new Scanner(new File(tplFile))) {
-            contents = scanner.useDelimiter("\\A").next();
-        } catch (FileNotFoundException ex) {
-            log.info("SET-PARAM: EXCEPTION: {}", ex);
-            out.println("ERROR Template file not found: " + ex);
-            return;
-        } catch (IOException ex) {
-            log.info("SET-PARAM: EXCEPTION: {}", ex);
-            out.println("ERROR While reading from template file: " + ex);
-            return;
-        }
-
-        // Replace placeholders with value
-        contents = contents.replace(placeholder, value);
-
-        // Write new contents to output file
-        try (PrintWriter writer = new PrintWriter(outFile)) {
-            writer.println(contents);
-        } catch (FileNotFoundException ex) {
-            log.error("SET-PARAM: EXCEPTION: ", ex);
-            out.println("ERROR Template file not found: " + ex);
-            return;
-        } catch (IOException ex) {
-            log.error("SET-PARAM: EXCEPTION: ", ex);
-            out.println("ERROR While writing to output file: " + ex);
-            return;
-        }
-
-        out.println("PARAM SET");
-    }
-
-    protected Properties _base64ToProperties(String paramsStr) {
+    /*protected Properties _base64ToProperties(String paramsStr) {
         paramsStr = new String(Base64.getDecoder().decode(paramsStr), StandardCharsets.UTF_8);
         //log.trace("params-str:  {}", paramsStr);
         Properties params = new Properties();
@@ -494,16 +364,18 @@ public class CommandExecutor {
         }
     }
 
-    //XXX: DO WE NEED THIS FUNCTIONALITY?
-    protected void setClientId(String id) {
-        if (id == null || id.trim().isEmpty()) {
+    protected synchronized void setClientId(String id) {
+        // Check new id value
+        if (StringUtils.isEmpty(id)) {
             log.error("SET-ID: ERROR: Invalid id: {}", id);
             out.println("ERROR Invalid id: " + id);
             return;
         }
         clientId = id;
 
-        if (idFile == null) idFile = "cached-id.properties";
+        // Load contents of existing 'id file' (if any)
+        if (idFile == null)
+            idFile = DEFAULT_ID_FILE;
         Properties p = new Properties();
         try {
             try (InputStream in = new FileInputStream(idFile)) {
@@ -512,8 +384,10 @@ public class CommandExecutor {
         } catch (Exception ex) {
         }
 
+        // Update 'id file' contents in-memory
         p.setProperty("client.id", id);
 
+        // Store new contents into 'id file'
         try {
             try (OutputStream out = new FileOutputStream(idFile)) {
                 p.store(out, "# Saved on " + new java.util.Date());
@@ -525,20 +399,6 @@ public class CommandExecutor {
             out.println("ERROR While storing id to file: " + ex);
         }
     }
-
-    //XXX: OBSOLETE: To delete
-    /*public static String getOsName() {
-        String OS = System.getProperty("os.name").toLowerCase();
-        if (OS.indexOf("win") >= 0) {
-            return "windows";
-        } else if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 || OS.indexOf("sunos") >= 0) {
-            return "linux";
-        } else if (OS.indexOf("mac") >= 0) {
-            return "mac";
-        } else {
-            return "other";
-        }
-    }*/
 
     private static class StreamGobbler implements Runnable {
         private InputStream inputStream1;
