@@ -10,13 +10,12 @@
 package eu.melodic.event.control;
 
 import eu.melodic.event.control.properties.ControlServiceProperties;
-import eu.melodic.event.control.util.LogPrintStream;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
-import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.Banner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -51,14 +50,9 @@ public class ControlServiceApplication {
     private PasswordUtil passwordUtil;
 
     public static void main(String[] args) {
-        if (args.length==0 || !"-nolog".equalsIgnoreCase(args[0].trim())) {
-            // Set standard system streams being logged
-            System.setOut(new LogPrintStream(System.out, Level.INFO, "OUT"));
-            System.setErr(new LogPrintStream(System.err, Level.ERROR, "ERR"));
-        }
-
         // Start EMS server
         SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
+        springApplication.setBannerMode(Banner.Mode.LOG);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
     }
