@@ -13,6 +13,7 @@ import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterc
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,13 +41,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // Add authorization interceptor (if configured)
         if (!authEnabled || authProperties.getPdp().isDisabled()) {
             log.warn("WebMvcConfig.addInterceptors(): Authorization check is disabled");
         } else {
             log.info("WebMvcConfig.addInterceptors(): Authorization check is enabled");
 
-            if (authPathsProtected==null || authPathsProtected.length==0) authPathsProtected = DEFAULT_PATHS_PROTECTED;
-            if (authPathsExcluded==null || authPathsExcluded.length==0) authPathsExcluded = DEFAULT_PATHS_EXCLUDED;
+            if (ArrayUtils.isEmpty(authPathsProtected)) authPathsProtected = DEFAULT_PATHS_PROTECTED;
+            if (ArrayUtils.isEmpty(authPathsExcluded)) authPathsExcluded = DEFAULT_PATHS_EXCLUDED;
             log.warn("WebMvcConfig.addInterceptors(): Authorization check: paths-protected={}, paths-excluded={}",
                     authPathsProtected, authPathsExcluded);
 
