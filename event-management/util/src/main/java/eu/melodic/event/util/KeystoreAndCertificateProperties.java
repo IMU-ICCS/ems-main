@@ -17,38 +17,31 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class KeystoreAndCertificateProperties implements IKeystoreAndCertificateProperties {
 
-    //@Value("${default-ip-address:}")
     private String defaultIpAddress;
-    //@Value("${public-ip-address:}")
     private String publicIpAddress;
 
-    //@Value("${control.ssl.keystore.file:}")
     private String keystoreFile;
-    //@Value("${control.ssl.keystore.type:}")
     private String keystoreType;
-    //@Value("${control.ssl.keystore.password:}")
     private String keystorePassword;
-    //@Value("${control.ssl.truststore.file:}")
+
     private String truststoreFile;
-    //@Value("${control.ssl.truststore.type:}")
     private String truststoreType;
-    //@Value("${control.ssl.truststore.password:}")
     private String truststorePassword;
-    //@Value("${control.ssl.certificate.file:}")
+
     private String certificateFile;
 
-    //@Value("${control.ssl.entry.generate:IF-IP-CHANGED}")
     private KEY_ENTRY_GENERATE keyEntryGenerate;
-    //@Value("${control.ssl.entry.name:ems}")
     private String keyEntryName;
-    //@Value("${control.ssl.entry.dname:CN=ems,OU=Unknown,O=Unknown,L=Unknown,ST=Unknown,C=Unknown}")
     private String keyEntryDName;
-    //@Value("${control.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
     private String keyEntryExtSAN;
 
     public String getKeyEntryNameValue() { return prepareValue(keyEntryName, this.publicIpAddress, this.defaultIpAddress, "127.0.0.1"); }
     public String getKeyEntryDNameValue() { return prepareValue(keyEntryDName, this.publicIpAddress, this.defaultIpAddress, "127.0.0.1"); }
     public String getKeyEntryExtSANValue() { return prepareValue(keyEntryExtSAN, this.publicIpAddress, this.defaultIpAddress, "127.0.0.1"); }
+
+    // ------------------------------------------------------------------------
+    // Helper methods
+    // ------------------------------------------------------------------------
 
     public static String prepareUrl(String url) {
         return prepareValue(url, "");

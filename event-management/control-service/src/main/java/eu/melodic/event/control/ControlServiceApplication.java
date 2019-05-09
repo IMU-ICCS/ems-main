@@ -65,7 +65,7 @@ public class ControlServiceApplication {
                     try {
                         log.debug("TomcatServletWebServerFactory: ControlServiceProperties: {}", properties);
                         log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate...");
-                        KeystoreUtil.initializeKeystoresAndCertificate(properties, passwordUtil);
+                        KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
                         log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate... done");
                     } catch (Exception e) {
                         log.error("TomcatServletWebServerFactory: EXCEPTION while initializing HTTPS keystore, truststore and certificate:\n", e);

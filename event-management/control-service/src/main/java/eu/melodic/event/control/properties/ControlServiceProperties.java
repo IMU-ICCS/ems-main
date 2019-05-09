@@ -9,7 +9,6 @@
 
 package eu.melodic.event.control.properties;
 
-import eu.melodic.event.util.IKeystoreAndCertificateProperties;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ import javax.validation.constraints.Min;
 @ConfigurationProperties(prefix = "control")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
 @Slf4j
-public class ControlServiceProperties implements IKeystoreAndCertificateProperties {
+public class ControlServiceProperties {
     @Value("${control.upperware-grouping}")
     private String upperwareGrouping;
     @Value("${control.metasolver-configuration-url}")
@@ -73,36 +72,6 @@ public class ControlServiceProperties implements IKeystoreAndCertificateProperti
     @Value("${control.password-encoder}")
     private String passwordEncoderClass;
 
-    @Value("${default-ip-address:}")
-    private String defaultIpAddress;
-    @Value("${public-ip-address:}")
-    private String publicIpAddress;
-
-    @Value("${control.ssl.keystore.file:}")
-    private String keystoreFile;
-    @Value("${control.ssl.keystore.type:}")
-    private String keystoreType;
-    @Value("${control.ssl.keystore.password:}")
-    private String keystorePassword;
-    @Value("${control.ssl.truststore.file:}")
-    private String truststoreFile;
-    @Value("${control.ssl.truststore.type:}")
-    private String truststoreType;
-    @Value("${control.ssl.truststore.password:}")
-    private String truststorePassword;
-    @Value("${control.ssl.certificate.file:}")
-    private String certificateFile;
-
-    @Value("${control.ssl.entry.generate:IF-IP-CHANGED}")
-    private KEY_ENTRY_GENERATE keyEntryGenerate;
-    @Value("${control.ssl.entry.name:ems}")
-    private String keyEntryName;
-    @Value("${control.ssl.entry.dname:CN=ems,OU=Unknown,O=Unknown,L=Unknown,ST=Unknown,C=Unknown}")
-    private String keyEntryDName;
-    @Value("${control.ssl.entry.ext-san:dns:localhost,ip:127.0.0.1,ip:%{DEFAULT_IP}%,ip:%{PUBLIC_IP}%}")
-    private String keyEntryExtSAN;
-
-    public String getKeyEntryNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
-    public String getKeyEntryDNameValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryDName, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
-    public String getKeyEntryExtSANValue() { return KeystoreAndCertificateProperties.prepareValue(keyEntryExtSAN, publicIpAddress, defaultIpAddress, "127.0.0.1"); }
+    // control.ssl.** settings
+    private KeystoreAndCertificateProperties ssl;
 }
