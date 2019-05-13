@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Api {
 
-    private Long id;
+    private long id;
 
     private String providerName;
 }
