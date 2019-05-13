@@ -371,7 +371,10 @@ public class ControlServiceCoordinator {
             log.info("ControlServiceCoordinator.processNewModel(): MetaSolver configuration in JSON: {}", json);
             try {
                 log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
-                String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
+                //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
+                HttpEntity<String> entity = createHttpEntity(json, jwtToken);
+                final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
+                String metaSolverResponse = response.getBody();
                 log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
             } catch (Exception ex) {
                 log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
@@ -673,6 +676,7 @@ public class ControlServiceCoordinator {
         // Call ESB endpoint
         String url = esbUrl + "/" + notificationUri;
         log.info("ControlServiceCoordinator.sendCamelModelNotification(): Invoking ESB endpoint: {}", url);
+        //String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
         HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(notification, jwtToken);
         final ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
         String responseStatus = response.getStatusCode().toString();
@@ -682,6 +686,11 @@ public class ControlServiceCoordinator {
     private HttpEntity<CamelModelNotificationRequest> createHttpEntity(CamelModelNotificationRequest notification, String jwtToken) {
         HttpHeaders headers = createHttpHeaders(jwtToken);
         return new HttpEntity<>(notification, headers);
+    }
+
+    private HttpEntity<String> createHttpEntity(String body, String jwtToken) {
+        HttpHeaders headers = createHttpHeaders(jwtToken);
+        return new HttpEntity<>(body, headers);
     }
 
     private HttpHeaders createHttpHeaders(String jwtToken) {
