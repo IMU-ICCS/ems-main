@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -120,7 +121,10 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/monitors", method = POST)
-    public MonitorsDataResponse getSensors(@RequestBody MonitorsDataRequestImpl request) throws ConcurrentAccessException {
+    public HttpEntity<MonitorsDataResponse> getSensors(@RequestBody MonitorsDataRequestImpl request,
+                                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.getSensors(): Received request: {}", request);
 
         // Get information from request
@@ -156,9 +160,11 @@ public class ControlServiceController {
         MonitorsDataResponse response = new MonitorsDataResponseImpl();
         response.setMonitors(sensors);
         response.setWatermark(watermark);
+        HttpEntity<MonitorsDataResponse> entity = coordinator.createHttpEntity(MonitorsDataResponse.class, response, jwtToken);
         log.info("ControlServiceController.getSensors(): Response: {}", response);
 
-        return response;
+        //return response;
+        return entity;
     }
 
     // ------------------------------------------------------------------------------------------------------------
