@@ -34,6 +34,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -87,8 +91,9 @@ public class ControlServiceCoordinator {
         String preloadCpModel = properties.getPreloadCpModel();
         if (StringUtils.isNotBlank(preloadCamelModel)) {
             log.info("===================================================================================================");
-            log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}", preloadCamelModel, preloadCpModel);
-            processNewModel(preloadCamelModel, preloadCpModel, null, null);
+            log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}",
+                    preloadCamelModel, preloadCpModel);
+            processNewModel(preloadCamelModel, preloadCpModel, null, null, null);
         } else {
             log.info("ControlServiceCoordinator.preloadModels(): No CAMEL model to preload");
         }
@@ -97,13 +102,13 @@ public class ControlServiceCoordinator {
     // ------------------------------------------------------------------------------------------------------------
 
     @Async
-    public void processNewModel(String camelModelId, String cpModelId, String notificationUri, String requestUuid) {
+    public void processNewModel(String camelModelId, String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator.processNewModel(): ERROR: Coordinator is in use. Method exits immediately";
             log.warn(mesg);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(camelModelId, notificationUri, requestUuid, mesg, mesg);
+                sendErrorNotification(camelModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
             }
@@ -112,14 +117,14 @@ public class ControlServiceCoordinator {
 
         try {
             // Call '_processNewModels()' to do actual processing
-            _processNewModels(camelModelId, cpModelId, notificationUri, requestUuid);
+            _processNewModels(camelModelId, cpModelId, notificationUri, requestUuid, jwtToken);
             this.currentCamelModelId = camelModelId;
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
             String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(camelModelId, notificationUri, requestUuid, mesg, mesg);
+                sendErrorNotification(camelModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
             }
@@ -130,13 +135,13 @@ public class ControlServiceCoordinator {
     }
 
     @Async
-    public void processCpModel(String cpModelId, String notificationUri, String requestUuid) {
+    public void processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator.processCpModel(): ERROR: Coordinator is in use. Method exits immediately";
             log.warn(mesg);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(null, notificationUri, requestUuid, mesg, mesg);
+                sendErrorNotification(null, notificationUri, requestUuid, jwtToken, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
             }
@@ -145,13 +150,13 @@ public class ControlServiceCoordinator {
 
         try {
             // Call '_processCpModel()' to do actual processing
-            _processCpModel(cpModelId, notificationUri, requestUuid);
+            _processCpModel(cpModelId, notificationUri, requestUuid, jwtToken);
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
             String mesg = "ControlServiceCoordinator.processCpModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(null, notificationUri, requestUuid, mesg, mesg);
+                sendErrorNotification(null, notificationUri, requestUuid, jwtToken, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
             }
@@ -163,7 +168,9 @@ public class ControlServiceCoordinator {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected void _processNewModels(String camelModelId, String cpModelId, String notificationUri, String requestUuid) {
+    protected void _processNewModels(String camelModelId, String cpModelId, String notificationUri,
+                                     String requestUuid, String jwtToken)
+    {
         log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, cp-model-id={}, notification-uri={}, request-uuid={}", camelModelId, cpModelId, notificationUri, requestUuid);
 
         // Translate models into EPL rules etc
@@ -397,7 +404,7 @@ public class ControlServiceCoordinator {
             if (StringUtils.isNotBlank(notificationUri)) {
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(camelModelId, notificationUri, requestUuid);
+                sendSuccessNotification(camelModelId, notificationUri, requestUuid, jwtToken);
                 log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
             }
         } else {
@@ -408,7 +415,7 @@ public class ControlServiceCoordinator {
         log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
     }
 
-    protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid) {
+    protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
         log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, notification-uri={}, request-uuid={}", cpModelId, notificationUri, requestUuid);
         log.info("ControlServiceCoordinator._processCpModel(): Current camel-model-id={}", currentCamelModelId);
         TranslationContext _TC = this.currentTC;
@@ -473,7 +480,7 @@ public class ControlServiceCoordinator {
             if (StringUtils.isNotBlank(notificationUri)) {
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(null, notificationUri, requestUuid);
+                sendSuccessNotification(null, notificationUri, requestUuid, jwtToken);
                 log.info("ControlServiceCoordinator._processCpModel(): ESB notified: {}", notificationUri);
             }
         } else {
@@ -596,16 +603,18 @@ public class ControlServiceCoordinator {
     // ESB notification methods
     // ------------------------------------------------------------------------------------------------------------
 
-    private void sendSuccessNotification(String applicationId, String notificationUri, String requestUuid) {
+    private void sendSuccessNotification(String applicationId, String notificationUri, String requestUuid, String jwtToken) {
         // Prepare success result notification
         NotificationResultImpl result = new NotificationResultImpl();
         result.setStatus(NotificationResult.StatusType.SUCCESS);
 
         // Prepare and send CamelModelNotification
-        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid);
+        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
     }
 
-    private void sendErrorNotification(String applicationId, String notificationUri, String requestUuid, String errorCode, String errorDescription) {
+    private void sendErrorNotification(String applicationId, String notificationUri, String requestUuid,
+                                       String jwtToken, String errorCode, String errorDescription)
+    {
         // Prepare error result notification
         NotificationResultImpl result = new NotificationResultImpl();
         result.setStatus(NotificationResult.StatusType.ERROR);
@@ -613,10 +622,12 @@ public class ControlServiceCoordinator {
         result.setErrorDescription(errorDescription);
 
         // Prepare and send CamelModelNotification
-        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid);
+        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
     }
 
-    private void sendCamelModelNotification(String applicationId, NotificationResult result, String notificationUri, String requestUuid) {
+    private void sendCamelModelNotification(String applicationId, NotificationResult result, String notificationUri,
+                                            String requestUuid, String jwtToken)
+    {
         // Create a new watermark
         Watermark watermark = new WatermarkImpl();
         watermark.setUser("EMS");
@@ -632,10 +643,10 @@ public class ControlServiceCoordinator {
         request.setWatermark(watermark);
 
         // Send CamelModelNotification to ESB (Control Process)
-        sendCamelModelNotification(request, notificationUri);
+        sendCamelModelNotification(request, notificationUri, jwtToken);
     }
 
-    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri) {
+    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) {
         // Check if 'notificationUri' is blank
         if (StringUtils.isBlank(notificationUri)) {
             log.warn("ControlServiceCoordinator.sendCamelModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");
@@ -662,8 +673,25 @@ public class ControlServiceCoordinator {
         // Call ESB endpoint
         String url = esbUrl + "/" + notificationUri;
         log.info("ControlServiceCoordinator.sendCamelModelNotification(): Invoking ESB endpoint: {}", url);
-        String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
+        HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(notification, jwtToken);
+        final ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+        String responseStatus = response.getStatusCode().toString();
         log.info("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, response={}", url, responseStatus);
+    }
+
+    private HttpEntity<CamelModelNotificationRequest> createHttpEntity(CamelModelNotificationRequest notification, String jwtToken) {
+        HttpHeaders headers = createHttpHeaders(jwtToken);
+        return new HttpEntity<>(notification, headers);
+    }
+
+    private HttpHeaders createHttpHeaders(String jwtToken) {
+        HttpHeaders headers = new HttpHeaders();
+        if (StringUtils.isNotBlank(jwtToken)) {
+            headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
+        }
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        return headers;
     }
 
 
