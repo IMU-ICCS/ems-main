@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,17 +51,21 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/camelModel", method = POST)
-    public String newCamelModel(@RequestBody CamelModelRequestImpl request) throws ConcurrentAccessException {
+    public String newCamelModel(@RequestBody CamelModelRequestImpl request,
+                                @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", request);
 
         // Get information from request
         String applicationId = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
-        log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}", applicationId, notificationUri, requestUuid);
+        log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}",
+                applicationId, notificationUri, requestUuid);
 
         // Start translation and reconfiguration in a worker thread
-        coordinator.processNewModel(applicationId, null, notificationUri, requestUuid);
+        coordinator.processNewModel(applicationId, null, notificationUri, requestUuid, jwtToken);
         log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -69,7 +74,10 @@ public class ControlServiceController {
     @RequestMapping(value = "/camelModelJson", method = POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String newCamelModel(@RequestBody String requestStr) throws ConcurrentAccessException {
+    public String newCamelModel(@RequestBody String requestStr,
+                                @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", requestStr);
 
         // Use Gson to get model id's from request body (in JSON format)
@@ -80,7 +88,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCamelModel(): CP model id from request: {}", cpModelId);
 
         // Start translation and component reconfiguration in a worker thread
-        coordinator.processNewModel(camelModelId, cpModelId, null, null);
+        coordinator.processNewModel(camelModelId, cpModelId, null, null, jwtToken);
         log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -91,7 +99,10 @@ public class ControlServiceController {
     @RequestMapping(value = "/cpModelJson", method = POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String newCpModel(@RequestBody String requestStr) throws ConcurrentAccessException {
+    public String newCpModel(@RequestBody String requestStr,
+                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.newCpModel(): Received request: {}", requestStr);
 
         // Use Gson to get model id's from request body (in JSON format)
@@ -100,7 +111,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCpModel(): CP model id from request: {}", cpModelId);
 
         // Start CP model processing in a worker thread
-        coordinator.processCpModel(cpModelId, null, null);
+        coordinator.processCpModel(cpModelId, null, null, jwtToken);
         log.debug("ControlServiceController.newCpModel(): CP Model processing dispatched to a worker thread");
 
         return "OK";
