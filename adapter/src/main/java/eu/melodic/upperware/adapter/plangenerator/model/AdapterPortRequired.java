@@ -8,13 +8,11 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = true)
 public class AdapterPortRequired extends AdapterPort {
 
-    private String updateAction;
     private Boolean isMandatory;
 
     @Builder
-    public AdapterPortRequired(String type, String name, String updateAction, Boolean isMandatory) {
+    public AdapterPortRequired(String type, String name, Boolean isMandatory) {
         super(type, name);
-        this.updateAction = updateAction;
         this.isMandatory = isMandatory;
     }
 }

@@ -29,6 +29,7 @@ public class LanceInterfaceConverter implements InterfaceConverter<ScriptConfigu
                 .start(configuration.getStartCommand())
                 .startDetection(configuration.getUploadCommand())
                 .stop(configuration.getStopCommand())
+                .update(configuration.getUpdateCommand())
                 .build();
     }
 }

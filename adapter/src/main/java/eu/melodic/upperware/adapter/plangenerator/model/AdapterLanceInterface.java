@@ -23,4 +23,5 @@ public class AdapterLanceInterface extends AdapterTaskInterface {
     private String stop;
     private String postStop;
     private String shutdown;
+    private String update;
 }

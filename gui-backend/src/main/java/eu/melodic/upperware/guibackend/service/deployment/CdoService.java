@@ -37,6 +37,7 @@ public class CdoService {
         try {
             model = CDOClient.loadModel(file.getAbsolutePath());
         } catch (RuntimeException e) {
+            client.closeSession();
             return false;
         }
 
@@ -72,20 +73,24 @@ public class CdoService {
     }
 
     public List<String> getAllXmi() {
-        CDOClient client = getCdoClient();
-        CDOTransaction cdoTransaction = client.openTransaction();
-
-        CDOQuery sql = cdoTransaction.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
         List<String> result = new ArrayList<>();
+        CDOTransaction cdoTransaction = null;
         try {
+            CDOClient client = getCdoClient();
+            cdoTransaction = client.openTransaction();
+
+            CDOQuery sql = cdoTransaction.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
+
             result = sql.getResult().stream()
                     .map(o -> (CamelModel) o)
                     .map(NamedElement::getName)
                     .collect(Collectors.toList());
         } catch (Exception ex) {
-            log.error("Error by getting list of available models: ", ex);
+            log.debug("List of available models is empty");
         } finally {
-            cdoTransaction.close();
+            if (cdoTransaction != null) {
+                cdoTransaction.close();
+            }
         }
         return result;
     }
