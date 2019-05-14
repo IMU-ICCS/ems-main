@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,7 +42,7 @@ public class ProviderService {
 
     private List<CloudDefinition> mapResultFromYamlToCloudDefinitionList(Object resultLoadedFromYaml) {
         ObjectMapper mapper = new ObjectMapper();
-        return resultLoadedFromYaml == null ? Collections.emptyList() : mapper.convertValue(resultLoadedFromYaml,
+        return resultLoadedFromYaml == null ? new ArrayList<>() : mapper.convertValue(resultLoadedFromYaml,
                 new TypeReference<List<CloudDefinition>>() {
                 });
     }
