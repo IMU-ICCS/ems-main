@@ -146,7 +146,7 @@ public class ClientInstallationHelper implements InitializingBean {
 
         // Run Baguette Client installation script
                 .appendLog("Run Baguette Client installation script")
-                .appendExec("sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey+" \n")
+                .appendExec("sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey)
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")
