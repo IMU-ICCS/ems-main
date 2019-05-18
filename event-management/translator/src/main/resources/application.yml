@@ -15,7 +15,7 @@ generator:
     # SCHEDULE (i.e. IUTPUT) CLAUSE
     SCHEDULE:
       __ANY__:
-        - | 
+        - |
           OUTPUT LAST EVERY [(${period})] [(${unit})]
     # Binary-Event-Pattern templates
     BEP-AND:
@@ -34,13 +34,13 @@ generator:
       GLOBAL:
 #XXX: TEST:
         - |
-          /* BEP-XOR-GLOBAL */ /*INSERT INTO [(${outputStream})]*/ 
+          /* BEP-XOR-GLOBAL */ /*INSERT INTO [(${outputStream})]*/
           SELECT CASE WHEN le IS NULL THEN re ELSE le END AS evt FROM PATTERN [ EVERY ( le=[(${leftEvent})] OR re=[(${rightEvent})] ) ]
     BEP-PRECEDES:
       GLOBAL:
 #XXX: TEST:
         - |
-          /* BEP-PRECEDES-GLOBAL */ /*INSERT INTO [(${outputStream})]*/ 
+          /* BEP-PRECEDES-GLOBAL */ /*INSERT INTO [(${outputStream})]*/
           SELECT le.* FROM PATTERN [ EVERY ( le=[(${leftEvent})] -> re=[(${rightEvent})] ) ]
     BEP-REPEAT_UNTIL:
       GLOBAL:
@@ -72,14 +72,14 @@ generator:
 #XXX: WHAT'S THE MEANING OF THIS OPERATOR?? ...IF STANDALONE??
       GLOBAL:
         - |
-          /* UEP-WHEN-GLOBAL */ /*INSERT INTO [(${outputStream})]*/ 
+          /* UEP-WHEN-GLOBAL */ /*INSERT INTO [(${outputStream})]*/
           SELECT ue.* FROM [(${leftEvent})].std:lastevent() AS ue
           
     # Non-Functional-Event templates
     NFE:
       GLOBAL:
         - |
-          /* NFE-GLOBAL */ /*INSERT INTO [(${outputStream})]*/ 
+          /* NFE-GLOBAL */ /*INSERT INTO [(${outputStream})]*/
           SELECT * FROM [(${metricConstraint})].std:lastevent()
           
     # Metric-Constraint templates
@@ -111,7 +111,7 @@ generator:
       __ANY__:
         - |
           /* COMP-CTX-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
+          SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
@@ -145,7 +145,7 @@ generator:
       __ANY__:
         - |
           /* VAR-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
+          SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
@@ -154,7 +154,7 @@ generator:
       __ANY__:
         - |
           /* VAR-AGG-any */ /*INSERT INTO [(${outputStream})]*/
-          SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue, 
+          SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
                  current_timestamp AS timestamp
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
@@ -190,7 +190,7 @@ generator:
       PER_INSTANCE:
         - |
           /* RAW-CTX-PER_INSTANCE */
-          INSERT INTO TEST_STREAM 
+          INSERT INTO TEST_STREAM
           SELECT EVAL('-1*CPUMetric+CPUMetric_2+CPUMetric_3', '[(${metric})],[(${metric})]_2,[(${metric})]_3', [(${metric})], [(${metric})]_2, [(${metric})]_3) AS metricValue,
                  1 AS level,
                  current_timestamp AS timestamp
