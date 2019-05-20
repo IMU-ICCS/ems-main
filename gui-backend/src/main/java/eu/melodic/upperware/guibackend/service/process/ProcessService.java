@@ -2,6 +2,7 @@ package eu.melodic.upperware.guibackend.service.process;
 
 import eu.melodic.upperware.guibackend.communication.camunda.CamundaClientApi;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaProcesInstanceResponse;
+import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableName;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableResponseItem;
 import eu.melodic.upperware.guibackend.controller.common.ProcessState;
 import eu.melodic.upperware.guibackend.controller.common.VariableStatus;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 public class ProcessService {
 
     private CamundaClientApi camundaClientApi;
-    private static final List<String> MONITORING_VARIABLES = Arrays.asList("discoveryServiceResult", "cpCreationResultCode",
-            "cpSolutionResultCode", "applicationDeploymentResultCode", "processState");
 
     public ProcessVariables getProcessVariables(String processId) {
         Map<String, CamundaVariableResponseItem> processVariablesMap = camundaClientApi.getProcessVariables(processId);
@@ -60,19 +58,28 @@ public class ProcessService {
 
     private void checkErrorsInNotMonitoringVariablesResponse(Map<String, CamundaVariableResponseItem> camundaResponse) {
         camundaResponse.forEach((variableName, camundaVariableResponseItem) -> {
-            if (!MONITORING_VARIABLES.contains(variableName) && "ERROR".equals(camundaVariableResponseItem.getValue())) {
+            if (!isMonitoredVariable(variableName) && "ERROR".equals(camundaVariableResponseItem.getValue())) {
                 throw new CamundaErrorVariableException(variableName, String.format("Error in Camunda variable %s", variableName));
             }
         });
     }
 
+    private boolean isMonitoredVariable(String variableName) {
+        for (CamundaVariableName value : CamundaVariableName.values()) {
+            if (value.label.equals(variableName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private ProcessVariables mapCamundaResponseToProcessVariables(Map<String, CamundaVariableResponseItem> camundaVariables) {
         ProcessVariables result = new ProcessVariables();
-        result.setDiscoveryServiceResult(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(MONITORING_VARIABLES.get(0), null), null));
-        result.setCpCreationResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(MONITORING_VARIABLES.get(1), null), result.getDiscoveryServiceResult()));
-        result.setCpSolutionResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(MONITORING_VARIABLES.get(2), null), result.getCpCreationResultCode()));
-        result.setApplicationDeploymentResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(MONITORING_VARIABLES.get(3), null), result.getCpSolutionResultCode()));
-        result.setProcessState(mapProcessStateToVariableStatus(camundaVariables.containsKey(MONITORING_VARIABLES.get(4)) ? ProcessState.valueOf(camundaVariables.get(MONITORING_VARIABLES.get(4)).getValue()) : ProcessState.UNKNOWN, result.getApplicationDeploymentResultCode()));
+        result.setDiscoveryServiceResult(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.DISCOVERY_SERVICE_RESULT.label, null), null));
+        result.setCpCreationResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.CP_CREATION_RESULT_CODE.label, null), result.getDiscoveryServiceResult()));
+        result.setCpSolutionResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.CP_SOLUTION_RESULT_CODE.label, null), result.getCpCreationResultCode()));
+        result.setApplicationDeploymentResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.APPLICATION_DEPLOYMENT_RESULT_CODE.label, null), result.getCpSolutionResultCode()));
+        result.setProcessState(mapProcessStateToVariableStatus(camundaVariables.containsKey(CamundaVariableName.PROCESS_STATE.label) ? ProcessState.valueOf(camundaVariables.get(CamundaVariableName.PROCESS_STATE.label).getValue()) : ProcessState.UNKNOWN, result.getApplicationDeploymentResultCode()));
         return result;
     }
 

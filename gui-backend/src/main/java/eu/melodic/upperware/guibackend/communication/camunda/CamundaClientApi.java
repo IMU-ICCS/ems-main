@@ -35,21 +35,7 @@ public class CamundaClientApi implements CamundaApi {
         ParameterizedTypeReference<Map<String, CamundaVariableResponseItem>> responseType =
                 new ParameterizedTypeReference<Map<String, CamundaVariableResponseItem>>() {
                 };
-        ResponseEntity<Map<String, CamundaVariableResponseItem>> processVariablesResponse = null;
-
-        try {
-            processVariablesResponse = restTemplate.exchange(camundaUrl, HttpMethod.GET, null, responseType);
-        } catch (ResourceAccessException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem by checking process status in Camunda. Camunda not working. Please try again.");
-        } catch (HttpServerErrorException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Requested process doesn't exist");
-        }
-
-        if (processVariablesResponse.getBody() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem by checking process status in Camunda. Camunda not working. Please try again.");
-        }
-
-        return processVariablesResponse.getBody();
+        return getResponse(camundaUrl, responseType).getBody();
     }
 
     @Override
@@ -59,19 +45,25 @@ public class CamundaClientApi implements CamundaApi {
         ParameterizedTypeReference<List<CamundaProcesInstanceResponse>> responseType =
                 new ParameterizedTypeReference<List<CamundaProcesInstanceResponse>>() {
                 };
-        ResponseEntity<List<CamundaProcesInstanceResponse>> processInstanceListResponse;
+        return getResponse(camundaUrl, responseType).getBody();
+    }
+
+    private <T> ResponseEntity<T> getResponse(String camundaUrl, ParameterizedTypeReference<T> responseType) {
+        ResponseEntity<T> camundaResponse = null;
 
         try {
-            processInstanceListResponse = restTemplate.exchange(camundaUrl, HttpMethod.GET, null, responseType);
+            camundaResponse = restTemplate.exchange(camundaUrl, HttpMethod.GET, null, responseType);
         } catch (ResourceAccessException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem by checking process status in Camunda. Camunda not working. Please try again.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem in communication with Camunda. Camunda not working. Please try again.");
+        } catch (HttpServerErrorException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Requested process doesn't exist");
         }
 
-        if (processInstanceListResponse.getBody() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem by checking process status in Camunda. Camunda not working. Please try again.");
+        if (camundaResponse.getBody() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem in communication with Camunda. Camunda not working. Please try again.");
         }
 
-        return processInstanceListResponse.getBody();
+        return camundaResponse;
     }
 
 }

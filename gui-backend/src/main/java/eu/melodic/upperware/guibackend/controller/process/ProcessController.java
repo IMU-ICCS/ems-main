@@ -26,7 +26,7 @@ public class ProcessController {
         return processService.getProcessVariables(processId);
     }
 
-    @GetMapping(value = "")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<ProcessInstanceResponse> getAllProcessData() {
         log.info("GET request for all processes data");
