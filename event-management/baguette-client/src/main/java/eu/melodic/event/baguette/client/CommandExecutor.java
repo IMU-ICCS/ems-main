@@ -325,8 +325,12 @@ public class CommandExecutor {
                         if (groupingBrokerCfg != null) {
                             if (groupingBrokerCfg.indexOf("\n") > 0) {
                                 String brokerCert = groupingBrokerCfg.substring(groupingBrokerCfg.indexOf("\n")).trim();
-                                log.info("Updating broker certificate to truststore for Grouping: {}", g);
-                                brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
+                                if (StringUtils.isNotEmpty(brokerCert)) {
+                                    log.info("Updating broker certificate to truststore for Grouping: {}", g);
+                                    brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
+                                } else {
+                                    log.info("No broker PEM certificate provided for Grouping: {}", g);
+                                }
                             }
                         } else {
                             log.info("Removing broker certificate from truststore for Grouping (no new certificate provided): {}", g);

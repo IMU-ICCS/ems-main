@@ -324,12 +324,17 @@ public class BrokerCepService {
 
     public Certificate addOrReplaceCertificateInTruststore(String alias, String certPem) throws Exception {
         log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert-PEM=\n{}", alias, certPem);
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        try (InputStream inputStream = new ByteArrayInputStream(certPem.getBytes(Charset.forName("UTF-8")))) {
-            Certificate cert = cf.generateCertificate(inputStream);
-            log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): X509 Certificate: {}",
-                    ((X509Certificate)cert).getSubjectX500Principal().getName());
-            return addOrReplaceCertificateInTruststore(alias, cert);
+        if (StringUtils.isNotEmpty(certPem)) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            try (InputStream inputStream = new ByteArrayInputStream(certPem.getBytes(Charset.forName("UTF-8")))) {
+                Certificate cert = cf.generateCertificate(inputStream);
+                log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): X509 Certificate: {}",
+                        ((X509Certificate) cert).getSubjectX500Principal().getName());
+                return addOrReplaceCertificateInTruststore(alias, cert);
+            }
+        } else {
+            log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): PEM certificate is empty. Returning 'null'");
+            return null;
         }
     }
 

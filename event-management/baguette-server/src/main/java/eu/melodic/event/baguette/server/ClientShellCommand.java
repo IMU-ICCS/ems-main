@@ -188,21 +188,27 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         .replace("$$", "\n");
                 log.info("{}--> Broker Cert.: {}", id, clientCertificate);
 
-                // Add certificate to truststore
+                // Get certificate alias from client name or IP address
                 String alias = StringUtils.isNotBlank(clientId)
                         ? clientId.trim()
                         : getClientIpAddress();
                 log.info("{}--> Adding/Replacing client certificate in Truststore: alias={}", id, alias);
-                try {
-                    X509Certificate cert = (X509Certificate)coordinator
-                            .getServer()
-                            .getBrokerCepService()
-                            .addOrReplaceCertificateInTruststore(alias, clientCertificate);
-                    log.info("{}--> Added/Replaced client certificate in Truststore: alias={}, CN={}, certificate-names={}",
-                            id, alias, cert.getSubjectDN().getName(), CertUtil.subjectNames(cert));
-                } catch (Exception e) {
-                    log.warn("{}--> EXCEPTION while adding/replacing certificate in Trust store: alias={}, exception: ",
-                            clientId, alias, e);
+
+                if (StringUtils.isNotEmpty(clientCertificate)) {
+                    // Add certificate to truststore
+                    try {
+                        X509Certificate cert = (X509Certificate) coordinator
+                                .getServer()
+                                .getBrokerCepService()
+                                .addOrReplaceCertificateInTruststore(alias, clientCertificate);
+                        log.info("{}--> Added/Replaced client certificate in Truststore: alias={}, CN={}, certificate-names={}",
+                                id, alias, cert.getSubjectDN().getName(), CertUtil.subjectNames(cert));
+                    } catch (Exception e) {
+                        log.warn("{}--> EXCEPTION while adding/replacing certificate in Trust store: alias={}, exception: ",
+                                clientId, alias, e);
+                    }
+                } else {
+                    log.info("{}--> Client PEM certificate is empty. Leaving truststore unchanged");
                 }
             } else {
                 log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);
