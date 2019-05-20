@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProcessCreationResultItem {
-    private Result result;
+    private ProcessResult result;
     private String processId;
 }
