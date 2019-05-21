@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Result {
+public class ProcessResult {
     private ProcessStatus status;
 }

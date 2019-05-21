@@ -1,15 +1,18 @@
-package eu.melodic.upperware.guibackend.controller.deployment.response;
+package eu.melodic.upperware.guibackend.controller.process.response;
 
-import lombok.Builder;
-import lombok.Getter;
+import eu.melodic.upperware.guibackend.controller.common.VariableStatus;
+import lombok.*;
 
 @Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProcessVariables {
 
     private VariableStatus cpCreationResultCode;
     private VariableStatus cpSolutionResultCode;
     private VariableStatus applicationDeploymentResultCode;
     private VariableStatus discoveryServiceResult;
-    private ProcessState processState;
+    private VariableStatus processState;
 }

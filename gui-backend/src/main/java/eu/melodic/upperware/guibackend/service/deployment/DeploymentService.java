@@ -3,11 +3,9 @@ package eu.melodic.upperware.guibackend.service.deployment;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
-import eu.melodic.upperware.guibackend.communication.camunda.CamundaClientApi;
 import eu.melodic.upperware.guibackend.communication.mule.MuleClientApi;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
-import eu.melodic.upperware.guibackend.controller.deployment.response.ProcessVariables;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +33,6 @@ public class DeploymentService {
     private MuleClientApi muleClientApi;
     private DeploymentMapper deploymentMapper;
     private CdoService cdoService;
-    private CamundaClientApi camundaClientApi;
 
     public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest) {
         DeploymentProcessRequest deploymentProcessRequest = deploymentMapper.mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
@@ -94,7 +91,4 @@ public class DeploymentService {
         return allXmiModels;
     }
 
-    public ProcessVariables getProcessVariables(String processId) {
-        return camundaClientApi.getProcessVariables(processId);
-    }
 }
