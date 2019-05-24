@@ -28,6 +28,9 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +42,7 @@ import java.util.*;
 public class Coordinator implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
+    private MetaSolverController controller;
     private MetaSolverProperties metaSolverProperties;
     private MelodicSecurityProperties melodicSecurityProperties;
     private double uvThresholdFactor;
@@ -294,10 +298,32 @@ public class Coordinator implements ApplicationContextAware {
 
         Map<String, String> notification = new HashMap<>();
         notification.put("cp-model-id", cpModelPath);
-        ResponseEntity<String> response =
-                restTemplate.postForEntity(emsUrl, notification, String.class);
+		
+		String jwtToken = controller.getAuthenticationToken();
+		final ResponseEntity<String> response;
+		if (StringUtils.isNotEmpty(jwtToken)) {
+			HttpEntity<HashMap> entity = createHttpEntity(HashMap.class, notification, jwtToken);
+			response = restTemplate.postForEntity(emsUrl, entity, String.class);
+		} else {
+			response = restTemplate.postForEntity(emsUrl, notification, String.class);
+		}
 
         log.debug("MetaSolver.Coordinator: notifyEMS(): Response from EMS: status={}, response={}, body={}",
                 response.getStatusCode(), response, response.getBody());
+    }
+	
+    public <T> HttpEntity<T> createHttpEntity(Class<T> notifType, Object notification, String jwtToken) {
+        HttpHeaders headers = createHttpHeaders(jwtToken);
+        return new HttpEntity<T>((T)notification, headers);
+    }
+
+    private HttpHeaders createHttpHeaders(String jwtToken) {
+        HttpHeaders headers = new HttpHeaders();
+        if (StringUtils.isNotBlank(jwtToken)) {
+            headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
+        }
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        return headers;
     }
 }

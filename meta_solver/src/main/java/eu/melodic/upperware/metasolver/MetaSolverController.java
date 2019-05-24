@@ -12,11 +12,12 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
@@ -32,13 +33,24 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class MetaSolverController {
 
     private Coordinator coordinator;
+	
+	private String jwtToken = null;
+	
+	public String getAuthenticationToken() {
+		return jwtToken;
+	}
 
     @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
-    public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request) throws ConcurrentAccessException {
+    public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request,
+                                                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+	{
+		this.jwtToken = jwtToken;
+		
         // Get information from request
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
@@ -67,7 +79,12 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/solutionEvaluation", method = POST)
-    public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request) throws ConcurrentAccessException {
+    public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request,
+                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+	{
+		this.jwtToken = jwtToken;
+		
         // Get information from request
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
@@ -89,7 +106,12 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/updateSolution", method = POST)
-    public UpdateSolutionResponse updateSolution(@RequestBody UpdateSolutionRequest request) throws ConcurrentAccessException {
+    public UpdateSolutionResponse updateSolution(@RequestBody UpdateSolutionRequest request,
+                                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+	{
+		this.jwtToken = jwtToken;
+		
         // Get information from request
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
@@ -116,7 +138,12 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/updateConfiguration", method = POST)
-    public String updateConfiguration(@RequestBody String configStr) throws ConcurrentAccessException {
+    public String updateConfiguration(@RequestBody String configStr,
+                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+	{
+		this.jwtToken = jwtToken;
+		
         log.info("updateConfiguration: json={}", configStr);
 
         // Unserialize configuration from JSON
