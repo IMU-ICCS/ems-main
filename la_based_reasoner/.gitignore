@@ -1,3 +1,5 @@
 *.kdev4
 /laSolver.pb.cc
 /laSolver.pb.h
+/Model.cpp
+*.directory

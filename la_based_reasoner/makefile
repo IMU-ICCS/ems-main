@@ -3,8 +3,8 @@
 # The LA Reasoner
 #
 # This file makes compiles the files for the LA Reasoner
-# 
-# Author: Geir Horn, 2014 - 2018
+#
+# Author: Geir Horn, 2014 - 2019
 #
 ###############################################################################
 
@@ -12,121 +12,201 @@
 # Setting the standard definitions
 #
 
-CC = g++
-AR = ar
-RM = rm -f
+CXX = g++
+#CXX = clang
 
-# These locations have been made relative to work independent of the different 
-# machines used for this development. Note that the LA framework will be 
-# located differently during a real deployment.
+# The compiler is instructed to produce all warnings and provide output for
+# the code to be debugged with GDB. This produces larger object files and if
+# this is a concern the GDB switch can be dropped. The following flags were
+# also previously needed:
+# -Wformat-truncation=0
 
-THERON ?= ../../Theron++
-LA_FRAMEWORK ?= ../../LA-Framework
+GENERAL_OPTIONS = -c -Wall -std=c++17 -ggdb -Wno-deprecated-declarations \
+                  -Wno-sign-compare
 
-# These frameworks contain certain objective functions that must be built 
-# as part of the built process for the solvers.
-
-THERON_OBJECTS = $(THERON)/Actor.o
-LA_OBJECTS = ${LA_FRAMEWORK}/RandomGenerator.o
-
-# Optimisation -O3 is the highest level of optimisation and should be used 
-# with production code. -Og is the code optimising and offering debugging 
+# Optimisation -O3 is the highest level of optimisation and should be used
+# with production code. -Og is the code optimising and offering debugging
 # transparency and should be use while the code is under development
-# Since the code is templated, it is recommended to not use any optimisation 
-# while testing the code
 
-OPTIMISATION_FLAG = 
+OPTIMISATION_FLAG =
 
-# It is useful to let the compiler generate the dependencies for the various 
-# files, and the following will produce .d files that can be included at the 
-# end. The -MMD flag is equivalent with -MD, but the latter will include system 
-# headers in the output (which we do not need here). The -MP includes an 
-# empty rule to create the dependencies so that make would not create any errors 
+# There LA solver directory and the standard user include is explicitly set
+# as directories to ensure that the compiler uses these standard locations.
+
+STANDARD_INCLUDE = -I. -I/usr/include
+
+# It is useful to let the compiler generate the dependencies for the various
+# files, and the following will produce .d files that can be included at the
+# end. The -MMD flag is equivalent with -MD, but the latter will include system
+# headers in the output (which we do not need here). The -MP includes an
+# empty rule to create the dependencies so that make would not create any errors
 # if the file name changes.
 
 DEPENDENCY_FLAGS = -MMD -MP
 
-# Options 
+# The linker flags include the use of POSIX threads as they are the underlying
+# implementation of standard C++ threads and is explicitly needed on some
+# systems.
 
-GENERAL_OPTIONS = -c -Wall -std=c++1z -ggdb -D_DEBUG -Wformat-truncation=0 -Wno-sign-compare
-INCLUDE_DIRECTORIES = -I. -I/usr/include -I$(THERON) -I$(LA_FRAMEWORK)
+LDFLAGS = -Wl,--allow-multiple-definition -ggdb -D_DEBUG -pthread
 
-# Other library specific flags. 
+# The object files and the dependencies are kept in a separate directory
+# relative to the top level.
 
-#THERON_FLAGS = -DTHERON_POSIX=1 -DTHERON_BOOST=0 -DTHERON_CPP11=1
+OBJECTS_DIR = Bin
+
+#------------------------------------------------------------------------------
+#
+# External used frameworks
+#
+#------------------------------------------------------------------------------
+#
+# These locations have been made relative to work independent of the different
+# machines used for this development. Essentially they are all located at the
+# same level as the MELODIC upperware code base.
+#
+# The first framework is the Theron++ actor framework that is maintained as
+# a separate library file to speed up compilation.
+
+THERON ?= ../../Theron++
+THERON_INCLUDE = -I $(THERON)
+THERON_LIB = $(THERON)/Theron++.a
+
+# The Learning Automata framework is an essential part of the functionality
+# as it provides the stochastic learning for discrete configuration variables.
+
+LA_FRAMEWORK ?= ../../LA-Framework
+LA_INCLUDE = -I $(LA_FRAMEWORK)
+
+# In order to read the metric values from the AMQ message broker serving the
+# MELODIC metric system, some non-standard include locations are needed, and
+# the appropriate libraries must be added for linking. The SSL library -lssl is
+# not explicitly used, but may be needed as the AMQ interface supports
+# encrypted transfer between the AMQ server and the clients.
+
+AMQ_INCLUDE = -I /usr/include/activemq-cpp-3.9.4/ -I /usr/include/apr-1
+AMQ_LIB     = -l activemq-cpp
+
+# The Google protocol buffers are used to exchange configurations with the
+# Utility Generator and this requires to link against the protocol buffer
+# library
+
+PROTOBUF_LIB = -l protobuf
+
+# The JsonCpp library is used to parse metric value messages arriving on
+# AMQ topics and its library must be included in the linking of executables
+
+JSON_LIB = -l jsoncpp
+
+# The Armadillo linear algebra library is used to represent matrices and
+# some derived vectors, and to do some linear algebra operations. It needs to
+# be told to use C++11, although there should not be an option by now.
+
 ARMADILLO_FLAGS = -DARMA_USE_CXX11
-GLIB_FLAGS = -D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD -DHAVE_INLINE
 
-# Libraries used - note that the Theron lib should be added to the link command
-# later when the code uses it. The code uses the GNU Scientific Library (GSL)
-# and the math library (m).
+# Boost is used around in the code and both boost system and boost options
+# are linked as libraries.
 
-MACHINE := $(shell uname --nodename)
-ifeq ($(MACHINE),Glamdring)
-  NLOPT_LIB ?= -lgslcblas -lnlopt_cxx
-else
-  NLOPT_LIB ?= -lgslcblas -lnlopt
-endif
+BOOST_LIB = -l boost_system -l boost_program_options
 
-# Then the flags for the compiler can be defined
+# The Armadillo library uses functions from linear libraries and also the
+# GNU Scientific Library can be used. Continuous variables are solved using
+# algorithms from the NLopt library. The C++ version of NLopt my require
+# a special library (in general just -lnlopt should be sufficient)
 
-CFLAGS = $(DEPENDENCY_FLAGS) $(OPTIMISATION_FLAG) $(GENERAL_OPTIONS) \
-         $(GLIB_FLAGS) $(ARMADILLO_FLAGS) $(THERON_FLAGS)
-INCLUDE_FLAGS = -I ${LA_FRAMEWORK} -I ${THERON}/Include
+SCIENCE_LIB ?= -l gslcblas -l nlopt_cxx -l m
 
-# The linker needs a separate set of flags and libraries. Note that the 
-# Google protocol buffers library is given directly here.
-
-#THERON_LIB = ${THERON}/Lib/libtherond.a
-LDFLAGS = -Wl,--allow-multiple-definition -pthread -ggdb -D_DEBUG
-LD_LIBS    = ${THERON_LIB} ${NLOPT_LIB} -lprotobuf -lm
-
+#------------------------------------------------------------------------------
 #
-# SOLVER MODULES
+# Combined flags
 #
-# The compiled files that are needed by the linker in order to build the 
-# solver executable.
-
-SOLVER_OBJECTS = 
-
-# And these are needed to build the various targets
-
-ALL_MODULES = $(THERON_OBJECTS) $(LA_OBJECTS) $(SOLVER_OBJECTS)
-
+#------------------------------------------------------------------------------
 #
-# TARGETS
+# Setting up the combined macros based on the above definitions
+
+CXXFLAGS = $(DEPENDENCY_FLAGS) $(OPTIMISATION_FLAG) $(GENERAL_OPTIONS) \
+           $(ARMADILLO_FLAGS)
+
+INCLUDE_DIRECTORIES = $(STANDARD_INCLUDE) $(THERON_INCLUDE) $(LA_INCLUDE) \
+                      $(AMQ_INCLUDE)
+
+LINKER_LIBS = $(THERON_LIB) $(AMQ_LIB) $(PROTOBUF_LIB) $(JSON_LIB) \
+              $(BOOST_LIB) $(SCIENCE_LIB)
+
+#------------------------------------------------------------------------------
+#
+# Compiling source files
+#
+#------------------------------------------------------------------------------
+#
+# The LA solver header and source files are defined first, with the generic
+# target to build the object files from these.
+
+LASOLVER_HEADERS = Application.hpp CommandOptions.hpp Constraints.hpp \
+                   Domains.hpp laSolver.pb.h Metrics.hpp MetricStore.hpp \
+                   Solver.hpp Variables.hpp
+
+LASOLVER_SOURCE = CommandOptions.cpp MetricStore.cpp Model.cpp Registries.cpp
+
+LASOLVER_OBJECTS = ${LASOLVER_SOURCE:.cpp=.o}
+
+$(OBJECTS_DIR)/%.o : %.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(INCLUDE_DIRECTORIES)
+
+# The Google protocol buffer file has to be separately compiled because it is
+# differently named.
+
+$(OBJECTS_DIR)/laSolver.o : laSolver.pb.h laSolver.pb.cc
+	$(CXX) $(CXXFLAGS) laSolver.pb.cc -o $@ $(INCLUDE_DIRECTORIES)
+
+# The Theron++ library has its own make command that can be invoked to
+# check the availability of the library
+
+# The LA framework has one file that is currently needed (will be replaced by
+# a library like for Theron++)
+
+LA_FRAMEWORK_OBJECTS = RandomGenerator.o
+
+$(OBJECTS_DIR)/RandomGenerator.o : ${LA_FRAMEWORK}/RandomGenerator.hpp ${LA_FRAMEWORK}/RandomGenerator.cpp
+	$(CXX) $(CXXFLAGS) ${LA_FRAMEWORK}/RandomGenerator.cpp -o $@ $(INCLUDE_DIRECTORIES)
+
+###############################################################################
+#
+# Targets
+#
+###############################################################################
+#
+
+ALL_MODULES = $(addprefix $(OBJECTS_DIR)/, $(LASOLVER_OBJECTS) $(LA_FRAMEWORK_OBJECTS))
+
+#------------------------------------------------------------------------------
+#
+# Test targets
+#
+#------------------------------------------------------------------------------
+#
+
+$(OBJECTS_DIR)/%.o : Tests/%.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(INCLUDE_DIRECTORIES)
+
+GetMetricValue: $(OBJECTS_DIR)/GetMetricValue.o ${ALL_MODULES}
+	$(CXX) $(OBJECTS_DIR)/GetMetricValue.o ${ALL_MODULES} ${LDFLAGS} \
+	${THERON_LIB} $(LINKER_LIBS) -o $(OBJECTS_DIR)/GetMetricValue
+
+UseMetricStore: $(OBJECTS_DIR)/UseMetricStore.o ${ALL_MODULES}
+	(cd $(THERON); make Library)
+	$(CXX) $(OBJECTS_DIR)/UseMetricStore.o ${ALL_MODULES} ${LDFLAGS} \
+	$(LINKER_LIBS) -o $(OBJECTS_DIR)/UseMetricValue
+
+#------------------------------------------------------------------------------
+#
+# Production targets
+#
+#------------------------------------------------------------------------------
 #
 
 clean:
-	${RM} *.o
-	${RM} *.d
-	${RM} *.a
-	${RM} *.pdb
-	${RM} ${LA_FRAMEWORK}/*.o
-	$(RM) ${THERON}/*.o
-	${RM} ${LA_FRAMEWORK}/*.d
-	$(RM) ${THERON}/*.d
-
-# Generic compile targets
-
-%.o : %.cpp
-	$(CC) $(CFLAGS) $< -o $@ $(INCLUDE_DIRECTORIES)
-
-#
-# Test targets 
-#
-# The model file defines the CP-model to be solved by the solver, and it is 
-# mainly a syntax check to ensure that it has been correctly set up.
-
-Model: Model.o Interface.o ${LA_OBJECTS}
-	$(CC) Model.o Interface.o ${LA_OBJECTS} $(LDFLAGS) $(LD_LIBS) -o Model
-
-#
-# Main target
-#
-
-LASolver: ${ALL_MODULES}
-	$(CC) ${ALL_MODULES} $(LDFLAGS) $(LD_LIBS) -o LASolver
+	$(RM) $(OBJECTS_DIR)/*
 
 #
 # DEPENDENCIES
