@@ -14,6 +14,7 @@ import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +45,14 @@ public class MetaSolverController {
 		return jwtToken;
 	}
 
+	public void setAuthenticationToken(String s) { if (StringUtils.isNotEmpty(s)) jwtToken = s.trim(); }
+
     @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
     public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request,
                                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
 	{
-		this.jwtToken = jwtToken;
+        setAuthenticationToken(jwtToken);
 		
         // Get information from request
         String applicationId = request.getApplicationId();
@@ -83,7 +86,7 @@ public class MetaSolverController {
                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
 	{
-		this.jwtToken = jwtToken;
+        setAuthenticationToken(jwtToken);
 		
         // Get information from request
         String applicationId = request.getApplicationId();
@@ -110,7 +113,7 @@ public class MetaSolverController {
                                                  @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
 	{
-		this.jwtToken = jwtToken;
+        setAuthenticationToken(jwtToken);
 		
         // Get information from request
         String applicationId = request.getApplicationId();
@@ -142,7 +145,7 @@ public class MetaSolverController {
                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
 	{
-		this.jwtToken = jwtToken;
+        setAuthenticationToken(jwtToken);
 		
         log.info("updateConfiguration: json={}", configStr);
 
@@ -189,5 +192,4 @@ public class MetaSolverController {
         log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
         return exception.getMessage();
     }
-
 }
