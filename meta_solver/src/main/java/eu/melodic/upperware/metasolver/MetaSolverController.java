@@ -12,7 +12,7 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
-import lombok.RequiredArgsConstructor;
+//import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,11 +34,12 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+//@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
 public class MetaSolverController {
 
+    @Autowired
     private Coordinator coordinator;
-	
+
 	private String jwtToken = null;
 	
 	public String getAuthenticationToken() {

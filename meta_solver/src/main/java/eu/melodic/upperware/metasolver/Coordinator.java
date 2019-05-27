@@ -58,6 +58,8 @@ public class Coordinator implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        this.controller = applicationContext.getBean(MetaSolverController.class);
+        this.jwtService = applicationContext.getBean(JWTService.class);
         this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
@@ -310,6 +312,7 @@ public class Coordinator implements ApplicationContextAware {
         String jwtToken = createNewToken
                 ? createToken()
                 : controller.getAuthenticationToken();
+        log.debug("MetaSolver.postToUrl(): JWT token={}, created={}", jwtToken, createNewToken);
 
         final ResponseEntity<String> response;
         if (StringUtils.isNotEmpty(jwtToken)) {
@@ -338,6 +341,9 @@ public class Coordinator implements ApplicationContextAware {
 
     public String createToken() {
         String username = melodicSecurityProperties.getUser().getUsername();
-        return SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+        log.debug("MetaSolver.createToken():  username={}, jwt-service={}", username, jwtService);
+        String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+        log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
+        return token;
     }
 }
