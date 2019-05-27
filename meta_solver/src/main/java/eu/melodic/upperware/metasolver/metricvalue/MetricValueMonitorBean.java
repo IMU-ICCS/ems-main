@@ -38,9 +38,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
     private MetricValueRegistry<Object> registry = new MetricValueRegistry<>();
 	
-	@Value("${ems-broker-username}")
+	@Value("${ems-broker-username:#{null}}")
 	private String brokerUsername;
-	@Value("${ems-broker-password}")
+	@Value("${ems-broker-password:#{null}}")
 	private String brokerPassword;
 
     @Override
@@ -49,6 +49,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         this.properties = applicationContext.getBean(MetaSolverProperties.class);
         this.coordinator = applicationContext.getBean(Coordinator.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
+        log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
     }
 
     public MetricValueRegistry<Object> getMetricValuesRegistry() {
