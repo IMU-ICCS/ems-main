@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
-public class ProcessService {
+public class ProcessCamundaService {
 
     private CamundaClientApi camundaClientApi;
 
@@ -51,7 +51,7 @@ public class ProcessService {
         return ProcessInstanceResponse.builder()
                 .processId(processId)
                 .applicationId(processVariablesMap.get("applicationId").getValue())
-                .processState(processVariablesMap.containsKey("processState") ? ProcessState.valueOf(processVariablesMap.get("processState").getValue()) : null)
+                .processState(processVariablesMap.containsKey("processState") ? ProcessState.valueOf(processVariablesMap.get("processState").getValue()) : ProcessState.STARTED)
                 .finishDate(processVariablesMap.containsKey("processFinishDate") ? processVariablesMap.get("processFinishDate").getValue() : null)
                 .build();
     }
@@ -94,7 +94,7 @@ public class ProcessService {
     private VariableStatus mapProcessStateToVariableStatus(ProcessState processState, VariableStatus applicationDeploymetStatus) {
         if (applicationDeploymetStatus == VariableStatus.SUCCESS && processState == ProcessState.STARTED) {
             return VariableStatus.ACTIVE;
-        } else if (processState == ProcessState.STARTED) {
+        } else if (processState == null || processState == ProcessState.STARTED) {
             return VariableStatus.UNKNOWN;
         } else if (processState == ProcessState.FINISHED) {
             return VariableStatus.SUCCESS;
