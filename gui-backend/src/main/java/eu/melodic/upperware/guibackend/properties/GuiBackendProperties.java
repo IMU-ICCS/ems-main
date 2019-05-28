@@ -40,6 +40,8 @@ public class GuiBackendProperties {
 
         @NotBlank
         private String apiKey;
+
+        private int httpReadTimeout = 30000;
     }
 
     @Getter

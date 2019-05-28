@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CdoService {
 
-
     public String getCdoName(String fileName, String fileExtension) {
         return StringUtils.removeEnd(fileName, fileExtension);
     }

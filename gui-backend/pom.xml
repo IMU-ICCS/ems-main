@@ -82,6 +82,12 @@
             <version>${upperware.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.cloudiator.client</groupId>
+            <artifactId>java-rest</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
 
     </dependencies>
 
