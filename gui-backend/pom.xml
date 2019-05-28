@@ -88,6 +88,16 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ow2.paasage</groupId>
+                    <artifactId>upperware-metamodel</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
     </dependencies>
 

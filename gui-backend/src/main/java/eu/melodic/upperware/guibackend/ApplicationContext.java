@@ -1,19 +1,14 @@
 package eu.melodic.upperware.guibackend;
 
-import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
+import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.CloudApi;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
-
-    private GuiBackendProperties guiBackendProperties;
 
     @Bean
     public RestTemplate getRestTemplate() {
@@ -21,11 +16,11 @@ public class ApplicationContext {
     }
 
     @Bean
-    public ApiClient apiClient() {
+    public ApiClient apiClient(CloudiatorProperties cloudiatorProperties) {
         ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(guiBackendProperties.getCloudiator().getUrl());
-        apiClient.setApiKey(guiBackendProperties.getCloudiator().getApiKey());
-        apiClient.setReadTimeout(guiBackendProperties.getCloudiator().getHttpReadTimeout());
+        apiClient.setBasePath(cloudiatorProperties.getCloudiator().getUrl());
+        apiClient.setApiKey(cloudiatorProperties.getCloudiator().getApiKey());
+        apiClient.setReadTimeout(cloudiatorProperties.getCloudiator().getHttpReadTimeout());
         return apiClient;
     }
 
