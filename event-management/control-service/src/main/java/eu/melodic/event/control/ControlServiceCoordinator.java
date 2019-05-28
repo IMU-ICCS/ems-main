@@ -676,6 +676,7 @@ public class ControlServiceCoordinator {
         // Call ESB endpoint
         String url = esbUrl + "/" + notificationUri;
         log.info("ControlServiceCoordinator.sendCamelModelNotification(): Invoking ESB endpoint: {}", url);
+        log.trace("ControlServiceCoordinator.sendCamelModelNotification(): JWT token: {}", jwtToken);
         //String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
         HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(CamelModelNotificationRequest.class, notification, jwtToken);
         final ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);

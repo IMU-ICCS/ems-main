@@ -57,6 +57,7 @@ public class ControlServiceController {
             throws ConcurrentAccessException
     {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", request);
+        log.trace("ControlServiceController.newCamelModel()/camelModel: JWT token: {}", jwtToken);
 
         // Get information from request
         String applicationId = request.getApplicationId();
@@ -80,6 +81,7 @@ public class ControlServiceController {
             throws ConcurrentAccessException
     {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.newCamelModel()/camelModelJson: JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
@@ -105,6 +107,7 @@ public class ControlServiceController {
             throws ConcurrentAccessException
     {
         log.info("ControlServiceController.newCpModel(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.newCpModel(): JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
@@ -126,6 +129,7 @@ public class ControlServiceController {
             throws ConcurrentAccessException
     {
         log.info("ControlServiceController.getSensors(): Received request: {}", request);
+        log.trace("ControlServiceController.getSensors(): JWT token: {}", jwtToken);
 
         // Get information from request
         String applicationId = request.getApplicationId();
