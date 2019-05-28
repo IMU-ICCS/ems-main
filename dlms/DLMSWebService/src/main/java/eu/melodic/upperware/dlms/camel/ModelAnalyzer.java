@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
@@ -74,20 +75,30 @@ public class ModelAnalyzer {
 								EList<Feature> ftList = data.getSubFeatures();
 								for (Feature feature : ftList) {
 									EList<Attribute> attrList = feature.getAttributes();
-									for (Attribute attribute : attrList) {
-										Value val = attribute.getValue();
-										if (val.getClass() == StringValueImpl.class) {
-											// read the camel model and set the properties
-											StringValue strVal = (StringValue) val;
-											DataSource dataSource = new DataSource();
-											dataSource.setName(data.getName());
-											dataSource.setUfsURI(strVal.getValue());
-											// set the mount point with the initial "melodic" for all
-											dataSource.setMountPoint("/melodic/" + data.getName());
+									DataSource dataSource = new DataSource();
+									boolean added = false;
 
-											dataSourceList.add(dataSource);
-											log.debug("DataSource was added: " + camelModel);
+									for (Attribute attribute : attrList) {
+										if (attribute.getName().equalsIgnoreCase("ufsUri")) {
+											if (checkStringValueImpl(attribute)) {
+												String attr = attrVal(attribute);
+												dataSource.setUfsURI(attr);
+
+												added = true;
+											}
+										} else if (attribute.getName().equalsIgnoreCase("accessUserId")) {
+											if (checkStringValueImpl(attribute)) {
+												String accessKey = attrVal(attribute);
+												dataSource.setAccessKey(accessKey);
+											}
 										}
+									}
+									if (added) {
+										dataSource.setName(data.getName());
+										// set the mount point with the initial "melodic" for all
+										dataSource.setMountPoint("/melodic/" + data.getName());
+										dataSourceList.add(dataSource);
+										log.debug("DataSource was added: " + camelModel);
 									}
 								}
 							}
@@ -106,6 +117,18 @@ public class ModelAnalyzer {
 			if (session != null)
 				session.closeSession();
 		}
+	}
+
+	private boolean checkStringValueImpl(Attribute attribute) {
+		Value val = attribute.getValue();
+		return (val.getClass() == StringValueImpl.class);
+	}
+
+	private String attrVal(Attribute attribute) {
+		Value val = attribute.getValue();
+		// read the camel model and set the properties
+		StringValue strVal = (StringValue) val;
+		return strVal.getValue();
 	}
 
 	public List<DataSource> getDataSourceList() {

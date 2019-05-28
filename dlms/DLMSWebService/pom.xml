@@ -86,19 +86,13 @@
 			<artifactId>alluxio-shell</artifactId>
 			<version>1.8.1</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>commons-net</groupId> -->
-<!-- 			<artifactId>commons-net</artifactId> -->
-<!-- 			<version>3.0.1</version> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>com.codahale.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
 			<version>3.0.2</version>
 			<exclusions>
-</exclusions>
-<!-- 			<version>3.0.2</version> -->
+			</exclusions>
+			<!-- <version>3.0.2</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

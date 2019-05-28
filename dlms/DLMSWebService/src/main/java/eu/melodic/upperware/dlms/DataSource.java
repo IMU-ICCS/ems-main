@@ -34,6 +34,7 @@ public class DataSource {
 	private DataSourceType dataSourceType;
 	private String ufsURI; /* underlying file system uri */
 	private String mountPoint; /* mount point in alluxio */
+	private String accessKey; /* access information for datasources with username and password */
 
 	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint) {
 		super();
@@ -41,6 +42,15 @@ public class DataSource {
 		this.dataSourceType = dataSourceType;
 		this.ufsURI = ufsURI;
 		this.mountPoint = mountPoint;
+	}
+
+	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint, String accessKey) {
+		super();
+		this.name = name;
+		this.dataSourceType = dataSourceType;
+		this.ufsURI = ufsURI;
+		this.mountPoint = mountPoint;
+		this.accessKey = accessKey;
 	}
 
 }

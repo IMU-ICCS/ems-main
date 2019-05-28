@@ -8,6 +8,7 @@
 package eu.melodic.upperware.dlms;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -172,14 +173,10 @@ public class DLMSServiceController {
 		restTemplate.postForEntity(esbUrl + "/" + notificationUri, dataModelNotificationRequest,
 				DataModelNotificationRequest.class);
 	}
-
-	// test the notification request, uncomment this when actual url exists
-//	@PostMapping("/notification/msg")
-//	public void addNotificationRequest(@Valid @RequestBody DataModelNotificationRequest dataModelNotificationRequest) {
-//		log.info("Test message");
-//	}
 	
-	// generate watermark
+	/**
+	 * Generate watermark
+	 */
 	private Watermark prepareWatermark(String uuid) {
 		Watermark watermark = new WatermarkImpl();
 		watermark.setUser("dlms");

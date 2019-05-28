@@ -9,14 +9,23 @@ package eu.melodic.upperware.dlms;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import alluxio.AlluxioConfiguration;
+import alluxio.AlluxioURI;
+import alluxio.Configuration;
 import alluxio.Constants;
 import alluxio.PropertyKey;
 import alluxio.cli.fs.command.CpCommand;
@@ -28,6 +37,9 @@ import alluxio.cli.fs.command.PersistCommand;
 import alluxio.cli.fs.command.RmCommand;
 import alluxio.cli.fs.command.UnmountCommand;
 import alluxio.client.file.FileSystem;
+import alluxio.client.file.options.MountOptions;
+import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.Source;
 import alluxio.exception.AlluxioException;
 import alluxio.util.ConfigurationUtils;
 import eu.melodic.upperware.dlms.exception.CopyException;
@@ -38,6 +50,7 @@ import eu.melodic.upperware.dlms.exception.NameNotFoundException;
 import eu.melodic.upperware.dlms.exception.PersistException;
 import eu.melodic.upperware.dlms.exception.RemoveException;
 import eu.melodic.upperware.dlms.exception.UnmountException;
+import eu.melodic.upperware.dlms.properties.DLMSDataSourceAccess;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,6 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DLMSServiceImpl implements DLMSService {
 
 	private final DataSourceRepository dsRepository;
+	private final DLMSDataSourceAccess dlmsDsAccess;
 
 	@Override
 	public DataSource getDataSourceById(long id) {
@@ -180,7 +194,25 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureMountPoint(DataSource ds) {
-		String result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI());
+		String result;
+		// check if key is required
+		if (StringUtils.isEmpty(ds.getAccessKey())) {
+			result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI());
+		} else {
+			//key is required, so get access information
+			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
+			// does both access key and secret key exists
+			if (userInfo.size() > 1) {
+				String accessKeyId = userInfo.get(0);
+				String secretKey = userInfo.get(1);
+				result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI(), accessKeyId, secretKey);
+			} else {
+				log.debug("User account does not have accessKey/secreKey");
+
+				result = null;
+			}
+		}
+
 		if (!result.isEmpty() && !result.endsWith(" already exists")) {
 			throw new CreateDatasourceException("Create Datasource " + ds.getName() + " failed: " + result);
 		}
@@ -233,12 +265,25 @@ public class DLMSServiceImpl implements DLMSService {
 	protected String runMountCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
 
-		try {
-			MountCommand mountCommand = new MountCommand(FileSystem.Factory.get());
-			CommandLine commandLine = mountCommand.parseAndValidateArgs(args);
-			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
+		AlluxioURI alluxioPath = new AlluxioURI(args[0]);
+		AlluxioURI ufsPath = new AlluxioURI(args[1]);
+		MountOptions mountOption = MountOptions.defaults();
+		mountOption.setReadOnly(true);
+		mountOption.setShared(true);
+		// if access key id and secret key are passed along with the arguments
+		if (args.length == 4) {
+			Map<String, String> authentication = new HashMap<>();
+			// different access information based on cloud provider need to be set up here. 
+			// following is for aws
+			authentication.put("aws.accessKeyId", args[2]);
+			authentication.put("aws.secretKey", args[3]);
 
-			mountCommand.run(commandLine);
+			mountOption.setProperties(authentication);
+		}
+		FileSystem mFileSystem = (FileSystem.Factory.get());
+		try {
+			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
+			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 			return "";
 		} catch (IOException | AlluxioException e) {
 			log.error(e.getMessage(), e);
