@@ -18,12 +18,14 @@ This provides application with the properties (in that way can be provided exter
 package eu.melodic.upperware.metasolver;
 
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+@Slf4j
 @SpringBootApplication
 @EnableAsync
 @Configuration
@@ -31,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class MetaSolverApplication {
 
     public static void main(String[] args) {
+        log.info("MetaSolverApplication: !! 2019-05-29 !!");
         SpringApplication.run(MetaSolverApplication.class, args);
         //UtilCpModelImport.main(args);
     }
