@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationContext {
 
     //private Coordinator coordinator;
-    private MetricValueMonitorBean metricValueMonitor;
+    //private MetricValueMonitorBean metricValueMonitor;
     private MetaSolverProperties metasolverProperties;
     private CpModelHelper cpModelHelper;
 
