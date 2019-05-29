@@ -283,6 +283,18 @@ public class ControlServiceController {
         return "{}";
     }
 
+    /*@RequestMapping(value = "/test", method = {GET, POST},
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public OrchestrationHelper.InstallationInstructions test(@RequestBody String jsonStr) {
+        log.info(">>>>>>>>>>>>>>>>>>  {}", jsonStr);
+        OrchestrationHelper.InstallationInstructions installationInstructions =
+                new OrchestrationHelper.InstallationInstructions();
+        installationInstructions.appendExec("Exec OK");
+        installationInstructions.appendLog("Log OK");
+        return installationInstructions;
+    }*/
+
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/health", method = GET)
