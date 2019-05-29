@@ -33,7 +33,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class MetaSolverApplication {
 
     public static void main(String[] args) {
-        log.info("MetaSolverApplication: !! 2019-05-29 !!");
         SpringApplication.run(MetaSolverApplication.class, args);
         //UtilCpModelImport.main(args);
     }
