@@ -144,7 +144,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity webSecurity) throws Exception {
         webSecurity
                 .ignoring()
-                .antMatchers("/baguette/registerNode");
+                .antMatchers("/baguette/registerNode")
+                .antMatchers("/resources/**")
+                .antMatchers("/event/**")
+                .antMatchers("/event-debug/**")
+                .antMatchers("/favicon.ico")
+                .antMatchers("/health")
+                .antMatchers("/")
+        ;
     }
 
     // Cors configuration
