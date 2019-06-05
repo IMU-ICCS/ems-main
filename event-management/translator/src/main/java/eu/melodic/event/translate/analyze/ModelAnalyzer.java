@@ -210,13 +210,18 @@ public class ModelAnalyzer {
 
             // for every metric variable...
             for (MetricVariable mv : variables) {
+                log.debug("_findMatchingVar(): Checking variable: {}, component={}",
+                        mv.getName(), getElementName(mv.getComponent()));
                 CamelMetadata type1 = CamelMetadataTool.findVariableType((MetricVariableImpl) mv);
+                log.debug("_findMatchingVar(): Variable type: {}, type={}", mv.getName(), type1);
                 String componentName1 = mv.getComponent().getName();
 
                 if (type1==type && componentName.equals(componentName1)) {
                     log.debug("_findMatchingVar(): Found matching variable: {} -> {}", mvar.getName(), mv.getName());
                     return mv;
                 }
+                log.trace("_findMatchingVar(): Variable type or component does not match to: search-type={}, search-component={}",
+                        type, componentName);
             }
         }
 
@@ -1213,7 +1218,7 @@ public class ModelAnalyzer {
     // ================================================================================================================
     // Helper methods
 
-    private String getElementName(NamedElement elem) {
+    private static String getElementName(NamedElement elem) {
         return elem != null ? elem.getName() : null;
     }
 
