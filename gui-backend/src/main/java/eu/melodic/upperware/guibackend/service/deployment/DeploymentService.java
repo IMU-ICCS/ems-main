@@ -7,6 +7,7 @@ import eu.melodic.upperware.guibackend.communication.mule.MuleClientApi;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
+import eu.melodic.upperware.guibackend.service.cdo.CdoService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.net4j.connector.ConnectorException;

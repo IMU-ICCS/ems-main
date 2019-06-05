@@ -1,9 +1,11 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
+import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessVariables;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
+import eu.melodic.upperware.guibackend.service.process.ProcessService;
 import io.github.cloudiator.rest.model.Cloud;
 import io.github.cloudiator.rest.model.Hardware;
 import io.github.cloudiator.rest.model.Image;
@@ -24,6 +26,7 @@ public class ProcessController {
 
     private ProcessCamundaService processCamundaService;
     private CloudiatorClientApi cloudiatorClientApi;
+    private ProcessService processService;
 
     @GetMapping(value = "/{processId}")
     @ResponseStatus(HttpStatus.OK)
@@ -72,5 +75,11 @@ public class ProcessController {
     public List<Cloud> getCloudList() {
         log.info("GET request for cloud list");
         return cloudiatorClientApi.getCloudList();
+    }
+
+    @GetMapping("/cp/model/{processId}")
+    public CpModelResponse getConstraintProblem(@PathVariable("processId") String processId) {
+        log.info("GET request for CP model for process with id: {}", processId);
+        return processService.getCpModel(processId);
     }
 }
