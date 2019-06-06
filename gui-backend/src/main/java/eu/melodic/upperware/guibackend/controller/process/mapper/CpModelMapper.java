@@ -24,9 +24,9 @@ public class CpModelMapper {
                 .build();
     }
 
-    private List<CpConstantResponse> mapConstantsToResponse(EList<Constant> constants) {
+    private List<CpItemResponse> mapConstantsToResponse(EList<Constant> constants) {
         return constants.stream()
-                .map(constant -> CpConstantResponse.builder()
+                .map(constant -> CpItemResponse.builder()
                         .id(constant.getId())
                         .type(constant.getType().getName())
                         .value(mapNumericValueUpperwareToObject(constant.getValue()))
@@ -86,9 +86,9 @@ public class CpModelMapper {
                 .collect(Collectors.toList());
     }
 
-    private List<CpMetricResponse> mapCpMetricsToResponse(EList<CpMetric> cpMetrics) {
+    private List<CpItemResponse> mapCpMetricsToResponse(EList<CpMetric> cpMetrics) {
         return cpMetrics.stream()
-                .map(cpMetric -> CpMetricResponse.builder()
+                .map(cpMetric -> CpItemResponse.builder()
                         .id(cpMetric.getId())
                         .type(cpMetric.getType().toString())
                         .value(mapNumericValueUpperwareToObject(cpMetric.getValue()))

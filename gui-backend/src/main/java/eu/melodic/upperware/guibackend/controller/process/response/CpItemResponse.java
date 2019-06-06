@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CpConstantResponse {
+public class CpItemResponse {
     private String id;
     private String type;
     private Object value;

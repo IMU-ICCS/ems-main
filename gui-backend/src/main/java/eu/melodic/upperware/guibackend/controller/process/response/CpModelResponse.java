@@ -12,9 +12,9 @@ import java.util.List;
 public class CpModelResponse {
 
     private String id;
-    private List<CpMetricResponse> metrics;
+    private List<CpItemResponse> metrics;
     private List<CpVariableResponse> variables;
-    private List<CpConstantResponse> constants;
+    private List<CpItemResponse> constants;
     private CpSolutionResponse solution;
     private String utilityFormula;
 }
