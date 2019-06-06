@@ -178,6 +178,6 @@ public class CdoService {
                 .filter(r -> r instanceof OptimisationRequirementImpl)
                 .findAny();
         return optimisationRequirement.map(requirement -> ((OptimisationRequirement) requirement).getMetricVariable().getFormula())
-                .orElse("");
+                .orElse("default formula");
     }
 }
