@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @ComponentScan(basePackages = {
         "eu.melodic.upperware.guibackend",
-        "eu.passage.upperware.commons"})
+        "eu.passage.upperware.commons.cloudiator"})
 @SpringBootApplication
 @EnableConfigurationProperties({CloudiatorProperties.class})
 public class GuiBackendApplication {

@@ -15,4 +15,6 @@ public class ProcessVariables {
     private VariableStatus applicationDeploymentResultCode;
     private VariableStatus discoveryServiceResult;
     private VariableStatus processState;
+    private boolean isReconfigurationProcess;
+    private String applicationId;
 }
