@@ -8,7 +8,9 @@ public enum CamundaVariableName {
     CP_CREATION_RESULT_CODE("cpCreationResultCode"),
     CP_SOLUTION_RESULT_CODE("cpSolutionResultCode"),
     APPLICATION_DEPLOYMENT_RESULT_CODE("applicationDeploymentResultCode"),
-    PROCESS_STATE("processState");
+    USE_EXISTING_CP("useExistingCP"),
+    PROCESS_STATE("processState"),
+    APPLICATION_ID("applicationId");
 
 
     public final String label;

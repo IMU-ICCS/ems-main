@@ -80,6 +80,8 @@ public class ProcessCamundaService {
         result.setCpSolutionResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.CP_SOLUTION_RESULT_CODE.label, null), result.getCpCreationResultCode()));
         result.setApplicationDeploymentResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.APPLICATION_DEPLOYMENT_RESULT_CODE.label, null), result.getCpSolutionResultCode()));
         result.setProcessState(mapProcessStateToVariableStatus(camundaVariables.containsKey(CamundaVariableName.PROCESS_STATE.label) ? ProcessState.valueOf(camundaVariables.get(CamundaVariableName.PROCESS_STATE.label).getValue()) : ProcessState.UNKNOWN, result.getApplicationDeploymentResultCode()));
+        result.setReconfigurationProcess(camundaVariables.containsKey(CamundaVariableName.USE_EXISTING_CP.label) ? Boolean.valueOf(camundaVariables.get(CamundaVariableName.USE_EXISTING_CP.label).getValue()) : false);
+        result.setApplicationId(camundaVariables.containsKey(CamundaVariableName.APPLICATION_ID.label) ? camundaVariables.get(CamundaVariableName.APPLICATION_ID.label).getValue() : "");
         return result;
     }
 
