@@ -44,6 +44,10 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOG_FILE"/>
+    </logger>
     <logger name="eu.melodic.event.baguette.server" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
