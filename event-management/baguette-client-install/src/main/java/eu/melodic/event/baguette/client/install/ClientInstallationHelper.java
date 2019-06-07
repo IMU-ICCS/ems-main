@@ -138,7 +138,7 @@ public class ClientInstallationHelper implements InitializingBean {
         // Download Baguette Client installation script
         installationInstructions
                 .appendLog("Download Baguette Client installation script")
-                .appendExec("sudo wget "+installScriptUrl+" -O "+installScriptPath)
+                .appendExec("sudo wget --no-check-certificate "+installScriptUrl+" -O "+installScriptPath)
 
         // Make Baguette Client installation script executable
                 .appendLog("Make Baguette Client installation script executable")
