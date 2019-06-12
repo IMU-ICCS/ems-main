@@ -31,6 +31,8 @@ public class BaguetteServer {
     private BaguetteServerProperties config;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    private NodeRegistry nodeRegistry;
 
     private Sshd server;
 
@@ -95,6 +97,8 @@ public class BaguetteServer {
 
     public String getServerPubkeyFingerprint() { return server.getPublicKeyFingerprint(); }
 
+    public NodeRegistry getNodeRegistry() { return nodeRegistry; }
+
     // Server control methods
     public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
         if (server == null) {
@@ -153,6 +157,9 @@ public class BaguetteServer {
 
         // Stop any running instance of SSH server
         stopServer();
+
+        // Clear node registry
+        nodeRegistry.clearNodes();
 
         // Set new configuration
         this.groupingTopicsMap = G2T;
@@ -216,6 +223,7 @@ public class BaguetteServer {
 
         Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);
 
+        // Create client id
         String formatter = getConfiguration().getClientIdFormat();
         String clientId = null;
         if (StringUtils.isBlank(formatter)) {
@@ -228,8 +236,12 @@ public class BaguetteServer {
             nodeInfo.put("random", UUID.randomUUID().toString());
             clientId = StringSubstitutor.replace(formatter, nodeInfo);
         }
-
         log.debug("BaguetteServer.registerClient(): client-id={}", clientId);
+
+        // Add node info into node registry
+        nodeInfo.put("baguette-client-id", clientId);
+        nodeRegistry.addNode(nodeInfo);
+
         return clientId;
     }
 }
