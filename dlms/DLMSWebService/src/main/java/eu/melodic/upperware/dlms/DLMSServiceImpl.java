@@ -197,7 +197,7 @@ public class DLMSServiceImpl implements DLMSService {
 		String result;
 		// check if key is required
 		if (StringUtils.isEmpty(ds.getAccessKey())) {
-			result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI());
+			result = runMountCommand("/" + ds.getName(), ds.getUfsURI());
 		} else {
 			//key is required, so get access information
 			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
@@ -205,7 +205,7 @@ public class DLMSServiceImpl implements DLMSService {
 			if (userInfo.size() > 1) {
 				String accessKeyId = userInfo.get(0);
 				String secretKey = userInfo.get(1);
-				result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI(), accessKeyId, secretKey);
+				result = runMountCommand("/" + ds.getName(), ds.getUfsURI(), accessKeyId, secretKey);
 			} else {
 				log.debug("User account does not have accessKey/secreKey");
 

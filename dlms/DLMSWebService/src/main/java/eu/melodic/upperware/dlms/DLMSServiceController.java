@@ -103,7 +103,7 @@ public class DLMSServiceController {
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
+//		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
 		
 		NotificationResult notificationResult = new NotificationResultImpl();
 

@@ -96,7 +96,8 @@ public class ModelAnalyzer {
 									if (added) {
 										dataSource.setName(data.getName());
 										// set the mount point with the initial "melodic" for all
-										dataSource.setMountPoint("/melodic/" + data.getName());
+//										dataSource.setMountPoint("/melodic/" + data.getName());
+										dataSource.setMountPoint(data.getName());
 										dataSourceList.add(dataSource);
 										log.debug("DataSource was added: " + camelModel);
 									}
