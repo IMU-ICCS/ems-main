@@ -1,12 +1,16 @@
 /*==============================================================================
 Metrics
 
-A metric is fundamentally the same as a variable whose value is set 
-automatically by some measurement value. The metrics will be kept in a registry 
+A metric is fundamentally the same as a variable whose value is set
+automatically by some measurement value. The metrics will be kept in a registry
 separate from the variables since the solver is only reading their values.
 
-Author and Copyright: Geir Horn, 2018
-License: LGPL 3.0
+Author and Copyright: Geir Horn, University of Oslo 2018-2019
+
+License:
+This Source Code Form is subject to the terms of the Mozilla Public License,
+v. 2.0. If a copy of the MPL was not distributed with this file, You can
+obtain one at http://mozilla.org/MPL/2.0/.
 ==============================================================================*/
 
 #ifndef LA_SOLVER_METRICS
@@ -21,7 +25,7 @@ License: LGPL 3.0
 
 #include "Variables.hpp"    // The definition of the variables
 
-namespace LASolver 
+namespace LASolver
 {
 /*==============================================================================
 
@@ -29,64 +33,127 @@ namespace LASolver
 
 ==============================================================================*/
 //
-// The metric registry is nothing but an instance of the variable registry, 
-// and it simply allows access to the protected virtual interface to ensure 
-// that only classes that is a Metric, i.e. inheriting the Metric class, are 
+// The metric registry is nothing but an instance of the variable registry,
+// and it simply allows access to the protected virtual interface to ensure
+// that only classes that is a Metric, i.e. inheriting the Metric class, are
 // allowed to register.
 
 class MetricRegistry : public virtual Configuration::VariableRegistry
 {
+private:
+
+	// The idea is that the metric registry is to be inherited by some other
+	// class that is able to receive metric updates on the data plane
+	// communication protocol used for a given application of the LA Solver.
+	// The metric registry is therefore stored as a pointer to this base class,
+	// and this will be used to access the methods to store the metrics.
+
+	static MetricRegistry * Metrics;
+
+public:
+
+	// Metrics are registered and removed from this registry by the two static
+	// functions with the same name as for the variables. The registration
+	// function will throw a logic error if the metric is registered before
+	// the metric registry has been created.
+
+	static bool Register( Configuration::ValueElement * TheMetric )
+	{
+		if ( Metrics != nullptr )
+		{
+			Metrics->NewVariable( TheMetric );
+			return true;
+		}
+		else
+		{
+			std::ostringstream ErrorMessage;
+
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+			             << "Metric " << TheMetric->Name << " was created before "
+									 << "the metric registry was created.";
+
+		  throw std::logic_error( ErrorMessage.str() );
+		}
+	}
+
+	// Removal will just forget about the metric if the registry pointer is null.
+
+	static void Remove( Configuration::ValueElement * TheMetric )
+	{
+		if ( Metrics != nullptr )
+			Metrics->RemoveVariable( TheMetric );
+	}
+
 protected:
 
-  // Metric variables are registered using the same functions as defined for 
-	// the variable registry, and they will eventually be defined by the class
-	// implementing the metric handling. 
-	
-	using Configuration::VariableRegistry::NewVariable;
-	using Configuration::VariableRegistry::RemoveVariable;
-	
-	template< class ValueType >
-	friend class Metric;
+	// Derived classes may update the metric pointer if they want to make
+	// additional functionality available through this pointer. Similar to
+	// the update functions for the variable registries, this will verify that
+	// the derived class is really a registry and if it is a derived class of
+	// an instance of the currently registered registry it is allowed to
+	// overwrite the metric value.
 
-private:
-	
-	// The idea is that the metric registry is to be inherited by some other 
-	// class that is able to receive metric updates on the data plane 
-	// communication protocol used for a given application of the LA Solver. 
-	// The metric registry is therefore stored as a pointer to this base class,
-	// and then it is assumed that the derived class is assigned using the 
-	// public creator function. This behaviour is identical to the one used for 
-	// the variable registry.
-	
-	static std::shared_ptr< MetricRegistry > Metrics;
-		
-public:
-	
-	// The function to create the metric registry takes the registry type as 
-	// a template parameter, and the arguments for the registry constructor as 
-	// parameters. It checks that the given class is really derived from this 
-	// registry at compile time. 
-	
-	template< class RegistryType, class... RegistryArguments >
-	static bool Create( RegistryArguments &&... TheArguments  )
+	template< class DerivedClass >
+	void UpdateRegistryPointer( DerivedClass * DerivedRegistry )
 	{
-		static_assert( std::is_base_of< MetricRegistry, RegistryType >::value,
-			"Discrete variable registry must be derived from class Variable Registry"
-		);
-		
-		Metrics = std::make_shared< RegistryType >( 
-					    std::forward< RegistryArguments >( TheArguments )... );
-		
-		if ( Metrics )
-			return true;
-		else 
-			return false;
+		static_assert( std::is_base_of< MetricRegistry, DerivedClass >::value,
+		  "Cannot update the metric registry pointer with the given class" );
+
+		MetricRegistry * BaseOfDerived =
+			dynamic_cast< MetricRegistry * >( DerivedRegistry );
+
+		if ( (Metrics == nullptr) || (Metrics == BaseOfDerived) )
+			Metrics = DerivedRegistry;
+		else
+		{
+			std::ostringstream ErrorMessage;
+
+			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+			             << "The metrics registry has already been "
+									 << "defined and only one metrics registry "
+									 << "can exist for the solver";
+
+		  throw std::logic_error( ErrorMessage.str() );
+		}
 	}
-	
-	// Only the virtual destructor must be defined.
-	
+
+	// Even though the variables can be all set in one go, it does not make sense
+	// to set all the metric values as once as they are supposed to be event
+	// indicators or sensor readings representing the current execution context
+	// and never values that will be actively set by any LA Solver component.
+	// However, the variable registry requires a function to set the values of
+	// the variables, and this will here be defined to throw a logic error if
+	// used.
+
+	virtual	void SetValues( ValueVector & Values ) override
+	{
+		std::ostringstream ErrorMessage;
+
+		ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
+		             << "The function to set a vector of variable values has been "
+								 << "called on a metric registry. Metrics receive their values "
+								 << "one by one.";
+
+	  throw std::logic_error( ErrorMessage.str() );
+	}
+
+	// The constructor simply initializes the static metric pointer to this
+	// class class providing the default behaviour to set and remove metrics
+
+	inline MetricRegistry( void )
+	{ UpdateRegistryPointer( this ); }
+
+	// The copy constructor is deleted
+
+	MetricRegistry( const MetricRegistry & Other )  = delete;
+
+public:
+
+	// The virtual destructor resets the metric registry pointer to ensure
+	// that further access will create segmentation faults.
+
 	virtual ~MetricRegistry()
-	{ }
+	{ Metrics = nullptr; }
 };
 
 /*==============================================================================
@@ -95,58 +162,85 @@ public:
 
 ==============================================================================*/
 //
-// A metric is a configuration variable because it has no domain, and it simply
-// registers with the global metric registry. If the registry has not been 
-// instantiated, a logic error will be thrown.
+// A metric value is a configuration variable because it has no domain, and
+// the bounds are set to the maximal bounds of the value type given.
 
 template< class ValueType >
-class Metric : public Configuration::Variable< ValueType >
+class MetricValue : public Configuration::Variable< ValueType >
 {
 protected:
-	
-	// Defining the upper and lower bound of a metric makes no sense since the 
-	// metric has no bounds. However, the bounds can be defined to correspond 
+
+	// Defining the upper and lower bound of a metric makes no sense since the
+	// metric has no bounds. However, the bounds can be defined to correspond
 	// with the ranges for the metric value type, i.e. the range from the smallest
-	// number that can be stored in the metric to the largest number the type 
+	// number that can be stored in the metric to the largest number the type
 	// can hold.
-	
+
 	virtual std::any GetUpperBound( void ) override
 	{ return std::numeric_limits< ValueType >::max(); }
-	
+
 	virtual std::any GetLowerBound( void ) override
 	{ return std::numeric_limits< ValueType >::min(); }
-	
-	
+
+
 public:
-	
-	Metric( const std::string TheTopicName, ValueType InitialValue )
-	: Configuration::Variable< ValueType >( TheTopicName, InitialValue )
-	{
-		if ( MetricRegistry::Metrics )
-			MetricRegistry::Metrics->NewVariable( this );
-		else
-		{
-			std::ostringstream ErrorMessage;
-			
-			ErrorMessage << __FILE__ << " at line " << __LINE__ << ": "
-			             << "The metric " << TheTopicName << " is created before "
-									 << "the metric registry has been instantiated";
-									 
-		  throw std::logic_error( ErrorMessage.str() );
-		}
-	}
-	
-	// The default constructor is deleted
-	
+
+	// The value type is defined to be accessible at compile time
+
+	using value_type = ValueType;
+
+	// The constructor takes the name of the topic to subscribe to
+
+	inline MetricValue( const std::string TheMetricName, ValueType InitialValue )
+	: Configuration::Variable< ValueType >( TheMetricName, InitialValue )
+	{	}
+
+	// The default constructor and copy constructor is deleted
+
+	MetricValue( void ) = delete;
+	MetricValue( const MetricValue & Other ) = delete;
+
+	// The destructor is virtual because the metric variable is polymorphic
+	// It deletes the parser and removes the metric instance from the metric
+	// registry.
+
+	virtual ~MetricValue()
+	{}
+};
+
+// The Metric is a metric value that register with the metric registry.
+// The reason for this split in two parts is that the metric value can be
+// used by sensors to set new values to a metric, but these temporary value
+// objects should not be registered as proper metrics.
+
+template< class ValueType >
+class Metric : public MetricValue< ValueType >
+{
+public:
+
+	// The value type is defined to be accessible at compile time
+
+	using value_type = ValueType;
+
+	// The constructor takes the name of the topic to subscribe to
+
+	inline Metric( const std::string TheMetricName, ValueType InitialValue )
+	: MetricValue< ValueType >( TheMetricName, InitialValue )
+	{	MetricRegistry::Register( this );	}
+
+	// The default constructor and copy constructor is deleted
+
 	Metric( void ) = delete;
-	
-	// The destructor is virtual because the metric variable is polymorphic 
-	
+	Metric( const Metric & Other ) = delete;
+
+	// The destructor is virtual because the metric variable is polymorphic
+	// It deletes the parser and removes the metric instance from the metric
+	// registry.
+
 	virtual ~Metric()
-	{	MetricRegistry::Metrics->RemoveVariable( this ); }
+	{	MetricRegistry::Remove( this ); }
 };
 
 
-}
-
+}      // Name space LA Solver
 #endif // LA_SOLVER_METRICS

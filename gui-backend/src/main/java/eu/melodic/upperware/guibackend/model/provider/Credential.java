@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Credential {
 
-    private Long id;
+    private long id;
 
     private String user;
 

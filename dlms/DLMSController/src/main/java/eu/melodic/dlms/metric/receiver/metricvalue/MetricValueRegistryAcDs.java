@@ -1,6 +1,7 @@
 package eu.melodic.dlms.metric.receiver.metricvalue;
 
 import java.util.Date;
+import java.util.Objects;
 
 import eu.melodic.dlms.db.model.ApplicationComponent;
 import eu.melodic.dlms.db.model.ApplicationComponentDataSourceData;
@@ -11,8 +12,10 @@ import eu.melodic.dlms.db.repository.DataSourceRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class MetricValueRegistryAcDs<T> {
 	private final ApplicationComponentRepository acRepository;
 	private final DataSourceRepository dsRepository;
@@ -47,10 +50,10 @@ public class MetricValueRegistryAcDs<T> {
 	/**
 	 * Store the application component if it does not exist
 	 */
-	public void storeApplicationComponent(Long id) {
-		if (!acRepository.existsById(id)) {
+	public void storeApplicationComponent(String name) {
+		if (!acRepository.existsByName(name)) {
 			ApplicationComponent ac = new ApplicationComponent();
-			ac.setId(id);
+			ac.setName(name);
 			acRepository.save(ac);
 		}
 	}
@@ -58,10 +61,10 @@ public class MetricValueRegistryAcDs<T> {
 	/**
 	 * Store the data source
 	 */
-	public void storeDataSource(Long id) {
-		if (!dsRepository.existsById(id)) {
+	public void storeDataSource(String name) {
+		if (!dsRepository.existsByName(name)) {
 			DataSource ds = new DataSource();
-			ds.setId(id);
+			ds.setName(name);
 			dsRepository.save(ds);
 		}
 	}
@@ -69,11 +72,17 @@ public class MetricValueRegistryAcDs<T> {
 	/**
 	 * Store the data read/write
 	 */
-	public void storeAcDsData(Long acId, Long dsId, Long data, Date timestamp, boolean isDataRead) {
+	public void storeAcDsData(String acName, String dsName, Long data, Date timestamp, boolean isDataRead) {
+		Long acId = null, dsId = null;
+		if (acRepository.existsByName(acName))
+			acId = acRepository.findByName(acName).getId();
+		if (dsRepository.existsByName(dsName))
+			dsId = dsRepository.findByName(dsName).getId();
+		if (Objects.isNull(acId) || Objects.isNull(dsId))
+			log.info("acId or dsId is null");
 		ApplicationComponentDataSourceData acDs = new ApplicationComponentDataSourceData(acId, dsId, data, timestamp,
 				isDataRead);
 		acDsDataRepository.save(acDs);
-
 	}
 
 }

@@ -1,8 +1,14 @@
 package eu.melodic.upperware.guibackend.communication.camunda;
 
-import eu.melodic.upperware.guibackend.controller.deployment.response.ProcessVariables;
+import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaProcesInstanceResponse;
+import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableResponseItem;
+
+import java.util.List;
+import java.util.Map;
 
 public interface CamundaApi {
 
-    ProcessVariables getProcessVariables(String processId);
+    Map<String, CamundaVariableResponseItem> getProcessVariables(String processId);
+
+    List<CamundaProcesInstanceResponse> getProcessInstances();
 }
