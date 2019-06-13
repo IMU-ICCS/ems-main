@@ -27,6 +27,10 @@ public class GuiBackendProperties {
     @NotNull
     private Camunda camunda;
 
+    @Valid
+    @NotNull
+    private CdoUploader cdoUploader;
+
     @Getter
     @Setter
     public static class Mule {
@@ -47,5 +51,12 @@ public class GuiBackendProperties {
 
         @NotBlank
         private String port;
+    }
+
+    @Getter
+    @Setter
+    public static class CdoUploader {
+
+        private boolean validationEnabled;
     }
 }
