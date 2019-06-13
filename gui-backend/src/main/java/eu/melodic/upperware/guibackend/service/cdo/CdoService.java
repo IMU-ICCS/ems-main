@@ -8,6 +8,7 @@ import camel.requirement.RequirementModel;
 import camel.requirement.impl.OptimisationRequirementImpl;
 import eu.melodic.upperware.guibackend.controller.process.mapper.CpModelMapper;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
+import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 public class CdoService {
 
     private CpModelMapper cpModelMapper;
+    private GuiBackendProperties guiBackendProperties;
 
     public String getCdoName(String fileName, String fileExtension) {
         return StringUtils.removeEnd(fileName, fileExtension);
@@ -47,7 +49,7 @@ public class CdoService {
 
     public boolean storeFileInCdo(String cdoName, File file) {
 
-        log.info("Storing Model {} into CDO", cdoName);
+        log.info("Storing Model {} into CDO with validationEnabled = {}", cdoName, guiBackendProperties.getCdoUploader().isValidationEnabled());
         EObject model = null;
         CDOClient client = getCdoClient();
         try {
@@ -57,7 +59,7 @@ public class CdoService {
             return false;
         }
 
-        boolean successfullyStored = client.storeModel(model, cdoName, true);
+        boolean successfullyStored = client.storeModel(model, cdoName, guiBackendProperties.getCdoUploader().isValidationEnabled());
         log.info("Model {} successfully stored into CDO", cdoName);
         client.closeSession();
         return successfullyStored;
