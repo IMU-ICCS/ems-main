@@ -242,6 +242,20 @@ public class ControlServiceController {
         return nodeInfo;
     }
 
+    @RequestMapping(value = "/baguette/getNodeNameByAddress/{ipAddress:.+}", method = {GET, POST},
+            produces = MediaType.TEXT_PLAIN_VALUE)
+    public String baguetteGetNodeNameByAddress(@PathVariable String ipAddress) throws Exception {
+        log.info("ControlServiceController.baguetteGetNodeNameByAddress(): ip-address={}", ipAddress);
+
+        BaguetteServer baguette = coordinator.getBaguetteServer();
+        Map<String,Object> nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
+        String nodeName = (String)nodeInfo.get("name");
+
+        log.info("ControlServiceController.baguetteGetNodeNameByAddress(): Name of node at: ip-address={}, Node name: {}",
+                ipAddress, nodeName);
+        return nodeName;
+    }
+
     // ------------------------------------------------------------------------------------------------------------
     // Event Generation and Debugging methods
     // ------------------------------------------------------------------------------------------------------------
