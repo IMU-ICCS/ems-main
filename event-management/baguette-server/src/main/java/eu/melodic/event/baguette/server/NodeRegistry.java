@@ -12,7 +12,7 @@ package eu.melodic.event.baguette.server;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,5 +46,13 @@ public class NodeRegistry {
         if (info!=null) info = new HashMap<>(info); else info = new HashMap<>();
         log.debug("NodeRegistry.getNodeByAddress(): Returning info for node at address: {}\nNode Info: {}", ipAddress, info);
         return info;
+    }
+
+    public Collection<String> getNodeAddresses() {
+        return registry.keySet();
+    }
+
+    public Collection<Map<String,Object>> getNodes() {
+        return registry.values();
     }
 }
