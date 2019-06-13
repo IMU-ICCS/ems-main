@@ -3,16 +3,17 @@ package eu.melodic.upperware.guibackend.service.cdo;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
 import camel.requirement.OptimisationRequirement;
-import camel.requirement.Requirement;
 import camel.requirement.RequirementModel;
 import camel.requirement.impl.OptimisationRequirementImpl;
 import eu.melodic.upperware.guibackend.controller.process.mapper.CpModelMapper;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
+import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
+import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +60,7 @@ public class CdoService {
         }
 
         boolean successfullyStored = client.storeModel(model, cdoName, guiBackendProperties.getCdoUploader().isValidationEnabled());
-        log.info("Model {} successfully stored into CDO", cdoName);
+        log.info("Successfully stored of model {} in CDO = {}", cdoName, successfullyStored);
         client.closeSession();
         return successfullyStored;
     }
@@ -135,6 +135,32 @@ public class CdoService {
         }
     }
 
+    public CpSolutionResponse getCpSolution(String cpCdoPath, Integer deployedSolutionId) {
+        CDOResource cdoResource = null;
+        CDOView cdoView = null;
+        try {
+            CDOClient client = getCdoClient();
+            cdoView = client.openView();
+            cdoResource = cdoView.getResource(cpCdoPath);
+            EList<EObject> contents = cdoResource.getContents();
+            log.info("Get {} of cpModels", contents.size());
+            ConstraintProblemImpl cpModel = (ConstraintProblemImpl) contents.get(contents.size() - 1);
+            if (deployedSolutionId != null) {
+                log.info("Get solution with id: {}", deployedSolutionId);
+                return cpModelMapper.mapSolutionToResponse(cpModel.getSolution().get(deployedSolutionId));
+            } else {
+                return cpModelMapper.mapSolutionToResponse(CPModelTool.searchLastSolution(cpModel.getSolution()));
+            }
+        } catch (RuntimeException ex) {
+            log.error("Error by getting constraint problem solution. Table doesn't exist.", ex);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error by getting constraint problem. Required table doesn't exist.");
+        } finally {
+            if (cdoView != null) {
+                cdoView.close();
+            }
+        }
+    }
+
     private CDOClient getCdoClient() {
         CDOClient client = new CDOClient();
         registerPackages(client);
@@ -174,12 +200,12 @@ public class CdoService {
 
     private String getUtilityFormulaFromCamelModel(CamelModel camelModel) {
         RequirementModel requirementModel = CdoTool.getFirstElement(camelModel.getRequirementModels());
-        Optional<Requirement> optimisationRequirement = requirementModel
+        return requirementModel
                 .getRequirements()
                 .stream()
                 .filter(r -> r instanceof OptimisationRequirementImpl)
-                .findAny();
-        return optimisationRequirement.map(requirement -> ((OptimisationRequirement) requirement).getMetricVariable().getFormula())
+                .findAny()
+                .map(requirement -> ((OptimisationRequirement) requirement).getMetricVariable().getFormula())
                 .orElse("default formula");
     }
 }
