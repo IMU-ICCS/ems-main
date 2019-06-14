@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
@@ -30,6 +31,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.*;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -38,10 +43,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -612,7 +622,11 @@ public class ControlServiceCoordinator {
         result.setStatus(NotificationResult.StatusType.SUCCESS);
 
         // Prepare and send CamelModelNotification
-        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+        try {
+            sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void sendErrorNotification(String applicationId, String notificationUri, String requestUuid,
@@ -625,12 +639,15 @@ public class ControlServiceCoordinator {
         result.setErrorDescription(errorDescription);
 
         // Prepare and send CamelModelNotification
-        sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+        try {
+            sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void sendCamelModelNotification(String applicationId, NotificationResult result, String notificationUri,
-                                            String requestUuid, String jwtToken)
-    {
+                                            String requestUuid, String jwtToken) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, CertificateException, UnrecoverableKeyException {
         // Create a new watermark
         Watermark watermark = new WatermarkImpl();
         watermark.setUser("EMS");
@@ -649,7 +666,7 @@ public class ControlServiceCoordinator {
         sendCamelModelNotification(request, notificationUri, jwtToken);
     }
 
-    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) {
+    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, IOException, CertificateException, UnrecoverableKeyException {
         // Check if 'notificationUri' is blank
         if (StringUtils.isBlank(notificationUri)) {
             log.warn("ControlServiceCoordinator.sendCamelModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");
@@ -679,7 +696,66 @@ public class ControlServiceCoordinator {
         log.trace("ControlServiceCoordinator.sendCamelModelNotification(): JWT token: {}", jwtToken);
         //String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
         HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(CamelModelNotificationRequest.class, notification, jwtToken);
-        final ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+        ResponseEntity<String> response;
+        if (url.toLowerCase().startsWith("http:")) {
+            response = restTemplate.postForEntity(url, entity, String.class);
+        } else {
+
+            /*TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+            SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
+            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
+                    NoopHostnameVerifier.INSTANCE);
+
+            Registry<ConnectionSocketFactory> socketFactoryRegistry =
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                            .register("https", sslsf)
+                            .register("http", new PlainConnectionSocketFactory())
+                            .build();
+
+            BasicHttpClientConnectionManager connectionManager =
+                    new BasicHttpClientConnectionManager(socketFactoryRegistry);
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
+                    .setConnectionManager(connectionManager).build();
+
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory(httpClient);
+
+            response = new RestTemplate(requestFactory)
+                    .postForEntity(url, entity, String.class);*/
+
+            // Load keystore and truststore
+            KeyStore keyStore = KeystoreUtil.readKeystore(
+                    properties.getSsl().getKeystoreFile(),
+                    properties.getSsl().getKeystoreType(),
+                    properties.getSsl().getKeystorePassword());
+            KeyStore trustStore = KeystoreUtil.readKeystore(
+                    properties.getSsl().getTruststoreFile(),
+                    properties.getSsl().getTruststoreType(),
+                    properties.getSsl().getTruststorePassword());
+
+            // Create SSL connection factory
+            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
+                    new SSLContextBuilder()
+                            //.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy())
+                            .loadTrustMaterial(trustStore, null)
+                            .loadKeyMaterial(keyStore, properties.getSsl().getKeystorePassword().toCharArray())
+                            .build(),
+                    new DefaultHostnameVerifier()
+            );
+
+            // Create HTTPS client
+            HttpClient httpClient = HttpClients.custom()
+                    .setSSLSocketFactory(socketFactory).build();
+            ClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory(httpClient);
+
+            // Perform HTTPS call
+            RestTemplate restTemplate = new RestTemplate(requestFactory);
+            response = restTemplate
+                    .postForEntity(url, entity, String.class);
+        }
+
         String responseStatus = response.getStatusCode().toString();
         log.info("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, response={}", url, responseStatus);
     }
