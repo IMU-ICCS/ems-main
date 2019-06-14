@@ -136,6 +136,7 @@ public class MetaSolverController {
         UpdateSolutionResponseImpl response = new UpdateSolutionResponseImpl();
         response.setApplicationId(applicationId);
         response.setUpdateResult(notifRes);
+        response.setDeployedSolutionId(pos.getLeft());
         response.setWatermark(coordinator.prepareWatermark(requestUuid));
 
         return response;
