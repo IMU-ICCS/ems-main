@@ -15,6 +15,5 @@ public class CpModelResponse {
     private List<CpItemResponse> metrics;
     private List<CpVariableResponse> variables;
     private List<CpItemResponse> constants;
-    private CpSolutionResponse solution;
     private String utilityFormula;
 }
