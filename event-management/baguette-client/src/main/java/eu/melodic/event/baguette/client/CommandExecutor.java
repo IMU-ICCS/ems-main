@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 @Service
 @Slf4j
 public class CommandExecutor {
-    public final static String DEFAULT_ID_FILE = "cached-id.properties";
+    private final static String DEFAULT_ID_FILE = "cached-id.properties";
 
     @Autowired
     private BrokerCepService brokerCepService;

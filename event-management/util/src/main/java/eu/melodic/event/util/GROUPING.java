@@ -25,6 +25,8 @@ public enum GROUPING {
     PER_INSTANCE;
 
     public static List<String> getNames() {
-        return Arrays.asList(values()).stream().map(v -> v.name()).collect(Collectors.toList());
+        return Arrays.stream(values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 }

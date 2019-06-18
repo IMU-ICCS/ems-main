@@ -77,7 +77,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                     url = ActiveMQConnection.DEFAULT_BROKER_URL;
                 else url = url.trim();
                 if (StringUtils.isEmpty(topicName))
-                    throw new IllegalArgumentException("Topic name not set: #"+(i++)+" pubsub setting");
+                    throw new IllegalArgumentException("Topic name not set: #"+i+" pubsub setting");
                 if (StringUtils.isEmpty(clientId)) clientId = "";
                 else clientId = clientId.trim();
                 if (type == null) type = TopicType.UNKNOWN;

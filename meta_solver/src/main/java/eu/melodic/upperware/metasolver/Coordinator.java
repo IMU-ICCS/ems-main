@@ -9,7 +9,6 @@
 
 package eu.melodic.upperware.metasolver;
 
-import eu.melodic.upperware.metasolver.util.CpModelHelper;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;

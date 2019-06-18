@@ -208,7 +208,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                                 clientId, alias, e);
                     }
                 } else {
-                    log.info("{}--> Client PEM certificate is empty. Leaving truststore unchanged");
+                    log.info("{}--> Client PEM certificate is empty. Leaving truststore unchanged", id);
                 }
             } else {
                 log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);

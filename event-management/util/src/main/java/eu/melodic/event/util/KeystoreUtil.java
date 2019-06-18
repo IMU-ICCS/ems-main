@@ -36,17 +36,17 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class KeystoreUtil {
-    public final static String DEFAULT_KEY_GEN_ALGORITHM = "RSA";
-    public final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256WithRSA";
-    public final static int DEFAULT_KEY_SIZE = 2048;
-    public final static int DEFAULT_CERT_START_DATE_OFFSET = -1;
-    public final static int DEFAULT_CERT_END_DATE_OFFSET = 3650;
+    private final static String DEFAULT_KEY_GEN_ALGORITHM = "RSA";
+    private final static String DEFAULT_SIGNATURE_ALGORITHM = "SHA256WithRSA";
+    private final static int DEFAULT_KEY_SIZE = 2048;
+    private final static int DEFAULT_CERT_START_DATE_OFFSET = -1;
+    private final static int DEFAULT_CERT_END_DATE_OFFSET = 3650;
 
-    public final static String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
-    public final static String END_CERT = "-----END CERTIFICATE-----";
-    public final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    private final static String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+    private final static String END_CERT = "-----END CERTIFICATE-----";
+    private final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    protected static boolean bcProviderInitialized = false;
+    private static boolean bcProviderInitialized = false;
 
     private String keystoreFile;
     private String keystoreType;
@@ -57,7 +57,7 @@ public class KeystoreUtil {
         return new KeystoreUtil(file, type, password);
     }
 
-    protected KeystoreUtil(String file, String type, String password) {
+    private KeystoreUtil(String file, String type, String password) {
         this.keystoreFile = file;
         this.keystoreType = type;
         this.keystorePassword = password;
@@ -160,10 +160,10 @@ public class KeystoreUtil {
             String[] names = extSAN.split(",");
             List<GeneralName> altNames = new ArrayList<>();
             for (String name : names) {
-                if ("dns:".equalsIgnoreCase(name.substring(0,"dns:".length()))) {
+                if (StringUtils.startsWithIgnoreCase(name, "dns:")) {
                     altNames.add(new GeneralName(GeneralName.dNSName, name.substring("dns:".length())));
                 } else
-                if ("ip:".equalsIgnoreCase(name.substring(0,"ip:".length()))) {
+                if (StringUtils.startsWithIgnoreCase(name, "ip:")) {
                     altNames.add(new GeneralName(GeneralName.iPAddress, name.substring("ip:".length())));
                 } else
                     log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
@@ -198,12 +198,12 @@ public class KeystoreUtil {
     // Replace PUBLIC_IP and DEFAULT_IP placeholders with actual values
     private String _processPlaceholders(String s, String defaultValue) {
         if (s==null) return null;
-        if (s.indexOf("%{PUBLIC_IP}%")>=0) {
+        if (s.contains("%{PUBLIC_IP}%")) {
             String publicIp = NetUtil.getPublicIpAddress();
             if (StringUtils.isBlank(publicIp)) publicIp = defaultValue;
             s = s.replace("%{PUBLIC_IP}%", publicIp);
         }
-        if (s.indexOf("%{DEFAULT_IP}%")>=0) {
+        if (s.contains("%{DEFAULT_IP}%")) {
             String defaultIp = NetUtil.getDefaultIpAddress();
             if (StringUtils.isBlank(defaultIp)) defaultIp=defaultValue;
             s = s.replace("%{DEFAULT_IP}%", defaultIp);
@@ -328,16 +328,17 @@ public class KeystoreUtil {
                 ? CertUtil.subjectNames(cert, GeneralNameType.IPAddress)
                 : CertUtil.subjectNames(cert);
         return names.stream()
-                .map(e -> {
+                .map(sanName -> {
                     try {
-                        return e.startsWith("#") ?
-                                InetAddress.getByAddress(parseHexToBinary(e.substring(1))).getHostAddress()
-                                : e;
+                        return sanName.startsWith("#") ?
+                                InetAddress.getByAddress(parseHexToBinary(sanName.substring(1))).getHostAddress()
+                                : sanName;
                     } catch (Exception ex) {
-                        log.warn("KeystoreUtil: getEntryNames: entry={} caused {}", e, ex.toString());
+                        log.warn("KeystoreUtil: getEntryNames: entry={} caused {}", sanName, ex.toString());
                         return null;
                     }
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

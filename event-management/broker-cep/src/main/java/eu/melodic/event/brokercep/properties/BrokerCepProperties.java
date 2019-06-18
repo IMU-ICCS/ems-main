@@ -19,7 +19,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Data
-@ToString(exclude = {"truststorePassword", "keystorePassword"})
 @Configuration
 @ConfigurationProperties(prefix = "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")

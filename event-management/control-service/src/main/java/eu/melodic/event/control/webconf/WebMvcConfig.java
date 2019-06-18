@@ -12,9 +12,7 @@ package eu.melodic.event.control.webconf;
 import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterceptor;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,8 +24,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages={"eu.melodic.security.authorization.util.properties"})
 @Slf4j
 public class WebMvcConfig implements WebMvcConfigurer {
-    public final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
-    public final static String[] DEFAULT_PATHS_EXCLUDED = { };
+    private final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
+    private final static String[] DEFAULT_PATHS_EXCLUDED = { };
 
     @Autowired
     private AuthorizationServiceClientProperties authProperties;

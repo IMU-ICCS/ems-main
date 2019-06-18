@@ -10,10 +10,12 @@
 package eu.melodic.event.util;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Data
+@ToString(exclude = {"truststorePassword", "keystorePassword"})
 @Slf4j
 public class KeystoreAndCertificateProperties implements IKeystoreAndCertificateProperties {
 

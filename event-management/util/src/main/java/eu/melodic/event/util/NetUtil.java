@@ -22,15 +22,15 @@ import java.util.*;
 @Slf4j
 public class NetUtil {
 
-    public final static String[] addressFilter = {
+    private final static String[] addressFilter = {
             "127.",
             /*"192.168.", "10.", "172.16.", "172.31.", "169.254.",*/
             "224.", "239.", "255.255.255.255"
     };
 
-    public final static String DATAGRAM_ADDRESS = "8.8.8.8";
+    private final static String DATAGRAM_ADDRESS = "8.8.8.8";
 
-    public final static String[][] SERVICES = {
+    private final static String[][] SERVICES = {
             { "AWS", "http://checkip.amazonaws.com" },
             { "Ipify", "https://api.ipify.org/?format=text" },
             { "WhatIsMyIpAddress", "http://bot.whatismyipaddress.com/" }
@@ -105,7 +105,7 @@ public class NetUtil {
             return ipAddresses;
         }
 
-        Vector<InetAddress> list = new Vector<>();
+        List<InetAddress> list = new ArrayList<>();
         Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
         while (en.hasMoreElements()) {
             NetworkInterface ni = en.nextElement();

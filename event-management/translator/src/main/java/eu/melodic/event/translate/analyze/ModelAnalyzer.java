@@ -1019,14 +1019,12 @@ public class ModelAnalyzer {
                         f.getAnnotations().stream().anyMatch(ann -> {
                             camel.mms.MmsConcept o = (camel.mms.MmsConcept) ann;
                             //StringBuilder annPath = new StringBuilder(ann.getName());
-                            StringBuilder annIdPath = new StringBuilder(ann.getId());
+                            StringBuilder annPath = new StringBuilder(ann.getId());
                             while (o.getParent() != null) {
                                 o = o.getParent();
-                                //annPath.insert(0, o.getName() + ".");
-                                annIdPath.insert(0, o.getId() + ".");
+                                annPath.insert(0, o.getName() + ".");
                             }
-                            //return annPath.toString().equals(sensorConfigAnnotation);
-                            return annIdPath.toString().equals(sensorConfigAnnotation);
+                            return annPath.toString().equals(sensorConfigAnnotation);
                         })
                 )
                 .findFirst();
