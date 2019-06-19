@@ -16,6 +16,9 @@ import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.DeploymentModel;
 import camel.deployment.DeploymentTypeModel;
 import camel.execution.*;
+import camel.mms.MmsFactory;
+import camel.mms.MmsObject;
+import camel.mms.MmsProperty;
 import camel.requirement.RequirementModel;
 import camel.type.StringValue;
 import camel.type.TypeFactory;
@@ -136,8 +139,16 @@ public class CdoServerClientApi implements CdoServerApi {
     }
 
     private HistoryRecord createHistoryRecord(DeploymentInstanceModel oldModel, DeploymentInstanceModel newModel){
-    Attribute type = createType();
-    newModel.getAttributes().add(type);
+//    Attribute type = createType();
+//    newModel.getAttributes().add(type);
+
+
+    MmsProperty mmsProperty = MmsFactory.eINSTANCE.createMmsProperty();
+    mmsProperty.setName(getUniqueAttributeName());
+    mmsProperty.setRangeUri(getUniqueAttributeName());
+    mmsProperty.setDescription(getUniqueAttributeName());
+
+    newModel.getAnnotations().add(mmsProperty);
 
     HistoryRecord historyRecord = ExecutionFactory.eINSTANCE.createHistoryRecord();
     historyRecord.setName(getUniqueHistoryName());
@@ -145,7 +156,7 @@ public class CdoServerClientApi implements CdoServerApi {
     historyRecord.setEndTime(new Date());
     historyRecord.setFromDeploymentInstanceModel(oldModel);
     historyRecord.setToDeploymentInstanceModel(newModel);
-    historyRecord.setType(type);
+    historyRecord.setType(mmsProperty);
     historyRecord.setCause(createCause());
     return historyRecord;
   }
