@@ -11,7 +11,9 @@ package eu.melodic.event.control.webconf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -76,5 +78,22 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
         }
 
         WebMvcConfigurer.super.addViewControllers(registry);
+    }
+
+    @Bean
+    public CommonsRequestLoggingFilter logFilter() {
+        CommonsRequestLoggingFilter filter
+                = new CommonsRequestLoggingFilter();
+        filter.setIncludeQueryString(true);
+        filter.setIncludePayload(true);
+        filter.setMaxPayloadLength(10000);
+        filter.setIncludeHeaders(true);
+        filter.setIncludeClientInfo(true);
+
+        filter.setBeforeMessagePrefix("REQUEST DATA BEFORE: >>");
+        filter.setBeforeMessageSuffix("<< REQUEST DATA BEFORE");
+        filter.setAfterMessagePrefix("REQUEST DATA AFTER: >>");
+        filter.setAfterMessageSuffix("<< REQUEST DATA AFTER");
+        return filter;
     }
 }

@@ -23,6 +23,21 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>jwt-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.security.authorization</groupId>
+            <artifactId>authorization-service-client</artifactId>
+            <version>2.1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- Dependencies on other EMS modules -->
         <dependency>
@@ -43,6 +58,11 @@
         <dependency>
             <groupId>eu.melodic.event</groupId>
             <artifactId>translator</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>util</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -146,11 +166,15 @@
                 <configuration>
                     <resources>
                         <resource>
-                            <targetPath>/</targetPath>
+                            <targetPath>/jars</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>${docker.jarToInclude}</include>
                             <include>${docker.esperJarToInclude}</include>
-                            <include>${project.basedir}/../run.sh</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/bin</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>run.sh</include>
                         </resource>
                         <resource>
                             <targetPath>/config</targetPath>
@@ -167,12 +191,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.groovy.maven</groupId>
-                <artifactId>gmaven-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
-
 
 </project>

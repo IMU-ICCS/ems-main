@@ -9,13 +9,26 @@
 ::
 
 setlocal
-set curdir=%~dp0
-set BASEDIR=%curdir%..
-set MELODIC_CONFIG_DIR=%BASEDIR%\conf
-set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
+set PWD=%~dp0
+cd %PWD%..
+set BASEDIR=%cd%
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\conf
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
 
-cd %BASEDIR%
+:: Copy dependencies if missing
+if exist pom.xml (
+    if not exist %BASEDIR%\target\dependency cmd /C "mvn dependency:copy-dependencies"
+)
 
-rem set JAVA_OPTS=-Djavax.net.debug=all
-java %JAVA_OPTS% -classpath "conf;jars\*" eu.melodic.event.baguette.client.BaguetteClient %*
+:: Run Baguette Client
+set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-truststore.p12 ^
+ -Djavax.net.ssl.trustStorePassword=melodic ^
+ -Djavax.net.ssl.trustStoreType=pkcs12
+::set JAVA_OPTS=-Djavax.net.debug=all %JAVA_OPTS%
+
+echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
+echo Starting baguette client...
+java %JAVA_OPTS% -classpath "%MELODIC_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" eu.melodic.event.baguette.client.BaguetteClient %*
+
+cd %PWD%
 endlocal

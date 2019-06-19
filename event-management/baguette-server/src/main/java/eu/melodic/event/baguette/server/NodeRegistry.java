@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Slf4j
 @Service
 public class NodeRegistry {
-    private HashMap<String,Map<String,Object>> registry = new HashMap<>();
+    private Map<String,Map<String,Object>> registry = new HashMap<>();
 
     public synchronized void addNode(Map<String,Object> nodeInfo) {
         String ipAddress = nodeInfo.get("ip").toString();
@@ -42,8 +43,7 @@ public class NodeRegistry {
     }
 
     public Map<String,Object> getNodeByAddress(String ipAddress) {
-        Map<String,Object> info = registry.get(ipAddress);
-        if (info!=null) info = new HashMap<>(info); else info = new HashMap<>();
+        Map<String, Object> info = MapUtils.emptyIfNull(registry.get(ipAddress));
         log.debug("NodeRegistry.getNodeByAddress(): Returning info for node at address: {}\nNode Info: {}", ipAddress, info);
         return info;
     }

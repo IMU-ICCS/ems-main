@@ -24,8 +24,8 @@ import org.springframework.context.annotation.Configuration;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
 
-    private Coordinator coordinator;
-    private MetricValueMonitorBean metricValueMonitor;
+    //private Coordinator coordinator;
+    //private MetricValueMonitorBean metricValueMonitor;
     private MetaSolverProperties metasolverProperties;
     private CpModelHelper cpModelHelper;
 

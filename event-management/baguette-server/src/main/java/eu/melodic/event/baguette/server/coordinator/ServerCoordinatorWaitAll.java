@@ -37,6 +37,10 @@ public class ServerCoordinatorWaitAll implements ServerCoordinator {
         log.info("initialize: Done");
     }
 
+    public BaguetteServer getServer() {
+        return server;
+    }
+
     public void start() {
     }
 

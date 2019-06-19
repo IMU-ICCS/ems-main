@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.properties;
 
+import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,4 +68,10 @@ public class ControlServiceProperties {
 
     @Value("${static.resource.context:/**}")
     private String staticResourceContext;
+
+    @Value("${control.password-encoder}")
+    private String passwordEncoderClass;
+
+    // control.ssl.** settings
+    private KeystoreAndCertificateProperties ssl;
 }

@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,17 +52,22 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/camelModel", method = POST)
-    public String newCamelModel(@RequestBody CamelModelRequestImpl request) throws ConcurrentAccessException {
+    public String newCamelModel(@RequestBody CamelModelRequestImpl request,
+                                @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", request);
+        log.trace("ControlServiceController.newCamelModel()/camelModel: JWT token: {}", jwtToken);
 
         // Get information from request
         String applicationId = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
-        log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}", applicationId, notificationUri, requestUuid);
+        log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}",
+                applicationId, notificationUri, requestUuid);
 
         // Start translation and reconfiguration in a worker thread
-        coordinator.processNewModel(applicationId, null, notificationUri, requestUuid);
+        coordinator.processNewModel(applicationId, null, notificationUri, requestUuid, jwtToken);
         log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -69,8 +76,12 @@ public class ControlServiceController {
     @RequestMapping(value = "/camelModelJson", method = POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String newCamelModel(@RequestBody String requestStr) throws ConcurrentAccessException {
+    public String newCamelModel(@RequestBody String requestStr,
+                                @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.newCamelModel()/camelModelJson: JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
@@ -80,7 +91,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCamelModel(): CP model id from request: {}", cpModelId);
 
         // Start translation and component reconfiguration in a worker thread
-        coordinator.processNewModel(camelModelId, cpModelId, null, null);
+        coordinator.processNewModel(camelModelId, cpModelId, null, null, jwtToken);
         log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -91,8 +102,12 @@ public class ControlServiceController {
     @RequestMapping(value = "/cpModelJson", method = POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String newCpModel(@RequestBody String requestStr) throws ConcurrentAccessException {
+    public String newCpModel(@RequestBody String requestStr,
+                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.newCpModel(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.newCpModel(): JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
@@ -100,7 +115,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCpModel(): CP model id from request: {}", cpModelId);
 
         // Start CP model processing in a worker thread
-        coordinator.processCpModel(cpModelId, null, null);
+        coordinator.processCpModel(cpModelId, null, null, jwtToken);
         log.debug("ControlServiceController.newCpModel(): CP Model processing dispatched to a worker thread");
 
         return "OK";
@@ -109,8 +124,12 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/monitors", method = POST)
-    public MonitorsDataResponse getSensors(@RequestBody MonitorsDataRequestImpl request) throws ConcurrentAccessException {
+    public HttpEntity<MonitorsDataResponse> getSensors(@RequestBody MonitorsDataRequestImpl request,
+                                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
         log.info("ControlServiceController.getSensors(): Received request: {}", request);
+        log.trace("ControlServiceController.getSensors(): JWT token: {}", jwtToken);
 
         // Get information from request
         String applicationId = request.getApplicationId();
@@ -145,9 +164,11 @@ public class ControlServiceController {
         MonitorsDataResponse response = new MonitorsDataResponseImpl();
         response.setMonitors(sensors);
         response.setWatermark(watermark);
+        HttpEntity<MonitorsDataResponse> entity = coordinator.createHttpEntity(MonitorsDataResponse.class, response, jwtToken);
         log.info("ControlServiceController.getSensors(): Response: {}", response);
 
-        return response;
+        //return response;
+        return entity;
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -287,6 +308,18 @@ public class ControlServiceController {
         log.debug("ControlServiceController.emsTopology(): END");
         return "{}";
     }
+
+    /*@RequestMapping(value = "/test", method = {GET, POST},
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public OrchestrationHelper.InstallationInstructions test(@RequestBody String jsonStr) {
+        log.info(">>>>>>>>>>>>>>>>>>  {}", jsonStr);
+        OrchestrationHelper.InstallationInstructions installationInstructions =
+                new OrchestrationHelper.InstallationInstructions();
+        installationInstructions.appendExec("Exec OK");
+        installationInstructions.appendLog("Log OK");
+        return installationInstructions;
+    }*/
 
     // ------------------------------------------------------------------------------------------------------------
 

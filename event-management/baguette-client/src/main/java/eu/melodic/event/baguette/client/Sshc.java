@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
@@ -29,6 +30,7 @@ import java.net.SocketAddress;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.Properties;
 
 //import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
@@ -50,21 +52,20 @@ public class Sshc {
     private boolean started = false;
     @Autowired
     private CommandExecutor commandExecutor;
+    @Autowired
+    BrokerCepService brokerCepService;
 
     private InputStream in;
     private PrintStream out;
     //private PrintStream err;
     private String clientId;
 
-    //public Sshc(Properties config, String idFile) throws IOException {
     public void setConfigAndId(Properties config, String idFile) throws IOException {
         this.config = config;
         this.idFile = idFile;
         this.clientId = config.getProperty("client.id", "");
-        //this.commandExecutor = new CommandExecutor();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
         this.commandExecutor.setConfigAndId(config, idFile);
-//XXX:DEL:        log.debug("Sshc: OS detected: {}", CommandExecutor.getOsName());
     }
 
     public synchronized void start(boolean retry) throws IOException {
@@ -77,7 +78,7 @@ public class Sshc {
                     start();
                 } catch (Exception ex) {
                     log.warn("{}", ex.getMessage());
-                }    //{ log.warn("(Re-)trying to start client: {}", ex.getMessage()); }
+                }
                 if (started) break;
                 log.trace("Failed to start. Sleeping for {}ms...", retryPeriod);
                 try {
@@ -111,7 +112,8 @@ public class Sshc {
 
         //client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
         //client.setServerKeyVerifier(new RequiredServerKeyVerifier(....));
-        client.setServerKeyVerifier(new ServerKeyVerifier() {
+        client.setServerKeyVerifier(new ServerKeyVerifier()
+                {
                     private String serverFingerprint;
                     private String serverPubKey;
 
@@ -119,10 +121,6 @@ public class Sshc {
 
                         // Print server address info
                         log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
-					    /*log.info("verifyServerKey(): remoteAddress: {}: {}",
-                                remoteAddress.getClass().getName(),	//java.net.InetSocketAddress
-						        remoteAddress.toString()
-					            );*/
 
                         // Check that server public key fingerprint matches with the one in configuration
                         String fingerprint = KeyUtils.getFingerPrint(serverKey);
@@ -152,7 +150,7 @@ public class Sshc {
                         return this;
                     }
                 }
-                        .setServerPubKey(serverPubKey, serverFingerprint)
+                .setServerPubKey(serverPubKey, serverFingerprint)
         );
 
         this.simple = SshClient.wrapAsSimpleClient(client);
@@ -207,7 +205,21 @@ public class Sshc {
 
     protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        out.println(String.format("-HELLO FROM CLIENT: %s %s", clientId, config.getProperty("debug.fake-ip-address", "")));
+        String certOneLine = Optional
+                .ofNullable(brokerCepService.getBrokerCertificate())
+                .orElse("")
+                .replace(" ","~~")
+                .replace("\r\n","##")
+                .replace("\n","$$");
+        String clientAddress = config.getProperty("debug.fake-ip-address", "");
+        int clientPort = -1;
+        out.println(String.format("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s",
+                clientId.replace(" ", "~~"),
+                brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
+                clientAddress,
+                clientPort,
+                certOneLine));
+        out.flush();
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
@@ -217,7 +229,6 @@ public class Sshc {
                 if (exit) break;
             } catch (Exception ex) {
                 log.error("{}", ex);
-                //ex.printStackTrace(System.err);
                 // Report exception back to server
                 out.println(ex);
                 ex.printStackTrace(out);

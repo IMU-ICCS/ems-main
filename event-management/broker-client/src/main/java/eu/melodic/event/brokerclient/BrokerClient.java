@@ -75,6 +75,15 @@ public class BrokerClient {
         return client;
     }
 
+    public static BrokerClient newClient(String username, String password) throws java.io.IOException, JMSException {
+        BrokerClient client = newClient();
+        if (username!=null && password!=null) {
+            client.getClientProperties().setBrokerUsername(username);
+            client.getClientProperties().setBrokerPassword(password);
+        }
+        return client;
+    }
+
     // ------------------------------------------------------------------------
 
     public BrokerClientProperties getClientProperties() {

@@ -41,6 +41,10 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
         this.clients = new Vector<>();
     }
 
+    public BaguetteServer getServer() {
+        return server;
+    }
+
     public void start() {
         timeout = new Thread(
                 new Runnable() {
