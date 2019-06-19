@@ -85,6 +85,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
                 // Subscribe to topic
                 _do_subscribe(url, topicName, clientId, type);
+                i++;
             }
         }
         log.debug("Subscribing to topics: ok");
