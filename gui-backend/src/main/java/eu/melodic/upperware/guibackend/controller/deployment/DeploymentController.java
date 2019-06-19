@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.controller.deployment;
 
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
+import eu.melodic.upperware.guibackend.controller.deployment.request.SecureVariableRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.deployment.DeploymentService;
@@ -25,7 +26,9 @@ public class DeploymentController {
     @ResponseStatus(HttpStatus.CREATED)
     public UploadXmiResponse uploadXmi(@RequestParam("file") MultipartFile file) {
         log.info("POST request for upload xmi file with name: {}", file.getResource().getFilename());
-        return deploymentService.uploadXmi(file);
+        String cdoName = deploymentService.uploadXmi(file);
+        log.info("File {} successfully uploaded. Finding sensitive variables in progress.", cdoName);
+        return deploymentService.findSecureVariables(file, cdoName);
     }
 
     @DeleteMapping(value = "/xmi/{xmiName}")
@@ -47,5 +50,12 @@ public class DeploymentController {
     public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest) {
         log.info("POST request for deployment new process");
         return deploymentService.createDeploymentProcess(deploymentRequest);
+    }
+
+    @PostMapping(value = "/secure/variable")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<String> saveSecureVariables(@RequestBody List<SecureVariableRequest> secureVariablesRequest) {
+        log.info("POST request for save secure variables");
+        return deploymentService.saveSecureVariables(secureVariablesRequest);
     }
 }

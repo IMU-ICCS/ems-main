@@ -18,4 +18,6 @@ public interface CloudiatorApi {
     List<Function> getFunctionList();
 
     List<VirtualMachine> getVMList();
+
+    void storeSecureVariable(String key, String value);
 }

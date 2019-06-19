@@ -2,6 +2,7 @@ package eu.melodic.upperware.guibackend.communication.cloudiator;
 
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.CloudApi;
+import io.github.cloudiator.rest.api.SecurityApi;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import java.util.List;
 public class CloudiatorClientApi implements CloudiatorApi {
 
     private CloudApi cloudApi;
+    private SecurityApi securityApi;
     private final String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
@@ -99,6 +101,17 @@ public class CloudiatorClientApi implements CloudiatorApi {
         } catch (ApiException e) {
             log.error("Error by getting VMs list: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void storeSecureVariable(String key, String value) {
+        Text cloudiatorText = new Text();
+        try {
+            securityApi.storeSecure(key, cloudiatorText.content(value));
+        } catch (ApiException ex) {
+            log.error("Error by secure storing of variable with name: {}", key, ex);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by storing secure variable with name: %s in Cloudiator's secure store", key));
         }
     }
 }
