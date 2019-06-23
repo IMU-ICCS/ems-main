@@ -24,8 +24,10 @@ import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -73,6 +75,11 @@ public class BrokerConfig implements InitializingBean {
     private String brokerCert;
 
     private KeyStore truststore;
+
+    @Value("${brokercep.broker-url-2}")
+    private String brokerUrl2;
+    @Value("${brokercep.broker-url-3}")
+    private String brokerUrl3;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -230,6 +237,12 @@ public class BrokerConfig implements InitializingBean {
             brokerService.addConnector(brokerUrl);
         }
         brokerService.setBrokerName(getBrokerName());
+
+        // Start additional connectors (non-SSL)
+        log.debug("BrokerConfig: 2nd connector: {}", brokerUrl2);
+        log.debug("BrokerConfig: 3rd connector: {}", brokerUrl3);
+        if (StringUtils.isNotEmpty(brokerUrl2)) brokerService.addConnector(brokerUrl2);
+        if (StringUtils.isNotEmpty(brokerUrl3)) brokerService.addConnector(brokerUrl3);
 
         // Set authentication and authorization plugins
         List<BrokerPlugin> plugins = new ArrayList<>();
