@@ -397,7 +397,6 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                     deploymentTypeModel.getGlobalRequirementSet(),
                     softwareComponent.getRequirementSet(),
                     camelModel.getLocationModels(),
-                    getImageId(softwareComponent),
                     getNodeType(softwareComponent)
                     );
             Map<String, List<NodeCandidate>> nodeCandidatesByProvider = nodeCandidatesService.groupByProviders(nodeCandidates);
@@ -424,17 +423,8 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return (DeploymentTypeModelImpl) camelModel.getDeploymentModels().get(0);
     }
 
-    private String getImageId(SoftwareComponent softwareComponent) {
-        Configuration configuration = softwareComponent.getConfigurations().get(0);
-        if (configuration instanceof ScriptConfigurationImpl) {
-            return ((ScriptConfigurationImpl) configuration).getImageId();
-        }
-        return null;
-    }
-
-    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels,
-                                              String imageId, NodeType nodeType) {
-        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, imageId, nodeType);
+    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, NodeType nodeType) {
+        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, nodeType);
         log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;

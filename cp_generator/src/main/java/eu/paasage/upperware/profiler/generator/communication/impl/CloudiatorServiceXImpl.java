@@ -56,11 +56,11 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-            List<LocationModel> locationModels, String imageId, NodeType nodeType) {
+            List<LocationModel> locationModels, NodeType nodeType) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
-        requirements.addAll(createImageRequirement(imageId));
+        requirements.addAll(createImageRequirement(getImageRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createProviderRequirement(getProviderRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createNodeTypeRequirement(nodeType));
@@ -171,12 +171,14 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
                 .anyMatch(geographicalRegion -> geographicalRegion.equals(parentRegion));
     }
 
-    private Collection<? extends Requirement> createImageRequirement(String imageId) {
-        if (StringUtils.isBlank(imageId)) {
+    private Collection<? extends Requirement> createImageRequirement(camel.requirement.ImageRequirement imageRequirement) {
+        if (imageRequirement == null) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(createRequirement(IMAGE_CLASS, "name", RequirementOperator.EQ, imageId));
+        String images = String.join(", ", imageRequirement.getImages());
+        return Collections.singletonList(createRequirement(IMAGE_CLASS, "name", RequirementOperator.IN, images));
     }
+
 
     private Collection<? extends Requirement> createOSRequirement(camel.requirement.OSRequirement osRequirement) {
         if (osRequirement == null) {
@@ -317,6 +319,10 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     private camel.requirement.PaaSRequirement getPaasRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet) {
         return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getPaasRequirement);
+    }
+
+    private camel.requirement.ImageRequirement getImageRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet) {
+        return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getImageRequirement);
     }
 
     private <T extends camel.requirement.HardRequirement> T getRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,

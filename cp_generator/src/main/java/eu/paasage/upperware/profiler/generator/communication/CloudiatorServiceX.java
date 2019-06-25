@@ -14,5 +14,5 @@ public interface CloudiatorServiceX {
     List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException;
 
     List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-                                         List<LocationModel> locationModels, String imageId, NodeType nodeType);
+                                         List<LocationModel> locationModels, NodeType nodeType);
 }
