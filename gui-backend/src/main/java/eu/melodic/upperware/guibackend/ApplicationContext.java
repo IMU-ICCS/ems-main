@@ -1,5 +1,8 @@
 package eu.melodic.upperware.guibackend;
 
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.CloudApi;
@@ -33,5 +36,10 @@ public class ApplicationContext {
     @Bean
     public SecurityApi securityApi(ApiClient apiClient) {
         return new SecurityApi(apiClient);
+    }
+
+    @Bean
+    public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
+        return new JWTServiceImpl(melodicSecurityProperties);
     }
 }

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -117,12 +118,13 @@ public class DeploymentService {
     }
 
     public List<String> saveSecureVariables(List<SecureVariableRequest> secureVariablesRequest) {
-        List<String> savedVariablesKeys = new ArrayList<>();
-        secureVariablesRequest.forEach(secureVariableRequest -> {
-            log.info("Saving secure variable with key: {}", secureVariableRequest.getName());
-            cloudiatorClientApi.storeSecureVariable(secureVariableRequest.getName(), secureVariableRequest.getValue());
-            savedVariablesKeys.add(secureVariableRequest.getName());
-        });
-        return savedVariablesKeys;
+        return secureVariablesRequest
+                .stream()
+                .peek(secureVariableRequest -> {
+                    log.info("Saving secure variable with key: {}", secureVariableRequest.getName());
+                    cloudiatorClientApi.storeSecureVariable(secureVariableRequest.getName(), secureVariableRequest.getValue());
+                })
+                .map(SecureVariableRequest::getName)
+                .collect(Collectors.toList());
     }
 }
