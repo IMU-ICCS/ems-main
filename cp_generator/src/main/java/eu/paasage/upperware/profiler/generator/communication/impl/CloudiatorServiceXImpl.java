@@ -58,7 +58,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             try {
                 ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
                 if (response.getStatusCode() == 200) {
-                    log.error("Approach {} of {} successfully fetch {} NodeCandidates", counter, maxNumberOfApproaches, response.getData().size());
+                    log.info("Approach {} of {} successfully fetched {} NodeCandidates", counter, maxNumberOfApproaches, response.getData().size());
                     return response.getData();
                 }
             } catch (Exception e) {
