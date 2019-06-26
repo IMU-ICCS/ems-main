@@ -16,6 +16,7 @@ import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.ApiResponse;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Runtime;
@@ -51,7 +52,29 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
-        return matchmakingApi.findNodeCandidates(requirements);
+        int counter = 1;
+        int maxNumberOfApproaches = 10;
+        do {
+            try {
+                ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
+                if (response.getStatusCode() == 200) {
+                    log.error("Approach {} of {} successfully fetch {} NodeCandidates", counter, maxNumberOfApproaches, response.getData().size());
+                    return response.getData();
+                }
+            } catch (Exception e) {
+                log.error("Approach {} of {} failed with Exception: ", counter, maxNumberOfApproaches, e);
+            }
+
+            if (counter == maxNumberOfApproaches) {
+                throw new GeneratorException("Could not get node candidates for requirements: " + requirements);
+            }
+            counter++;
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                //
+            }
+        } while (true);
     }
 
     @Override
