@@ -26,7 +26,7 @@ public class RestCommunicationService {
 
     public <T, G> ResponseEntity<T> getResponse(String requestUrl, ParameterizedTypeReference<T> responseType,
                                                 HttpEntity<G> requestBody, String serviceName, HttpMethod httpMethod) {
-        ResponseEntity<T> response = null;
+        ResponseEntity<T> response;
 
         try {
             response = restTemplate.exchange(requestUrl, httpMethod, requestBody, responseType);
@@ -38,7 +38,7 @@ public class RestCommunicationService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization failed. Invalid credentials");
         }
 
-        if (response.getBody() == null) {
+        if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem in communication with %s. Service not working. Please try again.", serviceName));
         }
 

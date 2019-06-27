@@ -106,7 +106,7 @@ public class MuleClientApi implements MuleApi {
             // Install the all-trusting host verifier
             HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            e.printStackTrace();
+            log.error("Error by disabling SSL verification: ", e);
         }
     }
 
