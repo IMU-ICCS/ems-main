@@ -8,6 +8,7 @@ import lombok.Getter;
 @Builder
 public class AdapterRequirement implements Data {
 
+    private String taskName;
     private String type;
     private String nodeName;
 

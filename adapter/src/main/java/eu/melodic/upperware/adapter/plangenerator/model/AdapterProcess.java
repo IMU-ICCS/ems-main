@@ -1,15 +1,14 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
 public class AdapterProcess implements Data {
 
     private String nodeName;
@@ -19,6 +18,6 @@ public class AdapterProcess implements Data {
 
     @Override
     public String getName() {
-        return "AdapterProcess_" + nodeName + "_" + scheduleName + "_" + jobName + "_" + taskName;
+        return String.format("AdapterProcess_%s_%s_%s_%s", nodeName, scheduleName, jobName, taskName);
     }
 }

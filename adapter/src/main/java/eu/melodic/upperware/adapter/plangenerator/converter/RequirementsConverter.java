@@ -37,6 +37,7 @@ public class RequirementsConverter implements ModelConverter<DeploymentInstanceM
         return AdapterRequirement
                 .builder()
                 .type(IdentifierRequirement.class.getSimpleName())
+                .taskName(softwareComponentInstance.getType().getName())
                 .nodeName(softwareComponentInstance.getName())
                 .nodeCandidate(gson.fromJson(camelEnricherService.fetch("nodeCandidate", softwareComponentInstance), NodeCandidate.class))
                 .build();

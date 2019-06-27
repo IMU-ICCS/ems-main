@@ -36,14 +36,8 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
                 .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
                 .getId();
 
-        Optional<CloudiatorProcess> cloudiatorProcessByNodeId = context.getSingleProcessByNodeId(nodeId);
-        if (!cloudiatorProcessByNodeId.isPresent()) {
-            log.warn("Could not find CloudiatorProcess containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
-            return;
-        }
-
-        Monitor monitor = convertToMonitor(taskBody, cloudiatorProcessByNodeId.get().getId());
-        MonitoringTarget monitoringTarget = createMonitoringTarget(cloudiatorProcessByNodeId.get().getId());
+        Monitor monitor = convertToMonitor(taskBody, nodeId);
+        MonitoringTarget monitoringTarget = createMonitoringTarget(nodeId);
 
         Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), monitoringTarget);
         if (monitorOpt.isPresent()) {
@@ -60,10 +54,10 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         }
     }
 
-    private Monitor convertToMonitor(AdapterMonitor taskBody, String processGroupId) {
+    private Monitor convertToMonitor(AdapterMonitor taskBody, String nodeId) {
         return new Monitor()
                 .metric(taskBody.getMetricName())
-                .targets(convertToTargets(processGroupId))
+                .targets(convertToTargets(nodeId))
                 .sensor(convertToSensor(taskBody.getSensor()))
                 .sinks(convertToSinks(taskBody.getSinks()))
                 .tags(convertToTags(taskBody.getTags()));
@@ -109,9 +103,11 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
                 .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
-    private List<MonitoringTarget> convertToTargets(String processGroupId) {
+    private List<MonitoringTarget> convertToTargets(String nodeId) {
         return Collections.singletonList(
-                new MonitoringTarget().type(MonitoringTarget.TypeEnum.PROCESS).identifier(processGroupId));
+                new MonitoringTarget()
+                        .type(MonitoringTarget.TypeEnum.NODE)
+                        .identifier(nodeId));
     }
 
     @Override
@@ -121,12 +117,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
                 .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
                 .getId();
 
-        Optional<CloudiatorProcess> cloudiatorProcessByNodeId = context.getSingleProcessByNodeId(nodeId);
-        if (!cloudiatorProcessByNodeId.isPresent()) {
-            log.warn("Could not find CloudiatorProcess containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
-            return;
-        }
-        MonitoringTarget monitoringTarget = createMonitoringTarget(cloudiatorProcessByNodeId.get().getId());
+        MonitoringTarget monitoringTarget = createMonitoringTarget(nodeId);
 
         if (!context.getMonitor(taskBody.getMetricName(), monitoringTarget).isPresent()) {
             log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());
@@ -144,10 +135,10 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         }
     }
 
-    private MonitoringTarget createMonitoringTarget(String fistProcessId) {
+    private MonitoringTarget createMonitoringTarget(String nodeId) {
         MonitoringTarget monitoringTarget = new MonitoringTarget();
-        monitoringTarget.setType(MonitoringTarget.TypeEnum.PROCESS);
-        monitoringTarget.setIdentifier(fistProcessId);
+        monitoringTarget.setType(MonitoringTarget.TypeEnum.NODE);
+        monitoringTarget.setIdentifier(nodeId);
         return monitoringTarget;
     }
 }

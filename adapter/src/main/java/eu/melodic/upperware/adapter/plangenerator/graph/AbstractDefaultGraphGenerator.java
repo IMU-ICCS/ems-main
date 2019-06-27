@@ -47,8 +47,8 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
         }
     }
 
-    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, List<U> to) {
-        addEdge(graph, from, to, () -> true);
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, U to) {
+        from.forEach(f -> addEdge(graph, f, to));
     }
 
     <T extends Task, U extends Task> void addWaitEdge(MelodicGraph<Task, DefaultEdge> graph, Supplier<T> from, List<U> to, BooleanSupplier booleanSupplier) {

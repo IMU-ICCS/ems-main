@@ -75,6 +75,9 @@ public class ColosseumExecutorFactory implements InitializingBean {
     if (task instanceof MonitorTask) {
       return new MonitorTaskExecutor((MonitorTask)task, predecessors, api, context, checkFinishTaskToFutureFunction);
     }
+    if (task instanceof ScaleTask) {
+      return new ScaleTaskExecutor((ScaleTask) task, predecessors, api, context, checkFinishTaskToFutureFunction);
+    }
 
     throw new IllegalArgumentException(format("Task %s is not supported as RunnableTask", task.getClass().getName()));
   }

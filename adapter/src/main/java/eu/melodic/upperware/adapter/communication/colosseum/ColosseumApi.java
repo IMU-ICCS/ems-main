@@ -50,4 +50,6 @@ public interface ColosseumApi {
     Monitor addMonitor(Monitor monitor) throws ApiException;
 
     void deleteMonitor(String metricName, MonitoringTarget monitoringTarget) throws ApiException;
+
+    Queue triggerScale(Scale scale) throws ApiException;
 }
