@@ -43,9 +43,10 @@ public class DeploymentService {
     private CloudiatorClientApi cloudiatorClientApi;
     private static final Pattern SECURE_VARIABLE_PATTERN = Pattern.compile("\\{\\{(.*?)}}");
 
-    public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest) {
-        DeploymentProcessRequest deploymentProcessRequest = deploymentMapper.mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
-        return muleClientApi.createDeploymentProcess(deploymentProcessRequest);
+    public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token) {
+        DeploymentProcessRequest deploymentProcessRequest = deploymentMapper
+                .mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
+        return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token);
     }
 
     private Watermark createWatermark(String username) {
