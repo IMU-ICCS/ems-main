@@ -8,6 +8,7 @@ import eu.melodic.upperware.guibackend.service.deployment.DeploymentService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/deployment")
+@RequestMapping("/application/deployment")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentController {
@@ -47,9 +48,10 @@ public class DeploymentController {
 
     @PostMapping(value = "/process")
     @ResponseStatus(HttpStatus.CREATED)
-    public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest) {
+    public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest,
+                                                @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         log.info("POST request for deployment new process");
-        return deploymentService.createDeploymentProcess(deploymentRequest);
+        return deploymentService.createDeploymentProcess(deploymentRequest, token);
     }
 
     @PostMapping(value = "/secure/variable")

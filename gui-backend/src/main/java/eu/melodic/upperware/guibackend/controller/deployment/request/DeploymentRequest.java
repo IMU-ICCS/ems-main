@@ -16,6 +16,5 @@ public class DeploymentRequest {
 
     private String applicationId;
     private String username;
-    private String password;
     private List<CloudDefinition> cloudDefinitions;
 }
