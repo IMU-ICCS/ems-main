@@ -6,6 +6,7 @@ import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.CloudApi;
+import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.SecurityApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,11 @@ public class ApplicationContext {
     @Bean
     public SecurityApi securityApi(ApiClient apiClient) {
         return new SecurityApi(apiClient);
+    }
+
+    @Bean
+    public NodeApi nodeApi(ApiClient apiClient) {
+        return new NodeApi(apiClient);
     }
 
     @Bean
