@@ -31,6 +31,10 @@ public class GuiBackendProperties {
     @NotNull
     private CdoUploader cdoUploader;
 
+    @Valid
+    @NotNull
+    private JwtServer jwtServer;
+
     @Getter
     @Setter
     public static class Mule {
@@ -58,5 +62,13 @@ public class GuiBackendProperties {
     public static class CdoUploader {
 
         private boolean validationEnabled;
+    }
+
+    @Getter
+    @Setter
+    public static class JwtServer {
+
+        @NotBlank
+        private String url;
     }
 }

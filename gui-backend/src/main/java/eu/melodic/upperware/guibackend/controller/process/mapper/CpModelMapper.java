@@ -4,7 +4,6 @@ import eu.melodic.upperware.guibackend.controller.process.response.*;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.cp.impl.ConstraintProblemImpl;
 import eu.paasage.upperware.metamodel.types.*;
-import eu.passage.upperware.commons.model.tools.CPModelTool;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +17,16 @@ public class CpModelMapper {
                 .id(constraintProblem.getId())
                 .metrics(mapCpMetricsToResponse(constraintProblem.getCpMetrics()))
                 .variables(mapCpVariablesListToResponse(constraintProblem.getCpVariables()))
-                .solution(mapSolutionToResponse(CPModelTool.searchLastSolution(constraintProblem.getSolution())))
                 .constants(mapConstantsToResponse(constraintProblem.getConstants()))
                 .utilityFormula(utilityFormula)
+                .build();
+    }
+
+    public CpSolutionResponse mapSolutionToResponse(Solution solution) {
+        return CpSolutionResponse.builder()
+                .timestamp(solution.getTimestamp())
+                .utilityValue(mapNumericValueUpperwareToObject(solution.getUtilityValue()))
+                .variableValue(mapCpVariablesValueToResponse(solution.getVariableValue()))
                 .build();
     }
 
@@ -32,14 +38,6 @@ public class CpModelMapper {
                         .value(mapNumericValueUpperwareToObject(constant.getValue()))
                         .build())
                 .collect(Collectors.toList());
-    }
-
-    private CpSolutionResponse mapSolutionToResponse(Solution searchLastSolution) {
-        return CpSolutionResponse.builder()
-                .timestamp(searchLastSolution.getTimestamp())
-                .utilityValue(mapNumericValueUpperwareToObject(searchLastSolution.getUtilityValue()))
-                .variableValue(mapCpVariablesValueToResponse(searchLastSolution.getVariableValue()))
-                .build();
     }
 
     private List<CpVariableValueResponse> mapCpVariablesValueToResponse(EList<CpVariableValue> variableValue) {

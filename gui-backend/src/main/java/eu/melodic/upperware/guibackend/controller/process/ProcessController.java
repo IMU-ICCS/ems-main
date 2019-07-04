@@ -2,6 +2,7 @@ package eu.melodic.upperware.guibackend.controller.process;
 
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
+import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessVariables;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/process")
+@RequestMapping("/application/process")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ProcessController {
@@ -81,5 +82,11 @@ public class ProcessController {
     public CpModelResponse getConstraintProblem(@PathVariable("processId") String processId) {
         log.info("GET request for CP model for process with id: {}", processId);
         return processService.getCpModel(processId);
+    }
+
+    @GetMapping("/cp/solution/{processId}")
+    public CpSolutionResponse getSolutionForProcess(@PathVariable("processId") String processId) {
+        log.info("GET request for CP solution for process with id: {}", processId);
+        return processService.getCpSolutionForProcess(processId);
     }
 }

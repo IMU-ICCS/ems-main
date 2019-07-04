@@ -26,8 +26,8 @@ public class MuleClientApi implements MuleApi {
     private GuiBackendProperties guiBackendProperties;
 
     @Override
-    public DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest) {
-        HttpEntity entity = createHttpEntity(deploymentProcessRequest);
+    public DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest, String token) {
+        HttpEntity entity = createHttpEntity(deploymentProcessRequest, token);
 
         String muleUrl = guiBackendProperties.getEsb().getUrl() + "/api/frontend/deploymentProcess";
         ResponseEntity<DeploymentResponse> processResponse;
@@ -63,14 +63,15 @@ public class MuleClientApi implements MuleApi {
     }
 
 
-    private HttpEntity<DeploymentProcessRequest> createHttpEntity(DeploymentProcessRequest deploymentProcessRequest) {
-        HttpHeaders httpHeaders = createHttpHeaders();
+    private HttpEntity<DeploymentProcessRequest> createHttpEntity(DeploymentProcessRequest deploymentProcessRequest, String token) {
+        HttpHeaders httpHeaders = createHttpHeaders(token);
         return new HttpEntity<>(deploymentProcessRequest, httpHeaders);
     }
 
-    private HttpHeaders createHttpHeaders() {
+    private HttpHeaders createHttpHeaders(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.AUTHORIZATION, token);
         return headers;
     }
 
@@ -104,10 +105,8 @@ public class MuleClientApi implements MuleApi {
 
             // Install the all-trusting host verifier
             HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            log.error("Error by disabling SSL verification: ", e);
         }
     }
 

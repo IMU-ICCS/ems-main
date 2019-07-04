@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend;
 
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
         "eu.melodic.upperware.guibackend",
         "eu.passage.upperware.commons.cloudiator"})
 @SpringBootApplication
-@EnableConfigurationProperties({CloudiatorProperties.class})
+@EnableConfigurationProperties({CloudiatorProperties.class, MelodicSecurityProperties.class})
 public class GuiBackendApplication {
 
     public static void main(String[] args) {

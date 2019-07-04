@@ -7,5 +7,5 @@ import java.net.MalformedURLException;
 
 public interface MuleApi {
 
-    DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest) throws MalformedURLException;
+    DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest, String token) throws MalformedURLException;
 }
