@@ -22,4 +22,12 @@ public interface CloudiatorApi {
     List<Node> getFaasFromNodeList();
 
     void storeSecureVariable(String key, String value);
+
+    List<Node> getNodeList();
+
+    List<CloudiatorProcess> getProcessList();
+
+    List<Queue> getQueueList();
+
+    List<Job> getJobList();
 }

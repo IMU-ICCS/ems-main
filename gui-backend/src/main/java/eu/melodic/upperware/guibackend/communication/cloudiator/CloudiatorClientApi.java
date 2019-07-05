@@ -1,9 +1,7 @@
 package eu.melodic.upperware.guibackend.communication.cloudiator;
 
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.api.CloudApi;
-import io.github.cloudiator.rest.api.NodeApi;
-import io.github.cloudiator.rest.api.SecurityApi;
+import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +21,9 @@ public class CloudiatorClientApi implements CloudiatorApi {
     private CloudApi cloudApi;
     private SecurityApi securityApi;
     private NodeApi nodeApi;
+    private ProcessApi processApi;
+    private QueueApi queueApi;
+    private JobApi jobApi;
     private final String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
@@ -126,6 +127,46 @@ public class CloudiatorClientApi implements CloudiatorApi {
             return vmsFromNode;
         } catch (ApiException e) {
             log.error("Error by getting {} nodes list: ", nodeTypeEnum, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Node> getNodeList() {
+        try {
+            return nodeApi.findNodes();
+        } catch (ApiException e) {
+            log.error("Error by getting nodes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<CloudiatorProcess> getProcessList() {
+        try {
+            return processApi.getProcesses(null);
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator processes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Queue> getQueueList() {
+        try {
+            return queueApi.getQueuedTasks();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator queues list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Job> getJobList() {
+        try {
+            return jobApi.findJobs();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator jobs list: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }
