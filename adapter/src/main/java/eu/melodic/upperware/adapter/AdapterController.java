@@ -11,6 +11,9 @@ package eu.melodic.upperware.adapter;
 
 import eu.melodic.models.interfaces.adapter.ApplicationDeploymentRequestImpl;
 import eu.melodic.models.interfaces.adapter.ApplySolutionRequestImpl;
+import eu.melodic.models.interfaces.adapter.DifferenceRequestImpl;
+import eu.melodic.models.services.adapter.DifferenceResponse;
+import eu.melodic.upperware.adapter.service.DiffResponseConverter;
 import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,8 @@ public class AdapterController {
     private ApplyCoordinator applyCoordinator;
 
     private DeploymentRequestValidator validator;
+
+    private DiffResponseConverter diffResponseConverter;
 
     @PostMapping(value = "/applicationDeployment", consumes = APPLICATION_JSON_VALUE)
     public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
@@ -57,6 +62,14 @@ public class AdapterController {
         log.info("Received request: {} {} {} {}", applicationId, cdoResourcePath, notificationUri, requestUuid);
 
         applyCoordinator.doWorkTS(applicationId, cdoResourcePath, notificationUri, requestUuid);
+    }
+
+    @PostMapping(value = "/difference", consumes = APPLICATION_JSON_VALUE)
+    public DifferenceResponse applySolution(@RequestBody DifferenceRequestImpl request) {
+        String applicationId = request.getApplicationId();
+        String deploymentInstanceName = request.getDeploymentInstanceName();
+
+        return diffResponseConverter.convert(deployCoordinator.calculateDifference(applicationId, deploymentInstanceName));
     }
 
     @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
