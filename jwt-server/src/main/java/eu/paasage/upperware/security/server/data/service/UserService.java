@@ -79,4 +79,9 @@ public class UserService {
     public String createToken(String username) {
         return SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
     }
+
+    public String createRefreshToken(String username) {
+        return jwtService.createRefreshToken(username);
+    }
+
 }

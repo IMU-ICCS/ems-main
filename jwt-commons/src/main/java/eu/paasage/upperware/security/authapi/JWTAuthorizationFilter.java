@@ -1,10 +1,7 @@
 package eu.paasage.upperware.security.authapi;
 
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,7 +33,6 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied - missing or wrong header");
 			return;
 		}
-
 		try {
 			UsernamePasswordAuthenticationToken authentication = getAuthentication(header);
 			if (authentication != null) {
@@ -53,8 +49,10 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
 	private UsernamePasswordAuthenticationToken getAuthentication(String token) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
 		if (token != null) {
-			String user = jwtService.parse(token).getSubject();
-			if (user != null) {
+			Claims claims = jwtService.parse(token);
+			String user = claims.getSubject();
+			String audience = claims.getAudience(); //todo - check if audience is set ?
+			if (user != null && SecurityConstants.AUDIENCE_UPPERWARE.equals(audience)) {
 				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
 			}
 			return null;

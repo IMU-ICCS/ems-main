@@ -35,6 +35,9 @@ public class MelodicSecurityProperties {
 
         @NotNull
         private Long expirationTime;
+
+        @NotNull
+        private Long refreshTokenExpirationTime;
     }
 
     @Valid
