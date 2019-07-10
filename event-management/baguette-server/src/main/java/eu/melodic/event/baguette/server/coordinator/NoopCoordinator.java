@@ -31,6 +31,11 @@ public class NoopCoordinator implements ServerCoordinator {
     }
 
     @Override
+    public BaguetteServer getServer() {
+        return server;
+    }
+
+    @Override
     public void start() {
         if (_logInvocation("start", null, false)) return;
         started = true;

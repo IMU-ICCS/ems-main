@@ -210,13 +210,18 @@ public class ModelAnalyzer {
 
             // for every metric variable...
             for (MetricVariable mv : variables) {
+                log.debug("_findMatchingVar(): Checking variable: {}, component={}",
+                        mv.getName(), getElementName(mv.getComponent()));
                 CamelMetadata type1 = CamelMetadataTool.findVariableType((MetricVariableImpl) mv);
+                log.debug("_findMatchingVar(): Variable type: {}, type={}", mv.getName(), type1);
                 String componentName1 = mv.getComponent().getName();
 
                 if (type1==type && componentName.equals(componentName1)) {
                     log.debug("_findMatchingVar(): Found matching variable: {} -> {}", mvar.getName(), mv.getName());
                     return mv;
                 }
+                log.trace("_findMatchingVar(): Variable type or component does not match to: search-type={}, search-component={}",
+                        type, componentName);
             }
         }
 
@@ -468,7 +473,7 @@ public class ModelAnalyzer {
                 Component component = mv.getComponent();
                 String formula = mv.getFormula();
                 List<Metric> componentMetrics = ListUtils.emptyIfNull(mv.getComponentMetrics());
-                boolean containsMetrics = (componentMetrics != null && componentMetrics.size() > 0);
+                boolean containsMetrics = ! componentMetrics.isEmpty();
                 log.info("  Processing Metric Variable {} from Metric Type model {}: template={}, is-current-configuration={}, is-on-node-candidates={}, component={}, formula={}, component-metrics={}, contains-metrics={}...",
                         mvName, mm.getName(), getElementName(template), isCurrConfig, isOnNodeCand, getElementName(component), formula, getListElementNames(componentMetrics), containsMetrics);
 
@@ -1007,21 +1012,19 @@ public class ModelAnalyzer {
         }
 
         // Get additional configuration
-        String SensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
+        String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
         List<KeyValuePair> keyValuePairs = null;
         Optional<Feature> sensorConfig = sensor.getSubFeatures().stream()
                 .filter(f ->
                         f.getAnnotations().stream().anyMatch(ann -> {
                             camel.mms.MmsConcept o = (camel.mms.MmsConcept) ann;
                             //StringBuilder annPath = new StringBuilder(ann.getName());
-                            StringBuilder annIdPath = new StringBuilder(ann.getId());
+                            StringBuilder annPath = new StringBuilder(ann.getId());
                             while (o.getParent() != null) {
                                 o = o.getParent();
-                                //annPath.insert(0, o.getName() + ".");
-                                annIdPath.insert(0, o.getId() + ".");
+                                annPath.insert(0, o.getName() + ".");
                             }
-                            //return annPath.toString().equals(SensorConfigAnnotation);
-                            return annIdPath.toString().equals(SensorConfigAnnotation);
+                            return annPath.toString().equals(sensorConfigAnnotation);
                         })
                 )
                 .findFirst();
@@ -1213,7 +1216,7 @@ public class ModelAnalyzer {
     // ================================================================================================================
     // Helper methods
 
-    private String getElementName(NamedElement elem) {
+    private static String getElementName(NamedElement elem) {
         return elem != null ? elem.getName() : null;
     }
 

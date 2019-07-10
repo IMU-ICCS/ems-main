@@ -21,22 +21,23 @@ public class ApplySolutionNotificationSenderImpl extends NotificationSender<Appl
         super(restTemplate, env);
     }
 
-    public void notifySolutionApplied(String camelModelID, String notificationUri, String uuid) {
+    public void notifySolutionApplied(String camelModelID, String deploymentInstanceName, String notificationUri, String uuid) {
         log.info("Sending solution applied notification");
         NotificationResult result = prepareSuccessNotificationResult();
-        notifySolution(camelModelID, notificationUri, uuid, result);
+        notifySolution(camelModelID, deploymentInstanceName, notificationUri, uuid, result);
     }
 
     public void notifySolutionNotApplied(String camelModelID, String notificationUri, String uuid)  {
         log.info("Sending solution NOT applied notification");
         NotificationResult result = prepareErrorNotificationResult("Solution was not applied.");
-        notifySolution(camelModelID, notificationUri, uuid, result);
+        notifySolution(camelModelID, null, notificationUri, uuid, result);
     }
 
-    private void notifySolution(String camelModelID, String notificationUri, String uuid, NotificationResult result)  {
+    private void notifySolution(String camelModelID, String deploymentInstanceName, String notificationUri, String uuid, NotificationResult result)  {
         Supplier<ApplySolutionNotificationRequest> notificationSupplier = () -> {
             ApplySolutionNotificationRequest notification = new ApplySolutionNotificationRequestImpl();
             notification.setApplicationId(camelModelID);
+            notification.setDeploymentInstanceName(deploymentInstanceName);
             notification.setResult(result);
             notification.setWatermark(prepareWatermark(uuid));
             return notification;

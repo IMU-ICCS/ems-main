@@ -60,7 +60,7 @@ fi
 echo ""
 echo "Download installation package..."
 date -Iseconds
-wget $DOWNLOAD_URL -O $INSTALL_PACKAGE
+wget --no-check-certificate $DOWNLOAD_URL -O $INSTALL_PACKAGE
 if [ $? != 0 ]; then
   echo "Failed to download installation package ($?)"
   echo "Aborting installation..."
@@ -74,7 +74,7 @@ echo "Download installation package...ok"
 echo ""
 echo "Download installation package MD5 checksum..."
 date -Iseconds
-wget $DOWNLOAD_URL_MD5 -O $INSTALL_PACKAGE_MD5
+wget --no-check-certificate $DOWNLOAD_URL_MD5 -O $INSTALL_PACKAGE_MD5
 if [ $? != 0 ]; then
   echo "Failed to download installation package ($?)"
   echo "Aborting installation..."

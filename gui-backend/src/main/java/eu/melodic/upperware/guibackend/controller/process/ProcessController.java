@@ -2,14 +2,12 @@ package eu.melodic.upperware.guibackend.controller.process;
 
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
+import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessVariables;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
 import eu.melodic.upperware.guibackend.service.process.ProcessService;
-import io.github.cloudiator.rest.model.Cloud;
-import io.github.cloudiator.rest.model.Hardware;
-import io.github.cloudiator.rest.model.Image;
-import io.github.cloudiator.rest.model.Location;
+import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/process")
+@RequestMapping("/application/process")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ProcessController {
@@ -81,5 +79,35 @@ public class ProcessController {
     public CpModelResponse getConstraintProblem(@PathVariable("processId") String processId) {
         log.info("GET request for CP model for process with id: {}", processId);
         return processService.getCpModel(processId);
+    }
+
+    @GetMapping("/cp/solution/{processId}")
+    public CpSolutionResponse getSolutionForProcess(@PathVariable("processId") String processId) {
+        log.info("GET request for CP solution for process with id: {}", processId);
+        return processService.getCpSolutionForProcess(processId);
+    }
+
+    @GetMapping("/deployment/node")
+    public List<Node> getNodesList() {
+        log.info("GET request for nodes list");
+        return cloudiatorClientApi.getNodeList();
+    }
+
+    @GetMapping("/deployment/process")
+    public List<CloudiatorProcess> getCloudiatorProcessList() {
+        log.info("GET Cloudiator processes list");
+        return cloudiatorClientApi.getProcessList();
+    }
+
+    @GetMapping("/deployment/queue")
+    public List<Queue> getCloudiatorQueue() {
+        log.info("GET Cloudiator queues list");
+        return cloudiatorClientApi.getQueueList();
+    }
+
+    @GetMapping("/deployment/job")
+    public List<Job> getJobsList() {
+        log.info("GET Cloudiator jobs list");
+        return cloudiatorClientApi.getJobList();
     }
 }

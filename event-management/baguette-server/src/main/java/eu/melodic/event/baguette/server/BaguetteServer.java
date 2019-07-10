@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,8 @@ public class BaguetteServer {
     private BaguetteServerProperties config;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    private NodeRegistry nodeRegistry;
 
     private Sshd server;
 
@@ -41,8 +44,7 @@ public class BaguetteServer {
     private Set<FunctionDefinition> functionDefinitions;
     private String upperwareGrouping;
     private String upperwareBrokerUrl;
-    private String brokerUsername;
-    private String brokerPassword;
+    private BrokerCepService brokerCepService;
 
     // Configuration getter methods
     public Set<String> getGroupingNames() {
@@ -79,21 +81,21 @@ public class BaguetteServer {
         return functionDefinitions;
     }
 
-    public String getUpperwareBrokerUrl() {
-        return upperwareBrokerUrl;
-    }
+    public String getUpperwareGrouping() { return upperwareGrouping; }
 
-    public String getBrokerUsername() {
-        return brokerUsername;
-    }
+    public String getUpperwareBrokerUrl() { return upperwareBrokerUrl; }
 
-    public String getBrokerPassword() {
-        return brokerPassword;
-    }
+    public String getBrokerUsername() { return brokerCepService.getBrokerUsername(); }
+
+    public String getBrokerPassword() { return brokerCepService.getBrokerPassword(); }
+
+    public BrokerCepService getBrokerCepService() { return brokerCepService; }
 
     public String getServerPubkey() { return server.getPublicKey(); }
 
     public String getServerPubkeyFingerprint() { return server.getPublicKeyFingerprint(); }
+
+    public NodeRegistry getNodeRegistry() { return nodeRegistry; }
 
     // Server control methods
     public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
@@ -137,8 +139,7 @@ public class BaguetteServer {
             Set<FunctionDefinition> functionDefinitions,
             String upperwareGrouping,
             String upperwareBrokerUrl,
-            String brokerUsername,
-            String brokerPassword)
+            BrokerCepService brokerCepService)
             throws IOException {
         log.info("BaguetteServer.setTopologyConfiguration(): BEGIN");
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Grouping-to-Topics (G2T): {}", G2T);
@@ -149,10 +150,13 @@ public class BaguetteServer {
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
         log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password={}",
-                brokerUsername, passwordUtil.encodePassword(brokerPassword));
+                brokerCepService.getBrokerUsername(), passwordUtil.encodePassword(brokerCepService.getBrokerPassword()));
 
         // Stop any running instance of SSH server
         stopServer();
+
+        // Clear node registry
+        nodeRegistry.clearNodes();
 
         // Set new configuration
         this.groupingTopicsMap = G2T;
@@ -162,8 +166,7 @@ public class BaguetteServer {
         this.functionDefinitions = functionDefinitions;
         this.upperwareGrouping = upperwareGrouping;
         this.upperwareBrokerUrl = upperwareBrokerUrl;
-        this.brokerUsername = brokerUsername;
-        this.brokerPassword = brokerPassword;
+        this.brokerCepService = brokerCepService;
 
         log.info("BaguetteServer.setTopologyConfiguration(): Baguette server configuration: {}", config);
         log.info("BaguetteServer.setTopologyConfiguration(): Baguette Server credentials: {}", config.getCredentials());
@@ -216,6 +219,7 @@ public class BaguetteServer {
 
         Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);
 
+        // Create client id
         String formatter = getConfiguration().getClientIdFormat();
         String clientId = null;
         if (StringUtils.isBlank(formatter)) {
@@ -228,8 +232,12 @@ public class BaguetteServer {
             nodeInfo.put("random", UUID.randomUUID().toString());
             clientId = StringSubstitutor.replace(formatter, nodeInfo);
         }
-
         log.debug("BaguetteServer.registerClient(): client-id={}", clientId);
+
+        // Add node info into node registry
+        nodeInfo.put("baguette-client-id", clientId);
+        nodeRegistry.addNode(nodeInfo);
+
         return clientId;
     }
 }

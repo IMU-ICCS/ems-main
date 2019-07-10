@@ -1,7 +1,7 @@
 package eu.melodic.upperware.guibackend.communication.cloudiator;
 
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.api.CloudApi;
+import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -18,6 +19,11 @@ import java.util.List;
 public class CloudiatorClientApi implements CloudiatorApi {
 
     private CloudApi cloudApi;
+    private SecurityApi securityApi;
+    private NodeApi nodeApi;
+    private ProcessApi processApi;
+    private QueueApi queueApi;
+    private JobApi jobApi;
     private final String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
@@ -91,13 +97,76 @@ public class CloudiatorClientApi implements CloudiatorApi {
     }
 
     @Override
-    public List<VirtualMachine> getVMList() {
+    public void storeSecureVariable(String key, String value) {
+        Text cloudiatorText = new Text();
         try {
-            List<VirtualMachine> vMs = cloudApi.findVMs(null);
-            log.info("Number of VMs in response: {}", vMs.size());
-            return vMs;
+            securityApi.storeSecure(key, cloudiatorText.content(value));
+        } catch (ApiException ex) {
+            log.error("Error by secure storing of variable with name: {}", key, ex);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by storing secure variable with name: %s in Cloudiator's secure store", key));
+        }
+    }
+
+    @Override
+    public List<Node> getVMFromNodeList() {
+        return this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.VM);
+    }
+
+    @Override
+    public List<Node> getFaasFromNodeList() {
+        return this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.FAAS);
+    }
+
+    private List<Node> getNodeWithTypeFromNodeList(Node.NodeTypeEnum nodeTypeEnum) {
+        try {
+            List<Node> vmsFromNode = nodeApi.findNodes()
+                    .stream()
+                    .filter(node -> nodeTypeEnum.equals(node.getNodeType()))
+                    .collect(Collectors.toList());
+            log.info("Number of {} nodes in response: {}", nodeTypeEnum, vmsFromNode.size());
+            return vmsFromNode;
         } catch (ApiException e) {
-            log.error("Error by getting VMs list: ", e);
+            log.error("Error by getting {} nodes list: ", nodeTypeEnum, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Node> getNodeList() {
+        try {
+            return nodeApi.findNodes();
+        } catch (ApiException e) {
+            log.error("Error by getting nodes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<CloudiatorProcess> getProcessList() {
+        try {
+            return processApi.getProcesses(null);
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator processes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Queue> getQueueList() {
+        try {
+            return queueApi.getQueuedTasks();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator queues list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Job> getJobList() {
+        try {
+            return jobApi.findJobs();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator jobs list: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }

@@ -9,16 +9,23 @@
 
 package eu.melodic.event.control;
 
-import eu.melodic.event.control.util.LogPrintStream;
+import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.event.Level;
+import org.apache.catalina.connector.Connector;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.Banner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -37,17 +44,37 @@ public class ControlServiceApplication {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
 
-    public static void main(String[] args) {
-        if (args.length==0 || !"-nolog".equalsIgnoreCase(args[0].trim())) {
-            // Set standard system streams being logged
-            System.setOut(new LogPrintStream(System.out, Level.INFO, "OUT"));
-            System.setErr(new LogPrintStream(System.err, Level.ERROR, "ERR"));
-        }
+    @Autowired
+    private ControlServiceProperties properties;
+    @Autowired
+    private PasswordUtil passwordUtil;
 
-        // Start EMS
+    public static void main(String[] args) {
+        // Start EMS server
         SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
+        springApplication.setBannerMode(Banner.Mode.LOG);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
+    }
+
+    @Bean
+    public ServletWebServerFactory servletWebServerFactory() throws Exception {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+            protected void customizeConnector(Connector connector) {
+                if (this.getSsl() != null && this.getSsl().isEnabled()) {
+                    try {
+                        log.debug("TomcatServletWebServerFactory: ControlServiceProperties: {}", properties);
+                        log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate...");
+                        KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
+                        log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate... done");
+                    } catch (Exception e) {
+                        log.error("TomcatServletWebServerFactory: EXCEPTION while initializing HTTPS keystore, truststore and certificate:\n", e);
+                    }
+                }
+                super.customizeConnector(connector);
+            }
+        };
+        return tomcat;
     }
 
     synchronized static void exitApp(int exitCode, long gracePeriod) {

@@ -9,18 +9,21 @@
 
 FROM java:8-alpine
 
-WORKDIR /opt/ems-server
+ENV BASEDIR /opt/ems-server
+#ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
+#ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
+ENV JAR_PATH ${BASEDIR}/jars
+
+WORKDIR ${BASEDIR}
 RUN /bin/sh -c "apk add --no-cache bash"
 
-ADD control-service.jar .
-ADD esper-*.jar .
+ADD bin ./bin
+ADD jars ./jars
 ADD config ./config
 ADD resources ./resources
-ADD run-ems.sh .
 
-RUN bash -c 'touch control-service.jar'
-RUN bash -c 'touch esper-*.jar'
-RUN bash -c 'chmod +rx run-ems.sh'
 RUN mkdir logs
+RUN bash -c 'touch jars/*.jar'
+RUN bash -c 'chmod +rx ./bin/*.sh'
 
-ENTRYPOINT ["./run-ems.sh"]
+ENTRYPOINT ["./bin/run.sh"]
