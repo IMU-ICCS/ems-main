@@ -1,4 +1,4 @@
-package eu.melodic.upperware.guibackend.controller.deployment.request;
+package eu.melodic.upperware.guibackend.controller.deployment.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SecureVariableRequest {
+public class SecureVariable {
     private String name;
     private String value;
 }
