@@ -77,6 +77,8 @@ public class HistoryHelper extends AbstractCdoHelper {
 
             // update history record
             lastRecord.getInfos().add(info);
+
+            return null;
         });
 
         log.debug("{}: END: helper-id={}", methodName, id);
@@ -143,7 +145,7 @@ public class HistoryHelper extends AbstractCdoHelper {
         throw new RuntimeException("MMS Concept Instance not found in CAMEL model: camel-model="+camelModel.getName()+", concept-instance="+path);
     }
 
-    /*public static void main(String args[]) {
+   /* public static void main(String args[]) {
         try {
             String appId = "zzz_history_test";
             String cpPath = "zzz_history_test_cp";

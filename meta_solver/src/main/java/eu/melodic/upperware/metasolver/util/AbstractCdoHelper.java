@@ -54,9 +54,21 @@ public abstract class AbstractCdoHelper {
         log.debug("{}->releaseObject(): RELEASED LOCK ON: helper-id={}, cp-path={}", caller, id, objectId);
     }
 
-    public void processInTransaction(String lockName, Processor processor) throws ConcurrentAccessException {
-        // lock resource
+    public <T> T processInTransaction(String lockName, Processor<T> processor) throws ConcurrentAccessException {
+        return processInTransaction(lockName, processor, null);
+    }
+
+    public <T> T processInTransaction(String lockName, Processor<T> processor, T valueOnException) throws ConcurrentAccessException {
         String callerName = lockName;
+        return processInTransaction(lockName, callerName, processor, valueOnException);
+    }
+
+    public <T> T processInTransaction(String lockName, String callerName, Processor<T> processor) throws ConcurrentAccessException {
+        return processInTransaction(lockName, callerName, processor, null);
+    }
+
+    public <T> T processInTransaction(String lockName, String callerName, Processor<T> processor, T valueOnException) throws ConcurrentAccessException {
+        // lock resource
         lockObject(lockName, callerName);
 
         CDOSessionX session = null;
@@ -68,14 +80,18 @@ public abstract class AbstractCdoHelper {
             transaction = session.openTransaction();
 
             // call model processor passing transaction as argument
-            processor.process(transaction);
+            T result = processor.process(transaction);
 
             // commit changes
             transaction.commit();
             transaction = null;
 
+            return result;
+
         } catch (Exception ex) {
             log.error("{}: EXCEPTION: helper-id={}, Exception={}", callerName, id, ex);
+            if (valueOnException!=null) return valueOnException;
+            throw new RuntimeException(ex);
         } finally {
             if (transaction != null) {
                 transaction.rollback();
@@ -88,7 +104,7 @@ public abstract class AbstractCdoHelper {
     }
 
     @FunctionalInterface
-    public static interface Processor {
-        public void process(CDOTransaction transaction);
+    public static interface Processor<T> {
+        public T process(CDOTransaction transaction);
     }
 }
