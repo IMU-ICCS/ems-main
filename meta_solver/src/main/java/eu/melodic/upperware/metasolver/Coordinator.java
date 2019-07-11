@@ -19,6 +19,7 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
+import eu.melodic.upperware.metasolver.util.HistoryHelper;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -124,23 +125,30 @@ public class Coordinator implements ApplicationContextAware {
         double[] solUv = helper.getSolutionUtilities(applicationId, cpModelPath);
         log.debug("MetaSolver.Coordinator: solUv: {}", solUv);
 
+        // Get history helper
+        HistoryHelper history = new HistoryHelper();
+
         // check if an error occurred
         if (solUv == null) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: An error occurred: appId={}, model={}", applicationId, cpModelPath);
+            history.addCpSolutionHistoryInfo(applicationId, cpModelPath, false, "An error occurred");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[0] == -2) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
+            history.addCpSolutionHistoryInfo(applicationId, cpModelPath, false, "No solutions found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[1] == -1) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No candidate solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
+            history.addCpSolutionHistoryInfo(applicationId, cpModelPath, false, "No candidate solution found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
 
         // check if a solution is deployed. If no solution is deployed accept new solution
         if (solUv[0] < 0) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
+            history.addCpSolutionHistoryInfo(applicationId, cpModelPath, true, "No deployed solution found. Accepting new solution");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         }
 
@@ -150,9 +158,11 @@ public class Coordinator implements ApplicationContextAware {
         double newSolUv = solUv[1];
         if (newSolUv > uvThresholdFactor * depSolUv) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+            history.addCpSolutionHistoryInfo(applicationId, cpModelPath, true, "New solution is ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         } else {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+            history.addCpSolutionHistoryInfo(applicationId, cpModelPath, false, "New solution is NOT ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
         }
     }
@@ -210,6 +220,10 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
         setMetricValuesInCpModel(appId, cpModelPath);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
+
+        // Create a new execution history record
+        /*HistoryHelper history = new HistoryHelper();
+        history.addNewHistoryRecord(appId, "APPLICATION_RECONFIGURATION", null, null, null, null);*/
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);

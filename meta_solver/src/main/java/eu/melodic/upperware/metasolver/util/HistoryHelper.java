@@ -31,23 +31,85 @@ import java.util.*;
 @Slf4j
 public class HistoryHelper extends AbstractCdoHelper {
 
+    private boolean initialized = false;
+
     private String mmsBasePath;
-    private String mmsTypeBasePath;
-    private String mmsComponentPath;
-    private String mmsSuccessPath;
-    private String mmsFailurePath;
+    private String mmsActionsBasePath;
+    private String mmsComponentsBasePath;
+    private String mmsTransitionsBasePath;
 
-    public void initHelperWithDefaultMetadata(String basePath) {
-        initHelperMetadata(basePath, "StateTransition", ".PlatformComponent.META_SOLVER", ".PlatformAction.CP_SOLUTION_PRODUCED", ".PlatformAction.CP_SOLUTION_FAILED");
+    private String mmsMetasolverPath;
+    private String mmsCpSolutionSuccessPath;
+    private String mmsCpSolutionFailurePath;
+
+    // ------------------------------------------------------------------------
+
+    public void initHelperMetadataWithBase(String basePath) {
+        log.debug("HistoryHelper: Initializing Helper #{} metadata with base path: {}", id, basePath);
+        initHelperMetadata(basePath, null, null, null, "META_SOLVER", "CP_SOLUTION_PRODUCED", "CP_SOLUTION_FAILED");
     }
 
-    public void initHelperMetadata(String basePath, String typesBasePath, String componentPath, String successActionPath, String failureActionPath) {
-        mmsBasePath = Objects.toString(basePath, "");
-        mmsTypeBasePath = mmsBasePath + (!StringUtils.startsWith(typesBasePath, ".") ? "." : "") + typesBasePath;
-        mmsComponentPath = mmsBasePath + (!StringUtils.startsWith(componentPath, ".") ? "." : "") + componentPath;
-        mmsSuccessPath = mmsBasePath + (!StringUtils.startsWith(successActionPath, ".") ? "." : "") + successActionPath;
-        mmsFailurePath = mmsBasePath + (!StringUtils.startsWith(failureActionPath, ".") ? "." : "") + failureActionPath;
+    public synchronized void initHelperMetadata(String basePath, String actionsBasePath, String componentsBasePath, String transitionsBasePath, String metasolverPath, String CpSolutionSuccessActionPath, String CpSolutionFailureActionPath) {
+        if (StringUtils.isEmpty(basePath)) throw new IllegalArgumentException("'basePath' argument cannot be empty");
+
+        mmsBasePath = basePath;
+        mmsActionsBasePath = mmsBasePath + "." + Objects.toString(actionsBasePath, "PlatformAction");
+        mmsComponentsBasePath = mmsBasePath + "." + Objects.toString(componentsBasePath, "PlatformComponent");
+        mmsTransitionsBasePath = mmsBasePath + "." + Objects.toString(transitionsBasePath, "StateTransition");
+
+        mmsMetasolverPath = mmsComponentsBasePath + "." + metasolverPath;
+        mmsCpSolutionSuccessPath = mmsActionsBasePath + "." + CpSolutionSuccessActionPath;
+        mmsCpSolutionFailurePath = mmsActionsBasePath + "." + CpSolutionFailureActionPath;
+
+        initialized = true;
+        log.debug("HistoryHelper: Helper #{} metadata initialized", id);
     }
+
+    public void initHelperMetadataFromCamelModel(String applicationId) throws ConcurrentAccessException {
+        log.debug("HistoryHelper: Attempting to initialize Helper #{} metadata from CAMEL model: {}", id, applicationId);
+
+        String methodName = "initHelperMetadataFromCamelModel";
+        String historyBasePath = processInTransaction(methodName, transaction -> {
+            // get CAMEL model
+            String camelPath = StringUtils.startsWith(applicationId, "/") ? applicationId : "/" + applicationId;
+            CDOResource resource = transaction.getResource(camelPath);
+            CamelModel camelModel = (CamelModel) resource.getContents().get(0);
+
+            // get metadata schema
+            Optional<MetaDataModel> opt = camelModel.getMetadataModels()
+                    .stream()
+                    .filter(model -> {
+                        if (model.getMetadataElements().size()==1) {
+                            if (model.getMetadataElements().get(0) instanceof MmsConcept) {
+                                MmsConcept root = (MmsConcept)model.getMetadataElements().get(0);
+                                Optional<MmsConcept> opt1 = root.getConcept()
+                                        .stream()
+                                        .filter(child -> "History".equals(child.getId()))
+                                        .findFirst();
+                                return opt1.isPresent();
+                            }
+                        }
+                        return false;
+                    })
+                    .findFirst();
+            if (opt.isPresent()) {
+                String modelName = opt.get().getName();
+                String rootName = opt.get().getMetadataElements().get(0).getId();
+                return String.join(".", modelName, rootName, "History");
+            }
+
+            return null;
+        });
+
+        if (StringUtils.isNotEmpty(historyBasePath)) {
+            log.debug("HistoryHelper: History base path from CAMEL model: {}", historyBasePath);
+            initHelperMetadataWithBase(historyBasePath);
+        } else {
+            log.warn("HistoryHelper: Helper #{} metadata failed to initialize from CAMEL model: {}", id, applicationId);
+        }
+    }
+
+    // ------------------------------------------------------------------------
 
     public void addNewHistoryRecord(String applicationId, String typeName, String causeDescription, String description,
                                     String newDeploymentInstanceName, String newDataInstanceName)
@@ -61,52 +123,82 @@ public class HistoryHelper extends AbstractCdoHelper {
                                     String oldDataInstanceName, String newDataInstanceName)
             throws ConcurrentAccessException
     {
+        initHelperMetadataFromCamelModel(applicationId);
+
         String methodName = "HistoryHelper.addNewHistoryRecord()";
         log.debug("{}: BEGIN: helper-id={}, app-id={}, old-deployment-instance={}, new-deployment-instance={}, old-data-instance={}, new-data-instance={}",
                 methodName, id, applicationId, oldDeploymentInstanceName, newDeploymentInstanceName, oldDataInstanceName, newDataInstanceName);
 
         processInTransaction(methodName, transaction -> {
             // get CAMEL model
+            log.trace("HistoryHelper: Loading Camel model: {}", applicationId);
             String camelPath = StringUtils.startsWith(applicationId, "/") ? applicationId : "/" + applicationId;
             CDOResource resource = transaction.getResource(camelPath);
             CamelModel camelModel = (CamelModel) resource.getContents().get(0);
 
+            // get execution history records
+            List<ExecutionModel> execModels = camelModel.getExecutionModels();
+            log.trace("HistoryHelper: Execution models: size={}", execModels.size());
+            if (execModels.size()==0)
+                throw new IllegalStateException("Camel model does not contain any execution model: "+applicationId);
+            List<HistoryRecord> records = execModels.get(execModels.size() - 1).getHistoryRecords();
+            log.trace("HistoryHelper: History Records: size={}", records.size());
+
+            // find last deployment instance model and last data instance model
+            // (one of them might not be in the last history record)
+            DeploymentInstanceModel lastDeploymentInstanceModel = null;
+            DataInstanceModel lastDataInstanceModel = null;
+            for (int i=records.size()-1; i>=0; i--) {
+                if (lastDeploymentInstanceModel==null)
+                    lastDeploymentInstanceModel = records.get(i).getToDeploymentInstanceModel();
+                if (lastDataInstanceModel==null)
+                    lastDataInstanceModel = records.get(i).getToDataInstanceModel();
+            }
+            log.trace("HistoryHelper: Last deployment instance model: {}", lastDeploymentInstanceModel);
+            log.trace("HistoryHelper: Last data instance model: {}", lastDataInstanceModel);
+
             // get old deployment instances from camel model
             DeploymentInstanceModel oldDeploymentInstance = StringUtils.isNotEmpty(oldDeploymentInstanceName)
                     ? getModelInCamel(camelModel.getDeploymentModels(), DeploymentInstanceModel.class, oldDeploymentInstanceName)
-                    : null;
+                    : lastDeploymentInstanceModel;
+            log.trace("HistoryHelper: Old deployment instance model: {}", oldDeploymentInstance);
 
             // get old data instances from camel model
             DataInstanceModel oldDataInstance = StringUtils.isNotEmpty(oldDataInstanceName)
                     ? getModelInCamel(camelModel.getDataModels(), DataInstanceModel.class, oldDataInstanceName)
-                    : null;
+                    : lastDataInstanceModel;
+            log.trace("HistoryHelper: Old data instance model: {}", oldDataInstance);
 
             // get new deployment instance model
             DeploymentInstanceModel newDeploymentInstance = StringUtils.isNotEmpty(newDeploymentInstanceName)
                     ? getModelInCamel(camelModel.getDeploymentModels(), DeploymentInstanceModel.class, newDeploymentInstanceName)
                     : null;
+            log.trace("HistoryHelper: New deployment instance model: {}", newDeploymentInstance);
 
             // get new data instance model
             DataInstanceModel newDataInstance = StringUtils.isNotEmpty(newDataInstanceName)
                     ? getModelInCamel(camelModel.getDataModels(), DataInstanceModel.class, newDataInstanceName)
                     : null;
+            log.trace("HistoryHelper: New data instance model: {}", newDataInstance);
 
             // check if at least one of new deployment and new data instances are not null
-            if (newDeploymentInstance==null && newDataInstance==null) {
+            /*if (newDeploymentInstance==null && newDataInstance==null) {
                 throw new IllegalArgumentException("At least one of new deployment instance or new data instance must be not null and exist in camel model: "+applicationId);
-            }
+            }*/
 
             // get MMS type and create cause
-            MmsConceptInstance mmsType = getMetadataConceptInstance(camelModel, mmsTypeBasePath+"."+typeName);
+            MmsConceptInstance mmsType = getMetadataConceptInstance(camelModel, mmsTransitionsBasePath+"."+typeName);
             Cause cause = createCause(causeDescription);
+            log.trace("HistoryHelper: MMS state transition: {}", mmsType);
 
             // create a new history record
             HistoryRecord record = createHistoryRecord(mmsType, cause, description,
                     oldDeploymentInstance, newDeploymentInstance, oldDataInstance, newDataInstance);
+            log.trace("HistoryHelper: New history record: {}", record);
 
             // get last execution model and append new history record
-            List<ExecutionModel> execModels = camelModel.getExecutionModels();
-            execModels.get(execModels.size() - 1).getHistoryRecords().add(record);
+            records.add(record);
+            log.trace("HistoryHelper: New history record added");
 
             return null;
         });
@@ -114,22 +206,9 @@ public class HistoryHelper extends AbstractCdoHelper {
         log.debug("{}: END: helper-id={}", methodName, id);
     }
 
-    public <T extends Model,U extends Model> U getModelInCamel(Collection<T> modelsList, Class<U> clazz, String modelName) {
-        U result = null;
-        if (StringUtils.isNotEmpty(modelName)) {
-            Optional<U> opt = modelsList.stream()
-                    .filter(model -> modelName.equals(model.getName()))
-                    .filter(model -> clazz.isAssignableFrom(model.getClass()))
-                    .map(model -> clazz.cast(model))
-                    .findFirst();
-            if (opt.isPresent()) {
-                result = opt.get();
-            }
-        }
-        return result;
-    }
-
     public void closeLastHistoryRecord(String applicationId) throws ConcurrentAccessException {
+        initHelperMetadataFromCamelModel(applicationId);
+
         String methodName = "HistoryHelper.closeLastHistoryRecord()";
         log.debug("{}: BEGIN: helper-id={}, app-id={}", methodName, id, applicationId);
 
@@ -152,33 +231,9 @@ public class HistoryHelper extends AbstractCdoHelper {
         log.debug("{}: END: helper-id={}", methodName, id);
     }
 
-    public HistoryRecord createHistoryRecord(MmsConceptInstance mmsType, Cause cause, String description,
-                                             DeploymentInstanceModel oldDeployment, DeploymentInstanceModel newDeployment,
-                                             DataInstanceModel oldData, DataInstanceModel newData)
-    {
-        Date now = new Date();
-        HistoryRecord record = ExecutionFactory.eINSTANCE.createHistoryRecord();
-        record.setName("Record_"+now.getTime());
-        record.setType(mmsType);
-        record.setCause(cause);
-        record.setDescription(description);
-        record.setStartTime(now);
-        record.setEndTime(now);
-        record.setFromDeploymentInstanceModel(oldDeployment);
-        record.setToDeploymentInstanceModel(newDeployment);
-        record.setFromDataInstanceModel(oldData);
-        record.setToDataInstanceModel(newData);
-        return record;
-    }
-
-    public Cause createCause(String description) {
-        Cause cause = ExecutionFactory.eINSTANCE.createCause();
-        cause.setName("Cause_"+System.currentTimeMillis());
-        if (description!=null) cause.setDescription(description);
-        return cause;
-    }
-
     public void addCpSolutionHistoryInfo(String applicationId, String cpModelPath, boolean success, String description) throws ConcurrentAccessException {
+        initHelperMetadataFromCamelModel(applicationId);
+
         String methodName = "HistoryHelper.addCpSolutionHistoryInfo()";
         log.debug("{}: BEGIN: helper-id={}, app-id={}, cp-path={}", methodName, id, applicationId, cpModelPath);
 
@@ -189,9 +244,9 @@ public class HistoryHelper extends AbstractCdoHelper {
             CamelModel camelModel = (CamelModel) resource.getContents().get(0);
 
             // get MMS concept instances
-            MmsConceptInstance mmsMetaSolver = getMetadataConceptInstance(camelModel, mmsComponentPath);
-            MmsConceptInstance mmsSuccess = getMetadataConceptInstance(camelModel, mmsSuccessPath);
-            MmsConceptInstance mmsFailure = getMetadataConceptInstance(camelModel, mmsFailurePath);
+            MmsConceptInstance mmsMetaSolver = getMetadataConceptInstance(camelModel, mmsMetasolverPath);
+            MmsConceptInstance mmsSuccess = getMetadataConceptInstance(camelModel, mmsCpSolutionSuccessPath);
+            MmsConceptInstance mmsFailure = getMetadataConceptInstance(camelModel, mmsCpSolutionFailurePath);
             log.debug("{}: MMS concept instance: MetaSolver: {}", methodName, mmsMetaSolver.getName());
             log.debug("{}: MMS concept instance: Success:    {}", methodName, mmsSuccess.getName());
             log.debug("{}: MMS concept instance: Failure:    {}", methodName, mmsFailure.getName());
@@ -232,6 +287,34 @@ public class HistoryHelper extends AbstractCdoHelper {
         log.debug("{}: END: helper-id={}", methodName, id);
     }
 
+    // ------------------------------------------------------------------------
+
+    public HistoryRecord createHistoryRecord(MmsConceptInstance mmsType, Cause cause, String description,
+                                             DeploymentInstanceModel oldDeployment, DeploymentInstanceModel newDeployment,
+                                             DataInstanceModel oldData, DataInstanceModel newData)
+    {
+        Date now = new Date();
+        HistoryRecord record = ExecutionFactory.eINSTANCE.createHistoryRecord();
+        record.setName("Record_"+now.getTime());
+        record.setType(mmsType);
+        record.setCause(cause);
+        record.setDescription(description);
+        record.setStartTime(now);
+        record.setEndTime(now);
+        record.setFromDeploymentInstanceModel(oldDeployment);
+        record.setToDeploymentInstanceModel(newDeployment);
+        record.setFromDataInstanceModel(oldData);
+        record.setToDataInstanceModel(newData);
+        return record;
+    }
+
+    public Cause createCause(String description) {
+        Cause cause = ExecutionFactory.eINSTANCE.createCause();
+        cause.setName("Cause_"+System.currentTimeMillis());
+        if (description!=null) cause.setDescription(description);
+        return cause;
+    }
+
     public HistoryInfo createHistoryInfo(MmsConceptInstance subject, MmsConceptInstance action, String object, EObject objRef, String description) {
         Date now = new Date();
         HistoryInfo info = ExecutionFactory.eINSTANCE.createHistoryInfo();
@@ -244,6 +327,23 @@ public class HistoryHelper extends AbstractCdoHelper {
         info.setStartTime(now);
         info.setEndTime(now);
         return info;
+    }
+
+    // ------------------------------------------------------------------------
+
+    public <T extends Model,U extends Model> U getModelInCamel(Collection<T> modelsList, Class<U> clazz, String modelName) {
+        U result = null;
+        if (StringUtils.isNotEmpty(modelName)) {
+            Optional<U> opt = modelsList.stream()
+                    .filter(model -> modelName.equals(model.getName()))
+                    .filter(model -> clazz.isAssignableFrom(model.getClass()))
+                    .map(model -> clazz.cast(model))
+                    .findFirst();
+            if (opt.isPresent()) {
+                result = opt.get();
+            }
+        }
+        return result;
     }
 
     public MmsConceptInstance getMetadataConceptInstance(CamelModel camelModel, String path) {
@@ -298,8 +398,11 @@ public class HistoryHelper extends AbstractCdoHelper {
             String appId = "zzz_history_test";
             String cpPath = "zzz_history_test_cp";
             HistoryHelper helper = new HistoryHelper();
-//            helper.initHelperMetadata("MetaDataModel_1.MELODICMetadataSchema.History", ".PlatformComponent.META_SOLVER", ".PlatformAction.CP_SOLUTION_PRODUCED", ".PlatformAction.CP_SOLUTION_FAILED");
-            helper.initHelperWithDefaultMetadata("MetaDataModel_1.MELODICMetadataSchema.History");
+            *//*helper.initHelperMetadata("MetaDataModel_1.MELODICMetadataSchema.History",
+                    "PlatformAction", "PlatformComponent", "StateTransition",
+                    "META_SOLVER", "CP_SOLUTION_PRODUCED", "CP_SOLUTION_FAILED");*//*
+            //helper.initHelperMetadataWithBase("MetaDataModel_1.MELODICMetadataSchema.History");
+            //helper.initHelperMetadataFromCamelModel(appId);
 
             helper.addNewHistoryRecord(appId, "APPLICATION_DEPLOYMENT", "A cause", "New History Record",
                     "DeplInst_1", null);
