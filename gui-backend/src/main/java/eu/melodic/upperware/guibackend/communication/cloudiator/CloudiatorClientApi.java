@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend.communication.cloudiator;
 
+import eu.melodic.upperware.guibackend.exception.SecureVariableNotFoundException;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
@@ -108,6 +109,31 @@ public class CloudiatorClientApi implements CloudiatorApi {
     }
 
     @Override
+    public String getSecureVariable(String key) {
+        try {
+            log.info("GET secure variable with key: {}", key);
+            return securityApi.retrieveSecure(key).getContent();
+        } catch (ApiException e) {
+            if (e.getResponseBody() != null && e.getResponseBody().startsWith("Response code 404")) {
+                log.error("Secure variable not found error");
+                throw new SecureVariableNotFoundException(String.format("Secure variable with key %s not found in secure store", key), key);
+            }
+            log.error("Error by getting secure variable with name: {}", key, e);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Error by getting secure variable with name: %s from Cloudiator's secure store", key));
+        }
+    }
+
+    @Override
+    public void deleteSecureVariable(String key) {
+        try {
+            securityApi.deleteSecure(key);
+        } catch (ApiException e) {
+            log.error("Error by deleting secure variable with name: {}", key, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by getting secure variable with name: %s from Cloudiator's secure store", key));
+        }
+    }
+
+    @Override
     public List<Node> getVMFromNodeList() {
         return this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.VM);
     }
@@ -142,11 +168,31 @@ public class CloudiatorClientApi implements CloudiatorApi {
     }
 
     @Override
+    public void deleteNode(String nodeId) {
+        try {
+            nodeApi.deleteNode(nodeId);
+        } catch (ApiException e) {
+            log.error("Error by deleting node with id: {}", nodeId, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
     public List<CloudiatorProcess> getProcessList() {
         try {
             return processApi.getProcesses(null);
         } catch (ApiException e) {
             log.error("Error by getting Cloudiator processes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void deleteCloudiatorProcess(String processId) {
+        try {
+            processApi.deleteProcess(processId);
+        } catch (ApiException e) {
+            log.error("Error by deleting process with id: {}", processId, e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }

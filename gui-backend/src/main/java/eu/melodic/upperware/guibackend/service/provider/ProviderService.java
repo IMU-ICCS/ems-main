@@ -1,9 +1,12 @@
 package eu.melodic.upperware.guibackend.service.provider;
 
+import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
 import eu.melodic.upperware.guibackend.exception.CloudDefinitionNotFoundException;
 import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
+import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -23,7 +27,13 @@ public class ProviderService {
 
     private ProviderIdCreatorService providerIdCreatorService;
     private ProviderValidationService providerValidationService;
+    private CloudiatorClientApi cloudiatorClientApi;
+    private SecureStoreService secureStoreService;
+
     private final static String YAML_CONFIG_FILE_NAME = "gui_providers_data.yaml";
+    private final static String SECURE_VARIABLE_PREFIX = "{{";
+    private final static String SECURE_VARIABLE_SUFFIX = "}}";
+
 
     // todo get from DB
     public List<CloudDefinition> getCloudDefinitionsForAllProviders() {
@@ -42,16 +52,29 @@ public class ProviderService {
 
     private List<CloudDefinition> mapResultFromYamlToCloudDefinitionList(Object resultLoadedFromYaml) {
         ObjectMapper mapper = new ObjectMapper();
-        return resultLoadedFromYaml == null ? new ArrayList<>() : mapper.convertValue(resultLoadedFromYaml,
+        List<CloudDefinition> result = resultLoadedFromYaml == null ? new ArrayList<>() : mapper.convertValue(resultLoadedFromYaml,
                 new TypeReference<List<CloudDefinition>>() {
                 });
+        return result.stream()
+                .map(this::fillSecureVariableInCredentials)
+                .collect(Collectors.toList());
     }
 
     // todo get from DB
     public CloudDefinition getCloudDefinition(int cloudDefId) {
         return getCloudDefinitionsForAllProviders().stream()
                 .filter(cloudDefinition -> cloudDefId == cloudDefinition.getId()).findAny()
+                .map(this::fillSecureVariableInCredentials)
                 .orElseThrow(() -> new CloudDefinitionNotFoundException(cloudDefId));
+    }
+
+    public CloudDefinition fillSecureVariableInCredentials(CloudDefinition cloudDefinition) {
+        log.info("Checking secure variables for secret key: {}", cloudDefinition.getCredential().getSecret());
+        List<String> secureVariables = secureStoreService.findSecureVariables(cloudDefinition.getCredential().getSecret());
+        if (secureVariables.size() == 1) {
+            cloudDefinition.getCredential().setSecret(cloudiatorClientApi.getSecureVariable(secureVariables.get(0)));
+        }
+        return cloudDefinition;
     }
 
     // todo save in DB
@@ -65,10 +88,24 @@ public class ProviderService {
         // add id for each objects, todo remove for using DB
         providerIdCreatorService.addIdForCloudDefinitionElements(cloudDefinition, cloudDefinitionsForAllProviders);
 
+        saveSecretInSecureStore(cloudDefinition);
+
         cloudDefinitionsForAllProviders.add(cloudDefinition);
 
         updateYamlFile(cloudDefinitionsForAllProviders);
         return cloudDefinition;
+    }
+
+    private void saveSecretInSecureStore(CloudDefinition cloudDefinition) {
+        Pair<String, String> keyLabelForSecret = createKeyLabelForSecret(cloudDefinition);
+        log.info("Saving secret in secure store for user {} under key: {}", cloudDefinition.getCredential().getUser(), keyLabelForSecret.getKey());
+        this.cloudiatorClientApi.storeSecureVariable(keyLabelForSecret.getKey(), cloudDefinition.getCredential().getSecret());
+        cloudDefinition.getCredential().setSecret(keyLabelForSecret.getValue());
+    }
+
+    private Pair<String, String> createKeyLabelForSecret(CloudDefinition cloudDefinition) {
+        String keyForSecret = cloudDefinition.getApi().getProviderName() + "-" + cloudDefinition.getCredential().getUser() + "-SECRET";
+        return Pair.of(keyForSecret, SECURE_VARIABLE_PREFIX + keyForSecret + SECURE_VARIABLE_SUFFIX);
     }
 
     // todo update in DB
@@ -90,6 +127,9 @@ public class ProviderService {
         providerIdCreatorService.createIdsForNewElements(cloudDefinitionToUpdate, cloudDefinitionsForAllProviders);
 
         cloudDefinitionsForAllProviders.remove(oldCloudDefinition);
+
+        saveSecretInSecureStore(cloudDefinitionToUpdate);
+
         cloudDefinitionsForAllProviders.add(cloudDefinitionToUpdate);
 
         updateYamlFile(cloudDefinitionsForAllProviders);
@@ -105,10 +145,19 @@ public class ProviderService {
                 .findFirst()
                 .orElseThrow(() -> new CloudDefinitionNotFoundException(cloudDefId));
         cloudDefinitionsForAllProviders.remove(cloudDefinitionToDelete);
+
+        cloudiatorClientApi.deleteSecureVariable(createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
         updateYamlFile(cloudDefinitionsForAllProviders);
     }
 
     private void updateYamlFile(List<CloudDefinition> cloudDefinitionsForAllProviders) {
+        log.info("Updating yaml file");
+
+        // replace plain text secrets with labels
+        cloudDefinitionsForAllProviders = cloudDefinitionsForAllProviders.stream()
+                .map(this::replaceSecretWithLabel)
+                .collect(Collectors.toList());
+
         Yaml yaml = new Yaml();
         FileWriter writer = null;
         try {
@@ -118,4 +167,10 @@ public class ProviderService {
         }
         yaml.dump(cloudDefinitionsForAllProviders, writer);
     }
+
+    private CloudDefinition replaceSecretWithLabel(CloudDefinition cloudDefinition) {
+        cloudDefinition.getCredential().setSecret(createKeyLabelForSecret(cloudDefinition).getValue());
+        return cloudDefinition;
+    }
+
 }

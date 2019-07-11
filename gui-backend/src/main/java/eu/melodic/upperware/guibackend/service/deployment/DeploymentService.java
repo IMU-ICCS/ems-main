@@ -3,13 +3,13 @@ package eu.melodic.upperware.guibackend.service.deployment;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
 import eu.melodic.upperware.guibackend.communication.mule.MuleClientApi;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
-import eu.melodic.upperware.guibackend.controller.deployment.request.SecureVariableRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
+import eu.melodic.upperware.guibackend.service.provider.ProviderService;
+import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.net4j.connector.ConnectorException;
@@ -24,12 +24,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,10 +37,14 @@ public class DeploymentService {
     private MuleClientApi muleClientApi;
     private DeploymentMapper deploymentMapper;
     private CdoService cdoService;
-    private CloudiatorClientApi cloudiatorClientApi;
-    private static final Pattern SECURE_VARIABLE_PATTERN = Pattern.compile("\\{\\{(.*?)}}");
+    private ProviderService providerService;
+    private SecureStoreService secureStoreService;
 
     public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token) {
+        deploymentRequest.setCloudDefinitions(deploymentRequest.getCloudDefinitions()
+                .stream()
+                .map(cloudDefinition -> providerService.fillSecureVariableInCredentials(cloudDefinition))
+                .collect(Collectors.toList()));
         DeploymentProcessRequest deploymentProcessRequest = deploymentMapper
                 .mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
         return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token);
@@ -102,30 +103,16 @@ public class DeploymentService {
     }
 
     public UploadXmiResponse findSecureVariables(MultipartFile xmiFile, String cdoName) {
-        List<String> secureVariablesKeys = new ArrayList<>();
+        List<String> secureVariablesKeys;
         try {
             String xmiContent = new String(xmiFile.getBytes());
-            Matcher matcher = SECURE_VARIABLE_PATTERN.matcher(xmiContent);
-            while (matcher.find()) {
-                secureVariablesKeys.add(matcher.group(1));
-                log.info("Found secure variables: {}", matcher.group(1));
-            }
+            secureVariablesKeys = secureStoreService.findSecureVariables(xmiContent);
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by parsing your uploaded file %s in order to find sensitive variables", xmiFile.getName()));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by parsing your uploaded file %s in order to find secure variables", xmiFile.getName()));
         }
         return UploadXmiResponse.builder()
                 .modelName(cdoName)
-                .sensitiveVariables(secureVariablesKeys).build();
-    }
-
-    public List<String> saveSecureVariables(List<SecureVariableRequest> secureVariablesRequest) {
-        return secureVariablesRequest
-                .stream()
-                .peek(secureVariableRequest -> {
-                    log.info("Saving secure variable with key: {}", secureVariableRequest.getName());
-                    cloudiatorClientApi.storeSecureVariable(secureVariableRequest.getName(), secureVariableRequest.getValue());
-                })
-                .map(SecureVariableRequest::getName)
-                .collect(Collectors.toList());
+                .secureVariables(secureStoreService.fillSecureVariablesValues(secureVariablesKeys))
+                .build();
     }
 }

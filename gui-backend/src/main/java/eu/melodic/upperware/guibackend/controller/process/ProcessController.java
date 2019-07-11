@@ -93,10 +93,24 @@ public class ProcessController {
         return cloudiatorClientApi.getNodeList();
     }
 
+    @DeleteMapping("/deployment/node/{nodeId}")
+    public void deleteNode(@PathVariable("nodeId") String nodeId) {
+        log.info("DELETE request for node with wid: {}", nodeId);
+        cloudiatorClientApi.deleteNode(nodeId);
+        log.info("Node with id: {} successfully deleted", nodeId);
+    }
+
     @GetMapping("/deployment/process")
     public List<CloudiatorProcess> getCloudiatorProcessList() {
         log.info("GET Cloudiator processes list");
         return cloudiatorClientApi.getProcessList();
+    }
+
+    @DeleteMapping("/deployment/process/{processId}")
+    public void deleteCloudiatorProcess(@PathVariable("processId") String processId) {
+        log.info("DELETE request for Cloudiator process with id: {}", processId);
+        cloudiatorClientApi.deleteCloudiatorProcess(processId);
+        log.info("Cloudiator process with id: {} successfully deleted", processId);
     }
 
     @GetMapping("/deployment/queue")

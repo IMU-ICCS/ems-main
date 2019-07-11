@@ -17,6 +17,10 @@ public interface CloudiatorApi {
 
     List<Function> getFunctionList();
 
+    String getSecureVariable(String key);
+
+    void deleteSecureVariable(String key);
+
     List<Node> getVMFromNodeList();
 
     List<Node> getFaasFromNodeList();
@@ -30,4 +34,8 @@ public interface CloudiatorApi {
     List<Queue> getQueueList();
 
     List<Job> getJobList();
+
+    void deleteNode(String nodeId);
+
+    void deleteCloudiatorProcess(String processId);
 }
