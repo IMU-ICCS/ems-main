@@ -1,8 +1,8 @@
 package eu.melodic.upperware.guibackend.communication.cloudiator;
 
+import eu.melodic.upperware.guibackend.exception.SecureVariableNotFoundException;
 import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.api.CloudApi;
-import io.github.cloudiator.rest.api.SecurityApi;
+import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,6 +21,10 @@ public class CloudiatorClientApi implements CloudiatorApi {
 
     private CloudApi cloudApi;
     private SecurityApi securityApi;
+    private NodeApi nodeApi;
+    private ProcessApi processApi;
+    private QueueApi queueApi;
+    private JobApi jobApi;
     private final String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
@@ -93,18 +98,6 @@ public class CloudiatorClientApi implements CloudiatorApi {
     }
 
     @Override
-    public List<VirtualMachine> getVMList() {
-        try {
-            List<VirtualMachine> vMs = cloudApi.findVMs(null);
-            log.info("Number of VMs in response: {}", vMs.size());
-            return vMs;
-        } catch (ApiException e) {
-            log.error("Error by getting VMs list: ", e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
-        }
-    }
-
-    @Override
     public void storeSecureVariable(String key, String value) {
         Text cloudiatorText = new Text();
         try {
@@ -112,6 +105,115 @@ public class CloudiatorClientApi implements CloudiatorApi {
         } catch (ApiException ex) {
             log.error("Error by secure storing of variable with name: {}", key, ex);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by storing secure variable with name: %s in Cloudiator's secure store", key));
+        }
+    }
+
+    @Override
+    public String getSecureVariable(String key) {
+        try {
+            log.info("GET secure variable with key: {}", key);
+            return securityApi.retrieveSecure(key).getContent();
+        } catch (ApiException e) {
+            if (e.getResponseBody() != null && e.getResponseBody().startsWith("Response code 404")) {
+                log.error("Secure variable not found error");
+                throw new SecureVariableNotFoundException(String.format("Secure variable with key %s not found in secure store", key), key);
+            }
+            log.error("Error by getting secure variable with name: {}", key, e);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Error by getting secure variable with name: %s from Cloudiator's secure store", key));
+        }
+    }
+
+    @Override
+    public void deleteSecureVariable(String key) {
+        try {
+            securityApi.deleteSecure(key);
+        } catch (ApiException e) {
+            log.error("Error by deleting secure variable with name: {}", key, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by getting secure variable with name: %s from Cloudiator's secure store", key));
+        }
+    }
+
+    @Override
+    public List<Node> getVMFromNodeList() {
+        return this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.VM);
+    }
+
+    @Override
+    public List<Node> getFaasFromNodeList() {
+        return this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.FAAS);
+    }
+
+    private List<Node> getNodeWithTypeFromNodeList(Node.NodeTypeEnum nodeTypeEnum) {
+        try {
+            List<Node> vmsFromNode = nodeApi.findNodes()
+                    .stream()
+                    .filter(node -> nodeTypeEnum.equals(node.getNodeType()))
+                    .collect(Collectors.toList());
+            log.info("Number of {} nodes in response: {}", nodeTypeEnum, vmsFromNode.size());
+            return vmsFromNode;
+        } catch (ApiException e) {
+            log.error("Error by getting {} nodes list: ", nodeTypeEnum, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Node> getNodeList() {
+        try {
+            return nodeApi.findNodes();
+        } catch (ApiException e) {
+            log.error("Error by getting nodes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void deleteNode(String nodeId) {
+        try {
+            nodeApi.deleteNode(nodeId);
+        } catch (ApiException e) {
+            log.error("Error by deleting node with id: {}", nodeId, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<CloudiatorProcess> getProcessList() {
+        try {
+            return processApi.getProcesses(null);
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator processes list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void deleteCloudiatorProcess(String processId) {
+        try {
+            processApi.deleteProcess(processId);
+        } catch (ApiException e) {
+            log.error("Error by deleting process with id: {}", processId, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Queue> getQueueList() {
+        try {
+            return queueApi.getQueuedTasks();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator queues list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Job> getJobList() {
+        try {
+            return jobApi.findJobs();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator jobs list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }
 }

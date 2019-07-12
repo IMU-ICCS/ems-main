@@ -15,7 +15,10 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 public interface CdoServerApi {
 
+  //remove in the future
   DeploymentInstanceModel getModelToDeploy(String resourceName, CDOTransaction tr);
+
+  DeploymentInstanceModel getModelToDeploy(String resourceName, String deploymentInstanceName, CDOTransaction tr);
 
   DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr);
 

@@ -23,8 +23,6 @@ public class DeploymentMapper {
 
     public DeploymentProcessRequest mapDeploymentRequestToDeploymentProcessRequest(DeploymentRequest deploymentRequest, Watermark watermark) {
         DeploymentProcessRequest deploymentProcessRequest = new DeploymentProcessRequestImpl();
-        deploymentProcessRequest.setUsername(deploymentRequest.getUsername());
-        deploymentProcessRequest.setPassword(deploymentRequest.getPassword());
         deploymentProcessRequest.setApplicationId(deploymentRequest.getApplicationId());
         deploymentProcessRequest.setWatermark(watermark);
         deploymentProcessRequest.setCloudDefinitions(mapCloudDefinitionsToRequest(deploymentRequest.getCloudDefinitions()));

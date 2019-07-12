@@ -75,7 +75,7 @@ public class ApplyCoordinator {
 				}
 				camelModel.getDeploymentModels().add(newDeploymentInstanceModel);
 				transaction.commit();
-
+				applySolutionNotificationSender.notifySolutionApplied(camelModelId, newDeploymentInstanceModel.getName(), notificationUri, requestUuid);
 			} catch (CommitException e) {
 				log.error("Error during commit transaction, Unable to complete data model instances registration", e);
 				applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
@@ -92,12 +92,11 @@ public class ApplyCoordinator {
 			}
 			session.closeSession();
 		}
-		applySolutionNotificationSender.notifySolutionApplied(camelModelId, notificationUri, requestUuid);
 	}
 
 	private void dumpDM(CamelModel cm, int level) {
 		log.info("Camel doc contains {} Deployment Model", cm.getDeploymentModels().size());
-		if (level > 1)
+		if (level > 1) {
 			for (int i = 1; i < cm.getDeploymentModels().size(); i++) {
 				DeploymentInstanceModel dm = (DeploymentInstanceModel) cm.getDeploymentModels().get(i);
 				log.info("  DeploymentInstanceModel {} : SoftwareComponentInstances: {} CommInstances: {}",
@@ -109,7 +108,7 @@ public class ApplyCoordinator {
 					log.info("CommInstances: {}", getAsString(dm.getCommunicationInstances()));
 				}
 			}
-
+		}
 	}
 
 	private <T extends Feature> String getAsString(EList<T> features) {
