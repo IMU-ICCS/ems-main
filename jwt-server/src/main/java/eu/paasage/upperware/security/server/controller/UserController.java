@@ -3,7 +3,7 @@ package eu.paasage.upperware.security.server.controller;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
-import eu.paasage.upperware.security.server.data.service.RefreshService;
+import eu.paasage.upperware.security.server.data.service.RefreshTokenService;
 import eu.paasage.upperware.security.server.data.service.UserService;
 import eu.paasage.upperware.security.server.exception.RefreshTokenInvalidException;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
@@ -27,19 +27,21 @@ import javax.servlet.http.HttpServletResponse;
 public class UserController {
 
     private UserService userService;
-    private RefreshService refreshService;
-
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
             throws UserNotFoundException {
-        log.info("Login request for user with username: {}", userRequest.getUsername());
-        userService.authenticate(userRequest.getUsername(), userRequest.getPassword());
-        String token = userService.createToken(userRequest.getUsername());
-        String refreshToken = userService.createRefreshToken(userRequest.getUsername());
+        String username = userRequest.getUsername();
+        log.info("Login request for user with username: {}", username);
+        userService.authenticate(username, userRequest.getPassword());
+
+        String token = userService.createToken(username);
+        String refreshToken = refreshTokenService.createRefreshToken(username);
+
         response.setHeader(SecurityConstants.HEADER_STRING, token);
         response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
-        return new UserLoginResponse(userRequest.getUsername());
+        return new UserLoginResponse(username);
     }
 
     @PostMapping("/users/sign-up")
@@ -55,7 +57,7 @@ public class UserController {
     @GetMapping(value = "/refresh-token")
     public ResponseEntity<Object> refreshToken(@RequestHeader(name = HttpHeaders.AUTHORIZATION)
             String authorization, HttpServletResponse response)
-            throws UserNotFoundException, RefreshTokenInvalidException{
+            throws UserNotFoundException, RefreshTokenInvalidException {
 
         log.info("Refresh token request");
 
@@ -64,10 +66,8 @@ public class UserController {
 //        }
 
         try {
-            refreshService.validateToken(authorization);
-        }
-
-        catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException
+            refreshTokenService.validateToken(authorization);
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException
                 | IllegalArgumentException | RefreshTokenInvalidException ex) {
 
             log.error("Error during validating token: " + ex);
@@ -76,15 +76,23 @@ public class UserController {
 
         log.info("Refresh token has been accepted");
 
-        String username = refreshService.getUsername(authorization);
-
+        String username = refreshTokenService.getUsername(authorization);
         String token = userService.createToken(username);
-        String refreshToken = userService.createRefreshToken(username);
+        String refreshToken = refreshTokenService.createRefreshToken(username);
+        refreshTokenService.useToken(authorization);
+
         response.setHeader(SecurityConstants.HEADER_STRING, token);
         response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body("New tokens has been created.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("New tokens have been created.");
     }
 
+    //todo: make it POST
+    @GetMapping(value = "/invalidate-token")
+    public ResponseEntity<Object> invalidateToken(@RequestHeader(name = SecurityConstants.REFRESH_HEADER_STRING) String refreshToken) {
 
+        refreshTokenService.invalidateToken(refreshToken);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Token has been invalidated");
+
+    }
 }

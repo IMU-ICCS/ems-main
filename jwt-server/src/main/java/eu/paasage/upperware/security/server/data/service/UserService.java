@@ -54,7 +54,7 @@ public class UserService {
                 .build();
         DirContextAdapter context = new DirContextAdapter(dn);
 
-        context.setAttributeValues("objectclass", new String[] {"person"});
+        context.setAttributeValues("objectclass", new String[]{"person"});
         context.setAttributeValue("cn", username);
         context.setAttributeValue("sn", username);
         context.setAttributeValue("userPassword", newUser.getPassword());
@@ -80,8 +80,5 @@ public class UserService {
         return SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
     }
 
-    public String createRefreshToken(String username) {
-        return jwtService.createRefreshToken(username);
-    }
 
 }

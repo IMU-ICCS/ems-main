@@ -7,4 +7,8 @@ public class RefreshTokenInvalidException extends RuntimeException {
     public RefreshTokenInvalidException() {
         super(REFRESH_TOKEN_INVALID_MESSAGE);
     }
+
+    public RefreshTokenInvalidException(String message) {
+        super(message);
+    }
 }
