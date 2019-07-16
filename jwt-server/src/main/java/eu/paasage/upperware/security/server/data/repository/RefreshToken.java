@@ -22,17 +22,21 @@ public class RefreshToken implements Serializable {
     @Column(name = "id")
     private String id;
 
+    @Column(name="username")
+    private String username;
+
     @Setter
     @Column(name = "state")
-    private RefreshTokenType state;
+    private RefreshTokenState state;
 
     protected RefreshToken() {
 
     }
 
-    public RefreshToken(String id) {
+    public RefreshToken(String id, String username) {
         this.id = id;
-        this.state = RefreshTokenType.NEW;
+        this.username = username;
+        this.state = RefreshTokenState.NEW;
     }
 
     @Override
@@ -42,12 +46,13 @@ public class RefreshToken implements Serializable {
 
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public enum RefreshTokenType {
+    public enum RefreshTokenState {
 
         NEW,
         USED,
         INVALIDATED
 
     }
+
 
 }

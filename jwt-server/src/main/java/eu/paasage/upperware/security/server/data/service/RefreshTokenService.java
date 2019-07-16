@@ -23,16 +23,21 @@ public class RefreshTokenService {
     private RefreshTokenRepository repository;
 
 
-    public String createRefreshToken(String username) {
-        String refreshToken = jwtService.createRefreshToken(username);
-        repository.save(new RefreshToken(getId(refreshToken)));
+    public String createToken(String username) {
+        String encodedRefreshToken = jwtService.createRefreshToken(username);
+        RefreshToken decodedRefreshToken = decodeRefreshToken(encodedRefreshToken);
+        repository.save(new RefreshToken(decodedRefreshToken.getId(), username));
         log.debug("Refresh token has been saved.");
-        return refreshToken;
+        return encodedRefreshToken;
     }
 
-    public void validateToken(String authorization) throws RefreshTokenInvalidException {
-        Claims claims = jwtService.parse(authorization);
+    private RefreshToken decodeRefreshToken(String encodedToken) {
+        Claims claims = jwtService.parse(encodedToken);
+        return new RefreshToken(claims.getId(), claims.getSubject());
+    }
 
+    public RefreshToken validateToken(String encodedToken) throws RefreshTokenInvalidException {
+        Claims claims = jwtService.parse(encodedToken);
         String audience = claims.getAudience();
         String tokenId = claims.getId();
         log.debug("Claims: {}", claims.toString());
@@ -40,8 +45,9 @@ public class RefreshTokenService {
         if (SecurityConstants.AUDIENCE_JWT.equals(audience)) {
             Optional<RefreshToken> tokenById = repository.findById(tokenId);
             if (tokenById.isPresent()) {
-                if (RefreshToken.RefreshTokenType.NEW.equals(tokenById.get().getState())) {
-                    log.info("Token with id: {} can be used", tokenId);
+                if (RefreshToken.RefreshTokenState.NEW.equals(tokenById.get().getState())) {
+                    log.debug("Token with id: {} can be used", tokenId);
+                    return tokenById.get();
                 } else {
                     throw new RefreshTokenInvalidException(String.format("Token with id: %s cannot be used, its state is %s.", tokenId, tokenById.get().getState()));
                 }
@@ -53,37 +59,28 @@ public class RefreshTokenService {
         }
     }
 
-    public void invalidateToken(String token) {
-        String id = jwtService.parse(token).getId();
+    public void invalidateToken(String encodedToken) {
+        String id = jwtService.parse(encodedToken).getId();
         RefreshToken refreshToken = repository
                 .findById(id)
                 .orElseThrow(() -> new IllegalStateException(String.format("Token with id: %s does not exist", id)));
 
-        if (RefreshToken.RefreshTokenType.NEW.equals(refreshToken.getState())) {
-            repository.save(new RefreshToken(id, RefreshToken.RefreshTokenType.INVALIDATED));
+        if (RefreshToken.RefreshTokenState.NEW.equals(refreshToken.getState())) {
+            refreshToken.setState(RefreshToken.RefreshTokenState.INVALIDATED);
+            repository.save(refreshToken);
         } else {
-            log.info("Token cannot be used, it was used before");
+            throw new IllegalStateException(String.format("Token cannot be invalidated, its state is %s", refreshToken.getState()));
         }
         log.debug("found: {}", repository.findById(id).get().getState());
-
     }
 
-    public void useToken(String token) {
-
-        String tokenId = getId(token);
+    public void useToken(RefreshToken refreshToken) {
+        String tokenId = refreshToken.getId();
         repository.findById(tokenId)
                 .orElseThrow(() -> new IllegalStateException(String.format("Token with id: %s does not exist", tokenId)));
-        repository.save(new RefreshToken(tokenId, RefreshToken.RefreshTokenType.USED));
+        refreshToken.setState(RefreshToken.RefreshTokenState.USED);
+        repository.save(refreshToken);
 
-    }
-
-    public String getUsername(String authorization) {
-        return jwtService.parse(authorization).getSubject();
-
-    }
-
-    private String getId(String token) {
-        return jwtService.parse(token).getId();
     }
 
 }
