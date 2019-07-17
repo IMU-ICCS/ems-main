@@ -216,7 +216,9 @@ public class CdoServerClientApi implements CdoServerApi {
 
     @Override
     public CDOSessionX openSession() {
-        return cdoClient.getSession();
+        CDOSessionX session = cdoClient.getSession();
+        log.info("PRUSIK: Opening session: {}", session.hashCode());
+        return session;
     }
 
     private Optional<ExecutionModel> getExecutionModel(CamelModel camelModel, DeploymentTypeModel deploymentTypeModel) {
