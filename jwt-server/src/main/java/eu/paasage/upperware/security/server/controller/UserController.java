@@ -28,7 +28,7 @@ public class UserController {
 
     private UserService userService;
 
-    @PostMapping("/login")
+    @PostMapping("/user/login")
     public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
             throws UserNotFoundException {
         log.info("Login request for user with username: {}", userRequest.getUsername());
@@ -38,7 +38,7 @@ public class UserController {
         return new UserLoginResponse(userRequest.getUsername());
     }
 
-    @PostMapping("/user/sign-up")
+    @PostMapping("/auth/user/sign-up")
     public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
         log.info("Sign-up request for username: {}", userRequest.getUsername());
         if (!userService.exists(userRequest.getUsername())) {
@@ -48,7 +48,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }
 
-    @PutMapping("/user/password")
+    @PutMapping("/auth/user/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest) {
         log.info("PUT request for change password from user: {}", changePasswordRequest.getUsername());

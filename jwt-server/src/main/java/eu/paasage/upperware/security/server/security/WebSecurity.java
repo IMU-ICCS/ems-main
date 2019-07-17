@@ -32,7 +32,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         if (securityEnabled) {
             log.info("Running WITH security");
             http.cors().and().csrf().disable()
-                    .antMatcher("/user/**")
+                    .antMatcher("/auth/**")
                     .authorizeRequests()
                     .anyRequest().authenticated()
                     .and()

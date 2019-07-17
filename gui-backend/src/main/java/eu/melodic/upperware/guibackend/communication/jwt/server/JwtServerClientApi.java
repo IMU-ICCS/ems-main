@@ -29,7 +29,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public LoginResponse login(UserRequest userRequest) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/login";
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/user/login";
         ParameterizedTypeReference<JwtLoginResponse> responseType = new ParameterizedTypeReference<JwtLoginResponse>() {
         };
         HttpEntity<UserRequest> requestHttpEntity = new HttpEntity<>(userRequest);
@@ -52,7 +52,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public void changePassword(ChangePasswordRequest changePasswordRequest, String token) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/user/password";
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/password";
         ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
         };
         HttpHeaders headers = new HttpHeaders();
