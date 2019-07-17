@@ -130,16 +130,15 @@ public class CdoServerClientApi implements CdoServerApi {
                 return executionModelNew;
             });
 
+            DeploymentInstanceModel oldModel = null;
+            Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
+            if (lastHistoryRecordOpt.isPresent()) {
+                HistoryRecord lastHistoryRecord = lastHistoryRecordOpt.get();
+                oldModel = lastHistoryRecord.getToDeploymentInstanceModel();
+                lastHistoryRecord.setEndTime(new Date());
+            }
 
-//            DeploymentInstanceModel oldModel = null;
-//            Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
-//            if (lastHistoryRecordOpt.isPresent()) {
-//                HistoryRecord lastHistoryRecord = lastHistoryRecordOpt.get();
-//                oldModel = lastHistoryRecord.getToDeploymentInstanceModel();
-//                lastHistoryRecord.setEndTime(new Date());
-//            }
-
-//            executionModel.getHistoryRecords().add(createHistoryRecord(camelModel, oldModel, newDeploymentModel));
+            executionModel.getHistoryRecords().add(createHistoryRecord(camelModel, oldModel, newDeploymentModel));
             log.info("History record has been added to ExecutionModel");
         }
     }
@@ -216,9 +215,7 @@ public class CdoServerClientApi implements CdoServerApi {
 
     @Override
     public CDOSessionX openSession() {
-        CDOSessionX session = cdoClient.getSession();
-        log.info("PRUSIK: Opening session: {}", session.hashCode());
-        return session;
+        return cdoClient.getSession();
     }
 
     private Optional<ExecutionModel> getExecutionModel(CamelModel camelModel, DeploymentTypeModel deploymentTypeModel) {
