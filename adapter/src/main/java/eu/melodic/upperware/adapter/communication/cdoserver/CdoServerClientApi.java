@@ -131,15 +131,15 @@ public class CdoServerClientApi implements CdoServerApi {
             });
 
 
-            DeploymentInstanceModel oldModel = null;
-            Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
-            if (lastHistoryRecordOpt.isPresent()) {
-                HistoryRecord lastHistoryRecord = lastHistoryRecordOpt.get();
-                oldModel = lastHistoryRecord.getToDeploymentInstanceModel();
-                lastHistoryRecord.setEndTime(new Date());
-            }
+//            DeploymentInstanceModel oldModel = null;
+//            Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
+//            if (lastHistoryRecordOpt.isPresent()) {
+//                HistoryRecord lastHistoryRecord = lastHistoryRecordOpt.get();
+//                oldModel = lastHistoryRecord.getToDeploymentInstanceModel();
+//                lastHistoryRecord.setEndTime(new Date());
+//            }
 
-            executionModel.getHistoryRecords().add(createHistoryRecord(camelModel, oldModel, newDeploymentModel));
+//            executionModel.getHistoryRecords().add(createHistoryRecord(camelModel, oldModel, newDeploymentModel));
             log.info("History record has been added to ExecutionModel");
         }
     }
