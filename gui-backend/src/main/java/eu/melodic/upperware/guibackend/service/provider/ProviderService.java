@@ -166,7 +166,7 @@ public class ProviderService {
         try {
             writer = new FileWriter(System.getenv("MELODIC_CONFIG_DIR") + "/" + YAML_CONFIG_FILE_NAME);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error by writing to yaml file: ", e);
         }
         yaml.dump(cloudDefinitionsForAllProviders, writer);
     }
