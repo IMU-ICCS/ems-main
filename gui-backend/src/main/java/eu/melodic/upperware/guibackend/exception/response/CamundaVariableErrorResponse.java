@@ -4,10 +4,14 @@ import lombok.*;
 
 @Setter
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CamundaVariableErrorResponse {
-    private String message;
+public class CamundaVariableErrorResponse extends ErrorResponse {
     private String variableName;
+
+    @Builder
+    public CamundaVariableErrorResponse(String message, String errorName, String variableName) {
+        super(message, errorName);
+        this.variableName = variableName;
+    }
 }

@@ -17,7 +17,25 @@ public interface CloudiatorApi {
 
     List<Function> getFunctionList();
 
-    List<VirtualMachine> getVMList();
+    String getSecureVariable(String key);
+
+    void deleteSecureVariable(String key);
+
+    List<Node> getVMFromNodeList();
+
+    List<Node> getFaasFromNodeList();
 
     void storeSecureVariable(String key, String value);
+
+    List<Node> getNodeList();
+
+    List<CloudiatorProcess> getProcessList();
+
+    List<Queue> getQueueList();
+
+    List<Job> getJobList();
+
+    void deleteNode(String nodeId);
+
+    void deleteCloudiatorProcess(String processId);
 }
