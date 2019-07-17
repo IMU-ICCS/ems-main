@@ -1,5 +1,7 @@
 package eu.melodic.upperware.guibackend.communication.commons;
 
+import com.google.gson.Gson;
+import eu.melodic.upperware.guibackend.communication.jwt.server.response.JwtExceptionResponse;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,13 +39,24 @@ public class RestCommunicationService {
         } catch (HttpServerErrorException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Requested resource doesn't exist");
         } catch (HttpClientErrorException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization failed. Invalid credentials");
+            String jwtExceptionResponse = getJwtExceptionResponse(ex.getResponseBodyAsString())
+                    .map(JwtExceptionResponse::getMessage)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization failed. Invalid credentials"));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, jwtExceptionResponse);
         }
 
-        if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
+        if ((HttpMethod.GET.equals(httpMethod) || HttpMethod.POST.equals(httpMethod))
+                && (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem in communication with %s. Service not working. Please try again.", serviceName));
         }
 
         return response;
     }
+
+    private Optional<JwtExceptionResponse> getJwtExceptionResponse(String responseBody) {
+        Gson gson = new Gson();
+        JwtExceptionResponse jwtExceptionResponse = gson.fromJson(responseBody, JwtExceptionResponse.class);
+        return Optional.ofNullable(jwtExceptionResponse);
+    }
+
 }

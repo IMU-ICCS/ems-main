@@ -11,4 +11,6 @@ public interface UserLdapRepository extends LdapRepository<User> {
     Optional<User> findByUsernameAndPassword(String username, String password);
 
     boolean existsByUsername(String username);
+
+    User save(User user);
 }
