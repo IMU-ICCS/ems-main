@@ -48,6 +48,13 @@ public class AdapterController {
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
 
+        log.info("REMOVE THIS LATER!!!!!! Sleeping to check race condition...");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         deployCoordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization);
     }
 
