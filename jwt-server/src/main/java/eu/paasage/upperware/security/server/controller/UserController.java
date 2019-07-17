@@ -1,5 +1,6 @@
 package eu.paasage.upperware.security.server.controller;
 
+import eu.melodic.models.interfaces.security.InvalidateTokenRequest;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
@@ -86,12 +87,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body("New tokens created.");
     }
 
-    //todo: make it POST
-    @GetMapping(value = "/invalidate-token")
-    public ResponseEntity<Object> invalidateToken(@RequestHeader(name = SecurityConstants.REFRESH_HEADER_STRING) String refreshToken) {
+    @PostMapping(value = "/invalidate-token")
+    public ResponseEntity<Object> invalidateToken(@RequestBody InvalidateTokenRequest invalidateTokenRequest) {
 
         try {
-            refreshTokenService.invalidateToken(refreshToken);
+            refreshTokenService.invalidateToken(invalidateTokenRequest.getToken());
         } catch (IllegalStateException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }

@@ -68,6 +68,7 @@ public class RefreshTokenService {
         if (RefreshToken.RefreshTokenState.NEW.equals(refreshToken.getState())) {
             refreshToken.setState(RefreshToken.RefreshTokenState.INVALIDATED);
             repository.save(refreshToken);
+            log.info("Token with id: {} has been invalidated.", id);
         } else {
             throw new IllegalStateException(String.format("Token cannot be invalidated, its state is %s", refreshToken.getState()));
         }
