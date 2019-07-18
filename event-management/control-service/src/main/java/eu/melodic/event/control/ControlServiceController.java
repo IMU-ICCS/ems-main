@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -169,6 +170,23 @@ public class ControlServiceController {
 
         //return response;
         return entity;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/constraintThresholds/{appId}", method = {GET,POST})
+    public Collection getConstraintThresholds(@PathVariable("appId") String applicationId,
+                                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        log.info("ControlServiceController.getConstraintThresholds(): Received request: app-id={}", applicationId);
+        log.trace("ControlServiceController.getConstraintThresholds(): JWT token: {}", jwtToken);
+
+        // Retrieve sensor information
+        Collection constraints = coordinator.getMetricConstraints("/"+applicationId);
+        log.info("ControlServiceController.getConstraintThresholds(): Constraints for application: {}: {}", applicationId, constraints);
+
+        return constraints;
     }
 
     // ------------------------------------------------------------------------------------------------------------
