@@ -559,6 +559,12 @@ public class ControlServiceCoordinator {
         return sensors;
     }
 
+    public Collection getMetricConstraints(String camelModelId) {
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptyList();
+        return _tc.getMetricConstraints();
+    }
+
 
     // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods

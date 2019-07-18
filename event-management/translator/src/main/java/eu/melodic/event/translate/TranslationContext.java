@@ -9,6 +9,8 @@
 
 package eu.melodic.event.translate;
 
+import camel.constraint.ComparisonOperatorType;
+import camel.constraint.UnaryConstraint;
 import camel.core.Action;
 import camel.core.NamedElement;
 import camel.data.Data;
@@ -21,6 +23,7 @@ import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.models.interfaces.ems.Monitor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -73,6 +76,9 @@ public class TranslationContext {
     protected boolean needsRefresh;
     private transient String fullNamePattern;                           // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
 
+    // Metric Constraints
+    protected Collection<MetricConstraint> metricConstraints;
+
 
     // ====================================================================================================================================================
     // Constructors
@@ -110,6 +116,9 @@ public class TranslationContext {
         this.E2N = new HashMap<>();
         this.elementsCount = new AtomicLong(0);
         this.fullNamePattern = "{ELEM}";
+
+        // Metric Constraints
+        this.metricConstraints = new HashSet<>();
     }
 
     // ====================================================================================================================================================
@@ -145,6 +154,10 @@ public class TranslationContext {
     public boolean isMVV(String name) {
         for (String mvv : MVV) if (mvv.equals(name)) return true;
         return false;
+    }
+
+    public Collection<MetricConstraint> getMetricConstraints() {
+        return new HashSet<>(metricConstraints);
     }
 
     // ====================================================================================================================================================
@@ -251,6 +264,21 @@ public class TranslationContext {
     public void addFunction(Function f) {
         FunctionDefinition fdef = new FunctionDefinition().setName(f.getName()).setExpression(f.getExpression()).setArguments(f.getArguments());
         FUNC.add(fdef);
+    }
+
+    public void addMetricConstraint(UnaryConstraint uc) {
+        String opName = uc.getComparisonOperator().getName();
+        String op = null;
+        if (StringUtils.isBlank(opName)) throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no operator specified");
+        else if (ComparisonOperatorType.EQUAL.getName().equalsIgnoreCase(opName)) op = "=";
+        else if (ComparisonOperatorType.NOT_EQUAL.getName().equalsIgnoreCase(opName)) op = "<>";
+        else if (ComparisonOperatorType.LESS_THAN.getName().equalsIgnoreCase(opName)) op = "<";
+        else if (ComparisonOperatorType.LESS_EQUAL_THAN.getName().equalsIgnoreCase(opName)) op = "<=";
+        else if (ComparisonOperatorType.GREATER_THAN.getName().equalsIgnoreCase(opName)) op = ">";
+        else if (ComparisonOperatorType.GREATER_EQUAL_THAN.getName().equalsIgnoreCase(opName)) op = ">=";
+        else throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has an invalid operator: "+opName);
+
+        metricConstraints.add(new MetricConstraint(uc.getName(), op, uc.getThreshold()));
     }
 
     // ====================================================================================================================================================
@@ -399,5 +427,15 @@ public class TranslationContext {
 
     public Set<FunctionDefinition> getFunctionDefinitions() {
         return new HashSet<>(FUNC);
+    }
+
+    // ====================================================================================================================================================
+    // Metric Constraint helper class
+
+    @lombok.Data
+    public static class MetricConstraint {
+        private final String name;
+        private final String operator;
+        private final double threshold;
     }
 }
