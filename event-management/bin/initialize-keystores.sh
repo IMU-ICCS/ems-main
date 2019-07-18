@@ -15,7 +15,7 @@ if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; 
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 
 # Get IP addresses
-UTIL_FILE=util-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+UTIL_FILE=util-2.5.1-SNAPSHOT-jar-with-dependencies.jar
 UTIL_PATH_0=util/target/${UTIL_FILE}
 UTIL_PATH_1=jars/util/${UTIL_FILE}
 UTIL_PATH_2=../util/target/${UTIL_FILE}
@@ -29,7 +29,7 @@ elif [ -f ${UTIL_PATH_2} ]; then
 elif [ -f ${UTIL_PATH_3} ]; then
 	UTIL_JAR=${UTIL_PATH_3}
 else
-	echo "ERROR: Couldn't find 'util-2.1.0-SNAPSHOT-jar-with-dependencies.jar'"
+	echo "ERROR: Couldn't find 'util-2.5.1-SNAPSHOT-jar-with-dependencies.jar'"
 	echo "ERROR: Skipping keystore initialization"
 	cd ${PREVWORKDIR}
 	exit 1

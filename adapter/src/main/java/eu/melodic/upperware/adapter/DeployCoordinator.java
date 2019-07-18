@@ -27,6 +27,12 @@ import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
+import eu.melodic.upperware.adapter.plangenerator.converter.CamelModelConverter;
+import eu.melodic.upperware.adapter.plangenerator.graph.DefaultDiffCalculator;
+import eu.melodic.upperware.adapter.plangenerator.graph.DiffCalculator;
+import eu.melodic.upperware.adapter.plangenerator.graph.model.DividedElement;
+import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
+import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
 import eu.melodic.upperware.adapter.notification.DeploymentNotificationSenderImpl;
@@ -43,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,6 +81,10 @@ public class DeployCoordinator {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private DeploymentNotificationSenderImpl deploymentNotificationSenderImpl;
+
+    private CamelModelConverter converter;
+
+    private DiffCalculator<AdapterRequirement, String> diffCalculator = new DefaultDiffCalculator<>();
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
@@ -226,5 +237,28 @@ public class DeployCoordinator {
         String fileName = "/logs/adapter_camel_models/" + CDO_SERVER_PATH + pcId + System.currentTimeMillis() + ".xmi";
         cdoClientX.exportModel(camelModel, fileName);
         log.debug("CDODatabaseProxy - saveModels - Models saved to file {}!", fileName);
+    }
+
+    public Map<String, DividedElement<AdapterRequirement>> calculateDifference(String resourceName, String deploymentInstanceName) {
+        CDOSessionX cdoSessionX = cdoServerApi.openSession();
+        CDOTransaction tr = cdoSessionX.openTransaction();
+
+        try {
+            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, deploymentInstanceName, tr); //new
+            DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
+
+            ComparableModel oldModel = currentModel != null ? converter.toComparableModel(currentModel) : ComparableModel.builder().build();
+            ComparableModel newModel = converter.toComparableModel(targetModel);
+
+            return diffCalculator.calculateDiff(
+                    new ArrayList<>(newModel.getAdapterRequirements()),
+                    new ArrayList<>(oldModel.getAdapterRequirements()),
+                    AdapterRequirement.NODE_BI_PREDICATE,
+                    AdapterRequirement::getTaskName);
+
+        } finally {
+            cdoSessionX.closeTransaction(tr);
+            cdoSessionX.closeSession();
+        }
     }
 }

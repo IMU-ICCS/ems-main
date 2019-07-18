@@ -72,6 +72,27 @@ public class CdoServerClientApi implements CdoServerApi {
     }
 
     @Override
+    public DeploymentInstanceModel getModelToDeploy(String resourceName, String deploymentInstanceName, CDOTransaction tr) {
+        EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
+        if (CollectionUtils.isEmpty(contents)) {
+            throw new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
+                    "Check the value is valid and the model is available in CDO Server.", resourceName));
+        }
+
+        CamelModel model = CdoTool.getLastCamelModel(contents)
+                .orElseThrow(() -> new IllegalStateException(format("Could not find Camel Model for resourceName=%s", resourceName)));
+
+        return CollectionUtils.emptyIfNull(model.getDeploymentModels())
+                .stream()
+                .filter(deploymentModel -> deploymentModel instanceof DeploymentInstanceModel)
+                .map(deploymentModel -> (DeploymentInstanceModel) deploymentModel)
+                .filter(deploymentModel -> deploymentInstanceName.equals(deploymentModel.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
+                        "Check the value is valid and the model is available in CDO Server.", resourceName)));
+    }
+
+    @Override
     public DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr) {
         EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
 
@@ -108,7 +129,6 @@ public class CdoServerClientApi implements CdoServerApi {
                 camelModel.getExecutionModels().add(executionModelNew);
                 return executionModelNew;
             });
-
 
             DeploymentInstanceModel oldModel = null;
             Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
