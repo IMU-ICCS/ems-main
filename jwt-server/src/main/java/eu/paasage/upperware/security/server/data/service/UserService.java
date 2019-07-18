@@ -2,6 +2,7 @@ package eu.paasage.upperware.security.server.data.service;
 
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
@@ -78,5 +79,14 @@ public class UserService {
 
     public String createToken(String username) {
         return SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+    }
+
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+        authenticate(changePasswordRequest.getUsername(), changePasswordRequest.getOldPassword());
+
+        User user = userLdapRepository.findByUsernameAndPassword(changePasswordRequest.getUsername(), digestSHA(changePasswordRequest.getOldPassword()))
+                .orElseThrow(UserNotFoundException::new);
+        user.setPassword(digestSHA(changePasswordRequest.getNewPassword()));
+        userLdapRepository.save(user);
     }
 }

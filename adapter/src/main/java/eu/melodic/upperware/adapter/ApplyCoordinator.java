@@ -81,7 +81,7 @@ public class ApplyCoordinator {
 				applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
 				return;
 			}
-			dumpDM(camelModel, 2);
+//			dumpDM(camelModel, 2);
 		} catch (RuntimeException exception) {
 			log.error("RuntimeException", exception);
 			applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);

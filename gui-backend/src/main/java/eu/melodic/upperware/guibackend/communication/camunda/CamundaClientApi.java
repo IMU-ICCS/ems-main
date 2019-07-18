@@ -3,6 +3,7 @@ package eu.melodic.upperware.guibackend.communication.camunda;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaProcesInstanceResponse;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableResponseItem;
 import eu.melodic.upperware.guibackend.communication.commons.RestCommunicationService;
+import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -32,7 +33,7 @@ public class CamundaClientApi extends RestCommunicationService implements Camund
         ParameterizedTypeReference<Map<String, CamundaVariableResponseItem>> responseType =
                 new ParameterizedTypeReference<Map<String, CamundaVariableResponseItem>>() {
                 };
-        return getResponse(camundaUrl, responseType, null, "Camunada", HttpMethod.GET).getBody();
+        return getResponse(camundaUrl, responseType, null, ServiceName.CAMUNDA.name, HttpMethod.GET).getBody();
     }
 
     @Override
@@ -42,6 +43,6 @@ public class CamundaClientApi extends RestCommunicationService implements Camund
         ParameterizedTypeReference<List<CamundaProcesInstanceResponse>> responseType =
                 new ParameterizedTypeReference<List<CamundaProcesInstanceResponse>>() {
                 };
-        return getResponse(camundaUrl, responseType, null, "Camunada", HttpMethod.GET).getBody();
+        return getResponse(camundaUrl, responseType, null, ServiceName.CAMUNDA.name, HttpMethod.GET).getBody();
     }
 }
