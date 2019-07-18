@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,21 +38,21 @@ public class ProviderService {
     // todo get from DB
     public List<CloudDefinition> getCloudDefinitionsForAllProviders() {
         Yaml yaml = new Yaml();
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(new File(System.getenv("MELODIC_CONFIG_DIR") + "/" + YAML_CONFIG_FILE_NAME));
+        try (FileInputStream fileInputStream = new FileInputStream(new File(System.getenv("MELODIC_CONFIG_DIR") + "/" + YAML_CONFIG_FILE_NAME))) {
+            List resultLoadedFromYaml = yaml.load(fileInputStream);
+            return mapResultFromYamlToCloudDefinitionList(resultLoadedFromYaml);
         } catch (FileNotFoundException e) {
             log.error("File with providers configuration is missing.", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("File with providers configuration: %s is missing.", YAML_CONFIG_FILE_NAME));
+        } catch (IOException e) {
+            log.error("Problem by reading file with providers configuration");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by reading file: %s with providers configuration", YAML_CONFIG_FILE_NAME));
         }
-        Object resultLoadedFromYaml = yaml.load(fileInputStream);
-        return mapResultFromYamlToCloudDefinitionList(resultLoadedFromYaml);
-
     }
 
-    private List<CloudDefinition> mapResultFromYamlToCloudDefinitionList(Object resultLoadedFromYaml) {
+    private List<CloudDefinition> mapResultFromYamlToCloudDefinitionList(List resultLoadedFromYaml) {
         ObjectMapper mapper = new ObjectMapper();
-        List<CloudDefinition> result = resultLoadedFromYaml == null ? new ArrayList<>() : mapper.convertValue(resultLoadedFromYaml,
+        List<CloudDefinition> result = resultLoadedFromYaml == null ? Collections.emptyList() : mapper.convertValue(resultLoadedFromYaml,
                 new TypeReference<List<CloudDefinition>>() {
                 });
         return result.stream()
@@ -71,7 +71,9 @@ public class ProviderService {
     public CloudDefinition fillSecureVariableInCredentials(CloudDefinition cloudDefinition) {
         log.info("Checking secure variables for secret key: {}", cloudDefinition.getCredential().getSecret());
         List<String> secureVariables = secureStoreService.findSecureVariables(cloudDefinition.getCredential().getSecret());
-        if (secureVariables.size() == 1) {
+        if (secureVariables.size() > 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Invalid format of secret placeholder: %s", cloudDefinition.getCredential().getSecret()));
+        } else if (secureVariables.size() == 1) {
             cloudDefinition.getCredential().setSecret(cloudiatorClientApi.getSecureVariable(secureVariables.get(0)));
         }
         return cloudDefinition;
@@ -155,7 +157,8 @@ public class ProviderService {
 
         // replace plain text secrets with labels
         cloudDefinitionsForAllProviders = cloudDefinitionsForAllProviders.stream()
-                .map(this::replaceSecretWithLabel)
+                .peek(cloudDefinition -> cloudDefinition.getCredential()
+                        .setSecret(createKeyLabelForSecret(cloudDefinition).getValue()))
                 .collect(Collectors.toList());
 
         Yaml yaml = new Yaml();
@@ -163,14 +166,8 @@ public class ProviderService {
         try {
             writer = new FileWriter(System.getenv("MELODIC_CONFIG_DIR") + "/" + YAML_CONFIG_FILE_NAME);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error by writing to yaml file: ", e);
         }
         yaml.dump(cloudDefinitionsForAllProviders, writer);
     }
-
-    private CloudDefinition replaceSecretWithLabel(CloudDefinition cloudDefinition) {
-        cloudDefinition.getCredential().setSecret(createKeyLabelForSecret(cloudDefinition).getValue());
-        return cloudDefinition;
-    }
-
 }
