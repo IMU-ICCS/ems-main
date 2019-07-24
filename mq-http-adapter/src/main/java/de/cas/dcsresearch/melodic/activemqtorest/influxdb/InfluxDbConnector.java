@@ -47,7 +47,7 @@ public class InfluxDbConnector {
 				.addField("level", mqDataEntry.getLevel() == null ? 0.0 : Double.parseDouble(mqDataEntry.getLevel()))
 				.addField("producer", mqDataEntry.getProducer())
 				.build();
-		influxDB.write("melodic", "", point);
+		influxDB.write("melodic_ui", "", point);
 	}
 
 }
