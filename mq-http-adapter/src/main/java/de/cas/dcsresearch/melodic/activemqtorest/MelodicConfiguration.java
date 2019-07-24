@@ -13,6 +13,9 @@ public class MelodicConfiguration {
 	@Value("${influxdb.url}")
 	private String activeMqBrokerAddress;
 
+	@Value("${influxdb.database}")
+	private String databaseName;
+
 	public String getMelodicMqAddress() {
 		return melodicMqAddress;
 	}
@@ -21,4 +24,7 @@ public class MelodicConfiguration {
 		return activeMqBrokerAddress;
 	}
 
+	public String getDatabaseName() {
+		return databaseName;
+	}
 }
