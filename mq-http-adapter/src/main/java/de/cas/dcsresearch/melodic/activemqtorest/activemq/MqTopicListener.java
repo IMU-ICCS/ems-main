@@ -43,6 +43,7 @@ public class MqTopicListener {
 		Thread brokerThread = new Thread(() -> {
 			try {
 				BrokerClient brokerClient = BrokerClient.newClient();
+				waitForActiveMq(brokerClient);
 				brokerClient.receiveEvents(melodicConfiguration.getMelodicMqAddress(), "*", message -> {
 					ActiveMQMessage activeMQMessage = (ActiveMQMessage) message;
 					logRawValues(activeMQMessage);
@@ -53,11 +54,29 @@ public class MqTopicListener {
 					activeMqStatisticHolder.increaseMsgCount();
 				});
 			} catch (JMSException | IOException e) {
+				logger.error("Error while using BrokerCLient", e);
 				activeMqStatisticHolder.setHasError();
 			}
 		});
 		brokerThread.start();
 		logger.info("MqTopicListener up and running..");
+	}
+
+	private void waitForActiveMq(BrokerClient brokerClient) {
+		int RETRY_MAX = 10;
+		for (int i = 0; i < RETRY_MAX; i++) {
+			try {
+				brokerClient.openConnection(melodicConfiguration.getMelodicMqAddress());
+			} catch (JMSException e) {
+				logger.error("Error while initiating connection with MQ. Retry {} of {}", i, RETRY_MAX);
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException ex) {
+				}
+				continue;
+			}
+			break;
+		}
 	}
 
 	private MqDataEntry createDataEntry(ActiveMQMessage am) {
