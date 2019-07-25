@@ -35,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @Slf4j
 @AllArgsConstructor
-@ComponentScan(basePackages = {"eu.paasage.upperware.dlms"})
 public class DLMSWebServiceApplication {
 
 	private final Environment env;
@@ -68,6 +67,7 @@ public class DLMSWebServiceApplication {
 			log.debug("Master host name is"  + conf.get(PropertyKey.MASTER_HOSTNAME));
 			
 			log.debug("Master host name that we set above is ", env.getProperty("alluxio.master.hostname"));
+			log.debug("ESB URL is ", env.getProperty("esb.url"));
 			// store user authentication in a hashmap for later use
 			dlmsDsAccess.getDataSource().computeAccount();
 			// this is test
