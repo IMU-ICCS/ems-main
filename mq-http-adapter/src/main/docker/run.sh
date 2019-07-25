@@ -2,7 +2,7 @@
 
 curl -XPOST 'http://ui-influxdb:8086/query' --data-urlencode 'q=CREATE DATABASE melodic_ui'
 
-sleep 10
+sleep 30
 
 curl --user admin:admin -i -XPOST -H "Content-Type: application/json" "http://ui-grafana:3000/api/datasources" -d '
 {
