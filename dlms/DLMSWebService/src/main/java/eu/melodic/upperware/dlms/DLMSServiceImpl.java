@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Implementation of DLMSService.
  */
-@Service("dlmsService")
+@Service
 @Slf4j
 @AllArgsConstructor
 public class DLMSServiceImpl implements DLMSService {
