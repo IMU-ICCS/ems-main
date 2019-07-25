@@ -10,7 +10,8 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 import alluxio.Constants;
-import alluxio.PropertyKey;
+import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.PropertyKey;
 import alluxio.cli.AbstractShell;
 import alluxio.cli.Command;
 import alluxio.client.file.FileSystem;
@@ -26,6 +27,7 @@ public final class FileSystemShell extends AbstractShell {
 	private static final Map<String, String[]> CMD_ALIAS = ImmutableMap.<String, String[]>builder()
 			.put("lsr", new String[] { "ls", "-R" }).put("rmr", new String[] { "rm", "-R" }).build();
 
+	private static InstancedConfiguration conf;
 	/**
 	 * Main method, starts a new FileSystemShell.
 	 *
@@ -33,8 +35,8 @@ public final class FileSystemShell extends AbstractShell {
 	 */
 	public static void runCommand(String[] argv) throws IOException {
 //    int ret;
-
-		if (!ConfigurationUtils.masterHostConfigured()) {
+		
+		if (!ConfigurationUtils.masterHostConfigured(conf)) {
 			log.info(String.format(
 					"Cannot run alluxio shell; master hostname is not "
 							+ "configured. Please modify %s to either set %s or configure zookeeper with "
@@ -53,7 +55,7 @@ public final class FileSystemShell extends AbstractShell {
 	 * Creates a new instance of {@link FileSystemShell}.
 	 */
 	public FileSystemShell() {
-		super(CMD_ALIAS);
+		super(CMD_ALIAS, null, conf);
 	}
 
 	@Override

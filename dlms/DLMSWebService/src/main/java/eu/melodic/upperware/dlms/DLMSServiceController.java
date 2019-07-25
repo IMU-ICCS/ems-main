@@ -91,6 +91,8 @@ public class DLMSServiceController {
 	public void deleteDataSource(@PathVariable String name) {
 		dlmsService.deleteByName(name);
 	}
+	
+	
 
 	/**
 	 * Adds/updates the datasource from the camel model to the database and mounts
@@ -103,7 +105,7 @@ public class DLMSServiceController {
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-//		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
+		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
 		
 		NotificationResult notificationResult = new NotificationResultImpl();
 

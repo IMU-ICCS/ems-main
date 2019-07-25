@@ -23,11 +23,10 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import alluxio.AlluxioConfiguration;
+import alluxio.conf.AlluxioConfiguration;
 import alluxio.AlluxioURI;
-import alluxio.Configuration;
 import alluxio.Constants;
-import alluxio.PropertyKey;
+import alluxio.conf.PropertyKey;
 import alluxio.cli.fs.command.CpCommand;
 import alluxio.cli.fs.command.LsCommand;
 import alluxio.cli.fs.command.MkdirCommand;
@@ -37,10 +36,11 @@ import alluxio.cli.fs.command.PersistCommand;
 import alluxio.cli.fs.command.RmCommand;
 import alluxio.cli.fs.command.UnmountCommand;
 import alluxio.client.file.FileSystem;
-import alluxio.client.file.options.MountOptions;
+import alluxio.client.file.FileSystemContext;
 import alluxio.conf.InstancedConfiguration;
 import alluxio.conf.Source;
 import alluxio.exception.AlluxioException;
+import alluxio.grpc.MountPOptions;
 import alluxio.util.ConfigurationUtils;
 import eu.melodic.upperware.dlms.exception.CopyException;
 import eu.melodic.upperware.dlms.exception.CreateDatasourceException;
@@ -64,6 +64,8 @@ public class DLMSServiceImpl implements DLMSService {
 
 	private final DataSourceRepository dsRepository;
 	private final DLMSDataSourceAccess dlmsDsAccess;
+	
+	private final InstancedConfiguration conf ;
 
 	@Override
 	public DataSource getDataSourceById(long id) {
@@ -224,9 +226,9 @@ public class DLMSServiceImpl implements DLMSService {
 	 */
 	protected String runLsCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
-
+	
 		try {
-			LsCommand lsCommand = new LsCommand(FileSystem.Factory.get());
+			LsCommand lsCommand = new LsCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = lsCommand.parseAndValidateArgs(args);
 			log.info("Running LS command with parameter(s): " + Arrays.toString(args));
 
@@ -246,7 +248,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			MkdirCommand mkdirCommand = new MkdirCommand(FileSystem.Factory.get());
+			MkdirCommand mkdirCommand = new MkdirCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = mkdirCommand.parseAndValidateArgs(args);
 			log.info("Running MKDIR command with parameter(s): " + Arrays.toString(args));
 
@@ -267,9 +269,16 @@ public class DLMSServiceImpl implements DLMSService {
 
 		AlluxioURI alluxioPath = new AlluxioURI(args[0]);
 		AlluxioURI ufsPath = new AlluxioURI(args[1]);
-		MountOptions mountOption = MountOptions.defaults();
-		mountOption.setReadOnly(true);
-		mountOption.setShared(true);
+//		MountPOptions mountOption = MountPOptions.defaults();
+		
+		
+		MountPOptions mountOption = MountPOptions.getDefaultInstance();
+		
+		MountPOptions.Builder mountBuilder = mountOption.toBuilder();
+		mountBuilder.setReadOnly(true);
+		mountBuilder.setShared(true);
+//		mountOption.setReadOnly(true);
+//		mountOption.setShared(true);
 		// if access key id and secret key are passed along with the arguments
 		if (args.length == 4) {
 			Map<String, String> authentication = new HashMap<>();
@@ -278,11 +287,14 @@ public class DLMSServiceImpl implements DLMSService {
 			authentication.put("aws.accessKeyId", args[2]);
 			authentication.put("aws.secretKey", args[3]);
 
-			mountOption.setProperties(authentication);
+			mountBuilder.putAllProperties(authentication);
+			mountOption = mountBuilder.build();
+//			mountOption.setProperties(authentication);
 		}
 		FileSystem mFileSystem = (FileSystem.Factory.get());
 		try {
 			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
+	
 			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 			return "";
 		} catch (IOException | AlluxioException e) {
@@ -299,7 +311,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			UnmountCommand unmountCommand = new UnmountCommand(FileSystem.Factory.get());
+			UnmountCommand unmountCommand = new UnmountCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = unmountCommand.parseAndValidateArgs(args);
 			log.info("Running UNMOUNT command with parameter(s): " + Arrays.toString(args));
 
@@ -319,7 +331,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			MvCommand mvCommand = new MvCommand(FileSystem.Factory.get());
+			MvCommand mvCommand = new MvCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = mvCommand.parseAndValidateArgs(args);
 			log.info("Running MOVE command with parameter(s): " + Arrays.toString(args));
 
@@ -339,7 +351,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			CpCommand cpCommand = new CpCommand(FileSystem.Factory.get());
+			CpCommand cpCommand = new CpCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = cpCommand.parseAndValidateArgs(args);
 			log.info("Running COPY command with parameter(s): " + Arrays.toString(args));
 
@@ -359,7 +371,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			RmCommand rmCommand = new RmCommand(FileSystem.Factory.get());
+			RmCommand rmCommand = new RmCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = rmCommand.parseAndValidateArgs(args);
 			log.info("Running REMOVE command with parameter(s): " + Arrays.toString(args));
 
@@ -379,7 +391,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			PersistCommand persistCommand = new PersistCommand(FileSystem.Factory.get());
+			PersistCommand persistCommand = new PersistCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = persistCommand.parseAndValidateArgs(args);
 			log.info("Running PERSIST command with parameter(s): " + Arrays.toString(args));
 
@@ -392,7 +404,7 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureConfiguration() {
-		if (!ConfigurationUtils.masterHostConfigured()) {
+		if (!ConfigurationUtils.masterHostConfigured(conf)) {
 			log.error(String.format(
 					"Cannot run alluxio shell; master hostname is not "
 							+ "configured. Please modify %s to either set %s or configure zookeeper with "

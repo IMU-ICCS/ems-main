@@ -19,8 +19,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
-import alluxio.Configuration;
-import alluxio.PropertyKey;
+import alluxio.conf.AlluxioConfiguration;
+import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.PropertyKey;
 import eu.melodic.upperware.dlms.properties.DLMSDataSourceAccess;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,8 @@ public class DLMSWebServiceApplication {
 	private final Environment env;
 	private final DLMSServiceImpl dlmsService;
 	private final DLMSDataSourceAccess dlmsDsAccess;
+	private final InstancedConfiguration conf;
+	
 
 	/**
 	 * Main method for starting. No arguments needed for normal use.
@@ -57,8 +60,8 @@ public class DLMSWebServiceApplication {
 		return args -> {
 			// TODO remove sample data before go-live
 			log.debug("Alluxio master is located at " + env.getProperty("alluxio.master.address"));
-			// set master hostname
-			Configuration.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
+			// set master hostname		
+			conf.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
 			// store user authentication in a hashmap for later use
 			dlmsDsAccess.getDataSource().computeAccount();
 			// this is test
