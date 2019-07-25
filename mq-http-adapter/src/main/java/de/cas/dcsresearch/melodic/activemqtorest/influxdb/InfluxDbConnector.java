@@ -28,6 +28,7 @@ public class InfluxDbConnector {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress());
+		logger.info("Connected to {}, will use database '{}'", melodicConfiguration.getActiveMqBrokerAddress(), melodicConfiguration.getDatabaseName());
 	}
 
 	public void writeDataPoint(MqDataEntry mqDataEntry) {
@@ -47,6 +48,7 @@ public class InfluxDbConnector {
 				.addField("level", mqDataEntry.getLevel() == null ? 0.0 : Double.parseDouble(mqDataEntry.getLevel()))
 				.addField("producer", mqDataEntry.getProducer())
 				.build();
+
 		influxDB.write(melodicConfiguration.getDatabaseName(), "", point);
 	}
 
