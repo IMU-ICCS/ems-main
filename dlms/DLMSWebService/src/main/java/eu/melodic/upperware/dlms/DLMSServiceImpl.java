@@ -272,6 +272,7 @@ public class DLMSServiceImpl implements DLMSService {
 //		MountPOptions mountOption = MountPOptions.defaults();
 		
 		
+		
 		MountPOptions mountOption = MountPOptions.getDefaultInstance();
 		
 		MountPOptions.Builder mountBuilder = mountOption.toBuilder();
@@ -295,7 +296,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
 	
-			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
+			mFileSystem.mount(alluxioPath, ufsPath);
 			return "";
 		} catch (IOException | AlluxioException e) {
 			log.error(e.getMessage(), e);

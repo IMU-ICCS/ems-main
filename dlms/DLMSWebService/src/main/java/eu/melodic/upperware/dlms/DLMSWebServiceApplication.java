@@ -62,6 +62,10 @@ public class DLMSWebServiceApplication {
 			log.debug("Alluxio master is located at " + env.getProperty("alluxio.master.address"));
 			// set master hostname		
 			conf.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
+			
+			log.debug("Master host name is ", conf.get(PropertyKey.MASTER_HOSTNAME));
+			
+			log.debug("Master host name that we set above is ", env.getProperty("alluxio.master.hostname"));
 			// store user authentication in a hashmap for later use
 			dlmsDsAccess.getDataSource().computeAccount();
 			// this is test
