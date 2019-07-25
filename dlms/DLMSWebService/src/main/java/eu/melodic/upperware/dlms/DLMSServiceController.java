@@ -91,8 +91,6 @@ public class DLMSServiceController {
 	public void deleteDataSource(@PathVariable String name) {
 		dlmsService.deleteByName(name);
 	}
-	
-	
 
 	/**
 	 * Adds/updates the datasource from the camel model to the database and mounts
@@ -106,7 +104,7 @@ public class DLMSServiceController {
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
 		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
-		
+
 		NotificationResult notificationResult = new NotificationResultImpl();
 
 		// default status is success
@@ -175,7 +173,7 @@ public class DLMSServiceController {
 		restTemplate.postForEntity(esbUrl + "/" + notificationUri, dataModelNotificationRequest,
 				DataModelNotificationRequest.class);
 	}
-	
+
 	/**
 	 * Generate watermark
 	 */

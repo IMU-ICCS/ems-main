@@ -292,11 +292,13 @@ public class DLMSServiceImpl implements DLMSService {
 			mountOption = mountBuilder.build();
 //			mountOption.setProperties(authentication);
 		}
-		FileSystem mFileSystem = (FileSystem.Factory.get());
+		
+//		FileSystem mFileSystem = (FileSystem.Factory.get());
+		FileSystem mFileSystem = FileSystem.Factory.create(conf);
 		try {
 			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
 	
-			mFileSystem.mount(alluxioPath, ufsPath);
+			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 			return "";
 		} catch (IOException | AlluxioException e) {
 			log.error(e.getMessage(), e);

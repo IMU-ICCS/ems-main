@@ -16,6 +16,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @Slf4j
 @AllArgsConstructor
+@ComponentScan(basePackages = {"eu.paasage.upperware.dlms"})
 public class DLMSWebServiceApplication {
 
 	private final Environment env;
@@ -63,7 +65,7 @@ public class DLMSWebServiceApplication {
 			// set master hostname		
 			conf.set(PropertyKey.MASTER_HOSTNAME, env.getProperty("alluxio.master.hostname"));
 			
-			log.debug("Master host name is ", conf.get(PropertyKey.MASTER_HOSTNAME));
+			log.debug("Master host name is"  + conf.get(PropertyKey.MASTER_HOSTNAME));
 			
 			log.debug("Master host name that we set above is ", env.getProperty("alluxio.master.hostname"));
 			// store user authentication in a hashmap for later use
