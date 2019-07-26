@@ -267,6 +267,7 @@ public class TranslationContext {
     }
 
     public void addMetricConstraint(UnaryConstraint uc) {
+        // Get comparison operator
         String opName = uc.getComparisonOperator().getName();
         String op = null;
         if (StringUtils.isBlank(opName)) throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no operator specified");
@@ -278,7 +279,26 @@ public class TranslationContext {
         else if (ComparisonOperatorType.GREATER_EQUAL_THAN.getName().equalsIgnoreCase(opName)) op = ">=";
         else throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has an invalid operator: "+opName);
 
-        metricConstraints.add(new MetricConstraint(uc.getName(), op, uc.getThreshold()));
+        // Get metric context/variable name
+        String metricName = null;
+        if (uc instanceof camel.constraint.MetricConstraint) {
+            camel.constraint.MetricConstraint mc = (camel.constraint.MetricConstraint) uc;
+            MetricContext context = mc.getMetricContext();
+            if (mc!=null) metricName = context.getName();
+            if (StringUtils.isBlank(metricName))
+                throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no valid metric context");
+        } else
+        if (uc instanceof camel.constraint.MetricVariableConstraint) {
+            camel.constraint.MetricVariableConstraint mvc = (camel.constraint.MetricVariableConstraint) uc;
+            MetricVariable mv = mvc.getMetricVariable();
+            if (mv!=null) metricName = mv.getName();
+            if (StringUtils.isBlank(metricName))
+                throw new IllegalArgumentException("Metric Variable Constraint '"+uc.getName()+"' has no valid metric variable");
+        } else
+            throw new IllegalArgumentException("Invalid Unary Constraint '"+uc.getName()+"' specified. Only metric constraints and metric variable constraints are allowed.");
+
+        // Add threshold information
+        metricConstraints.add(new MetricConstraint(metricName, op, uc.getThreshold()));
     }
 
     // ====================================================================================================================================================
