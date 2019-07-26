@@ -1,13 +1,13 @@
-package de.cas.dcsresearch.melodic.activemqtorest.rest.controller;
+package eu.melodic.upperware.activemqtorest.rest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.cas.dcsresearch.melodic.activemqtorest.activemq.ActiveMqStatisticHolder;
-import de.cas.dcsresearch.melodic.activemqtorest.objects.ActiveMqStatistics;
-import de.cas.dcsresearch.melodic.activemqtorest.objects.PingResult;
+import eu.melodic.upperware.activemqtorest.activemq.ActiveMqStatisticHolder;
+import eu.melodic.upperware.activemqtorest.objects.ActiveMqStatistics;
+import eu.melodic.upperware.activemqtorest.objects.PingResult;
 
 @RestController
 public class HealthCheckController {

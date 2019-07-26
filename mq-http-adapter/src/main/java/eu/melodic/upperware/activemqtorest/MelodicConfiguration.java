@@ -1,4 +1,4 @@
-package de.cas.dcsresearch.melodic.activemqtorest;
+package eu.melodic.upperware.activemqtorest;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

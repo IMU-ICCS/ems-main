@@ -1,4 +1,4 @@
-package de.cas.dcsresearch.melodic.activemqtorest.influxdb;
+package eu.melodic.upperware.activemqtorest.influxdb;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,8 +12,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import de.cas.dcsresearch.melodic.activemqtorest.MelodicConfiguration;
-import de.cas.dcsresearch.melodic.activemqtorest.objects.MqDataEntry;
+import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
+import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
 
 @Component
 public class InfluxDbConnector {

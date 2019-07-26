@@ -1,9 +1,9 @@
-package de.cas.dcsresearch.melodic.activemqtorest.activemq;
+package eu.melodic.upperware.activemqtorest.activemq;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.cas.dcsresearch.melodic.activemqtorest.objects.ActiveMqStatistics;
+import eu.melodic.upperware.activemqtorest.objects.ActiveMqStatistics;
 
 @Service
 public class ActiveMqStatisticHolder {

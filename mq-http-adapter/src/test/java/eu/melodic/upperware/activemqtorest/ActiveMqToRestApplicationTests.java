@@ -1,4 +1,4 @@
-package de.cas.dcsresearch.melodic.activemqtorest;
+package eu.melodic.upperware.activemqtorest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

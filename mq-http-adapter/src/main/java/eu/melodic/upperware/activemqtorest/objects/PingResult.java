@@ -1,4 +1,4 @@
-package de.cas.dcsresearch.melodic.activemqtorest.objects;
+package eu.melodic.upperware.activemqtorest.objects;
 
 public class PingResult {
 

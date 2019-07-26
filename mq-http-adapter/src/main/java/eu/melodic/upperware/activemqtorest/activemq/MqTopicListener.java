@@ -1,4 +1,4 @@
-package de.cas.dcsresearch.melodic.activemqtorest.activemq;
+package eu.melodic.upperware.activemqtorest.activemq;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,9 +18,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 
-import de.cas.dcsresearch.melodic.activemqtorest.MelodicConfiguration;
-import de.cas.dcsresearch.melodic.activemqtorest.influxdb.InfluxDbConnector;
-import de.cas.dcsresearch.melodic.activemqtorest.objects.MqDataEntry;
+import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
+import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
 import eu.melodic.event.brokerclient.BrokerClient;
 
 
