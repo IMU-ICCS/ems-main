@@ -18,12 +18,11 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 
+import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
 import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
 import lombok.extern.slf4j.Slf4j;
-import eu.melodic.event.brokerclient.BrokerClient;
-
 
 @Slf4j
 @Service
