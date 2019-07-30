@@ -21,13 +21,13 @@ import com.google.common.collect.Maps;
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
 import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
+import lombok.extern.slf4j.Slf4j;
 import eu.melodic.event.brokerclient.BrokerClient;
 
 
+@Slf4j
 @Service
 public class MqTopicListener {
-
-	private static Logger logger = LoggerFactory.getLogger(MqTopicListener.class);
 
 	@Autowired
 	private InfluxDbConnector influxDbConnector;
@@ -54,12 +54,12 @@ public class MqTopicListener {
 					activeMqStatisticHolder.increaseMsgCount();
 				});
 			} catch (JMSException | IOException e) {
-				logger.error("Error while using BrokerCLient", e);
+				log.error("Error while using BrokerCLient", e);
 				activeMqStatisticHolder.setHasError();
 			}
 		});
 		brokerThread.start();
-		logger.info("MqTopicListener up and running..");
+		log.info("MqTopicListener up and running..");
 	}
 
 	private void waitForActiveMq(BrokerClient brokerClient) {
@@ -68,7 +68,7 @@ public class MqTopicListener {
 			try {
 				brokerClient.openConnection(melodicConfiguration.getMelodicMqAddress());
 			} catch (JMSException e) {
-				logger.error("Error while initiating connection with MQ. Retry {} of {}", i, RETRY_MAX);
+				log.error("Error while initiating connection with MQ. Retry {} of {}", i, RETRY_MAX);
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException ex) {
@@ -103,7 +103,7 @@ public class MqTopicListener {
 	}
 
 	private void logRawValues(ActiveMQMessage am) {
-		logger.info("Retrieved raw ActiveMQMessage with content = {}", am.toString());
+		log.info("Retrieved raw ActiveMQMessage with content = {}", am.toString());
 	}
 
 }

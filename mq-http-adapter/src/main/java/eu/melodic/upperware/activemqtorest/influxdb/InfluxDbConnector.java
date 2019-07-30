@@ -5,8 +5,6 @@ import java.util.concurrent.TimeUnit;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -14,11 +12,11 @@ import org.springframework.stereotype.Component;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class InfluxDbConnector {
-
-	private static Logger logger = LoggerFactory.getLogger(InfluxDbConnector.class);
 
 	private InfluxDB influxDB;
 
@@ -28,7 +26,7 @@ public class InfluxDbConnector {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress());
-		logger.info("Connected to {}, will use database '{}'", melodicConfiguration.getActiveMqBrokerAddress(), melodicConfiguration.getDatabaseName());
+		log.info("Connected to {}, will use database '{}'", melodicConfiguration.getActiveMqBrokerAddress(), melodicConfiguration.getDatabaseName());
 	}
 
 	public void writeDataPoint(MqDataEntry mqDataEntry) {
@@ -36,10 +34,10 @@ public class InfluxDbConnector {
 		String timestamp = mqDataEntry.getTimestamp();
 
 		if (timestamp.contains("E")) {
-			logger.warn("Unsupported timestamp format in mqDataEntry={}", mqDataEntry);
+			log.warn("Unsupported timestamp format in mqDataEntry={}", mqDataEntry);
 			timestamp = String.format("%.0f", Double.parseDouble(timestamp));
 			timestamp = timestamp.substring(0, 13);
-			logger.warn("Corrected timestamp to '{}'", timestamp);
+			log.warn("Corrected timestamp to '{}'", timestamp);
 		}
 
 		Point point = Point.measurement(mqDataEntry.getTopic())
