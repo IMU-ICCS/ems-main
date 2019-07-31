@@ -5,8 +5,8 @@ import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
+import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.service.UserService;
-import eu.paasage.upperware.security.server.exception.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +17,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -30,12 +32,15 @@ public class UserController {
 
     @PostMapping("/user/login")
     public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
-            throws UserNotFoundException {
+            throws AuthenticationException {
         log.info("Login request for user with username: {}", userRequest.getUsername());
-        userService.authenticate(userRequest.getUsername(), userRequest.getPassword());
-        String token = userService.createToken(userRequest.getUsername());
-        response.setHeader(SecurityConstants.HEADER_STRING, token);
-        return new UserLoginResponse(userRequest.getUsername());
+        if (userService.authenticate(userRequest.getUsername(), userRequest.getPassword())) {
+            String token = userService.createToken(userRequest.getUsername());
+            response.setHeader(SecurityConstants.HEADER_STRING, token);
+            return new UserLoginResponse(userRequest.getUsername());
+        } else {
+            throw new AuthenticationException();
+        }
     }
 
     @PostMapping("/auth/user/sign-up")
@@ -50,10 +55,26 @@ public class UserController {
 
     @PutMapping("/auth/user/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest) {
+    public void changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest)
+            throws AuthenticationException {
         log.info("PUT request for change password from user: {}", changePasswordRequest.getUsername());
         userService.changePassword(changePasswordRequest);
         log.info("Password for user: {} successfully changed", changePasswordRequest.getUsername());
+    }
+
+    @PutMapping("/auth/user/unlock/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlockUserAccount(@PathVariable("username") String username) {
+        log.info("PUT request for unlock account for user: {}", username);
+        userService.unlockAccount(username);
+        log.info("Account for user: {} successfully unlocked", username);
+    }
+
+    @GetMapping("/auth/user")
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> getUsersList() {
+        log.info("GET request for all users list");
+        return userService.getUsersList();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
