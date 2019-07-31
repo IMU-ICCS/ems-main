@@ -8,9 +8,9 @@
 package eu.melodic.upperware.dlms;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -91,6 +91,67 @@ public class DLMSServiceController {
 	public void deleteDataSource(@PathVariable String name) {
 		dlmsService.deleteByName(name);
 	}
+	
+	@PostMapping("/dataModel2")
+	public ResponseEntity<Object> addUpdateDataSources2(@Valid @RequestBody String name) {
+		ResponseEntity<Object> retResponse = null;
+		name = "PeopleFlow";
+//		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
+
+		NotificationResult notificationResult = new NotificationResultImpl();
+
+		// default status is success
+		StatusType statusType = StatusType.SUCCESS;
+		// read the camel model and process it
+		try {
+			modelAnalyzer.readModel(name); // read the camel model
+			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
+
+			// Map of components and datasources
+			Map<String,List<String>> componentDataSourceMap = modelAnalyzer.getComponentDataSourceMap();
+			
+			// do operations if relevant data sources are present in the camel model
+			for (DataSource datasource : dataSourceList) {
+				if (dlmsService.hasDataSourceByName(datasource.getName())) {
+					try {
+						// if data source already exists, update if necessary
+						dlmsService.updateDataSource(datasource, datasource.getName());
+						retResponse = ResponseEntity.noContent().build();
+					} catch (Exception e) {
+						log.error(e.getMessage(), e);
+						notificationResult.setErrorDescription(e.getMessage());
+						throw new RuntimeException(e);
+					}
+				} else {
+					try {
+						// add new data source if it does not exist
+						URI location = dlmsService.addDataSource(datasource);
+						log.info(datasource.getName() + " was added");
+						retResponse = ResponseEntity.created(location).build();
+					} catch (Exception e) {
+						log.error(e.getMessage(), e);
+						notificationResult.setErrorDescription(e.getMessage());
+						throw new RuntimeException(e);
+					}
+				}
+				notificationResult.setErrorCode("0");
+				notificationResult.setErrorDescription(retResponse.toString());
+			}
+
+		} catch (Exception e) {
+			// data registration failed
+			statusType = StatusType.ERROR;
+			notificationResult.setErrorCode("1");
+			notificationResult.setErrorDescription("The model could not be read");
+
+			log.error(e.getMessage(), e);
+		}
+		notificationResult.setStatus(statusType);
+		
+		return retResponse;
+	}
+	
+
 
 	/**
 	 * Adds/updates the datasource from the camel model to the database and mounts
@@ -99,11 +160,11 @@ public class DLMSServiceController {
 	@PostMapping("/dataModel")
 	public ResponseEntity<Object> addUpdateDataSources(@Valid @RequestBody DataModelRequest dataModelRequest) {
 		ResponseEntity<Object> retResponse = null;
-		log.info("The name of the camel model is " + dataModelRequest.getApplicationId());
+		log.info("The name of the camel model is {}", dataModelRequest.getApplicationId());
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
+//		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
 
 		NotificationResult notificationResult = new NotificationResultImpl();
 
@@ -114,6 +175,9 @@ public class DLMSServiceController {
 			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
 			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
 
+			// Map of components and datasources
+			Map<String,List<String>> componentDataSourceMap = modelAnalyzer.getComponentDataSourceMap();
+			
 			// do operations if relevant data sources are present in the camel model
 			for (DataSource datasource : dataSourceList) {
 				if (dlmsService.hasDataSourceByName(datasource.getName())) {
@@ -155,6 +219,13 @@ public class DLMSServiceController {
 		// send notification
 		sendNotificationMessage(dataModelNotificationRequest, dataModelRequest.getNotificationURI());
 		return retResponse;
+	}
+	
+	/**
+	 * Save the component and list of datasources linked to it
+	 */
+	private void saveComponentDS() {
+		
 	}
 
 	/**

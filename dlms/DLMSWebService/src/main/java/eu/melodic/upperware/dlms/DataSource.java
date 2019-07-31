@@ -35,6 +35,7 @@ public class DataSource {
 	private String ufsURI; /* underlying file system uri */
 	private String mountPoint; /* mount point in alluxio */
 	private String accessKey; /* access information for datasources with username and password */
+	private boolean isReadOnly = false; /* check if modifications can be done on the mount point */
 
 	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint) {
 		super();
@@ -44,13 +45,20 @@ public class DataSource {
 		this.mountPoint = mountPoint;
 	}
 
+	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint, boolean isReadOnly) {
+		this(name, dataSourceType, ufsURI, mountPoint);
+		this.isReadOnly = isReadOnly;
+	}
+
 	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint, String accessKey) {
-		super();
-		this.name = name;
-		this.dataSourceType = dataSourceType;
-		this.ufsURI = ufsURI;
-		this.mountPoint = mountPoint;
+		this(name, dataSourceType, ufsURI, mountPoint);
 		this.accessKey = accessKey;
+	}
+
+	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint, String accessKey,
+			boolean isReadOnly) {
+		this(name, dataSourceType, ufsURI, mountPoint, accessKey);
+		this.isReadOnly = isReadOnly;
 	}
 
 }

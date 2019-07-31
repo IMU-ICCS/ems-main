@@ -9,10 +9,7 @@ package eu.melodic.upperware.dlms;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,14 +20,11 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import alluxio.conf.AlluxioConfiguration;
 import alluxio.AlluxioURI;
 import alluxio.Constants;
-import alluxio.conf.PropertyKey;
 import alluxio.cli.fs.command.CpCommand;
 import alluxio.cli.fs.command.LsCommand;
 import alluxio.cli.fs.command.MkdirCommand;
-import alluxio.cli.fs.command.MountCommand;
 import alluxio.cli.fs.command.MvCommand;
 import alluxio.cli.fs.command.PersistCommand;
 import alluxio.cli.fs.command.RmCommand;
@@ -38,7 +32,7 @@ import alluxio.cli.fs.command.UnmountCommand;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.FileSystemContext;
 import alluxio.conf.InstancedConfiguration;
-import alluxio.conf.Source;
+import alluxio.conf.PropertyKey;
 import alluxio.exception.AlluxioException;
 import alluxio.grpc.MountPOptions;
 import alluxio.util.ConfigurationUtils;
@@ -64,8 +58,8 @@ public class DLMSServiceImpl implements DLMSService {
 
 	private final DataSourceRepository dsRepository;
 	private final DLMSDataSourceAccess dlmsDsAccess;
-	
-	private final InstancedConfiguration conf ;
+
+	private final InstancedConfiguration conf;
 
 	@Override
 	public DataSource getDataSourceById(long id) {
@@ -199,17 +193,17 @@ public class DLMSServiceImpl implements DLMSService {
 		String result;
 		// check if key is required
 		if (StringUtils.isEmpty(ds.getAccessKey())) {
-			result = runMountCommand("/" + ds.getName(), ds.getUfsURI());
+			result = runMountCommand("/" + ds.getName(), ds.getUfsURI(), ds.isReadOnly());
 		} else {
-			//key is required, so get access information
+			// key is required, so get access information
 			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
 			// does both access key and secret key exists
 			if (userInfo.size() > 1) {
 				String accessKeyId = userInfo.get(0);
 				String secretKey = userInfo.get(1);
-				result = runMountCommand("/" + ds.getName(), ds.getUfsURI(), accessKeyId, secretKey);
+				result = runMountCommand("/" + ds.getName(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId, secretKey);
 			} else {
-				log.debug("User account does not have accessKey/secreKey");
+				log.debug("User account does not have accessKey/secretKey");
 
 				result = null;
 			}
@@ -226,11 +220,11 @@ public class DLMSServiceImpl implements DLMSService {
 	 */
 	protected String runLsCommand(String... args) {
 		ensureCommandParameterNotEmpty(args);
-	
+
 		try {
 			LsCommand lsCommand = new LsCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = lsCommand.parseAndValidateArgs(args);
-			log.info("Running LS command with parameter(s): " + Arrays.toString(args));
+			log.info("Running LS command with parameter(s): {}", Arrays.toString(args));
 
 			lsCommand.run(commandLine);
 			return "";
@@ -250,7 +244,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			MkdirCommand mkdirCommand = new MkdirCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = mkdirCommand.parseAndValidateArgs(args);
-			log.info("Running MKDIR command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MKDIR command with parameter(s): {}", Arrays.toString(args));
 
 			mkdirCommand.run(commandLine);
 			return "";
@@ -261,43 +255,41 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	/**
+	 * Runs the Alluxio MOUNT command without authentication
+	 */
+	protected String runMountCommand(String alluxioPath, String ufsPath, boolean isReadOnly) {
+		return runMountCommand(alluxioPath, ufsPath, isReadOnly, null, null);
+	}
+
+	/**
 	 * Runs the Alluxio MOUNT command. Returns an empty String on success or the
 	 * error message from Alluxio if anything went wrong.
 	 */
-	protected String runMountCommand(String... args) {
-		ensureCommandParameterNotEmpty(args);
-
-		AlluxioURI alluxioPath = new AlluxioURI(args[0]);
-		AlluxioURI ufsPath = new AlluxioURI(args[1]);
-//		MountPOptions mountOption = MountPOptions.defaults();
-		
-		
-		
+	protected String runMountCommand(String alluxPath, String ufPath, boolean isReadOnly, String accessKeyId,
+			String secretKey) {
+		AlluxioURI alluxioPath = new AlluxioURI(alluxPath);
+		AlluxioURI ufsPath = new AlluxioURI(ufPath);
 		MountPOptions mountOption = MountPOptions.getDefaultInstance();
-		
+
 		MountPOptions.Builder mountBuilder = mountOption.toBuilder();
-		mountBuilder.setReadOnly(true);
+		mountBuilder.setReadOnly(isReadOnly);
 		mountBuilder.setShared(true);
-//		mountOption.setReadOnly(true);
-//		mountOption.setShared(true);
-		// if access key id and secret key are passed along with the arguments
-		if (args.length == 4) {
-			Map<String, String> authentication = new HashMap<>();
-			// different access information based on cloud provider need to be set up here. 
-			// following is for aws
-			authentication.put("aws.accessKeyId", args[2]);
-			authentication.put("aws.secretKey", args[3]);
+
+		Map<String, String> authentication = new HashMap<>();
+		// different access information based on cloud provider need to be set up here.
+		// following is for aws
+		if (StringUtils.isNotBlank(accessKeyId) && StringUtils.isNotBlank(secretKey)) {
+			authentication.put("aws.accessKeyId", accessKeyId);
+			authentication.put("aws.secretKey", secretKey);
 
 			mountBuilder.putAllProperties(authentication);
-			mountOption = mountBuilder.build();
-//			mountOption.setProperties(authentication);
+			
 		}
-		
-//		FileSystem mFileSystem = (FileSystem.Factory.get());
+		mountOption = mountBuilder.build();
 		FileSystem mFileSystem = FileSystem.Factory.create(conf);
 		try {
-			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
-	
+			log.debug("Running MOUNT command with parameter(s): {}, {}, {}, and {}", alluxPath, ufPath, isReadOnly);
+			System.out.println("Running MOUNT command with parameter(s): {}, {}, {}, and {}"+ "  "+ alluxPath + "  "+ ufPath+ "  " +isReadOnly);
 			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 			return "";
 		} catch (IOException | AlluxioException e) {
@@ -316,7 +308,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			UnmountCommand unmountCommand = new UnmountCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = unmountCommand.parseAndValidateArgs(args);
-			log.info("Running UNMOUNT command with parameter(s): " + Arrays.toString(args));
+			log.info("Running UNMOUNT command with parameter(s): {}", Arrays.toString(args));
 
 			unmountCommand.run(commandLine);
 			return "";
@@ -336,7 +328,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			MvCommand mvCommand = new MvCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = mvCommand.parseAndValidateArgs(args);
-			log.info("Running MOVE command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MOVE command with parameter(s): {}", Arrays.toString(args));
 
 			mvCommand.run(commandLine);
 			return "";
@@ -356,7 +348,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			CpCommand cpCommand = new CpCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = cpCommand.parseAndValidateArgs(args);
-			log.info("Running COPY command with parameter(s): " + Arrays.toString(args));
+			log.info("Running COPY command with parameter(s): {}", Arrays.toString(args));
 
 			cpCommand.run(commandLine);
 			return "";
@@ -376,7 +368,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			RmCommand rmCommand = new RmCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = rmCommand.parseAndValidateArgs(args);
-			log.info("Running REMOVE command with parameter(s): " + Arrays.toString(args));
+			log.info("Running REMOVE command with parameter(s): {}", Arrays.toString(args));
 
 			rmCommand.run(commandLine);
 			return "";
@@ -396,7 +388,7 @@ public class DLMSServiceImpl implements DLMSService {
 		try {
 			PersistCommand persistCommand = new PersistCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = persistCommand.parseAndValidateArgs(args);
-			log.info("Running PERSIST command with parameter(s): " + Arrays.toString(args));
+			log.info("Running PERSIST command with parameter(s): {}", Arrays.toString(args));
 
 			persistCommand.run(commandLine);
 			return "";
