@@ -100,7 +100,7 @@ public class MetaSolverProperties {
     @Getter
     @Setter
     public static class History {
-        private boolean enabled = true;
+        private boolean enabled = false;
 
         private String basePath;
         private String actionsBasePath;
