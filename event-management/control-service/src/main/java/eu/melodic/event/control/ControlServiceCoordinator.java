@@ -76,7 +76,9 @@ public class ControlServiceCoordinator {
     private AtomicBoolean inUse = new AtomicBoolean();
     private Map<String, TranslationContext> camelToTcCache = new HashMap<>();
 
+    @Getter
     private String currentCamelModelId;
+    @Getter
     private String currentCpModelId;
     private TranslationContext currentTC;
 
