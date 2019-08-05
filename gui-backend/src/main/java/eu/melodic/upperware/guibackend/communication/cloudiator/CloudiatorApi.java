@@ -38,4 +38,6 @@ public interface CloudiatorApi {
     void deleteNode(String nodeId);
 
     void deleteCloudiatorProcess(String processId);
+
+    List<Schedule> getScheduleList();
 }
