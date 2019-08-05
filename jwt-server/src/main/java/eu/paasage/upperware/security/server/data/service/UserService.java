@@ -145,7 +145,7 @@ public class UserService {
                 pwdAccountLockedTime = attributes.get(PASSWORD_LOCKED_KEY);
             }
         } catch (NamingException e) {
-            e.printStackTrace();
+            log.error("Error by checking locked account state for user {}:", username, e);
         }
         return pwdAccountLockedTime != null;
     }
