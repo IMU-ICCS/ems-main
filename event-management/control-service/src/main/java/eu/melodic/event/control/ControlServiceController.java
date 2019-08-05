@@ -173,17 +173,50 @@ public class ControlServiceController {
     }
 
     // ------------------------------------------------------------------------------------------------------------
+    // Translation results methods
+    // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/constraintThresholds/{appId}", method = {GET,POST})
-    public Collection getConstraintThresholds(@PathVariable("appId") String applicationId,
-                                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
+    @RequestMapping(value = "/translator/currentCamelModel", method = {GET,POST})
+    public String getCurrentCamelModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
+        log.info("ControlServiceController.getCurrentCamelModel(): Received request");
+        log.trace("ControlServiceController.getCurrentCamelModel(): JWT token: {}", jwtToken);
+
+        String currentCamelModelId = coordinator.getCurrentCamelModelId();
+        log.info("ControlServiceController.getCurrentCamelModel(): Current CAMEL model: {}", currentCamelModelId);
+
+        return currentCamelModelId;
+    }
+
+    @RequestMapping(value = "/translator/currentCpModel", method = {GET,POST})
+    public String getCurrentCpModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("ControlServiceController.getCurrentCpModel(): Received request");
+        log.trace("ControlServiceController.getCurrentCpModel(): JWT token: {}", jwtToken);
+
+        String currentCpModelId = coordinator.getCurrentCpModelId();
+        log.info("ControlServiceController.getCurrentCpModel(): Current CP model: {}", currentCpModelId);
+
+        return currentCpModelId;
+    }
+
+    @RequestMapping(value = { "/translator/constraintThresholds/{appId}", "translator/constraintThresholds" }, method = {GET,POST})
+    public Collection getConstraintThresholds(@PathVariable("appId") Optional<String> optAppId,
+                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        String applicationId = (optAppId.isPresent()) ? optAppId.get() : null;
         log.info("ControlServiceController.getConstraintThresholds(): Received request: app-id={}", applicationId);
         log.trace("ControlServiceController.getConstraintThresholds(): JWT token: {}", jwtToken);
 
+        if (StringUtils.isBlank(applicationId)) {
+            applicationId = coordinator.getCurrentCamelModelId();
+            log.info("ControlServiceController.getConstraintThresholds(): Using current application: curr-app-id={}", applicationId);
+            if (applicationId==null) applicationId = "";
+        }
+
         // Retrieve sensor information
-        Collection constraints = coordinator.getMetricConstraints("/"+applicationId);
+        String appPath = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        Collection constraints = coordinator.getMetricConstraints(appPath);
         log.info("ControlServiceController.getConstraintThresholds(): Constraints for application: {}: {}", applicationId, constraints);
 
         return constraints;
