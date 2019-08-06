@@ -3,7 +3,10 @@ package eu.paasage.upperware.security.server.controller;
 import eu.melodic.models.interfaces.security.InvalidateTokenRequest;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
+import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
+import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
+import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.RefreshToken;
 import eu.paasage.upperware.security.server.data.service.RefreshTokenService;
 import eu.paasage.upperware.security.server.data.service.UserService;
@@ -19,34 +22,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RestController
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@Validated
 public class UserController {
 
     private UserService userService;
     private RefreshTokenService refreshTokenService;
 
-    @PostMapping("/login")
+    @PostMapping("/user/login")
     public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
-            throws UserNotFoundException {
+            throws AuthenticationException {
         String username = userRequest.getUsername();
         log.info("Login request for user with username: {}", username);
-        userService.authenticate(username, userRequest.getPassword());
+        if (userService.authenticate(username, userRequest.getPassword())) {
+            String token = userService.createToken(username);
+            String refreshToken = refreshTokenService.createToken(username);
+            response.setHeader(SecurityConstants.HEADER_STRING, token);
+            response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
+            return new UserLoginResponse(username);
+        } else {
+            throw new AuthenticationException();
+        }
 
-        String token = userService.createToken(username);
-        String refreshToken = refreshTokenService.createToken(username);
 
-        response.setHeader(SecurityConstants.HEADER_STRING, token);
-        response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
-        return new UserLoginResponse(username);
+
     }
 
-    @PostMapping("/users/sign-up")
+    @PostMapping("/auth/user/sign-up")
     public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
         log.info("Sign-up request for username: {}", userRequest.getUsername());
         if (!userService.exists(userRequest.getUsername())) {
@@ -54,6 +68,37 @@ public class UserController {
         }
         userService.create(userRequest.getUsername(), userRequest.getPassword());
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+    }
+
+    @PutMapping("/auth/user/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest)
+            throws AuthenticationException {
+        log.info("PUT request for change password from user: {}", changePasswordRequest.getUsername());
+        userService.changePassword(changePasswordRequest);
+        log.info("Password for user: {} successfully changed", changePasswordRequest.getUsername());
+    }
+
+    @PutMapping("/auth/user/unlock/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlockUserAccount(@PathVariable("username") String username) {
+        log.info("PUT request for unlock account for user: {}", username);
+        userService.unlockAccount(username);
+        log.info("Account for user: {} successfully unlocked", username);
+    }
+
+    @GetMapping("/auth/user")
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> getUsersList() {
+        log.info("GET request for all users list");
+        return userService.getUsersList();
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        String defaultMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        ExceptionResponse response = new ExceptionResponse(defaultMessage);
+        return new ResponseEntity<>(response, new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "/refresh-token")

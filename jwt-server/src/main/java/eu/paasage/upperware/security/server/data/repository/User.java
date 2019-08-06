@@ -1,5 +1,6 @@
 package eu.paasage.upperware.security.server.data.repository;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,16 +17,21 @@ import javax.naming.Name;
 public class User {
 
     @Id
+    @JsonIgnore
     private Name id;
 
     @Attribute(name = "sn")
     private String username;
 
+    @JsonIgnore
     @Attribute(name = "userPassword")
     private String password;
 
-    public User(String username, String password) {
+    private boolean lockedAccount;
+
+    public User(String username, String password, boolean lockedAccount) {
         this.username = username;
         this.password = password;
+        this.lockedAccount = lockedAccount;
     }
 }

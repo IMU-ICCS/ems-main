@@ -130,7 +130,6 @@ public class CdoServerClientApi implements CdoServerApi {
                 return executionModelNew;
             });
 
-
             DeploymentInstanceModel oldModel = null;
             Optional<HistoryRecord> lastHistoryRecordOpt = getLastHistoryRecord(executionModel);
             if (lastHistoryRecordOpt.isPresent()) {

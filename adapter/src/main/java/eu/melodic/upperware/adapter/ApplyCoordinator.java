@@ -50,6 +50,8 @@ public class ApplyCoordinator {
 		CDOSessionX session = cdoClientX.getSession();
 		CDOTransaction transaction = session.openTransaction();
 
+		String deploymentInstanceName;
+
 		try {
 			CamelModel camelModel = CdoTool.getLastCamelModel(transaction.getResource(camelModelId).getContents())
                 .orElseThrow(() -> new IllegalStateException("Could not find camel model from camelModelID: " + camelModelId));
@@ -75,7 +77,7 @@ public class ApplyCoordinator {
 				}
 				camelModel.getDeploymentModels().add(newDeploymentInstanceModel);
 				transaction.commit();
-				applySolutionNotificationSender.notifySolutionApplied(camelModelId, newDeploymentInstanceModel.getName(), notificationUri, requestUuid);
+				deploymentInstanceName = newDeploymentInstanceModel.getName();
 			} catch (CommitException e) {
 				log.error("Error during commit transaction, Unable to complete data model instances registration", e);
 				applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
@@ -92,6 +94,7 @@ public class ApplyCoordinator {
 			}
 			session.closeSession();
 		}
+		applySolutionNotificationSender.notifySolutionApplied(camelModelId, deploymentInstanceName, notificationUri, requestUuid);
 	}
 
 	private void dumpDM(CamelModel cm, int level) {

@@ -216,4 +216,14 @@ public class CloudiatorClientApi implements CloudiatorApi {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }
+
+    @Override
+    public List<Schedule> getScheduleList() {
+        try {
+            return processApi.getSchedules();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator schedules list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
 }
