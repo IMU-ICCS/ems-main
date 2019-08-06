@@ -8,4 +8,8 @@ public class MqConstants {
 
 	public static final String VALUE_SEPARATOR_DEFAULT = "=";
 	public static final String VALUE_SEPARATOR_JSON = ":";
+
+	public static final String KEY_VALUE_PAIR_SEPARATOR = ",";
+
+	public static final String ALL_DESTINATIONS = "*";
 }
