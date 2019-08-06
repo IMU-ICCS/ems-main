@@ -41,7 +41,7 @@ public class MqTopicListener {
 			try {
 				BrokerClient brokerClient = BrokerClient.newClient();
 				waitForActiveMq(brokerClient);
-				brokerClient.receiveEvents(melodicConfiguration.getMelodicMqAddress(), "*", message -> {
+				brokerClient.receiveEvents(melodicConfiguration.getMelodicMqAddress(), MqConstants.ALL_DESTINATIONS, message -> {
 					ActiveMQMessage activeMQMessage = (ActiveMQMessage) message;
 					logRawValues(activeMQMessage);
 
@@ -78,7 +78,7 @@ public class MqTopicListener {
 
 	private MqDataEntry createDataEntry(ActiveMQMessage activeMQMessage) {
 		String rawMqContent = extractPayload(new String(activeMQMessage.getContent().getData()));
-		String[] keyValuePairsAsStrings = rawMqContent.split(",");
+		String[] keyValuePairsAsStrings = rawMqContent.split(MqConstants.KEY_VALUE_PAIR_SEPARATOR);
 		String keyValueEncoding = extractUsedSeparator(keyValuePairsAsStrings);
 
 		HashMap<String, String> keyValueMap = Arrays.stream(keyValuePairsAsStrings)//
