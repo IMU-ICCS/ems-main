@@ -15,9 +15,8 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
-import org.apache.activemq.broker.BrokerPlugin;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.SslBrokerService;
+import org.apache.activemq.broker.*;
+import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.security.AuthenticationUser;
 import org.apache.activemq.security.SimpleAuthenticationPlugin;
@@ -98,13 +97,15 @@ public class BrokerConfig implements InitializingBean {
             brokerLocalAdmin = LOCAL_ADMIN_PREFIX + RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
             brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
             userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, SimpleBrokerAuthorizationPlugin.ADMIN_GROUP));
-            log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}", brokerLocalAdmin, brokerLocalAdminPassword);
+            log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}",
+                    brokerLocalAdmin, passwordUtil.encodePassword(brokerLocalAdminPassword));
 
             // initialize broker user credentials
             brokerUsername = LOCAL_USER_PREFIX+ RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
             brokerPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
             userList.add(new AuthenticationUser(brokerUsername, brokerPassword, SimpleBrokerAuthorizationPlugin.RO_USER_GROUP));
-            log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}", brokerUsername, brokerPassword);
+            log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}",
+                    brokerUsername, passwordUtil.encodePassword(brokerPassword));
 
             // initialize additional user credentials from configuration
             for (String extraUserCred : properties.getAdditionalBrokerCredentials().split(",")) {
@@ -316,7 +317,23 @@ public class BrokerConfig implements InitializingBean {
         // start broker service instance
         brokerService.start();
 
+        // register broker service interceptors
+        registerMessageInterceptors(brokerService);
+
         return brokerService;
+    }
+
+    private void registerMessageInterceptors(BrokerService brokerService) {
+        log.info("BrokerConfig: Registering Message Interceptors...");
+
+        // get message interceptor registry
+        final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
+        log.trace("BrokerConfig: Message interceptor registry: {}", registry);
+
+        // register interceptor for adding source (producer) address to messages
+        String applyToAllDestinations = ">";
+        registry.addMessageInterceptorForTopic(applyToAllDestinations, new SourceAddressMessageUpdateInterceptor(registry));
+        log.info("BrokerConfig: Registered SourceAddressMessageUpdateInterceptor");
     }
 
     private BrokerService _createSslBrokerService() throws Exception {
