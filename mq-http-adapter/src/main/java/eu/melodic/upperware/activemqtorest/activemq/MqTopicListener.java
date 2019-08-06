@@ -76,8 +76,8 @@ public class MqTopicListener {
 		}
 	}
 
-	private MqDataEntry createDataEntry(ActiveMQMessage am) {
-		String rawMqContent = extractPayload(new String(am.getContent().getData()));
+	private MqDataEntry createDataEntry(ActiveMQMessage activeMQMessage) {
+		String rawMqContent = extractPayload(new String(activeMQMessage.getContent().getData()));
 		String[] keyValuePairsAsStrings = rawMqContent.split(",");
 		String keyValueEncoding = extractUsedSeparator(keyValuePairsAsStrings);
 
@@ -86,23 +86,23 @@ public class MqTopicListener {
 				.collect(Collectors.toMap(keyValuePairs -> normalizeMqString(keyValuePairs[0]), keyValuePairs -> normalizeMqString(keyValuePairs[1]), (a, b) -> b, Maps::newHashMap));
 
 		MqDataEntry mqDataEntry = new MqDataEntry();
-		mqDataEntry.setLevel(keyValueMap.getOrDefault("level", "0"));
-		mqDataEntry.setValue(keyValueMap.get("metricValue"));
-		mqDataEntry.setTimestamp(keyValueMap.get("timestamp"));
-		String topic = am.getJMSDestination().toString().replace("topic://", "");
+		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, "0"));
+		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
+		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
+		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, "");
 		mqDataEntry.setTopic(topic);
-		String connectionId = am.getProducerId().getConnectionId();
+		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
 
 		return mqDataEntry;
 	}
 
 	private String extractUsedSeparator(String[] keyValuePairs) {
-		int delimiterConsistentCounter = (int) Arrays.stream(keyValuePairs).filter(string -> string.contains(":")).count();
+		int delimiterConsistentCounter = (int) Arrays.stream(keyValuePairs).filter(string -> string.contains(MqConstants.VALUE_SEPARATOR_JSON)).count();
 		if (delimiterConsistentCounter == keyValuePairs.length) {
-			return ":";
+			return MqConstants.VALUE_SEPARATOR_JSON;
 		}
-		return "=";
+		return MqConstants.VALUE_SEPARATOR_DEFAULT;
 	}
 
 	private String normalizeMqString(String mqString) {
