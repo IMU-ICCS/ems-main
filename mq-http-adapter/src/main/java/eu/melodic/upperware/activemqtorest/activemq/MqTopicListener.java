@@ -61,11 +61,11 @@ public class MqTopicListener {
 
 	private void waitForActiveMq(BrokerClient brokerClient) {
 		int RETRY_MAX = 10;
-		for (int i = 0; i < RETRY_MAX; i++) {
+		for (int retryCount = 1; retryCount < RETRY_MAX; retryCount++) {
 			try {
 				brokerClient.openConnection(melodicConfiguration.getMelodicMqAddress());
 			} catch (JMSException e) {
-				log.error("Error while initiating connection with MQ. Retry {} of {}", i, RETRY_MAX);
+				log.error("Error while initiating connection with MQ. Retry {} of {}", retryCount, RETRY_MAX);
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException ex) {
