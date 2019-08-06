@@ -77,26 +77,40 @@ public class MqTopicListener {
 	}
 
 	private MqDataEntry createDataEntry(ActiveMQMessage am) {
-		String contentAsString = new String(am.getContent().getData());
-		String rawMqContent = StringUtils.substringBetween(contentAsString, "{", "}");
-
+		String rawMqContent = extractPayload(new String(am.getContent().getData()));
 		String[] keyValuePairsAsStrings = rawMqContent.split(",");
+		String keyValueEncoding = extractUsedSeparator(keyValuePairsAsStrings);
 
 		HashMap<String, String> keyValueMap = Arrays.stream(keyValuePairsAsStrings)//
-				.map(s -> s.split("="))//
-				.collect(Collectors.toMap(keyValuePairs -> keyValuePairs[0].trim(), keyValuePairs -> keyValuePairs[1].trim(), (a, b) -> b, Maps::newHashMap));
+				.map(s -> s.split(keyValueEncoding))//
+				.collect(Collectors.toMap(keyValuePairs -> normalizeMqString(keyValuePairs[0]), keyValuePairs -> normalizeMqString(keyValuePairs[1]), (a, b) -> b, Maps::newHashMap));
 
 		MqDataEntry mqDataEntry = new MqDataEntry();
-		mqDataEntry.setLevel(keyValueMap.get("level"));
+		mqDataEntry.setLevel(keyValueMap.getOrDefault("level", "0"));
 		mqDataEntry.setValue(keyValueMap.get("metricValue"));
 		mqDataEntry.setTimestamp(keyValueMap.get("timestamp"));
 		String topic = am.getJMSDestination().toString().replace("topic://", "");
 		mqDataEntry.setTopic(topic);
-
 		String connectionId = am.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
 
 		return mqDataEntry;
+	}
+
+	private String extractUsedSeparator(String[] keyValuePairs) {
+		int delimiterConsistentCounter = (int) Arrays.stream(keyValuePairs).filter(string -> string.contains(":")).count();
+		if (delimiterConsistentCounter == keyValuePairs.length) {
+			return ":";
+		}
+		return "=";
+	}
+
+	private String normalizeMqString(String mqString) {
+		return mqString.trim().replaceAll("\"", "");
+	}
+
+	private String extractPayload(String rawPayload) {
+		return StringUtils.substringBetween(rawPayload, "{", "}");
 	}
 
 	private void logRawValues(ActiveMQMessage am) {
