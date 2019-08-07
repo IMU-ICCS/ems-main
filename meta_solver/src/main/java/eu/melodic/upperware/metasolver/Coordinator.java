@@ -183,8 +183,10 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     private void logCpSolutionInfo(String applicationId, String cpModelPath, boolean success, String description) throws ConcurrentAccessException {
-        if (metaSolverProperties.getHistory()!=null && !metaSolverProperties.getHistory().isEnabled()) return;
-        historyHelper.addCpSolutionHistoryInfo(applicationId, cpModelPath, success, description);
+        if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
+			//historyHelper.addCpSolutionHistoryInfo(applicationId, cpModelPath, success, description);
+			log.warn("MetaSolver.Coordinator: logCpSolutionInfo(): Logging to history has been deactivated from code");
+		}
     }
 
     /**
