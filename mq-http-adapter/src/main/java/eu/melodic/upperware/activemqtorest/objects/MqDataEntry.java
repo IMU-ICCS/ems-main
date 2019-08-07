@@ -20,5 +20,5 @@ public class MqDataEntry {
 	private String timestamp;
 	private String producer;
 	private String sourceIpAddress;
-
+	private String vmName;
 }

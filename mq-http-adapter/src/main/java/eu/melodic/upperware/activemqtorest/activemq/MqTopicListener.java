@@ -89,6 +89,7 @@ public class MqTopicListener {
 		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, "0"));
 		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
 		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
+		mqDataEntry.setVmName(keyValueMap.getOrDefault("vmName", ""));
 		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, "");
 		mqDataEntry.setTopic(topic);
 		String connectionId = activeMQMessage.getProducerId().getConnectionId();
