@@ -561,9 +561,9 @@ public class ControlServiceCoordinator {
         return sensors;
     }
 
-    public Collection getMetricConstraints(String camelModelId) {
+    public Set getMetricConstraints(String camelModelId) {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
-        if (_tc==null) return Collections.emptyList();
+        if (_tc==null) return Collections.emptySet();
         return _tc.getMetricConstraints();
     }
 

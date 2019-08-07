@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -200,11 +197,11 @@ public class ControlServiceController {
         return currentCpModelId;
     }
 
-    @RequestMapping(value = { "/translator/constraintThresholds/{appId}", "translator/constraintThresholds" }, method = {GET,POST})
+    @RequestMapping(value = { "/translator/constraintThresholds/{appId}", "/translator/constraintThresholds" }, method = {GET,POST})
     public Collection getConstraintThresholds(@PathVariable("appId") Optional<String> optAppId,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        String applicationId = (optAppId.isPresent()) ? optAppId.get() : null;
+        String applicationId = optAppId.orElse(null);
         log.info("ControlServiceController.getConstraintThresholds(): Received request: app-id={}", applicationId);
         log.trace("ControlServiceController.getConstraintThresholds(): JWT token: {}", jwtToken);
 
@@ -216,7 +213,7 @@ public class ControlServiceController {
 
         // Retrieve sensor information
         String appPath = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
-        Collection constraints = coordinator.getMetricConstraints(appPath);
+        Set constraints = coordinator.getMetricConstraints(appPath);
         log.info("ControlServiceController.getConstraintThresholds(): Constraints for application: {}: {}", applicationId, constraints);
 
         return constraints;

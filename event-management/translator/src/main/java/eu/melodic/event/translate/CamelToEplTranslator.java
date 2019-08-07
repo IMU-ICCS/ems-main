@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("CamelToEplTranslator")
@@ -253,10 +254,8 @@ public class CamelToEplTranslator implements Translator {
 	}
 	
 	protected Collection<String> getFunctionNames(Collection<FunctionDefinition> col) {
-		ArrayList<String> names = new ArrayList<>();
-		for (FunctionDefinition fd : col) {
-			names.add( fd.getName() );
-		}
-		return names;
+		return col.stream()
+				.map(FunctionDefinition::getName)
+				.collect(Collectors.toList());
 	}
 }

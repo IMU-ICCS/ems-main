@@ -39,16 +39,12 @@ public class SourceAddressMessageUpdateInterceptor implements MessageInterceptor
 
             // extract remote host address
             if (StringUtils.isNotBlank(address)) {
-                address = address.trim();
-                String s = address.substring(address.indexOf("//") + 2);
-                address = s.substring(0, s.indexOf(":"));
+                address = StringUtils.substringsBetween(address, "//", ":") [0];
             }
             log.debug("SourceAddressMessageUpdateInterceptor:  Producer host: {}", address);
 
             // check if host address is local
-            boolean isLocal = StringUtils.isNotBlank(address)
-                    ? NetUtil.isLocalAddress(address.trim())
-                    : true;
+            boolean isLocal = StringUtils.isBlank(address) || NetUtil.isLocalAddress(address.trim());
             if (isLocal) {
                 log.debug("SourceAddressMessageUpdateInterceptor:  Producer host is local. Getting our public IP address");
                 address = NetUtil.getPublicIpAddress();

@@ -77,7 +77,7 @@ public class TranslationContext {
     private transient String fullNamePattern;                           // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
 
     // Metric Constraints
-    protected Collection<MetricConstraint> metricConstraints;
+    protected Set<MetricConstraint> metricConstraints;
 
 
     // ====================================================================================================================================================
@@ -156,7 +156,7 @@ public class TranslationContext {
         return false;
     }
 
-    public Collection<MetricConstraint> getMetricConstraints() {
+    public Set<MetricConstraint> getMetricConstraints() {
         return new HashSet<>(metricConstraints);
     }
 
