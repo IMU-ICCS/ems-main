@@ -12,7 +12,7 @@ import lombok.ToString;
 @Component
 public class ActiveMqStatistics {
 
-	private long msqCount = 0;
-	private Boolean hasError = false;
+	private long msqCount;
+	private Boolean hasError;
 
 }
