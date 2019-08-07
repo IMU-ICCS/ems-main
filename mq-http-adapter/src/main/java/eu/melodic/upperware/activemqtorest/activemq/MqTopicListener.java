@@ -61,7 +61,7 @@ public class MqTopicListener {
 
 	private void waitForActiveMq(BrokerClient brokerClient) {
 		int RETRY_MAX = 10;
-		for (int retryCount = 1; retryCount < RETRY_MAX; retryCount++) {
+		for (int retryCount = 1; retryCount <= RETRY_MAX; retryCount++) {
 			try {
 				brokerClient.openConnection(melodicConfiguration.getMelodicMqAddress());
 			} catch (JMSException e) {
