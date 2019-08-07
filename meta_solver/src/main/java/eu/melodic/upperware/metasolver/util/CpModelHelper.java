@@ -14,6 +14,7 @@ import eu.paasage.upperware.metamodel.types.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
@@ -26,14 +27,18 @@ import java.util.function.Function;
 @Slf4j
 public class CpModelHelper extends AbstractCdoHelper {
 
+    protected ConstraintProblem getConstraintProblemAtPath(CDOTransaction transaction, String cpModelPath) {
+        CDOResource resource = transaction.getResource(cpModelPath);
+        return (ConstraintProblem) resource.getContents().get(0);
+    }
+
     public boolean updateCpModelWithMetricValues(String applicationId, String cpModelPath, Map<String, String> metricValues) throws ConcurrentAccessException {
         log.debug("CpModelHelper.updateCpModelWithMetricValues(): BEGIN: helper-id={}, app-id={}, cp-path={}, mvv={}", id, applicationId, cpModelPath, metricValues);
 
         return
                 processInTransaction(cpModelPath, "updateCpModelWithMetricValues()", transaction -> {
-                    // retrieve CP model (open transaction)
-                    CDOResource resource = transaction.getResource(cpModelPath);
-                    ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);    // one element in list - 0: ConstraintProblem  (see cp_generator, class :
+                    // retrieve CP model
+                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
 
                     // check if all metric variable names in CP model exist in 'metricValues' map
                     /*EList<MetricVariable> cpMetricVarList = cpModel.getMetricVariables();
@@ -97,9 +102,8 @@ public class CpModelHelper extends AbstractCdoHelper {
 
         return
                 processInTransaction(cpModelPath, "getSolutionUtilities()", transaction -> {
-                    // retrieve CP model (open view)
-                    CDOResource resource = transaction.getResource(cpModelPath);
-                    ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+                    // retrieve CP model
+                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
 
                     // get solutions list
                     EList<Solution> solutions = cpModel.getSolution();
@@ -141,9 +145,8 @@ public class CpModelHelper extends AbstractCdoHelper {
 
         return
                 processInTransaction(cpModelPath, "updateSolutionIdsInCpModel()", transaction -> {
-                    // retrieve CP model (open transaction)
-                    CDOResource resource = transaction.getResource(cpModelPath);
-                    ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+                    // retrieve CP model
+                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
 
                     // get current solution Ids
                     int depSolPos = cpModel.getDeployedSolutionId();
@@ -176,9 +179,8 @@ public class CpModelHelper extends AbstractCdoHelper {
 
         return
                 processInTransaction(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()", transaction -> {
-                    // retrieve CP model (open transaction)
-                    CDOResource resource = transaction.getResource(cpModelPath);
-                    ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+                    // retrieve CP model
+                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
 
                     // get current candidate solution Id
                     int oldPos = cpModel.getCandidateSolutionId();
@@ -205,9 +207,8 @@ public class CpModelHelper extends AbstractCdoHelper {
         log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): BEGIN: helper-id={}, app-id={}, cp-path={}, from-to-map={}", id, applicationId, cpModelPath, fromToMap);
 
         processInTransaction(cpModelPath, "copyVarValuesFromDeployedSolution()", transaction -> {
-            // retrieve CP model (open transaction)
-            CDOResource resource = transaction.getResource(cpModelPath);
-            ConstraintProblem cpModel = (ConstraintProblem) resource.getContents().get(0);
+            // retrieve CP model
+            ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
 
             // get solutions list
             EList<Solution> solutions = cpModel.getSolution();
@@ -285,12 +286,7 @@ public class CpModelHelper extends AbstractCdoHelper {
     }
 
     public static double numericValueUpperwareToDouble(NumericValueUpperware value) {
-        if (value==null) throw new IllegalArgumentException("Argument is null");
-        if (value instanceof IntegerValueUpperware) return ((IntegerValueUpperware)value).getValue();
-        if (value instanceof FloatValueUpperware) return ((FloatValueUpperware)value).getValue();
-        if (value instanceof DoubleValueUpperware) return ((DoubleValueUpperware)value).getValue();
-        if (value instanceof LongValueUpperware) return ((LongValueUpperware)value).getValue();
-        throw new IllegalArgumentException("Argument is not Integer/Float/Double/LongValueUpperware: "+value.getClass());
+        return numericValueUpperwareToNumber(value).doubleValue();
     }
 
     public static Number numericValueUpperwareToNumber(NumericValueUpperware value) {

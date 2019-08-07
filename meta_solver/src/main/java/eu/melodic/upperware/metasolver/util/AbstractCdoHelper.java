@@ -18,6 +18,7 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 @Component
@@ -31,7 +32,7 @@ public abstract class AbstractCdoHelper {
 
     public AbstractCdoHelper() {
         id = ++counter;
-        this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
         log.debug("AbstractCdoHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
     }
 
@@ -59,8 +60,7 @@ public abstract class AbstractCdoHelper {
     }
 
     public <T> T processInTransaction(String lockName, Processor<T> processor, T valueOnException) throws ConcurrentAccessException {
-        String callerName = lockName;
-        return processInTransaction(lockName, callerName, processor, valueOnException);
+        return processInTransaction(lockName, lockName, processor, valueOnException);
     }
 
     public <T> T processInTransaction(String lockName, String callerName, Processor<T> processor) throws ConcurrentAccessException {
@@ -75,7 +75,7 @@ public abstract class AbstractCdoHelper {
         CDOTransaction transaction = null;
         try {
             // open transaction
-            this.cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));
+            this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
             session = cdoClient.getSession();
             transaction = session.openTransaction();
 
@@ -104,7 +104,7 @@ public abstract class AbstractCdoHelper {
     }
 
     @FunctionalInterface
-    public static interface Processor<T> {
-        public T process(CDOTransaction transaction);
+    public interface Processor<T> {
+        T process(CDOTransaction transaction);
     }
 }

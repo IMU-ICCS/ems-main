@@ -284,7 +284,7 @@ public class TranslationContext {
         if (uc instanceof camel.constraint.MetricConstraint) {
             camel.constraint.MetricConstraint mc = (camel.constraint.MetricConstraint) uc;
             MetricContext context = mc.getMetricContext();
-            if (mc!=null) metricName = context.getName();
+            if (context!=null) metricName = context.getName();
             if (StringUtils.isBlank(metricName))
                 throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no valid metric context");
         } else

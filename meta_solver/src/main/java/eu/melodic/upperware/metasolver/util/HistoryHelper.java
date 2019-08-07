@@ -97,11 +97,9 @@ public class HistoryHelper extends AbstractCdoHelper {
                         if (model.getMetadataElements().size()==1) {
                             if (model.getMetadataElements().get(0) instanceof MmsConcept) {
                                 MmsConcept root = (MmsConcept)model.getMetadataElements().get(0);
-                                Optional<MmsConcept> opt1 = root.getConcept()
+                                return root.getConcept()
                                         .stream()
-                                        .filter(child -> "History".equals(child.getId()))
-                                        .findFirst();
-                                return opt1.isPresent();
+                                        .anyMatch(child -> "History".equals(child.getId()));
                             }
                         }
                         return false;
@@ -352,7 +350,7 @@ public class HistoryHelper extends AbstractCdoHelper {
             Optional<U> opt = modelsList.stream()
                     .filter(model -> modelName.equals(model.getName()))
                     .filter(model -> clazz.isAssignableFrom(model.getClass()))
-                    .map(model -> clazz.cast(model))
+                    .map(clazz::cast)
                     .findFirst();
             if (opt.isPresent()) {
                 result = opt.get();

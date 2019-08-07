@@ -248,9 +248,9 @@ public class Coordinator implements ApplicationContextAware {
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request", notification);
+        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
         sendNotification(notification);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent");
+        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
     }
 
     private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath) {
