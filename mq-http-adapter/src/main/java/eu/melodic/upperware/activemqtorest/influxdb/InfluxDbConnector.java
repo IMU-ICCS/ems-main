@@ -46,9 +46,10 @@ public class InfluxDbConnector {
 		Point point = Point.measurement(mqDataEntry.getTopic())
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
 				.addField("value", Double.valueOf(mqDataEntry.getValue()))
-				.addField("level", mqDataEntry.getLevel() == null ? 0.0 : Double.parseDouble(mqDataEntry.getLevel()))
-				.addField("producer", mqDataEntry.getProducer())
-				.addField("countryCode", ipGeoCoder.getCountryCode(mqDataEntry.getSourceIpAddress()))
+				.tag("level", mqDataEntry.getLevel())
+				.tag("producer", mqDataEntry.getProducer())
+				.tag("vmName", mqDataEntry.getVmName())
+				.tag("countryCode", ipGeoCoder.getCountryCode(mqDataEntry.getSourceIpAddress()))
 				.build();
 
 		influxDB.write(melodicConfiguration.getDatabaseName(), "", point);
