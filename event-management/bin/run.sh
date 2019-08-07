@@ -56,7 +56,7 @@ fi
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
 #JAVA_OPTS=-Djavax.net.debug=all
-export JAVA_OPTS
+#export JAVA_OPTS
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."

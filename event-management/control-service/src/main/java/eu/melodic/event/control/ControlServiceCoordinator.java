@@ -76,7 +76,9 @@ public class ControlServiceCoordinator {
     private AtomicBoolean inUse = new AtomicBoolean();
     private Map<String, TranslationContext> camelToTcCache = new HashMap<>();
 
+    @Getter
     private String currentCamelModelId;
+    @Getter
     private String currentCpModelId;
     private TranslationContext currentTC;
 
@@ -557,6 +559,12 @@ public class ControlServiceCoordinator {
         if (_tc==null) return Collections.emptyList();
         List<Monitor> sensors = new ArrayList<>(_tc.MON);
         return sensors;
+    }
+
+    public Set getMetricConstraints(String camelModelId) {
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptySet();
+        return _tc.getMetricConstraints();
     }
 
 
