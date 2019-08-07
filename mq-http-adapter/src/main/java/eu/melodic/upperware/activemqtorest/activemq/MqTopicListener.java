@@ -95,6 +95,12 @@ public class MqTopicListener {
 		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
 
+		try {
+			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty("producer-host"));
+		} catch (JMSException e) {
+			log.warn("Could not resolve property 'producer-host'.");
+		}
+
 		return mqDataEntry;
 	}
 
