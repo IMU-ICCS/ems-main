@@ -10,6 +10,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
+
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
@@ -49,6 +51,7 @@ public class InfluxDbConnector {
 				.tag("level", mqDataEntry.getLevel())
 				.tag("producer", mqDataEntry.getProducer())
 				.tag("vmName", mqDataEntry.getVmName())
+				.tag("ipAddress", Strings.nullToEmpty(mqDataEntry.getSourceIpAddress()))
 				.tag("countryCode", ipGeoCoder.getCountryCode(mqDataEntry.getSourceIpAddress()))
 				.build();
 
