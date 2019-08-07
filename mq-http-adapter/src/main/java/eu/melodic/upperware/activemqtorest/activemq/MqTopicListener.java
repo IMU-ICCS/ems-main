@@ -9,8 +9,6 @@ import javax.jms.JMSException;
 
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -18,16 +16,15 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Maps;
 
+import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
 import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
-import eu.melodic.event.brokerclient.BrokerClient;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 public class MqTopicListener {
-
-	private static Logger logger = LoggerFactory.getLogger(MqTopicListener.class);
 
 	@Autowired
 	private InfluxDbConnector influxDbConnector;
@@ -44,7 +41,7 @@ public class MqTopicListener {
 			try {
 				BrokerClient brokerClient = BrokerClient.newClient();
 				waitForActiveMq(brokerClient);
-				brokerClient.receiveEvents(melodicConfiguration.getMelodicMqAddress(), "*", message -> {
+				brokerClient.receiveEvents(melodicConfiguration.getMelodicMqAddress(), MqConstants.ALL_DESTINATIONS, message -> {
 					ActiveMQMessage activeMQMessage = (ActiveMQMessage) message;
 					logRawValues(activeMQMessage);
 
@@ -54,21 +51,21 @@ public class MqTopicListener {
 					activeMqStatisticHolder.increaseMsgCount();
 				});
 			} catch (JMSException | IOException e) {
-				logger.error("Error while using BrokerCLient", e);
+				log.error("Error while using BrokerCLient", e);
 				activeMqStatisticHolder.setHasError();
 			}
 		});
 		brokerThread.start();
-		logger.info("MqTopicListener up and running..");
+		log.info("MqTopicListener up and running..");
 	}
 
 	private void waitForActiveMq(BrokerClient brokerClient) {
 		int RETRY_MAX = 10;
-		for (int i = 0; i < RETRY_MAX; i++) {
+		for (int retryCount = 1; retryCount < RETRY_MAX; retryCount++) {
 			try {
 				brokerClient.openConnection(melodicConfiguration.getMelodicMqAddress());
 			} catch (JMSException e) {
-				logger.error("Error while initiating connection with MQ. Retry {} of {}", i, RETRY_MAX);
+				log.error("Error while initiating connection with MQ. Retry {} of {}", retryCount, RETRY_MAX);
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException ex) {
@@ -79,31 +76,45 @@ public class MqTopicListener {
 		}
 	}
 
-	private MqDataEntry createDataEntry(ActiveMQMessage am) {
-		String contentAsString = new String(am.getContent().getData());
-		String rawMqContent = StringUtils.substringBetween(contentAsString, "{", "}");
-
-		String[] keyValuePairsAsStrings = rawMqContent.split(",");
+	private MqDataEntry createDataEntry(ActiveMQMessage activeMQMessage) {
+		String rawMqContent = extractPayload(new String(activeMQMessage.getContent().getData()));
+		String[] keyValuePairsAsStrings = rawMqContent.split(MqConstants.KEY_VALUE_PAIR_SEPARATOR);
+		String keyValueEncoding = extractUsedSeparator(keyValuePairsAsStrings);
 
 		HashMap<String, String> keyValueMap = Arrays.stream(keyValuePairsAsStrings)//
-				.map(s -> s.split("="))//
-				.collect(Collectors.toMap(keyValuePairs -> keyValuePairs[0].trim(), keyValuePairs -> keyValuePairs[1].trim(), (a, b) -> b, Maps::newHashMap));
+				.map(s -> s.split(keyValueEncoding))//
+				.collect(Collectors.toMap(keyValuePairs -> normalizeMqString(keyValuePairs[0]), keyValuePairs -> normalizeMqString(keyValuePairs[1]), (a, b) -> b, Maps::newHashMap));
 
 		MqDataEntry mqDataEntry = new MqDataEntry();
-		mqDataEntry.setLevel(keyValueMap.get("level"));
-		mqDataEntry.setValue(keyValueMap.get("metricValue"));
-		mqDataEntry.setTimestamp(keyValueMap.get("timestamp"));
-		String topic = am.getJMSDestination().toString().replace("topic://", "");
+		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, "0"));
+		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
+		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
+		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, "");
 		mqDataEntry.setTopic(topic);
-
-		String connectionId = am.getProducerId().getConnectionId();
+		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
 
 		return mqDataEntry;
 	}
 
+	private String extractUsedSeparator(String[] keyValuePairs) {
+		int delimiterConsistentCounter = (int) Arrays.stream(keyValuePairs).filter(string -> string.contains(MqConstants.VALUE_SEPARATOR_JSON)).count();
+		if (delimiterConsistentCounter == keyValuePairs.length) {
+			return MqConstants.VALUE_SEPARATOR_JSON;
+		}
+		return MqConstants.VALUE_SEPARATOR_DEFAULT;
+	}
+
+	private String normalizeMqString(String mqString) {
+		return mqString.trim().replaceAll("\"", "");
+	}
+
+	private String extractPayload(String rawPayload) {
+		return StringUtils.substringBetween(rawPayload, "{", "}");
+	}
+
 	private void logRawValues(ActiveMQMessage am) {
-		logger.info("Retrieved raw ActiveMQMessage with content = {}", am.toString());
+		log.info("Retrieved raw ActiveMQMessage with content = {}", am.toString());
 	}
 
 }
