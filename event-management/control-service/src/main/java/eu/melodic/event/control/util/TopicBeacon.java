@@ -21,7 +21,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @EnableScheduling
@@ -38,6 +40,8 @@ public class TopicBeacon implements InitializingBean {
     private long beaconRate;
     @Value("${beacon.topics.heartbeat:}")
     private Set<String> beaconHeartbeatTopics;
+    @Value("${beacon.topics.instance:}")
+    private Set<String> beaconInstanceTopics;
 
     @Autowired
     private ControlServiceCoordinator coordinator;
@@ -54,8 +58,8 @@ public class TopicBeacon implements InitializingBean {
         }
 
         Date startTime = new Date(System.currentTimeMillis()+beaconInitialDelay);
-        log.debug("Topic Beacon settings: init-delay={}, delay={}, heartbeat-topics={}",
-                beaconInitialDelay, beaconDelay, beaconHeartbeatTopics);
+        log.debug("Topic Beacon settings: init-delay={}, delay={}, heartbeat-topics={}, instance-topics={}",
+                beaconInitialDelay, beaconDelay, beaconHeartbeatTopics, beaconInstanceTopics);
         scheduler.scheduleWithFixedDelay(() -> {
             try {
                 transmitInfo();
@@ -68,15 +72,34 @@ public class TopicBeacon implements InitializingBean {
 
     public void transmitInfo() throws JMSException {
         log.debug("Topic Beacon: Start transmitting info: {}", new Date());
-
-        String message = "TOPIC BEACON HEARTBEAT "+new Date();
-        log.debug("Topic Beacon: Transmitting Heartbeat info: message={}, topics={}", message, beaconHeartbeatTopics);
-        transmitInfo(message, beaconHeartbeatTopics);
-
+        transmitHeartbeat();
+        transmitInstances();
         log.debug("Topic Beacon: Completed transmitting info: {}", new Date());
     }
 
-    private void transmitInfo(String message, Set<String> topics) throws JMSException {
+    public void transmitHeartbeat() throws JMSException {
+        String message = "TOPIC BEACON HEARTBEAT "+new Date();
+        log.debug("Topic Beacon: Transmitting Heartbeat info: message={}, topics={}", message, beaconHeartbeatTopics);
+        sendMessageToTopics(message, beaconHeartbeatTopics);
+    }
+
+    public void transmitInstances() throws JMSException {
+        if (coordinator.getBaguetteServer().isServerRunning()) {
+            log.debug("Topic Beacon: Transmitting Instance info: topics={}",beaconInstanceTopics);
+            for (Map<String, Object> node : coordinator.getBaguetteServer().getNodeRegistry().getNodes()) {
+                String nodeName = node.get("name").toString();
+                String nodeIp = node.get("ip").toString();
+                //~{type}-~{operatingSystem}-~{id}-~{name}-~{providerId}-~{ip}-~{random}
+                String message = String.format("{ 'name': '%s', 'ip': '%s', 'timestamp': %d }",
+                        nodeName, nodeIp, System.currentTimeMillis());
+                log.debug("Topic Beacon: Transmitting Instance info for: instance={}, ip-address={}, message={}, topics={}",
+                        nodeName, nodeIp, message, beaconInstanceTopics);
+                sendMessageToTopics(message, beaconInstanceTopics);
+            }
+        }
+    }
+
+    private void sendMessageToTopics(String message, Set<String> topics) throws JMSException {
         for (String topicName : topics) {
             log.debug("Topic Beacon: Sending message to topic: message={}, topic={}", message, topicName);
             EventMap event = new EventMap(-1);
