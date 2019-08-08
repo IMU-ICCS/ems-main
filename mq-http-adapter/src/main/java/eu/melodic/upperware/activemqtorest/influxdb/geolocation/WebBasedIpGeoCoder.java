@@ -59,7 +59,8 @@ public class WebBasedIpGeoCoder implements IIpGeoCoder {
 			try {
 				JsonObject jsonObject = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject();
 				return Optional.of(jsonObject);
-			} catch (JsonSyntaxException x) {
+			} catch (JsonSyntaxException | NullPointerException x) {
+				log.warn("Error during JSON result parsing.");
 				return Optional.empty();
 			}
 		}
