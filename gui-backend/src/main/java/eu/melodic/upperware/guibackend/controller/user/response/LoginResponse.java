@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.user.response;
 
+import eu.melodic.upperware.guibackend.model.user.UserRole;
 import lombok.*;
 
 @Getter
@@ -10,4 +11,5 @@ import lombok.*;
 public class LoginResponse {
     private String username;
     private String token;
+    private UserRole userRole;
 }

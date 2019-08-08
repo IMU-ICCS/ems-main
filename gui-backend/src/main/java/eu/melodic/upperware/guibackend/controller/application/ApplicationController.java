@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/application")
+@RequestMapping("/auth/application")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ApplicationController {

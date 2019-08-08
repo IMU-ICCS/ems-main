@@ -40,7 +40,7 @@ public class UserController {
         if (userService.authenticate(userRequest.getUsername(), userRequest.getPassword())) {
             String token = userService.createToken(userRequest.getUsername());
             response.setHeader(SecurityConstants.HEADER_STRING, token);
-            return new UserLoginResponse(userRequest.getUsername());
+            return userService.createLoginResponse(userRequest.getUsername());
         } else {
             throw new AuthenticationException();
         }

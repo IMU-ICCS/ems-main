@@ -3,6 +3,7 @@ package eu.paasage.upperware.security.server.data.service;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
+import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
 import eu.paasage.upperware.security.server.data.repository.UserRole;
@@ -164,5 +165,14 @@ public class UserService {
             log.error("Error by checking locked account state for user {}:", username, e);
         }
         return pwdAccountLockedTime != null;
+    }
+
+    public UserLoginResponse createLoginResponse(String username) {
+        User user = userLdapRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+        return UserLoginResponse.builder()
+                .username(username)
+                .userRole(findUserRole(user.getId()))
+                .build();
     }
 }

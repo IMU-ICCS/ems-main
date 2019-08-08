@@ -6,6 +6,7 @@ import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
 import eu.melodic.upperware.guibackend.communication.jwt.server.response.JwtLoginResponse;
 import eu.melodic.upperware.guibackend.controller.user.request.ChangePasswordRequest;
 import eu.melodic.upperware.guibackend.controller.user.response.LoginResponse;
+import eu.melodic.upperware.guibackend.model.user.User;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -47,6 +48,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         return LoginResponse.builder()
                 .username(username)
                 .token(authorizationToken)
+                .userRole(response.getBody().getUserRole())
                 .build();
     }
 
@@ -58,6 +60,29 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", token);
         HttpEntity<ChangePasswordRequest> requestHttpEntity = new HttpEntity<>(changePasswordRequest, headers);
+        getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.PUT);
+    }
+
+    @Override
+    public List<User> getUsers(String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
+        ParameterizedTypeReference<List<User>> responseType = new ParameterizedTypeReference<List<User>>() {
+        };
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        HttpEntity<Void> requestHttpEntity = new HttpEntity<>(headers);
+        return getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.GET)
+                .getBody();
+    }
+
+    @Override
+    public void unlockUserAccount(String username, String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/unlock/" + username;
+        ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
+        };
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        HttpEntity<Void> requestHttpEntity = new HttpEntity<>(headers);
         getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.PUT);
     }
 }
