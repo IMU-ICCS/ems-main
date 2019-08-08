@@ -9,11 +9,12 @@
 
 package eu.melodic.event.control.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,6 +54,8 @@ public class TopicBeacon implements InitializingBean {
     @Autowired
     private TaskScheduler scheduler;
 
+    private Gson gson;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         if (!beaconEnable) {
@@ -61,6 +63,10 @@ public class TopicBeacon implements InitializingBean {
             return;
         }
 
+        // initialize a Gson instance
+        gson = new GsonBuilder().disableHtmlEscaping().create();
+
+        // configure and start scheduler
         Date startTime = new Date(System.currentTimeMillis()+beaconInitialDelay);
         log.debug("Topic Beacon settings: init-delay={}, delay={}, heartbeat-topics={}, threshold-topics={}, instance-topics={}",
                 beaconInitialDelay, beaconDelay, beaconHeartbeatTopics, beaconThresholdTopics, beaconInstanceTopics);
@@ -95,9 +101,8 @@ public class TopicBeacon implements InitializingBean {
                 .getMetricConstraints()
                 .stream()
                 .forEach(c -> {
-                    String message = String.format(Locale.US, "{ \"name\": \"%s\", \"operator\": \"%s\", \"threshold\": %f }",
-                            c.getName(), c.getOperator(), c.getThreshold());
-                    log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}", message, beaconThresholdTopics);
+                    String message = gson.toJson(c);
+                    log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}",message, beaconThresholdTopics);
                     try {
                         sendMessageToTopics(message, beaconThresholdTopics);
                     } catch (JMSException e) {
@@ -111,15 +116,9 @@ public class TopicBeacon implements InitializingBean {
         if (coordinator.getBaguetteServer().isServerRunning()) {
             log.debug("Topic Beacon: Transmitting Instance info: topics={}",beaconInstanceTopics);
             for (Map<String, Object> node : coordinator.getBaguetteServer().getNodeRegistry().getNodes()) {
-                String nodeId = StringUtils.defaultIfBlank((String)node.get("id"), "");
-                String nodeName = StringUtils.defaultIfBlank((String)node.get("name"), "");
-                String nodeType = StringUtils.defaultIfBlank((String)node.get("type"), "");
-                String nodeProv = StringUtils.defaultIfBlank((String)node.get("providerId"), "");
-                String nodeOs = StringUtils.defaultIfBlank((String)node.get("operatingSystem"),"");
-                String nodeIp = StringUtils.defaultIfBlank((String)node.get("ip"),"");
-
-                String message = String.format("{ \"id\": \"%s\", \"name\": \"%s\", \"type\": \"%s\", \"provider\": \"%s\", \"os\": \"%s\", \"ip\": \"%s\" }",
-                        nodeId, nodeName, nodeType, nodeProv, nodeOs, nodeIp);
+                String nodeName = (String)node.getOrDefault("name", "");
+                String nodeIp = (String)node.getOrDefault("ip","");
+                String message = gson.toJson(node);
                 log.debug("Topic Beacon: Transmitting Instance info for: instance={}, ip-address={}, message={}, topics={}",
                         nodeName, nodeIp, message, beaconInstanceTopics);
                 sendMessageToTopics(message, beaconInstanceTopics);
