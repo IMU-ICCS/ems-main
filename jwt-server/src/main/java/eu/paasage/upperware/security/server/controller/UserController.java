@@ -6,8 +6,8 @@ import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
-import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.RefreshToken;
+import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.service.RefreshTokenService;
 import eu.paasage.upperware.security.server.data.service.UserService;
 import eu.paasage.upperware.security.server.exception.RefreshTokenInvalidException;
@@ -24,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
@@ -55,7 +54,6 @@ public class UserController {
         } else {
             throw new AuthenticationException();
         }
-
 
 
     }
@@ -129,18 +127,22 @@ public class UserController {
 
         response.setHeader(SecurityConstants.HEADER_STRING, token);
         response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, newRefreshToken);
-        return ResponseEntity.status(HttpStatus.CREATED).body("New tokens created.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("New tokens have been created.");
     }
 
-    @PostMapping(value = "/invalidate-token")
+    @PostMapping(value = "/auth/invalidate-token")
     public ResponseEntity<Object> invalidateToken(@RequestBody InvalidateTokenRequest invalidateTokenRequest) {
 
+        log.info("Invalidate token request");
         try {
             refreshTokenService.invalidateToken(invalidateTokenRequest.getToken());
-        } catch (IllegalStateException ex) {
+        } catch (IllegalStateException | ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
+                | SignatureException | IllegalArgumentException ex) {
+            log.error(ex.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body("Token has been invalidated");
+        log.debug("Token has been invalidated successfully .");
+        return ResponseEntity.status(HttpStatus.OK).body("Token has been invalidated successfully.");
 
     }
 }
