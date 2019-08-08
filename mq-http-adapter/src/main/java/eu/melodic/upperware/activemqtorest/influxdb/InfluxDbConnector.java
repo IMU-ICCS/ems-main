@@ -10,7 +10,10 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
+
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
+import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import eu.melodic.upperware.activemqtorest.objects.MqDataEntry;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +26,9 @@ public class InfluxDbConnector {
 	@Autowired
 	private MelodicConfiguration melodicConfiguration;
 
+	@Autowired
+	private IIpGeoCoder ipGeoCoder;
+
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress());
@@ -30,7 +36,6 @@ public class InfluxDbConnector {
 	}
 
 	public void writeDataPoint(MqDataEntry mqDataEntry) {
-
 		String timestamp = mqDataEntry.getTimestamp();
 
 		if (timestamp.contains("E")) {
@@ -43,8 +48,11 @@ public class InfluxDbConnector {
 		Point point = Point.measurement(mqDataEntry.getTopic())
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
 				.addField("value", Double.valueOf(mqDataEntry.getValue()))
-				.addField("level", mqDataEntry.getLevel() == null ? 0.0 : Double.parseDouble(mqDataEntry.getLevel()))
-				.addField("producer", mqDataEntry.getProducer())
+				.tag("level", mqDataEntry.getLevel())
+				.tag("producer", mqDataEntry.getProducer())
+				.tag("vmName", mqDataEntry.getVmName())
+				.tag("ipAddress", Strings.nullToEmpty(mqDataEntry.getSourceIpAddress()))
+				.tag("countryCode", ipGeoCoder.getCountryCode(mqDataEntry.getSourceIpAddress()))
 				.build();
 
 		influxDB.write(melodicConfiguration.getDatabaseName(), "", point);
