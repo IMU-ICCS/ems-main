@@ -6,6 +6,7 @@ import eu.paasage.upperware.security.server.controller.request.ChangePasswordReq
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
 import eu.paasage.upperware.security.server.data.repository.User;
+import eu.paasage.upperware.security.server.data.repository.UserRole;
 import eu.paasage.upperware.security.server.data.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -44,17 +47,20 @@ public class UserController {
     }
 
     @PostMapping("/auth/user/sign-up")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
     public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
         log.info("Sign-up request for username: {}", userRequest.getUsername());
         if (userService.exists(userRequest.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username is used, please try with another username");
         }
-        userService.create(userRequest.getUsername(), userRequest.getPassword());
+        userService.create(userRequest.getUsername(), userRequest.getPassword(), UserRole.USER); // todo change UserRole - depends on request
         return ResponseEntity.status(HttpStatus.CREATED).body("User created");
     }
 
     @PutMapping("/auth/user/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("#changePasswordRequest.username.equals(authentication.name)")
     public void changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest)
             throws AuthenticationException {
         log.info("PUT request for change password from user: {}", changePasswordRequest.getUsername());
@@ -64,6 +70,7 @@ public class UserController {
 
     @PutMapping("/auth/user/unlock/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
     public void unlockUserAccount(@PathVariable("username") String username) {
         log.info("PUT request for unlock account for user: {}", username);
         userService.unlockAccount(username);
@@ -72,8 +79,10 @@ public class UserController {
 
     @GetMapping("/auth/user")
     @ResponseStatus(HttpStatus.OK)
-    public List<User> getUsersList() {
-        log.info("GET request for all users list");
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
+    public List<User> getUsersList(Authentication authentication) {
+        String requesterName = authentication.getName();
+        log.info("GET request for all users list from user: {}", requesterName);
         return userService.getUsersList();
     }
 

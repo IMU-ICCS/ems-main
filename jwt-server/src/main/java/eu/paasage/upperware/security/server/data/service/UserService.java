@@ -5,6 +5,7 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
+import eu.paasage.upperware.security.server.data.repository.UserRole;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.List;
 
 @Slf4j
@@ -42,6 +44,7 @@ public class UserService {
 
     private static final String PASSWORD_CHAR = "*";
     private static final String PASSWORD_LOCKED_KEY = "pwdAccountLockedTime";
+    private static final String GROUP_PREFIX = "ou=";
 
     public boolean authenticate(final String username, final String password) {
         log.info("Login request: l: {}, password: {}", username, createPasswordCode(password));
@@ -58,8 +61,8 @@ public class UserService {
         return userLdapRepository.existsByUsername(username);
     }
 
-    public void create(final String username, final String password) {
-        User newUser = new User(username, digestSHA(password), false);
+    public void create(final String username, final String password, UserRole userRole) {
+        User newUser = new User(username, digestSHA(password), userRole, false);
 
         Name dn = LdapNameBuilder
                 .newInstance()
@@ -127,9 +130,22 @@ public class UserService {
         List<User> result = new ArrayList<>();
         ldapUsers.forEach(user -> {
             user.setLockedAccount(isLockedAccount(user.getUsername()));
+            user.setUserRole(findUserRole(user.getId()));
             result.add(user);
         });
         return result;
+    }
+
+    public UserRole findUserRole(Name id) {
+        Enumeration<String> allIdElements = id.getAll();
+        while (allIdElements.hasMoreElements()) {
+            String idElement = allIdElements.nextElement();
+            if (idElement.startsWith(GROUP_PREFIX)) {
+                String userRole = idElement.replace(GROUP_PREFIX, StringUtils.EMPTY);
+                return UserRole.valueOf(userRole);
+            }
+        }
+        return UserRole.USER; // user without defined role -> common user
     }
 
     private boolean isLockedAccount(String username) {
