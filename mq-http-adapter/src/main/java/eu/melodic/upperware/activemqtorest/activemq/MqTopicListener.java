@@ -103,14 +103,14 @@ public class MqTopicListener {
 		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, "0"));
 		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
 		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
-		mqDataEntry.setVmName(keyValueMap.getOrDefault("vmName", ""));
+		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, ""));
 		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, "");
 		mqDataEntry.setTopic(topic);
 		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
 
 		try {
-			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty("producer-host"));
+			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty(MqConstants.PRODUCER_HOST));
 		} catch (JMSException e) {
 			log.warn("Could not resolve property 'producer-host'.");
 		}
