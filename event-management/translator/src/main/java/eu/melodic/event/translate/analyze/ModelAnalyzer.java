@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-//import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-
 @Slf4j
 public class ModelAnalyzer {
     private CamelToEplTranslatorProperties properties;
@@ -687,6 +685,9 @@ public class ModelAnalyzer {
 
         _TC.DAG.addNode(constraint, context).setGrouping(getGrouping(context));
 
+        // cache constraint
+        _TC.addMetricConstraint(constraint);
+
         _decomposeMetricContext(_TC, context);
     }
 
@@ -707,6 +708,9 @@ public class ModelAnalyzer {
             mvNode = _TC.DAG.addTopLevelNode(mvar).setGrouping(Grouping.GLOBAL);
         else
             mvNode = _TC.DAG.addNode(constraint, mvar).setGrouping(Grouping.GLOBAL);
+
+        // cache constraint
+        _TC.addMetricConstraint(constraint);
 
         log.trace("  _decomposeMetricVariableConstraint(): CMVAR: {}", _TC.CMVAR);
         log.trace("  _decomposeMetricVariableConstraint(): MVV:   {}", _TC.MVV);
