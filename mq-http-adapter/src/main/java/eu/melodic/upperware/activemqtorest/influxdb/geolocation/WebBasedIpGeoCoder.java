@@ -51,7 +51,7 @@ public class WebBasedIpGeoCoder implements IIpGeoCoder {
 		}
 
 		String httpGetUrl = String.format(HTTP_URL_SCHEME, ipAddress);
-		HttpEntity<String> requestEntity = new HttpEntity<String>(Strings.EMPTY);
+		HttpEntity<String> requestEntity = new HttpEntity<>(Strings.EMPTY);
 		ResponseEntity<String> responseEntity = restTemplate.exchange(httpGetUrl, HttpMethod.GET, requestEntity, String.class);
 
 		if (responseEntity.getStatusCode().equals(HttpStatus.OK)) {
