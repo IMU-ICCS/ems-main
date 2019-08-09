@@ -133,12 +133,12 @@ public class UserController {
     @PostMapping(value = "/auth/invalidate-token")
     public ResponseEntity<Object> invalidateToken(@RequestBody InvalidateTokenRequest invalidateTokenRequest) {
 
-        log.info("Invalidate token request");
+        log.info("Invalidate refresh token request");
         try {
             refreshTokenService.invalidateToken(invalidateTokenRequest.getToken());
         } catch (IllegalStateException | ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
                 | SignatureException | IllegalArgumentException ex) {
-            log.error(ex.getMessage());
+            log.error("Error during invalidating refresh token: "+ ex);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
         log.debug("Token has been invalidated successfully .");
