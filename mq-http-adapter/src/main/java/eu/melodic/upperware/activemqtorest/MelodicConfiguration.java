@@ -13,6 +13,15 @@ public class MelodicConfiguration {
 	@Value("${activemq.broker.url}")
 	private String melodicMqAddress;
 
+	@Value("${activemq.restartinterval:10000}")
+	private long melodicMqRestartInterval;
+
+	@Value("${activemq.connectionretryinterval:5000}")
+	private long melodicMqConnectionRetryInterval;
+
+	@Value("${activemq.connectionretrymax:10}")
+	private long melodicMqConnectionRetryMax;
+
 	@Value("${influxdb.url}")
 	private String activeMqBrokerAddress;
 

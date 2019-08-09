@@ -9,6 +9,7 @@ import javax.jms.JMSException;
 
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -51,23 +52,37 @@ public class MqTopicListener {
 					activeMqStatisticHolder.increaseMsgCount();
 				});
 			} catch (JMSException | IOException e) {
-				log.error("Error while using BrokerCLient", e);
-				activeMqStatisticHolder.setHasError();
+				activeMqStatisticHolder.increaseErrorCount();
+				log.error("Error while using BrokerCLient.", e);
+				restartAfterMqFailure();
 			}
 		});
 		brokerThread.start();
 		log.info("MqTopicListener up and running..");
 	}
 
+	private void restartAfterMqFailure() {
+		new java.util.Timer().schedule(
+				new java.util.TimerTask() {
+					@Override
+					public void run() {
+						log.info("Restarting MQTopicListener..");
+						onApplicationReady();
+					}
+				},
+				melodicConfiguration.getMelodicMqRestartInterval()
+		);
+	}
+
 	private void waitForActiveMq(BrokerClient brokerClient) {
-		int RETRY_MAX = 10;
+		long RETRY_MAX = melodicConfiguration.getMelodicMqConnectionRetryMax();
 		for (int retryCount = 1; retryCount <= RETRY_MAX; retryCount++) {
 			try {
 				brokerClient.openConnection(melodicConfiguration.getMelodicMqAddress());
 			} catch (JMSException e) {
 				log.error("Error while initiating connection with MQ. Retry {} of {}", retryCount, RETRY_MAX);
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(melodicConfiguration.getMelodicMqConnectionRetryInterval());
 				} catch (InterruptedException ex) {
 				}
 				continue;
@@ -86,17 +101,17 @@ public class MqTopicListener {
 				.collect(Collectors.toMap(keyValuePairs -> normalizeMqString(keyValuePairs[0]), keyValuePairs -> normalizeMqString(keyValuePairs[1]), (a, b) -> b, Maps::newHashMap));
 
 		MqDataEntry mqDataEntry = new MqDataEntry();
-		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, "0"));
+		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, MqConstants.DEFAULT_VALUE_WHEN_EMPTY));
 		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
 		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
-		mqDataEntry.setVmName(keyValueMap.getOrDefault("vmName", ""));
-		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, "");
+		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, Strings.EMPTY));
+		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, Strings.EMPTY);
 		mqDataEntry.setTopic(topic);
 		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
 
 		try {
-			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty("producer-host"));
+			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty(MqConstants.PRODUCER_HOST));
 		} catch (JMSException e) {
 			log.warn("Could not resolve property 'producer-host'.");
 		}
