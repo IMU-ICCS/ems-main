@@ -14,4 +14,6 @@ public class MqConstants {
 	public static final String KEY_VALUE_PAIR_SEPARATOR = ",";
 
 	public static final String ALL_DESTINATIONS = "*";
+
+	public static final String DEFAULT_VALUE_WHEN_EMPTY = "0";
 }

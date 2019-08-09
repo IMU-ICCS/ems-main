@@ -9,6 +9,7 @@ import javax.jms.JMSException;
 
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -100,11 +101,11 @@ public class MqTopicListener {
 				.collect(Collectors.toMap(keyValuePairs -> normalizeMqString(keyValuePairs[0]), keyValuePairs -> normalizeMqString(keyValuePairs[1]), (a, b) -> b, Maps::newHashMap));
 
 		MqDataEntry mqDataEntry = new MqDataEntry();
-		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, "0"));
+		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, MqConstants.DEFAULT_VALUE_WHEN_EMPTY));
 		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
 		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
-		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, ""));
-		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, "");
+		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, Strings.EMPTY));
+		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, Strings.EMPTY);
 		mqDataEntry.setTopic(topic);
 		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
