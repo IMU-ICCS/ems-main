@@ -12,7 +12,7 @@ public abstract class MqBaseEntry {
 
 	String normalizeTimestamp(String timestamp) {
 		if (timestamp.contains("E")) {
-			log.warn("Unsupported timestamp format in mqDataEntry={}", this);
+			log.warn("Unsupported timestamp format in mqBaseEntry={}", this);
 			timestamp = String.format("%.0f", Double.parseDouble(timestamp));
 			timestamp = timestamp.substring(0, 13);
 			log.warn("Corrected timestamp to '{}'", timestamp);

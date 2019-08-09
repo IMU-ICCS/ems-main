@@ -19,24 +19,20 @@ public class MqInstanceInfoExtractor extends MqDataEntryBaseExtractor implements
 		return activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicInstanceInfoName());
 	}
 
-
 	@Override
 	public Optional<MqBaseEntry> extractMqDataEntry(ActiveMQMessage activeMQMessage) {
-		Optional<JsonObject> jsonObject = extractJsonPayload(activeMQMessage);
-		if (jsonObject.isPresent()) {
+		return extractJsonPayload(activeMQMessage).map(jsonObject -> {
 			MqInstanceInfoEntry mqInstanceInfoEntry = new MqInstanceInfoEntry();
-			mqInstanceInfoEntry.setBaguetteClientId(jsonObject.get().get("baguette-client-id").getAsString());
-			mqInstanceInfoEntry.setOs(jsonObject.get().get("operatingSystem").getAsString());
-			mqInstanceInfoEntry.setType(jsonObject.get().get("type").getAsString());
-			mqInstanceInfoEntry.setName(jsonObject.get().get("name").getAsString());
-			mqInstanceInfoEntry.setIpAddress(jsonObject.get().get("ip").getAsString());
-			mqInstanceInfoEntry.setRandom(jsonObject.get().get("random").getAsString());
-			mqInstanceInfoEntry.setInstanceId(jsonObject.get().get("id").getAsString());
-			mqInstanceInfoEntry.setProviderId(jsonObject.get().get("providerId").getAsString());
+			mqInstanceInfoEntry.setBaguetteClientId(jsonObject.get("baguette-client-id").getAsString());
+			mqInstanceInfoEntry.setOs(jsonObject.get("operatingSystem").getAsString());
+			mqInstanceInfoEntry.setType(jsonObject.get("type").getAsString());
+			mqInstanceInfoEntry.setName(jsonObject.get("name").getAsString());
+			mqInstanceInfoEntry.setIpAddress(jsonObject.get("ip").getAsString());
+			mqInstanceInfoEntry.setRandom(jsonObject.get("random").getAsString());
+			mqInstanceInfoEntry.setInstanceId(jsonObject.get("id").getAsString());
+			mqInstanceInfoEntry.setProviderId(jsonObject.get("providerId").getAsString());
 			mqInstanceInfoEntry.setTimestamp(String.valueOf(activeMQMessage.getTimestamp()));
-			return Optional.of(mqInstanceInfoEntry);
-		} else {
-			return Optional.empty();
-		}
+			return mqInstanceInfoEntry;
+		});
 	}
 }

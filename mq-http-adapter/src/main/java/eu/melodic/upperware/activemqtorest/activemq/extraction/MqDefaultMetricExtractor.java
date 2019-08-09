@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import javax.jms.JMSException;
 
 import org.apache.activemq.command.ActiveMQMessage;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
@@ -42,8 +42,8 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 		mqDataEntry.setLevel(keyValueMap.getOrDefault(MqConstants.LEVEL, MqConstants.DEFAULT_VALUE_WHEN_EMPTY));
 		mqDataEntry.setValue(keyValueMap.get(MqConstants.VALUE));
 		mqDataEntry.setTimestamp(keyValueMap.get(MqConstants.TIMESTAMP));
-		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, Strings.EMPTY));
-		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, Strings.EMPTY);
+		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, StringUtils.EMPTY));
+		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, StringUtils.EMPTY);
 		mqDataEntry.setTopic(topic);
 		String connectionId = activeMQMessage.getProducerId().getConnectionId();
 		mqDataEntry.setProducer(connectionId);
