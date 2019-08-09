@@ -28,4 +28,10 @@ public class MelodicConfiguration {
 	@Value("${influxdb.database}")
 	private String databaseName;
 
+	@Value("${mq.topic.threshold.name:_ui_threshold_info}")
+	private String mqTopicThresholdName;
+
+	@Value("${mq.topic.instanceinfo.name:_ui_instance_info}")
+	private String mqTopicInstanceInfoName;
+
 }

@@ -16,4 +16,7 @@ public class MqConstants {
 	public static final String ALL_DESTINATIONS = "*";
 
 	public static final String DEFAULT_VALUE_WHEN_EMPTY = "0";
+
+	public static final String META_MESSAGE_IDENTIFIER = "message=";
+	public static final String META_TIMESTAMP_IDENTIFIER = ", timestamp=";
 }
