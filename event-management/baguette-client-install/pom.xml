@@ -38,19 +38,6 @@
             <version>9.0.12</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.6</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.rauschig/jarchivelib -->
         <dependency>
             <groupId>org.rauschig</groupId>
