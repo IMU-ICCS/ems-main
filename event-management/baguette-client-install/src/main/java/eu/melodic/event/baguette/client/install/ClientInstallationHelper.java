@@ -13,19 +13,25 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.apache.tomcat.util.net.SSLHostConfig;
+import org.rauschig.jarchivelib.Archiver;
+import org.rauschig.jarchivelib.ArchiverFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.context.WebServerInitializedEvent;
+import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,13 +39,16 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class ClientInstallationHelper implements InitializingBean {
+public class ClientInstallationHelper implements InitializingBean, ApplicationListener<WebServerInitializedEvent> {
     private static ClientInstallationHelper instance = null;
     private static List<String> LINUX_OS_FAMILIES;
     private static List<String> WINDOWS_OS_FAMILIES;
 
     @Autowired
     private ClientInstallationProperties properties;
+    private String archiveBase64;
+    private boolean isServerHttps;
+    private boolean isServerSecure;
 
     private ClientInstallationHelper() {
         ClientInstallationHelper.instance = this;
@@ -51,10 +60,110 @@ public class ClientInstallationHelper implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         log.info("ClientInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
         LINUX_OS_FAMILIES = properties.getOsFamilies().get("LINUX");
         WINDOWS_OS_FAMILIES = properties.getOsFamilies().get("WINDOWS");
+    }
+
+    @Override
+    public void onApplicationEvent(WebServerInitializedEvent event) {
+        log.debug("ClientInstallationHelper.onApplicationEvent(): event={}", event);
+        TomcatWebServer tomcat = (TomcatWebServer) event.getSource();
+
+        try {
+            initServerCertificateFile(tomcat);
+            initBaguetteClientConfigArchive();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void initServerCertificateFile(TomcatWebServer tomcat) throws Exception {
+        isServerHttps = "https".equalsIgnoreCase(tomcat.getTomcat().getConnector().getScheme());
+        isServerSecure = tomcat.getTomcat().getConnector().getSecure();
+        log.debug("ClientInstallationHelper.initServerCertificate(): Embedded Tomcat is secure: {}", isServerSecure);
+
+        if (isServerSecure) {
+            SSLHostConfig[] sslHostConfigArr = tomcat.getTomcat().getConnector().findSslHostConfigs();
+            log.debug("ClientInstallationHelper.initServerCertificate(): Tomcat SSL host config array: length={}",
+                    sslHostConfigArr.length);
+            if (sslHostConfigArr.length!=1)
+                throw new RuntimeException("Embedded Tomcat has zero or more than one SSL host configurations: "+sslHostConfigArr.length);
+
+            SSLHostConfig sslHostConfig = sslHostConfigArr[0];
+            String keystoreFile = sslHostConfig.getCertificateKeystoreFile();
+            String keystorePassword = sslHostConfig.getCertificateKeystorePassword();
+            String keystoreType = sslHostConfig.getCertificateKeystoreType();
+            String keyAlias = sslHostConfig.getCertificateKeyAlias();
+
+            if (StringUtils.startsWith(keystoreFile, "file:"))
+                keystoreFile = StringUtils.substringAfter(keystoreFile, "file:");
+            log.debug("ClientInstallationHelper.initServerCertificate(): Tomcat SSL host config: keystore={}, type={}, key-alias={}",
+                    keystoreFile, keystoreType, keyAlias);
+
+            log.debug("ClientInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}",
+                    properties.getServerCertFile());
+            KeystoreUtil
+                    .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                    .exportCertToFile(keyAlias, properties.getServerCertFile());
+            log.debug("ClientInstallationHelper.initServerCertificate(): Server certificate exported");
+
+            File certFile = new File(properties.getServerCertFile());
+            if (! certFile.exists())
+                throw new RuntimeException("Server certificate file not found: "+certFile);
+        } else {
+            File certFile = new File(properties.getServerCertFile());
+            if (certFile.exists()) {
+                log.debug("ClientInstallationHelper.initServerCertificate(): Removing previous server certificate file");
+                if (! certFile.delete())
+                    throw new RuntimeException("Could not remove previous server certificate file: "+certFile);
+            }
+        }
+    }
+
+    private void initBaguetteClientConfigArchive() throws IOException {
+        log.info("ClientInstallationHelper: Building baguette client configuration archive...");
+
+        // Get archiving settings
+        String configDirName = properties.getArchiveSourceDir();
+        File configDir = new File(configDirName);
+        log.debug("ClientInstallationHelper: Baguette client configuration directory: {}", configDir);
+        if (!configDir.exists())
+            throw new FileNotFoundException("Baguette client configuration directory not found: " + configDirName);
+
+        String archiveName = properties.getArchiveFile();
+        String archiveDirName = properties.getArchiveDir();
+        File archiveDir = new File(archiveDirName);
+        log.debug("ClientInstallationHelper: Baguette client configuration archive: {}/{}", archiveDirName, archiveName);
+        if (!archiveDir.exists())
+            throw new FileNotFoundException("Baguette client configuration archive directory not found: " + archiveDirName);
+
+        // Remove previous baguette client configuration archive
+        File archiveFile = new File(archiveDirName, archiveName);
+        if (archiveFile.exists()) {
+            log.debug("ClientInstallationHelper: Removing previous archive...");
+            if (!archiveFile.delete())
+                throw new RuntimeException("ClientInstallationHelper: Failed removing previous archive: " + archiveName);
+        }
+
+        // Create baguette client configuration archive
+        Archiver archiver = ArchiverFactory.createArchiver(archiveFile);
+        String tempFileName = "archive_" + System.currentTimeMillis();
+        log.debug("ClientInstallationHelper: Temp. archive name: {}", tempFileName);
+        archiveFile = archiver.create(tempFileName, archiveDir, configDir);
+        log.debug("ClientInstallationHelper: Archive generated: {}", archiveFile);
+        if (!archiveFile.getName().equals(archiveName)) {
+            log.debug("ClientInstallationHelper: Renaming archive to: {}", archiveName);
+            if (!archiveFile.renameTo(archiveFile = new File(archiveDir, archiveName)))
+                throw new RuntimeException("ClientInstallationHelper: Failed renaming generated archive to: " + archiveName);
+        }
+        log.info("ClientInstallationHelper: Baguette client configuration archive: {}", archiveFile);
+
+        // Base64 encode archive and cache in memory
+        byte[] archiveBytes = Files.readAllBytes(archiveFile.toPath());
+        this.archiveBase64 = Base64.getEncoder().encodeToString(archiveBytes);
+        log.debug("ClientInstallationHelper: Archive Base64 encoded: {}", archiveBase64);
     }
 
     private String getResourceAsString(String resourcePath) throws IOException {
@@ -70,9 +179,12 @@ public class ClientInstallationHelper implements InitializingBean {
 
         String osFamily = (String) nodeMap.get("operatingSystem");
         OrchestrationHelper.InstallationInstructions installationInstructions = null;
-        if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase())) installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette);
-        else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase())) installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette);
-        else log.warn("ClientInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
+        if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
+            installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette);
+        else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
+            installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette);
+        else
+            log.warn("ClientInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
         return installationInstructions;
     }
 
@@ -88,9 +200,9 @@ public class ClientInstallationHelper implements InitializingBean {
         log.debug("prepareInstallationInstructionsForLinux(): properties: {}", properties);
         String checkInstallationFile = properties.getCheckInstalledFile();
 
-        String baseDownloadUrl = _prepareUrl( properties.getDownloadUrl(), baseUrl);
+        String baseDownloadUrl = _prepareUrl(properties.getDownloadUrl(), baseUrl);
         String apiKey = properties.getApiKey();
-        String installScriptUrl = _prepareUrl( properties.getInstallScriptUrl(), baseUrl);
+        String installScriptUrl = _prepareUrl(properties.getInstallScriptUrl(), baseUrl);
         String installScriptPath = properties.getInstallScriptFile();
 
         String credentialsTempFile = properties.getCredentialsTempFile();
@@ -114,46 +226,46 @@ public class ClientInstallationHelper implements InitializingBean {
         String clientConfAppend = StringSubstitutor.replace(clientConfTemplate, valueMap);
         log.debug("prepareInstallationInstructionsForLinux(): clientConfAppend={}", clientConfAppend);
 
-		// Set the target operating system
+        // Set the target operating system
         OrchestrationHelper.InstallationInstructions installationInstructions = new OrchestrationHelper.InstallationInstructions();
         installationInstructions.setOs("LINUX");
 
-		// Check whether EMS Client is already installed
+        // Check whether EMS Client is already installed
                 /*.appendLog("Checking if Baguette Client is already installed")
                 .appendCheck("[[ -f "+checkInstallationFile+" ]] && exit 99", 0, true, "NOTE: Baguette Client is already installed")
                 .appendExec("Baguette Client is NOT installed")*/
-		
-		// Create Baguette Client installation directories
+
+        // Create Baguette Client installation directories
         installationInstructions.appendLog("Create Baguette Client installation directories");
         properties.getMkdirs().forEach(dir ->
-            installationInstructions.appendExec("sudo mkdir -p "+dir)
+                installationInstructions.appendExec("sudo mkdir -p " + dir)
         );
 
-		// Create files using touch
+        // Create files using touch
         installationInstructions.appendLog("Touch files");
         properties.getTouchFiles().forEach(f ->
-            installationInstructions.appendExec("sudo touch "+f)
+                installationInstructions.appendExec("sudo touch " + f)
         );
 
         // Download Baguette Client installation script
         installationInstructions
                 .appendLog("Download Baguette Client installation script")
-                .appendExec("sudo wget --no-check-certificate "+installScriptUrl+" -O "+installScriptPath)
+                .appendExec("sudo wget --no-check-certificate " + installScriptUrl + " -O " + installScriptPath)
 
         // Make Baguette Client installation script executable
                 .appendLog("Make Baguette Client installation script executable")
-                .appendExec("sudo chmod u+rwx,og-rwx "+installScriptPath)
+                .appendExec("sudo chmod u+rwx,og-rwx " + installScriptPath)
 
         // Run Baguette Client installation script
                 .appendLog("Run Baguette Client installation script")
-                .appendExec("sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey)
+                .appendExec("sudo " + installScriptPath + " " + baseDownloadUrl + " " + apiKey)
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")
                 .appendWriteFile(credentialsTempFile, clientConfAppend, false)
-                .appendExec("sudo mv "+credentialsTempFile+" "+credentialsFile)
-                .appendExec("sudo chmod u+rw,og-rwx "+credentialsFile)
-                .appendExec("sudo -- sh -c 'cat "+credentialsFile+" >> "+clientConfFile+"' ")
+                .appendExec("sudo mv " + credentialsTempFile + " " + credentialsFile)
+                .appendExec("sudo chmod u+rw,og-rwx " + credentialsFile)
+                .appendExec("sudo -- sh -c 'cat " + credentialsFile + " >> " + clientConfFile + "' ")
 
         // Launch Baguette Client
                 .appendLog("Launch Baguette Client")
@@ -161,7 +273,7 @@ public class ClientInstallationHelper implements InitializingBean {
 
         // Write successful installation file
                 .appendLog("Write successful installation file")
-                .appendExec("sudo touch "+checkInstallationFile)
+                .appendExec("sudo touch " + checkInstallationFile)
         ;
         //log.debug("prepareInstallationInstructionsForLinux(): installationInstructions: {}", installationInstructions);
 
