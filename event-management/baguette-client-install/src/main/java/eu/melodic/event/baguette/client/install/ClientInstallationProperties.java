@@ -41,4 +41,9 @@ public class ClientInstallationProperties {
     private String credentialsFile;
     private String clientConfigTemplateFile;
     private String clientConfigFile;
+
+    private String archiveSourceDir;
+    private String archiveDir;
+    private String archiveFile;
+    private String serverCertFile;
 }
