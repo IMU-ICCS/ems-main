@@ -31,9 +31,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Baguette Client installation helper
@@ -105,28 +107,40 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                     keystoreFile, keystoreType, keyAlias);
 
             String certFileName = properties.getServerCertFileAtServer();
-            log.debug("ClientInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
-            KeystoreUtil
-                    .getKeystore(keystoreFile, keystoreType, keystorePassword)
-                    .exportCertToFile(keyAlias, certFileName);
-            log.debug("ClientInstallationHelper.initServerCertificate(): Server certificate exported");
+            if (StringUtils.isNotEmpty(certFileName)) {
+                log.debug("ClientInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
+                KeystoreUtil
+                        .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                        .exportCertToFile(keyAlias, certFileName);
+                log.debug("ClientInstallationHelper.initServerCertificate(): Server certificate exported");
 
-            File certFile = new File(certFileName);
-            if (! certFile.exists())
-                throw new RuntimeException("Server certificate file not found: "+certFile);
-            this.serverCert = new String(Files.readAllBytes(Paths.get(certFile.getAbsolutePath())));
+                File certFile = new File(certFileName);
+                if (! certFile.exists())
+                    throw new RuntimeException("Server certificate file not found: "+certFile);
+                this.serverCert = new String(Files.readAllBytes(Paths.get(certFile.getAbsolutePath())));
+            } else {
+                this.serverCert = KeystoreUtil
+                        .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                        .getEntryCertificateAsPEM(keyAlias);
+            }
 
         } else {
-            File certFile = new File(properties.getServerCertFileAtServer());
-            if (certFile.exists()) {
-                log.debug("ClientInstallationHelper.initServerCertificate(): Removing previous server certificate file");
-                if (! certFile.delete())
-                    throw new RuntimeException("Could not remove previous server certificate file: "+certFile);
+            if (StringUtils.isNotEmpty(properties.getServerCertFileAtServer())) {
+                File certFile = new File(properties.getServerCertFileAtServer());
+                if (certFile.exists()) {
+                    log.debug("ClientInstallationHelper.initServerCertificate(): Removing previous server certificate file");
+                    if (!certFile.delete())
+                        throw new RuntimeException("Could not remove previous server certificate file: " + certFile);
+                }
             }
         }
     }
 
     private void initBaguetteClientConfigArchive() throws IOException {
+        if (StringUtils.isEmpty(properties.getArchiveSourceDir()) || StringUtils.isEmpty(properties.getArchiveFile())) {
+            log.debug("ClientInstallationHelper: No baguette client configuration archiving has been configured");
+            return;
+        }
         log.info("ClientInstallationHelper: Building baguette client configuration archive...");
 
         // Get archiving settings
@@ -217,6 +231,9 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         String serverCertFile = properties.getServerCertFileAtClient();
         String clientConfArchive = properties.getClientConfArchiveFile();
 
+        String copyFromServerDir = properties.getCopyFilesFromServerDir();
+        String copyToClientDir = properties.getCopyFilesToClientDir();
+
         // Load client config. template and prepare configuration
         String clientConfTemplate = getResourceAsString(clientConfTemplateFile);
         Map<String,String> valueMap = new HashMap<>();
@@ -259,6 +276,27 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
             installationInstructions
                     .appendLog("Write server certificate for 'wget' use")
                     .appendWriteFile(serverCertFile, this.serverCert, false);
+        }
+
+        // Copy files from server to Baguette Client
+        if (StringUtils.isNotEmpty(copyFromServerDir) && StringUtils.isNotEmpty(copyToClientDir)) {
+            Path startDir = Paths.get(copyFromServerDir).toAbsolutePath();
+            try (Stream<Path> stream = Files.walk(startDir, Integer.MAX_VALUE)) {
+                List<Path> paths = stream
+                        .filter(Files::isRegularFile)
+                        .map(Path::toAbsolutePath)
+                        .sorted()
+                        .collect(Collectors.toList());
+                for (Path p : paths) {
+                    String targetFile = StringUtils.substringAfter(p.toUri().toString(), startDir.toUri().toString());
+                    if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
+                    targetFile = copyToClientDir + targetFile;
+                    String contents = new String(Files.readAllBytes(p));
+                    installationInstructions
+                            .appendLog(String.format("Copy file from server to client: %s -> %s", p.toString(), targetFile))
+                            .appendWriteFile(targetFile, contents, false);
+                }
+            }
         }
 
         // Download Baguette Client installation script
