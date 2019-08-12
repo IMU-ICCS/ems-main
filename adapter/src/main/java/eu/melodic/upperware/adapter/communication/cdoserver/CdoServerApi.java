@@ -9,6 +9,7 @@
 
 package eu.melodic.upperware.adapter.communication.cdoserver;
 
+import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -21,6 +22,8 @@ public interface CdoServerApi {
   DeploymentInstanceModel getModelToDeploy(String resourceName, String deploymentInstanceName, CDOTransaction tr);
 
   DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr);
+
+  CamelModel getCamelModel(String resourceName, CDOTransaction tr);
 
   void setExecutionContext(DeploymentInstanceModel deploymentModel);
 
