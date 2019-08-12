@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,9 +47,10 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
     @Autowired
     private ClientInstallationProperties properties;
+
     private String archiveBase64;
-    private boolean isServerHttps;
     private boolean isServerSecure;
+    private String serverCert;
 
     private ClientInstallationHelper() {
         ClientInstallationHelper.instance = this;
@@ -80,8 +82,8 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
     }
 
     private void initServerCertificateFile(TomcatWebServer tomcat) throws Exception {
-        isServerHttps = "https".equalsIgnoreCase(tomcat.getTomcat().getConnector().getScheme());
-        isServerSecure = tomcat.getTomcat().getConnector().getSecure();
+        //this.isServerSecure = "https".equalsIgnoreCase(tomcat.getTomcat().getConnector().getScheme());
+        this.isServerSecure = tomcat.getTomcat().getConnector().getSecure();
         log.debug("ClientInstallationHelper.initServerCertificate(): Embedded Tomcat is secure: {}", isServerSecure);
 
         if (isServerSecure) {
@@ -102,18 +104,20 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
             log.debug("ClientInstallationHelper.initServerCertificate(): Tomcat SSL host config: keystore={}, type={}, key-alias={}",
                     keystoreFile, keystoreType, keyAlias);
 
-            log.debug("ClientInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}",
-                    properties.getServerCertFile());
+            String certFileName = properties.getServerCertFileAtServer();
+            log.debug("ClientInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
             KeystoreUtil
                     .getKeystore(keystoreFile, keystoreType, keystorePassword)
-                    .exportCertToFile(keyAlias, properties.getServerCertFile());
+                    .exportCertToFile(keyAlias, certFileName);
             log.debug("ClientInstallationHelper.initServerCertificate(): Server certificate exported");
 
-            File certFile = new File(properties.getServerCertFile());
+            File certFile = new File(certFileName);
             if (! certFile.exists())
                 throw new RuntimeException("Server certificate file not found: "+certFile);
+            this.serverCert = new String(Files.readAllBytes(Paths.get(certFile.getAbsolutePath())));
+
         } else {
-            File certFile = new File(properties.getServerCertFile());
+            File certFile = new File(properties.getServerCertFileAtServer());
             if (certFile.exists()) {
                 log.debug("ClientInstallationHelper.initServerCertificate(): Removing previous server certificate file");
                 if (! certFile.delete())
@@ -210,6 +214,9 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         String clientConfTemplateFile = properties.getClientConfigTemplateFile();
         String clientConfFile = properties.getClientConfigFile();
 
+        String serverCertFile = properties.getServerCertFileAtClient();
+        String clientConfArchive = properties.getClientConfArchiveFile();
+
         // Load client config. template and prepare configuration
         String clientConfTemplate = getResourceAsString(clientConfTemplateFile);
         Map<String,String> valueMap = new HashMap<>();
@@ -247,18 +254,34 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 installationInstructions.appendExec("sudo touch " + f)
         );
 
+        // Write EMS server certificate (PEM) file
+        if (isServerSecure) {
+            installationInstructions
+                    .appendLog("Write server certificate for 'wget' use")
+                    .appendWriteFile(serverCertFile, this.serverCert, false);
+        }
+
         // Download Baguette Client installation script
         installationInstructions
                 .appendLog("Download Baguette Client installation script")
-                .appendExec("sudo wget --no-check-certificate " + installScriptUrl + " -O " + installScriptPath)
+                //.appendExec("sudo wget --no-check-certificate " + installScriptUrl + " -O " + installScriptPath)
+                .appendExec(
+                        isServerSecure
+                                ? "sudo wget --certificate="+serverCertFile+" " + installScriptUrl + " -O " + installScriptPath
+                                : "sudo wget " + installScriptUrl + " -O " + installScriptPath
+                )
 
         // Make Baguette Client installation script executable
                 .appendLog("Make Baguette Client installation script executable")
                 .appendExec("sudo chmod u+rwx,og-rwx " + installScriptPath)
 
+        // Store Baguette Client configuration archive
+                .appendLog("Store baguette client configuration archive (in base64 encoding)")
+                .appendWriteFile(clientConfArchive, archiveBase64, false)
+
         // Run Baguette Client installation script
                 .appendLog("Run Baguette Client installation script")
-                .appendExec("sudo " + installScriptPath + " " + baseDownloadUrl + " " + apiKey)
+                .appendExec("sudo SERVER_CERT="+serverCertFile+" " + installScriptPath + " " + baseDownloadUrl + " " + apiKey)
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")

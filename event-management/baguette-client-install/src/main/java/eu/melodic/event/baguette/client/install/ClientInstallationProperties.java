@@ -42,8 +42,11 @@ public class ClientInstallationProperties {
     private String clientConfigTemplateFile;
     private String clientConfigFile;
 
-    private String archiveSourceDir;
-    private String archiveDir;
-    private String archiveFile;
-    private String serverCertFile;
+    private String archiveSourceDir;            // the directory in server that will be archived (it must contain client configuration)
+    private String archiveDir;                  // the directory in server where client config. archive will be placed into
+    private String archiveFile;                 // name of the client configuration archive (in server)
+    private String clientConfArchiveFile;       // location in VM, where client config. archive will be stored (in BASE64 encoding)
+    //private String clientConfArchiveDest;       // location in VM, where client config. archive will be extracted
+    private String serverCertFileAtServer;      // location of EMS server certificate in server (in config-files)
+    private String serverCertFileAtClient;      // location in VM, where EMS server certificate will be stored
 }
