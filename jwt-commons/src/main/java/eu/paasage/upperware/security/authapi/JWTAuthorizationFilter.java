@@ -51,7 +51,10 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		if (token != null) {
 			Claims claims = jwtService.parse(token);
 			String user = claims.getSubject();
-			String audience = claims.getAudience(); //todo - check if audience is set ?
+			if (claims.getAudience() == null){
+				throw new IllegalArgumentException("JWT Token does not contain claim Audience");
+			}
+			String audience = claims.getAudience();
 			if (user != null && SecurityConstants.AUDIENCE_UPPERWARE.equals(audience)) {
 				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
 			}

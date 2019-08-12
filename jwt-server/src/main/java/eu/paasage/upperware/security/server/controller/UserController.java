@@ -105,16 +105,18 @@ public class UserController {
             throws UserNotFoundException, RefreshTokenInvalidException {
 
         log.info("Refresh token request");
+        log.debug("Refresh token: {}", authorization);
+
         RefreshToken refreshToken;
 
         try {
             refreshToken = refreshTokenService.validateToken(authorization);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
                 | SignatureException | IllegalArgumentException ex) {
-            log.error("Error during validating token: " + ex);
+            log.error("Error during validating token:", ex);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         } catch (RefreshTokenInvalidException ex) {
-            log.error("Error during validating token: " + ex);
+            log.error("Error during validating token:", ex);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
 
@@ -134,14 +136,16 @@ public class UserController {
     public ResponseEntity<Object> invalidateToken(@RequestBody InvalidateTokenRequest invalidateTokenRequest) {
 
         log.info("Invalidate refresh token request");
+        log.debug("Token to invalidate: {}", invalidateTokenRequest.getToken());
+
         try {
             refreshTokenService.invalidateToken(invalidateTokenRequest.getToken());
         } catch (IllegalStateException | ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
                 | SignatureException | IllegalArgumentException ex) {
-            log.error("Error during invalidating refresh token: "+ ex);
+            log.error("Error during invalidating refresh token:", ex);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
-        log.debug("Token has been invalidated successfully .");
+        log.debug("Token has been invalidated successfully.");
         return ResponseEntity.status(HttpStatus.OK).body("Token has been invalidated successfully.");
 
     }

@@ -12,8 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -40,19 +38,15 @@ public class RefreshTokenService {
         Claims claims = jwtService.parse(encodedToken);
         String audience = claims.getAudience();
         String tokenId = claims.getId();
-        log.debug("Claims: {}", claims.toString());
+        log.debug("Claims: {}", claims);
 
         if (SecurityConstants.AUDIENCE_JWT.equals(audience)) {
-            Optional<RefreshToken> tokenById = repository.findById(tokenId);
-            if (tokenById.isPresent()) {
-                if (RefreshToken.RefreshTokenState.NEW.equals(tokenById.get().getState())) {
-                    log.debug("Token with id: {} can be used", tokenId);
-                    return tokenById.get();
-                } else {
-                    throw new RefreshTokenInvalidException(String.format("Token with id: %s cannot be used, its state is %s.", tokenId, tokenById.get().getState()));
-                }
+            RefreshToken refreshToken = getOrThrowRefreshToken(tokenId);
+            if (RefreshToken.RefreshTokenState.NEW.equals(refreshToken.getState())) {
+                log.debug("Token with id: {} can be used", tokenId);
+                return refreshToken;
             } else {
-                throw new RefreshTokenInvalidException(String.format("Token with id: %s does not exist in the refresh token repository", tokenId));
+                throw new RefreshTokenInvalidException(String.format("Token with id: %s cannot be used, its state is %s.", tokenId, refreshToken.getState()));
             }
         } else {
             throw new RefreshTokenInvalidException();
@@ -60,15 +54,12 @@ public class RefreshTokenService {
     }
 
     public void invalidateToken(String encodedToken) {
-        String id = jwtService.parse(encodedToken).getId();
-        RefreshToken refreshToken = repository
-                .findById(id)
-                .orElseThrow(() -> new IllegalStateException(String.format("Token with id: %s does not exist", id)));
-
+        String tokenId = jwtService.parse(encodedToken).getId();
+        RefreshToken refreshToken = getOrThrowRefreshToken(tokenId);
         if (RefreshToken.RefreshTokenState.NEW.equals(refreshToken.getState())) {
             refreshToken.setState(RefreshToken.RefreshTokenState.INVALIDATED);
             repository.save(refreshToken);
-            log.debug("Token with id: {} has been invalidated.", id);
+            log.debug("Token with id: {} has been invalidated.", tokenId);
         } else {
             throw new IllegalStateException(String.format("Token cannot be invalidated, its state is %s", refreshToken.getState()));
         }
@@ -76,11 +67,16 @@ public class RefreshTokenService {
 
     public void useToken(RefreshToken refreshToken) {
         String tokenId = refreshToken.getId();
-        repository.findById(tokenId)
-                .orElseThrow(() -> new IllegalStateException(String.format("Token with id: %s does not exist", tokenId)));
+        getOrThrowRefreshToken(tokenId);
         refreshToken.setState(RefreshToken.RefreshTokenState.USED);
         repository.save(refreshToken);
 
+    }
+
+    private RefreshToken getOrThrowRefreshToken(String id) {
+        return repository
+                .findById(id)
+                .orElseThrow(() -> new IllegalStateException(String.format("Token with id: %s does not exist", id)));
     }
 
 }
