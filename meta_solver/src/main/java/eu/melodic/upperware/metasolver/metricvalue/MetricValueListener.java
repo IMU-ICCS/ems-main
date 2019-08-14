@@ -40,14 +40,14 @@ public class MetricValueListener implements MessageListener {
 
     public void onMessage(Message message) {
         try {
-            log.debug("Listener of topic {}: Received message: ", topic.getTopicName());
+            log.debug("Listener of topic {}: Received message: {}", topic.getTopicName(), message);
             if (message instanceof TextMessage) {
                 // Extract Topic name and payload from message
                 TextMessage textMessage = (TextMessage) message;
                 //String metricName = textMessage.getStringProperty("topic_name");
                 String metricName = topicName;
                 String payload = textMessage.getText();
-                log.debug("Listener of topic {}: metric={}, type={}, payload={}", metricName, type, payload);
+                log.debug("Listener of topic {}: metric={}, type={}, payload={}", topicName, metricName, type, payload);
 
                 switch (type) {
                     case MVV:

@@ -48,7 +48,6 @@ public class BaguetteClient {
             try {
                 log.trace("BaguetteClient: spring-boot application-context: {}", appCtx);
                 Sshc client = appCtx.getBean(Sshc.class);
-                //Sshc client = new Sshc(config, idFile);
                 client.setConfigAndId(config, idFile);
                 log.trace("BaguetteClient: Sshc instance from application-context: {}", client);
                 log.trace("BaguetteClient: Calling SSHC start()");

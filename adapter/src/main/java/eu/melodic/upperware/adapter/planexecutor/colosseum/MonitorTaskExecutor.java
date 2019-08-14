@@ -22,7 +22,7 @@ import static java.lang.String.format;
 @Slf4j
 public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMonitor> {
 
-    public MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
+    MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
                                ColosseumApi api, ColosseumContext context,
                                Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
 
@@ -32,21 +32,18 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
     @Override
     public void create(AdapterMonitor taskBody) {
 
-        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
+        String nodeId = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
+                .getId();
 
-        String fistNodeId = getFistNodeId(nodeGroup);
-
-        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
-        if (!processGroupByNodeId.isPresent()) {
-            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
+        Optional<CloudiatorProcess> cloudiatorProcessByNodeId = context.getSingleProcessByNodeId(nodeId);
+        if (!cloudiatorProcessByNodeId.isPresent()) {
+            log.warn("Could not find CloudiatorProcess containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
             return;
         }
-        ProcessGroup processGroup = processGroupByNodeId.get();
 
-        String fistProcessId = getFistProcessId(processGroup);
-        Monitor monitor = convertToMonitor(taskBody, fistProcessId);
-        MonitoringTarget monitoringTarget = createMonitoringTarget(getFistProcessId(processGroup));
+        Monitor monitor = convertToMonitor(taskBody, cloudiatorProcessByNodeId.get().getId());
+        MonitoringTarget monitoringTarget = createMonitoringTarget(cloudiatorProcessByNodeId.get().getId());
 
         Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), monitoringTarget);
         if (monitorOpt.isPresent()) {
@@ -61,18 +58,6 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             log.error("Could not add Monitor. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Monitor", e);
         }
-    }
-
-    private Optional<ProcessGroup> getProcessGroupByNodeId(String nodeId) {
-        return context.getProcessGroupByNodeId(nodeId);
-    }
-
-    private String getFistNodeId(NodeGroup nodeGroup){
-        return nodeGroup.getNodes().get(0).getId();
-    }
-
-    private String getFistProcessId(ProcessGroup processGroup){
-        return processGroup.getProcesses().get(0).getId();
     }
 
     private Monitor convertToMonitor(AdapterMonitor taskBody, String processGroupId) {
@@ -131,19 +116,17 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     @Override
     public void delete(AdapterMonitor taskBody) {
-        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
 
-        String fistNodeId = getFistNodeId(nodeGroup);
+        String nodeId = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
+                .getId();
 
-        Optional<ProcessGroup> processGroupByNodeId = getProcessGroupByNodeId(fistNodeId);
-        if (!processGroupByNodeId.isPresent()) {
-            log.warn("Could not find ProcessGroup containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", fistNodeId);
+        Optional<CloudiatorProcess> cloudiatorProcessByNodeId = context.getSingleProcessByNodeId(nodeId);
+        if (!cloudiatorProcessByNodeId.isPresent()) {
+            log.warn("Could not find CloudiatorProcess containing SingleProcess with nodeId {}. Monitors could be added only to SingleProcess.", nodeId);
             return;
         }
-        ProcessGroup processGroup = processGroupByNodeId.get();
-
-        MonitoringTarget monitoringTarget = createMonitoringTarget(getFistProcessId(processGroup));
+        MonitoringTarget monitoringTarget = createMonitoringTarget(cloudiatorProcessByNodeId.get().getId());
 
         if (!context.getMonitor(taskBody.getMetricName(), monitoringTarget).isPresent()) {
             log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());
@@ -156,7 +139,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             api.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
             context.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
         } catch (ApiException e) {
-            log.error("Could not delete Monitor with metricName. Error code: {}, Response body: {}, ResponseHeaders: {}",
+            log.error("Could not delete Monitor with metricName {}. Error code: {}, Response body: {}, ResponseHeaders: {}",
                     taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
         }
     }

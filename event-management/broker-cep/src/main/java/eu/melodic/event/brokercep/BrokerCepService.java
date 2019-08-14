@@ -16,6 +16,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,9 +30,14 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.*;
 import javax.management.*;
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
@@ -126,6 +132,10 @@ public class BrokerCepService {
         } catch (Exception ex) {
             log.error("BrokerCepService.clearState(): Failed to clear Broker state: ", ex);
         }
+
+        // Reset Broker-CEP Consumer connection and session
+        brokerCepBridge.initialize();
+        log.info("BrokerCepService.clearState(): Broker-CEP Consumer has been re-initialized");
     }
 
     public synchronized void addEventTypes(Set<String> eventTypeNames, String[] eventPropertyNames, Class[] eventPropertyTypes) {
@@ -232,7 +242,7 @@ public class BrokerCepService {
 
     private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
-        if (connectionString == null) connectionString = properties.getBrokerUrl();
+        if (connectionString == null) connectionString = properties.getBrokerUrlForConsumer();
         ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
         connectionFactory.setBrokerURL(connectionString);
 
@@ -302,5 +312,47 @@ public class BrokerCepService {
 
     public String getBrokerPassword() {
         return brokerConfig.getBrokerLocalUserPassword();
+    }
+
+    public KeyStore getBrokerTruststore() {
+        return brokerConfig.getBrokerTruststore();
+    }
+
+    public String getBrokerCertificate() {
+        return brokerConfig.getBrokerCertificate();
+    }
+
+    public Certificate addOrReplaceCertificateInTruststore(String alias, String certPem) throws Exception {
+        log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert-PEM=\n{}", alias, certPem);
+        if (StringUtils.isNotEmpty(certPem)) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            try (InputStream inputStream = new ByteArrayInputStream(certPem.getBytes(Charset.forName("UTF-8")))) {
+                Certificate cert = cf.generateCertificate(inputStream);
+                log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): X509 Certificate: {}",
+                        ((X509Certificate) cert).getSubjectX500Principal().getName());
+                return addOrReplaceCertificateInTruststore(alias, cert);
+            }
+        } else {
+            log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): PEM certificate is empty. Returning 'null'");
+            return null;
+        }
+    }
+
+    public Certificate addOrReplaceCertificateInTruststore(String alias, Certificate cert) throws Exception {
+        log.trace("BrokerCepService.addOrReplaceCertificateInTruststore(): BEGIN: alias={}, cert=\n{}", alias, cert);
+        brokerConfig.getBrokerTruststore().setCertificateEntry(alias, cert);
+        brokerConfig.writeTruststore();
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): Certificate added with alias: {}", alias);
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
+                KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
+        return cert;
+    }
+
+    public void deleteCertificateFromTruststore(String alias) throws KeyStoreException {
+        log.trace("BrokerCepService.deleteCertificateFromTruststore(): BEGIN: alias={}", alias);
+        brokerConfig.getBrokerTruststore().deleteEntry(alias);
+        log.debug("BrokerCepService.deleteCertificateFromTruststore(): Deleted certificate with alias: {}", alias);
+        log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
+                KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
     }
 }

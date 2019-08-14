@@ -9,7 +9,7 @@
 
 package eu.melodic.event.brokercep.properties;
 
-import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -18,15 +18,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import java.util.Optional;
-
 @Data
-@ToString(exclude = {"truststorePassword", "keystorePassword"})
 @Configuration
 @ConfigurationProperties(prefix = "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 @Slf4j
 public class BrokerCepProperties {
+
     @Value("${broker-name:broker}")
     private String brokerName;
     @Value("${broker-url:ssl://0.0.0.0:61616}")
@@ -36,21 +34,14 @@ public class BrokerCepProperties {
     @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.util.NetUtil).getPublicIpAddress()+':61616' }")
     private String brokerUrlForClients;
 
-    public String getBrokerUrl() { return _prepareUrl(brokerUrl); }
-    public String getBrokerUrlForConsumer() { return _prepareUrl(brokerUrlForConsumer); }
-    public String getBrokerUrlForClients() { return _prepareUrl(brokerUrlForClients); }
+    public String getBrokerUrl() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrl); }
+    public String getBrokerUrlForConsumer() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrlForConsumer); }
+    public String getBrokerUrlForClients() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrlForClients); }
 
     @Value("${default-ip-address:}")
     private String defaultIpAddress;
     @Value("${public-ip-address:}")
     private String publicIpAddress;
-
-    protected String _prepareUrl(String url) {
-        if (url==null) return null;
-        return url
-                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(publicIpAddress))
-                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(defaultIpAddress));
-    }
 
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
@@ -61,18 +52,8 @@ public class BrokerCepProperties {
     @Value("${bypass-local-broker:false}")
     private boolean bypassLocalBroker;
 
-    @Value("${brokercep.ssl.truststore.file:}")
-    private String truststoreFile;
-    @Value("${brokercep.ssl.truststore.type:}")
-    private String truststoreType;
-    @Value("${brokercep.ssl.truststore.password:}")
-    private String truststorePassword;
-    @Value("${brokercep.ssl.keystore.file:}")
-    private String keystoreFile;
-    @Value("${brokercep.ssl.keystore.type:}")
-    private String keystoreType;
-    @Value("${brokercep.ssl.keystore.password:}")
-    private String keystorePassword;
+    // brokercep.ssl.** settings
+    private KeystoreAndCertificateProperties ssl;
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;

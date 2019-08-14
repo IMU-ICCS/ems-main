@@ -9,7 +9,6 @@
 
 package eu.melodic.upperware.metasolver;
 
-import eu.melodic.upperware.metasolver.util.CpModelHelper;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
@@ -20,7 +19,10 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
+import eu.melodic.upperware.metasolver.util.HistoryHelper;
+import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,6 +30,9 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +44,9 @@ import java.util.*;
 public class Coordinator implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
+    private MetaSolverController controller;
     private MetaSolverProperties metaSolverProperties;
+    private JWTService jwtService;
     private MelodicSecurityProperties melodicSecurityProperties;
     private double uvThresholdFactor;
     private RestTemplate restTemplate;
@@ -47,15 +54,35 @@ public class Coordinator implements ApplicationContextAware {
     private String cacheAppId;
     private String cacheCpModelPath;
     private Map<String,String> mvvToCurrentConfigVarsMap;
+    private HistoryHelper historyHelper;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        this.controller = applicationContext.getBean(MetaSolverController.class);
+        this.jwtService = applicationContext.getBean(JWTService.class);
         this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
+        this.historyHelper = new HistoryHelper();
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
+
+        // Initialize history helper
+        if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
+            if (StringUtils.isNotEmpty(metaSolverProperties.getHistory().getBasePath())) {
+                historyHelper.initHelperMetadata(
+                        metaSolverProperties.getHistory().getBasePath(),
+                        metaSolverProperties.getHistory().getActionsBasePath(),
+                        metaSolverProperties.getHistory().getComponentsBasePath(),
+                        metaSolverProperties.getHistory().getTransitionsBasePath(),
+                        metaSolverProperties.getHistory().getMetasolverPath(),
+                        metaSolverProperties.getHistory().getCpSolutionProducedPath(),
+                        metaSolverProperties.getHistory().getCpSolutionFailedPath()
+                );
+                log.debug("MetaSolver.Coordinator: setApplicationContext(): History helper initialized from properties: {}", metaSolverProperties.getHistory());
+            }
+        }
     }
 
     /**
@@ -119,20 +146,24 @@ public class Coordinator implements ApplicationContextAware {
         // check if an error occurred
         if (solUv == null) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: An error occurred: appId={}, model={}", applicationId, cpModelPath);
+            logCpSolutionInfo(applicationId, cpModelPath, false, "An error occurred");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[0] == -2) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
+            logCpSolutionInfo(applicationId, cpModelPath, false, "No solutions found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[1] == -1) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No candidate solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
+            logCpSolutionInfo(applicationId, cpModelPath, false, "No candidate solution found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
 
         // check if a solution is deployed. If no solution is deployed accept new solution
         if (solUv[0] < 0) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
+            logCpSolutionInfo(applicationId, cpModelPath, true, "No deployed solution found. Accepting new solution");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         }
 
@@ -142,11 +173,20 @@ public class Coordinator implements ApplicationContextAware {
         double newSolUv = solUv[1];
         if (newSolUv > uvThresholdFactor * depSolUv) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+            logCpSolutionInfo(applicationId, cpModelPath, true, "New solution is ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         } else {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+            logCpSolutionInfo(applicationId, cpModelPath, false, "New solution is NOT ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
         }
+    }
+
+    private void logCpSolutionInfo(String applicationId, String cpModelPath, boolean success, String description) throws ConcurrentAccessException {
+        if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
+			//historyHelper.addCpSolutionHistoryInfo(applicationId, cpModelPath, success, description);
+			log.warn("MetaSolver.Coordinator: logCpSolutionInfo(): Logging to history has been deactivated from code");
+		}
     }
 
     /**
@@ -203,11 +243,16 @@ public class Coordinator implements ApplicationContextAware {
         setMetricValuesInCpModel(appId, cpModelPath);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
 
+        // Create a new execution history record
+        if (metaSolverProperties.getHistory()==null || metaSolverProperties.getHistory().isEnabled()) {
+            historyHelper.addNewHistoryRecord(appId, "APPLICATION_RECONFIGURATION", null, null, null, null);
+        }
+
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request", notification);
+        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
         sendNotification(notification);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent");
+        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
     }
 
     private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath) {
@@ -229,14 +274,11 @@ public class Coordinator implements ApplicationContextAware {
         if (esbUrl.endsWith("/")) {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
-        log.debug("MetaSolver.Coordinator: sendNotification(): Request to ESB-URL: {}", esbUrl);
-        log.debug("MetaSolver.Coordinator: sendNotification(): restTemplate: {}", restTemplate);
-        log.debug("MetaSolver.Coordinator: sendNotification(): notification: {}", notification);
+        log.debug("MetaSolver.Coordinator: sendNotification(): Request to ESB: url={}, notification={}", esbUrl, notification);
         ResponseEntity<String> response =
-                restTemplate.postForEntity(esbUrl, notification, String.class);
-        log.debug("MetaSolver.Coordinator: sendNotification(): Response: {}", response);
-        log.debug("MetaSolver.Coordinator: sendNotification(): Response Body: {}", response.getBody());
-        log.debug("MetaSolver.Coordinator: sendNotification(): Response Status: {}", response.getStatusCode());
+                postToUrl(esbUrl, DeploymentProcessRequest.class, notification, true);
+        log.debug("MetaSolver.Coordinator: sendNotification(): Response: status={}, body={}",
+                response.getStatusCode(), response.getBody());
     }
 
     public Watermark prepareWatermark(String uuid) {
@@ -294,10 +336,50 @@ public class Coordinator implements ApplicationContextAware {
 
         Map<String, String> notification = new HashMap<>();
         notification.put("cp-model-id", cpModelPath);
-        ResponseEntity<String> response =
-                restTemplate.postForEntity(emsUrl, notification, String.class);
+		
+        final ResponseEntity<String> response =
+                postToUrl(emsUrl, HashMap.class, notification, false);
 
         log.debug("MetaSolver.Coordinator: notifyEMS(): Response from EMS: status={}, response={}, body={}",
                 response.getStatusCode(), response, response.getBody());
+    }
+
+    public ResponseEntity<String> postToUrl(String url, Class notifType, Object notification, boolean createNewToken) {
+        String jwtToken = createNewToken
+                ? createToken()
+                : controller.getAuthenticationToken();
+        log.debug("MetaSolver.postToUrl(): JWT token={}, created={}", jwtToken, createNewToken);
+
+        final ResponseEntity<String> response;
+        if (StringUtils.isNotEmpty(jwtToken)) {
+            HttpEntity<HashMap> entity = createHttpEntity(notifType, notification, jwtToken);
+            response = restTemplate.postForEntity(url, entity, String.class);
+        } else {
+            response = restTemplate.postForEntity(url, notification, String.class);
+        }
+        return response;
+    }
+
+    public <T> HttpEntity<T> createHttpEntity(Class<T> notifType, Object notification, String jwtToken) {
+        HttpHeaders headers = createHttpHeaders(jwtToken);
+        return new HttpEntity<T>((T)notification, headers);
+    }
+
+    private HttpHeaders createHttpHeaders(String jwtToken) {
+        HttpHeaders headers = new HttpHeaders();
+        if (StringUtils.isNotBlank(jwtToken)) {
+            headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
+        }
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        return headers;
+    }
+
+    public String createToken() {
+        String username = melodicSecurityProperties.getUser().getUsername();
+        log.debug("MetaSolver.createToken():  username={}, jwt-service={}", username, jwtService);
+        String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+        log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
+        return token;
     }
 }

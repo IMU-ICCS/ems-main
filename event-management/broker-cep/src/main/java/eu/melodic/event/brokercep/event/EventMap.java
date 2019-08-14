@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.event;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
@@ -18,6 +19,7 @@ import java.util.Map;
 
 @Data
 @Slf4j
+@EqualsAndHashCode(callSuper = false)
 public class EventMap extends HashMap<String, Object> implements Serializable {
     public EventMap() {
         super();

@@ -33,8 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
-//import org.eclipse.emf.cdo.util.ConcurrentAccessException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("CamelToEplTranslator")
@@ -201,7 +200,9 @@ public class CamelToEplTranslator implements Translator {
 		log.info("*********************************************************");
 		log.info("MVV_CP map:\n{}", _TC.MVV_CP);
 		log.info("*********************************************************");
-		log.info("Function Definitions set:\n{}", getElementNames(_TC.FUNC));
+		log.info("Function Definitions set:\n{}", getFunctionNames(_TC.FUNC));
+		log.info("*********************************************************");
+		log.info("Metric Constraints:\n{}", _TC.getMetricConstraints());
 		log.info("*********************************************************");
 	}
 
@@ -252,11 +253,9 @@ public class CamelToEplTranslator implements Translator {
 		return newMap;
 	}
 	
-	protected Collection<String> getElementNames(Collection<FunctionDefinition> col) {
-		ArrayList<String> names = new ArrayList<>();
-		for (FunctionDefinition fd : col) {
-			names.add( fd.getName() );
-		}
-		return names;
+	protected Collection<String> getFunctionNames(Collection<FunctionDefinition> col) {
+		return col.stream()
+				.map(FunctionDefinition::getName)
+				.collect(Collectors.toList());
 	}
 }

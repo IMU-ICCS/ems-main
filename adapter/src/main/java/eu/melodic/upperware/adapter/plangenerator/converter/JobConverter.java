@@ -1,7 +1,6 @@
 package eu.melodic.upperware.adapter.plangenerator.converter;
 
 import camel.deployment.*;
-import camel.deployment.Communication;
 import eu.melodic.upperware.adapter.plangenerator.converter.job.*;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.passage.upperware.commons.model.tools.CdoTool;
@@ -13,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static eu.passage.upperware.commons.extensions.OptionalUtils.peek;
 
 @Slf4j
 @Service
@@ -41,28 +38,21 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
     }
 
     private List<AdapterTask> toAdapterTasks(DeploymentTypeModel model) {
-        List<Communication> communications = model.getCommunications();
         return model
                 .getSoftwareComponents()
                 .stream()
                 .filter(Objects::nonNull)
-                .map(softwareComponent -> convertToTask(softwareComponent, communications))
+                .map(this::convertToTask)
                 .collect(Collectors.toList());
     }
 
-    private AdapterTask convertToTask(SoftwareComponent softwareComponent, List<Communication> communications) {
+    private AdapterTask convertToTask(SoftwareComponent softwareComponent) {
         return AdapterTask.builder()
                 .name(softwareComponent.getName())
-                .taskType(chooseTaskType(softwareComponent))
                 .interfaces(convertToInterfaces(softwareComponent))
-                .ports(convertToPorts(softwareComponent, communications))
+                .ports(convertToPorts(softwareComponent))
                 .build();
     }
-
-    private AdapterTaskType chooseTaskType(SoftwareComponent softwareComponent) {
-        return faasInterfaceConverter.isInstance (getConfiguration(softwareComponent)) ? AdapterTaskType.BATCH : AdapterTaskType.SERVICE;
-    }
-
 
     private List<AdapterTaskInterface> convertToInterfaces(SoftwareComponent softwareComponent) {
         Configuration configuration = getConfiguration(softwareComponent);
@@ -85,7 +75,7 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
         return Collections.singletonList(result);
     }
 
-    private List<AdapterPort> convertToPorts(SoftwareComponent softwareComponent, List<Communication> communications) {
+    private List<AdapterPort> convertToPorts(SoftwareComponent softwareComponent) {
         List<AdapterPort> result = new ArrayList<>();
         for (ProvidedCommunication providedCommunication : softwareComponent.getProvidedCommunications()) {
             result.add(AdapterPortProvided.builder()
@@ -100,28 +90,9 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
                     .name(requiredCommunication.getName())
                     .type(PORT_REQUIRED)
                     .isMandatory(requiredCommunication.isIsMandatory())
-                    .updateAction(getUpdateActionCommand(requiredCommunication.getName(), communications))
                     .build());
         }
         return result;
-    }
-
-    private String getUpdateActionCommand(String requiredCommunicationName, List<Communication> communications){
-        return getCommunicationForRequiredPort(requiredCommunicationName, communications)
-                .map(ScriptConfiguration::getStartCommand)
-                .orElse(null);
-    }
-
-    private Optional<ScriptConfiguration> getCommunicationForRequiredPort(String requiredCommunicationName, List<Communication> communications) {
-        return communications.stream()
-                .filter(communication -> communication.getRequiredCommunication().getName().equals(requiredCommunicationName))
-                .findFirst()
-                .map(peek(communication -> log.info("Communication {} found for requiredCommunicationName {}", communication.getName(), requiredCommunicationName)))
-                .map(Communication::getRequiredPortConfiguration)
-                .map(peek(configuration -> log.info("Found RequiredPortConfiguration {}", configuration.getName())))
-                .filter(configuration1 -> configuration1 instanceof ScriptConfiguration)
-                .map(peek(configuration -> log.info("Found RequiredPortConfiguration {} is instance of ScriptConfiguration", configuration.getName())))
-                .map(configuration1 -> (ScriptConfiguration) configuration1);
     }
 
     private Configuration getConfiguration(@NonNull SoftwareComponent softwareComponent) {

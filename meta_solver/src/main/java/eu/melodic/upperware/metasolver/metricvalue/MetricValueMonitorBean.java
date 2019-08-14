@@ -18,6 +18,7 @@ import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,11 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
     private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
     private MetricValueRegistry<Object> registry = new MetricValueRegistry<>();
+	
+	@Value("${ems-broker-username:#{null}}")
+	private String brokerUsername;
+	@Value("${ems-broker-password:#{null}}")
+	private String brokerPassword;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -43,6 +49,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         this.properties = applicationContext.getBean(MetaSolverProperties.class);
         this.coordinator = applicationContext.getBean(Coordinator.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
+        log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
     }
 
     public MetricValueRegistry<Object> getMetricValuesRegistry() {
@@ -70,7 +77,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                     url = ActiveMQConnection.DEFAULT_BROKER_URL;
                 else url = url.trim();
                 if (StringUtils.isEmpty(topicName))
-                    throw new IllegalArgumentException("Topic name not set: #"+(i++)+" pubsub setting");
+                    throw new IllegalArgumentException("Topic name not set: #"+i+" pubsub setting");
                 if (StringUtils.isEmpty(clientId)) clientId = "";
                 else clientId = clientId.trim();
                 if (type == null) type = TopicType.UNKNOWN;
@@ -78,6 +85,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
                 // Subscribe to topic
                 _do_subscribe(url, topicName, clientId, type);
+                i++;
             }
         }
         log.debug("Subscribing to topics: ok");
@@ -102,7 +110,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             ConnectionConf cconf = connectionCache.get(url);
             if (cconf == null) {
                 ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-                Connection connection = connectionFactory.createConnection();
+                Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
                 log.trace("*****   SUBSCRIBE: connection created");
                 if (!clientId.isEmpty()) {
                     connection.setClientID(clientId);

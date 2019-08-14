@@ -51,13 +51,25 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
         initialize();
     }
 
-    private void initialize() {
+    public synchronized void initialize() {
         log.debug("BrokerCepConsumer.initialize(): Initializing Broker-CEP consumer instance...");
         try {
+            // close previous session and connection
+            if (session!=null) {
+                session.close();
+                session = null;
+                log.debug("BrokerCepConsumer.initialize(): Closed pre-existing sessions");
+            }
+            if (connection!=null) {
+                connection.close();
+                connection = null;
+                log.debug("BrokerCepConsumer.initialize(): Closed pre-existing connection");
+            }
+
             // If an alternative Broker URL is provided for consumer, it will be use
             ActiveMQConnectionFactory connectionFactory = this.connectionFactory;
             if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
-                log.debug("BrokerCepConsumer.initialize(): Alternative broker URL will be used for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
+                log.debug("BrokerCepConsumer.initialize(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
                 connectionFactory = this.connectionFactory.copy();
                 connectionFactory.setBrokerURL(properties.getBrokerUrlForConsumer());
             } else {

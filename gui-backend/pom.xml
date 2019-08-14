@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>upperware</artifactId>
+        <groupId>org.ow2.paasage</groupId>
+        <version>2.5.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>eu.melodic</groupId>
+    <artifactId>gui-backend</artifactId>
+    <name>Upperware - GUI Backend</name>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <cdo.version>2.5.1-SNAPSHOT</cdo.version>
+        <upperware.version>2.5.1-SNAPSHOT</upperware.version>
+        <!--DOCKER plugin properties-->
+        <docker.imageName>gui-backend</docker.imageName>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.13</version>
+        </dependency>
+
+        <!--todo - remove after storing data in DB-->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.21</version>
+        </dependency>
+
+        <dependency>
+            <groupId>eu.melodic</groupId>
+            <artifactId>interfaces</artifactId>
+            <version>2.5.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>eu.melodic.cdo</groupId>
+            <artifactId>client</artifactId>
+            <version>${cdo.version}</version>
+            <classifier>repackaged</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>upperware-metamodel</artifactId>
+            <version>${upperware.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.cloudiator.client</groupId>
+            <artifactId>java-rest</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>melodic-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ow2.paasage</groupId>
+                    <artifactId>upperware-metamodel</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>jwt-commons</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--docker image building plugins start-->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+            </plugin>
+            <!--docker image building plugins end-->
+        </plugins>
+    </build>
+
+</project>

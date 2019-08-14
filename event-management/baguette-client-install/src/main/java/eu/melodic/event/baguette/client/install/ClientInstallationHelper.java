@@ -25,6 +25,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -137,7 +138,7 @@ public class ClientInstallationHelper implements InitializingBean {
         // Download Baguette Client installation script
         installationInstructions
                 .appendLog("Download Baguette Client installation script")
-                .appendExec("sudo wget "+installScriptUrl+" -O "+installScriptPath)
+                .appendExec("sudo wget --no-check-certificate "+installScriptUrl+" -O "+installScriptPath)
 
         // Make Baguette Client installation script executable
                 .appendLog("Make Baguette Client installation script executable")
@@ -145,7 +146,7 @@ public class ClientInstallationHelper implements InitializingBean {
 
         // Run Baguette Client installation script
                 .appendLog("Run Baguette Client installation script")
-                .appendExec("sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey+" \n")
+                .appendExec("sudo "+installScriptPath+" "+baseDownloadUrl+" "+apiKey)
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")
@@ -180,7 +181,7 @@ public class ClientInstallationHelper implements InitializingBean {
     private String _prepareUrl(String urlTemplate, String baseUrl) {
         return urlTemplate
                 .replace("%{BASE_URL}%", baseUrl)
-                .replace("%{PUBLIC_IP}%", NetUtil.getPublicIpAddress())
-                .replace("%{DEFAULT_IP}%", NetUtil.getDefaultIpAddress());
+                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(""))
+                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(""));
     }
 }

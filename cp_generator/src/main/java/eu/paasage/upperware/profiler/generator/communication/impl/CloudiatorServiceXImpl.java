@@ -16,6 +16,7 @@ import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.ApiResponse;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Runtime;
@@ -34,6 +35,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces.FAAS_RUNTIME;
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces.OS_VERSION;
 
 @Slf4j
 @Component
@@ -50,16 +52,38 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
-        return matchmakingApi.findNodeCandidates(requirements);
+        int counter = 1;
+        int maxNumberOfApproaches = 10;
+        do {
+            try {
+                ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
+                if (response.getStatusCode() == 200) {
+                    log.info("Approach {} of {} successfully fetched {} NodeCandidates", counter, maxNumberOfApproaches, response.getData().size());
+                    return response.getData();
+                }
+            } catch (Exception e) {
+                log.error("Approach {} of {} failed with Exception: ", counter, maxNumberOfApproaches, e);
+            }
+
+            if (counter == maxNumberOfApproaches) {
+                throw new GeneratorException("Could not get node candidates for requirements: " + requirements);
+            }
+            counter++;
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                //
+            }
+        } while (true);
     }
 
     @Override
     public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-            List<LocationModel> locationModels, String imageId, NodeType nodeType) {
+            List<LocationModel> locationModels, NodeType nodeType) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
-        requirements.addAll(createImageRequirement(imageId));
+        requirements.addAll(createImageRequirement(getImageRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createProviderRequirement(getProviderRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createNodeTypeRequirement(nodeType));
@@ -170,18 +194,37 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
                 .anyMatch(geographicalRegion -> geographicalRegion.equals(parentRegion));
     }
 
-    private Collection<? extends Requirement> createImageRequirement(String imageId) {
-        if (StringUtils.isBlank(imageId)) {
+    private Collection<? extends Requirement> createImageRequirement(camel.requirement.ImageRequirement imageRequirement) {
+        if (imageRequirement == null) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(createRequirement(IMAGE_CLASS, "name", RequirementOperator.EQ, imageId));
+        String images = String.join(", ", imageRequirement.getImages());
+        return Collections.singletonList(createRequirement(IMAGE_CLASS, "name", RequirementOperator.IN, images));
     }
 
+
     private Collection<? extends Requirement> createOSRequirement(camel.requirement.OSRequirement osRequirement) {
-        if (osRequirement == null || StringUtils.isBlank(osRequirement.getOs())) {
+        if (osRequirement == null) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.IN, prepareOSFamilyValue(osRequirement.getOs())));
+
+        List<Requirement> result = new ArrayList<>();
+        if (StringUtils.isNotBlank(osRequirement.getOs())){
+            result.add(createRequirement(IMAGE_CLASS, "operatingSystem.family", RequirementOperator.IN, prepareOSFamilyValue(osRequirement.getOs())));
+        }
+
+        List<Attribute> osAttributes = CamelMetadataToolForTaskInterfaces.findAttributesByAnnotation(osRequirement.getAttributes(), OS_VERSION.camelName);
+        String acceptedOsVersions = osAttributes.stream()
+                .map(Attribute::getValue)
+                .filter(value -> value instanceof StringValue)
+                .map(value -> ((StringValue) value).getValue())
+                .collect(Collectors.joining(", "));
+
+        if (StringUtils.isNotEmpty(acceptedOsVersions)){
+            result.add(createRequirement(IMAGE_CLASS, "operatingSystem.version", RequirementOperator.IN, acceptedOsVersions));
+        }
+
+        return result;
     }
 
     private Collection<? extends Requirement> createPaasRequirements(PaaSRequirement paasRequirement) {
@@ -299,6 +342,10 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     private camel.requirement.PaaSRequirement getPaasRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet) {
         return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getPaasRequirement);
+    }
+
+    private camel.requirement.ImageRequirement getImageRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet) {
+        return getRequirement(globalRequirementSet, localRequirementSet, RequirementSet::getImageRequirement);
     }
 
     private <T extends camel.requirement.HardRequirement> T getRequirement(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,

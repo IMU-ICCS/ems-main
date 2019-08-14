@@ -17,7 +17,4 @@ public class AdapterTask implements Data{
     private List<AdapterPort> ports;
     private List<AdapterTaskInterface> interfaces;
     private AdapterExecutionEnvironment executionEnvironment;
-
-    private AdapterTaskType taskType;
-
 }

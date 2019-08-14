@@ -8,22 +8,17 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ProcessTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
 @Slf4j
 public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProcess> {
-
-    private static final List<CloudiatorProcess.StateEnum> ACCEPTED_STATES = Arrays.asList(CloudiatorProcess.StateEnum.CREATED, CloudiatorProcess.StateEnum.RUNNING);
 
     ProcessTaskExecutor(ProcessTask task, Collection<Future> predecessors, ColosseumApi api,
                         ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
@@ -33,8 +28,8 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
     @Override
     public void create(AdapterProcess taskBody) {
 
-        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
+        Node node = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
 
         Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
@@ -49,37 +44,53 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
 
 
         try {
-            log.info("Creating Process with NodeGroup: {}, Schedule {}, Task: {}", nodeGroup.getId(), schedule.getId(), task.getName());
+            log.info("Creating Process with Node: {}, Schedule {}, Task: {}", node.getId(), schedule.getId(), task.getName());
 
-            Queue queue = api.addProcess(new CloudiatorProcessNew()
-                    .nodeGroup(nodeGroup.getId())
-                    .schedule(schedule.getId())
-                    .task(task.getName()));
+            CloudiatorProcessNew cpNew;
 
-            Queue watch = watch(queue.getId());
-            log.info("Response from queue {} successfully reached. New process is created", queue.getId());
-
-            String processGroupId = getId(watch.getLocation());
-            ProcessGroup processGroup = api.getProcessGroup(processGroupId)
-                    .orElseThrow(() -> new AdapterException((format("Could not get ProcessGroup with id %s", processGroupId))));
-
-            boolean isProcessRunning = processGroup
-                    .getProcesses()
-                    .stream()
-                    .allMatch(cloudiatorProcess ->  ACCEPTED_STATES.contains(cloudiatorProcess.getState()));
-
-            if (isProcessRunning) {
-                log.info("Process group has been created ProcessGroup details: {}", processGroup);
-                context.addProcessGroup(processGroup);
+            TaskInterface taskInterface = task.getInterfaces().get(0);
+            if (taskInterface instanceof SparkInterface) {
+                cpNew = new ClusterProcessNew()
+                        .nodes(Collections.singletonList(node.getId()))
+                        .schedule(schedule.getId())
+                        .task(task.getName())
+                        .taskInterface("io.github.cloudiator.deployment.domain.SparkInterface")
+                        .processType("ClusterProcessNew");
+            } else if (taskInterface instanceof FaasInterface) {
+                cpNew = getCloudiatorProcessNew(node, schedule, task, "io.github.cloudiator.deployment.domain.FaasInterface");
+            } else if (taskInterface instanceof LanceInterface) {
+                cpNew = getCloudiatorProcessNew(node, schedule, task, "io.github.cloudiator.deployment.domain.LanceInterface");
+            } else if (taskInterface instanceof DockerInterface) {
+                cpNew = getCloudiatorProcessNew(node, schedule, task, "io.github.cloudiator.deployment.domain.DockerInterface");
             } else {
-                String errorMessage = processGroup
-                        .getProcesses()
-                        .stream()
-                        .filter(cloudiatorProcess -> !ACCEPTED_STATES.contains(cloudiatorProcess.getState()))
-                        .map(cloudiatorProcess -> format("Process %s is in %s state", cloudiatorProcess.getId(), cloudiatorProcess.getState()))
-                        .collect(Collectors.joining(", ", "ProcessGroup " + processGroupId + " has been created but ", "."));
+                throw new AdapterException("Unsupported type: " + taskInterface);
+            }
 
-                throw new AdapterException(errorMessage);
+            Queue queue = api.addProcess(cpNew);
+
+            Queue watch = watch(queue.getId(), queueId -> {
+                String processId = getId(queueId);
+                try {
+                    return !CloudiatorProcess.StateEnum.PENDING.equals(api.getCloudiatorProcess(processId)
+                            .orElseThrow(() -> new AdapterException("Could not find CloudiatorProcess for " + processId))
+                            .getState());
+                } catch (ApiException e) {
+                    throw new AdapterException("Could not get CloudiatorProcess for " + processId, e);
+                }
+            });
+
+            String cloudiatorProcessId = getId(watch.getLocation());
+
+            CloudiatorProcess cp = api.getCloudiatorProcess(cloudiatorProcessId)
+                    .orElseThrow(() -> new AdapterException((format("Could not get CloudiatorProcess with id %s", cloudiatorProcessId))));
+
+            boolean isRunning = CloudiatorProcess.StateEnum.RUNNING.equals(cp.getState());
+            if (isRunning) {
+                log.info("Response from queue {} successfully reached. New CloudiatorProcess has been created {}", queue.getId(), cloudiatorProcessId);
+                context.addCloudiatorProcess(cp);
+            } else {
+                log.info("Response from queue {} successfully reached. But CloudiatorProcess {} is in state {}", queue.getId(), cloudiatorProcessId, cp.getState());
+                throw new AdapterException(format("Cloudiator Process %s is in %s state", cloudiatorProcessId, cp.getState()));
             }
 
         } catch (ApiException e) {
@@ -88,10 +99,22 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
         }
     }
 
+    private CloudiatorProcessNew getCloudiatorProcessNew(Node node, Schedule schedule, Task task, String s) {
+        CloudiatorProcessNew cpNew;
+        cpNew = new SingleProcessNew()
+                .node(node.getId())
+                .schedule(schedule.getId())
+                .task(task.getName())
+                .taskInterface(s)
+                .processType("SingleProcessNew");
+        return cpNew;
+    }
+
     @Override
     public void delete(AdapterProcess taskBody) {
-        NodeGroup nodeGroup = context.getNodeGroupByNodeName(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find NodeGroup with id %s", taskBody.getNodeName())));
+
+        Node node = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
 
         Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
@@ -105,20 +128,17 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
                 .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
 
         try {
-            Optional<ProcessGroup> optionalProcessGroup = context.getProcessGroup(nodeGroup.getId(), schedule.getId(), task.getName());
+            Optional<CloudiatorProcess> optionalCloudiatorProcess = context.getCloudiatorProcess(node.getId(), schedule.getId(), task.getName());
 
-            if (optionalProcessGroup.isPresent()) {
-                ProcessGroup processGroup = optionalProcessGroup.get();
-                String processGroupId = processGroup.getId();
-                CloudiatorProcess cloudiatorProcess = processGroup.getProcesses().get(0);
+            if (optionalCloudiatorProcess.isPresent()) {
+                CloudiatorProcess cloudiatorProcess = optionalCloudiatorProcess.get();
 
-                Queue deleteProcessQueue = api.deleteProcess(cloudiatorProcess.getId());
-
+                Queue deleteProcessQueue = api.deleteCloudiatorProcess(cloudiatorProcess.getId());
                 watch(deleteProcessQueue.getId());
-                log.info("Response from queue {} successfully reached. Process is deleted", deleteProcessQueue.getId(), processGroupId);
-                context.deleteProcessGroup(processGroupId);
+                log.info("Response from queue {} successfully reached. CloudiatorProcess {} is deleted", deleteProcessQueue.getId(), cloudiatorProcess.getId());
+                context.deleteCloudiatorProcess(cloudiatorProcess.getId());
             } else {
-                log.warn("Could not find process group with nodeGroup {}, schedule {} and task {}. Nothing will be deleted.", nodeGroup.getId(), schedule.getId(), task.getName());
+                log.warn("Could not find process group with node {}, schedule {} and task {}. Nothing will be deleted.", node.getId(), schedule.getId(), task.getName());
             }
         } catch (ApiException e) {
             log.error("Could not delete ProcessGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());

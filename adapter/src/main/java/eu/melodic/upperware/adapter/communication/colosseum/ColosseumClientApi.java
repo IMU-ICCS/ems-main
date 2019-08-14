@@ -111,27 +111,22 @@ public class ColosseumClientApi implements ColosseumApi {
   }
 
   @Override
-  public Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException {
-    Objects.requireNonNull(nodeGroupId);
-
-    return Optional.ofNullable(nodeApi.getNodeGroup(nodeGroupId));
+  public Optional<Node> getNode(String nodeId) throws ApiException {
+    Objects.requireNonNull(nodeId);
+    return Optional.ofNullable(nodeApi.getNode(nodeId));
   }
 
   @Override
-  public Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException {
-    Objects.requireNonNull(processGroupId);
+  public Optional<CloudiatorProcess> getCloudiatorProcess(String cloudiatorProcessId) throws ApiException {
+    Objects.requireNonNull(cloudiatorProcessId);
 
-    return processApi.findProcessGroups()
-            .stream()
-            .filter(processGroup -> processGroupId.equals(processGroup.getId()))
-            .findFirst();
+    return Optional.ofNullable(processApi.findProcess(cloudiatorProcessId));
   }
 
   @Override
-  public Queue deleteProcess(String processId) throws ApiException {
-    Objects.requireNonNull(processId);
-    log.info("Deleting process with id: {}", processId);
-    return processApi.deleteProcess(processId);
+  public Queue deleteCloudiatorProcess(String cloudiatorProcessId) throws ApiException {
+    log.info("Deleting process {}", cloudiatorProcessId);
+    return processApi.deleteProcess(cloudiatorProcessId);
   }
 
   @Override

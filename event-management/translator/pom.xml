@@ -5,7 +5,7 @@
     <parent>
         <groupId>eu.melodic.event</groupId>
         <artifactId>event-management</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>2.5.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>translator</artifactId>
@@ -15,7 +15,7 @@
         <!-- Dependencies versions -->
         <jgrapht.version>1.2.1-SNAPSHOT</jgrapht.version>
         <graphviz-java.version>0.5.4</graphviz-java.version>
-        <hibernate-validator.version>5.4.2.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.0.16.Final</hibernate-validator.version>
 
         <!-- Required in order to compile with Thymeleaf -->
         <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
@@ -40,30 +40,29 @@
     <dependencies>
         <!-- PaaSage and Melodic dependencies -->
         <dependency>
-            <groupId>org.ow2.paasage.mddb.cdo</groupId>
-            <artifactId>client-oxygen</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
-            <!--<classifier>repackaged</classifier>-->
+            <groupId>eu.melodic.cdo</groupId>
+            <artifactId>client</artifactId>
+            <classifier>repackaged</classifier>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
-            <version>2.1.0-SNAPSHOT</version>
+            <version>2.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>camel</groupId>
             <artifactId>camel</artifactId>
-            <version>2018.6.1-SNAPSHOT</version>
+            <version>2.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>camel</groupId>
             <artifactId>camel.dsl</artifactId>
-            <version>2018.6.1-SNAPSHOT</version>
+            <version>2.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>eu.melodic</groupId>
@@ -80,11 +79,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-validator -->
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring5</artifactId>

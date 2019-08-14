@@ -39,15 +39,13 @@ public interface ColosseumApi {
 
     Queue addNode(NodeRequest nodeRequest) throws ApiException;
 
-
-    Optional<NodeGroup> getNodeGroup(String nodeGroupId) throws ApiException;
-
     Queue deleteNode(String nodeId) throws ApiException;
 
-    Optional<ProcessGroup> getProcessGroup(String processGroupId) throws ApiException;
+    Optional<Node> getNode(String nodeId) throws ApiException;
 
-    Queue deleteProcess(String processId) throws ApiException;
+    Optional<CloudiatorProcess> getCloudiatorProcess(String cloudiatorProcessId) throws ApiException;
 
+    Queue deleteCloudiatorProcess(String cloudiatorProcessId) throws ApiException;
 
     Monitor addMonitor(Monitor monitor) throws ApiException;
 

@@ -65,7 +65,10 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
     private Task convertToTask(AdapterTask adapterTask) {
         return new Task()
                 .name(adapterTask.getName())
-                .taskType(TaskType.valueOf(adapterTask.getTaskType().name()))
+                .behaviour(new ServiceBehaviour()
+                        .restart(true)
+                        .type(ServiceBehaviour.class.getSimpleName())
+                )
                 .ports(convertToPorts(adapterTask.getPorts()))
                 .interfaces(convertToInterfaces(adapterTask.getInterfaces()));
     }
@@ -84,7 +87,6 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .type(adapterPort.getType());
         } else if (adapterPort instanceof AdapterPortRequired) {
             return new PortRequired()
-                    .updateAction(((AdapterPortRequired) adapterPort).getUpdateAction())
                     .isMandatory(((AdapterPortRequired) adapterPort).getIsMandatory())
                     .name(adapterPort.getName())
                     .type(adapterPort.getType());
@@ -102,6 +104,7 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
     private TaskInterface convertToInterface(AdapterTaskInterface adapterTaskInterface) {
         if (adapterTaskInterface instanceof AdapterLanceInterface) {
             return new LanceInterface()
+                    .updateAction(((AdapterLanceInterface) adapterTaskInterface).getUpdate())
                     .containerType(LanceInterface.ContainerTypeEnum.valueOf(((AdapterLanceInterface) adapterTaskInterface).getContainterType()))
                     .preInstall(((AdapterLanceInterface) adapterTaskInterface).getPreInstall())
                     .install(((AdapterLanceInterface) adapterTaskInterface).getInstall())
@@ -118,6 +121,7 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .arguments(((AdapterSparkInterface) adapterTaskInterface).getArguments())
                     .sparkArguments(((AdapterSparkInterface) adapterTaskInterface).getSparkArguments())
                     .sparkConfiguration(((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration())
+                    .processMapping(ProcessMapping.CLUSTER)
                     .type(SparkInterface.class.getSimpleName());
 
         } else if (adapterTaskInterface instanceof AdapterDockerInterface) {

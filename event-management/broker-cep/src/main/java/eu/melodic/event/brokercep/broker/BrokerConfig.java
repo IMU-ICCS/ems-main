@@ -10,21 +10,23 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
-import org.apache.activemq.broker.BrokerPlugin;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.SslBrokerService;
+import org.apache.activemq.broker.*;
+import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.security.AuthenticationUser;
 import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.usage.MemoryUsage;
 import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -69,13 +71,21 @@ public class BrokerConfig implements InitializingBean {
     private String brokerLocalAdminPassword;
     private String brokerUsername;
     private String brokerPassword;
+    private String brokerCert;
+
+    private KeyStore truststore;
+
+    @Value("${brokercep.broker-url-2}")
+    private String brokerUrl2;
+    @Value("${brokercep.broker-url-3}")
+    private String brokerUrl3;
 
     @Override
-    public void afterPropertiesSet() {
+    public void afterPropertiesSet() throws Exception {
         _initializeSecurity();
     }
 
-    protected synchronized void _initializeSecurity() {
+    protected synchronized void _initializeSecurity() throws Exception {
         log.debug("BrokerConfig._initializeSecurity(): Initializing broker security: initialize-authentication={}, initialize-authorization={}",
                 properties.isAuthenticationEnabled(), properties.isAuthorizationEnabled());
 
@@ -87,13 +97,15 @@ public class BrokerConfig implements InitializingBean {
             brokerLocalAdmin = LOCAL_ADMIN_PREFIX + RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
             brokerLocalAdminPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
             userList.add(new AuthenticationUser(brokerLocalAdmin, brokerLocalAdminPassword, SimpleBrokerAuthorizationPlugin.ADMIN_GROUP));
-            log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}", brokerLocalAdmin, brokerLocalAdminPassword);
+            log.debug("BrokerConfig._initializeSecurity(): Initialized local admin: {} / {}",
+                    brokerLocalAdmin, passwordUtil.encodePassword(brokerLocalAdminPassword));
 
             // initialize broker user credentials
             brokerUsername = LOCAL_USER_PREFIX+ RandomStringUtils.randomAlphanumeric(USERNAME_RANDOM_PART_LENGTH);
             brokerPassword = RandomStringUtils.randomAlphanumeric(PASSWORD_LENGTH);
             userList.add(new AuthenticationUser(brokerUsername, brokerPassword, SimpleBrokerAuthorizationPlugin.RO_USER_GROUP));
-            log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}", brokerUsername, brokerPassword);
+            log.debug("BrokerConfig._initializeSecurity(): Initialized broker user: {} / {}",
+                    brokerUsername, passwordUtil.encodePassword(brokerPassword));
 
             // initialize additional user credentials from configuration
             for (String extraUserCred : properties.getAdditionalBrokerCredentials().split(",")) {
@@ -123,6 +135,27 @@ public class BrokerConfig implements InitializingBean {
                 log.error("BrokerConfig._initializeSecurity(): Authorization will not be configured because authentication is not enabled");
             }
         }
+
+        // Initialize Key pair and Certificate for SSL broker
+        if (getBrokerUrl().startsWith("ssl")) {
+            log.debug("BrokerConfig._initializeSecurity(): Initializing Broker key pair and certificate...");
+            initializeKeyPairAndCert();
+            log.debug("BrokerConfig._initializeSecurity(): Broker key pair and certificate initialization has been completed");
+        } else {
+            log.debug("BrokerConfig._initializeSecurity(): Broker key pair and certificate NOT initialized");
+        }
+    }
+
+    private void initializeKeyPairAndCert() throws Exception {
+        log.debug("BrokerConfig.initializeKeyAndCert(): BrokerCepProperties: {}", properties);
+        log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
+        KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
+
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
+        this.brokerCert = KeystoreUtil
+                .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
+                .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryNameValue());
+        log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }
 
     public String getBrokerName() {
@@ -134,6 +167,13 @@ public class BrokerConfig implements InitializingBean {
         log.trace("BrokerConfig.getBrokerUrl(): broker-url: {}", properties.getBrokerUrl());
         return properties.getBrokerUrl();
     }
+
+    public String getBrokerCertificate() {
+        log.trace("BrokerConfig.getBrokerCertificate(): Broker certificate (PEM):\n{}", brokerCert);
+        return brokerCert;
+    }
+
+    public KeyStore getBrokerTruststore() { return truststore; }
 
     public String getBrokerLocalAdminUsername() {
         return brokerLocalAdmin;
@@ -199,6 +239,12 @@ public class BrokerConfig implements InitializingBean {
         }
         brokerService.setBrokerName(getBrokerName());
 
+        // Start additional connectors (non-SSL)
+        log.debug("BrokerConfig: 2nd connector: {}", brokerUrl2);
+        log.debug("BrokerConfig: 3rd connector: {}", brokerUrl3);
+        if (StringUtils.isNotEmpty(brokerUrl2)) brokerService.addConnector(brokerUrl2);
+        if (StringUtils.isNotEmpty(brokerUrl3)) brokerService.addConnector(brokerUrl3);
+
         // Set authentication and authorization plugins
         List<BrokerPlugin> plugins = new ArrayList<>();
         if (getBrokerAuthenticationPlugin()!=null) plugins.add(getBrokerAuthenticationPlugin());
@@ -245,7 +291,7 @@ public class BrokerConfig implements InitializingBean {
             log.debug("    MC: UseMBeanServer: {}", mc.isUseMBeanServer());
 
             log.debug("    MC->MBS: DefaultDomain: {}", mc.getMBeanServer().getDefaultDomain());
-            log.debug("    MC->MBS: Domains: {}", mc.getMBeanServer().getDomains());
+            log.debug("    MC->MBS: Domains: {}", (Object[])mc.getMBeanServer().getDomains());
             log.debug("    MC->MBS: MBeanCount: {}", mc.getMBeanServer().getMBeanCount());
         } catch (Exception ex) {
             log.error("    MC: EXCEPTION: ", ex);
@@ -271,7 +317,23 @@ public class BrokerConfig implements InitializingBean {
         // start broker service instance
         brokerService.start();
 
+        // register broker service interceptors
+        registerMessageInterceptors(brokerService);
+
         return brokerService;
+    }
+
+    private void registerMessageInterceptors(BrokerService brokerService) {
+        log.info("BrokerConfig: Registering Message Interceptors...");
+
+        // get message interceptor registry
+        final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
+        log.trace("BrokerConfig: Message interceptor registry: {}", registry);
+
+        // register interceptor for adding source (producer) address to messages
+        String applyToAllDestinations = ">";
+        registry.addMessageInterceptorForTopic(applyToAllDestinations, new SourceAddressMessageUpdateInterceptor(registry));
+        log.info("BrokerConfig: Registered SourceAddressMessageUpdateInterceptor");
     }
 
     private BrokerService _createSslBrokerService() throws Exception {
@@ -290,49 +352,53 @@ public class BrokerConfig implements InitializingBean {
 
     private KeyManager[] readKeystore() throws Exception {
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        final KeyStore keystore = KeyStore.getInstance(properties.getKeystoreType());
+        final KeyStore keystore = KeyStore.getInstance(properties.getSsl().getKeystoreType());
 
         //final Resource keystoreResource = new ClassPathResource( properties.getKeystoreFile() );
-        final FileSystemResource keystoreResource = new FileSystemResource(properties.getKeystoreFile());
-        keystore.load(keystoreResource.getInputStream(), properties.getKeystorePassword().toCharArray());
-        keyManagerFactory.init(keystore, properties.getKeystorePassword().toCharArray());
+        final FileSystemResource keystoreResource = new FileSystemResource(properties.getSsl().getKeystoreFile());
+        keystore.load(keystoreResource.getInputStream(), properties.getSsl().getKeystorePassword().toCharArray());
+        keyManagerFactory.init(keystore, properties.getSsl().getKeystorePassword().toCharArray());
         final KeyManager[] keystoreManagers = keyManagerFactory.getKeyManagers();
         return keystoreManagers;
     }
 
     private TrustManager[] readTruststore() throws Exception {
-        final KeyStore truststore = KeyStore.getInstance(properties.getTruststoreType());
+        this.truststore = KeyStore.getInstance(properties.getSsl().getTruststoreType());
 
         //final Resource truststoreResource = new ClassPathResource( properties.getTruststoreFile() );
-        final FileSystemResource truststoreResource = new FileSystemResource(properties.getTruststoreFile());
-        truststore.load(truststoreResource.getInputStream(), properties.getTruststorePassword().toCharArray());
+        final FileSystemResource truststoreResource = new FileSystemResource(properties.getSsl().getTruststoreFile());
+        this.truststore.load(truststoreResource.getInputStream(), properties.getSsl().getTruststorePassword().toCharArray());
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(truststore);
+        trustManagerFactory.init(this.truststore);
         final TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
         return trustManagers;
     }
 
+    public void writeTruststore() throws Exception {
+        //final Resource truststoreResource = new ClassPathResource( properties.getTruststoreFile() );
+        final FileSystemResource truststoreResource = new FileSystemResource(properties.getSsl().getTruststoreFile());
+        this.truststore.store(truststoreResource.getOutputStream(), properties.getSsl().getTruststorePassword().toCharArray());
+    }
+
     /**
-     * Creates an new JMS client connection factory
-     *
-     * @return
+     * Creates a new connection factory
      */
     @Bean
     public ActiveMQConnectionFactory connectionFactory() {
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
-        String brokerUrl = properties.getBrokerUrl();
+        String brokerUrl = properties.getBrokerUrlForClients();
         if (brokerUrl.startsWith("ssl")) {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
             try {
-                sslConnectionFactory.setTrustStore(properties.getTruststoreFile());
-                sslConnectionFactory.setTrustStoreType(properties.getTruststoreType());
-                sslConnectionFactory.setTrustStorePassword(properties.getTruststorePassword());
-                sslConnectionFactory.setKeyStore(properties.getKeystoreFile());
-                sslConnectionFactory.setKeyStoreType(properties.getKeystoreType());
-                sslConnectionFactory.setKeyStorePassword(properties.getKeystorePassword());
-                //sslConnectionFactory.setKeyStoreKeyPassword( properties........ );
+                sslConnectionFactory.setTrustStore(properties.getSsl().getTruststoreFile());
+                sslConnectionFactory.setTrustStoreType(properties.getSsl().getTruststoreType());
+                sslConnectionFactory.setTrustStorePassword(properties.getSsl().getTruststorePassword());
+                sslConnectionFactory.setKeyStore(properties.getSsl().getKeystoreFile());
+                sslConnectionFactory.setKeyStoreType(properties.getSsl().getKeystoreType());
+                sslConnectionFactory.setKeyStorePassword(properties.getSsl().getKeystorePassword());
+                //sslConnectionFactory.setKeyStoreKeyPassword( properties.getSsl()........ );
 
                 connectionFactory = sslConnectionFactory;
             } catch (final Exception theException) {
