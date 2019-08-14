@@ -120,6 +120,29 @@ class UtilityGeneratorFCRTest extends Specification{
         result != 0
     }
 
+    def "FCR without optimisation requirement - test"() {
+
+        given:
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
+        newConfiguration.add(new IntVariableValueDTO("cardinality_Component_LB", 1))
+        newConfiguration.add(new IntVariableValueDTO("provider_Component_LB", 2))
+
+
+        path = "src/main/test/resources/FCRwithoutOptimisationRequirement.xmi"
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath,true, mockNodeCandidates, properties)
+
+        when:
+        double result = utilityGenerator.evaluate(newConfiguration)
+
+        then:
+        noExceptionThrown()
+        result != 0
+    }
+
+
     def "FCR with dlms utility - test"() {
 
         given:

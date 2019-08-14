@@ -57,9 +57,10 @@ public class UtilityFunctionEvaluator {
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
-        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
         String formula = prepareUtilityFunction(fromCamelModelExtractor);
         log.info("Formula of the utility function: {}", formula);
+        fromCamelModelExtractor.setUtilityFunctionFormula(formula);
+        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
 
         this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter);
         this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
@@ -97,7 +98,11 @@ public class UtilityFunctionEvaluator {
     }
 
     private String prepareUtilityFunction(FromCamelModelExtractor fromCamelModelExtractor) {
-        return fromCamelModelExtractor.getUtilityFormula().orElse(createUtilityFunctionCostFormula(this.variablesFromConstraintProblem));
+        String utilityFunctionFormula = fromCamelModelExtractor.getUtilityFunctionFormula();
+        if ("".equals(utilityFunctionFormula)){
+            return createUtilityFunctionCostFormula(this.variablesFromConstraintProblem);
+        }
+        return utilityFunctionFormula;
     }
 
     private Collection<Argument> createConstantValuesForOneReasoning(MetricsConverter metricsConverter, NodeCandidatesConverter nodeCandidatesConverter) {
