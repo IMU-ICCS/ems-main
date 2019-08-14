@@ -23,4 +23,4 @@ curl --user admin:melodic -i -XPOST -H "Content-Type: application/json" "http://
 }'
 
 
-java -jar mq-http-adapter.jar
+java -jar mq-http-adapter.jar -Dagentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1986
