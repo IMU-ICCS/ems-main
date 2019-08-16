@@ -237,14 +237,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         //Process (D) -> Nodes(D)
         List<AdapterRequirement> nodesToDelete = requirementDiffCalculator.getToDelete(adapterRequirementDiff);
         List<NodeTask> nodeTasksToDelete = createTasks(graph, nodesToDelete, NodeTask.NODE_TASK_DELETE);
-        addEdge(graph, monitorTasksToDelete, nodeTasksToDelete, MONITOR_TO_NODE_BI_PREDICATE);
+//        addEdge(graph, monitorTasksToDelete, nodeTasksToDelete, MONITOR_TO_NODE_BI_PREDICATE);
 
         List<ProcessTask> processTasksToDelete = getTasksWithoutOutgoingEdges(graph, DELETE, ProcessTask.class);
         addEdge(graph, processTasksToDelete, nodeTasksToDelete, PROCESS_TO_NODE_BI_PREDICATE);
         addEdge(graph, lastCreateTask, processTasksToDelete, () -> lastCreateTask != null);
 
         List<ScaleTask> scaleTasksToDelete = getTasksWithoutOutgoingEdges(graph, DELETE, ScaleTask.class);
-        addEdge(graph, scaleTasksToDelete, nodeTasksToDelete, SCALE_TO_NODE_BI_PREDICATE);
+//        addEdge(graph, scaleTasksToDelete, nodeTasksToDelete, SCALE_TO_NODE_BI_PREDICATE);
         addEdge(graph, lastCreateTask, scaleTasksToDelete, () -> lastCreateTask != null);
 
         List<Task> tasksToDeleteWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, DELETE);
