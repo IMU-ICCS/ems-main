@@ -222,4 +222,25 @@ public class NetUtil {
             return socket.getLocalAddress().getHostAddress();
         }
     }
+
+    // ------------------------------------------------------------------------
+
+    public static boolean isLocalAddress(String addr) throws UnknownHostException {
+        return isLocalAddress(InetAddress.getByName(addr));
+    }
+
+    // Source: https://stackoverflow.com/questions/2406341/how-to-check-if-an-ip-address-is-the-local-host-on-a-multi-homed-system
+    public static boolean isLocalAddress(InetAddress addr) {
+        // Check if the address is a valid special local or loop back
+        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
+            return true;
+        }
+
+        // Check if the address is defined on any interface
+        try {
+            return NetworkInterface.getByInetAddress(addr) != null;
+        } catch (SocketException e) {
+            return false;
+        }
+    }
 }
