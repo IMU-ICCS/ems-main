@@ -30,6 +30,7 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 
 	@Override
 	public Optional<MqBaseEntry> extractMqDataEntry(ActiveMQMessage activeMQMessage) {
+		log.debug("Extracting MqBaseEntry");
 		String rawMqContent = extractPayload(new String(activeMQMessage.getContent().getData()));
 		String[] keyValuePairsAsStrings = rawMqContent.split(MqConstants.KEY_VALUE_PAIR_SEPARATOR);
 		String keyValueEncoding = extractUsedSeparator(keyValuePairsAsStrings);
