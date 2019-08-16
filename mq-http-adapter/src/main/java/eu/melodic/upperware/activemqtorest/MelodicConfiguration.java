@@ -34,7 +34,7 @@ public class MelodicConfiguration {
 	@Value("${influxdb.retainer.expiry:180}")
 	private long influxRetainerExpiry;
 
-	@Value("${influxdb.retainer.heap.entries:100000}")
+	@Value("${influxdb.retainer.heap.entries:2000}")
 	private long influxRetainerHeapEntries;
 
 	@Value("${mq.topic.threshold.name:_ui_threshold_info}")
