@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.influxdb.dto.Point;
 
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,4 +51,23 @@ public class MqInstanceInfoEntry extends MqBaseEntry {
 		return point;
 	}
 
+	@Override
+	public boolean mustRetain(InfluxDataRetainer influxDataRetainer) {
+		return influxDataRetainer.getInstanceInfoEntryCache().containsKey(this.hashCode());
+	}
+
+	@Override
+	public void updateRetained(InfluxDataRetainer influxDataRetainer) {
+		influxDataRetainer.getInstanceInfoEntryCache().put(this.hashCode(), this);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 31 * result + name.hashCode();
+		result = 31 * result + ipAddress.hashCode();
+		result = 31 * result + baguetteClientId.hashCode();
+		result = 31 * result + instanceId.hashCode();
+		return result;
+	}
 }

@@ -2,6 +2,7 @@ package eu.melodic.upperware.activemqtorest.objects;
 
 import org.influxdb.dto.Point;
 
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,6 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class MqBaseEntry {
 
 	public abstract Point getInfluxDbDataPoint(IIpGeoCoder ipGeoCoder);
+
+	public abstract boolean mustRetain(InfluxDataRetainer influxDataRetainer);
+
+	public void updateRetained(InfluxDataRetainer influxDataRetainer) {
+	}
 
 	String normalizeTimestamp(String timestamp) {
 		if (timestamp.contains("E")) {

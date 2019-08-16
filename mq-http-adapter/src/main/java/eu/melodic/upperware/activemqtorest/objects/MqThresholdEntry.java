@@ -2,8 +2,10 @@ package eu.melodic.upperware.activemqtorest.objects;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.influxdb.dto.Point;
 
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,13 +34,30 @@ public class MqThresholdEntry extends MqBaseEntry {
 		String timestamp = normalizeTimestamp(getTimestamp());
 		Point point = Point.measurement("_Thresholds")
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
-				.addField("name",getName())
+				.addField("name", getName())
 				.addField("threshold", Double.valueOf(getThreshold()))
 				.addField("operator", getOperator())
 				.build();
 		return point;
 	}
 
+	@Override
+	public boolean mustRetain(InfluxDataRetainer influxDataRetainer) {
+		return influxDataRetainer.getThresholdEntryCache().containsKey(this.hashCode());
+	}
 
+	@Override
+	public void updateRetained(InfluxDataRetainer influxDataRetainer) {
+		influxDataRetainer.getThresholdEntryCache().put(this.hashCode(), this);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 31 * result + name.hashCode();
+		result = 31 * result + threshold.hashCode();
+		result = 31 * result + operator.hashCode();
+		return result;
+	}
 
 }

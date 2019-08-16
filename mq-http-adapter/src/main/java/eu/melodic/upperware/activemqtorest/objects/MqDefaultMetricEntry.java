@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,4 +48,10 @@ public class MqDefaultMetricEntry extends MqBaseEntry {
 				.build();
 		return point;
 	}
+
+	@Override
+	public boolean mustRetain(InfluxDataRetainer influxDataRetainer) {
+		return false;
+	}
+
 }

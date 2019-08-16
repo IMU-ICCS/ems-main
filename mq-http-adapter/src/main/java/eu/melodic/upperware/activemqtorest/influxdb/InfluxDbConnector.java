@@ -25,6 +25,10 @@ public class InfluxDbConnector {
 	@Autowired
 	private IIpGeoCoder ipGeoCoder;
 
+	@Autowired
+	private InfluxDataRetainer influxDataRetainer;
+
+
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress());
@@ -32,10 +36,14 @@ public class InfluxDbConnector {
 	}
 
 	public void writeDataPoint(MqBaseEntry mqDataEntry) {
-
 		Point influxDbDataPoint = mqDataEntry.getInfluxDbDataPoint(ipGeoCoder);
-
-		influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+		if (melodicConfiguration.isInfluxRetainerEnabled() && mqDataEntry.mustRetain(influxDataRetainer)) {
+			log.debug("Retaining data point {}.", influxDbDataPoint);
+		} else {
+			log.debug("Writing data point {}.", influxDbDataPoint);
+			influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+		}
+		mqDataEntry.updateRetained(influxDataRetainer);
 	}
 
 }

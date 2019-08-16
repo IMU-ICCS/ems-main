@@ -28,6 +28,9 @@ public class MelodicConfiguration {
 	@Value("${influxdb.database}")
 	private String databaseName;
 
+	@Value("${influxdb.retainer.enabled:true}")
+	private boolean influxRetainerEnabled;
+
 	@Value("${influxdb.retainer.expiry:180}")
 	private long influxRetainerExpiry;
 
