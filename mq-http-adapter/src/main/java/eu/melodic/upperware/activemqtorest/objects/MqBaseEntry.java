@@ -11,7 +11,9 @@ public abstract class MqBaseEntry {
 
 	public abstract Point getInfluxDbDataPoint(IIpGeoCoder ipGeoCoder);
 
-	public abstract boolean mustRetain(InfluxDataRetainer influxDataRetainer);
+	public boolean mustRetain(InfluxDataRetainer influxDataRetainer){
+		return false;
+	}
 
 	public void updateRetained(InfluxDataRetainer influxDataRetainer) {
 	}
