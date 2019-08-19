@@ -49,7 +49,7 @@ public class UserController {
         log.info("Login request for user with username: {}", userRequest.getUsername());
         if (userService.authenticate(userRequest.getUsername(), userRequest.getPassword())) {
             String token = userService.createToken(userRequest.getUsername());
-            String refreshToken = refreshTokenService.createToken(username);
+            String refreshToken = refreshTokenService.createToken(userRequest.getUsername());
             response.setHeader(SecurityConstants.HEADER_STRING, token);
             response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
             return userService.createUserResponse(userRequest.getUsername());
