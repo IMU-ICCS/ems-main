@@ -3,10 +3,10 @@ package eu.paasage.upperware.security.server.controller;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
+import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
-import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
+import eu.paasage.upperware.security.server.controller.response.UserResponse;
 import eu.paasage.upperware.security.server.data.repository.User;
-import eu.paasage.upperware.security.server.data.repository.UserRole;
 import eu.paasage.upperware.security.server.data.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,28 +34,26 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/user/login")
-    public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
+    public UserResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
             throws AuthenticationException {
         log.info("Login request for user with username: {}", userRequest.getUsername());
         if (userService.authenticate(userRequest.getUsername(), userRequest.getPassword())) {
             String token = userService.createToken(userRequest.getUsername());
             response.setHeader(SecurityConstants.HEADER_STRING, token);
-            return userService.createLoginResponse(userRequest.getUsername());
+            return userService.createUserResponse(userRequest.getUsername());
         } else {
             throw new AuthenticationException();
         }
     }
 
-    @PostMapping("/auth/user/sign-up")
+    @PostMapping("/auth/user")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
-    public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
-        log.info("Sign-up request for username: {}", userRequest.getUsername());
-        if (userService.exists(userRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username is used, please try with another username");
-        }
-        userService.create(userRequest.getUsername(), userRequest.getPassword(), UserRole.USER); // todo change UserRole - depends on request
-        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+    public UserResponse signUp(@RequestBody @Valid NewUserRequest userRequest) {
+        log.info("Sign-up request with username: {} and role: {}", userRequest.getUsername(), userRequest.getUserRole());
+        UserResponse userResponse = userService.create(userRequest);
+        log.info("New user account for user {} with role {} successfully created", userRequest.getUsername(), userRequest.getUserRole());
+        return userResponse;
     }
 
     @PutMapping("/auth/user/password")

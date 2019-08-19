@@ -41,7 +41,7 @@ public class RestCommunicationService {
         } catch (HttpClientErrorException ex) {
             String jwtExceptionResponse = getJwtExceptionResponse(ex.getResponseBodyAsString())
                     .map(JwtExceptionResponse::getMessage)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization failed. Invalid credentials"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization failed. Invalid credentials. Your account will be locked after 4 fail attempts."));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, jwtExceptionResponse);
         }
 
