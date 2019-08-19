@@ -2,12 +2,12 @@ package eu.melodic.upperware.activemqtorest.objects;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.influxdb.dto.Point;
 
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,12 +20,15 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class MqThresholdEntry extends MqBaseEntry {
 
+	@EqualsAndHashCode.Exclude
 	private long id = 42l;
 	private String name;
 	private String threshold;
 	private String operator;
+	@EqualsAndHashCode.Exclude
 	private String timestamp;
 
 
@@ -49,15 +52,6 @@ public class MqThresholdEntry extends MqBaseEntry {
 	@Override
 	public void updateRetained(InfluxDataRetainer influxDataRetainer) {
 		influxDataRetainer.getThresholdEntryCache().put(this.hashCode(), this);
-	}
-
-	@Override
-	public int hashCode() {
-		int result = 17;
-		result = 31 * result + name.hashCode();
-		result = 31 * result + threshold.hashCode();
-		result = 31 * result + operator.hashCode();
-		return result;
 	}
 
 }
