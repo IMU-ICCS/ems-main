@@ -1,13 +1,22 @@
 package eu.paasage.upperware.security.server.controller;
 
+import eu.melodic.models.interfaces.security.InvalidateTokenRequest;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.controller.response.UserResponse;
+import eu.paasage.upperware.security.server.data.repository.RefreshToken;
 import eu.paasage.upperware.security.server.data.repository.User;
+import eu.paasage.upperware.security.server.data.service.RefreshTokenService;
 import eu.paasage.upperware.security.server.data.service.UserService;
+import eu.paasage.upperware.security.server.exception.RefreshTokenInvalidException;
+import eu.paasage.upperware.security.server.exception.UserNotFoundException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +41,7 @@ import java.util.List;
 public class UserController {
 
     private UserService userService;
+    private RefreshTokenService refreshTokenService;
 
     @PostMapping("/user/login")
     public UserResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
@@ -39,11 +49,15 @@ public class UserController {
         log.info("Login request for user with username: {}", userRequest.getUsername());
         if (userService.authenticate(userRequest.getUsername(), userRequest.getPassword())) {
             String token = userService.createToken(userRequest.getUsername());
+            String refreshToken = refreshTokenService.createToken(username);
             response.setHeader(SecurityConstants.HEADER_STRING, token);
+            response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
             return userService.createUserResponse(userRequest.getUsername());
         } else {
             throw new AuthenticationException();
         }
+
+
     }
 
     @PostMapping("/auth/user")
@@ -89,5 +103,56 @@ public class UserController {
         String defaultMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         ExceptionResponse response = new ExceptionResponse(defaultMessage);
         return new ResponseEntity<>(response, new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping(value = "/refresh-token")
+    public ResponseEntity<Object> refreshToken(@RequestHeader(name = HttpHeaders.AUTHORIZATION)
+            String authorization, HttpServletResponse response)
+            throws UserNotFoundException, RefreshTokenInvalidException {
+
+        log.info("Refresh token request");
+        log.debug("Refresh token: {}", authorization);
+
+        RefreshToken refreshToken;
+
+        try {
+            refreshToken = refreshTokenService.validateToken(authorization);
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
+                | SignatureException | IllegalArgumentException ex) {
+            log.error("Error during validating token:", ex);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        } catch (RefreshTokenInvalidException ex) {
+            log.error("Error during validating token:", ex);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+
+        log.info("Refresh token has been accepted");
+
+        String username = refreshToken.getUsername();
+        String token = userService.createToken(username);
+        String newRefreshToken = refreshTokenService.createToken(username);
+        refreshTokenService.useToken(refreshToken);
+
+        response.setHeader(SecurityConstants.HEADER_STRING, token);
+        response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, newRefreshToken);
+        return ResponseEntity.status(HttpStatus.CREATED).body("New tokens have been created.");
+    }
+
+    @PostMapping(value = "/auth/invalidate-token")
+    public ResponseEntity<Object> invalidateToken(@RequestBody InvalidateTokenRequest invalidateTokenRequest) {
+
+        log.info("Invalidate refresh token request");
+        log.debug("Token to invalidate: {}", invalidateTokenRequest.getToken());
+
+        try {
+            refreshTokenService.invalidateToken(invalidateTokenRequest.getToken());
+        } catch (IllegalStateException | ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
+                | SignatureException | IllegalArgumentException ex) {
+            log.error("Error during invalidating refresh token:", ex);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+        }
+        log.debug("Token has been invalidated successfully.");
+        return ResponseEntity.status(HttpStatus.OK).body("Token has been invalidated successfully.");
+
     }
 }

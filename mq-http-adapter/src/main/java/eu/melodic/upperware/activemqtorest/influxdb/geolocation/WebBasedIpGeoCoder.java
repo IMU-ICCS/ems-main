@@ -2,7 +2,7 @@ package eu.melodic.upperware.activemqtorest.influxdb.geolocation;
 
 import java.util.Optional;
 
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -37,12 +37,12 @@ public class WebBasedIpGeoCoder implements IIpGeoCoder {
 		Optional<JsonObject> completeJsonResult = getCompleteJsonResult(ipAddress);
 		if (completeJsonResult.isPresent()) {
 			if (completeJsonResult.get().has(ERROR_MESSAGE)) {
-				return Strings.EMPTY;
+				return StringUtils.EMPTY;
 			} else if (completeJsonResult.get().has(COUNTRY_CODE)) {
 				return completeJsonResult.get().get(COUNTRY_CODE).getAsString();
 			}
 		}
-		return Strings.EMPTY;
+		return StringUtils.EMPTY;
 	}
 
 	private Optional<JsonObject> getCompleteJsonResult(String ipAddress) {
@@ -51,7 +51,7 @@ public class WebBasedIpGeoCoder implements IIpGeoCoder {
 		}
 
 		String httpGetUrl = String.format(HTTP_URL_SCHEME, ipAddress);
-		HttpEntity<String> requestEntity = new HttpEntity<>(Strings.EMPTY);
+		HttpEntity<String> requestEntity = new HttpEntity<>(StringUtils.EMPTY);
 		ResponseEntity<String> responseEntity = restTemplate.exchange(httpGetUrl, HttpMethod.GET, requestEntity, String.class);
 
 		if (responseEntity.getStatusCode().equals(HttpStatus.OK)) {
