@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.springframework.ldap.odm.annotations.Attribute;
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
+import org.springframework.ldap.odm.annotations.Transient;
 
 import javax.naming.Name;
 
@@ -27,11 +28,16 @@ public class User {
     @Attribute(name = "userPassword")
     private String password;
 
+    @Attribute(name = "ou")
+    private UserRole userRole;
+
+    @Transient
     private boolean lockedAccount;
 
-    public User(String username, String password, boolean lockedAccount) {
+    public User(String username, String password, UserRole userRole, boolean lockedAccount) {
         this.username = username;
         this.password = password;
+        this.userRole = userRole;
         this.lockedAccount = lockedAccount;
     }
 }

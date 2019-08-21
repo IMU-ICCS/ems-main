@@ -47,4 +47,5 @@ public class MqDefaultMetricEntry extends MqBaseEntry {
 				.build();
 		return point;
 	}
+
 }

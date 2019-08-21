@@ -3,8 +3,11 @@ package eu.paasage.upperware.security.server.data.service;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
+import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
+import eu.paasage.upperware.security.server.controller.response.UserResponse;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
+import eu.paasage.upperware.security.server.data.repository.UserRole;
 import eu.paasage.upperware.security.server.exception.UserNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,6 @@ import org.springframework.ldap.NoSuchAttributeException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
-import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,6 +30,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.List;
 
 @Slf4j
@@ -42,6 +45,7 @@ public class UserService {
 
     private static final String PASSWORD_CHAR = "*";
     private static final String PASSWORD_LOCKED_KEY = "pwdAccountLockedTime";
+    private static final String GROUP_PREFIX = "ou=";
 
     public boolean authenticate(final String username, final String password) {
         log.info("Login request: l: {}, password: {}", username, createPasswordCode(password));
@@ -55,25 +59,30 @@ public class UserService {
     }
 
     public boolean exists(String username) {
-        return userLdapRepository.existsByUsername(username);
+        return userLdapRepository.findByUsername(username).isPresent();
     }
 
-    public void create(final String username, final String password) {
-        User newUser = new User(username, digestSHA(password), false);
+    public UserResponse create(NewUserRequest userRequest) {
 
-        Name dn = LdapNameBuilder
-                .newInstance()
-                .add("cn", username)
-                .build();
-        DirContextAdapter context = new DirContextAdapter(dn);
+        User newUser = new User(userRequest.getUsername(), digestSHA(userRequest.getPassword()), userRequest.getUserRole(), false);
+
+        String userDN = createUserDN(newUser.getUsername(), newUser.getUserRole());
+
+        DirContextAdapter context = new DirContextAdapter(userDN);
 
         context.setAttributeValues("objectclass", new String[] {"person"});
-        context.setAttributeValue("cn", username);
-        context.setAttributeValue("sn", username);
+        context.setAttributeValue("cn", newUser.getUsername());
+        context.setAttributeValue("sn", newUser.getUsername());
         context.setAttributeValue("userPassword", newUser.getPassword());
+        context.setAttributeValue("pwdPolicySubentry", "cn=ppolicy,dc=example,dc=org");
 
         ldapTemplate.bind(context);
-        log.info("Saving new user with credential: login={}, id={}", username, newUser.getId());
+
+        return createUserResponse(newUser.getUsername());
+    }
+
+    private String createUserDN(String userName, UserRole userRole) {
+        return String.format("cn=%s,ou=%s", userName, userRole.name());
     }
 
     private String digestSHA(final String password) {
@@ -105,14 +114,15 @@ public class UserService {
     }
 
     public void unlockAccount(String username) {
-        Name dn = LdapNameBuilder
-                .newInstance()
-                .add("cn", username)
-                .build();
+
+        User user = userLdapRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+        String userDN = createUserDN(username, findUserRole(user.getId()));
+
         ModificationItem[] modItems = new ModificationItem[1];
         modItems[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(PASSWORD_LOCKED_KEY));
         try {
-            ldapTemplate.modifyAttributes(dn, modItems);
+            ldapTemplate.modifyAttributes(userDN, modItems);
         } catch (NoSuchAttributeException ex) {
             log.error("User {} account was not locked", username, ex);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("User %s account was not locked", username));
@@ -127,9 +137,22 @@ public class UserService {
         List<User> result = new ArrayList<>();
         ldapUsers.forEach(user -> {
             user.setLockedAccount(isLockedAccount(user.getUsername()));
+            user.setUserRole(findUserRole(user.getId()));
             result.add(user);
         });
         return result;
+    }
+
+    public UserRole findUserRole(Name id) {
+        Enumeration<String> allIdElements = id.getAll();
+        while (allIdElements.hasMoreElements()) {
+            String idElement = allIdElements.nextElement();
+            if (idElement.startsWith(GROUP_PREFIX)) {
+                String userRole = idElement.replace(GROUP_PREFIX, StringUtils.EMPTY);
+                return UserRole.valueOf(userRole);
+            }
+        }
+        return UserRole.USER; // user without defined role -> common user
     }
 
     private boolean isLockedAccount(String username) {
@@ -145,8 +168,17 @@ public class UserService {
                 pwdAccountLockedTime = attributes.get(PASSWORD_LOCKED_KEY);
             }
         } catch (NamingException e) {
-            e.printStackTrace();
+            log.error("Error by checking locked account state for user {}:", username, e);
         }
         return pwdAccountLockedTime != null;
+    }
+
+    public UserResponse createUserResponse(String username) {
+        User user = userLdapRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+        return UserResponse.builder()
+                .username(username)
+                .userRole(findUserRole(user.getId()))
+                .build();
     }
 }
