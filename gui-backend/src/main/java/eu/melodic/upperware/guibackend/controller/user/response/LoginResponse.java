@@ -5,11 +5,14 @@ import lombok.*;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
-    private String username;
+public class LoginResponse extends UserResponse {
     private String token;
-    private UserRole userRole;
+
+    @Builder
+    public LoginResponse(String username, UserRole userRole, String token) {
+        super(username, userRole);
+        this.token = token;
+    }
 }

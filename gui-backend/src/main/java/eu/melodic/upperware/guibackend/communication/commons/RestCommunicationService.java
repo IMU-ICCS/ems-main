@@ -35,10 +35,13 @@ public class RestCommunicationService {
         try {
             response = restTemplate.exchange(requestUrl, httpMethod, requestBody, responseType);
         } catch (ResourceAccessException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem in communication with %s. Service not working. Please try again.", serviceName));
+            log.error("Error by sending http request to {}: ", serviceName, ex);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem in communication with %s. Service not working or connection is too slow. Please try again.", serviceName));
         } catch (HttpServerErrorException ex) {
+            log.error("Error by sending http request to {}: ", serviceName, ex);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Requested resource doesn't exist");
         } catch (HttpClientErrorException ex) {
+            log.error("Error by sending http request to {}: ", serviceName, ex);
             String jwtExceptionResponse = getJwtExceptionResponse(ex.getResponseBodyAsString())
                     .map(JwtExceptionResponse::getMessage)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authorization failed. Invalid credentials. Your account will be locked after 4 fail attempts."));
@@ -46,7 +49,8 @@ public class RestCommunicationService {
         }
 
         if ((HttpMethod.GET.equals(httpMethod) || HttpMethod.POST.equals(httpMethod))
-                && (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null)) {
+                && ((!HttpStatus.OK.equals(response.getStatusCode()) && !HttpStatus.CREATED.equals(response.getStatusCode()))
+                || response.getBody() == null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem in communication with %s. Service not working. Please try again.", serviceName));
         }
 
