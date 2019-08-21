@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/application/deployment")
+@RequestMapping("/auth/deployment")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentController {

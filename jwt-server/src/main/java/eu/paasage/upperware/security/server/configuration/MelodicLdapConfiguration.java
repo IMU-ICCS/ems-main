@@ -24,6 +24,7 @@ public class MelodicLdapConfiguration {
         contextSource.setBase(env.getRequiredProperty("ldap.partitionSuffix"));
         contextSource.setUserDn(env.getRequiredProperty("ldap.principal"));
         contextSource.setPassword(env.getRequiredProperty("ldap.password"));
+        contextSource.setPooled(false);
         return contextSource;
     }
 
