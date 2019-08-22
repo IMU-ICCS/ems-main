@@ -60,6 +60,15 @@ public class UserController {
                 .build();
     }
 
+    @DeleteMapping("/auth/user/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserAccount(@RequestHeader(value = "Authorization") String token,
+                                  @PathVariable(value = "username") String username) {
+        log.info("DELETE request for user account: {}", username);
+        jwtServerClientApi.deleteUser(username, token);
+        log.info("Account of user {} successfully deleted", username);
+    }
+
     @PutMapping("/auth/user/password")
     @ResponseStatus(HttpStatus.OK)
     public void changePassword(@RequestHeader(value = "Authorization") String token,

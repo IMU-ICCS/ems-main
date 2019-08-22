@@ -20,4 +20,6 @@ public interface JwtServerApi {
     List<User> getUsers(String token);
 
     void unlockUserAccount(String username, String token);
+
+    void deleteUser(String username, String token);
 }
