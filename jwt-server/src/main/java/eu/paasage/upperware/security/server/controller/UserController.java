@@ -56,8 +56,6 @@ public class UserController {
         } else {
             throw new AuthenticationException();
         }
-
-
     }
 
     @PostMapping("/auth/user")
@@ -68,6 +66,15 @@ public class UserController {
         UserResponse userResponse = userService.create(userRequest);
         log.info("New user account for user {} with role {} successfully created", userRequest.getUsername(), userRequest.getUserRole());
         return userResponse;
+    }
+
+    @DeleteMapping("/auth/user/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
+    public void deleteUserAccount(@PathVariable("username") String username) {
+        log.info("DELETE request for user: {}", username);
+        userService.delete(username);
+        log.info("Account of user {} successfully deleted", username);
     }
 
     @PutMapping("/auth/user/password")
@@ -153,6 +160,5 @@ public class UserController {
         }
         log.debug("Token has been invalidated successfully.");
         return ResponseEntity.status(HttpStatus.OK).body("Token has been invalidated successfully.");
-
     }
 }

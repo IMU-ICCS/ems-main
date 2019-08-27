@@ -98,6 +98,12 @@ public class UserService {
         return "{SHA}" + base64;
     }
 
+    public void delete(String username) {
+        User user = userLdapRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+        userLdapRepository.delete(user);
+    }
+
     public String createToken(String username) {
         return SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
     }

@@ -65,6 +65,15 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
     }
 
     @Override
+    public void deleteUser(String username, String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/" + username;
+        ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
+        };
+        HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
+        getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.DELETE);
+    }
+
+    @Override
     public void changePassword(ChangePasswordRequest changePasswordRequest, String token) {
         String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/password";
         ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
