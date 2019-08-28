@@ -22,6 +22,7 @@ import java.util.List;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentController {
 
+    private static final String REFRESH_HEADER = "Refresh";
     private DeploymentService deploymentService;
     private SecureStoreService secureStoreService;
 
@@ -52,7 +53,7 @@ public class DeploymentController {
     @ResponseStatus(HttpStatus.CREATED)
     public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest,
                                                 @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
-                                                @RequestHeader("Refresh") String refreshToken) {
+                                                @RequestHeader(REFRESH_HEADER) String refreshToken) {
         log.info("POST request for deployment new process");
         return deploymentService.createDeploymentProcess(deploymentRequest, token, refreshToken);
     }

@@ -11,6 +11,7 @@ import eu.melodic.upperware.guibackend.controller.user.response.UserResponse;
 import eu.melodic.upperware.guibackend.model.user.User;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.List;
 public class JwtServerClientApi extends RestCommunicationService implements JwtServerApi {
 
     private GuiBackendProperties guiBackendProperties;
+    private final static String REFRESH_HEADER = "Refresh";
 
     public JwtServerClientApi(RestTemplate restTemplate, GuiBackendProperties guiBackendProperties) {
         super(restTemplate);
@@ -37,11 +39,11 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         };
         HttpEntity<UserRequest> requestHttpEntity = new HttpEntity<>(userRequest);
         ResponseEntity<JwtLoginResponse> response = getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.POST);
-        List<String> authorizationHeader = response.getHeaders().get("Authorization");
-        List<String> refreshTokenHeader = response.getHeaders().get("Refresh");
+        List<String> authorizationHeader = response.getHeaders().get(HttpHeaders.AUTHORIZATION);
+        List<String> refreshTokenHeader = response.getHeaders().get(REFRESH_HEADER);
         String authorizationToken, username, refreshToken;
-        if (authorizationHeader != null && authorizationHeader.size() > 0
-                && refreshTokenHeader != null && refreshTokenHeader.size() > 0
+        if (CollectionUtils.isNotEmpty(authorizationHeader)
+                && CollectionUtils.isNotEmpty(refreshTokenHeader)
                 && response.getBody() != null) {
             authorizationToken = authorizationHeader.get(0);
             refreshToken = refreshTokenHeader.get(0);
