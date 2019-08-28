@@ -91,7 +91,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     private <T> HttpEntity<T> createHttpEntityWithAuthorizationHeader(T request, String token) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
+        headers.set(HttpHeaders.AUTHORIZATION, token);
         return new HttpEntity<>(request, headers);
     }
 
@@ -116,7 +116,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     private HttpEntity<Void> createEmptyHttpEntityWithAuthorizationHeader(String token) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", token);
+        headers.set(HttpHeaders.AUTHORIZATION, token);
         return new HttpEntity<>(headers);
     }
 }
