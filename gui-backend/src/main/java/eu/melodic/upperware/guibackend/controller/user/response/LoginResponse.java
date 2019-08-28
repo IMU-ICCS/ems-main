@@ -9,10 +9,12 @@ import lombok.*;
 @AllArgsConstructor
 public class LoginResponse extends UserResponse {
     private String token;
+    private String refreshToken;
 
     @Builder
-    public LoginResponse(String username, UserRole userRole, String token) {
+    public LoginResponse(String username, UserRole userRole, String token, String refreshToken) {
         super(username, userRole);
         this.token = token;
+        this.refreshToken = refreshToken;
     }
 }

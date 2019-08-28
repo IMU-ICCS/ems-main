@@ -38,9 +38,13 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         HttpEntity<UserRequest> requestHttpEntity = new HttpEntity<>(userRequest);
         ResponseEntity<JwtLoginResponse> response = getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.POST);
         List<String> authorizationHeader = response.getHeaders().get("Authorization");
-        String authorizationToken, username;
-        if (authorizationHeader != null && authorizationHeader.size() > 0 && response.getBody() != null) {
+        List<String> refreshTokenHeader = response.getHeaders().get("Refresh");
+        String authorizationToken, username, refreshToken;
+        if (authorizationHeader != null && authorizationHeader.size() > 0
+                && refreshTokenHeader != null && refreshTokenHeader.size() > 0
+                && response.getBody() != null) {
             authorizationToken = authorizationHeader.get(0);
+            refreshToken = refreshTokenHeader.get(0);
             username = response.getBody().getUsername();
             log.info("Successful login for user: {}", username);
         } else {
@@ -50,6 +54,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         return LoginResponse.builder()
                 .username(username)
                 .token(authorizationToken)
+                .refreshToken(refreshToken)
                 .userRole(response.getBody().getUserRole())
                 .build();
     }
