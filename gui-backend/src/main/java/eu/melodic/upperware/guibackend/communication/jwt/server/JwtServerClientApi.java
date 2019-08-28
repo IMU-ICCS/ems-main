@@ -5,7 +5,10 @@ import eu.melodic.upperware.guibackend.communication.commons.RestCommunicationSe
 import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
 import eu.melodic.upperware.guibackend.communication.jwt.server.response.JwtLoginResponse;
 import eu.melodic.upperware.guibackend.controller.user.request.ChangePasswordRequest;
+import eu.melodic.upperware.guibackend.controller.user.request.NewUserRequest;
 import eu.melodic.upperware.guibackend.controller.user.response.LoginResponse;
+import eu.melodic.upperware.guibackend.controller.user.response.UserResponse;
+import eu.melodic.upperware.guibackend.model.user.User;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -35,9 +38,13 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         HttpEntity<UserRequest> requestHttpEntity = new HttpEntity<>(userRequest);
         ResponseEntity<JwtLoginResponse> response = getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.POST);
         List<String> authorizationHeader = response.getHeaders().get("Authorization");
-        String authorizationToken, username;
-        if (authorizationHeader != null && authorizationHeader.size() > 0 && response.getBody() != null) {
+        List<String> refreshTokenHeader = response.getHeaders().get("Refresh");
+        String authorizationToken, username, refreshToken;
+        if (authorizationHeader != null && authorizationHeader.size() > 0
+                && refreshTokenHeader != null && refreshTokenHeader.size() > 0
+                && response.getBody() != null) {
             authorizationToken = authorizationHeader.get(0);
+            refreshToken = refreshTokenHeader.get(0);
             username = response.getBody().getUsername();
             log.info("Successful login for user: {}", username);
         } else {
@@ -47,7 +54,28 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         return LoginResponse.builder()
                 .username(username)
                 .token(authorizationToken)
+                .refreshToken(refreshToken)
+                .userRole(response.getBody().getUserRole())
                 .build();
+    }
+
+    @Override
+    public UserResponse createNewUser(NewUserRequest newUserRequest, String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
+        ParameterizedTypeReference<UserResponse> responseType = new ParameterizedTypeReference<UserResponse>() {
+        };
+        HttpEntity<NewUserRequest> requestHttpEntity = createHttpEntityWithAuthorizationHeader(newUserRequest, token);
+        ResponseEntity<UserResponse> response = getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.POST);
+        return response.getBody();
+    }
+
+    @Override
+    public void deleteUser(String username, String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/" + username;
+        ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
+        };
+        HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
+        getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.DELETE);
     }
 
     @Override
@@ -55,9 +83,38 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/password";
         ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
         };
+        HttpEntity<ChangePasswordRequest> requestHttpEntity = createHttpEntityWithAuthorizationHeader(changePasswordRequest, token);
+        getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.PUT);
+    }
+
+    private <T> HttpEntity<T> createHttpEntityWithAuthorizationHeader(T request, String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", token);
-        HttpEntity<ChangePasswordRequest> requestHttpEntity = new HttpEntity<>(changePasswordRequest, headers);
+        return new HttpEntity<>(request, headers);
+    }
+
+    @Override
+    public List<User> getUsers(String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
+        ParameterizedTypeReference<List<User>> responseType = new ParameterizedTypeReference<List<User>>() {
+        };
+        HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
+        return getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.GET)
+                .getBody();
+    }
+
+    @Override
+    public void unlockUserAccount(String username, String token) {
+        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/unlock/" + username;
+        ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
+        };
+        HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
         getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.PUT);
+    }
+
+    private HttpEntity<Void> createEmptyHttpEntityWithAuthorizationHeader(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        return new HttpEntity<>(headers);
     }
 }

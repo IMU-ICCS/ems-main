@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 @Slf4j
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
@@ -27,7 +29,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
         if (securityEnabled) {
             log.info("Running WITH security");
-            http.csrf().disable().antMatcher("/application/**")
+            http.csrf().disable().antMatcher("/auth/**")
                     .authorizeRequests()
                     .anyRequest().authenticated()
                     .and()

@@ -4,8 +4,9 @@ import eu.melodic.models.interfaces.security.InvalidateTokenRequest;
 import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
+import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
-import eu.paasage.upperware.security.server.controller.response.UserLoginResponse;
+import eu.paasage.upperware.security.server.controller.response.UserResponse;
 import eu.paasage.upperware.security.server.data.repository.RefreshToken;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.service.RefreshTokenService;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -41,35 +44,42 @@ public class UserController {
     private RefreshTokenService refreshTokenService;
 
     @PostMapping("/user/login")
-    public UserLoginResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
+    public UserResponse login(@RequestBody UserRequest userRequest, HttpServletResponse response)
             throws AuthenticationException {
-        String username = userRequest.getUsername();
-        log.info("Login request for user with username: {}", username);
-        if (userService.authenticate(username, userRequest.getPassword())) {
-            String token = userService.createToken(username);
-            String refreshToken = refreshTokenService.createToken(username);
+        log.info("Login request for user with username: {}", userRequest.getUsername());
+        if (userService.authenticate(userRequest.getUsername(), userRequest.getPassword())) {
+            String token = userService.createToken(userRequest.getUsername());
+            String refreshToken = refreshTokenService.createToken(userRequest.getUsername());
             response.setHeader(SecurityConstants.HEADER_STRING, token);
             response.setHeader(SecurityConstants.REFRESH_HEADER_STRING, refreshToken);
-            return new UserLoginResponse(username);
+            return userService.createUserResponse(userRequest.getUsername());
         } else {
             throw new AuthenticationException();
         }
-
-
     }
 
-    @PostMapping("/auth/user/sign-up")
-    public ResponseEntity<Object> signUp(@RequestBody UserRequest userRequest) {
-        log.info("Sign-up request for username: {}", userRequest.getUsername());
-        if (!userService.exists(userRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username is used, please try with another username");
-        }
-        userService.create(userRequest.getUsername(), userRequest.getPassword());
-        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
+    @PostMapping("/auth/user")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
+    public UserResponse signUp(@RequestBody @Valid NewUserRequest userRequest) {
+        log.info("Sign-up request with username: {} and role: {}", userRequest.getUsername(), userRequest.getUserRole());
+        UserResponse userResponse = userService.create(userRequest);
+        log.info("New user account for user {} with role {} successfully created", userRequest.getUsername(), userRequest.getUserRole());
+        return userResponse;
+    }
+
+    @DeleteMapping("/auth/user/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
+    public void deleteUserAccount(@PathVariable("username") String username) {
+        log.info("DELETE request for user: {}", username);
+        userService.delete(username);
+        log.info("Account of user {} successfully deleted", username);
     }
 
     @PutMapping("/auth/user/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("#changePasswordRequest.username.equals(authentication.name)")
     public void changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest)
             throws AuthenticationException {
         log.info("PUT request for change password from user: {}", changePasswordRequest.getUsername());
@@ -79,6 +89,7 @@ public class UserController {
 
     @PutMapping("/auth/user/unlock/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
     public void unlockUserAccount(@PathVariable("username") String username) {
         log.info("PUT request for unlock account for user: {}", username);
         userService.unlockAccount(username);
@@ -87,8 +98,10 @@ public class UserController {
 
     @GetMapping("/auth/user")
     @ResponseStatus(HttpStatus.OK)
-    public List<User> getUsersList() {
-        log.info("GET request for all users list");
+    @PreAuthorize("@PermissionComponent.isUserInAdminGroup(authentication.name)")
+    public List<User> getUsersList(Authentication authentication) {
+        String requesterName = authentication.getName();
+        log.info("GET request for all users list from user: {}", requesterName);
         return userService.getUsersList();
     }
 
@@ -147,6 +160,5 @@ public class UserController {
         }
         log.debug("Token has been invalidated successfully.");
         return ResponseEntity.status(HttpStatus.OK).body("Token has been invalidated successfully.");
-
     }
 }

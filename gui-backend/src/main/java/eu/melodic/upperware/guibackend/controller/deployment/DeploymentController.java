@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/application/deployment")
+@RequestMapping("/auth/deployment")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentController {
@@ -51,9 +51,10 @@ public class DeploymentController {
     @PostMapping(value = "/process")
     @ResponseStatus(HttpStatus.CREATED)
     public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest,
-                                                @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+                                                @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                @RequestHeader("Refresh") String refreshToken) {
         log.info("POST request for deployment new process");
-        return deploymentService.createDeploymentProcess(deploymentRequest, token);
+        return deploymentService.createDeploymentProcess(deploymentRequest, token, refreshToken);
     }
 
     @PostMapping(value = "/secure/variable")

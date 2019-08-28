@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/application/environment")
+@RequestMapping("/auth/environment")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class EnvironmentController {

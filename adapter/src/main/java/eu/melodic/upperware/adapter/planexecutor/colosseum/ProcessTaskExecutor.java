@@ -62,9 +62,14 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
             Queue watch = watch(queue.getId(), queueId -> {
                 String processId = getId(queueId);
                 try {
-                    return !CloudiatorProcess.StateEnum.PENDING.equals(api.getCloudiatorProcess(processId)
-                            .orElseThrow(() -> new AdapterException("Could not find CloudiatorProcess for " + processId))
-                            .getState());
+                    final CloudiatorProcess cloudiatorProcess = api.getCloudiatorProcess(processId)
+                            .orElseThrow(() -> new AdapterException("Could not find CloudiatorProcess for " + processId));
+
+                    final boolean finishChecking = !CloudiatorProcess.StateEnum.PENDING.equals(cloudiatorProcess.getState());
+
+                    log.info("CloudiatorProcess {} is in {} state. {}", cloudiatorProcess.getId(), cloudiatorProcess.getState(), finishChecking ? "Finish waiting" : "Waiting...");
+
+                    return finishChecking;
                 } catch (ApiException e) {
                     throw new AdapterException("Could not get CloudiatorProcess for " + processId, e);
                 }

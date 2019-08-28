@@ -40,14 +40,14 @@ public class DeploymentService {
     private ProviderService providerService;
     private SecureStoreService secureStoreService;
 
-    public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token) {
+    public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token, String refreshToken) {
         deploymentRequest.setCloudDefinitions(deploymentRequest.getCloudDefinitions()
                 .stream()
                 .map(cloudDefinition -> providerService.fillSecureVariableInCredentials(cloudDefinition))
                 .collect(Collectors.toList()));
         DeploymentProcessRequest deploymentProcessRequest = deploymentMapper
                 .mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
-        return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token);
+        return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token, refreshToken);
     }
 
     private Watermark createWatermark(String username) {
