@@ -26,7 +26,7 @@ public class CorsFilter extends OncePerRequestFilter {
 
         if (httpServletRequest.getHeader("Access-Control-Request-Method") != null && "OPTIONS".equals(httpServletRequest.getMethod())) {
             httpServletResponse.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH");
-            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Authorization, accept");
+            httpServletResponse.addHeader("Access-Control-Allow-Headers", "Authorization, accept, Refresh");
             httpServletResponse.addHeader("Access-Control-Allow-Headers", "Content-Type, X-Requested-With, AUTH-TOKEN");
             httpServletResponse.addHeader("Access-Control-Max-Age", "1500");
         }
