@@ -47,10 +47,6 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
         }
     }
 
-    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, U to) {
-        from.forEach(f -> addEdge(graph, f, to));
-    }
-
     <T extends Task, U extends Task> void addWaitEdge(MelodicGraph<Task, DefaultEdge> graph, Supplier<T> from, List<U> to, BooleanSupplier booleanSupplier) {
         if (booleanSupplier.getAsBoolean()) {
             T t = from.get();
@@ -80,6 +76,14 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
         }
     }
 
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, U to, BiPredicate<T, U> biPredicate) {
+        for (T t : from) {
+            if (biPredicate.test(t, to)) {
+                addEdge(graph, t, to);
+            }
+        }
+    }
+
     <T extends Task, U extends Task> void addReverseEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, List<U> to, BiPredicate<T, U> biPredicate) {
         for (U u : to) {
             boolean wasSet = false;
@@ -96,14 +100,14 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
         }
     }
 
-    <T extends Task> String tasksToString(List<T> tasks){
+    private <T extends Task> String tasksToString(List<T> tasks){
         return tasks
                 .stream()
                 .map(this::taskToString)
                 .collect(Collectors.joining(", ", "[", "]"));
     }
 
-    <T extends Task> String taskToString(T task){
+    private <T extends Task> String taskToString(T task){
         return task.getClass().getSimpleName() + "{" + task.getData().getName() + "}";
     }
 

@@ -3,25 +3,25 @@ package eu.melodic.upperware.adapter.planexecutor.colosseum;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.plangenerator.model.AdapterProcess;
+import eu.melodic.upperware.adapter.plangenerator.model.AdapterScale;
 import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScaleTask;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
 @Slf4j
-public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProcess> {
+public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterScale> {
 
     ScaleTaskExecutor(ScaleTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context,
                       Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
@@ -29,7 +29,7 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProc
     }
 
     @Override
-    public void create(AdapterProcess taskBody) {
+    public void create(AdapterScale taskBody) {
 
         Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.OUT);
         try {
@@ -55,7 +55,7 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProc
     }
 
     @Override
-    public void delete(AdapterProcess taskBody) {
+    public void delete(AdapterScale taskBody) {
 
         Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.IN);
         try {
@@ -80,21 +80,23 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProc
         }
     }
 
-    private Scale createScale(AdapterProcess taskBody, Scale.ScaleDirectionEnum direction){
-        Pair<Node, Schedule> requiredData = getRequiredData(taskBody);
+    private Scale createScale(AdapterScale taskBody, Scale.ScaleDirectionEnum direction){
+        Pair<List<Node>, Schedule> requiredData = getRequiredData(taskBody);
 
         return new Scale()
                 .schedule(requiredData.getRight().getId())
                 .task(taskBody.getTaskName())
                 .scaleDirection(direction)
-                .nodes(Collections.singletonList(requiredData.getLeft().getId()));
+                .nodes(requiredData.getLeft().stream().map(Node::getId).collect(Collectors.toList()));
 
     }
 
-    private Pair<Node, Schedule> getRequiredData(AdapterProcess taskBody) {
+    private Pair<List<Node>, Schedule> getRequiredData(AdapterScale taskBody) {
 
-        Node node = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
+        final List<Node> nodes = taskBody.getNodeNames()
+                .stream()
+                .map(this::getNode)
+                .collect(Collectors.toList());
 
         Job job = context.getJob(taskBody.getJobName())
                 .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
@@ -102,7 +104,12 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterProc
         Schedule schedule = context.getScheduleByJobId(job.getId())
                 .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
 
-        return Pair.of(node, schedule);
+        return Pair.of(nodes, schedule);
+    }
+
+    private Node getNode(String nodeName) {
+        return context.getNode(nodeName)
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", nodeName)));
     }
 
 }

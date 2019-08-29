@@ -30,7 +30,6 @@ import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.plangenerator.converter.CamelModelConverter;
-import eu.melodic.upperware.adapter.plangenerator.graph.DefaultDiffCalculator;
 import eu.melodic.upperware.adapter.plangenerator.graph.DiffCalculator;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.DividedElement;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
@@ -85,7 +84,7 @@ public class DeployCoordinator {
 
     private CamelToFileSaver camelToFileSaver;
 
-    private DiffCalculator<AdapterRequirement, String> diffCalculator = new DefaultDiffCalculator<>();
+    private DiffCalculator<AdapterRequirement, String> diffCalculator;
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
