@@ -9,6 +9,7 @@ package eu.melodic.upperware.dlms;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ import alluxio.conf.PropertyKey;
 import alluxio.exception.AlluxioException;
 import alluxio.grpc.MountPOptions;
 import alluxio.util.ConfigurationUtils;
+import eu.melodic.upperware.dlms.exception.AcNameNotFoundException;
 import eu.melodic.upperware.dlms.exception.CopyException;
 import eu.melodic.upperware.dlms.exception.CreateDatasourceException;
 import eu.melodic.upperware.dlms.exception.IdNotFoundException;
@@ -58,6 +60,8 @@ public class DLMSServiceImpl implements DLMSService {
 
 	private final DataSourceRepository dsRepository;
 	private final DLMSDataSourceAccess dlmsDsAccess;
+	private final AppCompDataSourceRepository acDsRepository;
+	private final AcDsMountPointRepository acDsMpRepository;
 
 	private final InstancedConfiguration conf;
 
@@ -87,6 +91,56 @@ public class DLMSServiceImpl implements DLMSService {
 	@Override
 	public List<DataSource> getAllDataSources() {
 		return dsRepository.findAll();
+	}
+	
+	@Override
+	public List<AcDsMountPoint> getAllAcDsMp() {
+		return acDsMpRepository.findAll();
+	}
+	
+	@Override
+	public AcDsMountPoint getAcDsMpByName(String name) {
+		ensureConfiguration();
+
+		checkAcName(name);
+		return acDsMpRepository.findByAcName(name);
+	}
+
+	@Override
+	public void calculateAcDsMp() {
+		// TODO Auto-generated method stub
+		List<AppCompDataSource> acDsList = acDsRepository.findAll();
+		List<DataSource> dsList = dsRepository.findAll();
+
+		List<AcDsMountPoint> acDsMountPointList = combineAcDsMountPoint(acDsList, dsList);
+		if (acDsMountPointList.size() > 0) {
+			acDsMpRepository.saveAll(acDsMountPointList);
+		} else {
+			log.debug("There are 0 mount points");
+		}
+	}
+
+	public List<AcDsMountPoint> combineAcDsMountPoint(List<AppCompDataSource> acDsList, List<DataSource> dsList) {
+		List<AcDsMountPoint> acDsMountPointList = new ArrayList<>();
+		for (AppCompDataSource acDs : acDsList) {
+			String dsName = acDs.getDataSource();
+			String acName = acDs.getName();
+
+			DataSource ds = matchingDs(dsName, dsList);
+			if (ds != null) {
+				String mountPoint = ds.getMountPoint();
+				AcDsMountPoint acDsMountPoint = new AcDsMountPoint(acName, dsName, mountPoint);
+				acDsMountPointList.add(acDsMountPoint);
+			} else {
+				log.error("The datasource {} did not have a mount point", dsName);
+			}
+		}
+		return acDsMountPointList;
+
+	}
+
+	private DataSource matchingDs(String dsName, List<DataSource> dsList) {
+		return dsList.stream().filter(ds -> ds.getName().equals(dsName)).findAny().get();
 	}
 
 	@Override
@@ -193,7 +247,7 @@ public class DLMSServiceImpl implements DLMSService {
 		String result;
 		// check if key is required
 		if (StringUtils.isEmpty(ds.getAccessKey())) {
-			result = runMountCommand("/" + ds.getName(), ds.getUfsURI(), ds.isReadOnly());
+			result = runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly());
 		} else {
 			// key is required, so get access information
 			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
@@ -201,7 +255,8 @@ public class DLMSServiceImpl implements DLMSService {
 			if (userInfo.size() > 1) {
 				String accessKeyId = userInfo.get(0);
 				String secretKey = userInfo.get(1);
-				result = runMountCommand("/" + ds.getName(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId, secretKey);
+				result = runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId,
+						secretKey);
 			} else {
 				log.debug("User account does not have accessKey/secretKey");
 
@@ -210,7 +265,7 @@ public class DLMSServiceImpl implements DLMSService {
 		}
 
 		if (!result.isEmpty() && !result.endsWith(" already exists")) {
-			throw new CreateDatasourceException("Create Datasource " + ds.getName() + " failed: " + result);
+			throw new CreateDatasourceException("Create Datasource " + ds.getMountPoint() + " failed: " + result);
 		}
 	}
 
@@ -283,13 +338,13 @@ public class DLMSServiceImpl implements DLMSService {
 			authentication.put("aws.secretKey", secretKey);
 
 			mountBuilder.putAllProperties(authentication);
-			
+
 		}
 		mountOption = mountBuilder.build();
 		FileSystem mFileSystem = FileSystem.Factory.create(conf);
 		try {
-			log.debug("Running MOUNT command with parameter(s): {}, {}, {}, and {}", alluxPath, ufPath, isReadOnly);
-			System.out.println("Running MOUNT command with parameter(s): {}, {}, {}, and {}"+ "  "+ alluxPath + "  "+ ufPath+ "  " +isReadOnly);
+			log.debug("Running MOUNT command with parameter(s): alluxPath: {}, ufsPath: {}, and isReadOnly: {}",
+					alluxPath, ufPath, isReadOnly);
 			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 			return "";
 		} catch (IOException | AlluxioException e) {
@@ -477,5 +532,12 @@ public class DLMSServiceImpl implements DLMSService {
 		if (!dsRepository.existsByName(name))
 			throw new NameNotFoundException(name);
 	}
+	
+	private void checkAcName(String name) {
+		if (!acDsMpRepository.existsByAcName(name))
+			throw new AcNameNotFoundException(name);
+	}
+
+
 
 }

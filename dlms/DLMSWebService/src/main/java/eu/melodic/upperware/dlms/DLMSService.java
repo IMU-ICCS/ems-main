@@ -38,6 +38,22 @@ public interface DLMSService {
 	List<DataSource> getAllDataSources();
 
 	/**
+	 * Returns all component name along with data source and mount point.
+	 */
+	List<AcDsMountPoint> getAllAcDsMp();
+
+	/**
+	 * Returns one component name along with the data source and mount point.
+	 */
+	AcDsMountPoint getAcDsMpByName(String name);
+
+	/**
+	 * Add data source linked to the component name along with the mount point in
+	 * the database.
+	 */
+	void calculateAcDsMp();
+
+	/**
 	 * Unmounts and deletes the datasource matching the given id. Throws an
 	 * IdNotFoundException if no datasource with this id exists.
 	 */
@@ -90,4 +106,5 @@ public interface DLMSService {
 	 * no datasource with this id exists.
 	 */
 	void migrateDatasource(long id, String pathTo);
+
 }

@@ -8,9 +8,9 @@
 package eu.melodic.upperware.dlms;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -51,6 +51,8 @@ public class DLMSServiceController {
 	private final RestTemplate restTemplate;
 
 	private final DLMSProperties dlmsProperties;
+	private final AppCompDataSourceRepository appCompDSRepository;
+	private final AcDsMountPointRepository acDsMpRepository;
 
 	/**
 	 * Returns all datasources in the database.
@@ -91,66 +93,22 @@ public class DLMSServiceController {
 	public void deleteDataSource(@PathVariable String name) {
 		dlmsService.deleteByName(name);
 	}
-	
-	@PostMapping("/dataModel2")
-	public ResponseEntity<Object> addUpdateDataSources2(@Valid @RequestBody String name) {
-		ResponseEntity<Object> retResponse = null;
-		name = "PeopleFlow";
-//		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
 
-		NotificationResult notificationResult = new NotificationResultImpl();
-
-		// default status is success
-		StatusType statusType = StatusType.SUCCESS;
-		// read the camel model and process it
-		try {
-			modelAnalyzer.readModel(name); // read the camel model
-			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
-
-			// Map of components and datasources
-			Map<String,List<String>> componentDataSourceMap = modelAnalyzer.getComponentDataSourceMap();
-			
-			// do operations if relevant data sources are present in the camel model
-			for (DataSource datasource : dataSourceList) {
-				if (dlmsService.hasDataSourceByName(datasource.getName())) {
-					try {
-						// if data source already exists, update if necessary
-						dlmsService.updateDataSource(datasource, datasource.getName());
-						retResponse = ResponseEntity.noContent().build();
-					} catch (Exception e) {
-						log.error(e.getMessage(), e);
-						notificationResult.setErrorDescription(e.getMessage());
-						throw new RuntimeException(e);
-					}
-				} else {
-					try {
-						// add new data source if it does not exist
-						URI location = dlmsService.addDataSource(datasource);
-						log.info(datasource.getName() + " was added");
-						retResponse = ResponseEntity.created(location).build();
-					} catch (Exception e) {
-						log.error(e.getMessage(), e);
-						notificationResult.setErrorDescription(e.getMessage());
-						throw new RuntimeException(e);
-					}
-				}
-				notificationResult.setErrorCode("0");
-				notificationResult.setErrorDescription(retResponse.toString());
-			}
-
-		} catch (Exception e) {
-			// data registration failed
-			statusType = StatusType.ERROR;
-			notificationResult.setErrorCode("1");
-			notificationResult.setErrorDescription("The model could not be read");
-
-			log.error(e.getMessage(), e);
-		}
-		notificationResult.setStatus(statusType);
-		
-		return retResponse;
+	/**
+	 * Get a list of application component and linked data sources
+	 */
+	@GetMapping("/ac")
+	public List<AcDsMountPoint> getAppCompDataSource() {
+		return dlmsService.getAllAcDsMp();
 	}
 	
+	/**
+	 * Returns one data source and mount point linked with the component name.
+	 */
+	@GetMapping(value = "/ac/{name}")
+	public AcDsMountPoint getAppCompDataSource(@PathVariable("name") String name) {
+		return dlmsService.getAcDsMpByName(name);
+	}
 
 
 	/**
@@ -164,20 +122,20 @@ public class DLMSServiceController {
 		// to send the notification
 		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
 		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-//		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
+		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
 
 		NotificationResult notificationResult = new NotificationResultImpl();
-
 		// default status is success
 		StatusType statusType = StatusType.SUCCESS;
+
+		// Map of components and datasources
+		List<AppCompDataSource> appCompDSList = new ArrayList<>();
 		// read the camel model and process it
 		try {
 			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
 			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
 
-			// Map of components and datasources
-			Map<String,List<String>> componentDataSourceMap = modelAnalyzer.getComponentDataSourceMap();
-			
+			appCompDSList = modelAnalyzer.getAppCompDSList();
 			// do operations if relevant data sources are present in the camel model
 			for (DataSource datasource : dataSourceList) {
 				if (dlmsService.hasDataSourceByName(datasource.getName())) {
@@ -214,18 +172,22 @@ public class DLMSServiceController {
 
 			log.error(e.getMessage(), e);
 		}
+		if (appCompDSList.size() > 0) {
+			saveACDS(appCompDSList);
+			dlmsService.calculateAcDsMp();
+		}
 		notificationResult.setStatus(statusType);
 		dataModelNotificationRequest.setResult(notificationResult);
 		// send notification
 		sendNotificationMessage(dataModelNotificationRequest, dataModelRequest.getNotificationURI());
 		return retResponse;
 	}
-	
+
 	/**
 	 * Save the component and list of datasources linked to it
 	 */
-	private void saveComponentDS() {
-		
+	private void saveACDS(List<AppCompDataSource> appCompDSList) {
+		appCompDSRepository.saveAll(appCompDSList);
 	}
 
 	/**

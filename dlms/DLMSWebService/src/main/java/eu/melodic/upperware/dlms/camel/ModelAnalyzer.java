@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
@@ -28,6 +29,7 @@ import camel.type.StringValue;
 import camel.type.Value;
 import camel.type.impl.BooleanValueImpl;
 import camel.type.impl.StringValueImpl;
+import eu.melodic.upperware.dlms.AppCompDataSource;
 import eu.melodic.upperware.dlms.DataSource;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -46,18 +48,18 @@ public class ModelAnalyzer {
 	private List<DataSource> dataSourceList;
 
 	// list of component id along with their datasource
-	private Map<String,List<String>> componentDataSourceMap;
+	private List<AppCompDataSource> appCompDSList;
 	
 	/**
 	 * Read the camel model to get a list of datasource(s) to update and/or create
 	 */
 	public void readModel(String modelId) {
-		initializeVar();		
+		initializeVar();
 		translateModel(modelId);
 	}
-	
+
 	private void initializeVar() {
-		componentDataSourceMap = new HashMap<>();
+		appCompDSList = new ArrayList<>();
 		cdoClient = new CDOClientXImpl(Collections.singletonList(CorePackage.eINSTANCE));
 	}
 
@@ -81,37 +83,10 @@ public class ModelAnalyzer {
 				log.info("CamelModel was loaded succesfuly: {}", camelModel);
 
 				EList<DeploymentModel> deploymentModelList = camelModel.getDeploymentModels();
-				for (DeploymentModel deployModel : deploymentModelList) {
-					boolean result = DeploymentTypeModel.class.isAssignableFrom(deployModel.getClass());
-					if (result) {
-						DeploymentTypeModel deployTypeModel = (DeploymentTypeModel) deployModel;
-						EList<SoftwareComponent> softCompList = deployTypeModel.getSoftwareComponents();
-						for (SoftwareComponent softComp : softCompList) {
-							System.out.println(softComp.getName());
-							
-							EList<Data> dataList = softComp.getConsumesData();
-							
-							List<String> dsNameList = new ArrayList<>();
-							for (Data data:dataList) {
-								if (data.getDataSource()!=null) {
-									// what kind of datasources will be mounted
-									// needs to be changed to be read from the ufsuri later or type if it becomes available later...
-									if (data.getDataSource().getName().contains("S3")|| data.getDataSource().getName().contains("HDFS")){
-										dsNameList.add(data.getDataSource().getName());
-									}
-								}
-							}
-						
-							if (dsNameList.size()>0) {
-								this.componentDataSourceMap.put(softComp.getName(), dsNameList);
-							}
-						}
-					}
-				}
+				Map<String, String> componentDataSourceMap = addComponentDataSource(deploymentModelList);
 
 				EList<DataModel> dataModelList = camelModel.getDataModels();
 				for (DataModel dataModel : dataModelList) {
-
 					boolean result = DataTypeModel.class.isAssignableFrom(dataModel.getClass());
 					if (result) {
 						DataTypeModel dataTypeModel = (DataTypeModel) dataModel;
@@ -120,19 +95,18 @@ public class ModelAnalyzer {
 						for (Data data : dataList) {
 							if (data.getDataSource() != null) {
 								EList<Feature> ftList = data.getSubFeatures();
+								DataSource dataSource = new DataSource();
 								for (Feature feature : ftList) {
 									EList<Attribute> attrList = feature.getAttributes();
-									DataSource dataSource = new DataSource();
 
 									for (Attribute attribute : attrList) {
-
 										// check attributes for the datasource
 										dataSource = checkUfsUri(attribute, dataSource);
 										dataSource = checkAccess(attribute, dataSource);
 										dataSource = checkReadOnly(attribute, dataSource);
 									}
 									if (StringUtils.isNotBlank(dataSource.getUfsURI())) {
-										dataSource.setName(data.getName());
+										dataSource.setName(data.getDataSource().getName());
 										// set the mount point with the initial "melodic" for all
 										// not needed based on discussions in June
 //										dataSource.setMountPoint("/melodic/" + data.getName());
@@ -145,6 +119,7 @@ public class ModelAnalyzer {
 						}
 					}
 				}
+				getAppCompDS(componentDataSourceMap);
 			} else {
 				log.info("Camel id is missing");
 			}
@@ -156,6 +131,45 @@ public class ModelAnalyzer {
 				view.close();
 			if (session != null)
 				session.closeSession();
+		}
+	}
+	
+	
+	/**
+	 * link between datasource name and the name of component linked to it
+	 */
+	private Map<String, String> addComponentDataSource(EList<DeploymentModel> deploymentModelList) {
+		Map<String, String> componentDataSourceMap = new HashMap<>();
+		for (DeploymentModel deployModel : deploymentModelList) {
+			boolean result = DeploymentTypeModel.class.isAssignableFrom(deployModel.getClass());
+			if (result) {
+				DeploymentTypeModel deployTypeModel = (DeploymentTypeModel) deployModel;
+				EList<SoftwareComponent> softCompList = deployTypeModel.getSoftwareComponents();
+				for (SoftwareComponent softComp : softCompList) {
+					EList<Data> dataList = softComp.getConsumesData();
+
+					String dsNameList;
+					for (Data data : dataList) {
+						if (data.getDataSource() != null) {
+							// what kind of datasources will be mounted
+							// needs to be changed to be read from the ufsuri later or type if it becomes available later...
+							if (data.getDataSource().getName().contains("S3")
+									|| data.getDataSource().getName().contains("HDFS")) {
+								dsNameList = data.getDataSource().getName();
+								componentDataSourceMap.put(softComp.getName(), dsNameList);
+							}
+						}
+					}
+				}
+			}
+		}
+		return componentDataSourceMap;
+	}
+	
+	private void getAppCompDS(Map<String, String> componentDataSourceMap) {
+		for (Entry<String, String> entry : componentDataSourceMap.entrySet()) {
+			AppCompDataSource appCompDS = new AppCompDataSource(entry.getKey(), entry.getValue());
+			this.appCompDSList.add(appCompDS);
 		}
 	}
 
