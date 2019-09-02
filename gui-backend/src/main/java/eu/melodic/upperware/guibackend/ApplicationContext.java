@@ -64,6 +64,11 @@ public class ApplicationContext {
     }
 
     @Bean
+    public MonitoringApi monitoringApi(ApiClient apiClient) {
+        return new MonitoringApi(apiClient);
+    }
+
+    @Bean
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);
     }

@@ -140,4 +140,10 @@ public class ProcessController {
         log.info("GET Cloudiator schedules list");
         return cloudiatorApi.getScheduleList();
     }
+
+    @GetMapping("/deployment/monitor")
+    public List<Monitor> getMonitorsList() {
+        log.info("GET Cloudiator monitors list");
+        return cloudiatorApi.getMonitorList();
+    }
 }
