@@ -50,9 +50,10 @@ public class ProcessCamundaService {
     private ProcessInstanceResponse mapCamundaResponseToProcessInstanceResponse(String processId, Map<String, CamundaVariableResponseItem> processVariablesMap) {
         return ProcessInstanceResponse.builder()
                 .processId(processId)
-                .applicationId(processVariablesMap.get("applicationId").getValue())
-                .processState(processVariablesMap.containsKey("processState") ? ProcessState.valueOf(processVariablesMap.get("processState").getValue()) : ProcessState.STARTED)
-                .finishDate(processVariablesMap.containsKey("processFinishDate") ? processVariablesMap.get("processFinishDate").getValue() : null)
+                .applicationId(processVariablesMap.get(CamundaVariableName.APPLICATION_ID.label).getValue())
+                .processState(processVariablesMap.containsKey(CamundaVariableName.PROCESS_STATE.label) ? ProcessState.valueOf(processVariablesMap.get(CamundaVariableName.PROCESS_STATE.label).getValue()) : ProcessState.STARTED)
+                .finishDate(processVariablesMap.containsKey(CamundaVariableName.PROCESS_FINISH_DATE.label) ? processVariablesMap.get(CamundaVariableName.PROCESS_FINISH_DATE.label).getValue() : null)
+                .startDate(processVariablesMap.containsKey(CamundaVariableName.PROCESS_START_DATE.label) ? processVariablesMap.get(CamundaVariableName.PROCESS_START_DATE.label).getValue() : null)
                 .build();
     }
 
