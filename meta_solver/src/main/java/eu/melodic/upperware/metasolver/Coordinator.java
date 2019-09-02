@@ -39,6 +39,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
+import static eu.paasage.upperware.security.authapi.SecurityConstants.REFRESH_HEADER_STRING;
+
 @Slf4j
 @Service
 public class Coordinator implements ApplicationContextAware {
@@ -348,11 +350,12 @@ public class Coordinator implements ApplicationContextAware {
         String jwtToken = createNewToken
                 ? createToken()
                 : controller.getAuthenticationToken();
+        String refreshToken = createRefreshToken();
         log.debug("MetaSolver.postToUrl(): JWT token={}, created={}", jwtToken, createNewToken);
 
         final ResponseEntity<String> response;
         if (StringUtils.isNotEmpty(jwtToken)) {
-            HttpEntity<HashMap> entity = createHttpEntity(notifType, notification, jwtToken);
+            HttpEntity<HashMap> entity = createHttpEntity(notifType, notification, jwtToken, refreshToken);
             response = restTemplate.postForEntity(url, entity, String.class);
         } else {
             response = restTemplate.postForEntity(url, notification, String.class);
@@ -360,15 +363,18 @@ public class Coordinator implements ApplicationContextAware {
         return response;
     }
 
-    public <T> HttpEntity<T> createHttpEntity(Class<T> notifType, Object notification, String jwtToken) {
-        HttpHeaders headers = createHttpHeaders(jwtToken);
+    public <T> HttpEntity<T> createHttpEntity(Class<T> notifType, Object notification, String jwtToken, String refreshToken) {
+        HttpHeaders headers = createHttpHeaders(jwtToken, refreshToken);
         return new HttpEntity<T>((T)notification, headers);
     }
 
-    private HttpHeaders createHttpHeaders(String jwtToken) {
+    private HttpHeaders createHttpHeaders(String jwtToken, String refreshToken) {
         HttpHeaders headers = new HttpHeaders();
         if (StringUtils.isNotBlank(jwtToken)) {
             headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
+        }
+        if (StringUtils.isNotBlank(jwtToken)) {
+            headers.set(REFRESH_HEADER_STRING, refreshToken);
         }
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -380,6 +386,14 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.createToken():  username={}, jwt-service={}", username, jwtService);
         String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
         log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
+        return token;
+    }
+
+    private String createRefreshToken() {
+        String username = melodicSecurityProperties.getUser().getUsername();
+        log.debug("MetaSolver.createRefreshToken():  username={}, jwt-service={}", username, jwtService);
+        String token = jwtService.createRefreshToken(username);
+        log.debug("MetaSolver.createRefreshToken():  username={}, token={}", username, token);
         return token;
     }
 }
