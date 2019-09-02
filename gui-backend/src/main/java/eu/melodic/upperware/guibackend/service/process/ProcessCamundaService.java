@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.service.process;
 
-import eu.melodic.upperware.guibackend.communication.camunda.CamundaClientApi;
+import eu.melodic.upperware.guibackend.communication.camunda.CamundaApi;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaProcesInstanceResponse;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableName;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableResponseItem;
@@ -23,16 +23,16 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ProcessCamundaService {
 
-    private CamundaClientApi camundaClientApi;
+    private CamundaApi camundaApi;
 
     public ProcessVariables getProcessVariables(String processId) {
-        Map<String, CamundaVariableResponseItem> processVariablesMap = camundaClientApi.getProcessVariables(processId);
+        Map<String, CamundaVariableResponseItem> processVariablesMap = camundaApi.getProcessVariables(processId);
         checkErrorsInNotMonitoringVariablesResponse(processVariablesMap);
         return mapCamundaResponseToProcessVariables(processVariablesMap);
     }
 
     public List<ProcessInstanceResponse> getAllProcessesData() {
-        List<CamundaProcesInstanceResponse> processInstances = camundaClientApi.getProcessInstances();
+        List<CamundaProcesInstanceResponse> processInstances = camundaApi.getProcessInstances();
         log.info("Process instances: ");
         return processInstances.stream()
                 .map(CamundaProcesInstanceResponse::getId)
@@ -43,7 +43,7 @@ public class ProcessCamundaService {
 
     private ProcessInstanceResponse getProcessInstanceResponse(String processId) {
         log.info("GET info about process with id: {}", processId);
-        Map<String, CamundaVariableResponseItem> processVariablesMap = camundaClientApi.getProcessVariables(processId);
+        Map<String, CamundaVariableResponseItem> processVariablesMap = camundaApi.getProcessVariables(processId);
         return mapCamundaResponseToProcessInstanceResponse(processId, processVariablesMap);
     }
 

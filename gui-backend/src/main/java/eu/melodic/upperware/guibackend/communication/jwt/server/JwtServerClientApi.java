@@ -34,7 +34,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public LoginResponse login(UserRequest userRequest) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/user/login";
+        String requestUrl = guiBackendProperties.getJwtServer().getUrl() + "/user/login";
         ParameterizedTypeReference<JwtLoginResponse> responseType = new ParameterizedTypeReference<JwtLoginResponse>() {
         };
         HttpEntity<UserRequest> requestHttpEntity = new HttpEntity<>(userRequest);
@@ -63,7 +63,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public UserResponse createNewUser(NewUserRequest newUserRequest, String token) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
+        String requestUrl = guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
         ParameterizedTypeReference<UserResponse> responseType = new ParameterizedTypeReference<UserResponse>() {
         };
         HttpEntity<NewUserRequest> requestHttpEntity = createHttpEntityWithAuthorizationHeader(newUserRequest, token);
@@ -73,7 +73,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public void deleteUser(String username, String token) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/" + username;
+        String requestUrl = guiBackendProperties.getJwtServer().getUrl() + "/auth/user/" + username;
         ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
         };
         HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
@@ -82,22 +82,16 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public void changePassword(ChangePasswordRequest changePasswordRequest, String token) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/password";
+        String requestUrl = guiBackendProperties.getJwtServer().getUrl() + "/auth/user/password";
         ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
         };
         HttpEntity<ChangePasswordRequest> requestHttpEntity = createHttpEntityWithAuthorizationHeader(changePasswordRequest, token);
         getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.PUT);
     }
 
-    private <T> HttpEntity<T> createHttpEntityWithAuthorizationHeader(T request, String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, token);
-        return new HttpEntity<>(request, headers);
-    }
-
     @Override
     public List<User> getUsers(String token) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
+        String requestUrl = guiBackendProperties.getJwtServer().getUrl() + "/auth/user";
         ParameterizedTypeReference<List<User>> responseType = new ParameterizedTypeReference<List<User>>() {
         };
         HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
@@ -107,16 +101,10 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
 
     @Override
     public void unlockUserAccount(String username, String token) {
-        String requestUrl = "http://" + guiBackendProperties.getJwtServer().getUrl() + "/auth/user/unlock/" + username;
+        String requestUrl = guiBackendProperties.getJwtServer().getUrl() + "/auth/user/unlock/" + username;
         ParameterizedTypeReference<Void> responseType = new ParameterizedTypeReference<Void>() {
         };
         HttpEntity<Void> requestHttpEntity = createEmptyHttpEntityWithAuthorizationHeader(token);
         getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.PUT);
-    }
-
-    private HttpEntity<Void> createEmptyHttpEntityWithAuthorizationHeader(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, token);
-        return new HttpEntity<>(headers);
     }
 }

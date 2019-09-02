@@ -3,7 +3,7 @@ package eu.melodic.upperware.guibackend.service.deployment;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
-import eu.melodic.upperware.guibackend.communication.mule.MuleClientApi;
+import eu.melodic.upperware.guibackend.communication.mule.MuleApi;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentService {
 
-    private MuleClientApi muleClientApi;
+    private MuleApi muleClientApi;
     private DeploymentMapper deploymentMapper;
     private CdoService cdoService;
     private ProviderService providerService;
@@ -47,7 +48,11 @@ public class DeploymentService {
                 .collect(Collectors.toList()));
         DeploymentProcessRequest deploymentProcessRequest = deploymentMapper
                 .mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
-        return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token, refreshToken);
+        try {
+            return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token, refreshToken);
+        } catch (MalformedURLException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem with communication with Mule by creating deployment process: %s", e.getMessage()));
+        }
     }
 
     private Watermark createWatermark(String username) {
