@@ -114,7 +114,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public List<User> getTechnicalUserList(@RequestHeader(value = "Authorization") String token) {
         log.info("GET request for technical user list");
-        return jwtServerClientApi.getUsers(token)
+        return jwtServerApi.getUsers(token)
                 .stream()
                 .filter(user -> UserRole.TECHNICAL_USER.equals(user.getUserRole()))
                 .collect(Collectors.toList());
