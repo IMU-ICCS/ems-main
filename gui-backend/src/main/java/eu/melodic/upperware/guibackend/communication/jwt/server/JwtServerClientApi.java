@@ -4,6 +4,7 @@ import eu.melodic.models.interfaces.security.UserRequest;
 import eu.melodic.upperware.guibackend.communication.commons.RestCommunicationService;
 import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
 import eu.melodic.upperware.guibackend.communication.jwt.server.response.JwtLoginResponse;
+import eu.melodic.upperware.guibackend.controller.common.MelodicHeaders;
 import eu.melodic.upperware.guibackend.controller.user.request.ChangePasswordRequest;
 import eu.melodic.upperware.guibackend.controller.user.request.NewUserRequest;
 import eu.melodic.upperware.guibackend.controller.user.response.LoginResponse;
@@ -25,7 +26,6 @@ import java.util.List;
 public class JwtServerClientApi extends RestCommunicationService implements JwtServerApi {
 
     private GuiBackendProperties guiBackendProperties;
-    private final static String REFRESH_HEADER = "Refresh";
 
     public JwtServerClientApi(RestTemplate restTemplate, GuiBackendProperties guiBackendProperties) {
         super(restTemplate);
@@ -40,7 +40,7 @@ public class JwtServerClientApi extends RestCommunicationService implements JwtS
         HttpEntity<UserRequest> requestHttpEntity = new HttpEntity<>(userRequest);
         ResponseEntity<JwtLoginResponse> response = getResponse(requestUrl, responseType, requestHttpEntity, ServiceName.JWT_SERVER.name, HttpMethod.POST);
         List<String> authorizationHeader = response.getHeaders().get(HttpHeaders.AUTHORIZATION);
-        List<String> refreshTokenHeader = response.getHeaders().get(REFRESH_HEADER);
+        List<String> refreshTokenHeader = response.getHeaders().get(MelodicHeaders.REFRESH);
         String authorizationToken, username, refreshToken;
         if (CollectionUtils.isNotEmpty(authorizationHeader)
                 && CollectionUtils.isNotEmpty(refreshTokenHeader)
