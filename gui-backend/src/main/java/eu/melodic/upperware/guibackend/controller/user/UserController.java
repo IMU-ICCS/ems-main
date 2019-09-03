@@ -110,6 +110,16 @@ public class UserController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/auth/user/technical")
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> getTechnicalUserList(@RequestHeader(value = "Authorization") String token) {
+        log.info("GET request for technical user list");
+        return jwtServerClientApi.getUsers(token)
+                .stream()
+                .filter(user -> UserRole.TECHNICAL_USER.equals(user.getUserRole()))
+                .collect(Collectors.toList());
+    }
+
     @PutMapping("/auth/user/unlock/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unlockUserAccount(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String token,
