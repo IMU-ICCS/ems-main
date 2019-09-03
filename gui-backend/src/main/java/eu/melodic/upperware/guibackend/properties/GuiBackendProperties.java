@@ -25,7 +25,7 @@ public class GuiBackendProperties {
 
     @Valid
     @NotNull
-    private Camunda camunda;
+    private ExternalService camunda;
 
     @Valid
     @NotNull
@@ -33,28 +33,18 @@ public class GuiBackendProperties {
 
     @Valid
     @NotNull
-    private JwtServer jwtServer;
+    private ExternalService jwtServer;
+
+    @Valid
+    @NotNull
+    private ExternalService adapter;
 
     @Getter
     @Setter
-    public static class Mule {
-
-        @NotBlank
-        private String url;
+    public static class Mule extends ExternalService {
 
         @NotNull
         private boolean sslVerificationEnabled;
-    }
-
-    @Getter
-    @Setter
-    public static class Camunda {
-
-        @NotBlank
-        private String host;
-
-        @NotBlank
-        private String port;
     }
 
     @Getter
@@ -66,7 +56,7 @@ public class GuiBackendProperties {
 
     @Getter
     @Setter
-    public static class JwtServer {
+    public static class ExternalService {
 
         @NotBlank
         private String url;
