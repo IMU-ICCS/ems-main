@@ -26,8 +26,8 @@ public class MuleClientApi implements MuleApi {
     private GuiBackendProperties guiBackendProperties;
 
     @Override
-    public DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest, String token) {
-        HttpEntity entity = createHttpEntity(deploymentProcessRequest, token);
+    public DeploymentResponse createDeploymentProcess(DeploymentProcessRequest deploymentProcessRequest, String token, String refreshToken) {
+        HttpEntity entity = createHttpEntity(deploymentProcessRequest, token, refreshToken);
 
         String muleUrl = guiBackendProperties.getEsb().getUrl() + "/api/frontend/deploymentProcess";
         ResponseEntity<DeploymentResponse> processResponse;
@@ -53,6 +53,10 @@ public class MuleClientApi implements MuleApi {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem in connection with internal service. Please try again or restart Melodic machine.");
             }
 
+            if (processResponse.getBody() != null && processResponse.getBody().getProcessCreationResult() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem by creating process");
+            }
+
             // catch exception if Mule not working
         } catch (ResourceAccessException ex) {
             log.error("Error by connection with Mule service.", ex);
@@ -63,15 +67,16 @@ public class MuleClientApi implements MuleApi {
     }
 
 
-    private HttpEntity<DeploymentProcessRequest> createHttpEntity(DeploymentProcessRequest deploymentProcessRequest, String token) {
-        HttpHeaders httpHeaders = createHttpHeaders(token);
+    private HttpEntity<DeploymentProcessRequest> createHttpEntity(DeploymentProcessRequest deploymentProcessRequest, String token, String refreshToken) {
+        HttpHeaders httpHeaders = createHttpHeaders(token, refreshToken);
         return new HttpEntity<>(deploymentProcessRequest, httpHeaders);
     }
 
-    private HttpHeaders createHttpHeaders(String token) {
+    private HttpHeaders createHttpHeaders(String token, String refreshToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.AUTHORIZATION, token);
+        headers.set("Refresh", refreshToken);
         return headers;
     }
 

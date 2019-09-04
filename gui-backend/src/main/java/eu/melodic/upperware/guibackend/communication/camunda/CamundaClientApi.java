@@ -27,8 +27,7 @@ public class CamundaClientApi extends RestCommunicationService implements Camund
 
     @Override
     public Map<String, CamundaVariableResponseItem> getProcessVariables(String processId) {
-        String camundaUrl = "http://" + guiBackendProperties.getCamunda().getHost() +
-                ":" + guiBackendProperties.getCamunda().getPort() +
+        String camundaUrl = guiBackendProperties.getCamunda().getUrl() +
                 "/rest/engine/default/process-instance/" + processId + "/variables";
         ParameterizedTypeReference<Map<String, CamundaVariableResponseItem>> responseType =
                 new ParameterizedTypeReference<Map<String, CamundaVariableResponseItem>>() {
@@ -38,8 +37,7 @@ public class CamundaClientApi extends RestCommunicationService implements Camund
 
     @Override
     public List<CamundaProcesInstanceResponse> getProcessInstances() {
-        String camundaUrl = "http://" + guiBackendProperties.getCamunda().getHost() +
-                ":" + guiBackendProperties.getCamunda().getPort() + "/rest/engine/default/process-instance";
+        String camundaUrl = guiBackendProperties.getCamunda().getUrl() + "/rest/engine/default/process-instance";
         ParameterizedTypeReference<List<CamundaProcesInstanceResponse>> responseType =
                 new ParameterizedTypeReference<List<CamundaProcesInstanceResponse>>() {
                 };

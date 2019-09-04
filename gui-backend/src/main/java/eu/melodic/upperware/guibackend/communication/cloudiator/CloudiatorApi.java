@@ -40,4 +40,6 @@ public interface CloudiatorApi {
     void deleteCloudiatorProcess(String processId);
 
     List<Schedule> getScheduleList();
+
+    List<Monitor> getMonitorList();
 }

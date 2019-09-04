@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.service.provider;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
+import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.exception.CloudDefinitionNotFoundException;
 import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
 import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
@@ -27,7 +27,7 @@ public class ProviderService {
 
     private ProviderIdCreatorService providerIdCreatorService;
     private ProviderValidationService providerValidationService;
-    private CloudiatorClientApi cloudiatorClientApi;
+    private CloudiatorApi cloudiatorApi;
     private SecureStoreService secureStoreService;
 
     private final static String YAML_CONFIG_FILE_NAME = "gui_providers_data.yaml";
@@ -74,7 +74,7 @@ public class ProviderService {
         if (secureVariables.size() > 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Invalid format of secret placeholder: %s", cloudDefinition.getCredential().getSecret()));
         } else if (secureVariables.size() == 1) {
-            cloudDefinition.getCredential().setSecret(cloudiatorClientApi.getSecureVariable(secureVariables.get(0)));
+            cloudDefinition.getCredential().setSecret(cloudiatorApi.getSecureVariable(secureVariables.get(0)));
         }
         return cloudDefinition;
     }
@@ -101,7 +101,7 @@ public class ProviderService {
     private void saveSecretInSecureStore(CloudDefinition cloudDefinition) {
         Pair<String, String> keyLabelForSecret = createKeyLabelForSecret(cloudDefinition);
         log.info("Saving secret in secure store for user {} under key: {}", cloudDefinition.getCredential().getUser(), keyLabelForSecret.getKey());
-        this.cloudiatorClientApi.storeSecureVariable(keyLabelForSecret.getKey(), cloudDefinition.getCredential().getSecret());
+        this.cloudiatorApi.storeSecureVariable(keyLabelForSecret.getKey(), cloudDefinition.getCredential().getSecret());
         cloudDefinition.getCredential().setSecret(keyLabelForSecret.getValue());
     }
 
@@ -148,7 +148,7 @@ public class ProviderService {
                 .orElseThrow(() -> new CloudDefinitionNotFoundException(cloudDefId));
         cloudDefinitionsForAllProviders.remove(cloudDefinitionToDelete);
 
-        cloudiatorClientApi.deleteSecureVariable(createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
+        cloudiatorApi.deleteSecureVariable(createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
         updateYamlFile(cloudDefinitionsForAllProviders);
     }
 

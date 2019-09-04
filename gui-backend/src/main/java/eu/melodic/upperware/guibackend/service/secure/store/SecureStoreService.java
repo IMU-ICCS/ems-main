@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.service.secure.store;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
+import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
 import eu.melodic.upperware.guibackend.exception.SecureVariableNotFoundException;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class SecureStoreService {
 
-    private CloudiatorClientApi cloudiatorClientApi;
+    private CloudiatorApi cloudiatorApi;
     private static final Pattern SECURE_VARIABLE_PATTERN = Pattern.compile("\\{\\{(.*?)}}");
 
     public List<String> findSecureVariables(String text) {
@@ -38,7 +38,7 @@ public class SecureStoreService {
                 .stream()
                 .peek(secureVariableRequest -> {
                     log.info("Saving secure variable with key: {}", secureVariableRequest.getName());
-                    cloudiatorClientApi.storeSecureVariable(secureVariableRequest.getName(), secureVariableRequest.getValue());
+                    cloudiatorApi.storeSecureVariable(secureVariableRequest.getName(), secureVariableRequest.getValue());
                 })
                 .map(SecureVariable::getName)
                 .collect(Collectors.toList());
@@ -53,7 +53,7 @@ public class SecureStoreService {
     private SecureVariable fillSecureVariableOrSetEmpty(String secureKey) {
         String secureValue;
         try {
-            secureValue = cloudiatorClientApi.getSecureVariable(secureKey);
+            secureValue = cloudiatorApi.getSecureVariable(secureKey);
         } catch (SecureVariableNotFoundException ex) {
             secureValue = StringUtils.EMPTY;
         }

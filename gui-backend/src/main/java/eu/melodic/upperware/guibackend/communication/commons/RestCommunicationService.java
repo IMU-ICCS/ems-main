@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -55,6 +52,18 @@ public class RestCommunicationService {
         }
 
         return response;
+    }
+
+    public <T> HttpEntity<T> createHttpEntityWithAuthorizationHeader(T request, String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, token);
+        return new HttpEntity<>(request, headers);
+    }
+
+    public HttpEntity<Void> createEmptyHttpEntityWithAuthorizationHeader(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, token);
+        return new HttpEntity<>(headers);
     }
 
     private Optional<JwtExceptionResponse> getJwtExceptionResponse(String responseBody) {
