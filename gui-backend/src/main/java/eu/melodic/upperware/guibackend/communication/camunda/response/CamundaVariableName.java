@@ -12,8 +12,10 @@ public enum CamundaVariableName {
     PROCESS_STATE("processState"),
     APPLICATION_ID("applicationId"),
     CP_CDO_PATH("cpCdoPath"),
-    DEPLOYED_SOLUTION_ID("deployedSolutionId");
-
+    DEPLOYED_SOLUTION_ID("deployedSolutionId"),
+    DEPLOYMENT_INSTANCE_NAME("deploymentInstanceName"),
+    PROCESS_FINISH_DATE("processFinishDate"),
+    PROCESS_START_DATE("processStartDate");
 
     public final String label;
 

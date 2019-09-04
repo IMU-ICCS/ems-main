@@ -132,6 +132,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         } catch (ApiException e) {
             log.error("Could not delete Monitor with metricName {}. Error code: {}, Response body: {}, ResponseHeaders: {}",
                     taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            throw new AdapterException("Problem during deleting Monitor", e);
         }
     }
 

@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum ServiceName {
     CAMUNDA("Camunda"),
-    JWT_SERVER("Authorization service");
+    JWT_SERVER("Authorization service"),
+    ADAPTER("Adapter");
 
     public final String name;
 }

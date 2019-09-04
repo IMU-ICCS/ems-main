@@ -274,11 +274,18 @@ public class Coordinator implements ApplicationContextAware {
         if (esbUrl.endsWith("/")) {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
-        log.debug("MetaSolver.Coordinator: sendNotification(): Request to ESB: url={}, notification={}", esbUrl, notification);
-        ResponseEntity<String> response =
-                postToUrl(esbUrl, DeploymentProcessRequest.class, notification, true);
-        log.debug("MetaSolver.Coordinator: sendNotification(): Response: status={}, body={}",
+        log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Request to ESB: url={}, notification={}", esbUrl, notification.toString());
+        ResponseEntity<String> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
+        log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
                 response.getStatusCode(), response.getBody());
+    }
+
+    private ResponseEntity<String> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        HttpEntity<DeploymentProcessRequest> entity = new HttpEntity<>(notification, headers);
+        return restTemplate.postForEntity(url, entity, String.class);
     }
 
     public Watermark prepareWatermark(String uuid) {
