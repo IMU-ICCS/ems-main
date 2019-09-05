@@ -65,11 +65,12 @@ public class AdapterController {
     }
 
     @PostMapping(value = "/difference", consumes = APPLICATION_JSON_VALUE)
-    public DifferenceResponse applySolution(@RequestBody DifferenceRequestImpl request) {
+    public DifferenceResponse difference(@RequestBody DifferenceRequestImpl request) {
         String applicationId = request.getApplicationId();
-        String deploymentInstanceName = request.getDeploymentInstanceName();
+        String currDeploymentInstanceName = request.getCurrDeploymentInstanceName();
+        String prevDeploymentInstanceName = request.getPrevDeploymentInstanceName();
 
-        return diffResponseConverter.convert(deployCoordinator.calculateDifference(applicationId, deploymentInstanceName));
+        return diffResponseConverter.convert(deployCoordinator.calculateDifference(applicationId, currDeploymentInstanceName, prevDeploymentInstanceName));
     }
 
     @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
