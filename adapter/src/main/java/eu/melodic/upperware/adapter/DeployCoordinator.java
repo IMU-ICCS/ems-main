@@ -249,7 +249,7 @@ public class DeployCoordinator {
 
         try {
             DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, currDeploymentInstanceName, tr); //new
-            DeploymentInstanceModel currentModel = StringUtils.isBlank(prevDeploymentInstanceName) ?  cdoServerApi.getModelToDeploy(resourceName, currDeploymentInstanceName, tr) : null;
+            DeploymentInstanceModel currentModel = StringUtils.isNotBlank(prevDeploymentInstanceName) ?  cdoServerApi.getModelToDeploy(resourceName, prevDeploymentInstanceName, tr) : null;
 
             ComparableModel newModel = converter.toComparableModel(targetModel);
             ComparableModel oldModel = currentModel != null ? converter.toComparableModel(currentModel) : ComparableModel.builder().build();
