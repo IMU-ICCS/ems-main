@@ -42,6 +42,7 @@ import io.github.cloudiator.rest.ApiException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.common.util.EList;
@@ -52,6 +53,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -232,16 +234,18 @@ public class DeployCoordinator {
         LOCKS.remove(resourceName);
     }
 
-    public Map<String, DividedElement<AdapterRequirement>> calculateDifference(String resourceName, String deploymentInstanceName) {
+    public Map<String, DividedElement<AdapterRequirement>> calculateDifference(String resourceName, String currDeploymentInstanceName, String prevDeploymentInstanceName) {
+        Objects.requireNonNull(currDeploymentInstanceName);
+
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
         CDOTransaction tr = cdoSessionX.openTransaction();
 
         try {
-            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, deploymentInstanceName, tr); //new
-            DeploymentInstanceModel currentModel = cdoServerApi.getDeployedModel(resourceName, tr); //old
+            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, currDeploymentInstanceName, tr); //new
+            DeploymentInstanceModel currentModel = StringUtils.isNotBlank(prevDeploymentInstanceName) ?  cdoServerApi.getModelToDeploy(resourceName, prevDeploymentInstanceName, tr) : null;
 
-            ComparableModel oldModel = currentModel != null ? converter.toComparableModel(currentModel) : ComparableModel.builder().build();
             ComparableModel newModel = converter.toComparableModel(targetModel);
+            ComparableModel oldModel = currentModel != null ? converter.toComparableModel(currentModel) : ComparableModel.builder().build();
 
             return diffCalculator.calculateDiff(
                     new ArrayList<>(newModel.getAdapterRequirements()),
