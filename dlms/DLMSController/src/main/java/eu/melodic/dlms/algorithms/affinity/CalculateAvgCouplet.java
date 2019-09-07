@@ -185,10 +185,9 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 				* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxDataTransPrediction - this.minDataTransPrediction))
 				+ MIN_RANGE);
 		else	// only one data
-			return ((val - 0)
-			* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxDataTransPrediction - 0))
+			return ((val)
+			* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxDataTransPrediction))
 			+ MIN_RANGE);
-//			return 0;
 	}
 
 	/**

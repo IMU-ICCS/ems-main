@@ -48,6 +48,11 @@ public interface DLMSService {
 	AcDsMountPoint getAcDsMpByName(String name);
 
 	/**
+	 * Returns the command for cloudiator to run for the particular component name.
+	 */
+	String getAlluxioCmd(String cmpName);
+	
+	/**
 	 * Add data source linked to the component name along with the mount point in
 	 * the database.
 	 */

@@ -64,6 +64,8 @@ public class DLMSServiceImpl implements DLMSService {
 	private final AcDsMountPointRepository acDsMpRepository;
 
 	private final InstancedConfiguration conf;
+	private final String ALLUXIO_FUSE_RUN = "integration/fuse/bin/alluxio-fuse mount ";
+	private final String MKDIR = "mkdir -p ";
 
 	@Override
 	public DataSource getDataSourceById(long id) {
@@ -105,10 +107,25 @@ public class DLMSServiceImpl implements DLMSService {
 		checkAcName(name);
 		return acDsMpRepository.findByAcName(name);
 	}
+	
+	@Override
+	public String getAlluxioCmd(String cmpName) {
+		ensureConfiguration();
+		
+		checkAcName(cmpName);
+		AcDsMountPoint  mp= acDsMpRepository.findByAcName(cmpName);
+	
+		String localMountPoint = mp.getToLocalMountPoint();
+		// create directory first
+		StringBuilder cmd = new StringBuilder(MKDIR).append(localMountPoint);
+		// running mount next
+		cmd.append(" && ").append(ALLUXIO_FUSE_RUN).append(mp.getToLocalMountPoint()).append(" /").append(mp.getMountPoint());
+		
+		return cmd.toString();
+	}
 
 	@Override
 	public void calculateAcDsMp() {
-		// TODO Auto-generated method stub
 		List<AppCompDataSource> acDsList = acDsRepository.findAll();
 		List<DataSource> dsList = dsRepository.findAll();
 
@@ -127,9 +144,8 @@ public class DLMSServiceImpl implements DLMSService {
 			String acName = acDs.getName();
 
 			DataSource ds = matchingDs(dsName, dsList);
-			if (ds != null) {
-				String mountPoint = ds.getMountPoint();
-				AcDsMountPoint acDsMountPoint = new AcDsMountPoint(acName, dsName, mountPoint);
+			if (ds != null) { // ds can be null if no matching found
+				AcDsMountPoint acDsMountPoint = new AcDsMountPoint(acName, dsName, ds.getMountPoint(), ds.getLocalMountPont());
 				acDsMountPointList.add(acDsMountPoint);
 			} else {
 				log.error("The datasource {} did not have a mount point", dsName);
@@ -140,8 +156,18 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private DataSource matchingDs(String dsName, List<DataSource> dsList) {
-		return dsList.stream().filter(ds -> ds.getName().equals(dsName)).findAny().get();
+		boolean isPresent = dsList.stream()
+				.anyMatch(ds->ds.getName().equals(dsName));
+		if (isPresent) {
+			return dsList.stream()
+					.filter(ds -> ds.getName().equals(dsName))
+					.findAny()
+					.get();
+		}
+		return null;				
 	}
+	
+
 
 	@Override
 	public void deleteById(long id) {
@@ -236,7 +262,7 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureDataSourceNameIsUnused(DataSource ds) {
-		DataSource findMe = new DataSource(ds.getName(), null, null, null);
+		DataSource findMe = new DataSource(ds.getName(), null, null, null, null);
 		Example<DataSource> example = Example.of(findMe);
 		if (dsRepository.findOne(example).isPresent()) {
 			throw new CreateDatasourceException("Datasource with this name already exists");
@@ -537,6 +563,8 @@ public class DLMSServiceImpl implements DLMSService {
 		if (!acDsMpRepository.existsByAcName(name))
 			throw new AcNameNotFoundException(name);
 	}
+
+
 
 
 

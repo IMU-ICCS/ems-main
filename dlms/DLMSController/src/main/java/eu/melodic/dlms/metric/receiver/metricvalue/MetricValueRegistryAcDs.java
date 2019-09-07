@@ -52,8 +52,7 @@ public class MetricValueRegistryAcDs<T> {
 	 */
 	public void storeApplicationComponent(String name) {
 		if (!acRepository.existsByName(name)) {
-			ApplicationComponent ac = new ApplicationComponent();
-			ac.setName(name);
+			ApplicationComponent ac = new ApplicationComponent(name);
 			acRepository.save(ac);
 		}
 	}
@@ -63,8 +62,7 @@ public class MetricValueRegistryAcDs<T> {
 	 */
 	public void storeDataSource(String name) {
 		if (!dsRepository.existsByName(name)) {
-			DataSource ds = new DataSource();
-			ds.setName(name);
+			DataSource ds = new DataSource(name);
 			dsRepository.save(ds);
 		}
 	}

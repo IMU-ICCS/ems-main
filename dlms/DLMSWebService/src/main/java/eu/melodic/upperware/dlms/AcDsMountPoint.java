@@ -19,5 +19,6 @@ public class AcDsMountPoint {
 	private String acName;
 	private String dsName;
 	private String mountPoint;
+	private String toLocalMountPoint;
 
 }

@@ -69,7 +69,7 @@ public class ModelAnalyzer {
 	private void translateModel(String camelId) {
 		CDOSessionX session = null;
 		CDOView view = null;
-		dataSourceList = new ArrayList<DataSource>();
+		dataSourceList = new ArrayList<>();
 		try {
 			// Open CDO session
 			session = cdoClient.getSession();
@@ -101,9 +101,10 @@ public class ModelAnalyzer {
 
 									for (Attribute attribute : attrList) {
 										// check attributes for the datasource
-										dataSource = checkUfsUri(attribute, dataSource);
-										dataSource = checkAccess(attribute, dataSource);
-										dataSource = checkReadOnly(attribute, dataSource);
+										checkUfsUri(attribute, dataSource);
+										checkAccess(attribute, dataSource);
+										checkReadOnly(attribute, dataSource);
+										checkLocalMountPoint(attribute, dataSource);
 									}
 									if (StringUtils.isNotBlank(dataSource.getUfsURI())) {
 										dataSource.setName(data.getDataSource().getName());
@@ -111,12 +112,15 @@ public class ModelAnalyzer {
 										// not needed based on discussions in June
 //										dataSource.setMountPoint("/melodic/" + data.getName());
 										dataSource.setMountPoint(data.getName());
+										validLocalMountPoint(dataSource);
+						
 										dataSourceList.add(dataSource);
 										log.debug("DataSource was added: {}", camelModel);
 									}
 								}
 							}
 						}
+						break;
 					}
 				}
 				getAppCompDS(componentDataSourceMap);
@@ -148,19 +152,19 @@ public class ModelAnalyzer {
 				for (SoftwareComponent softComp : softCompList) {
 					EList<Data> dataList = softComp.getConsumesData();
 
-					String dsNameList;
 					for (Data data : dataList) {
 						if (data.getDataSource() != null) {
 							// what kind of datasources will be mounted
 							// needs to be changed to be read from the ufsuri later or type if it becomes available later...
-							if (data.getDataSource().getName().contains("S3")
-									|| data.getDataSource().getName().contains("HDFS")) {
-								dsNameList = data.getDataSource().getName();
-								componentDataSourceMap.put(softComp.getName(), dsNameList);
+							String dataSourceName = data.getDataSource().getName();
+							if (dataSourceName.contains("S3")
+									|| dataSourceName.contains("HDFS")) {
+								componentDataSourceMap.put(softComp.getName(), dataSourceName);
 							}
 						}
 					}
 				}
+				break;
 			}
 		}
 		return componentDataSourceMap;
@@ -203,34 +207,50 @@ public class ModelAnalyzer {
 		this.dataSourceList = dataSourceList;
 	}
 
-	private DataSource checkUfsUri(Attribute attribute, DataSource dataSource) {
+	private void checkUfsUri(Attribute attribute, DataSource dataSource) {
 		if ("ufsUri".equalsIgnoreCase(attribute.getName())) {
 			if (checkStringValueImpl(attribute)) {
 				String ufsURI = attrVal(attribute);
 				dataSource.setUfsURI(ufsURI);
 			}
 		}
-		return dataSource;
 	}
 
-	private DataSource checkAccess(Attribute attribute, DataSource dataSource) {
+	private void checkAccess(Attribute attribute, DataSource dataSource) {
 		if ("accessUserId".equalsIgnoreCase(attribute.getName())) {
 			if (checkStringValueImpl(attribute)) {
 				String accessKey = attrVal(attribute);
 				dataSource.setAccessKey(accessKey);
 			}
 		}
-		return dataSource;
 	}
 
-	private DataSource checkReadOnly(Attribute attribute, DataSource dataSource) {
+	private void checkReadOnly(Attribute attribute, DataSource dataSource) {
 		if ("isReadOnly".equalsIgnoreCase(attribute.getName())) {
 			if (checkBooleanValueImpl(attribute)) {
 				boolean isReadOnly = attrValBool(attribute);
 				dataSource.setReadOnly(isReadOnly);
 			}
 		}
-		return dataSource;
+	}
+	
+	private void checkLocalMountPoint(Attribute attribute, DataSource dataSource) {
+		if ("localMountPoint".equalsIgnoreCase(attribute.getName())) {
+			if (checkStringValueImpl(attribute)) {
+				String localMountPoint = attrVal(attribute);
+				dataSource.setLocalMountPont(localMountPoint);
+			}
+		}
+	}
+	
+	/**
+	 * Change local mount point as same mount point if not valid
+	 */
+	private void validLocalMountPoint(DataSource dataSource) {
+		if (StringUtils.isBlank(dataSource.getLocalMountPont())) {
+			dataSource.setLocalMountPont(dataSource.getMountPoint());
+		}
+			
 	}
 
 }

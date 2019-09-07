@@ -184,8 +184,7 @@ public class MetricsController {
 		// text contains a particular pattern
 		String val = text.substring(text.indexOf("{count=") + 7, text.indexOf("}"));
 
-		long covertedVal = Long.parseLong(val);
-		return covertedVal;
+		return Long.parseLong(val);
 	}
 
 	/**
