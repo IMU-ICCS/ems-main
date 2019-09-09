@@ -11,13 +11,13 @@ import java.util.regex.Pattern;
 import com.google.common.collect.Lists;
 
 import alluxio.AlluxioURI;
-import alluxio.Configuration;
 import alluxio.Constants;
-import alluxio.PropertyKey;
 import alluxio.cli.Command;
 import alluxio.cli.CommandUtils;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.URIStatus;
+import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.PropertyKey;
 import alluxio.exception.AlluxioException;
 import alluxio.exception.ExceptionMessage;
 import alluxio.util.FormatUtils;
@@ -69,9 +69,10 @@ public final class FileSystemShellUtils {
 				return path;
 			}
 		} else {
-			String hostname = NetworkAddressUtils.getConnectHost(ServiceType.MASTER_RPC);
-			int port = Configuration.getInt(PropertyKey.MASTER_RPC_PORT);
-			if (Configuration.getBoolean(PropertyKey.ZOOKEEPER_ENABLED)) {
+			InstancedConfiguration conf = InstancedConfiguration.defaults();
+			String hostname = NetworkAddressUtils.getConnectHost(ServiceType.MASTER_RPC, conf);
+			int port = conf.getInt(PropertyKey.MASTER_RPC_PORT);
+			if (conf.getBoolean(PropertyKey.ZOOKEEPER_ENABLED)) {
 				return PathUtils.concatPath(Constants.HEADER_FT + hostname + ":" + port, path);
 			}
 			return PathUtils.concatPath(Constants.HEADER + hostname + ":" + port, path);
