@@ -156,15 +156,11 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private DataSource matchingDs(String dsName, List<DataSource> dsList) {
-		boolean isPresent = dsList.stream()
-				.anyMatch(ds->ds.getName().equals(dsName));
-		if (isPresent) {
-			return dsList.stream()
-					.filter(ds -> ds.getName().equals(dsName))
-					.findAny()
-					.get();
-		}
-		return null;				
+
+		return dsList.stream()
+				.filter(ds -> ds.getName().equals(dsName))
+				.findAny()
+				.orElse(null);
 	}
 	
 
