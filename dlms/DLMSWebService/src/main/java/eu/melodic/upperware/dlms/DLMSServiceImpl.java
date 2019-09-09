@@ -9,27 +9,35 @@ package eu.melodic.upperware.dlms;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import alluxio.AlluxioURI;
 import alluxio.Constants;
-import alluxio.PropertyKey;
 import alluxio.cli.fs.command.CpCommand;
 import alluxio.cli.fs.command.LsCommand;
 import alluxio.cli.fs.command.MkdirCommand;
-import alluxio.cli.fs.command.MountCommand;
 import alluxio.cli.fs.command.MvCommand;
 import alluxio.cli.fs.command.PersistCommand;
 import alluxio.cli.fs.command.RmCommand;
 import alluxio.cli.fs.command.UnmountCommand;
 import alluxio.client.file.FileSystem;
+import alluxio.client.file.FileSystemContext;
+import alluxio.conf.InstancedConfiguration;
+import alluxio.conf.PropertyKey;
 import alluxio.exception.AlluxioException;
+import alluxio.grpc.MountPOptions;
 import alluxio.util.ConfigurationUtils;
+import eu.melodic.upperware.dlms.exception.AcNameNotFoundException;
 import eu.melodic.upperware.dlms.exception.CopyException;
 import eu.melodic.upperware.dlms.exception.CreateDatasourceException;
 import eu.melodic.upperware.dlms.exception.IdNotFoundException;
@@ -38,18 +46,26 @@ import eu.melodic.upperware.dlms.exception.NameNotFoundException;
 import eu.melodic.upperware.dlms.exception.PersistException;
 import eu.melodic.upperware.dlms.exception.RemoveException;
 import eu.melodic.upperware.dlms.exception.UnmountException;
+import eu.melodic.upperware.dlms.properties.DLMSDataSourceAccess;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of DLMSService.
  */
-@Service("dlmsService")
+@Service
 @Slf4j
 @AllArgsConstructor
 public class DLMSServiceImpl implements DLMSService {
 
 	private final DataSourceRepository dsRepository;
+	private final DLMSDataSourceAccess dlmsDsAccess;
+	private final AppCompDataSourceRepository acDsRepository;
+	private final AcDsMountPointRepository acDsMpRepository;
+
+	private final InstancedConfiguration conf;
+	private final String ALLUXIO_FUSE_RUN = "integration/fuse/bin/alluxio-fuse mount ";
+	private final String MKDIR = "mkdir -p ";
 
 	@Override
 	public DataSource getDataSourceById(long id) {
@@ -78,6 +94,76 @@ public class DLMSServiceImpl implements DLMSService {
 	public List<DataSource> getAllDataSources() {
 		return dsRepository.findAll();
 	}
+	
+	@Override
+	public List<AcDsMountPoint> getAllAcDsMp() {
+		return acDsMpRepository.findAll();
+	}
+	
+	@Override
+	public AcDsMountPoint getAcDsMpByName(String name) {
+		ensureConfiguration();
+
+		checkAcName(name);
+		return acDsMpRepository.findByAcName(name);
+	}
+	
+	@Override
+	public String getAlluxioCmd(String cmpName) {
+		ensureConfiguration();
+		
+		checkAcName(cmpName);
+		AcDsMountPoint  mp= acDsMpRepository.findByAcName(cmpName);
+	
+		String localMountPoint = mp.getToLocalMountPoint();
+		// create directory first
+		StringBuilder cmd = new StringBuilder(MKDIR).append(localMountPoint);
+		// running mount next
+		cmd.append(" && ").append(ALLUXIO_FUSE_RUN).append(mp.getToLocalMountPoint()).append(" /").append(mp.getMountPoint());
+		
+		return cmd.toString();
+	}
+
+	@Override
+	public void calculateAcDsMp() {
+		List<AppCompDataSource> acDsList = acDsRepository.findAll();
+		List<DataSource> dsList = dsRepository.findAll();
+
+		List<AcDsMountPoint> acDsMountPointList = combineAcDsMountPoint(acDsList, dsList);
+		if (acDsMountPointList.size() > 0) {
+			acDsMpRepository.saveAll(acDsMountPointList);
+		} else {
+			log.debug("There are 0 mount points");
+		}
+	}
+
+	public List<AcDsMountPoint> combineAcDsMountPoint(List<AppCompDataSource> acDsList, List<DataSource> dsList) {
+		List<AcDsMountPoint> acDsMountPointList = new ArrayList<>();
+		for (AppCompDataSource acDs : acDsList) {
+			String dsName = acDs.getDataSource();
+			String acName = acDs.getName();
+
+			DataSource ds = matchingDs(dsName, dsList);
+			if (ds != null) { // ds can be null if no matching found
+				AcDsMountPoint acDsMountPoint = new AcDsMountPoint(acName, dsName, ds.getMountPoint(), ds.getLocalMountPont());
+				acDsMountPointList.add(acDsMountPoint);
+			} else {
+				log.error("The datasource {} did not have a mount point", dsName);
+			}
+		}
+		return acDsMountPointList;
+
+	}
+
+	private DataSource matchingDs(String dsName, List<DataSource> dsList) {
+
+		return dsList.stream()
+				.filter(ds -> ds.getName().equals(dsName))
+				.findAny()
+				.orElse(null);
+	}
+	
+
 
 	@Override
 	public void deleteById(long id) {
@@ -172,7 +258,7 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureDataSourceNameIsUnused(DataSource ds) {
-		DataSource findMe = new DataSource(ds.getName(), null, null, null);
+		DataSource findMe = new DataSource(ds.getName(), null, null, null, null);
 		Example<DataSource> example = Example.of(findMe);
 		if (dsRepository.findOne(example).isPresent()) {
 			throw new CreateDatasourceException("Datasource with this name already exists");
@@ -180,9 +266,28 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureMountPoint(DataSource ds) {
-		String result = runMountCommand("/melodic/" + ds.getName(), ds.getUfsURI());
+		String result;
+		// check if key is required
+		if (StringUtils.isEmpty(ds.getAccessKey())) {
+			result = runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly());
+		} else {
+			// key is required, so get access information
+			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
+			// does both access key and secret key exists
+			if (userInfo.size() > 1) {
+				String accessKeyId = userInfo.get(0);
+				String secretKey = userInfo.get(1);
+				result = runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId,
+						secretKey);
+			} else {
+				log.debug("User account does not have accessKey/secretKey");
+
+				result = null;
+			}
+		}
+
 		if (!result.isEmpty() && !result.endsWith(" already exists")) {
-			throw new CreateDatasourceException("Create Datasource " + ds.getName() + " failed: " + result);
+			throw new CreateDatasourceException("Create Datasource " + ds.getMountPoint() + " failed: " + result);
 		}
 	}
 
@@ -194,9 +299,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			LsCommand lsCommand = new LsCommand(FileSystem.Factory.get());
+			LsCommand lsCommand = new LsCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = lsCommand.parseAndValidateArgs(args);
-			log.info("Running LS command with parameter(s): " + Arrays.toString(args));
+			log.info("Running LS command with parameter(s): {}", Arrays.toString(args));
 
 			lsCommand.run(commandLine);
 			return "";
@@ -214,9 +319,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			MkdirCommand mkdirCommand = new MkdirCommand(FileSystem.Factory.get());
+			MkdirCommand mkdirCommand = new MkdirCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = mkdirCommand.parseAndValidateArgs(args);
-			log.info("Running MKDIR command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MKDIR command with parameter(s): {}", Arrays.toString(args));
 
 			mkdirCommand.run(commandLine);
 			return "";
@@ -227,18 +332,42 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	/**
+	 * Runs the Alluxio MOUNT command without authentication
+	 */
+	protected String runMountCommand(String alluxioPath, String ufsPath, boolean isReadOnly) {
+		return runMountCommand(alluxioPath, ufsPath, isReadOnly, null, null);
+	}
+
+	/**
 	 * Runs the Alluxio MOUNT command. Returns an empty String on success or the
 	 * error message from Alluxio if anything went wrong.
 	 */
-	protected String runMountCommand(String... args) {
-		ensureCommandParameterNotEmpty(args);
+	protected String runMountCommand(String alluxPath, String ufPath, boolean isReadOnly, String accessKeyId,
+			String secretKey) {
+		AlluxioURI alluxioPath = new AlluxioURI(alluxPath);
+		AlluxioURI ufsPath = new AlluxioURI(ufPath);
+		MountPOptions mountOption = MountPOptions.getDefaultInstance();
 
+		MountPOptions.Builder mountBuilder = mountOption.toBuilder();
+		mountBuilder.setReadOnly(isReadOnly);
+		mountBuilder.setShared(true);
+
+		Map<String, String> authentication = new HashMap<>();
+		// different access information based on cloud provider need to be set up here.
+		// following is for aws
+		if (StringUtils.isNotBlank(accessKeyId) && StringUtils.isNotBlank(secretKey)) {
+			authentication.put("aws.accessKeyId", accessKeyId);
+			authentication.put("aws.secretKey", secretKey);
+
+			mountBuilder.putAllProperties(authentication);
+
+		}
+		mountOption = mountBuilder.build();
+		FileSystem mFileSystem = FileSystem.Factory.create(conf);
 		try {
-			MountCommand mountCommand = new MountCommand(FileSystem.Factory.get());
-			CommandLine commandLine = mountCommand.parseAndValidateArgs(args);
-			log.info("Running MOUNT command with parameter(s): " + Arrays.toString(args));
-
-			mountCommand.run(commandLine);
+			log.debug("Running MOUNT command with parameter(s): alluxPath: {}, ufsPath: {}, and isReadOnly: {}",
+					alluxPath, ufPath, isReadOnly);
+			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 			return "";
 		} catch (IOException | AlluxioException e) {
 			log.error(e.getMessage(), e);
@@ -254,9 +383,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			UnmountCommand unmountCommand = new UnmountCommand(FileSystem.Factory.get());
+			UnmountCommand unmountCommand = new UnmountCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = unmountCommand.parseAndValidateArgs(args);
-			log.info("Running UNMOUNT command with parameter(s): " + Arrays.toString(args));
+			log.info("Running UNMOUNT command with parameter(s): {}", Arrays.toString(args));
 
 			unmountCommand.run(commandLine);
 			return "";
@@ -274,9 +403,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			MvCommand mvCommand = new MvCommand(FileSystem.Factory.get());
+			MvCommand mvCommand = new MvCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = mvCommand.parseAndValidateArgs(args);
-			log.info("Running MOVE command with parameter(s): " + Arrays.toString(args));
+			log.info("Running MOVE command with parameter(s): {}", Arrays.toString(args));
 
 			mvCommand.run(commandLine);
 			return "";
@@ -294,9 +423,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			CpCommand cpCommand = new CpCommand(FileSystem.Factory.get());
+			CpCommand cpCommand = new CpCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = cpCommand.parseAndValidateArgs(args);
-			log.info("Running COPY command with parameter(s): " + Arrays.toString(args));
+			log.info("Running COPY command with parameter(s): {}", Arrays.toString(args));
 
 			cpCommand.run(commandLine);
 			return "";
@@ -314,9 +443,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			RmCommand rmCommand = new RmCommand(FileSystem.Factory.get());
+			RmCommand rmCommand = new RmCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = rmCommand.parseAndValidateArgs(args);
-			log.info("Running REMOVE command with parameter(s): " + Arrays.toString(args));
+			log.info("Running REMOVE command with parameter(s): {}", Arrays.toString(args));
 
 			rmCommand.run(commandLine);
 			return "";
@@ -334,9 +463,9 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureCommandParameterNotEmpty(args);
 
 		try {
-			PersistCommand persistCommand = new PersistCommand(FileSystem.Factory.get());
+			PersistCommand persistCommand = new PersistCommand(FileSystemContext.create(conf));
 			CommandLine commandLine = persistCommand.parseAndValidateArgs(args);
-			log.info("Running PERSIST command with parameter(s): " + Arrays.toString(args));
+			log.info("Running PERSIST command with parameter(s): {}", Arrays.toString(args));
 
 			persistCommand.run(commandLine);
 			return "";
@@ -347,7 +476,7 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureConfiguration() {
-		if (!ConfigurationUtils.masterHostConfigured()) {
+		if (!ConfigurationUtils.masterHostConfigured(conf)) {
 			log.error(String.format(
 					"Cannot run alluxio shell; master hostname is not "
 							+ "configured. Please modify %s to either set %s or configure zookeeper with "
@@ -425,5 +554,14 @@ public class DLMSServiceImpl implements DLMSService {
 		if (!dsRepository.existsByName(name))
 			throw new NameNotFoundException(name);
 	}
+	
+	private void checkAcName(String name) {
+		if (!acDsMpRepository.existsByAcName(name))
+			throw new AcNameNotFoundException(name);
+	}
+
+
+
+
 
 }
