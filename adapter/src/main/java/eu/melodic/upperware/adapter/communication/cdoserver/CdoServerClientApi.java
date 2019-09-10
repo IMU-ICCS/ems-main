@@ -33,6 +33,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,8 +73,8 @@ public class CdoServerClientApi implements CdoServerApi {
     }
 
     @Override
-    public DeploymentInstanceModel getModelToDeploy(String resourceName, String deploymentInstanceName, CDOTransaction tr) {
-        EList<EObject> contents = tr.getOrCreateResource(resourceName).getContents();
+    public DeploymentInstanceModel getModelToDeploy(CDOView cdoView, String resourceName, String deploymentInstanceName) {
+        EList<EObject> contents = cdoView.getResource(resourceName).getContents();
         if (CollectionUtils.isEmpty(contents)) {
             throw new IllegalArgumentException(format("Cannot load Camel Deployment Instance Model for resourceName=%s. " +
                     "Check the value is valid and the model is available in CDO Server.", resourceName));

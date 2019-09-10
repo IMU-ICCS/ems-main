@@ -93,7 +93,6 @@ public class ProcessController {
     public DifferenceResponse getDeploymentDifferenceForProcess(@PathVariable("processId") String processId,
                                                                 @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("GET request for deployment difference for process with id: {}", processId);
-        DifferenceResponse deploymentDifference = processService.getDeploymentDifference(processId, token);
         return processService.getDeploymentDifference(processId, token);
     }
 
