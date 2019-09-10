@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.BadRequestException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
@@ -80,10 +81,9 @@ public class ProcessService {
     }
 
     private String findPreviousDeploymentInstanceName(String currentProcessId, Map<String, CamundaVariableResponseItem> currentProcessVariables) {
-        String currentProcessFinishDateAsString;
         Date currentProcessFinishDate = null;
         if (currentProcessVariables.containsKey(CamundaVariableName.PROCESS_FINISH_DATE.label)) {
-            currentProcessFinishDateAsString = currentProcessVariables.get(CamundaVariableName.PROCESS_FINISH_DATE.label).getValue();
+            String currentProcessFinishDateAsString = currentProcessVariables.get(CamundaVariableName.PROCESS_FINISH_DATE.label).getValue();
             currentProcessFinishDate = mapStingCamundaResponseToDate(currentProcessFinishDateAsString);
         }
         List<ProcessInstanceResponse> allProcessesData = processCamundaService.getAllProcessesData();
@@ -120,7 +120,7 @@ public class ProcessService {
     private Date mapStingCamundaResponseToDate(String currentProcessFinishDate) {
         currentProcessFinishDate = currentProcessFinishDate.replace('T', ' ');
         currentProcessFinishDate = currentProcessFinishDate.replace("+", " +");
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
         Date date = null;
         try {
             date = formatter.parse(currentProcessFinishDate);

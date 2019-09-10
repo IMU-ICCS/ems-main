@@ -248,7 +248,7 @@ public class DeployCoordinator {
     }
 
     public Map<String, DividedElement<AdapterRequirement>> calculateDifference(String resourceName, String currDeploymentInstanceName, String prevDeploymentInstanceName) {
-        Objects.requireNonNull(currDeploymentInstanceName);
+        Objects.requireNonNull(currDeploymentInstanceName, "currDeploymentInstanceName could not be null");
         CDOView cdoView = null;
         try {
             CDOClient client = getCdoClient();
