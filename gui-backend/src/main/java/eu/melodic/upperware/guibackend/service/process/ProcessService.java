@@ -6,8 +6,10 @@ import eu.melodic.upperware.guibackend.communication.adapter.AdapterApi;
 import eu.melodic.upperware.guibackend.communication.camunda.CamundaApi;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableName;
 import eu.melodic.upperware.guibackend.communication.camunda.response.CamundaVariableResponseItem;
+import eu.melodic.upperware.guibackend.controller.common.ProcessState;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
+import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +18,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.ws.rs.BadRequestException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,8 +33,9 @@ import java.util.Map;
 public class ProcessService {
 
     private CamundaApi camundaApi;
-    private CdoService cdoService;
     private AdapterApi adapterApi;
+    private ProcessCamundaService processCamundaService;
+    private CdoService cdoService;
 
     public CpModelResponse getCpModel(String processId) {
         Map<String, CamundaVariableResponseItem> processVariables = camundaApi.getProcessVariables(processId);
@@ -62,21 +72,82 @@ public class ProcessService {
     public DifferenceResponse getDeploymentDifference(String processId, String token) {
         Map<String, CamundaVariableResponseItem> processVariables = camundaApi.getProcessVariables(processId);
         String applicationId = processVariables.get(CamundaVariableName.APPLICATION_ID.label).getValue();
-        if (processVariables.containsKey(CamundaVariableName.DEPLOYMENT_INSTANCE_NAME.label)) {
-            String deploymentInstanceName = processVariables.get(CamundaVariableName.DEPLOYMENT_INSTANCE_NAME.label).getValue();
-            log.info("DeploymentInstanceName: {} for applicationId: {} already exist", deploymentInstanceName, applicationId);
-            DifferenceRequestImpl differenceRequest = createDifferenceRequest(applicationId, deploymentInstanceName);
-            return adapterApi.getDifference(differenceRequest, token);
+        String currentDeploymentInstanceName = getDeploymentInstanceName(processId);
+        String previousDeploymentInstanceName = findPreviousDeploymentInstanceName(processId, processVariables);
+        log.info("Getting deployment difference for current deployment instance name : {} and previous: {} for process: {}", currentDeploymentInstanceName, previousDeploymentInstanceName, processId);
+        DifferenceRequestImpl differenceRequest = createDifferenceRequest(applicationId, currentDeploymentInstanceName, previousDeploymentInstanceName);
+        return adapterApi.getDifference(differenceRequest, token);
+    }
+
+    private String findPreviousDeploymentInstanceName(String currentProcessId, Map<String, CamundaVariableResponseItem> currentProcessVariables) {
+        String currentProcessFinishDateAsString;
+        Date currentProcessFinishDate = null;
+        if (currentProcessVariables.containsKey(CamundaVariableName.PROCESS_FINISH_DATE.label)) {
+            currentProcessFinishDateAsString = currentProcessVariables.get(CamundaVariableName.PROCESS_FINISH_DATE.label).getValue();
+            currentProcessFinishDate = mapStingCamundaResponseToDate(currentProcessFinishDateAsString);
+        }
+        List<ProcessInstanceResponse> allProcessesData = processCamundaService.getAllProcessesData();
+        List<ProcessInstanceResponse> finishedProcessesSortedByFinishDate = allProcessesData.stream()
+                .filter(processInstanceResponse -> ProcessState.FINISHED.equals(processInstanceResponse.getProcessState()))
+                .sorted(Comparator.comparing(processInstanceResponse -> mapStingCamundaResponseToDate(processInstanceResponse.getFinishDate())))
+                .collect(Collectors.toList());
+
+        String previousProcessId = null;
+
+        if (currentProcessFinishDate == null && !finishedProcessesSortedByFinishDate.isEmpty()) { // not initial deployment process in progress
+            ProcessInstanceResponse processInstanceResponse = finishedProcessesSortedByFinishDate.get(finishedProcessesSortedByFinishDate.size() - 1);
+            previousProcessId = processInstanceResponse.getProcessId();
+        } else if (currentProcessFinishDate != null && finishedProcessesSortedByFinishDate.size() > 1) { // not initial deployment process finished
+            ProcessInstanceResponse currentProcessInstanceResponse = finishedProcessesSortedByFinishDate.stream()
+                    .filter(processInstanceResponse -> currentProcessId.equals(processInstanceResponse.getProcessId()))
+                    .findFirst()
+                    .orElseThrow(() -> new BadRequestException(String.format("Process with id %s doesn't exist on finished process list", currentProcessId)));
+            int indexOfCurrentProcess = finishedProcessesSortedByFinishDate.indexOf(currentProcessInstanceResponse);
+            if (indexOfCurrentProcess > 0) {
+                ProcessInstanceResponse previousInstanceResponse = finishedProcessesSortedByFinishDate.get(indexOfCurrentProcess - 1);
+                previousProcessId = previousInstanceResponse.getProcessId();
+            }
+        }
+        log.info("Previous process id: {}", previousProcessId);
+
+        if (previousProcessId != null) {
+            return getDeploymentInstanceName(previousProcessId);
         } else {
-            log.info("Deployment difference not created yet");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Variable deploymentInstanceName doesn't exist for application: %s", applicationId));
+            return null; //initial deployment
         }
     }
 
-    private DifferenceRequestImpl createDifferenceRequest(String applicationId, String deploymentInstanceName) {
+    private Date mapStingCamundaResponseToDate(String currentProcessFinishDate) {
+        currentProcessFinishDate = currentProcessFinishDate.replace('T', ' ');
+        currentProcessFinishDate = currentProcessFinishDate.replace("+", " +");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z");
+        Date date = null;
+        try {
+            date = formatter.parse(currentProcessFinishDate);
+        } catch (ParseException e) {
+            log.error("Error by parsing date: {}", currentProcessFinishDate, e);
+        }
+        return date;
+    }
+
+    private String getDeploymentInstanceName(String processId) {
+        Map<String, CamundaVariableResponseItem> processVariables = camundaApi.getProcessVariables(processId);
+        if (processVariables.containsKey(CamundaVariableName.DEPLOYMENT_INSTANCE_NAME.label)) {
+            String currentDeploymentInstanceName = processVariables.get(CamundaVariableName.DEPLOYMENT_INSTANCE_NAME.label).getValue();
+            log.info("DeploymentInstanceName: {} for process: {} already exist", currentDeploymentInstanceName, processId);
+            return currentDeploymentInstanceName;
+
+        } else {
+            log.info("Deployment difference for process {} not created yet", processId);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Variable deploymentInstanceName doesn't exist for process: %s", processId));
+        }
+    }
+
+    private DifferenceRequestImpl createDifferenceRequest(String applicationId, String currentDeploymentInstanceName, String previousDeploymentInstanceName) {
         DifferenceRequestImpl differenceRequest = new DifferenceRequestImpl();
         differenceRequest.setApplicationId(applicationId);
-        differenceRequest.setDeploymentInstanceName(deploymentInstanceName);
+        differenceRequest.setCurrDeploymentInstanceName(currentDeploymentInstanceName);
+        differenceRequest.setPrevDeploymentInstanceName(previousDeploymentInstanceName);
         return differenceRequest;
     }
 }
