@@ -82,29 +82,31 @@ public class ProcessService {
 
     private String findPreviousDeploymentInstanceName(String currentProcessId, Map<String, CamundaVariableResponseItem> currentProcessVariables) {
         Date currentProcessFinishDate = null;
+        String applicationId = currentProcessVariables.get(CamundaVariableName.APPLICATION_ID.label).getValue();
         if (currentProcessVariables.containsKey(CamundaVariableName.PROCESS_FINISH_DATE.label)) {
             String currentProcessFinishDateAsString = currentProcessVariables.get(CamundaVariableName.PROCESS_FINISH_DATE.label).getValue();
             currentProcessFinishDate = mapStingCamundaResponseToDate(currentProcessFinishDateAsString);
         }
         List<ProcessInstanceResponse> allProcessesData = processCamundaService.getAllProcessesData();
-        List<ProcessInstanceResponse> finishedProcessesSortedByFinishDate = allProcessesData.stream()
+        List<ProcessInstanceResponse> finishedProcessesOfAppSortedByFinishDate = allProcessesData.stream()
+                .filter(processInstanceResponse -> applicationId.equals(processInstanceResponse.getApplicationId()))
                 .filter(processInstanceResponse -> ProcessState.FINISHED.equals(processInstanceResponse.getProcessState()))
                 .sorted(Comparator.comparing(processInstanceResponse -> mapStingCamundaResponseToDate(processInstanceResponse.getFinishDate())))
                 .collect(Collectors.toList());
 
         String previousProcessId = null;
 
-        if (currentProcessFinishDate == null && !finishedProcessesSortedByFinishDate.isEmpty()) { // not initial deployment process in progress
-            ProcessInstanceResponse processInstanceResponse = finishedProcessesSortedByFinishDate.get(finishedProcessesSortedByFinishDate.size() - 1);
+        if (currentProcessFinishDate == null && !finishedProcessesOfAppSortedByFinishDate.isEmpty()) { // not initial deployment process in progress
+            ProcessInstanceResponse processInstanceResponse = finishedProcessesOfAppSortedByFinishDate.get(finishedProcessesOfAppSortedByFinishDate.size() - 1);
             previousProcessId = processInstanceResponse.getProcessId();
-        } else if (currentProcessFinishDate != null && finishedProcessesSortedByFinishDate.size() > 1) { // not initial deployment process finished
-            ProcessInstanceResponse currentProcessInstanceResponse = finishedProcessesSortedByFinishDate.stream()
+        } else if (currentProcessFinishDate != null && finishedProcessesOfAppSortedByFinishDate.size() > 1) { // not initial deployment process finished
+            ProcessInstanceResponse currentProcessInstanceResponse = finishedProcessesOfAppSortedByFinishDate.stream()
                     .filter(processInstanceResponse -> currentProcessId.equals(processInstanceResponse.getProcessId()))
                     .findFirst()
                     .orElseThrow(() -> new BadRequestException(String.format("Process with id %s doesn't exist on finished process list", currentProcessId)));
-            int indexOfCurrentProcess = finishedProcessesSortedByFinishDate.indexOf(currentProcessInstanceResponse);
+            int indexOfCurrentProcess = finishedProcessesOfAppSortedByFinishDate.indexOf(currentProcessInstanceResponse);
             if (indexOfCurrentProcess > 0) {
-                ProcessInstanceResponse previousInstanceResponse = finishedProcessesSortedByFinishDate.get(indexOfCurrentProcess - 1);
+                ProcessInstanceResponse previousInstanceResponse = finishedProcessesOfAppSortedByFinishDate.get(indexOfCurrentProcess - 1);
                 previousProcessId = previousInstanceResponse.getProcessId();
             }
         }
