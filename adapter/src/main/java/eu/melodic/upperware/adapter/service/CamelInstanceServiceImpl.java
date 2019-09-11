@@ -110,8 +110,8 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         // Gathering information
         FullCommunication fullCommunication = FullCommunication.fromCommunication(com);
 
-        List<SoftwareComponentInstance> reqInstances = null;
-        List<SoftwareComponentInstance> provInstances = null;
+        List<SoftwareComponentInstance> reqInstances;
+        List<SoftwareComponentInstance> provInstances;
         if (softwareComponentInstances == null) {
             reqInstances = findComponentInstanceFromDeploymentInstanceModels(fullCommunication.reqComponent, deploymentInstanceModel);
             provInstances = findComponentInstanceFromDeploymentInstanceModels(fullCommunication.provComponent, deploymentInstanceModel);
@@ -128,21 +128,11 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         log.debug("Looking for ComPI...");
         List<CommunicationPortInstance> providedCommunicationPortInstances = provInstances.stream()
                 .map(softwareComponentInstance -> findCommunicationPortInstanceFor(fullCommunication.communication.getProvidedCommunication(), softwareComponentInstance.getProvidedCommunicationInstances()))
-                .peek(communicationPortInstance -> {
-                    if (Objects.isNull(communicationPortInstance)) {
-                        log.error("Unable to find providedCommunicationPortInstance for communication {}", com.getName());
-                    }
-                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<CommunicationPortInstance> requiredCommunicationPortInstances = provInstances.stream()
                 .map(softwareComponentInstance -> findCommunicationPortInstanceFor(fullCommunication.communication.getRequiredCommunication(), softwareComponentInstance.getRequiredCommunicationInstances()))
-                .peek(communicationPortInstance -> {
-                    if (Objects.isNull(communicationPortInstance)) {
-                        log.error("Unable to find requiredCommunicationPortInstance for communication {}", com.getName());
-                    }
-                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
@@ -204,19 +194,16 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         return requiredCommunicationInstances.stream()
                 .filter(requiredCommunicationInstance -> (requiredCommunicationInstance).getType().getName().equals(communication.getName()))
                 .findFirst()
-                .orElseGet(() -> {
-                    log.error("Unable to find CommunicationPortInstance for {}!!", communication.getName());
-                    return null;
-                });
+                .orElse(null);
     }
 
     private void changeNames(List<SoftwareComponentInstance> componentsToRegister, CamelModel camelModel) {
-        CdoTool.getLastElementAsOptional(camelModel.getExecutionModels()).ifPresent(executionModel1 ->
-                CdoTool.getCurrentlyInstalledModel(executionModel1).ifPresent(deploymentInstanceModel -> {
+        CdoTool.getLastElementAsOptional(camelModel.getExecutionModels())
+                .flatMap(CdoTool::getCurrentlyInstalledModel)
+                .ifPresent(deploymentInstanceModel -> {
                     //1. Component
                     changeNames(componentsToRegister, deploymentInstanceModel.getSoftwareComponentInstances(), VMKey::new);
-                })
-        );
+                });
     }
 
     private <T extends Feature> void changeNames(List<T> newInstances, List<T> oldInstances, Function<T, VMKey> function) {
