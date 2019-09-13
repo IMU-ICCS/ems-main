@@ -64,6 +64,12 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                     scaleTask.getData().getJobName().equals(monitorTask.getData().getJobName()) &&
                     scaleTask.getData().getTaskName().equals(monitorTask.getData().getTaskName());
 
+    private static final BiPredicate<MonitorTask, ScaleTask> MONITOR_TO_SCALE_BI_PREDICATE = (monitorTask, scaleTask) ->
+            SCALE_TO_MONITOR_BI_PREDICATE.test(scaleTask, monitorTask);
+
+    private static final BiPredicate<MonitorTask, ProcessTask> MONITOR_TO_PROCESS_BI_PREDICATE = (monitorTask, processTask) ->
+            PROCESS_TO_MONITOR_BI_PREDICATE.test(processTask, monitorTask);
+
     @Override
     public SimpleDirectedGraph<Task, DefaultEdge> generateGraph(ComparableModel newComparableModel) {
         return generateGraph(newComparableModel, ComparableModel.builder().build(), () -> new MelodicGraph<>(DefaultEdge.class, CONFIG));
@@ -198,9 +204,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         List<WaitTask> lastCreateTasks = getTasksWithoutOutgoingEdges(graph, CREATE, WaitTask.class);
         WaitTask lastCreateTask = CollectionUtils.isNotEmpty(lastCreateTasks) ? lastCreateTasks.get(0) : null;
 
+        List<MonitorTask> monitorTasksToDelete = Collections.emptyList();
         if (adapterProperties.getEms().isEnabled()) {
             List<AdapterMonitor> monitorsToDelete = monitorDiffCalculator.getToDelete(adapterMonitorDiff);
-            List<MonitorTask> monitorTasksToDelete = createTasks(graph, monitorsToDelete, MonitorTask.MONITOR_TASK_DELETE);
+            monitorTasksToDelete = createTasks(graph, monitorsToDelete, MonitorTask.MONITOR_TASK_DELETE);
             addEdge(graph, lastCreateTask, monitorTasksToDelete, () -> lastCreateTask != null);
         }
 
@@ -234,13 +241,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
             }
         }
 
-
-        //Process (D) -> Nodes(D)
-        List<AdapterRequirement> nodesToDelete = requirementDiffCalculator.getToDelete(adapterRequirementDiff);
-
+        // 1
         List<ProcessTask> processTasksToDelete = getTasksWithoutOutgoingEdges(graph, DELETE, ProcessTask.class);
 
-        List<AdapterRequirement> filteredNodesToDelete = nodesToDelete.stream()
+        //Here
+        addEdge(graph, monitorTasksToDelete, processTasksToDelete, DefaultGraphGenerator.MONITOR_TO_PROCESS_BI_PREDICATE);
+
+        //Process (D) -> Nodes(D)
+        List<AdapterRequirement> filteredNodesToDelete = requirementDiffCalculator.getToDelete(adapterRequirementDiff).stream()
                 .filter(adapterRequirement -> processTasksToDelete.stream()
                         .anyMatch(processTask -> processTask.getData().getNodeName().equals(adapterRequirement.getNodeName())))
                 .collect(toList());
@@ -251,6 +259,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         addEdge(graph, lastCreateTask, processTasksToDelete, () -> lastCreateTask != null);
 
         List<ScaleTask> scaleTasksToDelete = getTasksWithoutOutgoingEdges(graph, DELETE, ScaleTask.class);
+
+        addEdge(graph, monitorTasksToDelete, scaleTasksToDelete, DefaultGraphGenerator.MONITOR_TO_SCALE_BI_PREDICATE);
 
         addEdge(graph, lastCreateTask, scaleTasksToDelete, () -> lastCreateTask != null);
 
