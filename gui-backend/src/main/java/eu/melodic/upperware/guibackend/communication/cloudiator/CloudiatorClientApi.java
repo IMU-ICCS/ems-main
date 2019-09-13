@@ -26,7 +26,7 @@ public class CloudiatorClientApi implements CloudiatorApi {
     private QueueApi queueApi;
     private JobApi jobApi;
     private MonitoringApi monitoringApi;
-    private final String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
+    private final static String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
     public Integer getDiscoveryStatusTotal() {

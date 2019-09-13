@@ -13,13 +13,14 @@ import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOView;
 
 public interface CdoServerApi {
 
   //remove in the future
   DeploymentInstanceModel getModelToDeploy(String resourceName, CDOTransaction tr);
 
-  DeploymentInstanceModel getModelToDeploy(String resourceName, String deploymentInstanceName, CDOTransaction tr);
+  DeploymentInstanceModel getModelToDeploy(CDOView cdoView, String resourceName, String deploymentInstanceName);
 
   DeploymentInstanceModel getDeployedModel(String resourceName, CDOTransaction tr);
 
