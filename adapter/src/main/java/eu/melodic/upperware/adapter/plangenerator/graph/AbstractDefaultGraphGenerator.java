@@ -88,7 +88,7 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
     <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, List<U> to, BiPredicate<T, U> biPredicate) {
         for (T f : from) {
             for (U t : to) {
-                addEdge(graph, from, to, biPredicate);
+                addEdge(graph, f, t, biPredicate);
             }
         }
     }
