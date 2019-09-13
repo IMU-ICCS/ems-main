@@ -54,11 +54,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
             nodeTask.getData().getNodeName().equals(processTask.getData().getNodeName()) &&
                     nodeTask.getType().equals(processTask.getType());
 
-    private static final BiPredicate<NodeTask, MonitorTask> NODES_TO_MONITOR_BI_PREDICATE = (nodeTask, monitorTask) ->
-            nodeTask.getData().getTaskName().equals(monitorTask.getData().getTaskName()) &&
-            nodeTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()) &&
-            nodeTask.getType().equals(monitorTask.getType());
-
     private static final BiPredicate<ProcessTask, MonitorTask> PROCESS_TO_MONITOR_BI_PREDICATE = (processTask, monitorTask) ->
             processTask.getData().getNodeName().equals(monitorTask.getData().getNodeName()) &&
             processTask.getData().getJobName().equals(monitorTask.getData().getJobName()) &&
@@ -126,11 +121,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                     newComparableModel.getAdapterMonitors().size(), oldComparableModel.getAdapterMonitors().size());
 
             List<AdapterMonitor> monitorsToCreate = monitorDiffCalculator.getToCreate(adapterMonitorDiff);
-//            List<MonitorTask> monitorTasksToCreate = createTasks(graph, monitorsToCreate, MonitorTask.MONITOR_TASK_CREATE);
             monitorTasksToCreate = createTasks(graph, monitorsToCreate, MonitorTask.MONITOR_TASK_CREATE);
-//
-//            log.info("monitorsToCreate: {}, monitorTasksToCreate: {}", monitorsToCreate.size(), monitorTasksToCreate.size());
-//            addReverseEdge(graph, nodeTasksToCreate, monitorTasksToCreate, NODES_TO_MONITOR_BI_PREDICATE);
         }
 
         //Job -> Schedule
@@ -159,7 +150,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                     addEdge(graph, scheduleTask, scaleTaskToCreate, scheduleTaskOpt::isPresent);
                     addEdge(graph, nodeTasksToCreate, scaleTaskToCreate, NODE_TO_SCALE_BI_PREDICATE);
                     addEdge(graph, scaleTaskToCreate, monitorTasksToCreate, SCALE_TO_MONITOR_BI_PREDICATE);
-                    //TODO - add edge scale -> monitor
                 } else {
                     //create PROCESS
                     log.info("Creating first process...");
@@ -171,7 +161,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                     ProcessTask processTask = createTask(graph, toCreateFirst, ProcessTask.PROCESS_TASK_CREATE);
                     addEdge(graph, scheduleTask, processTask, scheduleTaskOpt::isPresent);
                     addEdge(graph, processTask, monitorTasksToCreate, PROCESS_TO_MONITOR_BI_PREDICATE);
-                    //TODO - add edge process -> monitor
 
                     nodeTasksToCreate
                             .stream()
@@ -193,7 +182,6 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
                         addEdge(graph, remainedNodes, scaleTask, NODE_TO_SCALE_BI_PREDICATE);
                         addEdge(graph, scaleTask, monitorTasksToCreate, SCALE_TO_MONITOR_BI_PREDICATE);
-                        //TODO - add edge scale -> monitor
                     } else {
                         log.info("...and no scaleTasks");
                     }
