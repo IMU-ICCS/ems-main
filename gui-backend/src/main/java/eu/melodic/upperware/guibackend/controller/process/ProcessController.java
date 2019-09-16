@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
+import eu.melodic.models.services.adapter.DifferenceResponse;
+import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
@@ -11,19 +12,20 @@ import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/application/process")
+@RequestMapping("/auth/process")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ProcessController {
 
     private ProcessCamundaService processCamundaService;
-    private CloudiatorClientApi cloudiatorClientApi;
+    private CloudiatorApi cloudiatorApi;
     private ProcessService processService;
 
     @GetMapping(value = "/{processId}")
@@ -44,35 +46,35 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public Integer getOffersTotalNumber() {
         log.info("GET request for total number of offers");
-        return cloudiatorClientApi.getDiscoveryStatusTotal();
+        return cloudiatorApi.getDiscoveryStatusTotal();
     }
 
     @GetMapping("/offer/hardware")
     @ResponseStatus(HttpStatus.OK)
     public List<Hardware> getHardwareList() {
         log.info("GET request for hardware list");
-        return cloudiatorClientApi.getHardwareList();
+        return cloudiatorApi.getHardwareList();
     }
 
     @GetMapping("/offer/location")
     @ResponseStatus(HttpStatus.OK)
     public List<Location> getLocationList() {
         log.info("GET request for locations list");
-        return cloudiatorClientApi.getLocationList();
+        return cloudiatorApi.getLocationList();
     }
 
     @GetMapping("/offer/image")
     @ResponseStatus(HttpStatus.OK)
     public List<Image> getImageList() {
         log.info("GET request for images list");
-        return cloudiatorClientApi.getImageList();
+        return cloudiatorApi.getImageList();
     }
 
     @GetMapping("/offer/cloud")
     @ResponseStatus(HttpStatus.OK)
     public List<Cloud> getCloudList() {
         log.info("GET request for cloud list");
-        return cloudiatorClientApi.getCloudList();
+        return cloudiatorApi.getCloudList();
     }
 
     @GetMapping("/cp/model/{processId}")
@@ -87,47 +89,60 @@ public class ProcessController {
         return processService.getCpSolutionForProcess(processId);
     }
 
+    @GetMapping("/deployment/difference/{processId}")
+    public DifferenceResponse getDeploymentDifferenceForProcess(@PathVariable("processId") String processId,
+                                                                @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
+        log.info("GET request for deployment difference for process with id: {}", processId);
+        return processService.getDeploymentDifference(processId, token);
+    }
+
     @GetMapping("/deployment/node")
     public List<Node> getNodesList() {
         log.info("GET request for nodes list");
-        return cloudiatorClientApi.getNodeList();
+        return cloudiatorApi.getNodeList();
     }
 
     @DeleteMapping("/deployment/node/{nodeId}")
     public void deleteNode(@PathVariable("nodeId") String nodeId) {
         log.info("DELETE request for node with wid: {}", nodeId);
-        cloudiatorClientApi.deleteNode(nodeId);
+        cloudiatorApi.deleteNode(nodeId);
         log.info("Node with id: {} successfully deleted", nodeId);
     }
 
     @GetMapping("/deployment/process")
     public List<CloudiatorProcess> getCloudiatorProcessList() {
         log.info("GET Cloudiator processes list");
-        return cloudiatorClientApi.getProcessList();
+        return cloudiatorApi.getProcessList();
     }
 
     @DeleteMapping("/deployment/process/{processId}")
     public void deleteCloudiatorProcess(@PathVariable("processId") String processId) {
         log.info("DELETE request for Cloudiator process with id: {}", processId);
-        cloudiatorClientApi.deleteCloudiatorProcess(processId);
+        cloudiatorApi.deleteCloudiatorProcess(processId);
         log.info("Cloudiator process with id: {} successfully deleted", processId);
     }
 
     @GetMapping("/deployment/queue")
     public List<Queue> getCloudiatorQueue() {
         log.info("GET Cloudiator queues list");
-        return cloudiatorClientApi.getQueueList();
+        return cloudiatorApi.getQueueList();
     }
 
     @GetMapping("/deployment/job")
     public List<Job> getJobsList() {
         log.info("GET Cloudiator jobs list");
-        return cloudiatorClientApi.getJobList();
+        return cloudiatorApi.getJobList();
     }
 
     @GetMapping("/deployment/schedule")
     public List<Schedule> getSchedulesList() {
         log.info("GET Cloudiator schedules list");
-        return cloudiatorClientApi.getScheduleList();
+        return cloudiatorApi.getScheduleList();
+    }
+
+    @GetMapping("/deployment/monitor")
+    public List<Monitor> getMonitorsList() {
+        log.info("GET Cloudiator monitors list");
+        return cloudiatorApi.getMonitorList();
     }
 }

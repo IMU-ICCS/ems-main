@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
  * Application class for the DLMS agent.
  */
 @SpringBootApplication
-@EnableConfigurationProperties(MelodicSecurityProperties.class)
 @Slf4j
 public class DlmsAgentApplication {
 

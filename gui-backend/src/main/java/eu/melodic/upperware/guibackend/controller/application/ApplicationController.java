@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.application;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorClientApi;
+import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import io.github.cloudiator.rest.model.Function;
 import io.github.cloudiator.rest.model.Node;
 import lombok.AllArgsConstructor;
@@ -15,31 +15,31 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/application")
+@RequestMapping("/auth/application")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ApplicationController {
 
-    private CloudiatorClientApi cloudiatorClientApi;
+    private CloudiatorApi cloudiatorApi;
 
     @GetMapping("/node/vm")
     @ResponseStatus(HttpStatus.OK)
     public List<Node> getVMNodeList() {
         log.info("GET request for VM list");
-        return cloudiatorClientApi.getVMFromNodeList();
+        return cloudiatorApi.getVMFromNodeList();
     }
 
     @GetMapping("/node/faas")
     @ResponseStatus(HttpStatus.OK)
     public List<Node> getFaasNodeList() {
         log.info("GET request for FAAS list");
-        return cloudiatorClientApi.getFaasFromNodeList();
+        return cloudiatorApi.getFaasFromNodeList();
     }
 
     @GetMapping("/function")
     @ResponseStatus(HttpStatus.OK)
     public List<Function> getFunctionList() {
         log.info("GET functions list");
-        return cloudiatorClientApi.getFunctionList();
+        return cloudiatorApi.getFunctionList();
     }
 }

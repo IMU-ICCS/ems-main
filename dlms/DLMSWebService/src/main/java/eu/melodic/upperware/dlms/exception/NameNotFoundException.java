@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class NameNotFoundException extends RuntimeException {
 
 	/**
-	 * Creates an instance using the given datasource ID.
+	 * Creates an instance using the given application component name.
 	 */
 	public NameNotFoundException(String name) {
-		super("Datasource with Name " + name + " does not exist");
+		super("Application component with Name " + name + " does not exist");
 	}
 }

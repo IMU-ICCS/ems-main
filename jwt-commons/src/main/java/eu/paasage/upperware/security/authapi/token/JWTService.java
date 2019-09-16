@@ -6,4 +6,6 @@ public interface JWTService {
     Claims parse(String token);
 
     String create(String userName);
+
+    String createRefreshToken(String userName);
 }

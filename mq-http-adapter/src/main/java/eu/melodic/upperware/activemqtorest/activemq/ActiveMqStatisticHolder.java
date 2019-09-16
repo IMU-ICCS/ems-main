@@ -16,8 +16,8 @@ public class ActiveMqStatisticHolder {
 		activeMqStatistics.setMsqCount(activeMqStatistics.getMsqCount() + 1);
 	}
 
-	public void setHasError() {
-		activeMqStatistics.setHasError(true);
+	public void increaseErrorCount() {
+		activeMqStatistics.setErrorCount(activeMqStatistics.getErrorCount() + 1);
 	}
 
 	public ActiveMqStatistics getActiveMqStatistics() {
