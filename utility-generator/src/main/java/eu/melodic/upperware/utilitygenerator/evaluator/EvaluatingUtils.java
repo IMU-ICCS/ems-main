@@ -121,6 +121,8 @@ public class EvaluatingUtils {
                 case CARDINALITY:
                 case PROVIDER:
                 case CPU:
+                case LATITUDE:
+                case LONGITUDE:
                     break;
             }
         }
