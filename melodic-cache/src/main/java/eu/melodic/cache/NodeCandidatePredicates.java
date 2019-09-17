@@ -1,5 +1,7 @@
 package eu.melodic.cache;
 
+import io.github.cloudiator.rest.model.GeoLocation;
+import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import io.github.cloudiator.rest.model.OperatingSystemFamily;
 
@@ -68,6 +70,56 @@ public final class NodeCandidatePredicates {
             @Override
             public String toString() {
                 return "{Os Predicate with value: " + value + " (" + getOperatingSystemFamilyByOrdinal(value) + ")}";
+            }
+        };
+    }
+
+    public static Predicate<NodeCandidate> getLatitudePredicate(double value) {
+        return new Predicate<NodeCandidate>() {
+            @Override
+            public boolean test(NodeCandidate nodeCandidate) {
+
+                Double latitude = null;
+                Location tempLocation = nodeCandidate.getLocation();
+                do {
+                    final GeoLocation geoLocation = tempLocation.getGeoLocation();
+                    if (geoLocation != null) {
+                        latitude = geoLocation.getLatitude();
+                    }
+                    tempLocation = tempLocation.getParent();
+                } while (latitude == null || tempLocation != null);
+
+                return value == latitude;
+            }
+
+            @Override
+            public String toString() {
+                return "{Latitude Predicate with value: " + value + "}";
+            }
+        };
+    }
+
+    public static Predicate<NodeCandidate> getLongitudePredicate(double value) {
+        return new Predicate<NodeCandidate>() {
+            @Override
+            public boolean test(NodeCandidate nodeCandidate) {
+
+                Double longitude = null;
+                Location tempLocation = nodeCandidate.getLocation();
+                do {
+                    final GeoLocation geoLocation = tempLocation.getGeoLocation();
+                    if (geoLocation != null) {
+                        longitude = geoLocation.getLongitude();
+                    }
+                    tempLocation = tempLocation.getParent();
+                } while (longitude == null || tempLocation != null);
+
+                return value == longitude;
+            }
+
+            @Override
+            public String toString() {
+                return "{Longitude Predicate with value: " + value + "}";
             }
         };
     }

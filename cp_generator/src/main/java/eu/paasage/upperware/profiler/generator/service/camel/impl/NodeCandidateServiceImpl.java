@@ -1,10 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.upperware.profiler.generator.service.camel.NodeCandidatesService;
-import io.github.cloudiator.rest.model.Hardware;
-import io.github.cloudiator.rest.model.Image;
-import io.github.cloudiator.rest.model.NodeCandidate;
-import io.github.cloudiator.rest.model.OperatingSystem;
+import io.github.cloudiator.rest.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,6 +14,34 @@ import java.util.stream.Collectors;
 
 @Service
 public class NodeCandidateServiceImpl implements NodeCandidatesService {
+
+    private final Function<Location, Double> getLatitude = location -> {
+        Double latitude = null;
+        Location tempLocation = location;
+        do {
+            final GeoLocation geoLocation = tempLocation.getGeoLocation();
+            if (geoLocation != null) {
+                latitude = geoLocation.getLatitude();
+            }
+            tempLocation = tempLocation.getParent();
+        } while (latitude == null || tempLocation != null);
+
+        return latitude;
+    };
+
+    private final Function<Location, Double> getLongitude = location -> {
+        Double longitude = null;
+        Location tempLocation = location;
+        do {
+            final GeoLocation geoLocation = tempLocation.getGeoLocation();
+            if (geoLocation != null) {
+                longitude = geoLocation.getLongitude();
+            }
+            tempLocation = tempLocation.getParent();
+        } while (longitude == null || tempLocation != null);
+
+        return longitude;
+    };
 
     @Override
     public Pair<Integer, Integer> getRangeForProviders(List<NodeCandidate> nodeCandidates) {
@@ -58,6 +83,44 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
         return ImmutablePair.of(minValue.orElse(0), maxValue.orElse(0));
     }
 
+    @Override
+    public Pair<Double, Double> getRangeForLatitude(List<NodeCandidate> nodeCandidates) {
+        Optional<Double> minValue = getLatitudeMinValue(nodeCandidates, getLatitude);
+        Optional<Double> maxValue = getLatitudeMaxValue(nodeCandidates, getLatitude);
+        return ImmutablePair.of(minValue.orElse(0.0), maxValue.orElse(0.0));
+    }
+
+
+    @Override
+    public Pair<Double, Double> getRangeForLongitude(List<NodeCandidate> nodeCandidates) {
+        Optional<Double> minValue = getLongitudeMinValue(nodeCandidates, getLongitude);
+        Optional<Double> maxValue = getLongitudeMaxValue(nodeCandidates, getLongitude);
+        return ImmutablePair.of(minValue.orElse(0.0), maxValue.orElse(0.0));
+    }
+
+
+    private <T extends Comparable> Optional<T> getLatitudeMinValue(List<NodeCandidate> nodeCandidates, Function<Location, T> function) {
+        return getGeolocationValue(nodeCandidates, function, Collectors.minBy(Comparator.naturalOrder()));
+    }
+
+    private <T extends Comparable> Optional<T> getLatitudeMaxValue(List<NodeCandidate> nodeCandidates, Function<Location, T> function) {
+        return getGeolocationValue(nodeCandidates, function, Collectors.maxBy(Comparator.naturalOrder()));
+    }
+
+    private <T extends Comparable> Optional<T> getLongitudeMinValue(List<NodeCandidate> nodeCandidates, Function<Location, T> function) {
+        return getGeolocationValue(nodeCandidates, function, Collectors.minBy(Comparator.naturalOrder()));
+    }
+
+    private <T extends Comparable> Optional<T> getLongitudeMaxValue(List<NodeCandidate> nodeCandidates, Function<Location, T> function) {
+        return getGeolocationValue(nodeCandidates, function, Collectors.maxBy(Comparator.naturalOrder()));
+    }
+
+    private <T extends Comparable> Optional<T> getGeolocationValue(List<NodeCandidate> nodeCandidates, Function<Location, T> function, Collector<T, ?, Optional<T>> collector) {
+        return nodeCandidates.stream()
+                .map(NodeCandidate::getLocation)
+                .map(function)
+                .collect(collector);
+    }
 
     @Override
     public List<Integer> getValuesForProviders(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
@@ -117,6 +180,16 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
         return getPossibleValues(nodeCandidates, Hardware::getCores);
     }
 
+    @Override
+    public List<Double> getValuesForLatitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
+        return getPossibleLocationValues(nodeCandidatesMap, getLatitude);
+    }
+
+    @Override
+    public List<Double> getValuesForLongitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
+        return getPossibleLocationValues(nodeCandidatesMap, getLongitude);
+    }
+
     private List<String> getAvalibleProviderNames(List<NodeCandidate> nodeCandidates) {
         return getPossibleValues(nodeCandidates, Hardware::getProviderId);
     }
@@ -128,6 +201,15 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     private <T> List<T> getPossibleValues(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, Function<Hardware, T> mapper){
         List<NodeCandidate> nodeCandidates = nodeCandidatesMap.keySet().stream().map(nodeCandidatesMap::get).flatMap(Collection::stream).collect(Collectors.toList());
         return getPossibleValues(nodeCandidates, mapper);
+    }
+
+    private <T> List<T> getPossibleLocationValues(List<NodeCandidate> nodeCandidates, Function<Location, T> mapper){
+        return nodeCandidates.stream().map(NodeCandidate::getLocation).map(mapper).distinct().sorted().collect(Collectors.toList());
+    }
+
+    private <T> List<T> getPossibleLocationValues(Map<Integer, List<NodeCandidate>> nodeCandidatesMap, Function<Location, T> mapper){
+        List<NodeCandidate> nodeCandidates = nodeCandidatesMap.keySet().stream().map(nodeCandidatesMap::get).flatMap(Collection::stream).collect(Collectors.toList());
+        return getPossibleLocationValues(nodeCandidates, mapper);
     }
 
     private <T extends Comparable> Optional<T> getHardwareMinValue(Collection<NodeCandidate> collection, Function<Hardware, T> function) {
