@@ -185,17 +185,17 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             CpVariable latitudeVariable = null;
             Optional<MetricVariableImpl> optLatitude = CamelMetadataTool.findVariableFor(variables, CamelMetadata.LATITUDE);
             if (optLatitude.isPresent()){
-                List<Double> valuesForLatitude = nodeCandidatesService.getValuesForLatitude(nodeCandidatesByComponentName);
-                latitudeVariable = variableCreatorFactory.getCreator(PrimitiveType.DOUBLE_TYPE)
-                        .createCpVariable(cp, CamelMetadata.LATITUDE.variableType, componentName, variableService.createDoubleListDomain(valuesForLatitude), optLatitude.get().getName());
+                List<Integer> valuesForLatitude = nodeCandidatesService.getValuesForLatitude(nodeCandidatesByComponentName);
+                latitudeVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
+                        .createCpVariable(cp, CamelMetadata.LATITUDE.variableType, componentName, variableService.createIntegerListDomain(valuesForLatitude), optLatitude.get().getName());
             }
 
             CpVariable longitudeVariable = null;
             Optional<MetricVariableImpl> optLongitude = CamelMetadataTool.findVariableFor(variables, CamelMetadata.LONGITUDE);
             if (optLongitude.isPresent()){
-                List<Double> valuesForLongitude = nodeCandidatesService.getValuesForLongitude(nodeCandidatesByComponentName);
-                longitudeVariable = variableCreatorFactory.getCreator(PrimitiveType.DOUBLE_TYPE)
-                        .createCpVariable(cp, CamelMetadata.LONGITUDE.variableType, componentName, variableService.createDoubleListDomain(valuesForLongitude), optLongitude.get().getName());
+                List<Integer> valuesForLongitude = nodeCandidatesService.getValuesForLongitude(nodeCandidatesByComponentName);
+                longitudeVariable = variableCreatorFactory.getCreator(PrimitiveType.INT_TYPE)
+                        .createCpVariable(cp, CamelMetadata.LONGITUDE.variableType, componentName, variableService.createIntegerListDomain(valuesForLongitude), optLongitude.get().getName());
             }
 
             //F(P,x)
@@ -240,22 +240,22 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
                 }
 
                 if (latitudeVariable != null) {
-                    Pair<Double, Double> rangeForLatitude = nodeCandidatesService.getRangeForLatitude(nodeCandidatesForProvider);
-                    Constant min = constantService.createDoubleConstant(rangeForLatitude.getLeft(), constantService.getConstantName(VariableType.LATITUDE, componentName, "min", "p", String.valueOf(providerIndex)));
+                    Pair<Integer, Integer> rangeForLatitude = nodeCandidatesService.getRangeForLatitude(nodeCandidatesForProvider);
+                    Constant min = constantService.createIntegerConstant(rangeForLatitude.getLeft(), constantService.getConstantName(VariableType.LATITUDE, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createDoubleConstant(rangeForLatitude.getRight(), constantService.getConstantName(VariableType.LATITUDE, componentName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createIntegerConstant(rangeForLatitude.getRight(), constantService.getConstantName(VariableType.LATITUDE, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, latitudeVariable, cardinalityVariable, min, max, providerFunctionSupplier);
                 }
 
                 if (longitudeVariable != null) {
-                    Pair<Double, Double> rangeForLongitude = nodeCandidatesService.getRangeForLongitude(nodeCandidatesForProvider);
-                    Constant min = constantService.createDoubleConstant(rangeForLongitude.getLeft(), constantService.getConstantName(VariableType.LONGITUDE, componentName, "min", "p", String.valueOf(providerIndex)));
+                    Pair<Integer, Integer> rangeForLongitude = nodeCandidatesService.getRangeForLongitude(nodeCandidatesForProvider);
+                    Constant min = constantService.createIntegerConstant(rangeForLongitude.getLeft(), constantService.getConstantName(VariableType.LONGITUDE, componentName, "min", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(min);
 
-                    Constant max = constantService.createDoubleConstant(rangeForLongitude.getRight(), constantService.getConstantName(VariableType.LONGITUDE, componentName, "max", "p", String.valueOf(providerIndex)));
+                    Constant max = constantService.createIntegerConstant(rangeForLongitude.getRight(), constantService.getConstantName(VariableType.LONGITUDE, componentName, "max", "p", String.valueOf(providerIndex)));
                     cp.getConstants().add(max);
 
                     createConstraints(cp, longitudeVariable, cardinalityVariable, min, max, providerFunctionSupplier);

@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 @Service
 public class NodeCandidateServiceImpl implements NodeCandidatesService {
 
-    private final Function<Location, Double> getLatitude = location -> {
-        Double latitude = null;
+    private final Function<Location, Integer> getLatitude = location -> {
+        Integer latitude = null;
         Location tempLocation = location;
         do {
             final GeoLocation geoLocation = tempLocation.getGeoLocation();
             if (geoLocation != null) {
-                latitude = geoLocation.getLatitude();
+                latitude = (int) (geoLocation.getLatitude() * 100);
             }
             tempLocation = tempLocation.getParent();
         } while (latitude == null || tempLocation != null);
@@ -29,13 +29,13 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
         return latitude;
     };
 
-    private final Function<Location, Double> getLongitude = location -> {
-        Double longitude = null;
+    private final Function<Location, Integer> getLongitude = location -> {
+        Integer longitude = null;
         Location tempLocation = location;
         do {
             final GeoLocation geoLocation = tempLocation.getGeoLocation();
             if (geoLocation != null) {
-                longitude = geoLocation.getLongitude();
+                longitude = (int) (geoLocation.getLongitude()*100);
             }
             tempLocation = tempLocation.getParent();
         } while (longitude == null || tempLocation != null);
@@ -84,18 +84,18 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     }
 
     @Override
-    public Pair<Double, Double> getRangeForLatitude(List<NodeCandidate> nodeCandidates) {
-        Optional<Double> minValue = getLatitudeMinValue(nodeCandidates, getLatitude);
-        Optional<Double> maxValue = getLatitudeMaxValue(nodeCandidates, getLatitude);
-        return ImmutablePair.of(minValue.orElse(0.0), maxValue.orElse(0.0));
+    public Pair<Integer, Integer> getRangeForLatitude(List<NodeCandidate> nodeCandidates) {
+        Optional<Integer> minValue = getLatitudeMinValue(nodeCandidates, getLatitude);
+        Optional<Integer> maxValue = getLatitudeMaxValue(nodeCandidates, getLatitude);
+        return ImmutablePair.of(minValue.orElse(0), maxValue.orElse(0));
     }
 
 
     @Override
-    public Pair<Double, Double> getRangeForLongitude(List<NodeCandidate> nodeCandidates) {
-        Optional<Double> minValue = getLongitudeMinValue(nodeCandidates, getLongitude);
-        Optional<Double> maxValue = getLongitudeMaxValue(nodeCandidates, getLongitude);
-        return ImmutablePair.of(minValue.orElse(0.0), maxValue.orElse(0.0));
+    public Pair<Integer, Integer> getRangeForLongitude(List<NodeCandidate> nodeCandidates) {
+        Optional<Integer> minValue = getLongitudeMinValue(nodeCandidates, getLongitude);
+        Optional<Integer> maxValue = getLongitudeMaxValue(nodeCandidates, getLongitude);
+        return ImmutablePair.of(minValue.orElse(0), maxValue.orElse(0));
     }
 
 
@@ -181,12 +181,12 @@ public class NodeCandidateServiceImpl implements NodeCandidatesService {
     }
 
     @Override
-    public List<Double> getValuesForLatitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
+    public List<Integer> getValuesForLatitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
         return getPossibleLocationValues(nodeCandidatesMap, getLatitude);
     }
 
     @Override
-    public List<Double> getValuesForLongitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
+    public List<Integer> getValuesForLongitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap) {
         return getPossibleLocationValues(nodeCandidatesMap, getLongitude);
     }
 

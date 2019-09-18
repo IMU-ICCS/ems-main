@@ -74,7 +74,7 @@ public final class NodeCandidatePredicates {
         };
     }
 
-    public static Predicate<NodeCandidate> getLatitudePredicate(double value) {
+    public static Predicate<NodeCandidate> getLatitudePredicate(int value) {
         return new Predicate<NodeCandidate>() {
             @Override
             public boolean test(NodeCandidate nodeCandidate) {
@@ -89,7 +89,7 @@ public final class NodeCandidatePredicates {
                     tempLocation = tempLocation.getParent();
                 } while (latitude == null || tempLocation != null);
 
-                return value == latitude;
+                return value == (latitude * 100);
             }
 
             @Override
@@ -99,7 +99,7 @@ public final class NodeCandidatePredicates {
         };
     }
 
-    public static Predicate<NodeCandidate> getLongitudePredicate(double value) {
+    public static Predicate<NodeCandidate> getLongitudePredicate(int value) {
         return new Predicate<NodeCandidate>() {
             @Override
             public boolean test(NodeCandidate nodeCandidate) {
@@ -114,7 +114,7 @@ public final class NodeCandidatePredicates {
                     tempLocation = tempLocation.getParent();
                 } while (longitude == null || tempLocation != null);
 
-                return value == longitude;
+                return value == (longitude * 100);
             }
 
             @Override
