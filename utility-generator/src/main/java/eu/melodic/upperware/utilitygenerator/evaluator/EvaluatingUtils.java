@@ -117,13 +117,19 @@ public class EvaluatingUtils {
                 case STORAGE:
                     predicates.add(getStoragePredicate((int) var.getValue()));
                     break;
+                case LATITUDE:
+                    log.debug("Creating getLatitudePredicate for value {}", var.getValue());
+                    predicates.add(getLatitudePredicate((double) var.getValue()));
+                    break;
+                case LONGITUDE:
+                    log.debug("Creating getLongitudePredicate for value {}", var.getValue());
+                    predicates.add(getLongitudePredicate((double) var.getValue()));
+                    break;
                 case LOCATION:
                 case CARDINALITY:
                 case PROVIDER:
                 case CPU:
-                case LATITUDE:
-                case LONGITUDE:
-                    break;
+                break;
             }
         }
 
