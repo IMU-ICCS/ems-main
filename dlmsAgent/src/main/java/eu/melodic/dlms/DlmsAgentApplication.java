@@ -7,6 +7,8 @@
 
 package eu.melodic.dlms;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,10 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -52,7 +59,25 @@ public class DlmsAgentApplication {
 
 			String url = System.getProperties().getProperty("mode");
 			log.info("Application started and URL {} identified", url);
+			
+			String publicIp= System.getProperties().getProperty("ip.public");
+			String webServiceUrl = System.getProperties().getProperty("webServiceUrl")+publicIp;
 
+			SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
+			String appComp = "";
+			
+			while(sendToDlmsAgent !=null) {
+				if (isBothNull(sendToDlmsAgent)) {
+					// needs to be changed
+					Thread.sleep(20000);
+					log.debug("Did not find the component id. Waiting ....");
+					continue;
+				}else {
+					appComp = runCommands(sendToDlmsAgent);
+					break;
+				}			
+			}
+			
 			TimerTask timerTask = new TimerTask() {
 				@Override
 				public void run() {
@@ -74,7 +99,7 @@ public class DlmsAgentApplication {
 						}
 					}
 
-					metricsController.sendMetrics();
+					metricsController.sendMetrics(appComp);
 				}
 			};
 
@@ -83,4 +108,47 @@ public class DlmsAgentApplication {
 			log.info("Started timer with delay=" + DELAY_AFTER_STARTUP / 1000 + " sec. and interval=" + CALL_INTERVAL / 1000 + " sec.");
 		};
 	}
+	
+	
+	public SendToDlmsAgent getSendToDlmsAgent(String webServiceUrl) {
+		
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			URI uri = new URI(webServiceUrl);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			
+			HttpEntity<SendToDlmsAgent> entity = new HttpEntity<>(headers);
+			ResponseEntity<SendToDlmsAgent> response = restTemplate.exchange(uri, HttpMethod.GET, entity,
+					SendToDlmsAgent.class);
+			return response.getBody();		
+		} catch (URISyntaxException e) {
+			log.info("Problem getting the contents from dlms web service url");
+			e.printStackTrace();
+		}
+		return null;
+		
+	}
+	
+	public boolean isBothNull(SendToDlmsAgent sendToDlmsAgent) {
+		if (sendToDlmsAgent!=null) {
+			return sendToDlmsAgent.getCommand()!=null && sendToDlmsAgent.getComponentId()!=null;
+		}
+		return true;
+	}
+	
+	public String runCommands(SendToDlmsAgent sendToDlmsAgent) {
+		String cmd = sendToDlmsAgent.getCommand();
+		Process p;
+		
+		try {
+			p = Runtime.getRuntime().exec(cmd);
+			p.waitFor();
+		} catch (Exception e) {
+			log.info("There was a problem while executing the command from dlms web service api");
+		} 
+		return sendToDlmsAgent.getComponentId();
+	}
+	
+	
 }
