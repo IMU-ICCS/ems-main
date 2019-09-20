@@ -119,11 +119,11 @@ public class EvaluatingUtils {
                     break;
                 case LATITUDE:
                     log.debug("Creating getLatitudePredicate for value {}", var.getValue());
-                    predicates.add(getLatitudePredicate((double) var.getValue()));
+                    predicates.add(getLatitudePredicate((int) var.getValue()));
                     break;
                 case LONGITUDE:
                     log.debug("Creating getLongitudePredicate for value {}", var.getValue());
-                    predicates.add(getLongitudePredicate((double) var.getValue()));
+                    predicates.add(getLongitudePredicate((int) var.getValue()));
                     break;
                 case LOCATION:
                 case CARDINALITY:

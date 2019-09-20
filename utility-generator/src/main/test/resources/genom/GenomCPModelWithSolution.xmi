@@ -53,14 +53,14 @@
     </domain>
   </cpVariables>\  <cpVariables id="WorkerLatitude" variableType="latitude" componentId="ComponentSparkWorker">
     <domain xsi:type="cp:RangeDomain">
-      <from xsi:type="types:DoubleValueUpperware" value="2.0"/>
-      <to xsi:type="types:DoubleValueUpperware" value="3.0"/>
+      <from xsi:type="types:IntegerValueUpperware" value="0"/>
+      <to xsi:type="types:IntegerValueUpperware" value="30"/>
     </domain>
   </cpVariables>
   <cpVariables id="WorkerLongitude" variableType="longitude" componentId="ComponentSparkWorker">
     <domain xsi:type="cp:RangeDomain">
-      <from xsi:type="types:DoubleValueUpperware" value="0.0"/>
-      <to xsi:type="types:DoubleValueUpperware" value="1.0"/>
+      <from xsi:type="types:IntegerValueUpperware" value="0"/>
+      <to xsi:type="types:IntegerValueUpperware" value="50"/>
     </domain>
   </cpVariables>
   <constraints id="c_0" exp1="//@cpVariables.0" exp2="//@constants.2" comparator="greaterOrEqualTo"/>
@@ -193,10 +193,10 @@
             <value xsi:type="types:IntegerValueUpperware" value="1"/>
           </variableValue>
           <variableValue variable="//@cpVariables.3">
-            <value xsi:type="types:DoubleValueUpperware" value="0.5"/>
+            <value xsi:type="types:IntegerValueUpperware" value="5"/>
           </variableValue>
-          <variableValue variable="//@cpVariables.3">
-            <value xsi:type="types:DoubleValueUpperware" value="2.0"/>
+          <variableValue variable="//@cpVariables.4">
+            <value xsi:type="types:IntegerValueUpperware" value="20"/>
           </variableValue>
           <utilityValue xsi:type="types:DoubleValueUpperware" value="0.2"/>
     </solution>

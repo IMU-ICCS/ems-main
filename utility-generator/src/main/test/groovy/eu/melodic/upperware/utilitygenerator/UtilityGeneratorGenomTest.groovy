@@ -3,7 +3,6 @@ package groovy.eu.melodic.upperware.utilitygenerator
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.RealVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import io.github.cloudiator.rest.model.GeoLocation
@@ -66,8 +65,8 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
         newConfiguration.add(new IntVariableValueDTO(providerName, 1))
         newConfiguration.add(new IntVariableValueDTO(coresName, 2))
-        newConfiguration.add(new RealVariableValueDTO(latitudeName, 10.0 as Double))
-        newConfiguration.add(new RealVariableValueDTO(longitudeName, 40.5 as Double))
+        newConfiguration.add(new IntVariableValueDTO(latitudeName, 10))
+        newConfiguration.add(new IntVariableValueDTO(longitudeName, 405 ))
 
 
         UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties)
@@ -88,8 +87,8 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
         newConfiguration.add(new IntVariableValueDTO(providerName, 1))
         newConfiguration.add(new IntVariableValueDTO(coresName, 2))
-        newConfiguration.add(new RealVariableValueDTO(latitudeName, 4.7 as Double))
-        newConfiguration.add(new RealVariableValueDTO(longitudeName, 50.9 as Double))
+        newConfiguration.add(new IntVariableValueDTO(latitudeName, 47))
+        newConfiguration.add(new IntVariableValueDTO(longitudeName, 509))
 
         UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, properties)
 
