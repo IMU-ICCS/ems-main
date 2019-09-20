@@ -129,7 +129,7 @@ public class EvaluatingUtils {
                 case CARDINALITY:
                 case PROVIDER:
                 case CPU:
-                break;
+                    break;
             }
         }
 
