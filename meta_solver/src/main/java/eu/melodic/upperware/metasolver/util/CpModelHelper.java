@@ -242,7 +242,7 @@ public class CpModelHelper extends AbstractCdoHelper {
             // get target metrics from cp model
             final EList<CpMetric> cpMetrics = cpModel.getCpMetrics();
 			log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model Metric names: {}",
-                    cpMetrics.stream().map(e -> e.getId()).collect(Collectors.toList()));
+                    cpMetrics.stream().map(CPElement::getId).collect(Collectors.toList()));
             Map<String,CpMetric> metricsMap = cpMetrics.stream()
                     .collect(Collectors.toMap(CPElement::getId, Function.identity()));
             log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): CP model Metrics: {}", metricsMap.keySet());
