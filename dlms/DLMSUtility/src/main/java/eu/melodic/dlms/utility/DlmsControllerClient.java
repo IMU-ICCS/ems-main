@@ -207,9 +207,9 @@ public class DlmsControllerClient implements ApplicationContextAware{
 	
 	private String createToken() {
         String username = melodicSecurityProperties.getUser().getUsername();
-        log.debug("MetaSolver.createToken():  username={}, jwt-service={}", username, jwtService);
+        log.debug("DLMSUtility.createToken():  username={}, jwt-service={}", username, jwtService);
         String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
-        log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
+        log.debug("DLMSUtility.createToken():  username={}, token={}", username, token);
         return token;
 	}
 

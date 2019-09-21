@@ -66,16 +66,20 @@ public class DlmsAgentApplication {
 			SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
 			String appComp = "";
 			
-			while(sendToDlmsAgent !=null) {
-				if (isBothNull(sendToDlmsAgent)) {
-					// needs to be changed
-					Thread.sleep(20000);
-					log.debug("Did not find the component id. Waiting ....");
-					continue;
-				}else {
-					appComp = runCommands(sendToDlmsAgent);
+			// to stop program from going to a loop
+			// this needs to be modified to get information from melodic when it is ready
+			int counter = 1;
+			
+			while (sendToDlmsAgent == null && isBothNull(sendToDlmsAgent)) {
+				// sleep needs to be changed later on
+				Thread.sleep(20000);
+				counter ++;
+				
+				if (counter>10) {
+					log.error("Did not find the component id. Exiting now ...");
 					break;
-				}			
+				}
+				log.debug("Did not find the component id. Waiting ....");
 			}
 			
 			TimerTask timerTask = new TimerTask() {
@@ -98,7 +102,6 @@ public class DlmsAgentApplication {
 							break;
 						}
 					}
-
 					metricsController.sendMetrics(appComp);
 				}
 			};
@@ -109,9 +112,10 @@ public class DlmsAgentApplication {
 		};
 	}
 	
-	
-	public SendToDlmsAgent getSendToDlmsAgent(String webServiceUrl) {
-		
+	/**
+	 * Get contents form the web service url
+	 */
+	public SendToDlmsAgent getSendToDlmsAgent(String webServiceUrl) {		
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			URI uri = new URI(webServiceUrl);
@@ -123,13 +127,14 @@ public class DlmsAgentApplication {
 					SendToDlmsAgent.class);
 			return response.getBody();		
 		} catch (URISyntaxException e) {
-			log.info("Problem getting the contents from dlms web service url");
-			e.printStackTrace();
+			log.error("Problem getting the contents from dlms web service url");
 		}
-		return null;
-		
+		return null;	
 	}
 	
+	/**
+	 * Execute command and send back component id
+	 */
 	public boolean isBothNull(SendToDlmsAgent sendToDlmsAgent) {
 		if (sendToDlmsAgent!=null) {
 			return sendToDlmsAgent.getCommand()!=null && sendToDlmsAgent.getComponentId()!=null;
@@ -145,7 +150,7 @@ public class DlmsAgentApplication {
 			p = Runtime.getRuntime().exec(cmd);
 			p.waitFor();
 		} catch (Exception e) {
-			log.info("There was a problem while executing the command from dlms web service api");
+			log.error("There was a problem while executing the command from dlms web service api");
 		} 
 		return sendToDlmsAgent.getComponentId();
 	}

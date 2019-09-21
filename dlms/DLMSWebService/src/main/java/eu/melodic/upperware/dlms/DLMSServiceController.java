@@ -47,7 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DLMSServiceController {
 
-//    private FileSystemShell mFsShell;
 	private final DLMSService dlmsService;
 	private final ModelAnalyzer modelAnalyzer;
 	private final RestTemplate restTemplate;
@@ -111,24 +110,13 @@ public class DLMSServiceController {
 		return dlmsService.getAcDsMpByName(name);
 	}
 	
-	
 	/**
 	 * Returns command and the component name.
 	 */
 	@GetMapping(value = "/getAlluxioCmd/{ip}")
 	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) {
 		String componentId = comp.findComponentId(ip);
-		if (componentId != null) {
-			String command = dlmsService.getAlluxioCmd(componentId);
-			if (command != null) {
-				SendToDlmsAgent toSend = new SendToDlmsAgent(componentId, command);
-				return toSend;
-			}
-			log.debug("Command was null");
-			return null;
-		}
-		log.debug("Component id was null");
-		return null;
+		return new SendToDlmsAgent(componentId, dlmsService.getAlluxioCmd(componentId));
 	}
 	
 

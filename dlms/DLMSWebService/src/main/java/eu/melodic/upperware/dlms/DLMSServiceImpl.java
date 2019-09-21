@@ -113,7 +113,7 @@ public class DLMSServiceImpl implements DLMSService {
 		ensureConfiguration();
 		
 		checkAcName(cmpName);
-		AcDsMountPoint  mp= acDsMpRepository.findByAcName(cmpName);
+		AcDsMountPoint mp= acDsMpRepository.findByAcName(cmpName);
 	
 		String localMountPoint = mp.getToLocalMountPoint();
 		// create directory first

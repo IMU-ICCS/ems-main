@@ -1,17 +1,18 @@
 package eu.melodic.upperware.dlms.component;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.github.cloudiator.rest.ApiClient;
+import io.github.cloudiator.rest.ApiException;
+import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.ProcessApi;
+import io.github.cloudiator.rest.model.CloudiatorProcess;
+import io.github.cloudiator.rest.model.IpAddress;
+import io.github.cloudiator.rest.model.IpAddressType;
+import io.github.cloudiator.rest.model.IpVersion;
+import io.github.cloudiator.rest.model.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,20 +20,16 @@ import lombok.extern.slf4j.Slf4j;
  * Java class to obtain the component id of the current machine using cloudiator
  */
 @Slf4j
-@AllArgsConstructor
 @Component
+@AllArgsConstructor
 public class ComponentId {
 
-	@Autowired
-    private final ApiClient apiClient;
-    
+	private NodeApi nodeApi;
+	private ProcessApi processApi;
+
 	public String findComponentId(String ipAddress) {
-		final String endPoint = apiClient.getBasePath();
-		final String PROCESS_URL = endPoint + "/process";
-		final String NODE_URL = endPoint + "/node";
-		
-		List<Process> processes = readProcess(PROCESS_URL);
-		List<Node> nodes = readNode(NODE_URL);
+		List<CloudiatorProcess> processes = getProcessList(this.processApi);
+		List<Node> nodes = getNodeList(this.nodeApi);
 
 		if (processes != null && nodes != null) {
 			String nodeId = getNodeId(nodes, ipAddress);
@@ -41,6 +38,24 @@ public class ComponentId {
 			}
 		}
 		log.debug("Ip addresses {} from the deployed machine did not match with any component id", ipAddress);
+		return null;
+	}
+
+	public List<Node> getNodeList(NodeApi nodeApi) {
+		try {
+			return nodeApi.findNodes();
+		} catch (ApiException e) {
+			log.error("Error by getting nodes list: ", e);
+		}
+		return null;
+	}
+
+	public List<CloudiatorProcess> getProcessList(ProcessApi processApi) {
+		try {
+			return processApi.getProcesses(null);
+		} catch (ApiException e) {
+			log.error("Error by getting Cloudiator processes list: ", e);
+		}
 		return null;
 	}
 
@@ -57,8 +72,8 @@ public class ComponentId {
 	/**
 	 * Match the node if with the process id to get the component name
 	 */
-	private static String getComponentId(String nodeId, List<Process> processes) {
-		for (Process process : processes) {
+	private static String getComponentId(String nodeId, List<CloudiatorProcess> processes) {
+		for (CloudiatorProcess process : processes) {
 			if (isSameProcess(process.getId(), nodeId)) {
 				return process.getTask();
 			}
@@ -91,44 +106,6 @@ public class ComponentId {
 	private static boolean isRelevantIp(IpAddress ipAddress) {
 		return (ipAddress.getIpVersion().equals(IpVersion.V4)
 				&& ipAddress.getIpAddressType().equals(IpAddressType.PUBLIC_IP));
-	}
-
-	/**
-	 * Retrieve process using the url from cloudiator
-	 */
-	private static List<Process> readProcess(String url) {
-		List<Process> processes = null;
-		ObjectMapper mapper = new ObjectMapper();
-
-		try {
-			processes = mapper.readValue(url, new TypeReference<ArrayList<Process>>() {
-			});
-
-			log.info("Process was successfully retrieved from the provided url");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			log.info("There was a problem while parsing Process from the cloudiator url");
-		}
-		return processes;
-	}
-
-	/**
-	 * Retrieve node using the url from cloudiator
-	 */
-	private static List<Node> readNode(String url) {
-		List<Node> nodes = null;
-		ObjectMapper mapper = new ObjectMapper();
-
-		try {
-			nodes = mapper.readValue(url, new TypeReference<ArrayList<Node>>() {
-			});
-
-			log.info("Process was successfully retrieved from the provided url");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			log.info("There was a problem while parsing Node from the cloudiator url");
-		}
-		return nodes;
 	}
 
 }

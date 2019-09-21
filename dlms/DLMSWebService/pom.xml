@@ -124,8 +124,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-		</dependency>
 	</dependencies>
 
 	<build>

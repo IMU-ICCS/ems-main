@@ -10,6 +10,8 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import io.github.cloudiator.rest.ApiClient;
+import io.github.cloudiator.rest.api.NodeApi;
+import io.github.cloudiator.rest.api.ProcessApi;
 
 @Configuration
 @ComponentScan({"eu.passage.upperware.commons"})
@@ -32,5 +34,16 @@ public class DLMSWebServiceContext {
 		apiClient.setReadTimeout(cloudiatorProperties.getCloudiator().getHttpReadTimeout());
 		return apiClient;
 	}
+	
+	@Bean
+	public NodeApi nodeApi(ApiClient apiClient) {
+		return new NodeApi(apiClient);
+	}
+
+	@Bean
+	public ProcessApi processApi(ApiClient apiClient) {
+		return new ProcessApi(apiClient);
+	}
+
 	
 }
