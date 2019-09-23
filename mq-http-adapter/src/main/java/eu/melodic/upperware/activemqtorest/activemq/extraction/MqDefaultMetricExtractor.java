@@ -51,14 +51,14 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 		try {
 			producerHost = (String)activeMQMessage.getProperty(MqConstants.PRODUCER_HOST);
 		} catch (IOException e) {
-			log.error("Could not resolve producer-host on incoming message.");
+			log.error("Could not resolve '{}' on incoming message.", MqConstants.PRODUCER_HOST);
 		}
 		mqDataEntry.setProducer(producerHost);
 
 		try {
 			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty(MqConstants.PRODUCER_HOST));
 		} catch (JMSException e) {
-			log.warn("Could not resolve property 'producer-host'.");
+			log.warn("Could not resolve property '{}'.", MqConstants.PRODUCER_HOST);
 		}
 
 		return Optional.of(mqDataEntry);
