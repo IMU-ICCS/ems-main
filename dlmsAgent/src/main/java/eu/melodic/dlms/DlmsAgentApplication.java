@@ -80,6 +80,8 @@ public class DlmsAgentApplication {
 					break;
 				}
 				log.debug("Did not find the component id. Waiting ....");
+				// obtain the object again and check
+				sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
 				isNull = isNull(sendToDlmsAgent);
 			}
 			String appComp = runCommands(sendToDlmsAgent);
