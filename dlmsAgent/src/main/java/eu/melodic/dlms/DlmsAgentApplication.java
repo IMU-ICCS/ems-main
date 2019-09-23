@@ -24,7 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
+import eu.melodic.dlms.component.SendToDlmsAgent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
