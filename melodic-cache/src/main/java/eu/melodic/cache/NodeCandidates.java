@@ -61,8 +61,8 @@ public class NodeCandidates implements Serializable {
         List<NodeCandidate> nodeCandidates = get(vmName, providerIndex, predicates);
 
         if (CollectionUtils.isEmpty(nodeCandidates)) {
-            throw new CacheException(String.format("Could not find matching NodeCandidates for vmName: %s, providerIndex: %s, predicates: %s",
-                    vmName, providerIndex, predicates));
+            log.debug("Could not find NodeCandidates...");
+            return Optional.empty();
         }
 
         boolean iaasOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS);
