@@ -1,5 +1,6 @@
 package eu.melodic.upperware.activemqtorest.activemq.extraction;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -46,8 +47,13 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, StringUtils.EMPTY));
 		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, StringUtils.EMPTY);
 		mqDataEntry.setTopic(topic);
-		String connectionId = activeMQMessage.getProducerId().getConnectionId();
-		mqDataEntry.setProducer(connectionId);
+		String producerHost = MqConstants.PRODUCER_HOST_DEFAULT_VALUE;
+		try {
+			producerHost = (String)activeMQMessage.getProperty(MqConstants.PRODUCER_HOST);
+		} catch (IOException e) {
+			log.error("Could not resolve producer-host on incoming message.");
+		}
+		mqDataEntry.setProducer(producerHost);
 
 		try {
 			mqDataEntry.setSourceIpAddress(activeMQMessage.getStringProperty(MqConstants.PRODUCER_HOST));
