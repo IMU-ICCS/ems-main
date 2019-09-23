@@ -91,8 +91,9 @@ public final class NodeCandidatePredicates {
                     tempLocation = tempLocation.getParent();
                 } while (latitude == null || tempLocation != null);
 
-                log.debug("Comparing Latitude {} with {} result: {}", value, (latitude * 100), Objects.equals(value, (latitude * 100)));
-                return Objects.equals(value, (latitude * 100));
+                final int intLatitude = (int) (latitude * 100);
+                log.debug("Comparing Latitude {} with {} result: {}", value, intLatitude, Objects.equals(value, intLatitude));
+                return Objects.equals(value, intLatitude);
             }
 
             @Override
@@ -117,8 +118,9 @@ public final class NodeCandidatePredicates {
                     tempLocation = tempLocation.getParent();
                 } while (longitude == null || tempLocation != null);
 
-                log.debug("Comparing Longitude {} with {} result: {}", value, (longitude * 100), Objects.equals(value, (longitude * 100)));
-                return Objects.equals(value, (longitude * 100));
+                final int intLongitude = (int) (longitude * 100);
+                log.debug("Comparing Longitude {} with {} result: {}", value, intLongitude, Objects.equals(value, intLongitude));
+                return Objects.equals(value, intLongitude);
             }
 
             @Override
