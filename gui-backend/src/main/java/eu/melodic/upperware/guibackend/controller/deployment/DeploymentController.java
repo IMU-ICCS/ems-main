@@ -32,7 +32,14 @@ public class DeploymentController {
         log.info("POST request for upload xmi file with name: {}", file.getResource().getFilename());
         String cdoName = deploymentService.uploadXmi(file);
         log.info("File {} successfully uploaded. Finding secure variables in progress.", cdoName);
-        return deploymentService.findSecureVariables(file, cdoName);
+        return deploymentService.createUploadSingleXmiResponse(file, cdoName);
+    }
+
+    @PostMapping(value = "/xmi/multiple")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<UploadXmiResponse> uploadXmiList(@RequestParam("files") List<MultipartFile> files) {
+        log.info("POST request for upload xmi files list in number: {}", files.size());
+        return deploymentService.uploadXmiList(files);
     }
 
     @DeleteMapping(value = "/xmi/{xmiName}")
