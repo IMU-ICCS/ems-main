@@ -33,8 +33,10 @@ import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequest;
 import eu.melodic.models.services.dlms.DataModelNotificationRequestImpl;
 import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
+import eu.melodic.upperware.dlms.component.ComponentId;
+import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
 import eu.melodic.upperware.dlms.properties.DLMSProperties;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,13 +44,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestController
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DLMSServiceController {
 
-//    private FileSystemShell mFsShell;
 	private final DLMSService dlmsService;
 	private final ModelAnalyzer modelAnalyzer;
 	private final RestTemplate restTemplate;
+	private final ComponentId comp;
 
 	private final DLMSProperties dlmsProperties;
 	private final AppCompDataSourceRepository appCompDSRepository;
@@ -59,7 +61,7 @@ public class DLMSServiceController {
 	public List<DataSource> getDataSources() {
 		return dlmsService.getAllDataSources();
 	}
-
+	
 	/**
 	 * Returns one datasource matching the given id.
 	 */
@@ -108,11 +110,15 @@ public class DLMSServiceController {
 		return dlmsService.getAcDsMpByName(name);
 	}
 	
-	
-	@GetMapping(value = "/getAlluxioCmd/{cmpName}")
-	public String getAlluxioCmd(@PathVariable("cmpName") String cmpName) {
-		return dlmsService.getAlluxioCmd(cmpName);
+	/**
+	 * Returns command and the component name.
+	 */
+	@GetMapping(value = "/getAlluxioCmd/{ip}")
+	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) {
+		String componentId = comp.findComponentId(ip);
+		return new SendToDlmsAgent(componentId, dlmsService.getAlluxioCmd(componentId));
 	}
+	
 
 	/**
 	 * Adds/updates the datasource from the camel model to the database and mounts

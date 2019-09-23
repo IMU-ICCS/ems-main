@@ -1,26 +1,28 @@
-package eu.melodic.dlms;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+package eu.melodic.dlms.utility;
 
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Security configuration for Spring.
- */
 @Slf4j
+@Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class WebSecurity extends WebSecurityConfigurerAdapter {
+public class DlmsUtilityWebSecurity extends WebSecurityConfigurerAdapter {
 
-     private final JWTService jwtService;
+    private final JWTService jwtService;
 
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
@@ -43,5 +45,19 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                     .antMatchers("/**").permitAll()
                     .anyRequest().authenticated();
         }
+
+
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        if (securityEnabled) {
+            final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+            source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+            return source;
+        }
+        return null;
+    }
+
+
 }

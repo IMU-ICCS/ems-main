@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 
 @Configuration
 @AllArgsConstructor
-public class DLMSWebServiceContext {
+public class DLMSControllerContext {
     @Bean
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);
