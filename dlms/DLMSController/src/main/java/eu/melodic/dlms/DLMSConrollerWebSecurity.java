@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @EnableWebSecurity
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class WebSecurity extends WebSecurityConfigurerAdapter {
+public class DLMSConrollerWebSecurity extends WebSecurityConfigurerAdapter {
 
      private final JWTService jwtService;
 

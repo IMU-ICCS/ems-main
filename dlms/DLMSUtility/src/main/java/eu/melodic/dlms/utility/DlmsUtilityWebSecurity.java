@@ -20,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class WebSecurity extends WebSecurityConfigurerAdapter {
+public class DlmsUtilityWebSecurity extends WebSecurityConfigurerAdapter {
 
     private final JWTService jwtService;
 
