@@ -4,6 +4,7 @@ import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import io.github.cloudiator.rest.model.OperatingSystemFamily;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import java.util.function.Predicate;
 /**
  * Created by pszkup on 04.01.18.
  */
+@Slf4j
 public final class NodeCandidatePredicates {
 
     public static Predicate<NodeCandidate> getRamPredicate(Long value) {
@@ -89,7 +91,8 @@ public final class NodeCandidatePredicates {
                     tempLocation = tempLocation.getParent();
                 } while (latitude == null || tempLocation != null);
 
-                return value == (latitude * 100);
+                log.debug("Comparing Latitude {} with {} result: {}", value, (latitude * 100), Objects.equals(value, (latitude * 100)));
+                return Objects.equals(value, (latitude * 100));
             }
 
             @Override
@@ -114,7 +117,8 @@ public final class NodeCandidatePredicates {
                     tempLocation = tempLocation.getParent();
                 } while (longitude == null || tempLocation != null);
 
-                return value == (longitude * 100);
+                log.debug("Comparing Longitude {} with {} result: {}", value, (longitude * 100), Objects.equals(value, (longitude * 100)));
+                return Objects.equals(value, (longitude * 100));
             }
 
             @Override
