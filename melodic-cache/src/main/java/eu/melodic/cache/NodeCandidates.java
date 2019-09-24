@@ -6,6 +6,7 @@ import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -58,6 +59,12 @@ public class NodeCandidates implements Serializable {
         log.debug("Looking for cheapest nodeCandidates - vmName: {}, providerIndex: {}, predicates: {}", vmName, providerIndex, predicates);
 
         List<NodeCandidate> nodeCandidates = get(vmName, providerIndex, predicates);
+
+        if (CollectionUtils.isEmpty(nodeCandidates)) {
+            log.debug("Could not find NodeCandidates...");
+            return Optional.empty();
+        }
+
         boolean iaasOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS);
         boolean faasOnly = checkIfOnlyVmTypes(nodeCandidates, FAAS);
 

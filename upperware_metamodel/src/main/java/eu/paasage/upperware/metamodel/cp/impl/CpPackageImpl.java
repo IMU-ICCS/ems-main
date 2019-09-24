@@ -2,52 +2,10 @@
  */
 package eu.paasage.upperware.metamodel.cp.impl;
 
-import eu.paasage.upperware.metamodel.cp.BooleanDomain;
-import eu.paasage.upperware.metamodel.cp.BooleanExpression;
-import eu.paasage.upperware.metamodel.cp.CPElement;
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedUnaryExpression;
-import eu.paasage.upperware.metamodel.cp.ComposedUnaryOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.ConfigurationUpperware;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import eu.paasage.upperware.metamodel.cp.CpFactory;
-import eu.paasage.upperware.metamodel.cp.CpFunction;
-import eu.paasage.upperware.metamodel.cp.CpMetric;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.cp.CpVariable;
-import eu.paasage.upperware.metamodel.cp.CpVariableValue;
-import eu.paasage.upperware.metamodel.cp.Domain;
-import eu.paasage.upperware.metamodel.cp.Expression;
-import eu.paasage.upperware.metamodel.cp.Goal;
-import eu.paasage.upperware.metamodel.cp.GoalOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.ListDomain;
-import eu.paasage.upperware.metamodel.cp.MultiRangeDomain;
-import eu.paasage.upperware.metamodel.cp.NormalisedUtilityDimension;
-import eu.paasage.upperware.metamodel.cp.NumericDomain;
-import eu.paasage.upperware.metamodel.cp.NumericExpression;
-import eu.paasage.upperware.metamodel.cp.NumericListDomain;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Parameter;
-import eu.paasage.upperware.metamodel.cp.RangeDomain;
-import eu.paasage.upperware.metamodel.cp.SimpleUnaryExpression;
-import eu.paasage.upperware.metamodel.cp.SimpleUnaryOperatorEnum;
-import eu.paasage.upperware.metamodel.cp.Solution;
-import eu.paasage.upperware.metamodel.cp.UnaryExpression;
-import eu.paasage.upperware.metamodel.cp.VariableType;
-
+import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-
 import eu.paasage.upperware.metamodel.types.impl.TypesPackageImpl;
-
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-
+import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
@@ -1451,6 +1409,8 @@ public class CpPackageImpl extends EPackageImpl implements CpPackage {
 		addEEnumLiteral(variableTypeEEnum, VariableType.CARDINALITY);
 		addEEnumLiteral(variableTypeEEnum, VariableType.OS);
 		addEEnumLiteral(variableTypeEEnum, VariableType.LOCATION);
+		addEEnumLiteral(variableTypeEEnum, VariableType.LATITUDE);
+		addEEnumLiteral(variableTypeEEnum, VariableType.LONGITUDE);
 
 		// Create resource
 		createResource(eNS_URI);

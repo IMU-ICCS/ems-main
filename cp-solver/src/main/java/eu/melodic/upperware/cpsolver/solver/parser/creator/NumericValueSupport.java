@@ -39,7 +39,7 @@ abstract class NumericValueSupport {
             return collection.get(expressionId);
         }
         log.info("Creating realVar {}", expressionId);
-        RealVar realConstant = solverData.getModel().realVar(expressionId, toDoubleValue(supplier.get()));
+        RealVar realConstant = solverData.getModel().realVar(expressionId, toRealValue(supplier.get()));
         collection.put(expressionId, realConstant);
         return realConstant;
     }
@@ -73,6 +73,7 @@ abstract class NumericValueSupport {
         return values
                 .stream()
                 .mapToInt(this::toIntValue)
+                .sorted()
                 .toArray();
     }
 
@@ -86,13 +87,13 @@ abstract class NumericValueSupport {
                 "Only IntegerValueUpperware and LongValueUpperware are accepted in IntVarCreator", value.getClass()));
     }
 
-    Pair<Double, Double> parseDoubleRangeDomain(RangeDomain rangeDomain){
+    Pair<Double, Double> parseRealRangeDomain(RangeDomain rangeDomain){
         NumericValueUpperware from = rangeDomain.getFrom();
         NumericValueUpperware to = rangeDomain.getTo();
-        return Pair.of(toDoubleValue(from), toDoubleValue(to));
+        return Pair.of(toRealValue(from), toRealValue(to));
     }
 
-    private double toDoubleValue(NumericValueUpperware value) {
+    private double toRealValue(NumericValueUpperware value) {
         if (value instanceof DoubleValueUpperware) {
             return ((DoubleValueUpperware) value).getValue();
         } else if (value instanceof FloatValueUpperware) {

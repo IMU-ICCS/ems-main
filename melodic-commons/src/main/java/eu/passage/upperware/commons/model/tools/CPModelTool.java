@@ -115,6 +115,14 @@ public class CPModelTool {
         return getVariableValue(variableValues, VariableType.STORAGE);
     }
 
+    public static Optional<CpVariableValue> getLatitude(List<CpVariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.LATITUDE);
+    }
+
+    public static Optional<CpVariableValue> getLongitude(List<CpVariableValue> variableValues){
+        return getVariableValue(variableValues, VariableType.LONGITUDE);
+    }
+
     public static int getIntValue(CpVariableValue variableValue){
         Objects.requireNonNull(variableValue.getValue());
         return ((IntegerValueUpperware) variableValue.getValue()).getValue();
