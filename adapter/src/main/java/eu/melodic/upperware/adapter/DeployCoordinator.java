@@ -23,13 +23,14 @@ import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaver;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaverImpl;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
 import eu.melodic.upperware.adapter.notification.DeploymentNotificationSenderImpl;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.plangenerator.converter.CamelModelConverter;
-import eu.melodic.upperware.adapter.plangenerator.graph.DefaultDiffCalculator;
 import eu.melodic.upperware.adapter.plangenerator.graph.DiffCalculator;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.DividedElement;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
@@ -62,7 +63,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 import static java.lang.String.format;
 
 @Slf4j
@@ -80,7 +80,6 @@ public class DeployCoordinator {
 
     private ContextOperations context;
     private AdapterProperties properties;
-    private CDOClientX cdoClientX;
 
     private EmsClientApi emsClientApi;
 
@@ -92,7 +91,9 @@ public class DeployCoordinator {
 
     private CamelModelConverter converter;
 
-    private DiffCalculator<AdapterRequirement, String> diffCalculator = new DefaultDiffCalculator<>();
+    private CamelToFileSaver camelToFileSaver;
+
+    private DiffCalculator<AdapterRequirement, String> diffCalculator;
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
@@ -144,7 +145,7 @@ public class DeployCoordinator {
             try {
                 tr.commit();
                 isValid = deploymentInstanceModelValidator.validate(targetModel);
-                saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
+                camelToFileSaver.toFile((CamelModel) targetModel.eContainer());
             } catch (CommitException e) {
                 throw new AdapterException("Exception during commiting transaction", e);
             }
@@ -168,6 +169,7 @@ public class DeployCoordinator {
 
                 planExecutor.executePlan(plan);
                 cdoServerUpdater.updateCamelModel(resourceName);
+                camelToFileSaver.toFile(resourceName, CamelToFileSaverImpl.DEFAULT_NAME_AFTER_DEPLOYMENT_FUNCTION);
                 deploymentNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
             } else {
                 log.info("Deployment plan authorized failed...");
@@ -237,14 +239,6 @@ public class DeployCoordinator {
     private static void releaseLock(String resourceName) {
         log.info("Releasing lock for application {}", resourceName);
         LOCKS.remove(resourceName);
-    }
-
-    private void saveCamelModelToFile(CamelModel camelModel) {
-        String pcId = camelModel.getName();
-        log.debug("CDODatabaseProxy - saveModels to file...");
-        String fileName = "/logs/adapter_camel_models/" + CDO_SERVER_PATH + pcId + System.currentTimeMillis() + ".xmi";
-        cdoClientX.exportModel(camelModel, fileName);
-        log.debug("CDODatabaseProxy - saveModels - Models saved to file {}!", fileName);
     }
 
     public Map<String, DividedElement<AdapterRequirement>> calculateDifference(String resourceName, String currDeploymentInstanceName, String prevDeploymentInstanceName) {
