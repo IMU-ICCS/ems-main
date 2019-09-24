@@ -23,8 +23,8 @@ import eu.melodic.dlms.db.model.DataCenter;
 import eu.melodic.dlms.db.model.DataCenterZone;
 import eu.melodic.dlms.db.model.DataSource;
 import eu.melodic.dlms.db.model.Region;
-import eu.melodic.dlms.utility.DlmsConfigurationConnection;
-import eu.melodic.dlms.utility.UtilityMetrics;
+import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
+import eu.melodic.dlms.utility.common.UtilityMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

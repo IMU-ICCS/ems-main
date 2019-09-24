@@ -2,8 +2,9 @@ package eu.melodic.dlms;
 
 import java.util.Collection;
 
-import eu.melodic.dlms.utility.DlmsConfigurationConnection;
-import eu.melodic.dlms.utility.DlmsConfigurationElement;
+import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
+import eu.melodic.dlms.utility.common.DlmsConfigurationElement;
+
 
 /**
  * Interface for algorithm runner classes.
