@@ -25,6 +25,7 @@ import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.net4j.connector.ConnectorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -103,8 +104,11 @@ public class CdoService {
                     .map(o -> (CamelModel) o)
                     .map(NamedElement::getName)
                     .collect(Collectors.toList());
-        } catch (Exception ex) {
-            log.debug("List of available models is empty");
+        } catch (ConnectorException ex) {
+            log.error("Error by getting uploaded models. CDO is not responding", ex);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error by getting uploaded models. CDO does not respond.");
+        } catch (RuntimeException ex) {
+            log.debug("List of available models is empty:", ex);
         } finally {
             if (cdoView != null) {
                 cdoView.close();
