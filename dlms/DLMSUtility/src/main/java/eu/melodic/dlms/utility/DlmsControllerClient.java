@@ -44,6 +44,13 @@ public class DlmsControllerClient implements ApplicationContextAware{
 
 	private MelodicSecurityProperties melodicSecurityProperties;
 	private JWTService jwtService;
+	
+	/**
+	 * Constructor for unit tests etc.
+	 */
+	protected DlmsControllerClient() {
+		this("", "");
+	}
 
 	/**
 	 * Main method just for stand-alone testing.

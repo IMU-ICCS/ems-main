@@ -3,7 +3,7 @@ package eu.melodic.dlms.algorithm_runners;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.metric_sender.Algo_DlmsMetricSender_AcDsDataWrite;
-import eu.melodic.dlms.utility.DlmsConfigurationConnection;
+import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
 import lombok.extern.slf4j.Slf4j;
 
 /**
