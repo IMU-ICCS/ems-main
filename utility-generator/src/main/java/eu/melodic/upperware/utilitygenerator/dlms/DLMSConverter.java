@@ -54,6 +54,7 @@ public class DLMSConverter implements ArgumentConverter {
         } catch (Exception e) {
             log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value. The error:");
             log.warn(e.toString());
+            e.printStackTrace();
             return createDefaultValuesOfDLMSUtilityAttributes();
         }
         return dlmsUtilityAttributes.stream()
