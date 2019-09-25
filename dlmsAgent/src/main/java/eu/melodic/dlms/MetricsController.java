@@ -1,6 +1,7 @@
 package eu.melodic.dlms;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,12 @@ public class MetricsController {
 
 	private final String jmsUrl;
 
+	// Store the values to avoid getting cumulative values
+	private Map<String, Long> acDsValueMap = new HashMap<>();
+	// Pattern how the message should be sent as
+	private final String PATTERN_READ = "{\"ac\":\"%s\" , \"ds\":\"%s\" , \"amountRead\":\"%d\" , \"timeStamp\":\"%d\"}";
+	private final String PATTERN_WRITE = "{\"ac\":\"%s\" , \"ds\":\"%s\" , \"amountWrite\":\"%d\" , \"timeStamp\":\"%d\"}";
+
 	@Autowired
 	public MetricsController(JdbcTemplate jdbcTemplate, MetricsProperties metricsProperties) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -65,7 +72,6 @@ public class MetricsController {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 			return response;
 		});
-
 		metrics = restTemplate.getForObject(url, Metrics.class);
 	}
 
@@ -95,24 +101,23 @@ public class MetricsController {
 	 * sends every collected metric found as a message to that server (with the
 	 * metric's name as topic).
 	 */
-	public void sendMetrics() {
+	public void sendMetrics(String appComp) {
 		Connection connection = null;
 		try {
 			connection = initializeConnection();
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			if (hasAlluxioMetrics()) {
-				log.info("Alluxio metrics found");
-				Map<String, Object> gaugesMap = metrics.getGauges().getProperties();
+				log.debug("Alluxio metrics found");
+//				Map<String, Object> gaugesMap = metrics.getGauges().getProperties();
 				Map<String, Object> countersMap = metrics.getCounters().getProperties();
 
-				extractAndSendMetrics(gaugesMap, "value", session);
-				extractAndSendMetrics(countersMap, "count", session);
+				extractSendAlluxioMetrics(countersMap, session, appComp);
 			}
 
 			if (!mySqlMetrics.isEmpty()) {
 				log.info("MySQL metrics found");
-				extractAndSendMetrics(mySqlMetrics, null, session);
+				extractAndSendMetrics(mySqlMetrics, null, session, appComp);
 			}
 		} catch (JMSException e) {
 			log.error("JMS sending failed: {}", e.getMessage(), e);
@@ -121,12 +126,122 @@ public class MetricsController {
 		}
 	}
 
+	/**
+	 * Extract relevant read and write metrics
+	 */
+	public void extractSendAlluxioMetrics(Map<String, Object> map, Session session, String appComp) throws JMSException {
+		Date now = new Date();
+		Set<Map.Entry<String, Object>> entries = map.entrySet();
+		for (Map.Entry<String, Object> entry : entries) {
+			if (isRelevant(entry.getKey())) {
+				String ds = getApplicationId(entry.getKey());
+
+				String msgType = getMessageType(entry.getKey());
+				String topic = getTopic(msgType);
+				long totalVal = getTotalValue(entry.getValue());
+
+//				String acDsKey = "ac:" + applicationId + " ds:" + ds + " " + msgType;
+				String acDsKey = "ac:" + appComp + " ds:" + ds + " " + msgType;
+				long effectVal = getCurrentValue(acDsKey, totalVal);
+
+				String msg = getMessage(topic, appComp, ds, effectVal, now.getTime());
+				log.info(msg);
+
+				sendMessage(topic, msg, session);
+				log.debug("Message sent");
+			}
+
+		}
+	}
+
+	/**
+	 * Get the message
+	 */
+	private String getMessage(String topic, String ac, String ds, long val, long time) {
+		if ("dataRead".equalsIgnoreCase(topic))
+			return convertMessage(PATTERN_READ, ac, ds, val, time);
+		else if ("dataWrite".equalsIgnoreCase(topic))
+			return convertMessage(PATTERN_WRITE, ac, ds, val, time);
+		return "";
+	}
+
+	/**
+	 * Convert the message in a particular format
+	 */
+	private String convertMessage(String pattern, String ac, String ds, long val, long time) {
+		return String.format(pattern, ac, ds, val, time);
+	}
+
+	/**
+	 * Get the value for the metric
+	 */
+	private long getTotalValue(Object item) {
+		String text = String.valueOf(item);
+		log.debug("Value follows a particular pattern {}", text);
+		// text contains a particular pattern
+		String val = text.substring(text.indexOf("{count=") + 7, text.indexOf("}"));
+
+		return Long.parseLong(val);
+	}
+
+	/**
+	 * Get value for the metrics
+	 */
+	private long getCurrentValue(String acDsKey, long totalVal) {
+		long newVal = 0;
+		if (acDsValueMap.containsKey(acDsKey)) {
+			long oldVal = acDsValueMap.get(acDsKey);
+			newVal = totalVal - oldVal;
+		} else {
+			newVal = totalVal;
+		}
+		acDsValueMap.put(acDsKey, totalVal);
+		return newVal;
+	}
+
+	/**
+	 * Get the application id from the message
+	 */
+	private String getApplicationId(String message) {
+		return message.substring(message.lastIndexOf("__") + 2);
+	}
+
+	/**
+	 * Check if the message needs to be passed to jms queue
+	 */
+	private boolean isRelevant(String message) {
+		return (message.contains("BytesReadPerUfs") || message.contains("BytesWrittenPerUfs"));
+	}
+
+	/**
+	 * Type of message
+	 */
+	private String getMessageType(String message) {
+		if (message.contains("BytesReadPerUfs"))
+			return "amountRead";
+		else if (message.contains("BytesWrittenPerUfs"))
+			return "amountWrite";
+		log.debug("No read or write available");
+		return "";
+	}
+
+	/**
+	 * Topic for the message
+	 */
+	private String getTopic(String msgType) {
+		if ("amountRead".equalsIgnoreCase(msgType))
+			return "dataRead";
+		else if ("amountWrite".equalsIgnoreCase(msgType))
+			return "dataWrite";
+		return "";
+	}
+
 	private boolean hasAlluxioMetrics() {
 		return metrics != null
 				&& (!metrics.getGauges().getProperties().isEmpty() || !metrics.getCounters().getProperties().isEmpty());
 	}
 
-	private void extractAndSendMetrics(Map<String, Object> map, String propertyName, Session session)
+	private void extractAndSendMetrics(Map<String, Object> map, String propertyName, Session session, String appComp)
 			throws JMSException {
 		Date now = new Date();
 
@@ -182,7 +297,7 @@ public class MetricsController {
 
 	private String initializeJmsServerUrl() {
 		String jmsUrl = System.getProperties().getProperty("jmsUrl");
-		
+
 		if (StringUtils.isBlank(jmsUrl)) {
 			throw new IllegalArgumentException("No URL for JMS server set.");
 		}
@@ -203,7 +318,7 @@ public class MetricsController {
 
 	private String readMySqlMetric(String metricName) {
 		List<Map<String, Object>> result = jdbcTemplate.queryForList("SHOW GLOBAL STATUS like '" + metricName + '\'');
-		
+
 		if (CollectionUtils.isNotEmpty(result)) {
 			// the metric names should be direct hits if configured correctly, so we expect
 			// only one result

@@ -20,6 +20,23 @@ import lombok.Setter;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.dlmsws.properties")
 public class DLMSProperties {
 
+	@Getter
+	@Setter
+	private Alluxio alluxio;
+
+	@Getter
+	@Setter
+	public static class Alluxio {
+		@NotNull
+		private Master master;
+
+		public static class Master {
+			@NotBlank
+			private String hostname;
+
+		}
+	}
+
 	@Valid
 	@NotNull
 	private Esb esb;

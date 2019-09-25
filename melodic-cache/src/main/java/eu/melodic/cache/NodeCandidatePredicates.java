@@ -1,7 +1,10 @@
 package eu.melodic.cache;
 
+import io.github.cloudiator.rest.model.GeoLocation;
+import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import io.github.cloudiator.rest.model.OperatingSystemFamily;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -10,6 +13,7 @@ import java.util.function.Predicate;
 /**
  * Created by pszkup on 04.01.18.
  */
+@Slf4j
 public final class NodeCandidatePredicates {
 
     public static Predicate<NodeCandidate> getRamPredicate(Long value) {
@@ -68,6 +72,60 @@ public final class NodeCandidatePredicates {
             @Override
             public String toString() {
                 return "{Os Predicate with value: " + value + " (" + getOperatingSystemFamilyByOrdinal(value) + ")}";
+            }
+        };
+    }
+
+    public static Predicate<NodeCandidate> getLatitudePredicate(int value) {
+        return new Predicate<NodeCandidate>() {
+            @Override
+            public boolean test(NodeCandidate nodeCandidate) {
+
+                Double latitude = null;
+                Location tempLocation = nodeCandidate.getLocation();
+                do {
+                    final GeoLocation geoLocation = tempLocation.getGeoLocation();
+                    if (geoLocation != null) {
+                        latitude = geoLocation.getLatitude();
+                    }
+                    tempLocation = tempLocation.getParent();
+                } while (latitude == null || tempLocation != null);
+
+                final int intLatitude = (int) (latitude * 100);
+                log.debug("Comparing Latitude {} with {} result: {}", value, intLatitude, Objects.equals(value, intLatitude));
+                return Objects.equals(value, intLatitude);
+            }
+
+            @Override
+            public String toString() {
+                return "{Latitude Predicate with value: " + value + "}";
+            }
+        };
+    }
+
+    public static Predicate<NodeCandidate> getLongitudePredicate(int value) {
+        return new Predicate<NodeCandidate>() {
+            @Override
+            public boolean test(NodeCandidate nodeCandidate) {
+
+                Double longitude = null;
+                Location tempLocation = nodeCandidate.getLocation();
+                do {
+                    final GeoLocation geoLocation = tempLocation.getGeoLocation();
+                    if (geoLocation != null) {
+                        longitude = geoLocation.getLongitude();
+                    }
+                    tempLocation = tempLocation.getParent();
+                } while (longitude == null || tempLocation != null);
+
+                final int intLongitude = (int) (longitude * 100);
+                log.debug("Comparing Longitude {} with {} result: {}", value, intLongitude, Objects.equals(value, intLongitude));
+                return Objects.equals(value, intLongitude);
+            }
+
+            @Override
+            public String toString() {
+                return "{Longitude Predicate with value: " + value + "}";
             }
         };
     }

@@ -23,21 +23,25 @@ import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaver;
+import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaverImpl;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
+import eu.melodic.upperware.adapter.notification.DeploymentNotificationSenderImpl;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.PlanGenerator;
 import eu.melodic.upperware.adapter.plangenerator.converter.CamelModelConverter;
-import eu.melodic.upperware.adapter.plangenerator.graph.DefaultDiffCalculator;
 import eu.melodic.upperware.adapter.plangenerator.graph.DiffCalculator;
 import eu.melodic.upperware.adapter.plangenerator.graph.model.DividedElement;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
-import eu.melodic.upperware.adapter.notification.DeploymentNotificationSenderImpl;
+import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
 import io.github.cloudiator.rest.ApiException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,10 +49,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +63,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static eu.passage.upperware.commons.MelodicConstants.CDO_SERVER_PATH;
 import static java.lang.String.format;
 
 @Slf4j
@@ -74,7 +80,6 @@ public class DeployCoordinator {
 
     private ContextOperations context;
     private AdapterProperties properties;
-    private CDOClientX cdoClientX;
 
     private EmsClientApi emsClientApi;
 
@@ -86,7 +91,9 @@ public class DeployCoordinator {
 
     private CamelModelConverter converter;
 
-    private DiffCalculator<AdapterRequirement, String> diffCalculator = new DefaultDiffCalculator<>();
+    private CamelToFileSaver camelToFileSaver;
+
+    private DiffCalculator<AdapterRequirement, String> diffCalculator;
 
     @Async
     public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
@@ -138,7 +145,7 @@ public class DeployCoordinator {
             try {
                 tr.commit();
                 isValid = deploymentInstanceModelValidator.validate(targetModel);
-                saveCamelModelToFile(((CamelModel) targetModel.eContainer()));
+                camelToFileSaver.toFile((CamelModel) targetModel.eContainer());
             } catch (CommitException e) {
                 throw new AdapterException("Exception during commiting transaction", e);
             }
@@ -162,6 +169,7 @@ public class DeployCoordinator {
 
                 planExecutor.executePlan(plan);
                 cdoServerUpdater.updateCamelModel(resourceName);
+                camelToFileSaver.toFile(resourceName, CamelToFileSaverImpl.DEFAULT_NAME_AFTER_DEPLOYMENT_FUNCTION);
                 deploymentNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
             } else {
                 log.info("Deployment plan authorized failed...");
@@ -193,17 +201,17 @@ public class DeployCoordinator {
                 throw new AdapterException("Error during serialising Monitors", e);
             }
             attributes.add(createAttribute(attributeName, attributeValue));
-                log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
+            log.info("Attribute with name {} for {} does not exist. New attribute will be created for monitors with metric names: {}", attributeName, targetModel.getName(),
                     monitors.stream().map(Monitor::getMetric).collect(Collectors.joining(", ", "[", "]")));
         }
     }
 
-    private boolean findAttribute(EList<Attribute> attributes, String attributeName){
+    private boolean findAttribute(EList<Attribute> attributes, String attributeName) {
         return attributes.stream().anyMatch(attribute -> attribute.getName().equals(attributeName));
     }
 
     private Attribute createAttribute(String attributeName, String attributeValue) {
-            log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
+        log.info("Adding attribute {} with value: {}", attributeName, attributeValue);
         Attribute strAttribute = CoreFactory.eINSTANCE.createAttribute();
         strAttribute.setName(attributeName);
         strAttribute.setValue(createStringValue(attributeValue));
@@ -233,23 +241,14 @@ public class DeployCoordinator {
         LOCKS.remove(resourceName);
     }
 
-    private void saveCamelModelToFile(CamelModel camelModel) {
-        String pcId = camelModel.getName();
-        log.debug("CDODatabaseProxy - saveModels to file...");
-        String fileName = "/logs/adapter_camel_models/" + CDO_SERVER_PATH + pcId + System.currentTimeMillis() + ".xmi";
-        cdoClientX.exportModel(camelModel, fileName);
-        log.debug("CDODatabaseProxy - saveModels - Models saved to file {}!", fileName);
-    }
-
     public Map<String, DividedElement<AdapterRequirement>> calculateDifference(String resourceName, String currDeploymentInstanceName, String prevDeploymentInstanceName) {
-        Objects.requireNonNull(currDeploymentInstanceName);
-
-        CDOSessionX cdoSessionX = cdoServerApi.openSession();
-        CDOTransaction tr = cdoSessionX.openTransaction();
-
+        Objects.requireNonNull(currDeploymentInstanceName, "currDeploymentInstanceName could not be null");
+        CDOView cdoView = null;
         try {
-            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(resourceName, currDeploymentInstanceName, tr); //new
-            DeploymentInstanceModel currentModel = StringUtils.isNotBlank(prevDeploymentInstanceName) ?  cdoServerApi.getModelToDeploy(resourceName, prevDeploymentInstanceName, tr) : null;
+            CDOClient client = getCdoClient();
+            cdoView = client.openView();
+            DeploymentInstanceModel targetModel = cdoServerApi.getModelToDeploy(cdoView, resourceName, currDeploymentInstanceName); //new
+            DeploymentInstanceModel currentModel = StringUtils.isNotBlank(prevDeploymentInstanceName) ? cdoServerApi.getModelToDeploy(cdoView, resourceName, prevDeploymentInstanceName) : null;
 
             ComparableModel newModel = converter.toComparableModel(targetModel);
             ComparableModel oldModel = currentModel != null ? converter.toComparableModel(currentModel) : ComparableModel.builder().build();
@@ -259,10 +258,24 @@ public class DeployCoordinator {
                     new ArrayList<>(oldModel.getAdapterRequirements()),
                     AdapterRequirement.NODE_BI_PREDICATE,
                     AdapterRequirement::getTaskName);
-
+        } catch (RuntimeException ex) {
+            log.error("Error by getting deployment instance model", ex);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error by getting deployment instance model.");
         } finally {
-            cdoSessionX.closeTransaction(tr);
-            cdoSessionX.closeSession();
+            if (cdoView != null) {
+                cdoView.close();
+            }
         }
+    }
+
+    private CDOClient getCdoClient() {
+        CDOClient client = new CDOClient();
+        registerPackages(client);
+        return client;
+    }
+
+    private void registerPackages(CDOClient cdoClient) {
+        cdoClient.registerPackage(CpPackage.eINSTANCE);
+        cdoClient.registerPackage(TypesPackage.eINSTANCE);
     }
 }

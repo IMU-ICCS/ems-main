@@ -2,11 +2,11 @@
  */
 package eu.paasage.upperware.metamodel.cp;
 
+import org.eclipse.emf.common.util.Enumerator;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.eclipse.emf.common.util.Enumerator;
 
 /**
  * <!-- begin-user-doc -->
@@ -96,7 +96,7 @@ public enum VariableType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	LOCATION(7, "location", "location");
+	LOCATION(7, "location", "location"),
 
 	/**
 	 * The '<em><b>Cpu</b></em>' literal value.
@@ -111,6 +111,39 @@ public enum VariableType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
+
+	LATITUDE(8, "latitude", "latitude"),
+
+	/**
+	 * The '<em><b>Latitude</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>Latitude</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #LATITUDE
+	 * @model name="latitude"
+	 * @generated
+	 * @ordered
+	 */
+
+	LONGITUDE(9, "longitude", "longitude");
+
+	/**
+	 * The '<em><b>Longitude</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>Longitude</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #LONGITUDE
+	 * @model name="longitude"
+	 * @generated
+	 * @ordered
+	 */
+
 	public static final int CPU_VALUE = 0;
 
 	/**
@@ -224,6 +257,26 @@ public enum VariableType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+
+	public static final int LATITUDE_VALUE = 8;
+
+	/**
+	 * An array of all the '<em><b>Variable Type</b></em>' enumerators.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+
+
+	public static final int LONGITUDE_VALUE = 9;
+
+	/**
+	 * An array of all the '<em><b>Variable Type</b></em>' enumerators.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+
 	private static final VariableType[] VALUES_ARRAY =
 		new VariableType[] {
 			CPU,
@@ -234,6 +287,8 @@ public enum VariableType implements Enumerator {
 			CARDINALITY,
 			OS,
 			LOCATION,
+			LATITUDE,
+			LONGITUDE,
 		};
 
 	/**
@@ -298,6 +353,8 @@ public enum VariableType implements Enumerator {
 			case CARDINALITY_VALUE: return CARDINALITY;
 			case OS_VALUE: return OS;
 			case LOCATION_VALUE: return LOCATION;
+			case LATITUDE_VALUE: return LATITUDE;
+			case LONGITUDE_VALUE: return LONGITUDE;
 		}
 		return null;
 	}

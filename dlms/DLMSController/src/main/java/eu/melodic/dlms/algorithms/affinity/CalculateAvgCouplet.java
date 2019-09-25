@@ -75,7 +75,7 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 				if (acDSDataList.size() > 0) {
 					long predVal = dataPrediction(acDSDataList);
 					long predNumTransfer = numTransferPrediction(acDSDataList);
-					AppComDataSrc appComDataSrc = new AppComDataSrc(acListItem.getName(), dsListItem.getName(), predVal,
+					AppComDataSrc appComDataSrc = new AppComDataSrc(Long.toString(acListItem.getId()), Long.toString(dsListItem.getId()), predVal,
 							predNumTransfer);
 
 					appComDataSrcList.add(appComDataSrc);
@@ -180,20 +180,26 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 	 * Normalize the value for data transfer
 	 */
 	public double normalizeDataTransfer(long val) {
-		double retVal = (val - this.minDataTransPrediction)
+		if (this.maxDataTransPrediction - this.minDataTransPrediction >0)
+			return ((val - this.minDataTransPrediction)
 				* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxDataTransPrediction - this.minDataTransPrediction))
-				+ MIN_RANGE;
-		return retVal;
+				+ MIN_RANGE);
+		else	// only one data
+			return ((val)
+			* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxDataTransPrediction))
+			+ MIN_RANGE);
 	}
 
 	/**
 	 * Normalize the value for number of transfer
 	 */
 	private double normalizeNumTransfer(long val) {
-		double retVal = (val - this.minNumTransPrediction)
-				* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxNumTransPrediction - this.minNumTransPrediction))
-				+ MIN_RANGE;
-		return retVal;
+		if (this.maxNumTransPrediction - this.minNumTransPrediction > 0)
+			return ((val - this.minNumTransPrediction)
+					* ((MAX_RANGE - MIN_RANGE) / (double) (this.maxNumTransPrediction - this.minNumTransPrediction))
+					+ MIN_RANGE);
+		else
+			return MIN_RANGE;
 	}
 
 	/**

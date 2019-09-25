@@ -1,4 +1,4 @@
-package eu.melodic.dlms;
+package eu.melodic.dlms.utility;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 
 @Configuration
 @AllArgsConstructor
-public class DLMSWebServiceContext {
+public class DLMSUtilityContext {
     @Bean
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);

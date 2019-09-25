@@ -10,6 +10,7 @@ import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -28,20 +29,10 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
     @Override
     public void create(AdapterProcess taskBody) {
 
-        Node node = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
-
-        Job job = context.getJob(taskBody.getJobName())
-                .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
-
-        Schedule schedule = context.getScheduleByJobId(job.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
-
-        Task task = job.getTasks()
-                .stream()
-                .filter(t -> t.getName().equals(taskBody.getTaskName()))
-                .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
-
+        Triple<Node, Schedule, Task> requiredData = getRequiredData(taskBody);
+        Node node = requiredData.getLeft();
+        Schedule schedule = requiredData.getMiddle();
+        Task task = requiredData.getRight();
 
         try {
             log.info("Creating Process with Node: {}, Schedule {}, Task: {}", node.getId(), schedule.getId(), task.getName());
@@ -118,19 +109,10 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
     @Override
     public void delete(AdapterProcess taskBody) {
 
-        Node node = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
-
-        Job job = context.getJob(taskBody.getJobName())
-                .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
-
-        Schedule schedule = context.getScheduleByJobId(job.getId())
-                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
-
-        Task task = job.getTasks()
-                .stream()
-                .filter(t -> t.getName().equals(taskBody.getTaskName()))
-                .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
+        Triple<Node, Schedule, Task> requiredData = getRequiredData(taskBody);
+        Node node = requiredData.getLeft();
+        Schedule schedule = requiredData.getMiddle();
+        Task task = requiredData.getRight();
 
         try {
             Optional<CloudiatorProcess> optionalCloudiatorProcess = context.getCloudiatorProcess(node.getId(), schedule.getId(), task.getName());
@@ -149,5 +131,24 @@ public class ProcessTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterPr
             log.error("Could not delete ProcessGroup. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during removing ProcessGroup", e);
         }
+    }
+
+    private Triple<Node, Schedule, Task> getRequiredData(AdapterProcess taskBody) {
+
+        Node node = context.getNode(taskBody.getNodeName())
+                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())));
+
+        Job job = context.getJob(taskBody.getJobName())
+                .orElseThrow(() -> new AdapterException((format("Could not find Job with name %s", taskBody.getJobName()))));
+
+        Schedule schedule = context.getScheduleByJobId(job.getId())
+                .orElseThrow(() -> new AdapterException(format("Could not find Schedule with job id %s", job.getId())));
+
+        Task task = job.getTasks()
+                .stream()
+                .filter(t -> t.getName().equals(taskBody.getTaskName()))
+                .findFirst().orElseThrow(() -> new AdapterException(format("Could not find Task with name %s", taskBody.getTaskName())));
+
+        return Triple.of(node, schedule, task);
     }
 }

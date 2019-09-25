@@ -25,6 +25,10 @@ public interface NodeCandidatesService {
 
     Pair<Integer, Integer> getRangeForOs(List<NodeCandidate> nodeCandidates);
 
+    Pair<Integer, Integer> getRangeForLatitude(List<NodeCandidate> nodeCandidates);
+
+    Pair<Integer, Integer> getRangeForLongitude(List<NodeCandidate> nodeCandidates);
+
 
     List<Integer> getValuesForProviders(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
 
@@ -44,4 +48,9 @@ public interface NodeCandidatesService {
 
     @Deprecated
     List<Integer> getValuesForCores(List<NodeCandidate> nodeCandidates);
+
+    List<Integer> getValuesForLatitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
+
+    List<Integer> getValuesForLongitude(Map<Integer, List<NodeCandidate>> nodeCandidatesMap);
+
 }

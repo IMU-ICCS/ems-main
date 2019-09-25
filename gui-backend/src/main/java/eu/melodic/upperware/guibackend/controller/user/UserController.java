@@ -112,7 +112,7 @@ public class UserController {
 
     @GetMapping("/auth/user/technical")
     @ResponseStatus(HttpStatus.OK)
-    public List<User> getTechnicalUserList(@RequestHeader(value = "Authorization") String token) {
+    public List<User> getTechnicalUserList(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("GET request for technical user list");
         return jwtServerApi.getUsers(token)
                 .stream()

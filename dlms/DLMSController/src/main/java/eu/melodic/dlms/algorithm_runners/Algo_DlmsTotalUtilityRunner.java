@@ -3,7 +3,7 @@ package eu.melodic.dlms.algorithm_runners;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.utility.Algo_DlmsTotalUtility;
-import eu.melodic.dlms.utility.DlmsConfigurationConnection;
+import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
 
 /**
  * Calculate the total utility of solutions

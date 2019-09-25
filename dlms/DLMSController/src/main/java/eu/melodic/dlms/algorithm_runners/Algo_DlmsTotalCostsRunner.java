@@ -7,8 +7,8 @@ import java.util.Map;
 import eu.melodic.dlms.AlgorithmRunner;
 import eu.melodic.dlms.DlmsControllerApplication;
 import eu.melodic.dlms.algorithms.cost.Algo_DlmsTotalCosts;
-import eu.melodic.dlms.utility.DlmsConfigurationConnection;
-import eu.melodic.dlms.utility.DlmsConfigurationElement;
+import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
+import eu.melodic.dlms.utility.common.DlmsConfigurationElement;
 import lombok.extern.slf4j.Slf4j;
 
 /**
