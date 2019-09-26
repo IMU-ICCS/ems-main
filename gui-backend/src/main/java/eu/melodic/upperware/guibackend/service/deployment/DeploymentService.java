@@ -26,10 +26,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -120,7 +117,7 @@ public class DeploymentService {
         } catch (ResponseStatusException ex) {
             return UploadXmiResponse.builder()
                     .modelName(cdoName)
-                    .secureVariables(null)
+                    .secureVariables(Collections.emptyList())
                     .httpStatus(HttpStatus.BAD_REQUEST)
                     .message(ex.getMessage())
                     .build();
@@ -135,10 +132,10 @@ public class DeploymentService {
                 log.info("File {} successfully uploaded. Finding secure variables in progress.", cdoName);
                 response.add(createUploadSingleXmiResponse(multipartFile, cdoName));
             } catch (ResponseStatusException ex) {
-                UploadXmiResponse.builder()
+                response.add(UploadXmiResponse.builder()
                         .httpStatus(HttpStatus.BAD_REQUEST)
                         .message(ex.getMessage())
-                        .build();
+                        .build());
             }
         });
         return response;

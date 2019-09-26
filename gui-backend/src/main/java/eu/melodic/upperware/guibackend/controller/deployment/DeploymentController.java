@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth/deployment")
@@ -38,7 +39,10 @@ public class DeploymentController {
     @PostMapping(value = "/xmi/multiple")
     @ResponseStatus(HttpStatus.CREATED)
     public List<UploadXmiResponse> uploadXmiList(@RequestParam("files") List<MultipartFile> files) {
-        log.info("POST request for upload xmi files list in number: {}", files.size());
+        final String names = files.stream()
+                .map(MultipartFile::getOriginalFilename)
+                .collect(Collectors.joining(", ", "[", "]"));
+        log.info("POST request for upload xmi files list in number: {}, files names: {}", files.size(), names);
         return deploymentService.uploadXmiList(files);
     }
 
