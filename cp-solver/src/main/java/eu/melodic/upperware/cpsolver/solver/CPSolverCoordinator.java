@@ -16,6 +16,8 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,7 +51,8 @@ public class CPSolverCoordinator {
                                @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService,
                                UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
-                               RestTemplate restTemplate) {
+                               RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
+                               JWTService jwtService) {
         this.cpSolver = cpSolver;
         this.clientX = clientX;
         this.memcacheService = memcacheService;
@@ -57,6 +60,8 @@ public class CPSolverCoordinator {
         this.utilityGeneratorProperties = utilityGeneratorProperties;
         this.env = env;
         this.restTemplate = restTemplate;
+        this.melodicSecurityProperties = melodicSecurityProperties;
+        this.jwtService = jwtService;
     }
 
     @SuppressWarnings("CanBeFinal")
@@ -71,6 +76,9 @@ public class CPSolverCoordinator {
     private Environment env;
 
     private RestTemplate restTemplate;
+
+    private MelodicSecurityProperties melodicSecurityProperties;
+    private JWTService jwtService;
 
     @Async
     public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
@@ -95,7 +103,8 @@ public class CPSolverCoordinator {
                 return;
             }
 
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false , nodeCandidates, utilityGeneratorProperties);
+            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false , nodeCandidates, utilityGeneratorProperties,
+                    melodicSecurityProperties, jwtService);
 
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();
