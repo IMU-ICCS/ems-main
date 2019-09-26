@@ -13,6 +13,7 @@ import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstan
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,9 @@ public class ProcessService {
         Map<String, CamundaVariableResponseItem> processVariables = camundaApi.getProcessVariables(processId);
         String applicationId = processVariables.get(CamundaVariableName.APPLICATION_ID.label).getValue();
         String currentDeploymentInstanceName = getDeploymentInstanceName(processId);
+        if (StringUtils.EMPTY.equals(currentDeploymentInstanceName)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Deployment difference is not created yet for process with id: %s", processId));
+        }
         String previousDeploymentInstanceName = findPreviousDeploymentInstanceName(processId, processVariables);
         log.info("Getting deployment difference for current deployment instance name : {} and previous: {} for process: {}", currentDeploymentInstanceName, previousDeploymentInstanceName, processId);
         DifferenceRequestImpl differenceRequest = createDifferenceRequest(applicationId, currentDeploymentInstanceName, previousDeploymentInstanceName);
@@ -138,10 +142,9 @@ public class ProcessService {
             String currentDeploymentInstanceName = processVariables.get(CamundaVariableName.DEPLOYMENT_INSTANCE_NAME.label).getValue();
             log.info("DeploymentInstanceName: {} for process: {} already exist", currentDeploymentInstanceName, processId);
             return currentDeploymentInstanceName;
-
         } else {
-            log.info("Deployment difference for process {} not created yet", processId);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Variable deploymentInstanceName doesn't exist for process: %s", processId));
+            log.warn("Variable deploymentInstanceName doesn't exist for process: {}. Deployment difference not created yet", processId);
+            return StringUtils.EMPTY;
         }
     }
 
