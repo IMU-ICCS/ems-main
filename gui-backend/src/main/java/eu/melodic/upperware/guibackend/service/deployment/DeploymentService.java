@@ -4,6 +4,7 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
 import eu.melodic.upperware.guibackend.communication.mule.MuleApi;
+import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
@@ -25,9 +26,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -107,7 +106,42 @@ public class DeploymentService {
         return allXmiModels;
     }
 
-    public UploadXmiResponse findSecureVariables(MultipartFile xmiFile, String cdoName) {
+    public UploadXmiResponse createUploadSingleXmiResponse(MultipartFile xmiFile, String cdoName) {
+        try {
+            List<SecureVariable> secureVariables = findSecureVariables(xmiFile);
+            return UploadXmiResponse.builder()
+                    .modelName(cdoName)
+                    .secureVariables(secureVariables)
+                    .httpStatus(HttpStatus.CREATED)
+                    .build();
+        } catch (ResponseStatusException ex) {
+            return UploadXmiResponse.builder()
+                    .modelName(cdoName)
+                    .secureVariables(Collections.emptyList())
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message(ex.getMessage())
+                    .build();
+        }
+    }
+
+    public List<UploadXmiResponse> uploadXmiList(List<MultipartFile> files) {
+        List<UploadXmiResponse> response = new ArrayList<>(files.size());
+        files.forEach(multipartFile -> {
+            try {
+                String cdoName = uploadXmi(multipartFile);
+                log.info("File {} successfully uploaded. Finding secure variables in progress.", cdoName);
+                response.add(createUploadSingleXmiResponse(multipartFile, cdoName));
+            } catch (ResponseStatusException ex) {
+                response.add(UploadXmiResponse.builder()
+                        .httpStatus(HttpStatus.BAD_REQUEST)
+                        .message(ex.getMessage())
+                        .build());
+            }
+        });
+        return response;
+    }
+
+    private List<SecureVariable> findSecureVariables(MultipartFile xmiFile) {
         List<String> secureVariablesKeys;
         try {
             String xmiContent = new String(xmiFile.getBytes());
@@ -115,9 +149,6 @@ public class DeploymentService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by parsing your uploaded file %s in order to find secure variables", xmiFile.getName()));
         }
-        return UploadXmiResponse.builder()
-                .modelName(cdoName)
-                .secureVariables(secureStoreService.fillSecureVariablesValues(secureVariablesKeys))
-                .build();
+        return secureStoreService.fillSecureVariablesValues(secureVariablesKeys);
     }
 }
