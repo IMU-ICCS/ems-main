@@ -234,6 +234,8 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         String copyFromServerDir = properties.getCopyFilesFromServerDir();
         String copyToClientDir = properties.getCopyFilesToClientDir();
 
+        String clientTmpDir = StringUtils.firstNonBlank(properties.getClientTmpDir(), "/tmp");
+
         // Load client config. template and prepare configuration
         String clientConfTemplate = getResourceAsString(clientConfTemplateFile);
         Map<String,String> valueMap = new HashMap<>();
@@ -292,9 +294,12 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                     if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
                     targetFile = copyToClientDir + targetFile;
                     String contents = new String(Files.readAllBytes(p));
+                    String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
                     installationInstructions
-                            .appendLog(String.format("Copy file from server to client: %s -> %s", p.toString(), targetFile))
-                            .appendWriteFile(targetFile, contents, false);
+                            .appendLog(String.format("Copy file from server to client: %s -> %s", p.toString(), tmpFile))
+                            .appendWriteFile(tmpFile, contents, false)
+                            .appendLog(String.format("Move file to target: %s -> %s", tmpFile, targetFile))
+                            .appendExec("sudo mv " + tmpFile + " " + targetFile);
                 }
             }
         }
@@ -314,18 +319,21 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 .appendExec("sudo chmod u+rwx,og-rwx " + installScriptPath)
 
         // Store Baguette Client configuration archive
-                .appendLog("Store baguette client configuration archive (in base64 encoding)")
-                .appendWriteFile(clientConfArchive, archiveBase64, false)
+                /*.appendLog("Store baguette client configuration archive (in base64 encoding)")
+                .appendWriteFile(clientConfArchive, archiveBase64, false)*/
 
         // Run Baguette Client installation script
                 .appendLog("Run Baguette Client installation script")
-                .appendExec("sudo SERVER_CERT="+serverCertFile+" " + installScriptPath + " " + baseDownloadUrl + " " + apiKey)
+                .appendExec(
+                        (isServerSecure ? "sudo SERVER_CERT="+serverCertFile+" " : "sudo ")
+                                + installScriptPath + " " + baseDownloadUrl + " " + apiKey
+                )
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")
                 .appendWriteFile(credentialsTempFile, clientConfAppend, false)
                 .appendExec("sudo mv " + credentialsTempFile + " " + credentialsFile)
-                .appendExec("sudo chmod u+rw,og-rwx " + credentialsFile)
+                //.appendExec("sudo chmod u+rw,og-rwx " + credentialsFile)
                 .appendExec("sudo -- sh -c 'cat " + credentialsFile + " >> " + clientConfFile + "' ")
 
         // Launch Baguette Client

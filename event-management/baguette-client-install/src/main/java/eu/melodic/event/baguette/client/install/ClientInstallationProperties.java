@@ -52,4 +52,6 @@ public class ClientInstallationProperties {
     private String serverCertFileAtClient;      // location in VM, where EMS server certificate will be stored
     private String copyFilesFromServerDir;      // location in EMS server whose contents will be copied to VM
     private String copyFilesToClientDir;        // location in VM where server files will be copied into
+
+    private String clientTmpDir;                // location of temp. directory in VM (typically /tmp)
 }
