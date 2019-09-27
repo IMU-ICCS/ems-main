@@ -29,9 +29,9 @@ import javax.validation.constraints.Min;
 public class ControlServiceProperties {
     @Value("${control.upperware-grouping}")
     private String upperwareGrouping;
-    @Value("${control.metasolver-configuration-url}")
+    @Value("${control.metasolver-configuration-url:}")
     private String metasolverConfigurationUrl;
-    @Value("${control.esb-url}")
+    @Value("${control.esb-url:}")
     private String esbUrl;
 
     @Value("${control.preload.camel-model:}")
