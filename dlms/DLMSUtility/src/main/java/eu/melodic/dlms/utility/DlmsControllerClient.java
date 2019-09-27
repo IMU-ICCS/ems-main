@@ -6,6 +6,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,6 +21,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import eu.melodic.dlms.utility.camel.ModelAnalyzer;
+import eu.paasage.upperware.security.authapi.SecurityConstants;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,35 +34,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class DlmsControllerClient {
-	// below url is just for testing, will be changed later once actual utility is
-	// available
-	private static String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
+	// below url is just for testing
+//	private static String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
 
 	private final String datasourceServerUrl;
 	private final String camelModelId;
 
+	private final MelodicSecurityProperties melodicSecurityProperties;
+	private final JWTService jwtService;
+	
 	/**
 	 * Constructor for unit tests etc.
 	 */
 	protected DlmsControllerClient() {
-		this("", "");
+		this("", "", null, null);
 	}
-
-	/**
-	 * Main method just for stand-alone testing.
-	 */
-
-//	public static void main(String[] args) {
-////		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-////				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
-//		Collection<DlmsConfigurationElement> proposed = new ArrayList<>();
-//		proposed.add(new DlmsConfigurationElement("Component_App", null, 0));
-//		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-//				.getUtilityValues(Collections.emptyList(), proposed);
-//		for (String key : result.getResults().keySet()) {
-//			log.info("{} --> {}", key, result.getResults().get(key));
-//		}
-//	}
 
 	/**
 	 * Obtain the deployed application topology from the camel model
@@ -64,6 +59,16 @@ public class DlmsControllerClient {
 
 		return modelAnalyzer.getCompConMap();
 	}
+	
+    private HttpHeaders createHttpHeaders(String jwtToken) {
+        HttpHeaders headers = new HttpHeaders();
+        if (StringUtils.isNotBlank(jwtToken)) {
+            headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
+        }
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        return headers;
+    }
 
 	/**
 	 * Returns utility values from every algorithm running in the DlmsController.
@@ -74,12 +79,14 @@ public class DlmsControllerClient {
 			Collection<DlmsConfigurationElement> proposed) {
 		// get the connections between the application component and datasource
 		Map<String, List<String>> compConMap = readCamelModel(this.camelModelId);
+		
+		String jwtToken = createToken();
 		// get the connections
 		try {
+			
 			RestTemplate restTemplate = new RestTemplate();
 			URI uri = new URI(datasourceServerUrl);
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpHeaders headers = createHttpHeaders(jwtToken);
 
 			log.debug("The size of deployed is {}", deployed.size());
 			log.debug("The size of proposed is {}", proposed.size());
@@ -99,6 +106,7 @@ public class DlmsControllerClient {
 			if (proposed.size() > 0) {
 				log.debug("Calculating the utility for the proposed solution");
 				DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
+
 				HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);
 				ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
 						UtilityMetrics.class);
@@ -185,6 +193,14 @@ public class DlmsControllerClient {
 			DlmsConfigurationElement proposedElement) {
 		DlmsConfigurationDiff diff = new DlmsConfigurationDiff(deployedElement, proposedElement);
 		diffBundle.addConfigurationDiff(diff);
+	}
+	
+	private String createToken() {
+        String username = melodicSecurityProperties.getUser().getUsername();
+        log.debug("DLMSUtility.createToken():  username={}, jwt-service={}", username, jwtService);
+        String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+        log.debug("DLMSUtility.createToken():  username={}, token={}", username, token);
+        return token;
 	}
 
 }

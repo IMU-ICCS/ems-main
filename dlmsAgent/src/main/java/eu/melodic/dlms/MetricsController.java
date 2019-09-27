@@ -101,7 +101,7 @@ public class MetricsController {
 	 * sends every collected metric found as a message to that server (with the
 	 * metric's name as topic).
 	 */
-	public void sendMetrics() {
+	public void sendMetrics(String appComp) {
 		Connection connection = null;
 		try {
 			connection = initializeConnection();
@@ -112,12 +112,12 @@ public class MetricsController {
 //				Map<String, Object> gaugesMap = metrics.getGauges().getProperties();
 				Map<String, Object> countersMap = metrics.getCounters().getProperties();
 
-				extractSendAlluxioMetrics(countersMap, session);
+				extractSendAlluxioMetrics(countersMap, session, appComp);
 			}
 
 			if (!mySqlMetrics.isEmpty()) {
 				log.info("MySQL metrics found");
-				extractAndSendMetrics(mySqlMetrics, null, session);
+				extractAndSendMetrics(mySqlMetrics, null, session, appComp);
 			}
 		} catch (JMSException e) {
 			log.error("JMS sending failed: {}", e.getMessage(), e);
@@ -129,11 +129,8 @@ public class MetricsController {
 	/**
 	 * Extract relevant read and write metrics
 	 */
-	public void extractSendAlluxioMetrics(Map<String, Object> map, Session session) throws JMSException {
+	public void extractSendAlluxioMetrics(Map<String, Object> map, Session session, String appComp) throws JMSException {
 		Date now = new Date();
-		// each deployed machine has a system variable with a component id
-		String appComp = System.getenv("COMPONENT_ID");
-//		long appCompId = Long.parseLong(appCompId);
 		Set<Map.Entry<String, Object>> entries = map.entrySet();
 		for (Map.Entry<String, Object> entry : entries) {
 			if (isRelevant(entry.getKey())) {
@@ -244,7 +241,7 @@ public class MetricsController {
 				&& (!metrics.getGauges().getProperties().isEmpty() || !metrics.getCounters().getProperties().isEmpty());
 	}
 
-	private void extractAndSendMetrics(Map<String, Object> map, String propertyName, Session session)
+	private void extractAndSendMetrics(Map<String, Object> map, String propertyName, Session session, String appComp)
 			throws JMSException {
 		Date now = new Date();
 

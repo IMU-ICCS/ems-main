@@ -14,15 +14,12 @@ import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.DefaultEdge;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static eu.melodic.upperware.adapter.plangenerator.graph.model.Type.CONFIG;
-import static java.lang.String.format;
 
 @Slf4j
 public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator<T> {
@@ -47,10 +44,6 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
         }
     }
 
-    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, List<U> to) {
-        addEdge(graph, from, to, () -> true);
-    }
-
     <T extends Task, U extends Task> void addWaitEdge(MelodicGraph<Task, DefaultEdge> graph, Supplier<T> from, List<U> to, BooleanSupplier booleanSupplier) {
         if (booleanSupplier.getAsBoolean()) {
             T t = from.get();
@@ -64,47 +57,26 @@ public abstract class AbstractDefaultGraphGenerator<T> implements GraphGenerator
         to.forEach(u -> addEdge(graph, from, u, booleanSupplier));
     }
 
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, U to, BiPredicate<T, U> biPredicate) {
+        addEdge(graph, from, Collections.singletonList(to), biPredicate);
+    }
+
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, List<U> to, BiPredicate<T, U> biPredicate) {
+        addEdge(graph, Collections.singletonList(from), to, biPredicate);
+    }
+
     <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, List<U> to, BiPredicate<T, U> biPredicate) {
-        for (T t : from) {
-            boolean wasSet = false;
-            for (U u : to) {
-                if (biPredicate.test(t, u)){
-                    addEdge(graph, t, u);
-                    wasSet = true;
-                }
-            }
-            if (CONFIG.equals(graph.getType()) && !wasSet) {
-                throw new IllegalStateException(
-                        format("Missing obligatory node of graph - dependency between %s and %s was not set", taskToString(t), tasksToString(to)));
+        for (T f : from) {
+            for (U t : to) {
+                addEdge(graph, f, t, biPredicate);
             }
         }
     }
 
-    <T extends Task, U extends Task> void addReverseEdge(MelodicGraph<Task, DefaultEdge> graph, List<T> from, List<U> to, BiPredicate<T, U> biPredicate) {
-        for (U u : to) {
-            boolean wasSet = false;
-            for (T t : from) {
-                if (biPredicate.test(t, u)){
-                    addEdge(graph, t, u);
-                    wasSet = true;
-                }
-            }
-            if (CONFIG.equals(graph.getType()) && !wasSet) {
-                throw new IllegalStateException(
-                        format("Missing obligatory node of graph - dependency between %s and %s was not set", taskToString(u), tasksToString(from)));
-            }
+    <T extends Task, U extends Task> void addEdge(MelodicGraph<Task, DefaultEdge> graph, T from, U to, BiPredicate<T, U> biPredicate) {
+        if (biPredicate.test(from, to)) {
+            addEdge(graph, from, to);
         }
-    }
-
-    <T extends Task> String tasksToString(List<T> tasks){
-        return tasks
-                .stream()
-                .map(this::taskToString)
-                .collect(Collectors.joining(", ", "[", "]"));
-    }
-
-    <T extends Task> String taskToString(T task){
-        return task.getClass().getSimpleName() + "{" + task.getData().getName() + "}";
     }
 
 }
