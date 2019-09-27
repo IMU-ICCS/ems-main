@@ -4,13 +4,11 @@ import camel.constraint.ComparisonOperatorType;
 import camel.constraint.ConstraintModel;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
+import camel.core.Feature;
 import camel.core.NamedElement;
-import camel.deployment.Configuration;
 import camel.deployment.RequirementSet;
-import camel.deployment.ServerlessConfiguration;
 import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
-import camel.deployment.impl.ScriptConfigurationImpl;
 import camel.location.LocationModel;
 import camel.metric.CompositeMetric;
 import camel.metric.Metric;
@@ -18,7 +16,9 @@ import camel.metric.MetricVariable;
 import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
+import camel.mms.MmsObject;
 import camel.requirement.HorizontalScaleRequirement;
+import camel.requirement.ResourceRequirement;
 import camel.type.PrimitiveType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -33,7 +33,6 @@ import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.parser.ExpressionService;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
-import eu.passage.upperware.commons.model.tools.CdoTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import io.github.cloudiator.rest.ApiException;
@@ -446,15 +445,20 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     private NodeType getNodeType(SoftwareComponent softwareComponent) {
-        Configuration configuration = CdoTool.getFirstElement(softwareComponent.getConfigurations());
-
-        NodeType result;
-        if (configuration instanceof ServerlessConfiguration) {
-            result = NodeType.FAAS;
-        } else {
-            result = NodeType.IAAS;
+        final ResourceRequirement resourceRequirement = softwareComponent.getRequirementSet().getResourceRequirement();
+        if (resourceRequirement == null) {
+            return NodeType.IAAS;
         }
-        return result;
+
+        for (Feature subFeature : resourceRequirement.getSubFeatures()) {
+            if ("placementApp".equals(subFeature.getName())) {
+                final EList<MmsObject> annotations = subFeature.getAnnotations();
+                if (CollectionUtils.isNotEmpty(annotations)) {
+                    return NodeType.valueOf(annotations.get(0).getId());
+                }
+            }
+        }
+        return NodeType.IAAS;
     }
 
     private DeploymentTypeModelImpl getDeploymentModel(CamelModel camelModel) {
