@@ -43,6 +43,7 @@ public class ColosseumClientApi implements ColosseumApi {
   private QueueApi queueApi;
   private ProcessApi processApi;
   private MonitoringApi monitoringApi;
+  private ScaleApi scaleApi;
 
 
   @Override
@@ -147,6 +148,12 @@ public class ColosseumClientApi implements ColosseumApi {
     Objects.requireNonNull(metricName);
     log.info("Deleting monitor with metricName: {} and MonitoringTarget({}, {}) ", metricName, monitoringTarget.getType(), monitoringTarget.getIdentifier());
     monitoringApi.deleteMonitor(metricName, monitoringTarget);
+  }
+
+  @Override
+  public Queue triggerScale(Scale scale) throws ApiException {
+    log.info("Triggering scale {}", scale);
+    return scaleApi.triggerScale(scale);
   }
 
 }

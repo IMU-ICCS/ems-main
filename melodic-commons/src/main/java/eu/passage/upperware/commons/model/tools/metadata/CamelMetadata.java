@@ -15,6 +15,8 @@ public enum CamelMetadata {
     RAM("RAM", VariableType.RAM, false, false),
     STORAGE("Storage", VariableType.STORAGE, false, false),
     CARDINALITY("Cardinality", VariableType.CARDINALITY, false, false),
+    LATITUDE("latitude", VariableType.LATITUDE, false, false),
+    LONGITUDE("longitude", VariableType.LONGITUDE, false, false),
 
     PROVIDER("", VariableType.PROVIDER, false, false),
 
@@ -33,7 +35,7 @@ public enum CamelMetadata {
     public boolean dlmsUtility;
 
 
-    public static final List<CamelMetadata> VM_LIST = Collections.unmodifiableList(Arrays.asList(CORES, RAM, STORAGE, CARDINALITY));
+    public static final List<CamelMetadata> VM_LIST = Collections.unmodifiableList(Arrays.asList(CORES, RAM, STORAGE, CARDINALITY, LATITUDE, LONGITUDE));
     public static final List<CamelMetadata> NC_LIST = Collections.unmodifiableList(Collections.singletonList(PRICE));
     public static final List<CamelMetadata> DLMS_LIST = Collections.unmodifiableList(Arrays.asList(AFFINITY_AWARENESS, DATA_CENTRE_AWARENESS, SOURCE_AWARENESS, DLMS_TOTAL_UTILITY));
 

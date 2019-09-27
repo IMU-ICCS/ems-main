@@ -30,7 +30,7 @@ public class RealVarCreator extends NumericValueSupport implements Creator<CpVar
             throw new RuntimeException("Temporary unimplemented");
         } else if (isRangeDomain(cpVariable.getDomain())) {
             log.info("Creating realVar {}", cpVariable.getId());
-            Pair<Double, Double> range = parseDoubleRangeDomain((RangeDomain) cpVariable.getDomain());
+            Pair<Double, Double> range = parseRealRangeDomain((RangeDomain) cpVariable.getDomain());
             RealVar realVar = solverData.getModel().realVar(cpVariable.getId(), range.getLeft(), range.getRight(), getPrecision());
             realVars.put(cpVariable.getId(), realVar);
             return realVar;

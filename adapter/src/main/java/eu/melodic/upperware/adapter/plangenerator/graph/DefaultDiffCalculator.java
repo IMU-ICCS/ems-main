@@ -1,6 +1,7 @@
 package eu.melodic.upperware.adapter.plangenerator.graph;
 
 import eu.melodic.upperware.adapter.plangenerator.graph.model.DividedElement;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -14,11 +15,12 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 @Service
 public class DefaultDiffCalculator<T, R> implements DiffCalculator<T, R> {
     
     @Override
-    public Map<R, DividedElement<T>> calculateDiff(List<T> newElements, List<T> oldElements,
+    public Map<R, DividedElement<T>> calculateDiff(Collection<T> newElements, Collection<T> oldElements,
                                                 BiPredicate<T, T> predicate, Function<T, R> toGroupFunction) {
 
         Map<R, DividedElement<T>> result = new HashMap<>();
@@ -30,7 +32,7 @@ public class DefaultDiffCalculator<T, R> implements DiffCalculator<T, R> {
             List<T> newElementsByTask = getFiltered(newElements, tPredicate);
             List<T> oldElementsByTask = getFiltered(oldElements, tPredicate);
 
-            DividedElement dividedElement = DividedElement.<T>builder()
+            DividedElement<T> dividedElement = DividedElement.<T>builder()
                     .toCreate(getDataToCreate(newElementsByTask, oldElementsByTask, predicate))
                     .toDelete(getDataToDelete(newElementsByTask, oldElementsByTask, predicate))
                     .toRemain(getDataToRemain(newElementsByTask, oldElementsByTask, predicate))
@@ -40,6 +42,37 @@ public class DefaultDiffCalculator<T, R> implements DiffCalculator<T, R> {
         }
 
         return result;
+    }
+
+    @Override
+    public void print(String name, Map<R, DividedElement<T>> result) {
+        log.info("Diff {} begin", name);
+        result.forEach((key, value) -> log.info("Task: {} -> (c: {}, r: {}, d: {})", key, value.getToCreate().size(), value.getToRemain().size(), value.getToDelete().size()));
+        log.info("Diff {} end", name);
+    }
+
+    @Override
+    public List<T> getToRemain(Map<R, DividedElement<T>> entireElement) {
+        return get(entireElement, DividedElement::getToRemain);
+    }
+
+    @Override
+    public List<T> getToDelete(Map<R, DividedElement<T>> entireElement) {
+        return get(entireElement, DividedElement::getToDelete);
+    }
+
+    @Override
+    public List<T> getToCreate(Map<R, DividedElement<T>> entireElement) {
+        return get(entireElement, DividedElement::getToCreate);
+    }
+
+    private List<T> get(Map<R, DividedElement<T>> entireElement, Function<DividedElement<T>, List<T>> fetchFunction) {
+        return entireElement.keySet()
+                .stream()
+                .map(entireElement::get)
+                .map(fetchFunction)
+                .flatMap(Collection::stream)
+                .collect(toList());
     }
 
     private List<T> getFiltered(Collection<T> elements, Predicate<T> tPredicate){

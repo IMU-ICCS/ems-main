@@ -143,6 +143,11 @@ public class ApplicationContext {
   }
 
   @Bean
+  public ScaleApi scaleApi(ApiClient apiClient) {
+    return new ScaleApi(apiClient);
+  }
+
+  @Bean
   public ApiClient apiClient() {
     ApiClient apiClient = new ApiClient();
     apiClient.setBasePath(adapterProperties.getCloudiatorV2().getUrl());

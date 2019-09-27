@@ -32,33 +32,23 @@ import lombok.extern.slf4j.Slf4j;
  * Client interface to call DlmsController from the UtilityGenerator.
  */
 @Slf4j
-@EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
-@SpringBootApplication
-public class DlmsControllerClient implements ApplicationContextAware{
+public class DlmsControllerClient {
 	// below url is just for testing
 //	private static String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
 
 	private final String datasourceServerUrl;
 	private final String camelModelId;
 
-	private MelodicSecurityProperties melodicSecurityProperties;
-	private JWTService jwtService;
-
+	private final MelodicSecurityProperties melodicSecurityProperties;
+	private final JWTService jwtService;
+	
 	/**
-	 * Main method just for stand-alone testing.
+	 * Constructor for unit tests etc.
 	 */
-//	public static void main (String[] args) {
-////		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-////				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
-//		Collection<DlmsConfigurationElement> proposed = new ArrayList<>();
-//		proposed.add(new DlmsConfigurationElement("Component_App", null, 0));
-//		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-//				.getUtilityValues(Collections.emptyList(), proposed);
-//		for (String key : result.getResults().keySet()) {
-//			log.info("{} --> {}", key, result.getResults().get(key));
-//		}
-//	}
+	protected DlmsControllerClient() {
+		this("", "", null, null);
+	}
 
 	/**
 	 * Obtain the deployed application topology from the camel model
@@ -211,13 +201,6 @@ public class DlmsControllerClient implements ApplicationContextAware{
         String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
         log.debug("DLMSUtility.createToken():  username={}, token={}", username, token);
         return token;
-	}
-
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
-		this.jwtService = applicationContext.getBean(JWTService.class);
 	}
 
 }

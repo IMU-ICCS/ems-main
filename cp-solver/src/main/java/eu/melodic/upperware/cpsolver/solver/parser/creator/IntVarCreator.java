@@ -48,7 +48,7 @@ public class IntVarCreator extends NumericValueSupport implements IntCreator<CpV
         if (solverData.getRealVars().containsKey(suffixedName)){
             return solverData.getRealVars().get(suffixedName);
         } else {
-            log.info("Creating realVar {} for intVar", suffixedName, cpVariable.getId());
+            log.info("Creating realVar {} for intVar {}", suffixedName, cpVariable.getId());
             RealVar realVar = solverData.getModel().realIntView(intVar, getPrecision());
             solverData.getRealVars().put(suffixedName, realVar);
             return realVar;

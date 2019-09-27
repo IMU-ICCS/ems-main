@@ -79,6 +79,10 @@ public class ColosseumContext implements ContextOperations {
         schedules.add(schedule);
     }
 
+    public synchronized void deleteSchedule(@NonNull String scheduleId) {
+        schedules.removeIf(schedule -> schedule.getId().equalsIgnoreCase(scheduleId));
+    }
+
     public synchronized Optional<Schedule> getSchedule(String name) {
         return getElement(schedules, schedule -> name.equals(schedule.getId()), createAmbiguousResultException(Schedule.class, name));
     }
