@@ -14,8 +14,8 @@ import lombok.Getter;
 @Getter
 //@ToString(doNotUseGetters = true, exclude = { "host_name", /* "component_name", */ "level" })
 public class MetricValueEventAcDsDataWrite {
-	private long ac;
-	private long ds;
+	private String ac;
+	private String ds;
 	private long amountWrite;
 	private long timeStamp;
 }

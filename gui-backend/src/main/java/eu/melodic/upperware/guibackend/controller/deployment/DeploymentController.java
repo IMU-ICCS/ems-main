@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.deployment;
 
+import eu.melodic.upperware.guibackend.controller.common.MelodicHeaders;
 import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
@@ -15,9 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/application/deployment")
+@RequestMapping("/auth/deployment")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentController {
@@ -31,7 +33,17 @@ public class DeploymentController {
         log.info("POST request for upload xmi file with name: {}", file.getResource().getFilename());
         String cdoName = deploymentService.uploadXmi(file);
         log.info("File {} successfully uploaded. Finding secure variables in progress.", cdoName);
-        return deploymentService.findSecureVariables(file, cdoName);
+        return deploymentService.createUploadSingleXmiResponse(file, cdoName);
+    }
+
+    @PostMapping(value = "/xmi/multiple")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<UploadXmiResponse> uploadXmiList(@RequestParam("files") List<MultipartFile> files) {
+        final String names = files.stream()
+                .map(MultipartFile::getOriginalFilename)
+                .collect(Collectors.joining(", ", "[", "]"));
+        log.info("POST request for upload xmi files list in number: {}, files names: {}", files.size(), names);
+        return deploymentService.uploadXmiList(files);
     }
 
     @DeleteMapping(value = "/xmi/{xmiName}")
@@ -51,9 +63,10 @@ public class DeploymentController {
     @PostMapping(value = "/process")
     @ResponseStatus(HttpStatus.CREATED)
     public DeploymentResponse deployApplication(@RequestBody DeploymentRequest deploymentRequest,
-                                                @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+                                                @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
+                                                @RequestHeader(MelodicHeaders.REFRESH) String refreshToken) {
         log.info("POST request for deployment new process");
-        return deploymentService.createDeploymentProcess(deploymentRequest, token);
+        return deploymentService.createDeploymentProcess(deploymentRequest, token, refreshToken);
     }
 
     @PostMapping(value = "/secure/variable")

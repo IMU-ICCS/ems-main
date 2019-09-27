@@ -134,6 +134,12 @@ public class DataUtils {
         CPModelTool.getOs(variableValues)
                 .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getOsPredicate(CPModelTool.getIntValue(variableValue))));
 
+        CPModelTool.getLatitude(variableValues)
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getLatitudePredicate(CPModelTool.getIntValue(variableValue))));
+
+        CPModelTool.getLongitude(variableValues)
+                .ifPresent(variableValue -> result.add(NodeCandidatePredicates.getLongitudePredicate(CPModelTool.getIntValue(variableValue))));
+
         return result.toArray(new Predicate[result.size()]);
     }
 

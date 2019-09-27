@@ -13,6 +13,6 @@ import lombok.ToString;
 public class ActiveMqStatistics {
 
 	private long msqCount;
-	private Boolean hasError;
+	private long errorCount;
 
 }

@@ -8,6 +8,7 @@ import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -15,7 +16,12 @@ public class ApplicationContext {
 
     @Bean
     public RestTemplate getRestTemplate() {
-        return new RestTemplate();
+
+        SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+        simpleClientHttpRequestFactory.setConnectTimeout(180000);
+        simpleClientHttpRequestFactory.setReadTimeout(120000);
+
+        return new RestTemplate(simpleClientHttpRequestFactory);
     }
 
     @Bean
@@ -55,6 +61,11 @@ public class ApplicationContext {
     @Bean
     public JobApi jobApi(ApiClient apiClient) {
         return new JobApi(apiClient);
+    }
+
+    @Bean
+    public MonitoringApi monitoringApi(ApiClient apiClient) {
+        return new MonitoringApi(apiClient);
     }
 
     @Bean

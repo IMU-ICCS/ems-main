@@ -13,4 +13,5 @@ public class ProcessInstanceResponse {
     private String applicationId;
     private ProcessState processState;
     private String finishDate;
+    private String startDate;
 }

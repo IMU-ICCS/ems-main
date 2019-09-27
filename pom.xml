@@ -341,10 +341,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>choco.repos</id>
-            <url>http://www.emn.fr/z-info/choco-repo/mvn/repository/</url>
-        </repository>
     </repositories>
     <distributionManagement>
         <repository>

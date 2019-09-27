@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/application/provider")
+@RequestMapping("/auth/provider")
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ProviderController {

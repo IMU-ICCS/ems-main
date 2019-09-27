@@ -15,10 +15,17 @@ import javax.naming.AuthenticationException;
 public class ExceptionController extends ResponseEntityExceptionHandler {
 
     private static final String UNAUTHORIZED_MESSAGE = "Invalid credentials";
+    private static final String USER_NOT_FOUND_MESSAGE = "Such user does not exist";
 
-    @ExceptionHandler({UserNotFoundException.class, AuthenticationException.class})
-    public ResponseEntity<ExceptionResponse> handleSecurityException() {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ExceptionResponse> handleAuthenticationException() {
         ExceptionResponse response = new ExceptionResponse(UNAUTHORIZED_MESSAGE);
         return new ResponseEntity<>(response, new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleUserNotFoundException() {
+        ExceptionResponse response = new ExceptionResponse(USER_NOT_FOUND_MESSAGE);
+        return new ResponseEntity<>(response, new HttpHeaders(), HttpStatus.NOT_FOUND);
     }
 }

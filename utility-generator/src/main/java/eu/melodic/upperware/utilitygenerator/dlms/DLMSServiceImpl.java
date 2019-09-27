@@ -13,6 +13,8 @@ import eu.melodic.dlms.utility.DlmsConfigurationElement;
 import eu.melodic.dlms.utility.DlmsControllerClient;
 import eu.melodic.dlms.utility.UtilityMetrics;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -21,8 +23,9 @@ public class DLMSServiceImpl implements DLMSService {
 
     private DlmsControllerClient dlmsClient;
 
-    public DLMSServiceImpl(String camelName, String dlmsControllerUrl) {
-        this.dlmsClient = new DlmsControllerClient(dlmsControllerUrl, camelName);
+    public DLMSServiceImpl(String camelName, String dlmsControllerUrl,
+                           MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
+        this.dlmsClient = new DlmsControllerClient(dlmsControllerUrl, camelName, melodicSecurityProperties, jwtService);
     }
 
     @Override

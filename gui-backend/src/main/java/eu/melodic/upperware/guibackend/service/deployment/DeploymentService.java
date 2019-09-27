@@ -3,7 +3,8 @@ package eu.melodic.upperware.guibackend.service.deployment;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
-import eu.melodic.upperware.guibackend.communication.mule.MuleClientApi;
+import eu.melodic.upperware.guibackend.communication.mule.MuleApi;
+import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
@@ -21,12 +22,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,20 +34,24 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class DeploymentService {
 
-    private MuleClientApi muleClientApi;
+    private MuleApi muleClientApi;
     private DeploymentMapper deploymentMapper;
     private CdoService cdoService;
     private ProviderService providerService;
     private SecureStoreService secureStoreService;
 
-    public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token) {
+    public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token, String refreshToken) {
         deploymentRequest.setCloudDefinitions(deploymentRequest.getCloudDefinitions()
                 .stream()
                 .map(cloudDefinition -> providerService.fillSecureVariableInCredentials(cloudDefinition))
                 .collect(Collectors.toList()));
         DeploymentProcessRequest deploymentProcessRequest = deploymentMapper
                 .mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
-        return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token);
+        try {
+            return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token, refreshToken);
+        } catch (MalformedURLException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem with communication with Mule by creating deployment process: %s", e.getMessage()));
+        }
     }
 
     private Watermark createWatermark(String username) {
@@ -73,7 +77,7 @@ public class DeploymentService {
 
             if (!cdoService.storeFileInCdo(cdoName, xmiFile)) {
                 log.error("Error by storing xmi model into cdo");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your xmi model is invalid. Please try again.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your xmi model is invalid or connection timeout occurred. Please try again.");
             }
         } catch (IOException e) {
             log.error("Error by uploading xmi file:", e);
@@ -102,7 +106,42 @@ public class DeploymentService {
         return allXmiModels;
     }
 
-    public UploadXmiResponse findSecureVariables(MultipartFile xmiFile, String cdoName) {
+    public UploadXmiResponse createUploadSingleXmiResponse(MultipartFile xmiFile, String cdoName) {
+        try {
+            List<SecureVariable> secureVariables = findSecureVariables(xmiFile);
+            return UploadXmiResponse.builder()
+                    .modelName(cdoName)
+                    .secureVariables(secureVariables)
+                    .httpStatus(HttpStatus.CREATED)
+                    .build();
+        } catch (ResponseStatusException ex) {
+            return UploadXmiResponse.builder()
+                    .modelName(cdoName)
+                    .secureVariables(Collections.emptyList())
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message(ex.getMessage())
+                    .build();
+        }
+    }
+
+    public List<UploadXmiResponse> uploadXmiList(List<MultipartFile> files) {
+        List<UploadXmiResponse> response = new ArrayList<>(files.size());
+        files.forEach(multipartFile -> {
+            try {
+                String cdoName = uploadXmi(multipartFile);
+                log.info("File {} successfully uploaded. Finding secure variables in progress.", cdoName);
+                response.add(createUploadSingleXmiResponse(multipartFile, cdoName));
+            } catch (ResponseStatusException ex) {
+                response.add(UploadXmiResponse.builder()
+                        .httpStatus(HttpStatus.BAD_REQUEST)
+                        .message(ex.getMessage())
+                        .build());
+            }
+        });
+        return response;
+    }
+
+    private List<SecureVariable> findSecureVariables(MultipartFile xmiFile) {
         List<String> secureVariablesKeys;
         try {
             String xmiContent = new String(xmiFile.getBytes());
@@ -110,9 +149,6 @@ public class DeploymentService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by parsing your uploaded file %s in order to find secure variables", xmiFile.getName()));
         }
-        return UploadXmiResponse.builder()
-                .modelName(cdoName)
-                .secureVariables(secureStoreService.fillSecureVariablesValues(secureVariablesKeys))
-                .build();
+        return secureStoreService.fillSecureVariablesValues(secureVariablesKeys);
     }
 }

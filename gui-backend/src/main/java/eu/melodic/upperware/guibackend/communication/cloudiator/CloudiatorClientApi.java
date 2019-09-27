@@ -25,7 +25,8 @@ public class CloudiatorClientApi implements CloudiatorApi {
     private ProcessApi processApi;
     private QueueApi queueApi;
     private JobApi jobApi;
-    private final String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
+    private MonitoringApi monitoringApi;
+    private final static String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
     public Integer getDiscoveryStatusTotal() {
@@ -223,6 +224,16 @@ public class CloudiatorClientApi implements CloudiatorApi {
             return processApi.getSchedules();
         } catch (ApiException e) {
             log.error("Error by getting Cloudiator schedules list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<Monitor> getMonitorList() {
+        try {
+            return monitoringApi.findMonitors();
+        } catch (ApiException e) {
+            log.error("Error by getting monitors list: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }

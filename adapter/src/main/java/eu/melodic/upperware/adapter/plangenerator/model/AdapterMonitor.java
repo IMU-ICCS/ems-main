@@ -5,10 +5,16 @@ import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.function.BiPredicate;
 
 @Getter
 @Builder
 public class AdapterMonitor implements Data {
+
+    public static final BiPredicate<AdapterMonitor, AdapterMonitor> MONITOR_BI_PREDICATE = (newReq, oldReq) ->
+            newReq.getMetricName().equals(oldReq.getMetricName()) &&
+                    newReq.getNodeName().equals(oldReq.getNodeName());
+
 
     private String jobName;
     private String nodeName;
@@ -20,6 +26,6 @@ public class AdapterMonitor implements Data {
 
     @Override
     public String getName() {
-        return "AdapterMonitor_" + metricName + "_" + taskName + "_" + nodeName;
+        return String.format("AdapterMonitor_%s_%s_%s", metricName, taskName, nodeName);
     }
 }

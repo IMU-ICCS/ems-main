@@ -12,6 +12,8 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -21,9 +23,10 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties) {
+    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+                                       MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
         log.info("Creating of the Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, jwtService);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {

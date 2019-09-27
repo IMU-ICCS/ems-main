@@ -12,6 +12,7 @@ import camel.core.CamelModel;
 import camel.deployment.DeploymentInstanceModel;
 import camel.execution.ExecutionModel;
 import camel.execution.HistoryRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -27,7 +28,10 @@ import java.util.Optional;
  * @author Shirley Crompton
  *         org UK Science and Technology Facilities Council
  */
+@Slf4j
 public final class CdoTool {
+
+    private static final String DEPLOYMENT_SOLUTION_SUCCESS = "DEPLOYMENT_SOLUTION_SUCCESS";
 
     public static Optional<CamelModel> getLastCamelModel(List<EObject> contentsCM){
         return getLastElementAsOptional(contentsCM)
@@ -57,10 +61,16 @@ public final class CdoTool {
 
     public static Optional<DeploymentInstanceModel> getCurrentlyInstalledModel(ExecutionModel executionModel){
         List<HistoryRecord> historyRecords = ListUtils.emptyIfNull(executionModel.getHistoryRecords());
-        if (CollectionUtils.isEmpty(historyRecords)){
-            return Optional.empty();
+
+        DeploymentInstanceModel result = null;
+        //search for last deployment history records
+        for (HistoryRecord historyRecord : historyRecords) {
+            if (DEPLOYMENT_SOLUTION_SUCCESS.equals(historyRecord.getType().getId())) {
+                result = historyRecord.getToDeploymentInstanceModel();
+            }
         }
-        return Optional.ofNullable(historyRecords.get(historyRecords.size() - 1).getToDeploymentInstanceModel());
+
+        return Optional.ofNullable(result);
     }
 
 }
