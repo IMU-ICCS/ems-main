@@ -126,11 +126,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     getClientInfoFromGreeting(line.substring("-HELLO FROM CLIENT:".length()));
                     coordinator.register(this);
                 } else if (line.equalsIgnoreCase("READY")) {
-                    if (coordinator.getPhase() == 2) {
-                        coordinator.brokerReady(this);
-                    } else {
-                        coordinator.clientReady(this);
-                    }
+                    coordinator.clientReady(this);
                 }
             }
 

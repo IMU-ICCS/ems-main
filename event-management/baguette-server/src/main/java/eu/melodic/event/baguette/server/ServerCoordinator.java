@@ -24,8 +24,6 @@ public interface ServerCoordinator {
 
     void unregister(ClientShellCommand c);
 
-    void brokerReady(ClientShellCommand c);
-
     void clientReady(ClientShellCommand c);
 
     void start();

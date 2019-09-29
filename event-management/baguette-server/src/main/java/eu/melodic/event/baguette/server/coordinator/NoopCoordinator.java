@@ -72,11 +72,6 @@ public class NoopCoordinator implements ServerCoordinator {
     }
 
     @Override
-    public synchronized void brokerReady(ClientShellCommand c) {
-        _logInvocation("brokerReady", c, true);
-    }
-
-    @Override
     public synchronized void clientReady(ClientShellCommand c) {
         _logInvocation("clientReady", c, true);
     }
