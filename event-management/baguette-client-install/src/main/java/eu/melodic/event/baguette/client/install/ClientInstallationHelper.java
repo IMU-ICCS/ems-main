@@ -281,6 +281,8 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
             installationInstructions
                     .appendLog("Write server certificate for 'wget' use")
                     .appendWriteFile(serverCertFile, this.serverCert, false);
+        } else {
+            serverCertFile = "";
         }
 
         // Copy files from server to Baguette Client
@@ -328,10 +330,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
         // Run Baguette Client installation script
                 .appendLog("Run Baguette Client installation script")
-                .appendExec(
-                        (isServerSecure ? "sudo SERVER_CERT="+serverCertFile+" " : "sudo ")
-                                + installScriptPath + " " + baseDownloadUrl + " " + apiKey
-                )
+                .appendExec("sudo "+installScriptPath+" \""+serverCertFile+"\" "+baseDownloadUrl+" "+apiKey)
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")
