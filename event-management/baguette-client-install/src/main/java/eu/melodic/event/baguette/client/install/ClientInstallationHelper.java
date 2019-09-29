@@ -191,27 +191,27 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         }
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette) throws IOException {
+    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
         log.debug("ClientInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
         OrchestrationHelper.InstallationInstructions installationInstructions = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette);
+            installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette, ipSetting);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette);
+            installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette, ipSetting);
         else
             log.warn("ClientInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
         return installationInstructions;
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette) {
+    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
         log.warn("ClientInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         return null;
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette) throws IOException {
+    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         log.debug("ClientInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
         // Get parameters
@@ -248,6 +248,9 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 baguette.getConfiguration().getCredentials().entrySet().iterator().next();
         valueMap.put("BAGUETTE_SERVER_USERNAME", pair.getKey());
         valueMap.put("BAGUETTE_SERVER_PASSWORD", pair.getValue());
+
+        if (StringUtils.isEmpty(ipSetting)) throw new IllegalArgumentException("IP_SETTING must have a value");
+        valueMap.put("IP_SETTING", ipSetting);
 
         String clientConfAppend = StringSubstitutor.replace(clientConfTemplate, valueMap);
         log.debug("prepareInstallationInstructionsForLinux(): clientConfAppend={}", clientConfAppend);
@@ -294,6 +297,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                     if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
                     targetFile = copyToClientDir + targetFile;
                     String contents = new String(Files.readAllBytes(p));
+                    contents = StringSubstitutor.replace(contents, valueMap);
                     String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
                     installationInstructions
                             .appendLog(String.format("Copy file from server to client: %s -> %s", p.toString(), tmpFile))
