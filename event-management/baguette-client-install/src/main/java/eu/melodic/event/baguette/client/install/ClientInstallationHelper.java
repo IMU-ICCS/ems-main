@@ -339,9 +339,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 //.appendWriteFile(credentialsTempFile, clientConfAppend, false)
                 //.appendExec("sudo mv " + credentialsTempFile + " " + credentialsFile)
         ;
-
         _appendCopyInstructions(installationInstructions, credentialsFile, null, clientConfAppend, clientTmpDir)
-                //.appendExec("sudo chmod u+rw,og-rwx " + credentialsFile)
                 .appendExec("sudo -- sh -c 'cat " + credentialsFile + " >> " + clientConfFile + "' ")
 
         // Launch Baguette Client
@@ -384,9 +382,6 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
         installationInstructions
                 .appendLog(String.format("Copy file from server to temp to client: %s -> %s -> %s", p.toString(), tmpFile, targetFile));
-        /*        .appendWriteFile(tmpFile, contents, false)
-                .appendExec("sudo mv " + tmpFile + " " + targetFile)
-                .appendExec("sudo chmod u+rw og-rwx " + targetFile);*/
         return _appendCopyInstructions(installationInstructions, targetFile, tmpFile, contents, clientTmpDir);
     }
 
@@ -403,7 +398,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         installationInstructions
                 .appendWriteFile(tmpFile, contents, false)
                 .appendExec("sudo mv " + tmpFile + " " + targetFile)
-                .appendExec("sudo chmod u+rw og-rwx " + targetFile);
+                .appendExec("sudo chmod u+rw,og-rwx " + targetFile);
         return installationInstructions;
     }
 
