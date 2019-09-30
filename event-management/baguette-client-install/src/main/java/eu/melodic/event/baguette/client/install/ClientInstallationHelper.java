@@ -223,10 +223,10 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         String installScriptUrl = _prepareUrl(properties.getInstallScriptUrl(), baseUrl);
         String installScriptPath = properties.getInstallScriptFile();
 
-        String credentialsTempFile = properties.getCredentialsTempFile();
-        String credentialsFile = properties.getCredentialsFile();
-        String clientConfTemplateFile = properties.getClientConfigTemplateFile();
-        String clientConfFile = properties.getClientConfigFile();
+        //XXX:DEL: String credentialsTempFile = properties.getCredentialsTempFile();
+        //XXX:DEL: String credentialsFile = properties.getCredentialsFile();
+        //XXX:DEL: String clientConfTemplateFile = properties.getClientConfigTemplateFile();
+        //XXX:DEL: String clientConfFile = properties.getClientConfigFile();
 
         String serverCertFile = properties.getServerCertFileAtClient();
         String clientConfArchive = properties.getClientConfArchiveFile();
@@ -237,7 +237,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         String clientTmpDir = StringUtils.firstNonBlank(properties.getClientTmpDir(), "/tmp");
 
         // Load client config. template and prepare configuration
-        String clientConfTemplate = getResourceAsString(clientConfTemplateFile);
+        //XXX:DEL: String clientConfTemplate = getResourceAsString(clientConfTemplateFile);
         Map<String,String> valueMap = new HashMap<>();
         valueMap.put("BAGUETTE_CLIENT_ID", clientId);
         valueMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
@@ -252,8 +252,8 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         if (StringUtils.isEmpty(ipSetting)) throw new IllegalArgumentException("IP_SETTING must have a value");
         valueMap.put("IP_SETTING", ipSetting);
 
-        String clientConfAppend = StringSubstitutor.replace(clientConfTemplate, valueMap);
-        log.debug("prepareInstallationInstructionsForLinux(): clientConfAppend={}", clientConfAppend);
+        //XXX:DEL: String clientConfAppend = StringSubstitutor.replace(clientConfTemplate, valueMap);
+        //XXX:DEL: log.debug("prepareInstallationInstructionsForLinux(): clientConfAppend={}", clientConfAppend);
 
         // Set the target operating system
         OrchestrationHelper.InstallationInstructions installationInstructions = new OrchestrationHelper.InstallationInstructions();
@@ -295,18 +295,6 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                         .sorted()
                         .collect(Collectors.toList());
                 for (Path p : paths) {
-                    /*String targetFile = StringUtils.substringAfter(p.toUri().toString(), startDir.toUri().toString());
-                    if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
-                    targetFile = copyToClientDir + targetFile;
-                    String contents = new String(Files.readAllBytes(p));
-                    contents = StringSubstitutor.replace(contents, valueMap);
-                    String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
-                    installationInstructions
-                            .appendLog(String.format("Copy file from server to client: %s -> %s", p.toString(), tmpFile))
-                            .appendWriteFile(tmpFile, contents, false)
-                            .appendLog(String.format("Move file to target: %s -> %s", tmpFile, targetFile))
-                            .appendExec("sudo mv " + tmpFile + " " + targetFile)
-                            .appendExec("sudo chmod u+rw og-rwx " + targetFile);*/
                     _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
                 }
             }
@@ -335,12 +323,12 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 .appendExec("sudo "+installScriptPath+" \""+serverCertFile+"\" "+baseDownloadUrl+" "+apiKey)
 
         // Add client identification and server credentials configuration
-                .appendLog("Add client identification and server credentials configuration")
+                /*XXX:DEL: .appendLog("Add client identification and server credentials configuration")
                 //.appendWriteFile(credentialsTempFile, clientConfAppend, false)
                 //.appendExec("sudo mv " + credentialsTempFile + " " + credentialsFile)
         ;
         _appendCopyInstructions(installationInstructions, credentialsFile, null, clientConfAppend, clientTmpDir)
-                .appendExec("sudo -- sh -c 'cat " + credentialsFile + " >> " + clientConfFile + "' ")
+                .appendExec("sudo -- sh -c 'cat " + credentialsFile + " >> " + clientConfFile + "' ")*/
 
         // Launch Baguette Client
                 .appendLog("Launch Baguette Client")
