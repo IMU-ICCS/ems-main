@@ -79,26 +79,21 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     @Override
     public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-            List<LocationModel> locationModels, NodeType nodeType) {
+            List<LocationModel> locationModels) {
         List<Requirement> requirements = new ArrayList<>();
         requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
         requirements.addAll(createImageRequirement(getImageRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createProviderRequirement(getProviderRequirement(globalRequirementSet, localRequirementSet)));
-        requirements.addAll(createNodeTypeRequirement(nodeType));
         requirements.addAll(createPaasRequirements(getPaasRequirement(globalRequirementSet, localRequirementSet)));
         return requirements;
     }
 
-    private Collection<? extends Requirement> createNodeTypeRequirement(NodeType nodeType) {
-        if (nodeType == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(
-                new OclRequirement()
-                        .constraint(String.format("nodes->forAll(type = NodeType::%s)", nodeType.name()))
-                        .type("OclRequirement"));
+    private Requirement createNodeTypeRequirement(NodeType nodeType) {
+        return new OclRequirement()
+                .constraint(String.format("nodes->forAll(type = NodeType::%s)", nodeType.name()))
+                .type("OclRequirement");
     }
 
     private Collection<? extends Requirement> createResourceRequirement(ResourceRequirement resourceRequirement) {
@@ -109,6 +104,13 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         List<Requirement> result = new ArrayList<>();
 
         Map<MmsObject, List<Attribute>> requirementsMap = getRequirementsMap(resourceRequirement);
+
+        final Optional<Attribute> nodeType = getAttribute(requirementsMap, "placementType");
+        if (nodeType.isPresent()) {
+            result.add(createNodeTypeRequirement(NodeType.valueOf(getValueAsString(nodeType.get().getValue()))));
+        } else {
+            result.add(createNodeTypeRequirement(NodeType.IAAS));
+        }
 
         getAttribute(requirementsMap, "totalMemoryHasMin").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
         getAttribute(requirementsMap, "totalMemoryHasMax").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));
@@ -366,6 +368,8 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             return String.valueOf(((FloatValue) value).getValue());
         } else if (value instanceof DoubleValue) {
             return String.valueOf(((DoubleValue) value).getValue());
+        } else if (value instanceof StringValue) {
+            return ((StringValue) value).getValue();
         }
         throw new GeneratorException("Unsupported value type");
     }
