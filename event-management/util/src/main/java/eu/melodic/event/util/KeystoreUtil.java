@@ -476,7 +476,8 @@ public class KeystoreUtil {
             log.debug("    Generating new Key pair and Certificate for: {}", properties.getKeyEntryNameValue());
 
             KeystoreUtil ksUtil = KeystoreUtil
-                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword());
+                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .createIfNotExist();
             if (StringUtils.isBlank(properties.getKeyEntryExtSANValue())) {
                 log.debug("    Create/Replace entry (with SAN auto-generate): {}", properties.getKeyEntryNameValue());
                 ksUtil.createOrReplaceKeyAndCertWithSAN(properties.getKeyEntryNameValue(), properties.getKeyEntryDNameValue());
@@ -490,7 +491,8 @@ public class KeystoreUtil {
             ksUtil.exportCertToFile(properties.getKeyEntryNameValue(), properties.getCertificateFile());
 
             KeystoreUtil tsUtil = KeystoreUtil
-                    .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword());
+                    .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword())
+                    .createIfNotExist();
             log.debug("    Importing certificate to trust store: {}", properties.getTruststoreFile());
             tsUtil.importAndReplaceCertFromFile(properties.getKeyEntryNameValue(), properties.getCertificateFile());
 

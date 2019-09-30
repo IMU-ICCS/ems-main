@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
 import eu.melodic.event.baguette.client.install.OrchestrationHelper;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
@@ -258,12 +259,16 @@ public class ControlServiceController {
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
-        String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+        String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
+        String baseUrl =
+                (ControlServiceProperties.IP_SETTING.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
+                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
+                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Prepare Baguette Client installation instructions for node
         OrchestrationHelper.InstallationInstructions installationInstructions =
-                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette);
+                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;

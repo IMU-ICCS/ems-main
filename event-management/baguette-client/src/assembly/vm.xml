@@ -30,14 +30,14 @@
             <lineEnding>unix</lineEnding>
             <fileMode>0755</fileMode>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <outputDirectory>conf</outputDirectory>
             <directory>conf</directory>
             <includes>
                 <include>*</include>
             </includes>
             <lineEnding>unix</lineEnding>
-        </fileSet>
+        </fileSet>-->
         <fileSet>
             <outputDirectory>logs</outputDirectory>
             <directory>logs</directory>

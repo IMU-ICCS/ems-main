@@ -94,6 +94,7 @@ public class ControlServiceCoordinator {
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
+        log.info("ControlServiceCoordinator.applicationReady(): IP setting: {}", properties.getIpSetting());
         preloadModels();
     }
 
