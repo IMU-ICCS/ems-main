@@ -6,6 +6,7 @@ import io.github.cloudiator.rest.api.*;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -135,8 +136,8 @@ public class CloudiatorClientApi implements CloudiatorApi {
     }
 
     @Override
-    public List<Node> getVMFromNodeList() {
-        return this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.VM);
+    public List<Node> getVMByonFromNodeList() {
+        return ListUtils.union(this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.BYON), this.getNodeWithTypeFromNodeList(Node.NodeTypeEnum.VM));
     }
 
     @Override
