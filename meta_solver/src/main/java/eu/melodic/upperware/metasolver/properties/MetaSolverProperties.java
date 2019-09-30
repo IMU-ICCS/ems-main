@@ -47,8 +47,8 @@ public class MetaSolverProperties {
     private double utilityThresholdFactor;
     @Valid
     private String emsUrl;
-    @Valid
-    private History history;
+    /*@Valid
+    private History history;*/
 
     // --------------------------------------------------------------
 
@@ -97,7 +97,7 @@ public class MetaSolverProperties {
 
     // --------------------------------------------------------------
 
-    @Getter
+    /*@Getter
     @Setter
     public static class History {
         private boolean enabled = false;
@@ -110,5 +110,5 @@ public class MetaSolverProperties {
         private String metasolverPath;
         private String cpSolutionProducedPath;
         private String cpSolutionFailedPath;
-    }
+    }*/
 }
