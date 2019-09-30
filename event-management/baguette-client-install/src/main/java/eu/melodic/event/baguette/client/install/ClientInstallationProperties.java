@@ -37,11 +37,6 @@ public class ClientInstallationProperties {
     private String installScriptUrl;
     private String installScriptFile;
 
-   /*XXX:DEL:  private String credentialsTempFile;
-    private String credentialsFile;
-    private String clientConfigTemplateFile;
-    private String clientConfigFile;*/
-
     private String archiveSourceDir;            // the directory in server that will be archived (it must contain client configuration)
     private String archiveDir;                  // the directory in server where client config. archive will be placed into
     private String archiveFile;                 // name of the client configuration archive (in server)
