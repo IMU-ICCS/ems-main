@@ -21,7 +21,7 @@ public interface CloudiatorApi {
 
     void deleteSecureVariable(String key);
 
-    List<Node> getVMFromNodeList();
+    List<Node> getVMByonFromNodeList();
 
     List<Node> getFaasFromNodeList();
 
