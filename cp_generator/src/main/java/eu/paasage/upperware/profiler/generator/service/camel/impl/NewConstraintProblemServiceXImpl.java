@@ -4,7 +4,6 @@ import camel.constraint.ComparisonOperatorType;
 import camel.constraint.ConstraintModel;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
-import camel.core.Feature;
 import camel.core.NamedElement;
 import camel.deployment.RequirementSet;
 import camel.deployment.SoftwareComponent;
@@ -16,9 +15,7 @@ import camel.metric.MetricVariable;
 import camel.metric.RawMetric;
 import camel.metric.impl.MetricTypeModelImpl;
 import camel.metric.impl.MetricVariableImpl;
-import camel.mms.MmsObject;
 import camel.requirement.HorizontalScaleRequirement;
-import camel.requirement.ResourceRequirement;
 import camel.type.PrimitiveType;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -27,7 +24,6 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
-import eu.paasage.upperware.profiler.generator.communication.impl.NodeType;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
@@ -433,8 +429,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             List<NodeCandidate> nodeCandidates = loadProviders(
                     deploymentTypeModel.getGlobalRequirementSet(),
                     softwareComponent.getRequirementSet(),
-                    camelModel.getLocationModels(),
-                    getNodeType(softwareComponent)
+                    camelModel.getLocationModels()
                     );
             Map<String, List<NodeCandidate>> nodeCandidatesByProvider = nodeCandidatesService.groupByProviders(nodeCandidates);
             Map<Integer, List<NodeCandidate>> nodeCandidatesByProviderIndex = getAsIndexMap(nodeCandidatesByProvider);
@@ -444,29 +439,12 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return result;
     }
 
-    private NodeType getNodeType(SoftwareComponent softwareComponent) {
-        final ResourceRequirement resourceRequirement = softwareComponent.getRequirementSet().getResourceRequirement();
-        if (resourceRequirement == null) {
-            return NodeType.IAAS;
-        }
-
-        for (Feature subFeature : resourceRequirement.getSubFeatures()) {
-            if ("placementApp".equals(subFeature.getName())) {
-                final EList<MmsObject> annotations = subFeature.getAnnotations();
-                if (CollectionUtils.isNotEmpty(annotations)) {
-                    return NodeType.valueOf(annotations.get(0).getId());
-                }
-            }
-        }
-        return NodeType.IAAS;
-    }
-
     private DeploymentTypeModelImpl getDeploymentModel(CamelModel camelModel) {
         return (DeploymentTypeModelImpl) camelModel.getDeploymentModels().get(0);
     }
 
-    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, NodeType nodeType) {
-        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, nodeType);
+    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels) {
+        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels);
         log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;
