@@ -257,22 +257,18 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
         // Create Baguette Client installation directories
         installationInstructions.appendLog("Create Baguette Client installation directories");
-        properties.getMkdirs().forEach(dir ->
-                installationInstructions.appendExec("sudo mkdir -p " + dir)
-        );
+        String dirList = String.join(" ", properties.getMkdirs());
+        if (StringUtils.isNotEmpty(dirList))
+            installationInstructions.appendExec("sudo mkdir -p " + dirList);
 
         // Create files using touch
         installationInstructions.appendLog("Touch files");
-        properties.getTouchFiles().forEach(f ->
-                installationInstructions.appendExec("sudo touch " + f)
-        );
+        String touchList = String.join(" ", properties.getTouchFiles());
+        if (StringUtils.isNotEmpty(touchList))
+            installationInstructions.appendExec("sudo touch " + touchList);
 
-        // Write EMS server certificate (PEM) file
-        if (isServerSecure) {
-            /*installationInstructions
-                    .appendLog("Write server certificate for 'wget' use")
-                    .appendWriteFile(serverCertFile, this.serverCert, false);*/
-        } else {
+        // Clear EMS server certificate (PEM) file, if not secure
+        if (!isServerSecure) {
             serverCertFile = "";
         }
 
@@ -321,7 +317,6 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 .appendLog("Write successful installation file")
                 .appendExec("sudo touch " + checkInstallationFile)
         ;
-        //log.debug("prepareInstallationInstructionsForLinux(): installationInstructions: {}", installationInstructions);
 
         // Pretty print installationInstructions JSON
         if (log.isDebugEnabled()) {
