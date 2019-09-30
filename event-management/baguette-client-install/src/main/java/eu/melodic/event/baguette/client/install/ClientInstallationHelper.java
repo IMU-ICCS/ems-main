@@ -278,9 +278,9 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
         // Write EMS server certificate (PEM) file
         if (isServerSecure) {
-            installationInstructions
+            /*installationInstructions
                     .appendLog("Write server certificate for 'wget' use")
-                    .appendWriteFile(serverCertFile, this.serverCert, false);
+                    .appendWriteFile(serverCertFile, this.serverCert, false);*/
         } else {
             serverCertFile = "";
         }
@@ -295,7 +295,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                         .sorted()
                         .collect(Collectors.toList());
                 for (Path p : paths) {
-                    String targetFile = StringUtils.substringAfter(p.toUri().toString(), startDir.toUri().toString());
+                    /*String targetFile = StringUtils.substringAfter(p.toUri().toString(), startDir.toUri().toString());
                     if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
                     targetFile = copyToClientDir + targetFile;
                     String contents = new String(Files.readAllBytes(p));
@@ -305,7 +305,9 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                             .appendLog(String.format("Copy file from server to client: %s -> %s", p.toString(), tmpFile))
                             .appendWriteFile(tmpFile, contents, false)
                             .appendLog(String.format("Move file to target: %s -> %s", tmpFile, targetFile))
-                            .appendExec("sudo mv " + tmpFile + " " + targetFile);
+                            .appendExec("sudo mv " + tmpFile + " " + targetFile)
+                            .appendExec("sudo chmod u+rw og-rwx " + targetFile);*/
+                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
                 }
             }
         }
@@ -316,7 +318,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 //.appendExec("sudo wget --no-check-certificate " + installScriptUrl + " -O " + installScriptPath)
                 .appendExec(
                         isServerSecure
-                                ? "sudo wget --certificate="+serverCertFile+" " + installScriptUrl + " -O " + installScriptPath
+                                ? "sudo wget --ca-certificate="+serverCertFile+" " + installScriptUrl + " -O " + installScriptPath
                                 : "sudo wget " + installScriptUrl + " -O " + installScriptPath
                 )
 
@@ -334,8 +336,11 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
         // Add client identification and server credentials configuration
                 .appendLog("Add client identification and server credentials configuration")
-                .appendWriteFile(credentialsTempFile, clientConfAppend, false)
-                .appendExec("sudo mv " + credentialsTempFile + " " + credentialsFile)
+                //.appendWriteFile(credentialsTempFile, clientConfAppend, false)
+                //.appendExec("sudo mv " + credentialsTempFile + " " + credentialsFile)
+        ;
+
+        _appendCopyInstructions(installationInstructions, credentialsFile, null, clientConfAppend, clientTmpDir)
                 //.appendExec("sudo chmod u+rw,og-rwx " + credentialsFile)
                 .appendExec("sudo -- sh -c 'cat " + credentialsFile + " >> " + clientConfFile + "' ")
 
@@ -359,6 +364,46 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
             log.debug("prepareInstallationInstructionsForLinux(): installationInstructions:\n{}", sw.toString());
         }
 
+        return installationInstructions;
+    }
+
+    private OrchestrationHelper.InstallationInstructions _appendCopyInstructions(
+            OrchestrationHelper.InstallationInstructions installationInstructions,
+            Path p,
+            Path startDir,
+            String copyToClientDir,
+            String clientTmpDir,
+            Map<String,String> valueMap
+    ) throws IOException
+    {
+        String targetFile = StringUtils.substringAfter(p.toUri().toString(), startDir.toUri().toString());
+        if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
+        targetFile = copyToClientDir + targetFile;
+        String contents = new String(Files.readAllBytes(p));
+        contents = StringSubstitutor.replace(contents, valueMap);
+        String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
+        installationInstructions
+                .appendLog(String.format("Copy file from server to temp to client: %s -> %s -> %s", p.toString(), tmpFile, targetFile));
+        /*        .appendWriteFile(tmpFile, contents, false)
+                .appendExec("sudo mv " + tmpFile + " " + targetFile)
+                .appendExec("sudo chmod u+rw og-rwx " + targetFile);*/
+        return _appendCopyInstructions(installationInstructions, targetFile, tmpFile, contents, clientTmpDir);
+    }
+
+    private OrchestrationHelper.InstallationInstructions _appendCopyInstructions(
+            OrchestrationHelper.InstallationInstructions installationInstructions,
+            String targetFile,
+            String tmpFile,
+            String contents,
+            String clientTmpDir
+    ) throws IOException
+    {
+        if (StringUtils.isEmpty(tmpFile))
+            tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
+        installationInstructions
+                .appendWriteFile(tmpFile, contents, false)
+                .appendExec("sudo mv " + tmpFile + " " + targetFile)
+                .appendExec("sudo chmod u+rw og-rwx " + targetFile);
         return installationInstructions;
     }
 
