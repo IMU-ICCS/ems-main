@@ -20,7 +20,8 @@ export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
 PATH=$PATH:/opt/cloudiator/jre8/bin/
 
 # Check if baguette client is already running
-PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+#PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
 if [ "$PID" != "" ]
 then
     echo "Baguette client is already running (pid: $PID)"
@@ -41,8 +42,10 @@ JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.s
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting baguette client..."
-java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &
-PID=`jps | grep BaguetteClient | cut -d " " -f 1`
-echo "Baguette client PID: $PID"
+java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $*
+#java ... &
+#PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+#PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
+#echo "Baguette client PID: $PID"
 
 cd $PREVWORKDIR
