@@ -19,7 +19,7 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
-import eu.melodic.upperware.metasolver.util.HistoryHelper;
+//import eu.melodic.upperware.metasolver.util.HistoryHelper;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -54,7 +54,7 @@ public class Coordinator implements ApplicationContextAware {
     private String cacheAppId;
     private String cacheCpModelPath;
     private Map<String,String> mvvToCurrentConfigVarsMap;
-    private HistoryHelper historyHelper;
+    //private HistoryHelper historyHelper;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -65,11 +65,11 @@ public class Coordinator implements ApplicationContextAware {
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
-        this.historyHelper = new HistoryHelper();
+        //this.historyHelper = new HistoryHelper();
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
 
         // Initialize history helper
-        if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
+        /*if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
             if (StringUtils.isNotEmpty(metaSolverProperties.getHistory().getBasePath())) {
                 historyHelper.initHelperMetadata(
                         metaSolverProperties.getHistory().getBasePath(),
@@ -82,7 +82,7 @@ public class Coordinator implements ApplicationContextAware {
                 );
                 log.debug("MetaSolver.Coordinator: setApplicationContext(): History helper initialized from properties: {}", metaSolverProperties.getHistory());
             }
-        }
+        }*/
     }
 
     /**
@@ -146,24 +146,24 @@ public class Coordinator implements ApplicationContextAware {
         // check if an error occurred
         if (solUv == null) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: An error occurred: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "An error occurred");
+            //logCpSolutionInfo(applicationId, cpModelPath, false, "An error occurred");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[0] == -2) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "No solutions found in CP model");
+            //logCpSolutionInfo(applicationId, cpModelPath, false, "No solutions found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[1] == -1) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No candidate solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "No candidate solution found in CP model");
+            //logCpSolutionInfo(applicationId, cpModelPath, false, "No candidate solution found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
 
         // check if a solution is deployed. If no solution is deployed accept new solution
         if (solUv[0] < 0) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, true, "No deployed solution found. Accepting new solution");
+            //logCpSolutionInfo(applicationId, cpModelPath, true, "No deployed solution found. Accepting new solution");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         }
 
@@ -173,21 +173,20 @@ public class Coordinator implements ApplicationContextAware {
         double newSolUv = solUv[1];
         if (newSolUv > uvThresholdFactor * depSolUv) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, true, "New solution is ACCEPTED");
+            //logCpSolutionInfo(applicationId, cpModelPath, true, "New solution is ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         } else {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "New solution is NOT ACCEPTED");
+            //logCpSolutionInfo(applicationId, cpModelPath, false, "New solution is NOT ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
         }
     }
 
-    private void logCpSolutionInfo(String applicationId, String cpModelPath, boolean success, String description) throws ConcurrentAccessException {
+    /*private void logCpSolutionInfo(String applicationId, String cpModelPath, boolean success, String description) throws ConcurrentAccessException {
         if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
-			//historyHelper.addCpSolutionHistoryInfo(applicationId, cpModelPath, success, description);
-			log.warn("MetaSolver.Coordinator: logCpSolutionInfo(): Logging to history has been deactivated from code");
+			historyHelper.addCpSolutionHistoryInfo(applicationId, cpModelPath, success, description);
 		}
-    }
+    }*/
 
     /**
      * Update deployed and candidate solutions in CP model
@@ -244,9 +243,9 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
 
         // Create a new execution history record
-        if (metaSolverProperties.getHistory()==null || metaSolverProperties.getHistory().isEnabled()) {
+        /*if (metaSolverProperties.getHistory()==null || metaSolverProperties.getHistory().isEnabled()) {
             historyHelper.addNewHistoryRecord(appId, "APPLICATION_RECONFIGURATION", null, null, null, null);
-        }
+        }*/
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
