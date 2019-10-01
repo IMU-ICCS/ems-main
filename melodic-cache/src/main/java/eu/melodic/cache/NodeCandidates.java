@@ -19,8 +19,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static io.github.cloudiator.rest.model.NodeCandidate.NodeCandidateTypeEnum.FAAS;
-import static io.github.cloudiator.rest.model.NodeCandidate.NodeCandidateTypeEnum.IAAS;
+import static io.github.cloudiator.rest.model.NodeCandidate.NodeCandidateTypeEnum.*;
 
 /**
  * Created by pszkup on 04.01.18.
@@ -29,7 +28,7 @@ import static io.github.cloudiator.rest.model.NodeCandidate.NodeCandidateTypeEnu
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NodeCandidates implements Serializable {
 
-    private static final BinaryOperator<NodeCandidate> IAAS_NODE_CANDIDATE_SORT_OPERATOR = (a, b) -> a.getPrice() < b.getPrice() ? a : b;
+    private static final BinaryOperator<NodeCandidate> IAAS_BYON_NODE_CANDIDATE_SORT_OPERATOR = (a, b) -> a.getPrice() < b.getPrice() ? a : b;
     private static final BinaryOperator<NodeCandidate> FAAS_NODE_CANDIDATE_SORT_OPERATOR = (a, b) -> a.getPricePerInvocation() < b.getPricePerInvocation() ? a : b;
 
     //Map<VMName, Map<ProviderIndex, List<NodeCandidate>>>
@@ -65,13 +64,13 @@ public class NodeCandidates implements Serializable {
             return Optional.empty();
         }
 
-        boolean iaasOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS);
+        boolean iaasOrByonOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS) || checkIfOnlyVmTypes(nodeCandidates, BYON);
         boolean faasOnly = checkIfOnlyVmTypes(nodeCandidates, FAAS);
 
         BinaryOperator<NodeCandidate> nodeCandidateSortOperator;
-        if (iaasOnly && !faasOnly) {
-            nodeCandidateSortOperator = IAAS_NODE_CANDIDATE_SORT_OPERATOR;
-        } else if (faasOnly && !iaasOnly) {
+        if (iaasOrByonOnly && !faasOnly) {
+            nodeCandidateSortOperator = IAAS_BYON_NODE_CANDIDATE_SORT_OPERATOR;
+        } else if (faasOnly && !iaasOrByonOnly) {
             nodeCandidateSortOperator = FAAS_NODE_CANDIDATE_SORT_OPERATOR;
         } else {
             throw new CacheException("List contains both FAAS and IAAS NodeCandidates");

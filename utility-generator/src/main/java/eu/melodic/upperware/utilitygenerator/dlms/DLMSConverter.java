@@ -13,6 +13,8 @@ import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtra
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
+import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
@@ -31,8 +33,10 @@ public class DLMSConverter implements ArgumentConverter {
     private Collection<ConfigurationElement> actConfiguration;
 
 
-    public DLMSConverter(String dlmsControllerUrl, FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration) {
-        this.dlmsUtilityService = new DLMSServiceImpl(fromCamelModelExtractor.getCamelModelPath(), dlmsControllerUrl);
+    public DLMSConverter(String dlmsControllerUrl, FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration,
+                         MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
+        this.dlmsUtilityService = new DLMSServiceImpl(fromCamelModelExtractor.getCamelModelPath(), dlmsControllerUrl,
+                melodicSecurityProperties, jwtService);
         this.dlmsUtilityAttributes = fromCamelModelExtractor.getListOfDlmsUtilityAttributes();
         log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
         this.actConfiguration = actConfiguration;
@@ -49,9 +53,12 @@ public class DLMSConverter implements ArgumentConverter {
         }
         UtilityMetrics dlmsUtility;
         try {
+            log.debug("Calling the dlms utility service");
             dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
         } catch (Exception e) {
-            log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value");
+            log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value. The error:");
+            log.warn(e.toString());
+            e.printStackTrace();
             return createDefaultValuesOfDLMSUtilityAttributes();
         }
         return dlmsUtilityAttributes.stream()

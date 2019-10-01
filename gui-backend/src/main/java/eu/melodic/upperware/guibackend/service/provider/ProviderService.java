@@ -130,6 +130,10 @@ public class ProviderService {
 
         cloudDefinitionsForAllProviders.remove(oldCloudDefinition);
 
+        if (providerUserChanged(oldCloudDefinition, cloudDefinitionToUpdate)) {
+            cloudiatorApi.deleteSecureVariable(createKeyLabelForSecret(oldCloudDefinition).getKey());
+            log.info("Provider user changed and secure variable from key {} deleted", createKeyLabelForSecret(oldCloudDefinition).getKey());
+        }
         saveSecretInSecureStore(cloudDefinitionToUpdate);
 
         cloudDefinitionsForAllProviders.add(cloudDefinitionToUpdate);
@@ -137,6 +141,11 @@ public class ProviderService {
         updateYamlFile(cloudDefinitionsForAllProviders);
 
         return cloudDefinitionToUpdate;
+    }
+
+    private boolean providerUserChanged(CloudDefinition oldCloudDefinition, CloudDefinition cloudDefinitionToUpdate) {
+        return !oldCloudDefinition.getCredential().getUser()
+                .equals(cloudDefinitionToUpdate.getCredential().getUser());
     }
 
     // todo delete from db
