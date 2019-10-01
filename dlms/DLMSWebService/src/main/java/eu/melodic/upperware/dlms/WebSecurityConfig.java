@@ -1,15 +1,17 @@
 package eu.melodic.upperware.dlms;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
  * Security configuration for Spring.
@@ -17,7 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Slf4j
 @EnableWebSecurity
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class WebSecurity extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
      private final JWTService jwtService;
 
@@ -42,5 +44,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                     .antMatchers("/**").permitAll()
                     .anyRequest().authenticated();
         }
+    }
+    
+    @Override
+    public void configure(WebSecurity webSecurity) throws Exception {
+        webSecurity
+                .ignoring()
+                .antMatchers("/getAlluxioCmd/**")              
+        ;
     }
 }
