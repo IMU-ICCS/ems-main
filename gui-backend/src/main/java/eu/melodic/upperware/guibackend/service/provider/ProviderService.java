@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.ws.rs.NotFoundException;
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
@@ -131,8 +132,13 @@ public class ProviderService {
         cloudDefinitionsForAllProviders.remove(oldCloudDefinition);
 
         if (providerUserChanged(oldCloudDefinition, cloudDefinitionToUpdate)) {
-            cloudiatorApi.deleteSecureVariable(createKeyLabelForSecret(oldCloudDefinition).getKey());
-            log.info("Provider user changed and secure variable from key {} deleted", createKeyLabelForSecret(oldCloudDefinition).getKey());
+            String oldSecureVariableKey = createKeyLabelForSecret(oldCloudDefinition).getKey();
+            try {
+                cloudiatorApi.deleteSecureVariable(oldSecureVariableKey);
+                log.info("Provider user changed and secure variable from key {} deleted", oldSecureVariableKey);
+            } catch (NotFoundException ex) {
+                log.info("Secure variable with key {} did not exist in secure store.", oldSecureVariableKey);
+            }
         }
         saveSecretInSecureStore(cloudDefinitionToUpdate);
 
