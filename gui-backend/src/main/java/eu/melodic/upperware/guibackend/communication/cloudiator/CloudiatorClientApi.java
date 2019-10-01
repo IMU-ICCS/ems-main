@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,8 +131,13 @@ public class CloudiatorClientApi implements CloudiatorApi {
         try {
             securityApi.deleteSecure(key);
         } catch (ApiException e) {
-            log.error("Error by deleting secure variable with name: {}", key, e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by getting secure variable with name: %s from Cloudiator's secure store", key));
+            if (e.getResponseBody().startsWith("Response code 404")) {
+                log.warn("Secure variable with name {} not found in secure store.", key);
+                throw new NotFoundException(String.format("Secure variable with name %s not found in secure store.", key));
+            } else {
+                log.error("Error by deleting secure variable with name: {}", key, e);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Error by deleting secure variable with name: %s from Cloudiator's secure store", key));
+            }
         }
     }
 
