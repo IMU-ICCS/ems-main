@@ -7,11 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,41 +27,23 @@ import lombok.extern.slf4j.Slf4j;
  * Client interface to call DlmsController from the UtilityGenerator.
  */
 @Slf4j
-@EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
-@SpringBootApplication
-public class DlmsControllerClient implements ApplicationContextAware {
+public class DlmsControllerClient {
 	// below url is just for testing
 //	private static String REST_URL_FOR_TESTING = "http://localhost:8094/dlmsController/utilityValue";
 
 	private final String datasourceServerUrl;
 	private final String camelModelId;
 
-	private MelodicSecurityProperties melodicSecurityProperties;
-	private JWTService jwtService;
-	private static ApplicationContext context;
-
+	private final MelodicSecurityProperties melodicSecurityProperties;
+	private final JWTService jwtService;
+	
 	/**
 	 * Constructor for unit tests etc.
 	 */
 	protected DlmsControllerClient() {
-		this("", "");
+		this("", "", null, null);
 	}
-
-	/**
-	 * Main method just for stand-alone testing.
-	 */
-//	public static void main (String[] args) {
-////		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-////				.getUtilityValues(Collections.emptyList(), Collections.emptyList());
-//		Collection<DlmsConfigurationElement> proposed = new ArrayList<>();
-//		proposed.add(new DlmsConfigurationElement("Component_App", null, 0));
-//		UtilityMetrics result = new DlmsControllerClient(REST_URL_FOR_TESTING, "")
-//				.getUtilityValues(Collections.emptyList(), proposed);
-//		for (String key : result.getResults().keySet()) {
-//			log.info("{} --> {}", key, result.getResults().get(key));
-//		}
-//	}
 
 	/**
 	 * Obtain the deployed application topology from the camel model
@@ -77,16 +54,16 @@ public class DlmsControllerClient implements ApplicationContextAware {
 
 		return modelAnalyzer.getCompConMap();
 	}
-
-	private HttpHeaders createHttpHeaders(String jwtToken) {
-		HttpHeaders headers = new HttpHeaders();
-		if (StringUtils.isNotBlank(jwtToken)) {
-			headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
-		}
-		headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-		return headers;
-	}
+	
+    private HttpHeaders createHttpHeaders(String jwtToken) {
+        HttpHeaders headers = new HttpHeaders();
+        if (StringUtils.isNotBlank(jwtToken)) {
+            headers.set(HttpHeaders.AUTHORIZATION, jwtToken);
+        }
+        headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        return headers;
+    }
 
 	/**
 	 * Returns utility values from every algorithm running in the DlmsController.
@@ -95,19 +72,13 @@ public class DlmsControllerClient implements ApplicationContextAware {
 	 */
 	public UtilityMetrics getUtilityValues(Collection<DlmsConfigurationElement> deployed,
 			Collection<DlmsConfigurationElement> proposed) {
-		try {
-			setProperties(context);
-		} catch (BeansException e) {
-			log.error("There was a problem setting the melodic security properties and jwt service");
-		}
-
 		// get the connections between the application component and datasource
 		Map<String, List<String>> compConMap = readCamelModel(this.camelModelId);
-
-		log.debug("Creating a jwtToken now");
+		
 		String jwtToken = createToken();
-
+		// get the connections
 		try {
+			
 			RestTemplate restTemplate = new RestTemplate();
 			URI uri = new URI(datasourceServerUrl);
 			HttpHeaders headers = createHttpHeaders(jwtToken);
@@ -218,24 +189,13 @@ public class DlmsControllerClient implements ApplicationContextAware {
 		DlmsConfigurationDiff diff = new DlmsConfigurationDiff(deployedElement, proposedElement);
 		diffBundle.addConfigurationDiff(diff);
 	}
-
+	
 	private String createToken() {
-		String username = melodicSecurityProperties.getUser().getUsername();
-		log.debug("DLMSUtility.createToken():  username={}, jwt-service={}", username, jwtService);
-		String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
-		log.debug("DLMSUtility.createToken():  username={}, token={}", username, token);
-		return token;
-	}
-
-//
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		context = applicationContext;
-	}
-
-	public void setProperties(ApplicationContext applicationContext) throws BeansException {
-		this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
-		this.jwtService = applicationContext.getBean(JWTService.class);
+        String username = melodicSecurityProperties.getUser().getUsername();
+        log.debug("DLMSUtility.createToken():  username={}, jwt-service={}", username, jwtService);
+        String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+        log.debug("DLMSUtility.createToken():  username={}, token={}", username, token);
+        return token;
 	}
 
 }
