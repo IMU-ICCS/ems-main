@@ -24,9 +24,9 @@ public class ApplicationController {
 
     @GetMapping("/node/vm")
     @ResponseStatus(HttpStatus.OK)
-    public List<Node> getVMNodeList() {
-        log.info("GET request for VM list");
-        return cloudiatorApi.getVMFromNodeList();
+    public List<Node> getVMByonNodeList() {
+        log.info("GET request for VM and Byon list");
+        return cloudiatorApi.getVMByonFromNodeList();
     }
 
     @GetMapping("/node/faas")

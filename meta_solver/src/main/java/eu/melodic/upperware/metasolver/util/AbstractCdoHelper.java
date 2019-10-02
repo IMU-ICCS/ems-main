@@ -89,13 +89,17 @@ public abstract class AbstractCdoHelper {
             return result;
 
         } catch (Exception ex) {
-            log.error("{}: EXCEPTION: helper-id={}, Exception={}", callerName, id, ex);
+            log.error("{}: EXCEPTION: helper-id={}, Exception=", callerName, id, ex);
             if (valueOnException!=null) return valueOnException;
             throw new RuntimeException(ex);
         } finally {
             if (transaction != null) {
-                transaction.rollback();
-                transaction.close();
+                try {
+                    transaction.rollback();
+                    transaction.close();
+                } catch (Exception ex) {
+                    log.error("{}: EXCEPTION while rolling back/closing transaction: helper-id={}, Exception=", callerName, id, ex);
+                }
             }
 
             // release resource

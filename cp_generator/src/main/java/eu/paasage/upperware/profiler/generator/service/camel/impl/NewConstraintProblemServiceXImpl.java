@@ -5,12 +5,9 @@ import camel.constraint.ConstraintModel;
 import camel.constraint.impl.MetricVariableConstraintImpl;
 import camel.core.CamelModel;
 import camel.core.NamedElement;
-import camel.deployment.Configuration;
 import camel.deployment.RequirementSet;
-import camel.deployment.ServerlessConfiguration;
 import camel.deployment.SoftwareComponent;
 import camel.deployment.impl.DeploymentTypeModelImpl;
-import camel.deployment.impl.ScriptConfigurationImpl;
 import camel.location.LocationModel;
 import camel.metric.CompositeMetric;
 import camel.metric.Metric;
@@ -27,13 +24,11 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
-import eu.paasage.upperware.profiler.generator.communication.impl.NodeType;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
 import eu.paasage.upperware.profiler.generator.service.camel.parser.ExpressionService;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
-import eu.passage.upperware.commons.model.tools.CdoTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import io.github.cloudiator.rest.ApiException;
@@ -434,8 +429,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             List<NodeCandidate> nodeCandidates = loadProviders(
                     deploymentTypeModel.getGlobalRequirementSet(),
                     softwareComponent.getRequirementSet(),
-                    camelModel.getLocationModels(),
-                    getNodeType(softwareComponent)
+                    camelModel.getLocationModels()
                     );
             Map<String, List<NodeCandidate>> nodeCandidatesByProvider = nodeCandidatesService.groupByProviders(nodeCandidates);
             Map<Integer, List<NodeCandidate>> nodeCandidatesByProviderIndex = getAsIndexMap(nodeCandidatesByProvider);
@@ -445,24 +439,12 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return result;
     }
 
-    private NodeType getNodeType(SoftwareComponent softwareComponent) {
-        Configuration configuration = CdoTool.getFirstElement(softwareComponent.getConfigurations());
-
-        NodeType result;
-        if (configuration instanceof ServerlessConfiguration) {
-            result = NodeType.FAAS;
-        } else {
-            result = NodeType.IAAS;
-        }
-        return result;
-    }
-
     private DeploymentTypeModelImpl getDeploymentModel(CamelModel camelModel) {
         return (DeploymentTypeModelImpl) camelModel.getDeploymentModels().get(0);
     }
 
-    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, NodeType nodeType) {
-        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels, nodeType);
+    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels) {
+        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels);
         log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;
