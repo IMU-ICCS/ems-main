@@ -160,7 +160,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             log.info("*****   SUBSCRIBE: ok");
 
         } catch (Exception e) {
-            log.error("*****   SUBSCRIBE: ERROR: {}", e);
+            log.error("*****   SUBSCRIBE: ERROR: ", e);
         }
     }
 
@@ -216,7 +216,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             log.info("*****   UN-SUBSCRIBE: ok");
 
         } catch (Exception e) {
-            log.error("*****   SUBSCRIBE: ERROR: {}", e);
+            log.error("*****   SUBSCRIBE: ERROR: ", e);
         } finally {
             connectionCache.clear();
         }
