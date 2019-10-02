@@ -17,7 +17,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 

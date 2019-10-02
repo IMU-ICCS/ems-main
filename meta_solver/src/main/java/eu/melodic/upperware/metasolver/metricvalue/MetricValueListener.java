@@ -19,7 +19,6 @@ import javax.jms.*;
 @Slf4j
 public class MetricValueListener implements MessageListener {
 
-    //private MessageConsumer consumer;
     private Topic topic;
     private String topicName;
     private TopicType type;
@@ -30,7 +29,6 @@ public class MetricValueListener implements MessageListener {
     public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry) throws JMSException {
         log.debug("MetricValueListener.<init>: type={}", type);
         this.coordinator = coordinator;
-        //this.consumer = consumer;
         this.topic = topic;
         this.topicName = topic.getTopicName();
         this.type = type;

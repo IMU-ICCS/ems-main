@@ -45,7 +45,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        //this.applicationContext = applicationContext;
         this.properties = applicationContext.getBean(MetaSolverProperties.class);
         this.coordinator = applicationContext.getBean(Coordinator.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
@@ -162,7 +161,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
         } catch (Exception e) {
             log.error("*****   SUBSCRIBE: ERROR: {}", e);
-            //e.printStackTrace(System.err);
         }
     }
 
@@ -198,7 +196,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                                     log.debug("      Unsubscribing from topic: {} : ok", topicName);
                                 } catch (Exception e) {
                                     log.error("      Unsubscribing from topic: {} : ERROR: {}", topicName, e);
-                                    //e.printStackTrace(System.err);
                                 }
                             }
 
@@ -206,7 +203,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                             log.debug("    Closing session: {} : ok", sconf);
                         } catch (Exception e) {
                             log.error("    Closing session: {} : ERROR: {}", sconf, e);
-                            //e.printStackTrace(System.err);
                         }
                     }
 
@@ -214,7 +210,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                     log.debug("  Closing connection to url: {} : ok", cconf.getUrl());
                 } catch (Exception e) {
                     log.error("  Closing connection to url: {} : ERROR: {}", cconf.getUrl(), e);
-                    //e.printStackTrace(System.err);
                 }
             }
 
@@ -222,7 +217,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
         } catch (Exception e) {
             log.error("*****   SUBSCRIBE: ERROR: {}", e);
-            //e.printStackTrace(System.err);
         } finally {
             connectionCache.clear();
         }
