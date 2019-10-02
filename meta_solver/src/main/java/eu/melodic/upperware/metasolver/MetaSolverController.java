@@ -171,23 +171,6 @@ public class MetaSolverController {
     public void health() {
     }
 
-    //XXX: DELETE:
-    @RequestMapping(value = "/esbTest", method = POST)
-    public eu.melodic.models.services.metaSolver.DeploymentProcessResponse esbTest(@RequestBody eu.melodic.models.services.metaSolver.DeploymentProcessRequest request) {
-        log.warn(">>>> Call to /esbTest: app-id={}, use-existing-cp={}, cdo-path={}, uuid={}",
-                request.getApplicationId(), request.getUseExistingCP(), request.getCdoResourcePath(), request.getWatermark().getUuid());
-
-        eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl response = new eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl();
-        eu.melodic.models.commons.NotificationResult notif = new eu.melodic.models.commons.NotificationResultImpl();
-        java.util.Map<String, Object> notifMap = new java.util.HashMap<>();
-        notifMap.put("xxxxxx-test-additional-property-name", "yyyyyyyyy-value");
-        notif.setStatus(eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS);
-        notif.setAdditionalProperties(notifMap);
-        response.setResult(notif);
-        response.setProcessId("zzzzzzzzzzz-the-process-ID");
-        return response;
-    }
-
     @ExceptionHandler
     @ResponseStatus(BAD_REQUEST)
     public String handleException(BadRequestException exception) {
