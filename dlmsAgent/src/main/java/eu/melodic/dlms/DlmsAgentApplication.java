@@ -62,7 +62,7 @@ public class DlmsAgentApplication {
 			log.info("Application started and URL {} identified", url);
 
 			String publicIp = System.getProperties().getProperty("ip.public");
-			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + publicIp;
+			String webServiceUrl = System.getProperties().getProperty("webServiceUrl")+"/getAlluxioCmd/"+publicIp;
 
 			SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
 
