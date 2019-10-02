@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
 import alluxio.conf.InstancedConfiguration;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Application class for the webservice.
  */
+@EnableAsync
 @SpringBootApplication
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @Slf4j

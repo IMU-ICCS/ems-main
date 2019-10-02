@@ -199,14 +199,6 @@ public class ModelAnalyzer {
 		return boolVal.isValue();
 	}
 
-	public List<DataSource> getDataSourceList() {
-		return dataSourceList;
-	}
-
-	public void setDataSourceList(List<DataSource> dataSourceList) {
-		this.dataSourceList = dataSourceList;
-	}
-
 	private void checkUfsUri(Attribute attribute, DataSource dataSource) {
 		if ("ufsUri".equalsIgnoreCase(attribute.getName())) {
 			if (checkStringValueImpl(attribute)) {
