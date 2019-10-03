@@ -172,14 +172,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                             .stream()
                             .filter(nodeTask -> nodeTask.getData().getNodeName().equalsIgnoreCase(toCreateFirst.getNodeName()))
                             .findFirst()
-                            .ifPresent(nodeTask -> addEdge(graph, nodeTask, processTask, scheduleTaskOpt::isPresent));
+                            .ifPresent(nodeTask -> addEdge(graph, nodeTask, processTask, () -> true));
 
                     //crete TRIGGER_SCALE
                     if (CollectionUtils.isNotEmpty(toCreateWithoutFirst)) {
                         log.info("...and {} scaleTasks", toCreateWithoutFirst.size());
                         ScaleTask scaleTask = createTask(graph, createScaleTask(toCreateWithoutFirst), ScaleTask.SCALE_TASK_CREATE);
 
-                        addEdge(graph, processTask, scaleTask, scheduleTaskOpt::isPresent);
+                        addEdge(graph, processTask, scaleTask, () -> true);
 
                         List<NodeTask> remainedNodes = nodeTasksToCreate
                                 .stream()
