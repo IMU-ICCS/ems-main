@@ -117,11 +117,8 @@ public class DLMSServiceImpl implements DLMSService {
 	
 		String localMountPoint = mp.getToLocalMountPoint();
 		// create directory first
-		StringBuilder cmd = new StringBuilder(MKDIR).append(localMountPoint);
-		// running mount next
-		cmd.append(" && ").append(ALLUXIO_FUSE_RUN).append(mp.getToLocalMountPoint()).append(" /").append(mp.getMountPoint());
-		
-		return cmd.toString();
+
+		return MKDIR + localMountPoint + " && " + ALLUXIO_FUSE_RUN + mp.getToLocalMountPoint() + " /" + mp.getMountPoint();
 	}
 
 	@Override
