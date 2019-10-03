@@ -94,7 +94,11 @@ public class DLMSServiceController {
 	@GetMapping(value = "/getAlluxioCmd/{ip}")
 	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) throws ApiException {
 		String componentId = comp.findComponentId(ip);
-		return new SendToDlmsAgent(componentId, dlmsService.getAlluxioCmd(componentId));
+		
+		if (componentId == "") {		// no datasource is present, so should not be used to send metrics
+			return new SendToDlmsAgent("", "");
+		}	
+		return new SendToDlmsAgent(componentId, dlmsService.getAlluxioCmd(componentId));	
 	}
 	
 

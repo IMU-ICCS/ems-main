@@ -62,7 +62,7 @@ public class DlmsAgentApplication {
 			log.info("Application started and URL {} identified", url);
 
 			String publicIp = System.getProperties().getProperty("ip.public");
-			String webServiceUrl = System.getProperties().getProperty("webServiceUrl")+"/getAlluxioCmd/"+publicIp;
+			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getAlluxioCmd/" + publicIp;
 
 			SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
 
@@ -84,29 +84,33 @@ public class DlmsAgentApplication {
 				sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
 				isNull = isNull(sendToDlmsAgent);
 			}
-			String appComp = runCommands(sendToDlmsAgent);
-
+			final SendToDlmsAgent tempDlmsAgent = sendToDlmsAgent;
 			TimerTask timerTask = new TimerTask() {
+
 				@Override
 				public void run() {
 					log.info("Running metrics collection for {}", url);
+					// do not run if the model did not have any data source
+					if (tempDlmsAgent.getCommand() != "" && tempDlmsAgent.getComponentId() != "") {
 
-					switch (metricsRange) {
-					case ALLUXIO: {
-						metricsController.collectAlluxioMetrics(url);
-						break;
+						String appComp = runCommands(tempDlmsAgent);
+						switch (metricsRange) {
+						case ALLUXIO: {
+							metricsController.collectAlluxioMetrics(url);
+							break;
+						}
+						case MY_SQL: {
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+						case ALL: {
+							metricsController.collectAlluxioMetrics(url);
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+						}
+						metricsController.sendMetrics(appComp);
 					}
-					case MY_SQL: {
-						metricsController.collectMySqlMetrics();
-						break;
-					}
-					case ALL: {
-						metricsController.collectAlluxioMetrics(url);
-						metricsController.collectMySqlMetrics();
-						break;
-					}
-					}
-					metricsController.sendMetrics(appComp);
 				}
 			};
 

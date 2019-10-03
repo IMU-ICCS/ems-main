@@ -50,8 +50,8 @@ public class ComponentId {
 				return process.getTask();
 			}
 		}
-		log.debug("There was no task matching the node id");
-		return null;
+		log.debug("There was no task matching the node id. Model did not have data source to mount");
+		return "";
 	}
 
 	private static boolean isSameProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {
