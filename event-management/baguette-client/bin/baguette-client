@@ -21,9 +21,11 @@
 export JAVA_HOME="/usr/bin/java"
 SU_USER=root
  
-startcmd='/opt/baguette-client/bin/run.sh &>>/opt/baguette-client/logs/output.txt &'
-stopcmd='/opt/baguette-client/bin/kill.sh &>>/opt/baguette-client/logs/output.txt'
- 
+#startcmd='/opt/baguette-client/bin/run.sh &>>/opt/baguette-client/logs/output.txt &'
+#stopcmd='/opt/baguette-client/bin/kill.sh &>>/opt/baguette-client/logs/output.txt'
+startcmd='/opt/baguette-client/bin/run.sh'
+stopcmd='/opt/baguette-client/bin/kill.sh'
+
 case "$1" in
 start)
    echo "Starting Baguette Client..."
