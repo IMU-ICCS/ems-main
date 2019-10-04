@@ -24,14 +24,15 @@ public class ComponentId {
 	private NodeApi nodeApi;
 	private ProcessApi processApi;
 
-	public String findComponentId(String ipAddress) throws ApiException {
+	public Optional<String> findComponentId(String ipAddress) throws ApiException {
 		List<CloudiatorProcess> processes = this.processApi.getProcesses(null);
 		List<Node> nodes = this.nodeApi.findNodes();
 
 		return getNodeForIP(nodes, ipAddress)
 				.map(Node::getId)
 				.map(nodeId -> getComponentId(nodeId, processes))
-				.orElseThrow(() -> new DLMSException(String.format("Ip addresses %s from the deployed machine did not match with any component id", ipAddress)));
+				.filter(Optional::isPresent)
+				.map(Optional::get);
 	}
 
 	private static Optional<Node> getNodeForIP(List<Node> nodes, String ipAddress) {
@@ -44,14 +45,12 @@ public class ComponentId {
 	/**
 	 * Match the node if with the process id to get the component name
 	 */
-	private static String getComponentId(String nodeId, List<CloudiatorProcess> processes) {
-		for (CloudiatorProcess process : processes) {
-			if (isSameProcess(process, nodeId)) {
-				return process.getTask();
-			}
-		}
-		log.debug("There was no task matching the node id. Model did not have data source to mount");
-		return "";
+	private static Optional<String> getComponentId(String nodeId, List<CloudiatorProcess> processes) {
+
+		return processes.stream()
+				.filter(p -> isSameProcess(p, nodeId))
+				.map(CloudiatorProcess::getTask)
+				.findFirst();
 	}
 
 	private static boolean isSameProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {

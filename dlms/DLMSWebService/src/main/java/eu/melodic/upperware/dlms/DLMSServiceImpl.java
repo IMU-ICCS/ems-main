@@ -9,11 +9,7 @@ package eu.melodic.upperware.dlms;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang3.StringUtils;
@@ -134,14 +130,15 @@ public class DLMSServiceImpl implements DLMSService {
 		}
 	}
 
-	public List<AcDsMountPoint> combineAcDsMountPoint(List<AppCompDataSource> acDsList, List<DataSource> dsList) {
+	private List<AcDsMountPoint> combineAcDsMountPoint(List<AppCompDataSource> acDsList, List<DataSource> dsList) {
 		List<AcDsMountPoint> acDsMountPointList = new ArrayList<>();
 		for (AppCompDataSource acDs : acDsList) {
 			String dsName = acDs.getDataSource();
 			String acName = acDs.getName();
 
-			DataSource ds = matchingDs(dsName, dsList);
-			if (ds != null) { // ds can be null if no matching found
+			final Optional<DataSource> dataSource = matchingDs(dsName, dsList);
+			if (dataSource.isPresent()) {
+				final DataSource ds = dataSource.get();
 				AcDsMountPoint acDsMountPoint = new AcDsMountPoint(acName, dsName, ds.getMountPoint(), ds.getLocalMountPont());
 				acDsMountPointList.add(acDsMountPoint);
 			} else {
@@ -152,12 +149,11 @@ public class DLMSServiceImpl implements DLMSService {
 
 	}
 
-	private DataSource matchingDs(String dsName, List<DataSource> dsList) {
+	private Optional<DataSource> matchingDs(String dsName, List<DataSource> dsList) {
 
 		return dsList.stream()
 				.filter(ds -> ds.getName().equals(dsName))
-				.findAny()
-				.orElse(null);
+				.findAny();
 	}
 	
 
