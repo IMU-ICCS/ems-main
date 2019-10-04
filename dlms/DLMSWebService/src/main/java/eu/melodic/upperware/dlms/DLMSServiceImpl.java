@@ -7,25 +7,9 @@
 
 package eu.melodic.upperware.dlms;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.*;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Example;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import alluxio.AlluxioURI;
 import alluxio.Constants;
-import alluxio.cli.fs.command.CpCommand;
-import alluxio.cli.fs.command.LsCommand;
-import alluxio.cli.fs.command.MkdirCommand;
-import alluxio.cli.fs.command.MvCommand;
-import alluxio.cli.fs.command.PersistCommand;
-import alluxio.cli.fs.command.RmCommand;
-import alluxio.cli.fs.command.UnmountCommand;
+import alluxio.cli.fs.command.*;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.FileSystemContext;
 import alluxio.conf.InstancedConfiguration;
@@ -33,18 +17,18 @@ import alluxio.conf.PropertyKey;
 import alluxio.exception.AlluxioException;
 import alluxio.grpc.MountPOptions;
 import alluxio.util.ConfigurationUtils;
-import eu.melodic.upperware.dlms.exception.AcNameNotFoundException;
-import eu.melodic.upperware.dlms.exception.CopyException;
-import eu.melodic.upperware.dlms.exception.CreateDatasourceException;
-import eu.melodic.upperware.dlms.exception.IdNotFoundException;
-import eu.melodic.upperware.dlms.exception.InvalidParameterException;
-import eu.melodic.upperware.dlms.exception.NameNotFoundException;
-import eu.melodic.upperware.dlms.exception.PersistException;
-import eu.melodic.upperware.dlms.exception.RemoveException;
-import eu.melodic.upperware.dlms.exception.UnmountException;
+import eu.melodic.upperware.dlms.exception.*;
 import eu.melodic.upperware.dlms.properties.DLMSDataSourceAccess;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Example;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Implementation of DLMSService.
@@ -155,8 +139,6 @@ public class DLMSServiceImpl implements DLMSService {
 				.filter(ds -> ds.getName().equals(dsName))
 				.findAny();
 	}
-	
-
 
 	@Override
 	public void deleteById(long id) {
@@ -178,20 +160,19 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	@Override
-	public URI addDataSource(DataSource ds) {
+	public void addDataSource(DataSource ds) {
 		ensureConfiguration();
-
+        log.info("Checking Configuration for DataSource: {}... OK", ds.getName());
 		ensureDataSourceNameIsUnused(ds);
+        log.info("Checking DataSourceNameIsUnused for DataSource: {}... OK", ds.getName());
 		ensureMountPoint(ds);
+        log.info("Checking MountPoint for DataSource: {}... OK", ds.getName());
 
-		DataSource newDataSource = dsRepository.save(ds);
-		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(newDataSource.getName()).toUri();
-		return location;
+        dsRepository.save(ds);
 	}
 
 	@Override
-	public DataSource updateDataSource(DataSource ds, long id) {
+	public void updateDataSource(DataSource ds, long id) {
 		ensureIdParameterNotNegative(id);
 		ensureConfiguration();
 
@@ -201,8 +182,6 @@ public class DLMSServiceImpl implements DLMSService {
 
 		ds.setId(id);
 		dsRepository.save(ds);
-
-		return null;
 	}
 
 	@Override
@@ -259,29 +238,27 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	private void ensureMountPoint(DataSource ds) {
-		String result;
-		// check if key is required
-		if (StringUtils.isEmpty(ds.getAccessKey())) {
-			result = runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly());
-		} else {
-			// key is required, so get access information
-			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
-			// does both access key and secret key exists
-			if (userInfo.size() > 1) {
-				String accessKeyId = userInfo.get(0);
-				String secretKey = userInfo.get(1);
-				result = runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId,
-						secretKey);
-			} else {
-				log.debug("User account does not have accessKey/secretKey");
-
-				result = null;
-			}
-		}
-
-		if (!result.isEmpty() && !result.endsWith(" already exists")) {
-			throw new CreateDatasourceException("Create Datasource " + ds.getMountPoint() + " failed: " + result);
-		}
+	    try {
+            // check if key is required
+            if (StringUtils.isEmpty(ds.getAccessKey())) {
+                log.info("Mounting datasource {} without accessKey", ds.getName());
+                runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly());
+            } else {
+                log.info("Mounting datasource {} with accessKey", ds.getName());
+                // key is required, so get access information
+                List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
+                // does both access key and secret key exists
+                if (CollectionUtils.isNotEmpty(userInfo) && userInfo.size() == 2) {
+                    String accessKeyId = userInfo.get(0);
+                    String secretKey = userInfo.get(1);
+                    runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId, secretKey);
+                } else {
+                    log.info("User account does not have accessKey/secretKey");
+                }
+            }
+        } catch (AlluxioException | IOException e) {
+            throw new CreateDatasourceException("Create Datasource " + ds.getMountPoint() + " failed");
+        }
 	}
 
 	/**
@@ -327,16 +304,16 @@ public class DLMSServiceImpl implements DLMSService {
 	/**
 	 * Runs the Alluxio MOUNT command without authentication
 	 */
-	protected String runMountCommand(String alluxioPath, String ufsPath, boolean isReadOnly) {
-		return runMountCommand(alluxioPath, ufsPath, isReadOnly, null, null);
+	protected void runMountCommand(String alluxioPath, String ufsPath, boolean isReadOnly) throws IOException, AlluxioException {
+		runMountCommand(alluxioPath, ufsPath, isReadOnly, null, null);
 	}
 
 	/**
 	 * Runs the Alluxio MOUNT command. Returns an empty String on success or the
 	 * error message from Alluxio if anything went wrong.
 	 */
-	protected String runMountCommand(String alluxPath, String ufPath, boolean isReadOnly, String accessKeyId,
-			String secretKey) {
+	protected void runMountCommand(String alluxPath, String ufPath, boolean isReadOnly, String accessKeyId,
+			String secretKey) throws IOException, AlluxioException {
 		AlluxioURI alluxioPath = new AlluxioURI(alluxPath);
 		AlluxioURI ufsPath = new AlluxioURI(ufPath);
 		MountPOptions mountOption = MountPOptions.getDefaultInstance();
@@ -345,27 +322,19 @@ public class DLMSServiceImpl implements DLMSService {
 		mountBuilder.setReadOnly(isReadOnly);
 		mountBuilder.setShared(true);
 
-		Map<String, String> authentication = new HashMap<>();
 		// different access information based on cloud provider need to be set up here.
-		// following is for aws
-		if (StringUtils.isNotBlank(accessKeyId) && StringUtils.isNotBlank(secretKey)) {
-			authentication.put("aws.accessKeyId", accessKeyId);
+        // following is for aws
+        if (StringUtils.isNotBlank(accessKeyId) && StringUtils.isNotBlank(secretKey)) {
+            Map<String, String> authentication = new HashMap<>();
+            authentication.put("aws.accessKeyId", accessKeyId);
 			authentication.put("aws.secretKey", secretKey);
 
 			mountBuilder.putAllProperties(authentication);
-
 		}
 		mountOption = mountBuilder.build();
-		FileSystem mFileSystem = FileSystem.Factory.create(conf);
-		try {
-			log.debug("Running MOUNT command with parameter(s): alluxPath: {}, ufsPath: {}, and isReadOnly: {}",
-					alluxPath, ufPath, isReadOnly);
-			mFileSystem.mount(alluxioPath, ufsPath, mountOption);
-			return "";
-		} catch (IOException | AlluxioException e) {
-			log.error(e.getMessage(), e);
-			return e.getMessage();
-		}
+        log.info("Running MOUNT command with parameter(s): alluxPath: {}, ufsPath: {}, and isReadOnly: {}", alluxPath, ufPath, isReadOnly);
+        FileSystem mFileSystem = FileSystem.Factory.create(conf);
+        mFileSystem.mount(alluxioPath, ufsPath, mountOption);
 	}
 
 	/**
@@ -494,7 +463,7 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	@Override
-	public DataSource updateDataSource(DataSource ds, String name) {
+	public void updateDataSource(DataSource ds, String name) {
 		ensureConfiguration();
 
 		checkName(name);
@@ -506,7 +475,6 @@ public class DLMSServiceImpl implements DLMSService {
 		ds.setId(dsOrig.getId());
 
 		dsRepository.save(ds);
-		return null;
 	}
 
 	private void runUnmount(DataSource ds) {
