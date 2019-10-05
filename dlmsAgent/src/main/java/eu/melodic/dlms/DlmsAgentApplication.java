@@ -77,32 +77,27 @@ public class DlmsAgentApplication {
 					@Override
 					public void run() {
 						log.info("Running metrics collection for {}", url);
-						// do not run if the model did not have any data source
-						if (StringUtils.isNotBlank(sendToDlmsAgent.getCommand())
-								&& StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())) {
-
-							switch (metricsRange) {
-							case ALLUXIO: {
-								log.info("Starting to collect Alluxio metrics");
-								metricsController.collectAlluxioMetrics(url);
-								break;
-							}
-							case MY_SQL: {
-								log.info("Starting to collect MySql metrics");
-								metricsController.collectMySqlMetrics();
-								break;
-							}
-							case ALL: {
-								log.info("Starting to collect both Alluxio and MySql metrics");
-								metricsController.collectAlluxioMetrics(url);
-								metricsController.collectMySqlMetrics();
-								break;
-							}
-							}
-							metricsController.sendMetrics(appComp);
-						} else {
-							log.warn("Empty sendToDlmsAgent, no metrics will be colected");
+						
+						switch (metricsRange) {
+						case ALLUXIO: {
+							log.info("Starting to collect Alluxio metrics");
+							metricsController.collectAlluxioMetrics(url);
+							break;
 						}
+						case MY_SQL: {
+							log.info("Starting to collect MySql metrics");
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+						case ALL: {
+							log.info("Starting to collect both Alluxio and MySql metrics");
+							metricsController.collectAlluxioMetrics(url);
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+						}
+						metricsController.sendMetrics(appComp);
+
 					}
 				};
 
