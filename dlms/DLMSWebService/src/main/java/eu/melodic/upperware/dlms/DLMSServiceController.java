@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Webservice controller for the DLMS service.
@@ -93,10 +94,18 @@ public class DLMSServiceController {
 	 */
 	@GetMapping(value = "/getAlluxioCmd/{ip}")
 	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) throws ApiException {
+		log.info("Invoking getAlluxioCmd with IP: {}", ip);
 
-		return comp.findComponentId(ip)
-				.map(cmpId -> new SendToDlmsAgent(cmpId, dlmsService.getAlluxioCmd(cmpId)))
-				.orElse(new SendToDlmsAgent("", ""));
+		final Optional<String> componentId = comp.findComponentId(ip);
+		if (componentId.isPresent()) {
+			final String cmpId = componentId.get();
+			final String alluxioCmd = dlmsService.getAlluxioCmd(cmpId);
+			log.info("Sending getAlluxioCmd response for IP: {}. Result: [cmpId:{}, alluxioCmd:{}]", ip, cmpId, alluxioCmd);
+			return new SendToDlmsAgent(cmpId, alluxioCmd);
+		} else {
+			log.info("Could not get componentId for IP: {}.", ip);
+			return new SendToDlmsAgent("", "");
+		}
 	}
 	
 

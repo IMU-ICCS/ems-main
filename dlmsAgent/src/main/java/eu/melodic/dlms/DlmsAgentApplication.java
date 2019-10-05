@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import eu.melodic.dlms.exception.DLMSAgentException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -59,7 +60,7 @@ public class DlmsAgentApplication {
 			MetricsRange metricsRange = MetricsRange.valueOf(metricsRangeProperty);
 			log.info("Application started with metricsRange {} set", metricsRangeProperty);
 
-			String url = System.getProperties().getProperty("mode");
+			String url = System.getProperties().getProperty("mode"); //TODO "mode" --> "url"??
 			log.info("Application started and URL {} identified", url);
 
 			String publicIp = System.getProperties().getProperty("ip.public");
@@ -129,6 +130,12 @@ public class DlmsAgentApplication {
 			sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
 			isNull = isNull(sendToDlmsAgent);
 		}
+
+		if (sendToDlmsAgent == null) {
+			throw new DLMSAgentException(String.format("Could not fetch response of %s", webServiceUrl));
+		}
+
+		log.info("Result of {} invocation is: [componentId:{}, command:{}]", webServiceUrl, sendToDlmsAgent.getComponentId(), sendToDlmsAgent.getCommand());
 		return sendToDlmsAgent;
 	}
 

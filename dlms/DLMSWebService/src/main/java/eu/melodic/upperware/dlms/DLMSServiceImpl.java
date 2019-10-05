@@ -44,8 +44,6 @@ public class DLMSServiceImpl implements DLMSService {
 	private final AcDsMountPointRepository acDsMpRepository;
 
 	private final InstancedConfiguration conf;
-	private final String ALLUXIO_FUSE_RUN = "integration/fuse/bin/alluxio-fuse mount ";
-	private final String MKDIR = "mkdir -p ";
 
 	@Override
 	public DataSource getDataSourceById(long id) {
@@ -91,14 +89,14 @@ public class DLMSServiceImpl implements DLMSService {
 	@Override
 	public String getAlluxioCmd(String cmpName) {
 		ensureConfiguration();
-		
+		log.info("Checking Configuration for {}... OK", cmpName);
 		checkAcName(cmpName);
+        log.info("Checking AcName for {}... OK", cmpName);
 		AcDsMountPoint mp= acDsMpRepository.findByAcName(cmpName);
 	
 		String localMountPoint = mp.getToLocalMountPoint();
 		// create directory first
-
-		return MKDIR + localMountPoint + " && " + ALLUXIO_FUSE_RUN + mp.getToLocalMountPoint() + " /" + mp.getMountPoint();
+		return String.format("mkdir -p %s && alluxio/integration/fuse/bin/alluxio-fuse mount %s /%s", localMountPoint, localMountPoint, mp.getMountPoint());
 	}
 
 	@Override
