@@ -21,7 +21,7 @@ import eu.melodic.dlms.db.model.ApplicationComponentDataSourceAffinity;
 import eu.melodic.dlms.db.model.CloudProvider;
 import eu.melodic.dlms.db.model.DataCenter;
 import eu.melodic.dlms.db.model.DataCenterZone;
-import eu.melodic.dlms.db.model.DataSource;
+import eu.melodic.dlms.db.model.ControllerDataSource;
 import eu.melodic.dlms.db.model.Region;
 import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
 import eu.melodic.dlms.utility.common.UtilityMetrics;
@@ -290,7 +290,7 @@ public class DlmsRestController {
 	 * Returns a list of data sources in the database
 	 */
 	@GetMapping(value = "/datasource")
-	public List<DataSource> getAllDataSources() {
+	public List<ControllerDataSource> getAllDataSources() {
 		return dlmsService.getAllDataSources();
 	}
 
@@ -298,7 +298,7 @@ public class DlmsRestController {
 	 * Create a new cloud provider
 	 */
 	@PostMapping("/datasource")
-	public DataSource createDataSource(@Valid @RequestBody DataSource ds) {
+	public ControllerDataSource createDataSource(@Valid @RequestBody ControllerDataSource ds) {
 		return dlmsService.createDataSource(ds);
 	}
 
@@ -307,7 +307,7 @@ public class DlmsRestController {
 	 * if no data source with this id exists.
 	 */
 	@RequestMapping(value = "/datasource/search", params = "id")
-	public DataSource getDataSourceById(@RequestParam Long id) {
+	public ControllerDataSource getDataSourceById(@RequestParam Long id) {
 		return dlmsService.getDataSourceById(id);
 	}
 
@@ -316,7 +316,7 @@ public class DlmsRestController {
 	 * NameNotFoundException if no data source with this name exists.
 	 */
 	@RequestMapping(value = "/datasource/search", params = "name")
-	public DataSource getDataSourceByName(@RequestParam String name) {
+	public ControllerDataSource getDataSourceByName(@RequestParam String name) {
 		return dlmsService.getDataSourceByName(name);
 	}
 
@@ -325,7 +325,7 @@ public class DlmsRestController {
 	 * IdNotFoundException if no cloud provider with this id exists.
 	 */
 	@RequestMapping(value = "/datasource/update", params = "id", method = RequestMethod.PUT)
-	public ResponseEntity<Object> updateDataDataSourceById(@RequestBody DataSource ds, @RequestParam Long id) {
+	public ResponseEntity<Object> updateDataDataSourceById(@RequestBody ControllerDataSource ds, @RequestParam Long id) {
 		dlmsService.updateDataSourceById(ds, id);
 		return ResponseEntity.noContent().build();
 	}
@@ -335,7 +335,7 @@ public class DlmsRestController {
 	 * NameNotFoundException if no cloud provider with this name exists.
 	 */
 	@RequestMapping(value = "/datasource/update", params = "name", method = RequestMethod.PUT)
-	public ResponseEntity<Object> updateDataSourceByName(@RequestBody DataSource ds, @RequestParam String name) {
+	public ResponseEntity<Object> updateDataSourceByName(@RequestBody ControllerDataSource ds, @RequestParam String name) {
 		dlmsService.updateDataSourceByName(ds, name);
 		return ResponseEntity.noContent().build();
 	}

@@ -8,11 +8,11 @@ import eu.melodic.dlms.db.model.AcDsKey;
 import eu.melodic.dlms.db.model.ApplicationComponent;
 import eu.melodic.dlms.db.model.ApplicationComponentDataSourceAffinity;
 import eu.melodic.dlms.db.model.ApplicationComponentDataSourceData;
-import eu.melodic.dlms.db.model.DataSource;
+import eu.melodic.dlms.db.model.ControllerDataSource;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.DataSourceRepository;
+import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,7 +25,7 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 	private long minNumTransPrediction = Long.MAX_VALUE;
 	private long maxNumTransPrediction = 0;
 
-	public CalculateAvgCouplet(ApplicationComponentRepository acRepository, DataSourceRepository dsRepository,
+	public CalculateAvgCouplet(ApplicationComponentRepository acRepository, ControllerDataSourceRepository dsRepository,
 			ApplicationComponentDataSourceDataRepository acDSDataRepository,
 			ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository, int paraNumRecords) {
 		super(acRepository, dsRepository, acDSDataRepository, acDsAffinityRepository);
@@ -63,12 +63,12 @@ public class CalculateAvgCouplet extends Algo_AffinityAwareness {
 	 */
 	private List<AppComDataSrc> computePrediction() {
 		List<ApplicationComponent> acList = acRepository.findAll();
-		List<DataSource> dsList = dsRepository.findAll();
+		List<ControllerDataSource> dsList = dsRepository.findAll();
 
 		List<AppComDataSrc> appComDataSrcList = new ArrayList<>();
 
 		for (ApplicationComponent acListItem : acList) {
-			for (DataSource dsListItem : dsList) {
+			for (ControllerDataSource dsListItem : dsList) {
 				List<ApplicationComponentDataSourceData> acDSDataList = acDsDataRepository
 						.findByAppCompIdAndDataSourceIdDataHigherZero(acListItem.getId(), dsListItem.getId(),
 								this.paraNumRecords);

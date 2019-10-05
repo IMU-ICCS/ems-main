@@ -32,7 +32,7 @@ import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepositor
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.CloudProviderRepository;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
-import eu.melodic.dlms.db.repository.DataSourceRepository;
+import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
 import eu.melodic.dlms.db.repository.RegionRepository;
 import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
 import eu.melodic.dlms.metric.receiver.properties.DlmsMetricProperties;
@@ -51,7 +51,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private RegionRepository regionRepository;
 	private TwoDataCentersRepository twoDcRepository;
 	private ApplicationComponentRepository acRepository;
-	private DataSourceRepository dsRepository;
+	private ControllerDataSourceRepository dsRepository;
 	private ApplicationComponentDataSourceDataRepository acDsDataRepository;
 
 	private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
@@ -67,7 +67,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		this.regionRepository = applicationContext.getBean(RegionRepository.class);
 		this.twoDcRepository = applicationContext.getBean(TwoDataCentersRepository.class);
 		this.acRepository = applicationContext.getBean(ApplicationComponentRepository.class);
-		this.dsRepository = applicationContext.getBean(DataSourceRepository.class);
+		this.dsRepository = applicationContext.getBean(ControllerDataSourceRepository.class);
 		this.acDsDataRepository = applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
 	}
 

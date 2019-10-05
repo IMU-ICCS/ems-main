@@ -4,7 +4,7 @@ import eu.melodic.dlms.db.model.AcDsKey;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.DataSourceRepository;
+import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Algo_AffinityAwareness {
 	protected final ApplicationComponentRepository acRepository;
-	protected final DataSourceRepository dsRepository;
+	protected final ControllerDataSourceRepository dsRepository;
 	protected final ApplicationComponentDataSourceDataRepository acDsDataRepository;
 	protected final ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository;
 

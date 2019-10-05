@@ -13,13 +13,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DataSource {
+public class ControllerDataSource {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
 	
-	public DataSource(String name) {
+	public ControllerDataSource(String name) {
 		this.name = name;
 	}
 	

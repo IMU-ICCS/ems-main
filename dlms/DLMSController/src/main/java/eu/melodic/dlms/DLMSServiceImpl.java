@@ -9,14 +9,14 @@ import eu.melodic.dlms.db.model.ApplicationComponentDataSourceAffinity;
 import eu.melodic.dlms.db.model.CloudProvider;
 import eu.melodic.dlms.db.model.DataCenter;
 import eu.melodic.dlms.db.model.DataCenterZone;
-import eu.melodic.dlms.db.model.DataSource;
+import eu.melodic.dlms.db.model.ControllerDataSource;
 import eu.melodic.dlms.db.model.Region;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.CloudProviderRepository;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
 import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
-import eu.melodic.dlms.db.repository.DataSourceRepository;
+import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
 import eu.melodic.dlms.db.repository.RegionRepository;
 import eu.melodic.dlms.exception.IdNotFoundException;
 import eu.melodic.dlms.exception.InvalidParameterException;
@@ -34,7 +34,7 @@ public class DLMSServiceImpl implements DLMSService {
 	private final DataCenterRepository dcRepository;
 	private final RegionRepository regionRepository;
 	private final ApplicationComponentRepository acRepository;
-	private final DataSourceRepository dsRepository;
+	private final ControllerDataSourceRepository dsRepository;
 	private final DataCenterZoneRepository dczRepository;
 	private final ApplicationComponentDataSourceAffinityRepository acDSAffinityRepository;
 
@@ -207,28 +207,28 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	@Override
-	public List<DataSource> getAllDataSources() {
+	public List<ControllerDataSource> getAllDataSources() {
 		return dsRepository.findAll();
 	}
 
 	@Override
-	public DataSource createDataSource(DataSource ds) {
+	public ControllerDataSource createDataSource(ControllerDataSource ds) {
 		return dsRepository.save(ds);
 	}
 
 	@Override
-	public DataSource getDataSourceById(long id) {
+	public ControllerDataSource getDataSourceById(long id) {
 		return dsRepository.findById(id).orElseThrow(() -> new IdNotFoundException(id));
 	}
 
 	@Override
-	public DataSource getDataSourceByName(String name) {
+	public ControllerDataSource getDataSourceByName(String name) {
 		checkDSName(name);
 		return dsRepository.findByName(name);
 	}
 
 	@Override
-	public DataSource updateDataSourceById(DataSource ds, long id) {
+	public ControllerDataSource updateDataSourceById(ControllerDataSource ds, long id) {
 		ensureIdParameterNotNegative(id);
 		checkDSId(id);
 
@@ -238,10 +238,10 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 
 	@Override
-	public DataSource updateDataSourceByName(DataSource ds, String name) {
+	public ControllerDataSource updateDataSourceByName(ControllerDataSource ds, String name) {
 		checkCPName(name);
 		// get old data source and update it
-		DataSource dsOrig = dsRepository.findByName(name);
+		ControllerDataSource dsOrig = dsRepository.findByName(name);
 		ds.setId(dsOrig.getId());
 
 		dsRepository.save(ds);
