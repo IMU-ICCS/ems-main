@@ -67,16 +67,17 @@ public class DlmsAgentApplication {
 			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getAlluxioCmd/" + publicIp;
 
 			final SendToDlmsAgent sendToDlmsAgent = fetchSendToDlmsAgent(webServiceUrl);
-
+			
+			// application component is the same and command needs to be executed once
+			String appComp = runCommands(sendToDlmsAgent);
+			
 			TimerTask timerTask = new TimerTask() {
-
 				@Override
 				public void run() {
 					log.info("Running metrics collection for {}", url);
 					// do not run if the model did not have any data source
 					if (StringUtils.isNotBlank(sendToDlmsAgent.getCommand()) && StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())) {
-
-						String appComp = runCommands(sendToDlmsAgent);
+						
 						switch (metricsRange) {
 							case ALLUXIO: {
 								log.info("Starting to collect Alluxio metrics");
