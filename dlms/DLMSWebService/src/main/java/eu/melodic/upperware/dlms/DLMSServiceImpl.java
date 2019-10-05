@@ -253,8 +253,8 @@ public class DLMSServiceImpl implements DLMSService {
                     String secretKey = userInfo.get(1);
                     runMountCommand("/" + ds.getMountPoint(), ds.getUfsURI(), ds.isReadOnly(), accessKeyId, secretKey);
                 } else {
-                    log.info("User account does not have accessKey/secretKey");
-                }
+					throw new CreateDatasourceException("User account does not have accessKey/secretKey");
+				}
             }
         } catch (AlluxioException | IOException e) {
             throw new CreateDatasourceException("Create Datasource " + ds.getMountPoint() + " failed");
