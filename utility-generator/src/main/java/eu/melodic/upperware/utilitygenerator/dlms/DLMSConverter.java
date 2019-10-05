@@ -55,6 +55,22 @@ public class DLMSConverter implements ArgumentConverter {
         try {
             log.debug("Calling the dlms utility service");
             dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
+
+            log.info("Utility was calculated {}", dlmsUtility);
+
+            log.info("Utility values start:");
+
+
+            if (dlmsUtility == null || dlmsUtility.getResults() == null) {
+                log.error("Utility values is null");
+            }
+
+            dlmsUtility.getResults().forEach((algName, value) ->
+                    log.info("AlgName: {} --> {}", algName, value)
+            );
+
+            log.info("Utility values stop");
+
         } catch (Exception e) {
             log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value. The error:");
             log.warn(e.toString());

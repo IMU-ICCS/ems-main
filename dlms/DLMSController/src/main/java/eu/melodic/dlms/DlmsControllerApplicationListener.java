@@ -1,33 +1,25 @@
 package eu.melodic.dlms;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import eu.melodic.dlms.metric.receiver.metricvalue.MetricValueMonitorBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import eu.melodic.dlms.metric.receiver.metricvalue.MetricValueMonitorBean;
-import eu.melodic.dlms.metric.receiver.properties.DlmsMetricProperties;
-import lombok.extern.slf4j.Slf4j;
+import javax.jms.JMSException;
 
 /**
  * Class to receive metrics.
  */
 @Component
 @Slf4j
-public class DlmsControllerApplicationListener implements ApplicationListener<ApplicationEvent>, ApplicationContextAware  {
+public class DlmsControllerApplicationListener implements ApplicationListener<ApplicationEvent> {
 
 	private MetricValueMonitorBean metricValueMonitorBean;
-    private DlmsMetricProperties properties;
-    private ApplicationContext applicationContext;
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-		this.metricValueMonitorBean = applicationContext.getBean(MetricValueMonitorBean.class);
+	public DlmsControllerApplicationListener(MetricValueMonitorBean metricValueMonitorBean) throws JMSException {
+		this.metricValueMonitorBean = metricValueMonitorBean;
 		this.metricValueMonitorBean.subscribe();
-		this.properties = applicationContext.getBean(DlmsMetricProperties.class);
 	}
 
     @Override

@@ -71,7 +71,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		this.acDsDataRepository = applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
 	}
 
-	public void subscribe() {
+	public void subscribe() throws JMSException {
 		// Check if Pub/Sub should be activated
 		if (!properties.getPubsub().isOn()) {
 			log.info("*****   Pub/Sub is SWITCHED OFF");
@@ -105,18 +105,18 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		log.info("Subscribing to topics: ok");
 	}
 
-	public void subscribe(String url, String topicName, String clientId, TopicType type) {
-		// Check if Pub/Sub should be activated
-		if (!properties.getPubsub().isOn()) {
-			log.info("*****   Pub/Sub is SWITCHED OFF");
-			return;
-		}
+//	public void subscribe(String url, String topicName, String clientId, TopicType type) {
+//		// Check if Pub/Sub should be activated
+//		if (!properties.getPubsub().isOn()) {
+//			log.info("*****   Pub/Sub is SWITCHED OFF");
+//			return;
+//		}
+//
+//		_do_subscribe(url, topicName, clientId, type);
+//	}
 
-		_do_subscribe(url, topicName, clientId, type);
-	}
-
-	protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) {
-		try {
+	protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) throws JMSException {
+//		try {
 			log.info("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url,
 					topicName, clientId, type);
 
@@ -175,9 +175,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
 			log.info("*****   SUBSCRIBE: ok");
 
-		} catch (Exception e) {
-			log.error("*****   SUBSCRIBE: ERROR: {}", e);
-		}
+//		} catch (Exception e) {
+//			log.error("*****   SUBSCRIBE: ERROR: {}", e);
+//		}
 	}
 
 	private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
