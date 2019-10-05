@@ -5,10 +5,10 @@ import java.util.Objects;
 
 import eu.melodic.dlms.db.model.ApplicationComponent;
 import eu.melodic.dlms.db.model.ApplicationComponentDataSourceData;
-import eu.melodic.dlms.db.model.ControllerDataSource;
+import eu.melodic.dlms.db.model.DataSource;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
+import eu.melodic.dlms.db.repository.DataSourceRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MetricValueRegistryAcDs<T> {
 	private final ApplicationComponentRepository acRepository;
-	private final ControllerDataSourceRepository dsRepository;
+	private final DataSourceRepository dsRepository;
 	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
 	@Getter
 	@Setter
@@ -62,7 +62,7 @@ public class MetricValueRegistryAcDs<T> {
 	 */
 	public void storeDataSource(String name) {
 		if (!dsRepository.existsByName(name)) {
-			ControllerDataSource ds = new ControllerDataSource(name);
+			DataSource ds = new DataSource(name);
 			dsRepository.save(ds);
 		}
 	}

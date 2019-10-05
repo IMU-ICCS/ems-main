@@ -8,7 +8,7 @@ import eu.melodic.dlms.db.model.ApplicationComponentDataSourceAffinity;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceAffinityRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
+import eu.melodic.dlms.db.repository.DataSourceRepository;
 
 public abstract class CalculateCouplet extends Algo_AffinityAwareness{
 	protected long minDataTransPrediction = Long.MAX_VALUE;
@@ -16,7 +16,7 @@ public abstract class CalculateCouplet extends Algo_AffinityAwareness{
 	protected long minNumTransPrediction = Long.MAX_VALUE;
 	protected long maxNumTransPrediction = 0;
 	
-	public CalculateCouplet(ApplicationComponentRepository acRepository, ControllerDataSourceRepository dsRepository,
+	public CalculateCouplet(ApplicationComponentRepository acRepository, DataSourceRepository dsRepository,
 			ApplicationComponentDataSourceDataRepository acDSDataRepository,
 			ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository, int paraNumRecords) {
 		super(acRepository, dsRepository, acDSDataRepository, acDsAffinityRepository);

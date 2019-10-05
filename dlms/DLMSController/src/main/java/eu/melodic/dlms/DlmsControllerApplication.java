@@ -17,7 +17,7 @@ import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.CloudProviderRepository;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
 import eu.melodic.dlms.db.repository.DataCenterZoneRepository;
-import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
+import eu.melodic.dlms.db.repository.DataSourceRepository;
 import eu.melodic.dlms.db.repository.RegionRepository;
 import eu.melodic.dlms.db.repository.TwoDataCenterCombinationRepository;
 import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
@@ -45,7 +45,7 @@ public class DlmsControllerApplication {
 	private final TwoDataCenterCombinationRepository twoDataCenterCombinationRepository;
 	private final DataCenterZoneRepository dataCenterZoneRepository;
 	private final ApplicationComponentRepository acRepository;
-	private final ControllerDataSourceRepository dsRepository;
+	private final DataSourceRepository dsRepository;
 	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
 	private final ApplicationComponentDataSourceAffinityRepository acDsAffinityRepository;
 	private final CloudProviderRepository cpRepository;

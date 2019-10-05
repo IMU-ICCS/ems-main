@@ -24,7 +24,7 @@ import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepositor
 import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
 import eu.melodic.dlms.db.repository.CloudProviderRepository;
 import eu.melodic.dlms.db.repository.DataCenterRepository;
-import eu.melodic.dlms.db.repository.ControllerDataSourceRepository;
+import eu.melodic.dlms.db.repository.DataSourceRepository;
 import eu.melodic.dlms.db.repository.RegionRepository;
 import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class MetricValueListener implements MessageListener {
 	private final TwoDataCentersRepository twoDcRepository;
 	private final RegionRepository regionRepository;
 	private final ApplicationComponentRepository acRepository;
-	private final ControllerDataSourceRepository dsRepository;
+	private final DataSourceRepository dsRepository;
 	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
 
 	private Topic topic;
@@ -48,7 +48,7 @@ public class MetricValueListener implements MessageListener {
 	public MetricValueListener( Topic topic, TopicType type,
 			CloudProviderRepository cpRepository,
 			DataCenterRepository dcRepository, RegionRepository regionRepository,
-			TwoDataCentersRepository twoDcRepository, ApplicationComponentRepository acRepository, ControllerDataSourceRepository dsRepository, ApplicationComponentDataSourceDataRepository acDsDataRepository) throws JMSException {
+			TwoDataCentersRepository twoDcRepository, ApplicationComponentRepository acRepository, DataSourceRepository dsRepository, ApplicationComponentDataSourceDataRepository acDsDataRepository) throws JMSException {
 		log.debug("MetricValueListener.<init>: type={}", type);
 
 		this.topic = topic;

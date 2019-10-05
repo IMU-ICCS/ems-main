@@ -7,7 +7,7 @@ import eu.melodic.dlms.db.model.ApplicationComponentDataSourceAffinity;
 import eu.melodic.dlms.db.model.CloudProvider;
 import eu.melodic.dlms.db.model.DataCenter;
 import eu.melodic.dlms.db.model.DataCenterZone;
-import eu.melodic.dlms.db.model.ControllerDataSource;
+import eu.melodic.dlms.db.model.DataSource;
 import eu.melodic.dlms.db.model.Region;
 
 /**
@@ -156,36 +156,36 @@ public interface DLMSService {
 	/**
 	 * Returns all the data sources in the database
 	 */
-	List<ControllerDataSource> getAllDataSources();
+	List<DataSource> getAllDataSources();
 
 	/**
 	 * Create a new data source
 	 */
-	ControllerDataSource createDataSource(ControllerDataSource ds);
+	DataSource createDataSource(DataSource ds);
 
 	/**
 	 * Returns one data source matching the given id. Throws an IdNotFoundException
 	 * if no data source with this id exists.
 	 */
-	ControllerDataSource getDataSourceById(long id);
+	DataSource getDataSourceById(long id);
 
 	/**
 	 * Returns one data source matching the given name. Throws a
 	 * NameNotFoundException if no data source with this name exists.
 	 */
-	ControllerDataSource getDataSourceByName(String name);
+	DataSource getDataSourceByName(String name);
 
 	/**
 	 * Updates the data source with the given id with the data provided Throws an
 	 * IdNotFoundException if no data source with this id exists.
 	 */
-	ControllerDataSource updateDataSourceById(ControllerDataSource ds, long id);
+	DataSource updateDataSourceById(DataSource ds, long id);
 
 	/**
 	 * Updates the data source with the given name with the data provided Throws a
 	 * NameNotFoundException if no data source with this name exists.
 	 */
-	ControllerDataSource updateDataSourceByName(ControllerDataSource ds, String name);
+	DataSource updateDataSourceByName(DataSource ds, String name);
 
 	/**
 	 * Returns all the data center zones in the database
