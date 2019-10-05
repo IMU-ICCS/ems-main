@@ -67,45 +67,46 @@ public class DlmsAgentApplication {
 			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getAlluxioCmd/" + publicIp;
 
 			final SendToDlmsAgent sendToDlmsAgent = fetchSendToDlmsAgent(webServiceUrl);
+			
+			if (StringUtils.isNotBlank(sendToDlmsAgent.getCommand())
+					&& StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())) {
+				// application component is the same and command needs to be executed once
+				String appComp = runCommands(sendToDlmsAgent);
 
-			TimerTask timerTask = new TimerTask() {
-
-				@Override
-				public void run() {
-					log.info("Running metrics collection for {}", url);
-					// do not run if the model did not have any data source
-					if (StringUtils.isNotBlank(sendToDlmsAgent.getCommand()) && StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())) {
-
-						String appComp = runCommands(sendToDlmsAgent);
+				TimerTask timerTask = new TimerTask() {
+					@Override
+					public void run() {
+						log.info("Running metrics collection for {}", url);
+						
 						switch (metricsRange) {
-							case ALLUXIO: {
-								log.info("Starting to collect Alluxio metrics");
-								metricsController.collectAlluxioMetrics(url);
-								break;
-							}
-							case MY_SQL: {
-								log.info("Starting to collect MySql metrics");
-								metricsController.collectMySqlMetrics();
-								break;
-							}
-							case ALL: {
-								log.info("Starting to collect both Alluxio and MySql metrics");
-								metricsController.collectAlluxioMetrics(url);
-								metricsController.collectMySqlMetrics();
-								break;
-							}
+						case ALLUXIO: {
+							log.info("Starting to collect Alluxio metrics");
+							metricsController.collectAlluxioMetrics(url);
+							break;
+						}
+						case MY_SQL: {
+							log.info("Starting to collect MySql metrics");
+							metricsController.collectMySqlMetrics();
+							break;
+						}
+						case ALL: {
+							log.info("Starting to collect both Alluxio and MySql metrics");
+							metricsController.collectAlluxioMetrics(url);
+							metricsController.collectMySqlMetrics();
+							break;
+						}
 						}
 						metricsController.sendMetrics(appComp);
-					} else {
-						log.warn("Empty sendToDlmsAgent, no metrics will be colected");
-					}
-				}
-			};
 
-			Timer timer = new Timer();
-			timer.schedule(timerTask, DELAY_AFTER_STARTUP, CALL_INTERVAL);
-			log.info("Started timer with delay=" + DELAY_AFTER_STARTUP / 1000 + " sec. and interval="
-					+ CALL_INTERVAL / 1000 + " sec.");
+					}
+				};
+
+				Timer timer = new Timer();
+				timer.schedule(timerTask, DELAY_AFTER_STARTUP, CALL_INTERVAL);
+				log.info("Started timer with delay=" + DELAY_AFTER_STARTUP / 1000 + " sec. and interval="
+						+ CALL_INTERVAL / 1000 + " sec.");
+			}
+			log.info("Metrics need not be calculated since it did not have data source");
 		};
 	}
 

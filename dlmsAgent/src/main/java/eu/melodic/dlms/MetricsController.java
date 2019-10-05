@@ -109,7 +109,7 @@ public class MetricsController {
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			if (hasAlluxioMetrics()) {
-				log.debug("Alluxio metrics found");
+				log.info("Alluxio metrics found");
 //				Map<String, Object> gaugesMap = metrics.getGauges().getProperties();
 				Map<String, Object> countersMap = metrics.getCounters().getProperties();
 
@@ -238,6 +238,7 @@ public class MetricsController {
 	}
 
 	private boolean hasAlluxioMetrics() {
+		log.info(metrics.toString());
 		return metrics != null
 				&& (!metrics.getGauges().getProperties().isEmpty() || !metrics.getCounters().getProperties().isEmpty());
 	}
@@ -280,6 +281,7 @@ public class MetricsController {
 	}
 
 	private Connection initializeConnection() throws JMSException {
+		log.info("Trying to initialize connection");
 		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl);
 		Connection connection = activeMQConnectionFactory.createConnection();
 		connection.start();
