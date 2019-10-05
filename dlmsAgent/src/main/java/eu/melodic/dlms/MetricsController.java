@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -317,7 +318,10 @@ public class MetricsController {
 	}
 
 	private String readMySqlMetric(String metricName) {
-		List<Map<String, Object>> result = jdbcTemplate.queryForList("SHOW GLOBAL STATUS like '" + metricName + '\'');
+		List<Map<String, Object>> result = jdbcTemplate.queryForList("SHOW GLOBAL STATUS like :metricName",
+				new MapSqlParameterSource()
+						.addValue("metricName", metricName)
+				);
 
 		if (CollectionUtils.isNotEmpty(result)) {
 			// the metric names should be direct hits if configured correctly, so we expect
