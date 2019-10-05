@@ -146,10 +146,10 @@ public class MetricsController {
 				long effectVal = getCurrentValue(acDsKey, totalVal);
 
 				String msg = getMessage(topic, appComp, ds, effectVal, now.getTime());
-				log.info(msg);
+				log.info("Sending message: {}", msg);
 
 				sendMessage(topic, msg, session);
-				log.debug("Message sent");
+				log.info("Message sent...");
 			}
 
 		}
@@ -274,10 +274,12 @@ public class MetricsController {
 	}
 
 	private void sendMessage(String metricName, String message, Session session) throws JMSException {
+		log.info("Trying to send metric: {} with message: {}", metricName, message);
 		Message msg = session.createTextMessage(message);
 		Topic topic = session.createTopic(metricName);
 		MessageProducer producer = session.createProducer(topic);
 		producer.send(msg);
+		log.info("Send metric: {} with message: {}", metricName, message);
 	}
 
 	private Connection initializeConnection() throws JMSException {
