@@ -174,13 +174,14 @@ public class DlmsAgentApplication {
 	 */
 	public String runCommands(SendToDlmsAgent sendToDlmsAgent) {
 		String cmd = sendToDlmsAgent.getCommand();
-		Process p;
+		String[] commands = { "/bin/bash", "-c", cmd };
 
 		try {
-			p = Runtime.getRuntime().exec(cmd);
+			Process p = Runtime.getRuntime().exec(commands);
+			log.info("Waiting for execution of {}", cmd);
 			p.waitFor();
 		} catch (Exception e) {
-			log.error("There was a problem while executing the command from dlms web service api");
+			log.error("There was a problem while executing the command from dlms web service api", e);
 		}
 		return sendToDlmsAgent.getComponentId();
 	}
