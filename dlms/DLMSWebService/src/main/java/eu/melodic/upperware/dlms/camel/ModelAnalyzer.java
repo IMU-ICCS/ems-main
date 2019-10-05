@@ -115,7 +115,7 @@ public class ModelAnalyzer {
 										validLocalMountPoint(dataSource);
 						
 										dataSourceList.add(dataSource);
-										log.debug("DataSource was added: {}", camelModel);
+										log.debug("DataSource was added: {}", data.getName());
 									}
 								}
 							}

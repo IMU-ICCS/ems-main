@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -62,51 +63,41 @@ public class DlmsAgentApplication {
 			log.info("Application started and URL {} identified", url);
 
 			String publicIp = System.getProperties().getProperty("ip.public");
-			String webServiceUrl = System.getProperties().getProperty("webServiceUrl")+"/getAlluxioCmd/"+publicIp;
+			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getAlluxioCmd/" + publicIp;
 
-			SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
-
-			// to stop program from going to a loop
-			// this needs to be modified to get information from melodic when it is ready
-			int counter = 1;
-			boolean isNull = isNull(sendToDlmsAgent);
-			while (isNull) { // repeat it until it is not null
-				// sleep needs to be changed later on
-				Thread.sleep(20000);
-				counter++;
-
-				if (counter > 10) {
-					log.error("Did not find the component id. Exiting now ...");
-					break;
-				}
-				log.debug("Did not find the component id. Waiting ....");
-				// obtain the object again and check
-				sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
-				isNull = isNull(sendToDlmsAgent);
-			}
-			String appComp = runCommands(sendToDlmsAgent);
+			final SendToDlmsAgent sendToDlmsAgent = fetchSendToDlmsAgent(webServiceUrl);
 
 			TimerTask timerTask = new TimerTask() {
+
 				@Override
 				public void run() {
 					log.info("Running metrics collection for {}", url);
+					// do not run if the model did not have any data source
+					if (StringUtils.isNotBlank(sendToDlmsAgent.getCommand()) && StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())) {
 
-					switch (metricsRange) {
-					case ALLUXIO: {
-						metricsController.collectAlluxioMetrics(url);
-						break;
+						String appComp = runCommands(sendToDlmsAgent);
+						switch (metricsRange) {
+							case ALLUXIO: {
+								log.info("Starting to collect Alluxio metrics");
+								metricsController.collectAlluxioMetrics(url);
+								break;
+							}
+							case MY_SQL: {
+								log.info("Starting to collect MySql metrics");
+								metricsController.collectMySqlMetrics();
+								break;
+							}
+							case ALL: {
+								log.info("Starting to collect both Alluxio and MySql metrics");
+								metricsController.collectAlluxioMetrics(url);
+								metricsController.collectMySqlMetrics();
+								break;
+							}
+						}
+						metricsController.sendMetrics(appComp);
+					} else {
+						log.warn("Empty sendToDlmsAgent, no metrics will be colected");
 					}
-					case MY_SQL: {
-						metricsController.collectMySqlMetrics();
-						break;
-					}
-					case ALL: {
-						metricsController.collectAlluxioMetrics(url);
-						metricsController.collectMySqlMetrics();
-						break;
-					}
-					}
-					metricsController.sendMetrics(appComp);
 				}
 			};
 
@@ -115,6 +106,30 @@ public class DlmsAgentApplication {
 			log.info("Started timer with delay=" + DELAY_AFTER_STARTUP / 1000 + " sec. and interval="
 					+ CALL_INTERVAL / 1000 + " sec.");
 		};
+	}
+
+	private SendToDlmsAgent fetchSendToDlmsAgent(String webServiceUrl) throws InterruptedException {
+		SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
+
+		// to stop program from going to a loop
+		// this needs to be modified to get information from melodic when it is ready
+		int counter = 1;
+		boolean isNull = isNull(sendToDlmsAgent);
+		while (isNull) { // repeat it until it is not null
+			// sleep needs to be changed later on
+			Thread.sleep(20000);
+			counter++;
+
+			if (counter > 10) {
+				log.error("Did not find the component id. Exiting now ...");
+				break;
+			}
+			log.debug("Did not find the component id. Waiting ....");
+			// obtain the object again and check
+			sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
+			isNull = isNull(sendToDlmsAgent);
+		}
+		return sendToDlmsAgent;
 	}
 
 	/**

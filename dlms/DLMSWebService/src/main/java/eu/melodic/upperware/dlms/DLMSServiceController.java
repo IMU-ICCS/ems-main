@@ -10,6 +10,7 @@ package eu.melodic.upperware.dlms;
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.upperware.dlms.component.ComponentId;
 import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
+import io.github.cloudiator.rest.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -91,9 +92,11 @@ public class DLMSServiceController {
 	 * Returns command and the component name.
 	 */
 	@GetMapping(value = "/getAlluxioCmd/{ip}")
-	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) {
-		String componentId = comp.findComponentId(ip);
-		return new SendToDlmsAgent(componentId, dlmsService.getAlluxioCmd(componentId));
+	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) throws ApiException {
+
+		return comp.findComponentId(ip)
+				.map(cmpId -> new SendToDlmsAgent(cmpId, dlmsService.getAlluxioCmd(cmpId)))
+				.orElse(new SendToDlmsAgent("", ""));
 	}
 	
 

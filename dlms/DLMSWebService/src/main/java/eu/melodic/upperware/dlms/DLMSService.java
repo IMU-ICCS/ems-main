@@ -74,7 +74,7 @@ public interface DLMSService {
 	 * Adds this datasource to the database and mounts the mount point. Throws a
 	 * CreateDatasourceException if a datasource with the same name already exists.
 	 */
-	URI addDataSource(DataSource ds);
+	void addDataSource(DataSource ds);
 
 	/**
 	 * Updates the datasource with the given id with the data provided in the
@@ -83,7 +83,7 @@ public interface DLMSService {
 	 * Then the data is saved for this id. Throws an IdNotFoundException if no
 	 * datasource with this id exists.
 	 */
-	DataSource updateDataSource(DataSource ds, long id);
+	void updateDataSource(DataSource ds, long id);
 
 	/**
 	 * Updates the datasource with the given name with the data provided in the
@@ -92,7 +92,7 @@ public interface DLMSService {
 	 * Then the data is saved for this name. Throws a NameNotFoundException if no
 	 * datasource with this name exists.
 	 */
-	DataSource updateDataSource(DataSource ds, String name);
+	void updateDataSource(DataSource ds, String name);
 
 	/**
 	 * Migrates (moves) a file from pathFrom to pathTo.
