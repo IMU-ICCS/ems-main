@@ -105,8 +105,22 @@ public class DlmsControllerClient {
 				HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);
 				ResponseEntity<UtilityMetrics> response = restTemplate.exchange(uri, HttpMethod.POST, entity,
 						UtilityMetrics.class);
-				log.debug("Utility was calculated");
-				return response.getBody();
+				final UtilityMetrics utilityMetrics = response.getBody();
+				log.info("Utility was calculated {}", utilityMetrics);
+
+				log.info("Utility values start:");
+
+
+				if (utilityMetrics == null || utilityMetrics.getResults() == null) {
+					log.error("Utility values is null");
+				}
+
+				utilityMetrics.getResults().forEach((algName, value) ->
+					log.info("AlgName: {} --> {}", algName, value)
+						);
+
+				log.info("Utility values stop");
+				return utilityMetrics;
 			}
 		} catch (URISyntaxException | RestClientException e) {
 			log.error(e.getMessage(), e);
