@@ -281,6 +281,7 @@ public class MetricsController {
 	}
 
 	private Connection initializeConnection() throws JMSException {
+		log.info("Trying to initialize connection");
 		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl);
 		Connection connection = activeMQConnectionFactory.createConnection();
 		connection.start();
