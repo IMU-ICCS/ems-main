@@ -7,37 +7,18 @@
 
 package eu.melodic.upperware.dlms;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-
-import eu.melodic.models.commons.NotificationResult;
-import eu.melodic.models.commons.NotificationResult.StatusType;
-import eu.melodic.models.commons.NotificationResultImpl;
-import eu.melodic.models.commons.Watermark;
-import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
-import eu.melodic.models.services.dlms.DataModelNotificationRequest;
-import eu.melodic.models.services.dlms.DataModelNotificationRequestImpl;
-import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
 import eu.melodic.upperware.dlms.component.ComponentId;
 import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
-import eu.melodic.upperware.dlms.properties.DLMSProperties;
+import io.github.cloudiator.rest.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Webservice controller for the DLMS service.
@@ -47,13 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DLMSServiceController {
 
+	private final DLMSCoordinator dlmsCoordinator;
+
 	private final DLMSService dlmsService;
-	private final ModelAnalyzer modelAnalyzer;
-	private final RestTemplate restTemplate;
 	private final ComponentId comp;
 
-	private final DLMSProperties dlmsProperties;
-	private final AppCompDataSourceRepository appCompDSRepository;
 	/**
 	 * Returns all datasources in the database.
 	 */
@@ -114,9 +93,19 @@ public class DLMSServiceController {
 	 * Returns command and the component name.
 	 */
 	@GetMapping(value = "/getAlluxioCmd/{ip}")
-	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) {
-		String componentId = comp.findComponentId(ip);
-		return new SendToDlmsAgent(componentId, dlmsService.getAlluxioCmd(componentId));
+	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) throws ApiException {
+		log.info("Invoking getAlluxioCmd with IP: {}", ip);
+
+		final Optional<String> componentId = comp.findComponentId(ip);
+		if (componentId.isPresent()) {
+			final String cmpId = componentId.get();
+			final String alluxioCmd = dlmsService.getAlluxioCmd(cmpId);
+			log.info("Sending getAlluxioCmd response for IP: {}. Result: [cmpId:{}, alluxioCmd:{}]", ip, cmpId, alluxioCmd);
+			return new SendToDlmsAgent(cmpId, alluxioCmd);
+		} else {
+			log.info("Could not get componentId for IP: {}.", ip);
+			return new SendToDlmsAgent("", "");
+		}
 	}
 	
 
@@ -125,107 +114,12 @@ public class DLMSServiceController {
 	 * the mount point
 	 */
 	@PostMapping("/dataModel")
-	public ResponseEntity<Object> addUpdateDataSources(@Valid @RequestBody DataModelRequest dataModelRequest) {
-		ResponseEntity<Object> retResponse = null;
+	public void addUpdateDataSources(@Valid @RequestBody DataModelRequest dataModelRequest) {
 		log.info("The name of the camel model is {}", dataModelRequest.getApplicationId());
-		// to send the notification
-		DataModelNotificationRequest dataModelNotificationRequest = new DataModelNotificationRequestImpl();
-		dataModelNotificationRequest.setApplicationId(dataModelRequest.getApplicationId());
-		dataModelNotificationRequest.setWatermark(prepareWatermark(dataModelRequest.getWatermark().getUuid()));
-
-		NotificationResult notificationResult = new NotificationResultImpl();
-		// default status is success
-		StatusType statusType = StatusType.SUCCESS;
-
-		// Map of components and datasources
-		List<AppCompDataSource> appCompDSList = new ArrayList<>();
-		// read the camel model and process it
-		try {
-			modelAnalyzer.readModel(dataModelRequest.getApplicationId()); // read the camel model
-			List<DataSource> dataSourceList = modelAnalyzer.getDataSourceList(); // get data sources from camel model
-
-			appCompDSList = modelAnalyzer.getAppCompDSList();
-			// do operations if relevant data sources are present in the camel model
-			for (DataSource datasource : dataSourceList) {
-				if (dlmsService.hasDataSourceByName(datasource.getName())) {
-					try {
-						// if data source already exists, update if necessary
-						dlmsService.updateDataSource(datasource, datasource.getName());
-						retResponse = ResponseEntity.noContent().build();
-					} catch (Exception e) {
-						log.error(e.getMessage(), e);
-						notificationResult.setErrorDescription(e.getMessage());
-						throw new RuntimeException(e);
-					}
-				} else {
-					try {
-						// add new data source if it does not exist
-						URI location = dlmsService.addDataSource(datasource);
-						log.info(datasource.getName() + " was added");
-						retResponse = ResponseEntity.created(location).build();
-					} catch (Exception e) {
-						log.error(e.getMessage(), e);
-						notificationResult.setErrorDescription(e.getMessage());
-						throw new RuntimeException(e);
-					}
-				}
-				notificationResult.setErrorCode("0");
-				notificationResult.setErrorDescription(retResponse.toString());
-			}
-
-		} catch (Exception e) {
-			// data registration failed
-			statusType = StatusType.ERROR;
-			notificationResult.setErrorCode("1");
-			notificationResult.setErrorDescription("The model could not be read");
-
-			log.error(e.getMessage(), e);
-		}
-		if (appCompDSList.size() > 0) {
-			saveACDS(appCompDSList);
-			dlmsService.calculateAcDsMp();
-		}
-		notificationResult.setStatus(statusType);
-		dataModelNotificationRequest.setResult(notificationResult);
-		// send notification
-		sendNotificationMessage(dataModelNotificationRequest, dataModelRequest.getNotificationURI());
-		return retResponse;
-	}
-
-	/**
-	 * Save the component and list of datasources linked to it
-	 */
-	private void saveACDS(List<AppCompDataSource> appCompDSList) {
-		appCompDSRepository.saveAll(appCompDSList);
-	}
-
-	/**
-	 * Post the notification message in the provided url
-	 */
-	public void sendNotificationMessage(DataModelNotificationRequest dataModelNotificationRequest,
-			String notificationUri) {
-		String esbUrl = dlmsProperties.getEsb().getUrl();
-		if (esbUrl.endsWith("/")) {
-			esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
-		}
-		if (notificationUri.startsWith("/")) {
-			notificationUri = notificationUri.substring(1);
-		}
-		log.info("Sending {} notification ", dataModelNotificationRequest.getResult().getStatus());
-		restTemplate.postForEntity(esbUrl + "/" + notificationUri, dataModelNotificationRequest,
-				DataModelNotificationRequest.class);
-	}
-
-	/**
-	 * Generate watermark
-	 */
-	private Watermark prepareWatermark(String uuid) {
-		Watermark watermark = new WatermarkImpl();
-		watermark.setUser("dlms");
-		watermark.setSystem("dlms");
-		watermark.setDate(new Date());
-		watermark.setUuid(uuid);
-		return watermark;
+		dlmsCoordinator.doAddUpdateDataSourcesWork(
+				dataModelRequest.getApplicationId(),
+				dataModelRequest.getNotificationURI(),
+				dataModelRequest.getWatermark().getUuid());
 	}
 
 	/**

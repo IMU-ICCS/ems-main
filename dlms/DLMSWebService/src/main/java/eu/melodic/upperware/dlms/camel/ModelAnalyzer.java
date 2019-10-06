@@ -115,7 +115,7 @@ public class ModelAnalyzer {
 										validLocalMountPoint(dataSource);
 						
 										dataSourceList.add(dataSource);
-										log.debug("DataSource was added: {}", camelModel);
+										log.debug("DataSource was added: {}", data.getName());
 									}
 								}
 							}
@@ -197,14 +197,6 @@ public class ModelAnalyzer {
 		// read the camel model and get the properties
 		BooleanValue boolVal = (BooleanValue) val;
 		return boolVal.isValue();
-	}
-
-	public List<DataSource> getDataSourceList() {
-		return dataSourceList;
-	}
-
-	public void setDataSourceList(List<DataSource> dataSourceList) {
-		this.dataSourceList = dataSourceList;
 	}
 
 	private void checkUfsUri(Attribute attribute, DataSource dataSource) {

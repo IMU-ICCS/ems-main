@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -108,7 +109,7 @@ public class MetricsController {
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			if (hasAlluxioMetrics()) {
-				log.debug("Alluxio metrics found");
+				log.info("Alluxio metrics found");
 //				Map<String, Object> gaugesMap = metrics.getGauges().getProperties();
 				Map<String, Object> countersMap = metrics.getCounters().getProperties();
 
@@ -145,10 +146,10 @@ public class MetricsController {
 				long effectVal = getCurrentValue(acDsKey, totalVal);
 
 				String msg = getMessage(topic, appComp, ds, effectVal, now.getTime());
-				log.info(msg);
+				log.info("Sending message: {}", msg);
 
 				sendMessage(topic, msg, session);
-				log.debug("Message sent");
+				log.info("Message sent...");
 			}
 
 		}
@@ -237,6 +238,7 @@ public class MetricsController {
 	}
 
 	private boolean hasAlluxioMetrics() {
+		log.info(metrics.toString());
 		return metrics != null
 				&& (!metrics.getGauges().getProperties().isEmpty() || !metrics.getCounters().getProperties().isEmpty());
 	}
@@ -272,13 +274,16 @@ public class MetricsController {
 	}
 
 	private void sendMessage(String metricName, String message, Session session) throws JMSException {
+		log.info("Trying to send metric: {} with message: {}", metricName, message);
 		Message msg = session.createTextMessage(message);
 		Topic topic = session.createTopic(metricName);
 		MessageProducer producer = session.createProducer(topic);
 		producer.send(msg);
+		log.info("Send metric: {} with message: {}", metricName, message);
 	}
 
 	private Connection initializeConnection() throws JMSException {
+		log.info("Trying to initialize connection");
 		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl);
 		Connection connection = activeMQConnectionFactory.createConnection();
 		connection.start();
@@ -317,7 +322,10 @@ public class MetricsController {
 	}
 
 	private String readMySqlMetric(String metricName) {
-		List<Map<String, Object>> result = jdbcTemplate.queryForList("SHOW GLOBAL STATUS like '" + metricName + '\'');
+		List<Map<String, Object>> result = jdbcTemplate.queryForList("SHOW GLOBAL STATUS like :metricName",
+				new MapSqlParameterSource()
+						.addValue("metricName", metricName)
+				);
 
 		if (CollectionUtils.isNotEmpty(result)) {
 			// the metric names should be direct hits if configured correctly, so we expect
