@@ -331,9 +331,9 @@ public class BrokerConfig implements InitializingBean {
         log.trace("BrokerConfig: Message interceptor registry: {}", registry);
 
         // register interceptor for adding source (producer) address to messages
-        String applyToAllDestinations = ">";
+        /*String applyToAllDestinations = ">";
         registry.addMessageInterceptorForTopic(applyToAllDestinations, new SourceAddressMessageUpdateInterceptor(registry));
-        log.info("BrokerConfig: Registered SourceAddressMessageUpdateInterceptor");
+        log.info("BrokerConfig: Registered SourceAddressMessageUpdateInterceptor");*/
     }
 
     private BrokerService _createSslBrokerService() throws Exception {
