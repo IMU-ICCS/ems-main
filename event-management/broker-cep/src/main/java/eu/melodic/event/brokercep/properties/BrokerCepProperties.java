@@ -17,6 +17,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.List;
+
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "brokercep")
@@ -74,6 +76,9 @@ public class BrokerCepProperties {
     private boolean enableStatistics;
     @Value("${broker-populate-jmsx-user-id:false}")
     private boolean populateJmsxUserId;
+
+    @Value("${message-interceptors:}#{T(java.util.Collections).emptyList()}")
+    private List<String> messageInterceptors;
 
     @Value("${enable-advisory-watcher:true}")
     private boolean enableAdvisoryWatcher;
