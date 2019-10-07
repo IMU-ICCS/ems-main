@@ -15,11 +15,13 @@ import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.jms.Message;
 import javax.jms.*;
 
+@ConditionalOnProperty(name="brokercep.enable-advisory-watcher", matchIfMissing = true)
 @Service
 @Slf4j
 public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean {
