@@ -60,7 +60,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		// this.applicationContext = applicationContext;
 		this.properties = applicationContext.getBean(DlmsMetricProperties.class);
-		log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
+		log.info("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
 
 		this.cpRepository = applicationContext.getBean(CloudProviderRepository.class);
 		this.dcRepository = applicationContext.getBean(DataCenterRepository.class);
@@ -71,14 +71,14 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		this.acDsDataRepository = applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
 	}
 
-	public void subscribe() {
+	public void subscribe() throws JMSException {
 		// Check if Pub/Sub should be activated
 		if (!properties.getPubsub().isOn()) {
-			log.debug("*****   Pub/Sub is SWITCHED OFF");
+			log.info("*****   Pub/Sub is SWITCHED OFF");
 			return;
 		}
 		// Subscribe to configured topics
-		log.debug("Subscribing to topics: ");
+		log.info("Subscribing to topics: ");
 		for (DlmsMetricProperties.Pubsub.Topic pst : properties.getPubsub().getTopics()) {
 			// Get topic configuration
 			String url = pst.getUrl();
@@ -97,39 +97,39 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 				clientId = clientId.trim();
 			if (type == null)
 				type = TopicType.UNKNOWN;
-			log.debug("Topic : {}", pst);
+			log.info("Topic : {}", pst);
 
 			// Subscribe to topic
 			_do_subscribe(url, topicName, clientId, type);
 		}
-		log.debug("Subscribing to topics: ok");
+		log.info("Subscribing to topics: ok");
 	}
 
-	public void subscribe(String url, String topicName, String clientId, TopicType type) {
-		// Check if Pub/Sub should be activated
-		if (!properties.getPubsub().isOn()) {
-			log.debug("*****   Pub/Sub is SWITCHED OFF");
-			return;
-		}
+//	public void subscribe(String url, String topicName, String clientId, TopicType type) {
+//		// Check if Pub/Sub should be activated
+//		if (!properties.getPubsub().isOn()) {
+//			log.info("*****   Pub/Sub is SWITCHED OFF");
+//			return;
+//		}
+//
+//		_do_subscribe(url, topicName, clientId, type);
+//	}
 
-		_do_subscribe(url, topicName, clientId, type);
-	}
-
-	protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) {
-		try {
-			log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url,
+	protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) throws JMSException {
+//		try {
+			log.info("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url,
 					topicName, clientId, type);
 
 			// Get ActiveMQ connection to the server
-			log.trace("*****   SUBSCRIBE: connection factory created: url={}", url);
+			log.info("*****   SUBSCRIBE: connection factory created: url={}", url);
 			ConnectionConf cconf = connectionCache.get(url);
 			if (cconf == null) {
 				ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
 				Connection connection = connectionFactory.createConnection();
-				log.trace("*****   SUBSCRIBE: connection created");
+				log.info("*****   SUBSCRIBE: connection created");
 				if (!clientId.isEmpty()) {
 					connection.setClientID(clientId);
-					log.trace("*****   SUBSCRIBE: client id set: {}", clientId);
+					log.info("*****   SUBSCRIBE: client id set: {}", clientId);
 				}
 
 				cconf = new ConnectionConf();
@@ -141,7 +141,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
 				// Open JMS session (We use sessions not transactions)
 				Session session = cconf.getConnection().createSession(false, Session.AUTO_ACKNOWLEDGE);
-				log.trace("*****   SUBSCRIBE: session created");
+				log.info("*****   SUBSCRIBE: session created");
 
 				SessionConf sconf = new SessionConf();
 				sconf.setSession(session);
@@ -154,9 +154,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
 			// Subscribe to topic (We use sessions not transactions)
 			Topic topic = session.createTopic(topicName);
-			log.trace("*****   SUBSCRIBE: topic created: {}", topicName);
+			log.info("*****   SUBSCRIBE: topic created: {}", topicName);
 			MessageConsumer consumer = session.createConsumer(topic);
-			log.trace("*****   SUBSCRIBE: consumer created: topic={}", topicName);
+			log.info("*****   SUBSCRIBE: consumer created: topic={}", topicName);
 
 			TopicConf tconf = new TopicConf();
 			tconf.setTopic(topic);
@@ -167,17 +167,17 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 			// Add message listener to receive incoming messages
 			MessageListener lsnr = getListener(topic, type);
 			consumer.setMessageListener(lsnr);
-			log.trace("*****   SUBSCRIBE: listener added");
+			log.info("*****   SUBSCRIBE: listener added");
 
 			// Ready to go
 			cconf.getConnection().start();
-			log.trace("*****   SUBSCRIBE: connection started");
+			log.info("*****   SUBSCRIBE: connection started");
 
-			log.debug("*****   SUBSCRIBE: ok");
+			log.info("*****   SUBSCRIBE: ok");
 
-		} catch (Exception e) {
-			log.error("*****   SUBSCRIBE: ERROR: {}", e);
-		}
+//		} catch (Exception e) {
+//			log.error("*****   SUBSCRIBE: ERROR: {}", e);
+//		}
 	}
 
 	private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
@@ -191,47 +191,47 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		try {
 			// Check if Pub/Sub should be activated
 			if (!properties.getPubsub().isOn()) {
-				log.debug("*****   Pub/Sub is SWITCHED OFF");
+				log.info("*****   Pub/Sub is SWITCHED OFF");
 				return;
 			}
 
-			log.debug("*****   UN-SUBSCRIBE:");
+			log.info("*****   UN-SUBSCRIBE:");
 
 			// Stop and close consumer, JMS session and ActiveMQ connection
 			for (ConnectionConf cconf : connectionCache.values()) {
 				try {
-					log.debug("  Closing connection to url: {}", cconf.getUrl());
+					log.info("  Closing connection to url: {}", cconf.getUrl());
 
 					for (SessionConf sconf : cconf.getSessions()) {
 						try {
-							log.debug("    Closing session: {}", sconf);
+							log.info("    Closing session: {}", sconf);
 
 							for (TopicConf tconf : sconf.getTopics()) {
 								String topicName = tconf.getTopic() != null ? tconf.getTopic().getTopicName() : null;
 								try {
-									log.debug("      Unsubscribing from topic: {}", topicName);
+									log.info("      Unsubscribing from topic: {}", topicName);
 									tconf.getConsumer().close();
-									log.debug("      Unsubscribing from topic: {} : ok", topicName);
+									log.info("      Unsubscribing from topic: {} : ok", topicName);
 								} catch (Exception e) {
 									log.error("      Unsubscribing from topic: {} : ERROR: {}", topicName, e);
 								}
 							}
 
 							sconf.getSession().close();
-							log.debug("    Closing session: {} : ok", sconf);
+							log.info("    Closing session: {} : ok", sconf);
 						} catch (Exception e) {
 							log.error("    Closing session: {} : ERROR: {}", sconf, e);
 						}
 					}
 
 					cconf.getConnection().stop();
-					log.debug("  Closing connection to url: {} : ok", cconf.getUrl());
+					log.info("  Closing connection to url: {} : ok", cconf.getUrl());
 				} catch (Exception e) {
 					log.error("  Closing connection to url: {} : ERROR: {}", cconf.getUrl(), e);
 				}
 			}
 
-			log.debug("*****   UN-SUBSCRIBE: ok");
+			log.info("*****   UN-SUBSCRIBE: ok");
 
 		} catch (Exception e) {
 			log.error("*****   SUBSCRIBE: ERROR: {}", e);

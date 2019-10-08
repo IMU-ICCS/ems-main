@@ -49,7 +49,7 @@ public class MetricValueListener implements MessageListener {
 			CloudProviderRepository cpRepository,
 			DataCenterRepository dcRepository, RegionRepository regionRepository,
 			TwoDataCentersRepository twoDcRepository, ApplicationComponentRepository acRepository, DataSourceRepository dsRepository, ApplicationComponentDataSourceDataRepository acDsDataRepository) throws JMSException {
-		log.debug("MetricValueListener.<init>: type={}", type);
+		log.info("MetricValueListener.<init>: type={}", type);
 
 		this.topic = topic;
 		this.topicName = topic.getTopicName();
@@ -68,7 +68,7 @@ public class MetricValueListener implements MessageListener {
 
 	public void onMessage(Message message) {
 		try {
-			log.debug("Listener of topic {}: Received message: ", topic.getTopicName());
+			log.info("Listener of topic {}: Received message: ", topic.getTopicName());
 			if (message instanceof TextMessage) {
 				// Extract Topic name and payload from message
 				TextMessage textMessage = (TextMessage) message;
@@ -78,15 +78,15 @@ public class MetricValueListener implements MessageListener {
  
 				switch (type) {
 				case LATENCY_BANDWIDTH:
-					log.debug("Listener of topic {}: Got a datacenter event: ", topicName);
+					log.info("Listener of topic {}: Got a datacenter event: ", topicName);
 					processMetricValueEventDataCenter(metricName, payload);
 					break;					
 				case BYTES_READ:
-					log.debug("Listener of topic {}: Got a data read event: ", topicName);
+					log.info("Listener of topic {}: Got a data read event: ", topicName);
 					processMetricValueEventAcDsDataRead(metricName, payload);
 					break;
 				case BYTES_WRITTEN:
-					log.debug("Listener of topic {}: Got a data write event: ", topicName);
+					log.info("Listener of topic {}: Got a data write event: ", topicName);
 					processMetricValueEventAcDsDataWrite(metricName, payload);
 					break;
 				default:
@@ -107,9 +107,9 @@ public class MetricValueListener implements MessageListener {
 		if (StringUtils.isNotBlank(metricName)) {
 			// Extract key-value pairs from message payload
 			// using MetricValueEvent
-			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
+			log.info("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
 			MetricValueEventDataCenter event = gson.fromJson(payload, MetricValueEventDataCenter.class);
-			log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
+			log.info("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
 			MetricValueRegistryDataCenter<Object> metricValRegistryDC = new MetricValueRegistryDataCenter<Object>(this.cpRepository, this.dcRepository, this.regionRepository, this.twoDcRepository, event);
 			metricValRegistryDC.saveMetricValues();
 		} else {
@@ -123,9 +123,9 @@ public class MetricValueListener implements MessageListener {
 		if (StringUtils.isNotBlank(metricName)) {
 			// Extract key-value pairs from message payload
 			// using MetricValueEvent
-			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
+			log.info("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
 			MetricValueEventAcDsDataRead eventRead = gson.fromJson(payload, MetricValueEventAcDsDataRead.class);
-			log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, eventRead);
+			log.info("Listener of topic {}: MetricValueEvent instance: {}", topicName, eventRead);
 			MetricValueRegistryAcDs<Object> metricValRegistryAcDsRead = new MetricValueRegistryAcDs<Object>(this.acRepository, this.dsRepository, this.acDsDataRepository);
 			metricValRegistryAcDsRead.setEventRead(eventRead);
 			metricValRegistryAcDsRead.saveMetricValuesEventRead();
@@ -140,9 +140,9 @@ public class MetricValueListener implements MessageListener {
 	protected void processMetricValueEventAcDsDataWrite(String metricName, String payload) {
 		if (StringUtils.isNotBlank(metricName)) {
 			// Extract key-value pairs from message payload
-			log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
+			log.info("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
 			MetricValueEventAcDsDataWrite eventWrite = gson.fromJson(payload, MetricValueEventAcDsDataWrite.class);
-			log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, eventWrite);
+			log.info("Listener of topic {}: MetricValueEvent instance: {}", topicName, eventWrite);
 			MetricValueRegistryAcDs<Object> metricValRegistryAcDsWrite = new MetricValueRegistryAcDs<Object>(this.acRepository, this.dsRepository, this.acDsDataRepository);
 			metricValRegistryAcDsWrite.setEventWrite(eventWrite);
 			metricValRegistryAcDsWrite.saveMetricValuesEventWrite();
@@ -153,7 +153,7 @@ public class MetricValueListener implements MessageListener {
 
 
 	protected void processScaleEvent(String metricName, String payload) {
-		log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
+		log.info("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
 //		coordinator.requestStartProcessForScaling();
 	}
 }

@@ -3,10 +3,7 @@ package eu.melodic.dlms.utility;
 import java.util.Collections;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * Bean used as data interface between UtilityGenerator and DlmsController to
@@ -18,6 +15,7 @@ import lombok.Setter;
 					// by the algorithms).
 @Getter
 @Setter
+@ToString
 public class UtilityMetrics {
 
 	private Map<String, Double> results = Collections.emptyMap();

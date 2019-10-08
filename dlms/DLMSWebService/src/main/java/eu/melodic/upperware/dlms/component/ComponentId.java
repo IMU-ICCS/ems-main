@@ -1,20 +1,17 @@
 package eu.melodic.upperware.dlms.component;
 
-import java.util.List;
-
-import org.apache.commons.codec.binary.StringUtils;
-import org.springframework.stereotype.Component;
-
+import eu.melodic.upperware.dlms.exception.DLMSException;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.NodeApi;
 import io.github.cloudiator.rest.api.ProcessApi;
-import io.github.cloudiator.rest.model.CloudiatorProcess;
-import io.github.cloudiator.rest.model.IpAddress;
-import io.github.cloudiator.rest.model.IpAddressType;
-import io.github.cloudiator.rest.model.IpVersion;
-import io.github.cloudiator.rest.model.Node;
+import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.StringUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Java class to obtain the component id of the current machine using cloudiator
@@ -27,77 +24,54 @@ public class ComponentId {
 	private NodeApi nodeApi;
 	private ProcessApi processApi;
 
-	public String findComponentId(String ipAddress) {
-		List<CloudiatorProcess> processes = getProcessList(this.processApi);
-		List<Node> nodes = getNodeList(this.nodeApi);
+	public Optional<String> findComponentId(String ipAddress) throws ApiException {
+		List<CloudiatorProcess> processes = this.processApi.getProcesses(null);
+		List<Node> nodes = this.nodeApi.findNodes();
 
-		if (processes != null && nodes != null) {
-			String nodeId = getNodeId(nodes, ipAddress);
-			if (nodeId != null) {
-				return (getComponentId(nodeId, processes));
-			}
-		}
-		log.debug("Ip addresses {} from the deployed machine did not match with any component id", ipAddress);
-		return null;
+		return getNodeForIP(nodes, ipAddress)
+				.map(Node::getId)
+				.map(nodeId -> getComponentId(nodeId, processes))
+				.filter(Optional::isPresent)
+				.map(Optional::get);
 	}
 
-	public List<Node> getNodeList(NodeApi nodeApi) {
-		try {
-			return nodeApi.findNodes();
-		} catch (ApiException e) {
-			log.error("Error by getting nodes list: ", e);
-		}
-		return null;
-	}
-
-	public List<CloudiatorProcess> getProcessList(ProcessApi processApi) {
-		try {
-			return processApi.getProcesses(null);
-		} catch (ApiException e) {
-			log.error("Error by getting Cloudiator processes list: ", e);
-		}
-		return null;
-	}
-
-	private static String getNodeId(List<Node> nodes, String ipAddress) {
-		for (Node node : nodes) {
-			if (isSameIp(node.getIpAddresses(), ipAddress)) {
-				return node.getId();
-			}
-		}
-		log.debug("There was no node id matching the public ip address of the deployed machine");
-		return null;
+	private static Optional<Node> getNodeForIP(List<Node> nodes, String ipAddress) {
+		return nodes
+				.stream()
+				.filter(node -> isSameIp(node.getIpAddresses(), ipAddress))
+				.findFirst();
 	}
 
 	/**
 	 * Match the node if with the process id to get the component name
 	 */
-	private static String getComponentId(String nodeId, List<CloudiatorProcess> processes) {
-		for (CloudiatorProcess process : processes) {
-			if (isSameProcess(process.getId(), nodeId)) {
-				return process.getTask();
-			}
-		}
-		log.debug("There was no task matching the node id");
-		return null;
+	private static Optional<String> getComponentId(String nodeId, List<CloudiatorProcess> processes) {
+
+		return processes.stream()
+				.filter(p -> isSameProcess(p, nodeId))
+				.map(CloudiatorProcess::getTask)
+				.findFirst();
 	}
 
-	private static boolean isSameProcess(String processId, String nodeId) {
-		return (StringUtils.equals(processId, nodeId));
+	private static boolean isSameProcess(CloudiatorProcess cloudiatorProcess, String nodeId) {
+		if (cloudiatorProcess instanceof SingleProcess) {
+			return ((SingleProcess) cloudiatorProcess).getNode().equals(nodeId);
+		} else if (cloudiatorProcess instanceof ClusterProcess){
+			return ((ClusterProcess) cloudiatorProcess).getNodes()
+					.stream()
+					.anyMatch(nodeId::equals);
+		}
+		throw new DLMSException(String.format("CloudiatorProcess is neither SingleProcess nor ClusterProcess but %s", cloudiatorProcess.getClass().getSimpleName()));
 	}
 
 	/**
 	 * Does node have the same ip address
 	 */
 	private static boolean isSameIp(List<IpAddress> ipAddresses, String ipAddress) {
-		for (IpAddress ipAdd : ipAddresses) {
-			if (isRelevantIp(ipAdd)) {
-				if (StringUtils.equals(ipAdd.getValue(), ipAddress)) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return ipAddresses
+				.stream()
+				.anyMatch(
+						ipAddress1 -> isRelevantIp(ipAddress1) && StringUtils.equals(ipAddress1.getValue(), ipAddress));
 	}
 
 	/**
