@@ -217,8 +217,9 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
             log.info("DELETE Working with {} -> toCreate: {}, toRemain: {}, toDelete: {}", taskName, dividedElement.getToCreate().size(), dividedElement.getToRemain().size(), dividedElement.getToDelete().size());
 
             List<AdapterProcess> toDelete = dividedElement.getToDelete();
+
             if (CollectionUtils.isNotEmpty(toDelete)) {
-                boolean hasExistingProcesses = hasExistingProcesses(dividedElement);
+                boolean hasExistingProcesses = atLeastOneProcessShouldRemain(dividedElement);
                 if (hasExistingProcesses) {
                     //ScaleIn
                     log.info("DELETE Working with {} -> hasExistingProcesses: {}, {} ScaleTasks will be deleted", taskName, hasExistingProcesses, toDelete.size());
@@ -233,10 +234,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                     log.info("DELETE Working with {} -> hasExistingProcesses: {}, {} ScaleTasks, and 1 ProcessTask will be deleted", taskName, hasExistingProcesses, toDeleteWithoutFirst.size());
 
                     ProcessTask processTaskToDelete = createTask(graph, toDeleteFirst, ProcessTask.PROCESS_TASK_DELETE);
-
-                    final ScaleTask scaleTaskToDelete = createTask(graph, createScaleTask(toDeleteWithoutFirst), ScaleTask.SCALE_TASK_DELETE);
-
-                    addEdge(graph, scaleTaskToDelete, processTaskToDelete);
+                    if (CollectionUtils.isNotEmpty(toDeleteWithoutFirst)) {
+                        final ScaleTask scaleTaskToDelete = createTask(graph, createScaleTask(toDeleteWithoutFirst), ScaleTask.SCALE_TASK_DELETE);
+                        addEdge(graph, scaleTaskToDelete, processTaskToDelete);
+                    }
                 }
             }
         }
@@ -273,8 +274,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         return graph;
     }
 
-    private boolean hasExistingProcesses(DividedElement dividedElement) {
-        return !dividedElement.getToRemain().isEmpty() || !dividedElement.getToCreate().isEmpty();
+    private boolean atLeastOneProcessShouldRemain(DividedElement dividedElement) {
+        return CollectionUtils.isNotEmpty(dividedElement.getToRemain()) || CollectionUtils.isNotEmpty(dividedElement.getToCreate());
     }
 
     private <T extends Task> List<T> getTasksWithoutOutgoingEdges(MelodicGraph<Task, DefaultEdge> graph, Type type, Class<T> clazz) {
