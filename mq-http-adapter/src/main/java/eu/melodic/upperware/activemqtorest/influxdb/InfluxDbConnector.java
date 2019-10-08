@@ -1,5 +1,7 @@
 package eu.melodic.upperware.activemqtorest.influxdb;
 
+import java.util.concurrent.TimeUnit;
+
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
@@ -12,6 +14,7 @@ import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import eu.melodic.upperware.activemqtorest.objects.MqBaseEntry;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 
 @Slf4j
 @Component
@@ -31,7 +34,10 @@ public class InfluxDbConnector {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
-		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress());
+		OkHttpClient.Builder okHttpbuilder = new OkHttpClient.Builder();
+		okHttpbuilder.readTimeout(melodicConfiguration.getInfluxReadTimeout(), TimeUnit.SECONDS);
+
+		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress(), okHttpbuilder);
 		log.info("Connected to {}, will use database '{}'", melodicConfiguration.getActiveMqBrokerAddress(), melodicConfiguration.getDatabaseName());
 	}
 
