@@ -36,6 +36,7 @@ public class InfluxDbConnector {
 	public void onApplicationReady() {
 		OkHttpClient.Builder okHttpbuilder = new OkHttpClient.Builder();
 		okHttpbuilder.readTimeout(melodicConfiguration.getInfluxReadTimeout(), TimeUnit.SECONDS);
+		okHttpbuilder.writeTimeout(melodicConfiguration.getInfluxWriteTimeout(), TimeUnit.SECONDS);
 
 		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress(), okHttpbuilder);
 		log.info("Connected to {}, will use database '{}'", melodicConfiguration.getActiveMqBrokerAddress(), melodicConfiguration.getDatabaseName());

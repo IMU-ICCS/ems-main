@@ -40,6 +40,9 @@ public class MelodicConfiguration {
 	@Value("${influxdb.read.timeout:10}")
 	private long influxReadTimeout;
 
+	@Value("${influxdb.write.timeout:10}")
+	private long influxWriteTimeout;
+
 	@Value("${mq.topic.threshold.name:_ui_threshold_info}")
 	private String mqTopicThresholdName;
 
