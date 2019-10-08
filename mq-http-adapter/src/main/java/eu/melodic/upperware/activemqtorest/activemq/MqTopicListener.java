@@ -54,7 +54,7 @@ public class MqTopicListener {
 						log.warn("Could not extract incoming message.");
 					}
 				});
-			} catch (JMSException | IOException e) {
+			} catch (Exception e) {
 				activeMqStatisticHolder.increaseErrorCount();
 				log.error("Error while using BrokerCLient.", e);
 				restartAfterMqFailure();
