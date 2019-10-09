@@ -1,6 +1,5 @@
 package eu.melodic.upperware.activemqtorest.activemq;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,8 +15,9 @@ import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.activemq.extraction.IMqDataEntryExtractor;
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
-import eu.melodic.upperware.activemqtorest.objects.MqBaseEntry;
-import eu.melodic.upperware.activemqtorest.objects.MqDefaultMetricEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqDefaultMetricEntry;
+import io.github.cloudiator.rest.api.NodeApi;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,6 +36,9 @@ public class MqTopicListener {
 	@Autowired
 	private Set<IMqDataEntryExtractor> mqDataEntryExtractors;
 
+	@Autowired
+	private NodeApi nodeApi;
+
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		Thread brokerThread = new Thread(() -> {
@@ -48,7 +51,7 @@ public class MqTopicListener {
 					Optional<MqBaseEntry> dataPoint = createDataEntry(activeMQMessage);
 
 					if (dataPoint.isPresent()) {
-						influxDbConnector.writeDataPoint(dataPoint.get());
+						influxDbConnector.writeMqDataEntry(dataPoint.get());
 						activeMqStatisticHolder.increaseMsgCount();
 					} else {
 						log.warn("Could not extract incoming message.");
