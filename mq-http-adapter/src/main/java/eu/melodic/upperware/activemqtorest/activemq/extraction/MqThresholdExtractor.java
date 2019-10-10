@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.stereotype.Component;
 
-import eu.melodic.upperware.activemqtorest.objects.MqBaseEntry;
-import eu.melodic.upperware.activemqtorest.objects.MqThresholdEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqThresholdEntry;
 import lombok.extern.slf4j.Slf4j;
 
 @Component

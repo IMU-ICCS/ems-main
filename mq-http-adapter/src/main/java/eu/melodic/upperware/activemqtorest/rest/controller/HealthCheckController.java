@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.melodic.upperware.activemqtorest.activemq.ActiveMqStatisticHolder;
-import eu.melodic.upperware.activemqtorest.objects.ActiveMqStatistics;
-import eu.melodic.upperware.activemqtorest.objects.PingResult;
+import eu.melodic.upperware.activemqtorest.entry.ActiveMqStatistics;
+import eu.melodic.upperware.activemqtorest.entry.PingResult;
 
 @RestController
 public class HealthCheckController {
