@@ -19,7 +19,6 @@ import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -65,7 +64,6 @@ public class ClientInstallationHelper implements InitializingBean {
         }
     }
 
-    @Async
     public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
         log.debug("ClientInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
@@ -78,13 +76,11 @@ public class ClientInstallationHelper implements InitializingBean {
         return installationInstructions;
     }
 
-    @Async
     public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette) {
         log.warn("ClientInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         return null;
     }
 
-    @Async
     public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette) throws IOException {
         log.debug("ClientInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
