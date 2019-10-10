@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.net4j.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.influxdb.dto.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,40 +59,31 @@ public class NodesPlugin implements IPlugin {
 	}
 
 	private Point buildPoint(Node node, int totalCount) {
-		long timestamp = new Date().getTime();
-
-		List<IpAddress> ipAddresses = node.getIpAddresses();
-
-		Optional<String> privateIpAddress = Optional.empty();
-		Optional<String> publicIpAddress = Optional.empty();
-
-		for (IpAddress ipAddress : ipAddresses) {
-			if (ipAddress.getIpAddressType().equals(IpAddressType.PRIVATE_IP)) {
-				privateIpAddress = Optional.of(ipAddress.getValue());
-			} else if (ipAddress.getIpAddressType().equals(IpAddressType.PUBLIC_IP)) {
-				publicIpAddress = Optional.of(ipAddress.getValue());
-			}
-		}
-
-		Optional<String> countryCode = Optional.empty();
-		if (publicIpAddress.isPresent()) {
-			countryCode = Optional.of(iIpGeoCoder.getCountryCode(publicIpAddress.get()));
-		}
+		final Optional<String> privateIpAddress = getIpAddress(node.getIpAddresses(), IpAddressType.PRIVATE_IP);
+		final Optional<String> publicIpAddress = getIpAddress(node.getIpAddresses(), IpAddressType.PUBLIC_IP);
+		final Optional<String> countryCode = publicIpAddress.map(iIpGeoCoder::getCountryCode);
 
 		Point point = Point.measurement("_node")
-				.time(timestamp, TimeUnit.MILLISECONDS)
+				.time(new Date().getTime(), TimeUnit.MILLISECONDS)
 				.addField("name", node.getName())
 				.addField("id", node.getId())
 				.addField("state", node.getState().getValue())
 				.tag("state", node.getState().getValue())
 				.addField("user", node.getUserId())
-				.addField("privateIp", privateIpAddress.orElse(StringUtil.EMPTY))
-				.addField("publicIp", publicIpAddress.orElse(StringUtil.EMPTY))
-				.addField("countryCode", countryCode.orElse(""))
-				.tag("countryCode", countryCode.orElse(""))
+				.addField("privateIp", privateIpAddress.orElse(StringUtils.EMPTY))
+				.addField("publicIp", publicIpAddress.orElse(StringUtils.EMPTY))
+				.addField("countryCode", countryCode.orElse(StringUtils.EMPTY))
+				.tag("countryCode", countryCode.orElse(StringUtils.EMPTY))
 				.addField("totalCount", totalCount)
 				.build();
 		return point;
+	}
+
+	private Optional<String> getIpAddress(List<IpAddress> ipAddresses, IpAddressType ipAddressType) {
+		return ipAddresses.stream()
+				.filter(ipAddress -> ipAddressType.equals(ipAddress.getIpAddressType()))
+				.findFirst()
+				.map(IpAddress::getValue);
 	}
 
 	@Override
