@@ -1,9 +1,9 @@
 package eu.melodic.upperware.activemqtorest.plugin;
 
 public interface IPlugin {
-	public String getName();
+	String getName();
 
-	public void execute();
+	void execute();
 
-	public boolean isReady();
+	boolean isReady();
 }

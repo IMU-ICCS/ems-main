@@ -59,7 +59,7 @@ public class NodesPlugin implements IPlugin {
 	}
 
 	private Point buildPoint(Node node, int totalCount) {
-		Long timestamp = Long.valueOf((new Date()).getTime());
+		long timestamp = new Date().getTime();
 
 		List<IpAddress> ipAddresses = node.getIpAddresses();
 
