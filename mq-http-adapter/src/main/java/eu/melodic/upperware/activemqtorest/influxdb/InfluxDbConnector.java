@@ -11,8 +11,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
-import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
+import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 
@@ -50,13 +50,17 @@ public class InfluxDbConnector {
 			log.debug("Retaining data point {}.", influxDbDataPoint);
 		} else {
 			log.debug("Writing data point {}.", influxDbDataPoint);
-			influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+			try {
+				influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+			} catch (Exception e) {
+				log.error("Could not write to InfluxDB. Ignoring data point '{}'", influxDbDataPoint, e);
+			}
 		}
 		mqDataEntry.updateRetained(influxDataRetainer);
 	}
 
 	public void writeNonRetainableDataPoint(Point influxDbDataPoint) {
-			influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+		influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
 	}
 
 	public boolean isReady() {
