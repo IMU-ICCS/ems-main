@@ -54,7 +54,7 @@ public class NodesPlugin implements IPlugin {
 		for (Node node : nodes) {
 			log.debug("Processing node '{}'", node.getName());
 			Point point = buildPoint(node, nodes.size());
-			influxDbConnector.writeNonRetainableDataPoint(point);
+			influxDbConnector.writeDataPoint(point);
 		}
 	}
 

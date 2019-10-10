@@ -50,17 +50,17 @@ public class InfluxDbConnector {
 			log.debug("Retaining data point {}.", influxDbDataPoint);
 		} else {
 			log.debug("Writing data point {}.", influxDbDataPoint);
-			try {
-				influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
-			} catch (Exception e) {
-				log.error("Could not write to InfluxDB. Ignoring data point '{}'", influxDbDataPoint, e);
-			}
+			writeDataPoint(influxDbDataPoint);
 		}
 		mqDataEntry.updateRetained(influxDataRetainer);
 	}
 
-	public void writeNonRetainableDataPoint(Point influxDbDataPoint) {
-		influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+	public void writeDataPoint(Point influxDbDataPoint) {
+		try {
+			influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+		} catch (Exception e) {
+			log.error("Could not write to InfluxDB. Ignoring data point '{}'", influxDbDataPoint, e);
+		}
 	}
 
 	public boolean isReady() {
