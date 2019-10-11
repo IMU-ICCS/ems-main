@@ -1,4 +1,4 @@
-package eu.melodic.upperware.activemqtorest.objects;
+package eu.melodic.upperware.activemqtorest.entry;
 
 import lombok.Getter;
 import lombok.Setter;

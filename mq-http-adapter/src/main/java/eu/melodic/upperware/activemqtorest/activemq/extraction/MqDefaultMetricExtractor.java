@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Maps;
 
 import eu.melodic.upperware.activemqtorest.activemq.MqConstants;
-import eu.melodic.upperware.activemqtorest.objects.MqBaseEntry;
-import eu.melodic.upperware.activemqtorest.objects.MqDefaultMetricEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqDefaultMetricEntry;
 import lombok.extern.slf4j.Slf4j;
 
 @Component

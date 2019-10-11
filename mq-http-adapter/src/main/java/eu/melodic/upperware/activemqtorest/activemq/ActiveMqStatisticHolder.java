@@ -3,7 +3,7 @@ package eu.melodic.upperware.activemqtorest.activemq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import eu.melodic.upperware.activemqtorest.objects.ActiveMqStatistics;
+import eu.melodic.upperware.activemqtorest.entry.ActiveMqStatistics;
 
 @Service
 public class ActiveMqStatisticHolder {

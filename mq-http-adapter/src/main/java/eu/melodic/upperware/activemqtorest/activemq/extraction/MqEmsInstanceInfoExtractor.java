@@ -5,15 +5,13 @@ import java.util.Optional;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.JsonObject;
-
-import eu.melodic.upperware.activemqtorest.objects.MqBaseEntry;
-import eu.melodic.upperware.activemqtorest.objects.MqInstanceInfoEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqInstanceInfoEntry;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class MqInstanceInfoExtractor extends MqDataEntryBaseExtractor implements IMqDataEntryExtractor {
+public class MqEmsInstanceInfoExtractor extends MqDataEntryBaseExtractor implements IMqDataEntryExtractor {
 	@Override
 	public boolean isApplicable(ActiveMQMessage activeMQMessage) {
 		return activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicInstanceInfoName());
