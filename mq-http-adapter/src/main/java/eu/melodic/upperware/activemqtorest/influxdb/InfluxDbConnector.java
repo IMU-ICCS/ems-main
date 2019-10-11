@@ -1,5 +1,7 @@
 package eu.melodic.upperware.activemqtorest.influxdb;
 
+import java.util.concurrent.TimeUnit;
+
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
@@ -9,9 +11,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
+import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
-import eu.melodic.upperware.activemqtorest.objects.MqBaseEntry;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 
 @Slf4j
 @Component
@@ -28,22 +31,39 @@ public class InfluxDbConnector {
 	@Autowired
 	private InfluxDataRetainer influxDataRetainer;
 
+	private boolean isReady;
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
-		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress());
+		OkHttpClient.Builder okHttpbuilder = new OkHttpClient.Builder();
+		okHttpbuilder.readTimeout(melodicConfiguration.getInfluxReadTimeout(), TimeUnit.SECONDS);
+		okHttpbuilder.writeTimeout(melodicConfiguration.getInfluxWriteTimeout(), TimeUnit.SECONDS);
+
+		influxDB = InfluxDBFactory.connect(melodicConfiguration.getActiveMqBrokerAddress(), okHttpbuilder);
+		isReady = true;
 		log.info("Connected to {}, will use database '{}'", melodicConfiguration.getActiveMqBrokerAddress(), melodicConfiguration.getDatabaseName());
 	}
 
-	public void writeDataPoint(MqBaseEntry mqDataEntry) {
+	public void writeMqDataEntry(MqBaseEntry mqDataEntry) {
 		Point influxDbDataPoint = mqDataEntry.getInfluxDbDataPoint(ipGeoCoder);
 		if (melodicConfiguration.isInfluxRetainerEnabled() && mqDataEntry.mustRetain(influxDataRetainer)) {
 			log.debug("Retaining data point {}.", influxDbDataPoint);
 		} else {
 			log.debug("Writing data point {}.", influxDbDataPoint);
-			influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+			writeDataPoint(influxDbDataPoint);
 		}
 		mqDataEntry.updateRetained(influxDataRetainer);
 	}
 
+	public void writeDataPoint(Point influxDbDataPoint) {
+		try {
+			influxDB.write(melodicConfiguration.getDatabaseName(), "", influxDbDataPoint);
+		} catch (Exception e) {
+			log.error("Could not write to InfluxDB. Ignoring data point '{}'", influxDbDataPoint, e);
+		}
+	}
+
+	public boolean isReady() {
+		return isReady;
+	}
 }

@@ -16,8 +16,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
-import eu.melodic.upperware.activemqtorest.objects.MqInstanceInfoEntry;
-import eu.melodic.upperware.activemqtorest.objects.MqThresholdEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqInstanceInfoEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqThresholdEntry;
 
 @Service
 public class InfluxDataRetainer {
