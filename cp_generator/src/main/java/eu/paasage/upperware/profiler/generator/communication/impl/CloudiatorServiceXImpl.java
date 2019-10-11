@@ -20,13 +20,16 @@ import io.github.cloudiator.rest.ApiResponse;
 import io.github.cloudiator.rest.api.MatchmakingApi;
 import io.github.cloudiator.rest.model.*;
 import io.github.cloudiator.rest.model.Runtime;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -39,7 +42,7 @@ import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataFor
 
 @Slf4j
 @Component
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CloudiatorServiceXImpl implements CloudiatorServiceX {
 
     private static final String HARDWARE_CLASS = "hardware";
@@ -48,33 +51,24 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private static final String CLOUD_CLASS = "cloud";
     private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
-    private MatchmakingApi matchmakingApi;
+    private final MatchmakingApi matchmakingApi;
 
+    @Retryable(value = { ApiException.class }, maxAttempts = 4, backoff = @Backoff(delay = 2000))
     @Override
     public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
-        int counter = 1;
-        int maxNumberOfApproaches = 10;
-        do {
-            try {
-                ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
-                if (response.getStatusCode() == 200) {
-                    log.info("Approach {} of {} successfully fetched {} NodeCandidates", counter, maxNumberOfApproaches, response.getData().size());
-                    return response.getData();
-                }
-            } catch (Exception e) {
-                log.error("Approach {} of {} failed with Exception: ", counter, maxNumberOfApproaches, e);
-            }
+        log.info("Trying to get Node candidates for requirements: {}", requirements);
+        ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
+        if (response.getStatusCode() == 200) {
+            log.info("Successfully fetched {} NodeCandidates", response.getData().size());
+            return response.getData();
+        } else {
+            throw new ApiException(String.format("Response received but HTTP status is: %d", response.getStatusCode()));
+        }
+    }
 
-            if (counter == maxNumberOfApproaches) {
-                throw new GeneratorException("Could not get node candidates for requirements: " + requirements);
-            }
-            counter++;
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                //
-            }
-        } while (true);
+    @Recover
+    public List<NodeCandidate> recover(ApiException t, List<Requirement> requirements){
+        throw new GeneratorException(String.format("Could not get node candidates for : %s", requirements), t);
     }
 
     @Override

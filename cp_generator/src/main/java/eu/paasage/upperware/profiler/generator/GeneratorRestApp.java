@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ import java.util.TimeZone;
 @SpringBootApplication
 @Slf4j
 @EnableAsync
+@EnableRetry
 @ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache"})
 @EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class GeneratorRestApp {
