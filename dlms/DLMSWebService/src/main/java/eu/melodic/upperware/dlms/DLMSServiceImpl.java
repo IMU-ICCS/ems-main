@@ -17,6 +17,9 @@ import alluxio.conf.PropertyKey;
 import alluxio.exception.AlluxioException;
 import alluxio.grpc.MountPOptions;
 import alluxio.util.ConfigurationUtils;
+import eu.melodic.upperware.dlms.component.AlluxioParam;
+import eu.melodic.upperware.dlms.component.MysqlParam;
+import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
 import eu.melodic.upperware.dlms.exception.*;
 import eu.melodic.upperware.dlms.properties.DLMSDataSourceAccess;
 import lombok.AllArgsConstructor;
@@ -87,16 +90,37 @@ public class DLMSServiceImpl implements DLMSService {
 	}
 	
 	@Override
-	public String getAlluxioCmd(String cmpName) {
+	public SendToDlmsAgent getDlmsAgentParams(String cmpName) {
 		ensureConfiguration();
 		log.info("Checking Configuration for {}... OK", cmpName);
 		checkAcName(cmpName);
         log.info("Checking AcName for {}... OK", cmpName);
-		AcDsMountPoint mp= acDsMpRepository.findByAcName(cmpName);
+
+		return getSendParameters(cmpName);
+	}
 	
-		String localMountPoint = mp.getToLocalMountPoint();
-		// create directory first
-		return String.format("mkdir -p %s && alluxio/integration/fuse/bin/alluxio-fuse mount %s /%s", localMountPoint, localMountPoint, mp.getMountPoint());
+	// To send alluxio or mysql parameters
+	private SendToDlmsAgent getSendParameters(String cmpName) {
+		AcDsMountPoint mp= acDsMpRepository.findByAcName(cmpName);
+		
+		DataSource ds = dsRepository.findByName(mp.getDsName());
+		DataSourceType dsType = ds.getDataSourceType();
+		switch (dsType) {
+		case HDFS:
+		case S3:
+			String localMountPoint = mp.getToLocalMountPoint();
+			// create directory first
+			String cmd = String.format("mkdir -p %s && alluxio/integration/fuse/bin/alluxio-fuse mount %s /%s", localMountPoint, localMountPoint, mp.getMountPoint());
+			AlluxioParam alluxio = new AlluxioParam(cmd);
+			return new SendToDlmsAgent(cmpName, "ALLUXIO", alluxio);
+		case MYSQL:	
+			List<String> userInfo = dlmsDsAccess.getDataSource().getAccountMap().get(ds.getAccessKey());
+			MysqlParam mysql = new MysqlParam(ds.getHostPort(), userInfo.get(0), userInfo.get(1));
+			return new SendToDlmsAgent(cmpName,"MYSQL", mysql);
+		default:
+			throw new DLMSException("Invalid datasource type.");
+		}
+		
 	}
 
 	@Override

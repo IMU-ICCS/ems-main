@@ -8,15 +8,21 @@
 package eu.melodic.upperware.dlms;
 
 import eu.melodic.models.interfaces.dlms.DataModelRequest;
+import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
 import eu.melodic.upperware.dlms.component.ComponentId;
 import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
+import eu.melodic.upperware.dlms.exception.DLMSException;
+import eu.melodic.upperware.dlms.properties.DLMSProperties;
 import io.github.cloudiator.rest.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,22 +98,22 @@ public class DLMSServiceController {
 	/**
 	 * Returns command and the component name.
 	 */
-	@GetMapping(value = "/getAlluxioCmd/{ip}")
-	public SendToDlmsAgent getAlluxioCmd(@PathVariable("ip") String ip) throws ApiException {
-		log.info("Invoking getAlluxioCmd with IP: {}", ip);
+	@GetMapping(value = "/getDlmsAgentParams/{ip}")
+	public SendToDlmsAgent getDlmsAgentParams(@PathVariable("ip") String ip) throws ApiException {
+		log.info("Invoking getDlmsAgentParams with IP: {}", ip);
 
 		final Optional<String> componentId = comp.findComponentId(ip);
 		if (componentId.isPresent()) {
-			final String cmpId = componentId.get();
-			final String alluxioCmd = dlmsService.getAlluxioCmd(cmpId);
-			log.info("Sending getAlluxioCmd response for IP: {}. Result: [cmpId:{}, alluxioCmd:{}]", ip, cmpId, alluxioCmd);
-			return new SendToDlmsAgent(cmpId, alluxioCmd);
+			final String cmpName = componentId.get();
+			final SendToDlmsAgent toSend = dlmsService.getDlmsAgentParams(cmpName);
+			log.info("Sending getAlluxioCmd response for IP: {}. Result: [cmpId:{}, metric:{}]", ip, cmpName,
+					toSend.getMetricName());
+			return toSend;
 		} else {
-			log.info("Could not get componentId for IP: {}.", ip);
-			return new SendToDlmsAgent("", "");
+			log.info("There is no data source for componentId with IP: {}.", ip);
+			return new SendToDlmsAgent("", "", null, null);
 		}
 	}
-	
 
 	/**
 	 * Adds/updates the datasource from the camel model to the database and mounts

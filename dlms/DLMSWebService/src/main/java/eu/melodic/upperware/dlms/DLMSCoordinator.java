@@ -30,7 +30,7 @@ public class DLMSCoordinator {
 
     private final DLMSProperties dlmsProperties;
     private final AppCompDataSourceRepository appCompDSRepository;
-
+    
     @Async
     public void doAddUpdateDataSourcesWork(String applicationId, String notificationURI, String uuid){
 

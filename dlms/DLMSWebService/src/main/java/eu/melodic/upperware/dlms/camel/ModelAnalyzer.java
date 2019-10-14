@@ -31,6 +31,7 @@ import camel.type.impl.BooleanValueImpl;
 import camel.type.impl.StringValueImpl;
 import eu.melodic.upperware.dlms.AppCompDataSource;
 import eu.melodic.upperware.dlms.DataSource;
+import eu.melodic.upperware.dlms.DataSourceType;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
@@ -98,25 +99,28 @@ public class ModelAnalyzer {
 								DataSource dataSource = new DataSource();
 								for (Feature feature : ftList) {
 									EList<Attribute> attrList = feature.getAttributes();
-
+								
 									for (Attribute attribute : attrList) {
 										// check attributes for the datasource
 										checkUfsUri(attribute, dataSource);
 										checkAccess(attribute, dataSource);
 										checkReadOnly(attribute, dataSource);
 										checkLocalMountPoint(attribute, dataSource);
+										checkHostPort(attribute, dataSource);
 									}
-									if (StringUtils.isNotBlank(dataSource.getUfsURI())) {
-										dataSource.setName(data.getDataSource().getName());
-										// set the mount point with the initial "melodic" for all
-										// not needed based on discussions in June
-//										dataSource.setMountPoint("/melodic/" + data.getName());
-										dataSource.setMountPoint(data.getName());
-										validLocalMountPoint(dataSource);
-						
+									dataSource.setName(data.getDataSource().getName());
+									
+									if (hasDataSourceType(feature.getName(), dataSource)) {
+										// local mount point is present for alluxio
+										if (dataSource.getDataSourceType().equals(DataSourceType.HDFS)
+												|| dataSource.getDataSourceType().equals(DataSourceType.S3)) {
+											addLocalMountPoint(data.getName(), dataSource);
+										}	
 										dataSourceList.add(dataSource);
+										
 										log.debug("DataSource was added: {}", data.getName());
 									}
+							
 								}
 							}
 						}
@@ -209,7 +213,7 @@ public class ModelAnalyzer {
 	}
 
 	private void checkAccess(Attribute attribute, DataSource dataSource) {
-		if ("accessUserId".equalsIgnoreCase(attribute.getName())) {
+		if ("accessUserId".equalsIgnoreCase(attribute.getName()) || "dbUserId".equalsIgnoreCase(attribute.getName())) {
 			if (checkStringValueImpl(attribute)) {
 				String accessKey = attrVal(attribute);
 				dataSource.setAccessKey(accessKey);
@@ -234,6 +238,49 @@ public class ModelAnalyzer {
 			}
 		}
 	}
+	
+	private void checkHostPort(Attribute attribute, DataSource dataSource) {
+		if ("hostPort".equalsIgnoreCase(attribute.getName())) {
+			if (checkStringValueImpl(attribute)) {
+				String localMountPoint = attrVal(attribute);
+				dataSource.setLocalMountPont(localMountPoint);
+			}
+		}
+	}
+	
+	private boolean hasDataSourceType(String featureName, DataSource dataSource) {	
+		switch (featureName) {
+		case "dataAttribs":
+			if (StringUtils.isNotBlank(dataSource.getUfsURI())) {
+				// alluxio types
+				if (dataSource.getUfsURI().contains("s3a")) {
+					dataSource.setDataSourceType(DataSourceType.S3);
+					return true;
+				} else if(dataSource.getUfsURI().contains("hdfs")) {
+					dataSource.setDataSourceType(DataSourceType.HDFS);
+					return true;
+				} else {
+					log.debug("Mount feature for this data source is not yet implemented.");
+				}	
+			}else {
+				log.debug("Ufsuri is not present in the model.");
+			}	
+			break;
+		case "rdbmsAttribs":
+			dataSource.setDataSourceType(DataSourceType.MYSQL);	
+			return true;
+		default:
+			log.debug("Not supported datasource type.");		
+		}
+		return false;
+	}
+	
+	
+	private void addLocalMountPoint(String mountPoint, DataSource dataSource) {
+		dataSource.setMountPoint(mountPoint);
+		validLocalMountPoint(dataSource);
+	}
+	
 	
 	/**
 	 * Change local mount point as same mount point if not valid
