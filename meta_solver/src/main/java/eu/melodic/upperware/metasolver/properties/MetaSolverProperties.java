@@ -47,8 +47,6 @@ public class MetaSolverProperties {
     private double utilityThresholdFactor;
     @Valid
     private String emsUrl;
-    @Valid
-    private History history;
 
     // --------------------------------------------------------------
 
@@ -93,22 +91,5 @@ public class MetaSolverProperties {
             private String clientId;
             private TopicType type;
         }
-    }
-
-    // --------------------------------------------------------------
-
-    @Getter
-    @Setter
-    public static class History {
-        private boolean enabled = false;
-
-        private String basePath;
-        private String actionsBasePath;
-        private String componentsBasePath;
-        private String transitionsBasePath;
-
-        private String metasolverPath;
-        private String cpSolutionProducedPath;
-        private String cpSolutionFailedPath;
     }
 }

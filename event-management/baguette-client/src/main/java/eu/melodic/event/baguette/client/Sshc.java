@@ -11,12 +11,14 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.client.simple.SimpleClient;
+import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.config.keys.impl.RSAPublicKeyDecoder;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
@@ -157,6 +159,14 @@ public class Sshc {
         //simple.setConnectTimeout(...CONNECT_TIMEOUT...);
         //simple.setAuthenticationTimeout(...AUTH_TIMEOUT...);
 
+        // Set a huge idle timeout, keep-alive to true and heartbeat to 1 minute
+        long heartbeatInterval = 60000;
+        PropertyResolverUtils.updateProperty(client, ClientFactoryManager.HEARTBEAT_INTERVAL, heartbeatInterval);
+        PropertyResolverUtils.updateProperty(client, ClientFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
+        PropertyResolverUtils.updateProperty(client, ClientFactoryManager.SOCKET_KEEPALIVE, true);
+        log.debug("Set IDLE_TIMEOUT to MAX, KEEP-ALIVE to true, and HEARTBEAT to {}", heartbeatInterval);
+
+        // Start SSH client
         client.start();
 
         // Authenticate and start session

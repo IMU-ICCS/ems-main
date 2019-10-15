@@ -8,12 +8,23 @@
 # http://mozilla.org/MPL/2.0/.
 #
 
+# Command line arguments: <server cert. file> <server url> <server api-key>
+SERVER_CERT=$1
+BASE_URL=$2
+APIKEY=$3
+
+if [ -z "$SERVER_CERT" ]; then
+  SERVER_CERT=""
+elif [ "$SERVER_CERT" = "-" ]; then
+  SERVER_CERT="--no-check-certificate"
+else
+  SERVER_CERT="--ca-certificate=${SERVER_CERT}"
+fi
+
 # Create installation directories
 BIN_DIRECTORY=/opt/baguette-client/bin
 CONF_DIRECTORY=/opt/baguette-client/conf
 LOGS_DIRECTORY=/opt/baguette-client/logs
-BASE_URL=$1
-APIKEY=$2
 
 mkdir -p $BIN_DIRECTORY/
 mkdir -p $CONF_DIRECTORY/
@@ -60,7 +71,7 @@ fi
 echo ""
 echo "Download installation package..."
 date -Iseconds
-wget --no-check-certificate $DOWNLOAD_URL -O $INSTALL_PACKAGE
+wget $SERVER_CERT $DOWNLOAD_URL -O $INSTALL_PACKAGE
 if [ $? != 0 ]; then
   echo "Failed to download installation package ($?)"
   echo "Aborting installation..."
@@ -74,7 +85,7 @@ echo "Download installation package...ok"
 echo ""
 echo "Download installation package MD5 checksum..."
 date -Iseconds
-wget --no-check-certificate $DOWNLOAD_URL_MD5 -O $INSTALL_PACKAGE_MD5
+wget $SERVER_CERT $DOWNLOAD_URL_MD5 -O $INSTALL_PACKAGE_MD5
 if [ $? != 0 ]; then
   echo "Failed to download installation package ($?)"
   echo "Aborting installation..."

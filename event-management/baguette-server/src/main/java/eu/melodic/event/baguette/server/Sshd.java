@@ -12,9 +12,11 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.Factory;
+import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.config.keys.impl.RSAPublicKeyDecoder;
 import org.apache.sshd.server.Command;
+import org.apache.sshd.server.ServerFactoryManager;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
@@ -100,6 +102,11 @@ public class Sshd {
                 }
                         .setCredentials(configuration.getCredentials())
         );
+
+        // Set session timeout
+        PropertyResolverUtils.updateProperty(sshd, ServerFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
+        PropertyResolverUtils.updateProperty(sshd, ServerFactoryManager.SOCKET_KEEPALIVE, true);
+        log.debug("SSH server: Set IDLE_TIMEOUT to MAX, and KEEP-ALIVE to true");
 
         // Start SSH server and accept connections
         sshd.start();

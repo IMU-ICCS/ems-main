@@ -15,7 +15,10 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
-import org.apache.activemq.broker.*;
+import org.apache.activemq.broker.BrokerPlugin;
+import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.broker.SslBrokerService;
+import org.apache.activemq.broker.inteceptor.MessageInterceptor;
 import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.security.AuthenticationUser;
@@ -38,6 +41,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
@@ -324,16 +328,30 @@ public class BrokerConfig implements InitializingBean {
     }
 
     private void registerMessageInterceptors(BrokerService brokerService) {
-        log.info("BrokerConfig: Registering Message Interceptors...");
+        log.info("BrokerConfig: Registering message interceptors...");
 
         // get message interceptor registry
         final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
         log.trace("BrokerConfig: Message interceptor registry: {}", registry);
 
         // register interceptor for adding source (producer) address to messages
-        String applyToAllDestinations = ">";
-        registry.addMessageInterceptorForTopic(applyToAllDestinations, new SourceAddressMessageUpdateInterceptor(registry));
-        log.info("BrokerConfig: Registered SourceAddressMessageUpdateInterceptor");
+        properties.getMessageInterceptors()
+                .forEach(bi -> {
+                    log.debug("BrokerConfig: Registering message interceptor: {}", bi);
+                    String part[] = bi.split(":");
+                    String destinationPattern = part[0];
+                    String interceptorClassName = part[1];
+                    try {
+                        Class<MessageInterceptor> interceptorClass = (Class<MessageInterceptor>) Class.forName(interceptorClassName);
+                        MessageInterceptor interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class).newInstance(registry);
+                        registry.addMessageInterceptorForTopic(destinationPattern, interceptor);
+                        log.info("BrokerConfig: Message interceptor registered: {}", bi);
+                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                        log.error("BrokerConfig: Error while registering message interceptor: {}. Exception: {}", bi, e);
+                    }
+                });
+
+        log.info("BrokerConfig: Registering message interceptors... done");
     }
 
     private BrokerService _createSslBrokerService() throws Exception {

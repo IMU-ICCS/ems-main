@@ -94,6 +94,7 @@ public class ControlServiceCoordinator {
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
+        log.info("ControlServiceCoordinator.applicationReady(): IP setting: {}", properties.getIpSetting());
         preloadModels();
     }
 
@@ -381,15 +382,19 @@ public class ControlServiceCoordinator {
             com.google.gson.Gson gson = new com.google.gson.Gson();
             String json = gson.toJson(msConfig);
             log.info("ControlServiceCoordinator.processNewModel(): MetaSolver configuration in JSON: {}", json);
-            try {
-                log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
-                //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
-                HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
-                final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
-                String metaSolverResponse = response.getBody();
-                log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+            if (StringUtils.isNotEmpty(metaSolverEndpoint)) {
+                try {
+                    log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
+                    //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
+                    HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
+                    final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
+                    String metaSolverResponse = response.getBody();
+                    log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+                }
+            } else {
+                log.warn("ControlServiceCoordinator.processNewModel(): MetaSolver endpoint is empty. Skipping Metasolver configuration");
             }
 
         } else {

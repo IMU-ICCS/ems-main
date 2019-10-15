@@ -156,7 +156,12 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
         broker.sendToClient("ROLE BROKER");
     }
 
-    public synchronized void brokerReady(ClientShellCommand c) {
+    public synchronized void clientReady(ClientShellCommand c) {
+        if (getPhase()==2) _brokerReady(c);
+        else _clientReady(c);
+    }
+
+    private void _brokerReady(ClientShellCommand c) {
         if (!started) return;
         if (phase != 2) return;
         log.info("ServerCoordinatorTimeWin: Broker is ready");
@@ -183,7 +188,7 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
         }
     }
 
-    public synchronized void clientReady(ClientShellCommand c) {
+    private void _clientReady(ClientShellCommand c) {
         if (!started) return;
         if (phase != 3) return;
         readyClients++;

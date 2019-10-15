@@ -27,11 +27,29 @@ import javax.validation.constraints.Min;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
 @Slf4j
 public class ControlServiceProperties {
+    public enum IP_SETTING {
+        DEFAULT_IP("%{DEFAULT_IP}%"),
+        PUBLIC_IP("%{PUBLIC_IP}%");
+
+        private final String placeholder;
+
+        IP_SETTING(String placeholder) {
+            this.placeholder = placeholder;
+        }
+
+        public String toString() {
+            return placeholder;
+        }
+    }
+
+    @Value("${IP_SETTING:}")
+    private IP_SETTING ipSetting;
+
     @Value("${control.upperware-grouping}")
     private String upperwareGrouping;
-    @Value("${control.metasolver-configuration-url}")
+    @Value("${control.metasolver-configuration-url:}")
     private String metasolverConfigurationUrl;
-    @Value("${control.esb-url}")
+    @Value("${control.esb-url:}")
     private String esbUrl;
 
     @Value("${control.preload.camel-model:}")

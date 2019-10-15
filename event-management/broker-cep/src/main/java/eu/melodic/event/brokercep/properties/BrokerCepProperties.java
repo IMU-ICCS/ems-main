@@ -11,12 +11,13 @@ package eu.melodic.event.brokercep.properties;
 
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.List;
 
 @Data
 @Configuration
@@ -75,6 +76,12 @@ public class BrokerCepProperties {
     private boolean enableStatistics;
     @Value("${broker-populate-jmsx-user-id:false}")
     private boolean populateJmsxUserId;
+
+    @Value("${message-interceptors:}#{T(java.util.Collections).emptyList()}")
+    private List<String> messageInterceptors;
+
+    @Value("${enable-advisory-watcher:true}")
+    private boolean enableAdvisoryWatcher;
 
     @Value("${brokercep.usage.memory.jvm-heap-percentage:-1}")
     private int memoryJvmHeapPercentage;
