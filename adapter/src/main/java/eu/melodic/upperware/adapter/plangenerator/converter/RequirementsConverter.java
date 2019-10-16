@@ -34,12 +34,22 @@ public class RequirementsConverter implements ModelConverter<DeploymentInstanceM
     }
 
     private AdapterRequirement createAdapterRequirement(SoftwareComponentInstance softwareComponentInstance) {
+        final NodeCandidate nodeCandidate = gson.fromJson(camelEnricherService.fetch("nodeCandidate", softwareComponentInstance), NodeCandidate.class);
+        clearNodeCandidate(nodeCandidate);
+
         return AdapterRequirement
                 .builder()
                 .type(IdentifierRequirement.class.getSimpleName())
                 .taskName(softwareComponentInstance.getType().getName())
                 .nodeName(softwareComponentInstance.getName())
-                .nodeCandidate(gson.fromJson(camelEnricherService.fetch("nodeCandidate", softwareComponentInstance), NodeCandidate.class))
+                .nodeCandidate(nodeCandidate)
                 .build();
+    }
+
+    private void clearNodeCandidate(NodeCandidate nodeCandidate) {
+        //clear NodeCandidate from unnecessary Cloud in case of BYON
+        if (nodeCandidate != null && NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType())) {
+            nodeCandidate.setCloud(null);
+        }
     }
 }
