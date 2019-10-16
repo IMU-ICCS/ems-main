@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.event.control;
@@ -94,6 +94,7 @@ public class ControlServiceCoordinator {
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
+        log.info("ControlServiceCoordinator.applicationReady(): IP setting: {}", properties.getIpSetting());
         preloadModels();
     }
 
@@ -381,15 +382,19 @@ public class ControlServiceCoordinator {
             com.google.gson.Gson gson = new com.google.gson.Gson();
             String json = gson.toJson(msConfig);
             log.info("ControlServiceCoordinator.processNewModel(): MetaSolver configuration in JSON: {}", json);
-            try {
-                log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
-                //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
-                HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
-                final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
-                String metaSolverResponse = response.getBody();
-                log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+            if (StringUtils.isNotEmpty(metaSolverEndpoint)) {
+                try {
+                    log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
+                    //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
+                    HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
+                    final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
+                    String metaSolverResponse = response.getBody();
+                    log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+                }
+            } else {
+                log.warn("ControlServiceCoordinator.processNewModel(): MetaSolver endpoint is empty. Skipping Metasolver configuration");
             }
 
         } else {
