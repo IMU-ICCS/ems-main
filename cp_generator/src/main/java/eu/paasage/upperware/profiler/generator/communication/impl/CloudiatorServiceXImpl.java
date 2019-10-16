@@ -58,8 +58,10 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
             try {
                 ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
                 if (response.getStatusCode() == 200) {
-                    log.info("Approach {} of {} successfully fetched {} NodeCandidates", counter, maxNumberOfApproaches, response.getData().size());
-                    return response.getData();
+                    final List<NodeCandidate> data = response.getData();
+                    log.info("Approach {} of {} successfully fetched {} NodeCandidates", counter, maxNumberOfApproaches, data.size());
+                    fillByonCloudProvider(data);
+                    return data;
                 }
             } catch (Exception e) {
                 log.error("Approach {} of {} failed with Exception: ", counter, maxNumberOfApproaches, e);
@@ -75,6 +77,28 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
                 //
             }
         } while (true);
+    }
+
+    private void fillByonCloudProvider(List<NodeCandidate> nodeCandidates) {
+        CollectionUtils.emptyIfNull(nodeCandidates)
+                .stream()
+                .filter(nodeCandidate -> NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType()))
+                .forEach(this::setCloudId);
+    }
+
+    private void setCloudId(NodeCandidate nodeCandidate) {
+        String id = getId(nodeCandidate.getImage());
+
+        Cloud cloud = nodeCandidate.getCloud();
+        if (cloud != null) {
+            cloud.setId(id);
+        } else {
+            nodeCandidate.setCloud(new Cloud().id(id));
+        }
+    }
+
+    private String getId(Image image) {
+        return StringUtils.substringAfterLast(image.getId(), "_");
     }
 
     @Override
