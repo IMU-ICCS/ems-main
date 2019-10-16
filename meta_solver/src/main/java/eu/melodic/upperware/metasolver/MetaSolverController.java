@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.upperware.metasolver;
@@ -169,23 +168,6 @@ public class MetaSolverController {
 
     @RequestMapping(value = "/health", method = GET)
     public void health() {
-    }
-
-    //XXX: DELETE:
-    @RequestMapping(value = "/esbTest", method = POST)
-    public eu.melodic.models.services.metaSolver.DeploymentProcessResponse esbTest(@RequestBody eu.melodic.models.services.metaSolver.DeploymentProcessRequest request) {
-        log.warn(">>>> Call to /esbTest: app-id={}, use-existing-cp={}, cdo-path={}, uuid={}",
-                request.getApplicationId(), request.getUseExistingCP(), request.getCdoResourcePath(), request.getWatermark().getUuid());
-
-        eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl response = new eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl();
-        eu.melodic.models.commons.NotificationResult notif = new eu.melodic.models.commons.NotificationResultImpl();
-        java.util.Map<String, Object> notifMap = new java.util.HashMap<>();
-        notifMap.put("xxxxxx-test-additional-property-name", "yyyyyyyyy-value");
-        notif.setStatus(eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS);
-        notif.setAdditionalProperties(notifMap);
-        response.setResult(notif);
-        response.setProcessId("zzzzzzzzzzz-the-process-ID");
-        return response;
     }
 
     @ExceptionHandler
