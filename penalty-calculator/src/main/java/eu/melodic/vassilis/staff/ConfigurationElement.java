@@ -6,7 +6,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.vassilis.staff;
+package eu.melodic.upperware;
 
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;

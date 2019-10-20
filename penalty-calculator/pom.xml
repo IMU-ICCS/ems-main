@@ -1,13 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-<!--
-	 <parent>
-        <groupId>org.ow2.paasage</groupId>
-        <artifactId>upperware</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
-    </parent>
-	-->
+
 	
 	<!-- Inherit defaults from Spring Boot -->
     <parent>
@@ -16,7 +10,7 @@
     <version>2.1.5.RELEASE</version>
     <relativePath/> <!-- lookup parent from repository -->
     </parent>
-	<groupId>eu.melodic.vassilis.staff</groupId>
+	<groupId>eu.melodic.upperware</groupId>
 	<artifactId>penalty-calculator</artifactId>
 	<version>2.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -25,19 +19,8 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-	</properties>
-	
-	
-	
+	</properties>	
 	<dependencies>
-<!--		
-		<dependency>
-			<groupId>eu.melodic</groupId>
-			<artifactId>utility-generator</artifactId>
-			<version>2.1.0-SNAPSHOT</version>
-		</dependency>
--->
-		
        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
        <dependency>
             <groupId>org.apache.commons</groupId>
@@ -54,13 +37,6 @@
 		    <artifactId>hibernate-validator</artifactId>
 		    <version>6.0.16.Final</version>
 	    </dependency>
-		<!--
-		<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
-        </dependency>
-		-->
 		<!-- https://mvnrepository.com/artifact/log4j/log4j -->
         <dependency>
             <groupId>log4j</groupId>

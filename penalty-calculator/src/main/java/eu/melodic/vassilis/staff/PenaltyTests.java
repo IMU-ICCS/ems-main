@@ -7,7 +7,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.vassilis.staff;
+package eu.melodic.upperware;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

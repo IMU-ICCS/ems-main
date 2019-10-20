@@ -8,7 +8,7 @@
  */
 
 
-package eu.melodic.vassilis.staff;
+package eu.melodic.upperware;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,6 @@ import java.util.Map;
 @Data
 @ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.config.properties")
-@Slf4j
 public class PenaltyFunctionProperties {
     private final Map<String, String> startupTimes = new HashMap<>();
 
