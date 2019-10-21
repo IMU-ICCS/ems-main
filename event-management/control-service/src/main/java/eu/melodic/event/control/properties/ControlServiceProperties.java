@@ -27,13 +27,13 @@ import javax.validation.constraints.Min;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
 @Slf4j
 public class ControlServiceProperties {
-    public enum IP_SETTING {
+    public enum IpSetting {
         DEFAULT_IP("%{DEFAULT_IP}%"),
         PUBLIC_IP("%{PUBLIC_IP}%");
 
         private final String placeholder;
 
-        IP_SETTING(String placeholder) {
+        IpSetting(String placeholder) {
             this.placeholder = placeholder;
         }
 
@@ -43,7 +43,7 @@ public class ControlServiceProperties {
     }
 
     @Value("${IP_SETTING:}")
-    private IP_SETTING ipSetting;
+    private IpSetting ipSetting;
 
     @Value("${control.upperware-grouping}")
     private String upperwareGrouping;

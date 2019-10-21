@@ -261,7 +261,7 @@ public class ControlServiceController {
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
         String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
         String baseUrl =
-                (ControlServiceProperties.IP_SETTING.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
+                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
                         ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
                         : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
