@@ -77,7 +77,7 @@ public class DeploymentService {
 
             if (!cdoService.storeFileInCdo(cdoName, xmiFile)) {
                 log.error("Error by storing xmi model into cdo");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your xmi model is invalid or connection timeout occurred. Please try again.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid or connection timeout occurred. Please try again.", uploadXmiRequest.getResource().getFilename()));
             }
         } catch (IOException e) {
             log.error("Error by uploading xmi file:", e);
@@ -133,6 +133,7 @@ public class DeploymentService {
                 response.add(createUploadSingleXmiResponse(multipartFile, cdoName));
             } catch (ResponseStatusException ex) {
                 response.add(UploadXmiResponse.builder()
+                        .modelName(multipartFile.getName())
                         .httpStatus(HttpStatus.BAD_REQUEST)
                         .message(ex.getMessage())
                         .build());
