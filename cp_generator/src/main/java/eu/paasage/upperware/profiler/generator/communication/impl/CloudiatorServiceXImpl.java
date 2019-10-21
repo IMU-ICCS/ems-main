@@ -51,7 +51,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private static final String CLOUD_CLASS = "cloud";
     private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
-    private MatchmakingApi matchmakingApi;
+    private final MatchmakingApi matchmakingApi;
 
     @Retryable(value = { ApiException.class }, maxAttempts = 4, backoff = @Backoff(delay = 2000))
     @Override
