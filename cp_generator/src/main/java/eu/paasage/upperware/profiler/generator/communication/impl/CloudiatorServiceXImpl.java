@@ -59,8 +59,10 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         log.info("Trying to get Node candidates for requirements: {}", requirements);
         ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
         if (response.getStatusCode() == 200) {
-            log.info("Successfully fetched {} NodeCandidates", response.getData().size());
-            return response.getData();
+            final List<NodeCandidate> data = response.getData();
+            fillByonCloudProvider(data);
+            log.info("Successfully fetched {} NodeCandidates", data.size());
+            return data;
         } else {
             throw new ApiException(String.format("Response received but HTTP status is: %d", response.getStatusCode()));
         }
@@ -69,6 +71,28 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     @Recover
     public List<NodeCandidate> recover(ApiException t, List<Requirement> requirements){
         throw new GeneratorException(String.format("Could not get node candidates for : %s", requirements), t);
+    }
+
+    private void fillByonCloudProvider(List<NodeCandidate> nodeCandidates) {
+        CollectionUtils.emptyIfNull(nodeCandidates)
+                .stream()
+                .filter(nodeCandidate -> NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType()))
+                .forEach(this::setCloudId);
+    }
+
+    private void setCloudId(NodeCandidate nodeCandidate) {
+        String id = getId(nodeCandidate.getImage());
+
+        Cloud cloud = nodeCandidate.getCloud();
+        if (cloud != null) {
+            cloud.setId(id);
+        } else {
+            nodeCandidate.setCloud(new Cloud().id(id));
+        }
+    }
+
+    private String getId(Image image) {
+        return StringUtils.substringAfterLast(image.getId(), "_");
     }
 
     @Override
