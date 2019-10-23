@@ -339,6 +339,8 @@ public class CommandExecutor {
                     }
                     log.debug("Truststore certificates after update: {}",
                             KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
+                    KeystoreUtil.writeKeystore(brokerCepService.getBrokerTruststore(), "/opt/truststore-debug-export", "PKCS", "melodic");
+                    log.debug("Truststore after update: /opt/truststore-debug-export");
                 } catch (Exception ex) {
                     log.error("EXCEPTION while updating Trust store: ", ex);
                 }

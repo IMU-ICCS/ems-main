@@ -29,10 +29,10 @@
     <logger name="eu.melodic.event" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="eu.melodic.event.baguette" level="INFO" additivity="false">
+    <logger name="eu.melodic.event.baguette" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
-    <logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false">
+    <logger name="eu.melodic.event.brokercep" level="TRACE" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
     <logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false">
