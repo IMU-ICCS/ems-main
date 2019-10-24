@@ -72,7 +72,8 @@ public class DeploymentService {
 
             File xmiFile = new File(uploadXmiRequest.getOriginalFilename());
             Files.copy(uploadXmiRequest.getInputStream(), Paths.get(xmiFile.getPath()), StandardCopyOption.REPLACE_EXISTING);
-            String cdoName = cdoService.getCdoName(xmiFile);
+            String cdoName = cdoService.getCdoName(xmiFile)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid. Name of camel model is missing.", uploadXmiRequest.getResource().getFilename())));
 
             if (!cdoService.storeFileInCdo(cdoName, xmiFile)) {
                 log.error("Error by storing xmi model into cdo");

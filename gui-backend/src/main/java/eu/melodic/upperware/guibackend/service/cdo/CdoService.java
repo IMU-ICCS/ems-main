@@ -36,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -52,7 +53,7 @@ public class CdoService {
     private CpModelMapper cpModelMapper;
     private GuiBackendProperties guiBackendProperties;
 
-    public String getCdoName(File xmiFile) {
+    public Optional<String> getCdoName(File xmiFile) {
         String cdoName = null;
         try (Stream<String> stream = Files.lines(Paths.get(xmiFile.getAbsolutePath()))) {
             String camelModelLine = stream.filter(s -> s.startsWith(CAMEL_MODEL_LINE_PREFIX))
@@ -66,7 +67,7 @@ public class CdoService {
         } catch (IOException e) {
             log.error("Error by parsing xmi file: {}", e);
         }
-        return cdoName;
+        return Optional.ofNullable(cdoName);
     }
 
     public boolean storeFileInCdo(String cdoName, File file) {
