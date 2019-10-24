@@ -59,6 +59,10 @@ public class WebBasedIpGeoCoder implements IIpGeoCoder {
 	public String getCountryCode(String ipAddress) {
 		String ipResult = StringUtils.EMPTY;
 
+		if(ipAddress == null){
+			return StringUtils.EMPTY;
+		}
+
 		if(ipToCountryCache.containsKey(ipAddress)){
 			return ipToCountryCache.get(ipAddress);
 		}
