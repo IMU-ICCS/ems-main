@@ -65,8 +65,6 @@ public class DeploymentService {
 
     public String uploadXmi(MultipartFile uploadXmiRequest) {
 
-        String cdoName = cdoService.getCdoName(uploadXmiRequest.getResource().getFilename(), ".xmi");
-
         try {
             if (uploadXmiRequest.getOriginalFilename() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. Please try again.", uploadXmiRequest.getResource().getFilename()));
@@ -74,11 +72,14 @@ public class DeploymentService {
 
             File xmiFile = new File(uploadXmiRequest.getOriginalFilename());
             Files.copy(uploadXmiRequest.getInputStream(), Paths.get(xmiFile.getPath()), StandardCopyOption.REPLACE_EXISTING);
+            String cdoName = cdoService.getCdoName(xmiFile);
 
             if (!cdoService.storeFileInCdo(cdoName, xmiFile)) {
                 log.error("Error by storing xmi model into cdo");
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid or connection timeout occurred. Please try again.", uploadXmiRequest.getResource().getFilename()));
             }
+            return cdoName;
+
         } catch (IOException e) {
             log.error("Error by uploading xmi file:", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. Please try again.", uploadXmiRequest.getResource().getFilename()));
@@ -89,7 +90,6 @@ public class DeploymentService {
             log.error("Error by uploading xmi file:", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. CDO repository is in pending state. Please try again.", uploadXmiRequest.getResource().getFilename()));
         }
-        return cdoName;
     }
 
     public void deleteXmiModel(String xmiName) {

@@ -17,7 +17,6 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -32,20 +31,42 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class CdoService {
 
+    private final static String CAMEL_MODEL_LINE_PREFIX = "<core:CamelModel";
+    private final static Pattern CAMEL_NAME_PATTERN = Pattern.compile("name=\"(.*?)\"");
+
     private CpModelMapper cpModelMapper;
     private GuiBackendProperties guiBackendProperties;
 
-    public String getCdoName(String fileName, String fileExtension) {
-        return StringUtils.removeEnd(fileName, fileExtension);
+    public String getCdoName(File xmiFile) {
+        String cdoName = null;
+        try (Stream<String> stream = Files.lines(Paths.get(xmiFile.getAbsolutePath()))) {
+            String camelModelLine = stream.filter(s -> s.startsWith(CAMEL_MODEL_LINE_PREFIX))
+                    .findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid. Camel model part is missing.", xmiFile.getName())));
+            Matcher matcher = CAMEL_NAME_PATTERN.matcher(camelModelLine);
+            while (matcher.find()) {
+                cdoName = matcher.group(1);
+                log.info("Cdo name found: {}", cdoName);
+            }
+        } catch (IOException e) {
+            log.error("Error by parsing xmi file: {}", e);
+        }
+        return cdoName;
     }
 
     public boolean storeFileInCdo(String cdoName, File file) {
