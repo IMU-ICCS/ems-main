@@ -159,6 +159,7 @@ public class BrokerConfig implements InitializingBean {
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
                 .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryNameValue());
+        //XXX: temp 24-10-2019 -> change to 'trace'
         log.debug("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
                 properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword(),
                 properties.getSsl().getKeyEntryNameValue(), this.brokerCert);
