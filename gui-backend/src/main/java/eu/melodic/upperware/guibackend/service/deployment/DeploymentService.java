@@ -9,6 +9,7 @@ import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentR
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
+import eu.melodic.upperware.guibackend.service.cdo.ModelNameGenerator;
 import eu.melodic.upperware.guibackend.service.provider.ProviderService;
 import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,7 @@ public class DeploymentService {
     private CdoService cdoService;
     private ProviderService providerService;
     private SecureStoreService secureStoreService;
+    private ModelNameGenerator modelNameGenerator;
 
     public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token, String refreshToken) {
         deploymentRequest.setCloudDefinitions(deploymentRequest.getCloudDefinitions()
@@ -72,9 +74,8 @@ public class DeploymentService {
 
             File xmiFile = new File(uploadXmiRequest.getOriginalFilename());
             Files.copy(uploadXmiRequest.getInputStream(), Paths.get(xmiFile.getPath()), StandardCopyOption.REPLACE_EXISTING);
-            String cdoName = cdoService.getCdoName(xmiFile)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid. Name of camel model is missing.", uploadXmiRequest.getResource().getFilename())));
-
+            String cdoName = modelNameGenerator.getModelName(xmiFile);
+            log.info("File {} will be stored under name: {}", uploadXmiRequest.getResource().getFilename(), cdoName);
             if (!cdoService.storeFileInCdo(cdoName, xmiFile)) {
                 log.error("Error by storing xmi model into cdo");
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid or connection timeout occurred. Please try again.", uploadXmiRequest.getResource().getFilename()));
