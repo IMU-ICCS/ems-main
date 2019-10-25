@@ -41,7 +41,7 @@ if "%JASYPT_PASSWORD%"=="" (
 
 :: check logger configuration
 if "%LOG_CONFIG_FILE%"=="" (
-    set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-spring.xml
+    set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-conf\logback-spring.xml
 )
 echo Using logback config.: %LOG_CONFIG_FILE%
 

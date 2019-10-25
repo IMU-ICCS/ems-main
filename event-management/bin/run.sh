@@ -44,7 +44,7 @@ export JASYPT_PASSWORD
 
 # check logger configuration
 if [[ -z "$LOG_CONFIG_FILE" ]]; then
-    LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-spring.xml
+    LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-conf/logback-spring.xml
 fi
 
 # Waiting CDO to come up...
