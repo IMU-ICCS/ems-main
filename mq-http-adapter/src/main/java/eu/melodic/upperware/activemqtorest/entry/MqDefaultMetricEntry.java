@@ -39,11 +39,11 @@ public class MqDefaultMetricEntry extends MqBaseEntry {
 		Point point = Point.measurement(getTopic())
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
 				.addField("value", Double.valueOf(getValue()))
-				.tag("level", getLevel())
-				.tag("producer", getProducer())
-				.tag("vmName", getVmName())
+				.tag("level", Strings.nullToEmpty(getLevel()))
+				.tag("producer", Strings.nullToEmpty(getProducer()))
+				.tag("vmName", Strings.nullToEmpty(getVmName()))
 				.tag("ipAddress", Strings.nullToEmpty(getSourceIpAddress()))
-				.tag("countryCode", ipGeoCoder.getCountryCode(getSourceIpAddress()))
+				.tag("countryCode", Strings.nullToEmpty(ipGeoCoder.getCountryCode(getSourceIpAddress())))
 				.build();
 		return point;
 	}
