@@ -33,35 +33,39 @@ public class SourceAddressMessageUpdateInterceptor implements MessageInterceptor
         try {
             // get remote address from connection
             Connection conn = producerBrokerExchange.getConnectionContext().getConnection();
-            log.debug("SourceAddressMessageUpdateInterceptor:  Connection: {}", conn);
+            log.trace("SourceAddressMessageUpdateInterceptor:  Connection: {}", conn);
             String address = conn.getRemoteAddress();
-            log.debug("SourceAddressMessageUpdateInterceptor:  Producer address: {}", address);
+            log.trace("SourceAddressMessageUpdateInterceptor:  Producer address: {}", address);
 
             // extract remote host address
             if (StringUtils.isNotBlank(address)) {
                 address = StringUtils.substringsBetween(address, "//", ":") [0];
             }
-            log.debug("SourceAddressMessageUpdateInterceptor:  Producer host: {}", address);
+            log.trace("SourceAddressMessageUpdateInterceptor:  Producer host: {}", address);
 
             // check if host address is local
             boolean isLocal = StringUtils.isBlank(address) || NetUtil.isLocalAddress(address.trim());
             if (isLocal) {
-                log.debug("SourceAddressMessageUpdateInterceptor:  Producer host is local. Getting our public IP address");
+                log.trace("SourceAddressMessageUpdateInterceptor:  Producer host is local. Getting our public IP address");
                 address = NetUtil.getPublicIpAddress();
-                log.debug("SourceAddressMessageUpdateInterceptor:  Producer host (public): {}", address);
+                log.trace("SourceAddressMessageUpdateInterceptor:  Producer host (public): {}", address);
             } else {
-                log.debug("SourceAddressMessageUpdateInterceptor:  Producer host is not local. Ok");
+                log.trace("SourceAddressMessageUpdateInterceptor:  Producer host is not local. Ok");
             }
 
             // get message remote address old value (if any)
             String oldAddress = (String) message.getProperty(sourceAddressPropertyName);
-            log.debug("SourceAddressMessageUpdateInterceptor:  Producer host property in message: {}", oldAddress);
+            log.trace("SourceAddressMessageUpdateInterceptor:  Producer host property in message: {}", oldAddress);
 
             // set new remote address value, if needed
             if (StringUtils.isBlank(oldAddress) && StringUtils.isNotBlank(address)) {
-                log.debug("SourceAddressMessageUpdateInterceptor:  Setting producer host property in message: host={}, message={}", address, message);
+                log.trace("SourceAddressMessageUpdateInterceptor:  Setting producer host property in message: host={}, message={}", address, message);
                 message.setProperty(sourceAddressPropertyName, address);
                 log.debug("SourceAddressMessageUpdateInterceptor:  Set producer host property in message: host={}, message={}", address, message);
+            } else if (StringUtils.isNotBlank(oldAddress)) {
+                log.debug("SourceAddressMessageUpdateInterceptor:  Producer host property already set (keeping previous value): host={}, message={}", oldAddress, message);
+            } else if (StringUtils.isBlank(address)) {
+                log.warn("SourceAddressMessageUpdateInterceptor:  Could not resolve Producer host property: message={}", message);
             }
 
             registry.injectMessage(producerBrokerExchange, message);
