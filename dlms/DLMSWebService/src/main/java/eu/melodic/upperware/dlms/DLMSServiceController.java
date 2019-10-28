@@ -7,7 +7,8 @@
 
 package eu.melodic.upperware.dlms;
 
-import eu.melodic.models.interfaces.dlms.DataModelRequest;
+import camel.deployment.impl.ConfigurationImpl;
+import eu.melodic.models.interfaces.dlms.*;
 import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
 import eu.melodic.upperware.dlms.component.ComponentId;
 import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
@@ -16,15 +17,14 @@ import eu.melodic.upperware.dlms.properties.DLMSProperties;
 import io.github.cloudiator.rest.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.ocl.util.Tuple;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Webservice controller for the DLMS service.
@@ -46,7 +46,7 @@ public class DLMSServiceController {
 	public List<DataSource> getDataSources() {
 		return dlmsService.getAllDataSources();
 	}
-	
+
 	/**
 	 * Returns one datasource matching the given id.
 	 */
@@ -86,7 +86,7 @@ public class DLMSServiceController {
 	public List<AcDsMountPoint> getAppCompDataSource() {
 		return dlmsService.getAllAcDsMp();
 	}
-	
+
 	/**
 	 * Returns one data source and mount point linked with the component name.
 	 */
@@ -94,7 +94,7 @@ public class DLMSServiceController {
 	public AcDsMountPoint getAppCompDataSource(@PathVariable("name") String name) {
 		return dlmsService.getAcDsMpByName(name);
 	}
-	
+
 	/**
 	 * Returns command and the component name.
 	 */
@@ -175,4 +175,31 @@ public class DLMSServiceController {
 		dlmsService.migrateDatasource(migrationData.getId(), migrationData.getPathTo());
 	}
 
+	/**
+	 * Returns configuration for the given IP as a tuple:
+	 */
+	@GetMapping(value = "/getConfiguration/{ip}")
+	public ConfigurationResponse getConfiguration(@PathVariable("ip") String ip) throws ApiException {
+		log.info("Invoking getConfiguration with IP: {}", ip);
+
+		final Optional<String> componentId = comp.findComponentId(ip);
+		ConfigurationResponse configResp = new ConfigurationResponseImpl();
+		if (componentId.isPresent()) {
+			LatencyConfiguration latencyConfig = new LatencyConfigurationImpl();
+			latencyConfig.setId(String.valueOf(componentId));
+			latencyConfig.setIp(ip);
+
+			OtherConfiguration otherConfig = new OtherConfigurationImpl();
+			otherConfig.setProperty1("example_value_1");
+			otherConfig.setProperty2("example_value_2");
+
+			configResp.setConfigurations(new ArrayList<>(Arrays.asList(
+					new Configuration(latencyConfig), new Configuration(otherConfig))));
+			log.info("Sending list of configurations for IP: {}.", ip);
+		} else {
+			configResp.setConfigurations(new ArrayList<>());
+			log.info("There is no component with IP: {}, returning empty config list.", ip);
+		}
+		return configResp;
+	}
 }
