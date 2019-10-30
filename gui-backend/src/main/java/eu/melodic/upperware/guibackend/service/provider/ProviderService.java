@@ -84,6 +84,7 @@ public class ProviderService {
     public CloudDefinition createCloudDefinition(CloudDefinition cloudDefinition) {
         List<CloudDefinition> cloudDefinitionsForAllProviders = getCloudDefinitionsForAllProviders();
 
+        providerValidationService.validateNodeGroup(cloudDefinition.getCloudConfiguration().getNodeGroup());
         providerValidationService.validateProviderUser(cloudDefinition, cloudDefinitionsForAllProviders);
         providerValidationService.validateUniquenessOfPropertyName(cloudDefinition);
         providerValidationService.validateUniquenessOfKeysInSingleProperties(cloudDefinition);
@@ -118,6 +119,8 @@ public class ProviderService {
                 .filter(cloudDefinition -> cloudDefinition.getId() == cloudDefId)
                 .findFirst()
                 .orElseThrow(() -> new CloudDefinitionNotFoundException(cloudDefId));
+
+        providerValidationService.validateNodeGroup(cloudDefinitionToUpdate.getCloudConfiguration().getNodeGroup());
 
         if (!cloudDefinitionToUpdate.getCredential().getUser().equals(oldCloudDefinition.getCredential().getUser())) {
             providerValidationService.validateProviderUser(cloudDefinitionToUpdate, cloudDefinitionsForAllProviders);
