@@ -8,15 +8,16 @@
 #
 
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-MELODIC_CONFIG_DIR=$BASEDIR/src/main/resources/config
-PAASAGE_CONFIG_DIR=$BASEDIR/src/main/resources
+if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/src/main/resources/config; fi
+if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/src/main/resources; fi
+if [[ -z $EXTRA_TS_DIR ]]; then EXTRA_TS_DIR=$MELODIC_CONFIG_DIR; fi
 
-export BASEDIR MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR
+export BASEDIR MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR EXTRA_TS_DIR
 
 #mvn spring-boot:run
 
 #LOGGING=--logging.config=file:%MELODIC_CONFIG_DIR%\logback-spring.xml
-JAVA_OPTS= -Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/broker-truststore.p12
+JAVA_OPTS=-Djavax.net.ssl.trustStore=${EXTRA_TS_DIR}/broker-truststore.p12
 JAVA_OPTS=${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12
 
 #java ${JAVA_OPTS} -Deu.paasage.configdir=. -jar target/meta-solver.jar ${LOGGING}

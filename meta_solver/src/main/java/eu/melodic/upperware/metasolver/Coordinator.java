@@ -271,11 +271,14 @@ public class Coordinator implements ApplicationContextAware {
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics...");
         for (Map p : subscriptions) {
             String url = (String) p.get("url");
+            String username = (String) p.get("username");
+            String password = (String) p.get("password");
+            String certificate = (String) p.get("certificate");
             String topicName = (String) p.get("topic");
             String clientId = (String) p.get("client-id");
             TopicType type = TopicType.valueOf((String) p.get("type"));
-            log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, topic={}, client-id={}, type={}", url, topicName, clientId, type);
-            metricValueMonitorBean.subscribe(url, topicName, clientId, type);
+            log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, username={}, topic={}, client-id={}, type={}", url, username, topicName, clientId, type);
+            metricValueMonitorBean.subscribe(url, username, password, certificate, topicName, clientId, type);
             log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
         }
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");

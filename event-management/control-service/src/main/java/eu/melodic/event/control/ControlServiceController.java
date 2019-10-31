@@ -221,6 +221,36 @@ public class ControlServiceController {
     }
 
     // ------------------------------------------------------------------------------------------------------------
+    // Broker-CEP query & control methods
+    // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/broker/credentials", method = {GET,POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("ControlServiceController.getBrokerCredentials(): BEGIN");
+        log.trace("ControlServiceController.getBrokerCredentials(): JWT token: {}", jwtToken);
+
+        // Retrieve sensor information
+        String brokerClientsUrl = coordinator.getBrokerCep().getBrokerCepProperties().getBrokerUrlForClients();
+        String brokerUsername = coordinator.getBrokerCep().getBrokerUsername();
+        String brokerPassword = coordinator.getBrokerCep().getBrokerPassword();
+        String brokerCertificatePem = coordinator.getBrokerCep().getBrokerCertificate();
+
+        // Prepare response
+        Map<String,String> response = new HashMap<>();
+        response.put("url", brokerClientsUrl);
+        response.put("username", brokerUsername);
+        response.put("password", brokerPassword);
+        response.put("certificate", brokerCertificatePem);
+        HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+        log.info("ControlServiceController.getBrokerCredentials(): Response: {}", response);
+
+        //return response;
+        return entity;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 

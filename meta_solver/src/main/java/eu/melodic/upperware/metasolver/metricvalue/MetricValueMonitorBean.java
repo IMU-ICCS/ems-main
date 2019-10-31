@@ -41,6 +41,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private String brokerUsername;
 	@Value("${ems-broker-password:#{null}}")
 	private String brokerPassword;
+	@Value("${ems-broker-certificate:#{null}}")
+	private String brokerCertificate;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -82,33 +84,35 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 log.debug("Topic : {}", pst);
 
                 // Subscribe to topic
-                _do_subscribe(url, topicName, clientId, type);
+                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type);
                 i++;
             }
         }
         log.debug("Subscribing to topics: ok");
     }
 
-    public void subscribe(String url, String topicName, String clientId, TopicType type) {
+    public void subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
         // Check if Pub/Sub should be activated
         if (! properties.getPubsub().isOn()) {
             log.info("*****   Pub/Sub is SWITCHED OFF");
             return;
         }
 
-        _do_subscribe(url, topicName, clientId, type);
+        _do_subscribe(url, username, password, certificate, topicName, clientId, type);
     }
 
-    protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) {
+    protected void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
         try {
-            log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url, topicName, clientId, type);
+            log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Username : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}",
+                    url, username, topicName, clientId, type);
 
             // Get ActiveMQ connection to the server
             log.trace("*****   SUBSCRIBE: connection factory created: url={}", url);
             ConnectionConf cconf = connectionCache.get(url);
             if (cconf == null) {
                 ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-                Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
+                //Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
+                Connection connection = connectionFactory.createConnection(username, password);
                 log.trace("*****   SUBSCRIBE: connection created");
                 if (!clientId.isEmpty()) {
                     connection.setClientID(clientId);
