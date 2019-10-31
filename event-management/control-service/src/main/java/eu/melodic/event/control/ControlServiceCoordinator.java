@@ -66,7 +66,8 @@ public class ControlServiceCoordinator {
     private ControlServiceProperties properties;
     @Autowired
     private BaguetteServer baguette;
-    //@Autowired
+    @Autowired
+    @Getter
     private BrokerCepService brokerCep;
     @Autowired
     private RestTemplate restTemplate;
@@ -357,15 +358,24 @@ public class ControlServiceCoordinator {
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
 
             // Prepare subscription configurations
-            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer() : null;
+            //String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer() : null;
+            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForClients() : null;
+            boolean usesAuthentication = brokerCep.getBrokerCepProperties().isAuthenticationEnabled();
+            String username = usesAuthentication ? brokerCep.getBrokerUsername() : null;
+            String password = usesAuthentication ? brokerCep.getBrokerPassword() : null;
+            String certificate = brokerCep.getBrokerCertificate();
+            log.debug("ControlServiceCoordinator.processNewModel(): Local Broker: uses-authentication={}, username={}, password={}, has-certificate={}",
+                    usesAuthentication, username, passwordUtil.encodePassword(password), StringUtils.isNotBlank(certificate));
+            log.trace("ControlServiceCoordinator.processNewModel(): Local Broker: broker-certificate={}", certificate);
+
             if (StringUtils.isBlank(upperwareBrokerUrl)) {
                 log.warn("ControlServiceCoordinator.processNewModel(): No Broker URL has been specified or Broker-CEP module is deactivated");
             }
             List<Map> subscriptionConfigs = new ArrayList<>();
             for (String t : scalingTopics)
-                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "SCALE"));
+                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "SCALE"));
             for (String t : metricTopics)
-                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "MVV"));
+                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "MVV"));
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver subscriptions configuration: {}", subscriptionConfigs);
 
             // Retrieve MVV to Current-Config MVV map
@@ -512,9 +522,12 @@ public class ControlServiceCoordinator {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected Map<String, String> _prepareSubscriptionConfig(String url, String topic, String clientId, String type) {
+    protected Map<String, String> _prepareSubscriptionConfig(String url, String username, String password, String certificate, String topic, String clientId, String type) {
         Map<String, String> map = new HashMap<>();
         map.put("url", url);
+        map.put("username", username);
+        map.put("password", password);
+        map.put("certificate", certificate);
         map.put("topic", topic);
         map.put("client-id", clientId);
         map.put("type", type);
