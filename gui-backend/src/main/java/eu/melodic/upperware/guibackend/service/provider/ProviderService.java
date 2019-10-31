@@ -4,20 +4,16 @@ import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.exception.CloudDefinitionNotFoundException;
 import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
 import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
+import eu.melodic.upperware.guibackend.service.yaml.YamlDataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.yaml.snakeyaml.Yaml;
 
 import javax.ws.rs.NotFoundException;
-import java.io.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,33 +26,16 @@ public class ProviderService {
     private ProviderValidationService providerValidationService;
     private CloudiatorApi cloudiatorApi;
     private SecureStoreService secureStoreService;
+    private YamlDataService yamlDataService;
 
-    private final static String YAML_CONFIG_FILE_NAME = "gui_providers_data.yaml";
     private final static String SECURE_VARIABLE_PREFIX = "{{";
     private final static String SECURE_VARIABLE_SUFFIX = "}}";
 
 
     // todo get from DB
     public List<CloudDefinition> getCloudDefinitionsForAllProviders() {
-        Yaml yaml = new Yaml();
-        try (FileInputStream fileInputStream = new FileInputStream(new File(System.getenv("MELODIC_CONFIG_DIR") + "/" + YAML_CONFIG_FILE_NAME))) {
-            List resultLoadedFromYaml = yaml.load(fileInputStream);
-            return mapResultFromYamlToCloudDefinitionList(resultLoadedFromYaml);
-        } catch (FileNotFoundException e) {
-            log.error("File with providers configuration is missing.", e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("File with providers configuration: %s is missing.", YAML_CONFIG_FILE_NAME));
-        } catch (IOException e) {
-            log.error("Problem by reading file with providers configuration");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by reading file: %s with providers configuration", YAML_CONFIG_FILE_NAME));
-        }
-    }
-
-    private List<CloudDefinition> mapResultFromYamlToCloudDefinitionList(List resultLoadedFromYaml) {
-        ObjectMapper mapper = new ObjectMapper();
-        List<CloudDefinition> result = resultLoadedFromYaml == null ? Collections.emptyList() : mapper.convertValue(resultLoadedFromYaml,
-                new TypeReference<List<CloudDefinition>>() {
-                });
-        return result.stream()
+        return yamlDataService.getDataFromYaml().getCloudDefinitions()
+                .stream()
                 .map(this::fillSecureVariableInCredentials)
                 .collect(Collectors.toList());
     }
@@ -96,7 +75,7 @@ public class ProviderService {
 
         cloudDefinitionsForAllProviders.add(cloudDefinition);
 
-        updateYamlFile(cloudDefinitionsForAllProviders);
+        updateCloudDefinitionsInYamlFile(cloudDefinitionsForAllProviders);
         return cloudDefinition;
     }
 
@@ -147,7 +126,7 @@ public class ProviderService {
 
         cloudDefinitionsForAllProviders.add(cloudDefinitionToUpdate);
 
-        updateYamlFile(cloudDefinitionsForAllProviders);
+        updateCloudDefinitionsInYamlFile(cloudDefinitionsForAllProviders);
 
         return cloudDefinitionToUpdate;
     }
@@ -167,25 +146,16 @@ public class ProviderService {
         cloudDefinitionsForAllProviders.remove(cloudDefinitionToDelete);
 
         cloudiatorApi.deleteSecureVariable(createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
-        updateYamlFile(cloudDefinitionsForAllProviders);
+        updateCloudDefinitionsInYamlFile(cloudDefinitionsForAllProviders);
     }
 
-    private void updateYamlFile(List<CloudDefinition> cloudDefinitionsForAllProviders) {
-        log.info("Updating yaml file");
-
+    private void updateCloudDefinitionsInYamlFile(List<CloudDefinition> cloudDefinitionsForAllProviders) {
         // replace plain text secrets with labels
         cloudDefinitionsForAllProviders = cloudDefinitionsForAllProviders.stream()
                 .peek(cloudDefinition -> cloudDefinition.getCredential()
                         .setSecret(createKeyLabelForSecret(cloudDefinition).getValue()))
                 .collect(Collectors.toList());
 
-        Yaml yaml = new Yaml();
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(System.getenv("MELODIC_CONFIG_DIR") + "/" + YAML_CONFIG_FILE_NAME);
-        } catch (IOException e) {
-            log.error("Error by writing to yaml file: ", e);
-        }
-        yaml.dump(cloudDefinitionsForAllProviders, writer);
+        yamlDataService.updateCloudDefinitionInYamlFile(cloudDefinitionsForAllProviders);
     }
 }
