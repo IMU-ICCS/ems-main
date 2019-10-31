@@ -8,13 +8,14 @@
 
 @echo off
 set curdir=%~dp0
-set MELODIC_CONFIG_DIR=%curdir%\src\main\resources\config
-set PAASAGE_CONFIG_DIR=%curdir%\src\main\resources
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%curdir%\src\main\resources\config
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%curdir%\src\main\resources
+IF NOT DEFINED EXTRA_TS_DIR set EXTRA_DIR=%MELODIC_CONFIG_DIR% fi
 
 rem mvn spring-boot:run
 
 rem set LOGGING=--logging.config=file:%MELODIC_CONFIG_DIR%\logback-spring.xml
-set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\broker-truststore.p12 ^
+set JAVA_OPTS= -Djavax.net.ssl.trustStore=%EXTRA_TS_DIR%\broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
  -Djavax.net.ssl.trustStoreType=pkcs12
 
