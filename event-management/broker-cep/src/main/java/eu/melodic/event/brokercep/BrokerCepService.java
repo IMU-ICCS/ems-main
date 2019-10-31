@@ -17,6 +17,7 @@ import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -233,9 +234,10 @@ public class BrokerCepService {
         // Get username/password for local broker service
         String username = null;
         String password = null;
-        if (connectionString==null || brokerConfig.getBrokerUrl().equals(connectionString)) {
+        if (_isLocalBrokerUrl(connectionString)) {
             username = brokerConfig.getBrokerLocalAdminUsername();
             password = brokerConfig.getBrokerLocalAdminPassword();
+            log.debug("BrokerCepService._publishEvent(): Setting LOCAL BROKER credentials: {} / {}", username, password);
         }
         _publishEvent(connectionString, username, password, destinationName, event);
     }
@@ -297,6 +299,26 @@ public class BrokerCepService {
         producer.send(message);
         //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
         log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
+    }
+
+    private String getAddressFromBrokerUrl(String url) {
+        return StringUtils.substringBetween(url, "://",":");
+    }
+
+    private boolean _isLocalBrokerUrl(String url) {
+        if (StringUtils.isEmpty(url)) {
+            log.debug("BrokerCepService._isLocalBrokerUrl(): url={}, is-local=true", url);
+            return true;
+        }
+        log.trace("BrokerCepService._isLocalBrokerUrl(): url={}", url);
+        try {
+            String address = getAddressFromBrokerUrl(url);
+            boolean isLocal = NetUtil.isLocalAddress(address);
+            log.debug("BrokerCepService._isLocalBrokerUrl(): url={}, address={}, is-local={}", url, address, isLocal);
+            return isLocal;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public void setBrokerCredentials(String username, String password) {
