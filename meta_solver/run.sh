@@ -17,8 +17,8 @@ export BASEDIR MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR EXTRA_TS_DIR
 #mvn spring-boot:run
 
 #LOGGING=--logging.config=file:%MELODIC_CONFIG_DIR%\logback-spring.xml
-JAVA_OPTS=-Djavax.net.ssl.trustStore=${EXTRA_TS_DIR}/broker-truststore.p12
-JAVA_OPTS=${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12
+JAVA_OPTS="-Djavax.net.ssl.trustStore=${EXTRA_TS_DIR}/broker-truststore.p12"
+JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12"
 
 #java ${JAVA_OPTS} -Deu.paasage.configdir=. -jar target/meta-solver.jar ${LOGGING}
-java ${JAVA_OPTS} -jar target\meta-solver.jar ${LOGGING}
+java ${JAVA_OPTS} -jar target/meta-solver.jar ${LOGGING}
