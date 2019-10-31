@@ -9,16 +9,20 @@
 
 package eu.melodic.event.brokercep.broker;
 
+import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.command.*;
+import org.apache.activemq.command.ActiveMQDestination;
+import org.apache.activemq.command.ActiveMQMessage;
+import org.apache.activemq.command.DataStructure;
+import org.apache.activemq.command.DestinationInfo;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import javax.jms.Message;
 import javax.jms.*;
 
 @ConditionalOnProperty(name="brokercep.enable-advisory-watcher", matchIfMissing = true)
@@ -29,6 +33,10 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
 	@Autowired
 	private ActiveMQConnectionFactory connectionFactory;
+	@Autowired
+	private BrokerCepService brokerCerService;
+	@Autowired
+	private PasswordUtil passwordUtil;
 
 	private Connection connection;
 	private Session session;
@@ -41,7 +49,15 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 	protected void initialize() {
 		log.debug("BrokerAdvisoryWatcher.init(): Initializing instance...");
 		try {
-			this.connection = connectionFactory.createConnection();
+			boolean usesAuthentication = brokerCerService.getBrokerCepProperties().isAuthenticationEnabled();
+			String username = brokerCerService.getBrokerUsername();
+			String password = brokerCerService.getBrokerPassword();
+			log.debug("BrokerAdvisoryWatcher.init(): uses-authentication={}, username={}, password={}",
+					usesAuthentication, username, passwordUtil.encodePassword(password));
+
+			this.connection = usesAuthentication
+					? connectionFactory.createConnection(username, password)
+					: connectionFactory.createConnection();
 			this.connection.start();
 			this.session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			Topic topic = session.createTopic("ActiveMQ.Advisory.>");
