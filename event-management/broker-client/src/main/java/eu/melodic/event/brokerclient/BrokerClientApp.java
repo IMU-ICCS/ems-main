@@ -37,11 +37,7 @@ public class BrokerClientApp {
         if ("list".equalsIgnoreCase(command)) {
             String url = args[aa++];
             log.info("BrokerClientApp: Listing destinations:");
-            BrokerClient client = BrokerClient.newClient();
-            if (username!=null && password!=null) {
-                client.getClientProperties().setBrokerUsername(username);
-                client.getClientProperties().setBrokerPassword(password);
-            }
+            BrokerClient client = BrokerClient.newClient(username, password);
             client.getDestinationNames(url).stream().forEach(d -> log.info("    {}", d));
         } else
         // send an event
@@ -52,11 +48,7 @@ public class BrokerClientApp {
             String level = args[aa++];
             EventMap event = new EventMap(Double.parseDouble(value), Integer.parseInt(level), System.currentTimeMillis());
             log.info("BrokerClientApp: Publishing event: {}", event);
-            BrokerClient client = BrokerClient.newClient();
-            if (username!=null && password!=null) {
-                client.getClientProperties().setBrokerUsername(username);
-                client.getClientProperties().setBrokerPassword(password);
-            }
+            BrokerClient client = BrokerClient.newClient(username, password);
             client.publishEvent(url, topic, event);
         } else
         // receive events from topic
@@ -64,11 +56,7 @@ public class BrokerClientApp {
             String url = args[aa++];
             String topic = args[aa++];
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
-            BrokerClient client = BrokerClient.newClient();
-            if (username!=null && password!=null) {
-                client.getClientProperties().setBrokerUsername(username);
-                client.getClientProperties().setBrokerPassword(password);
-            }
+            BrokerClient client = BrokerClient.newClient(username, password);
             client.receiveEvents(url, topic, new MessageListener() {
                 public void onMessage(Message message) {
                     try {
@@ -94,11 +82,7 @@ public class BrokerClientApp {
             String url = args[aa++];
             String topic = args[aa++];
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
-            BrokerClient client = BrokerClient.newClient();
-            if (username!=null && password!=null) {
-                client.getClientProperties().setBrokerUsername(username);
-                client.getClientProperties().setBrokerPassword(password);
-            }
+            BrokerClient client = BrokerClient.newClient(username, password);
             MessageListener listener = null;
             client.subscribe(url, topic, listener = new MessageListener() {
                 public void onMessage(Message message) {
@@ -141,11 +125,7 @@ public class BrokerClientApp {
             double upperValue = Double.parseDouble(args[6]);
             int level = Integer.parseInt(args[7]);
 
-            BrokerClient client = BrokerClient.newClient();
-            if (username!=null && password!=null) {
-                client.getClientProperties().setBrokerUsername(username);
-                client.getClientProperties().setBrokerPassword(password);
-            }
+            BrokerClient client = BrokerClient.newClient(username, password);
             EventGenerator generator = new EventGenerator();
             generator.setClient(client);
             generator.setBrokerUrl(url);
