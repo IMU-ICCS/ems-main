@@ -45,7 +45,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
@@ -126,7 +128,14 @@ public class BrokerConfig implements InitializingBean {
             sap.setAnonymousAccessAllowed(false);
             sap.setUsers(userList);
             brokerAuthenticationPlugin = sap;
-            log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}", sap.isAnonymousAccessAllowed(), sap.getUserPasswords());
+
+            if (log.isDebugEnabled()) {
+                log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}",
+                        sap.isAnonymousAccessAllowed(),
+                        sap.getUserPasswords().entrySet().stream()
+                                .collect(Collectors.toMap(Map.Entry::getKey, e -> passwordUtil.encodePassword(e.getValue())))
+                );
+            }
         }
 
         // initialize authorization (requires authentication being enabled)
