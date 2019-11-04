@@ -87,6 +87,7 @@ public class BrokerClient {
     // ------------------------------------------------------------------------
 
     public BrokerClientProperties getClientProperties() {
+        checkProperties();
         return properties;
     }
 
