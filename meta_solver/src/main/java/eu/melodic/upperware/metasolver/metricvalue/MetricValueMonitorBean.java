@@ -101,7 +101,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         _do_subscribe(url, username, password, certificate, topicName, clientId, type);
     }
 
-    protected void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
+    private void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
         try {
             log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Username : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}",
                     url, username, topicName, clientId, type);
