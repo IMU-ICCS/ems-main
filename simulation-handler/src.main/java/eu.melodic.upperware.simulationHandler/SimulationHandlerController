@@ -1,0 +1,100 @@
+/*
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
+ */
+
+package eu.melodic.upperware.simulationHandler;
+
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.emf.cdo.util.ConcurrentAccessException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.*;
+
+import javax.ws.rs.BadRequestException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static java.lang.String.format;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+public class SimulationHandlerController {
+
+    @Autowired
+    private Coordinator coordinator;
+
+    private String jwtToken = null;
+
+    public String getAuthenticationToken() {
+        return jwtToken;
+    }
+
+    public void setAuthenticationToken(String s) { if (StringUtils.isNotEmpty(s)) jwtToken = s.trim(); }
+
+    @RequestMapping(value = "/sendSimulatedMetricsToMetaSolver", method = POST)
+    public String sendSimulatedMetricsToMetaSolver(@RequestBody String metrics,
+                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        setAuthenticationToken(jwtToken);
+
+        // Get simulated metric valuse from request
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        Map<String, String> metricValueEventsMap = gson.fromJson(metrics, Map.class);
+
+        // Evaluate new solution
+        log.info("Send simulated metrics to MetaSolver: ");
+        coordinator.sendMetricsToMetaSolver(metricValueEventsMap);
+
+        return "OK";
+    }
+
+    @RequestMapping(value = "/updateMetricSendersConfiguration", method = POST)
+    public String updateMetricSenderConfiguration(@RequestBody String configStr,
+                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        setAuthenticationToken(jwtToken);
+
+        log.info("updateConfiguration: json={}", configStr);
+
+        // Unserialize configuration from JSON
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        Map<String,Object> configuration = gson.fromJson(configStr, Map.class);
+        log.info("updateConfiguration: new configuration={}", configuration);
+
+        // Update MVV-map
+        Map<String,String> mvvMap = (Map<String,String>) configuration.get("mvv");
+        coordinator.setMvvMap(mvvMap);
+
+        // Update subscriptions for metricSenders (metric names)
+        Set<Map> subscriptions = new HashSet<>( (Collection<Map>)configuration.get("subscriptions") );
+        coordinator.updateSubscriptions(subscriptions);
+
+        return "OK";
+    }
+
+    @RequestMapping(value = "/health", method = GET)
+    public void health() {
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(BAD_REQUEST)
+    public String handleException(BadRequestException exception) {
+        log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
+        return exception.getMessage();
+    }
+}
