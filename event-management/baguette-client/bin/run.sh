@@ -15,7 +15,8 @@ cd ${BASEDIR}
 MELODIC_CONFIG_DIR=${BASEDIR}/conf
 PAASAGE_CONFIG_DIR=${BASEDIR}/conf
 LOG_FILE=${BASEDIR}/logs/output.txt
-export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE
+JASYPT_PASSWORD=melodic
+export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD
 
 # Update path
 PATH=$PATH:/opt/cloudiator/jre8/bin/
@@ -39,6 +40,7 @@ fi
 # Run Baguette client
 JAVA_OPTS=-Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
 JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12"
+JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
 #JAVA_OPTS="-Djavax.net.debug=all ${JAVA_OPTS}"
 
 echo "Starting baguette client..."
