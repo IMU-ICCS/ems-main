@@ -8,13 +8,13 @@
  */
 
 
-package eu.melodic.upperware;
- 
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
- 
+package eu.melodic.upperware.penaltycalculator;
+
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
+
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
  
 @Measurement(name = "ComponentTime", timeUnit = TimeUnit.SECONDS)
 public class ComponMeasurement {
