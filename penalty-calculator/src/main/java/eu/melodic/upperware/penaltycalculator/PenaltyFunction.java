@@ -7,17 +7,15 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware;
+package eu.melodic.upperware.penaltycalculator;
 
 import com.whalin.MemCached.MemCachedClient;
 import com.whalin.MemCached.SockIOPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.log4j.BasicConfigurator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import java.util.*;
 
