@@ -7,24 +7,38 @@
 
 package eu.melodic.upperware.dlms;
 
-import camel.deployment.impl.ConfigurationImpl;
+import camel.core.CamelModel;
+import camel.deployment.*;
 import eu.melodic.models.interfaces.dlms.*;
-import eu.melodic.upperware.dlms.camel.ModelAnalyzer;
+import eu.melodic.models.interfaces.dlms.Configuration;
 import eu.melodic.upperware.dlms.component.ComponentId;
 import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
-import eu.melodic.upperware.dlms.exception.DLMSException;
-import eu.melodic.upperware.dlms.properties.DLMSProperties;
+//import eu.melodic.upperware.guibackend.service.cdo.CdoService;
+//import eu.melodic.upperware.guibackend.service.cdo.CdoService;
+//import eu.paasage.mddb.cdo.client.CDOClient;
+//import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+//import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
+import eu.paasage.mddb.cdo.client.CDOClient;
+import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.types.TypesPackage;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import io.github.cloudiator.rest.ApiException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.ocl.util.Tuple;
+import org.eclipse.emf.cdo.view.CDOQuery;
+import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.net4j.connector.ConnectorException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Webservice controller for the DLMS service.
@@ -175,6 +189,146 @@ public class DLMSServiceController {
 		dlmsService.migrateDatasource(migrationData.getId(), migrationData.getPathTo());
 	}
 
+//	ConfigurationResponse fakeConfig() {
+//		ConfigurationResponse configResp = new ConfigurationResponseImpl();
+//
+//		LatencyConfiguration latencyConfig = new LatencyConfigurationImpl();
+//		latencyConfig.setComponentName("CompName1");
+//		latencyConfig.setComponentIP("CompIP1");
+//		latencyConfig.setComponentRegion("Region1");
+//		latencyConfig.setAgentRegion("Region2");
+//
+//		OtherConfiguration otherConfig = new OtherConfigurationImpl();
+//		otherConfig.setProp1("example1");
+//		otherConfig.setProp2("example2");
+//
+//		configResp.setConfigurations(Arrays.asList(
+//				new Configuration(latencyConfig), new Configuration(otherConfig)));
+//
+//		return configResp;
+//	}
+
+//	@Service
+//	@AllArgsConstructor(onConstructor = @__(@Autowired))
+//	private static class CdoService {
+//		private List<CamelModel> getCamelModels() {
+//			List<CamelModel> result = new ArrayList<>();
+//			CDOView cdoView = null;
+//			try {
+//				CDOClient client = getCdoClient();
+//				cdoView = client.openView();
+//
+//				CDOQuery sql = cdoView.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
+//
+//				result = sql.getResult().stream()
+//						.map(o -> (CamelModel) o)
+//						.collect(Collectors.toList());
+//			} catch (ConnectorException ex) {
+//				log.error("Error by getting uploaded models. CDO is not responding", ex);
+//				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error by getting uploaded models. CDO does not respond.");
+//			} catch (RuntimeException ex) {
+//				log.debug("List of available models is empty:", ex);
+//			} finally {
+//				if (cdoView != null) {
+////					cdoView.close(); // TODO bez zakomentowania tej linijki wywala błąd przy getFirstElement na CdoTool.getFirstElement(deploymentModels);, moze po prostu powienienem robić get(0)?
+//				}
+//			}
+//			return result;
+//		}
+//		private CDOClient getCdoClient() {
+//			CDOClient client = new CDOClient();
+//			registerPackages(client);
+//			return client;
+//		}
+//		private void registerPackages(CDOClient cdoClient) {
+//			cdoClient.registerPackage(CpPackage.eINSTANCE);
+//			cdoClient.registerPackage(TypesPackage.eINSTANCE);
+//		}
+//	}
+
+	@Getter
+	static
+	class ModelExplorer {
+		private String agentNodeName;
+		private List<CamelModel> camelModels;
+		private EList<SoftwareComponentInstance> deploymentSoftwareComponentsInstances;
+		private DeploymentTypeModel deploymentTypeModel;
+		private DeploymentInstanceModel deploymentInstanceModel;
+
+		ModelExplorer(String agentNodeName) {
+			this.agentNodeName = agentNodeName;
+//			CdoService cdoService = new CdoService();
+			camelModels = this.getCamelModels();
+			log.info("Got camelModels: " + camelModels);
+			CamelModel camelModel = camelModels.get(0);
+			log.info("Taking first camel model from camel model list; length of list is " + camelModels.size()); // TODO tak naprawdę trzeba przeszukać wszystkie modele
+			EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
+			assert deploymentModels.size() == 1; // TODO UWAGA TU JEST SIZE 2 A PRZECHODZI!!
+			// Tu są dwa modele: type model i instance model
+			this.deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(deploymentModels);
+			this.deploymentInstanceModel = (DeploymentInstanceModel) CdoTool.getLastElement(deploymentModels); // TODO first/last? czy na pewno chce najnowszy - last
+//			// TODO tak naprawdę trzeba znaleźć w całej liście - bo ten komponent może nie istnieć
+			assert deploymentInstanceModel != null; // TODo think about it
+			this.deploymentSoftwareComponentsInstances = deploymentInstanceModel.getSoftwareComponentInstances();
+		}
+
+		// Find component with the same id as the id from cloudiator and save its required port
+		private List<Integer> findRequiredPorts() {
+			List<Integer> requiredPorts = new ArrayList<>(); // Required ports of the component - linked components have it as a provided ports
+			for (SoftwareComponentInstance comp : deploymentSoftwareComponentsInstances) {
+				if (comp.getName().equals(this.agentNodeName)) {
+					for (RequiredCommunicationInstance req: comp.getRequiredCommunicationInstances()) {
+						requiredPorts.add(req.getType().getPortNumber());
+					}
+				}
+			}
+			return requiredPorts;
+		}
+
+		// Create a list of names of software components, which have one of the ports in requiredPorts as provided port
+		List<String> findCommunicatingComponentsNames() {
+			List<Integer> requiredPorts = this.findRequiredPorts();
+			log.info("Found following required ports for node " + this.agentNodeName + ": " + requiredPorts);
+			log.info("Looking for components in camel instance model which have this port as provided...");
+			List<String> names = new ArrayList<>();
+			for (SoftwareComponentInstance comp : deploymentSoftwareComponentsInstances) {
+				EList<ProvidedCommunicationInstance> comms1 = comp.getProvidedCommunicationInstances();
+				for (ProvidedCommunicationInstance req : comms1) {
+					if(requiredPorts.contains(req.getType().getPortNumber())) {
+						names.add(comp.getName());
+					}
+				}
+			}
+			return names;
+		}
+
+		private List<CamelModel> getCamelModels() {
+			List<CamelModel> result = new ArrayList<>();
+			CDOView cdoView = null;
+			try {
+				CDOClient cdoClient = new CDOClient();
+				cdoClient.registerPackage(CpPackage.eINSTANCE);
+				cdoClient.registerPackage(TypesPackage.eINSTANCE);
+				cdoView = cdoClient.openView();
+				CDOQuery sql = cdoView.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
+
+				result = sql.getResult().stream()
+						.map(o -> (CamelModel) o)
+						.collect(Collectors.toList());
+			} catch (ConnectorException ex) {
+				log.error("Error by getting uploaded models. CDO is not responding", ex);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error by getting uploaded models. CDO does not respond.");
+			} catch (RuntimeException ex) {
+				log.debug("List of available models is empty:", ex);
+			} finally {
+				if (cdoView != null) {
+//					cdoView.close(); // TODO bez zakomentowania tej linijki wywala błąd przy getFirstElement na CdoTool.getFirstElement(deploymentModels);, moze po prostu powienienem robić get(0)?
+				}
+			}
+			return result;
+		}
+	}
+
 	/**
 	 * Returns configuration for the given IP as a tuple:
 	 */
@@ -182,24 +336,48 @@ public class DLMSServiceController {
 	public ConfigurationResponse getConfiguration(@PathVariable("ip") String ip) throws ApiException {
 		log.info("Invoking getConfiguration with IP: {}", ip);
 
-		final Optional<String> componentId = comp.findComponentId(ip);
 		ConfigurationResponse configResp = new ConfigurationResponseImpl();
-		if (componentId.isPresent()) {
-			LatencyConfiguration latencyConfig = new LatencyConfigurationImpl();
-			latencyConfig.setId(String.valueOf(componentId));
-			latencyConfig.setIp(ip);
 
-			OtherConfiguration otherConfig = new OtherConfigurationImpl();
-			otherConfig.setProperty1("example_value_1");
-			otherConfig.setProperty2("example_value_2");
-
-			configResp.setConfigurations(new ArrayList<>(Arrays.asList(
-					new Configuration(latencyConfig), new Configuration(otherConfig))));
-			log.info("Sending list of configurations for IP: {}.", ip);
+		// Get agent node name from cloudiator
+		final Optional<String> agentNodeNameOptional = comp.findNodeName(ip);
+		final String agentNodeName;
+		if (!agentNodeNameOptional.isPresent()) {
+			log.error("Cloudiator could not find node for a given IP: " + ip);
+			return configResp;
 		} else {
-			configResp.setConfigurations(new ArrayList<>());
-			log.info("There is no component with IP: {}, returning empty config list.", ip);
+			agentNodeName = agentNodeNameOptional.get();
+			log.info("Cloudiator found this agent node  name for given IP: " + agentNodeName);
 		}
+
+		// Get agent node location from cloudiator
+		final Optional<String> agentNodeLocationOptional = comp.findNodeLocation(agentNodeName);
+		final String agentNodeLocation;
+		if (!agentNodeLocationOptional.isPresent()) {
+			log.error("Cloudiator could not find node location for a given IP: " + ip);
+			return configResp;
+		} else {
+			agentNodeLocation = agentNodeLocationOptional.get();
+			log.info("Cloudiator found this agent node location for given IP: " + ip);
+		}
+
+		ModelExplorer explorer = new ModelExplorer(agentNodeName);
+
+		// Create a list of names of software components, which have one of the ports in requiredPorts as provided port
+		List<String> names = explorer.findCommunicatingComponentsNames();
+		log.info("Found components providing communication with requested component:" + names);
+
+		// find IP's of those components and add them to response
+		List<Configuration> configs = new ArrayList<>();
+		for (String name : names) {
+			LatencyConfiguration latConf = new LatencyConfigurationImpl();
+			latConf.setComponentName(name);
+			latConf.setComponentIP(comp.findNodeIp(name).get());
+			latConf.setComponentRegion(comp.findNodeLocation(name).get());
+			latConf.setAgentRegion(agentNodeLocation);
+			configs.add(new Configuration(latConf));
+		}
+		configResp.setConfigurations(configs);
+
 		return configResp;
 	}
 }

@@ -11,11 +11,13 @@ import java.util.List;
 
 import javax.annotation.PreDestroy;
 
+import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
@@ -32,9 +34,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @EnableAsync
 @SpringBootApplication
-@EnableConfigurationProperties(MelodicSecurityProperties.class)
+//@ComponentScan(basePackages = {
+//		"eu.melodic.upperware.guibackend",
+//		"eu.passage.upperware.commons.cloudiator"})
+@EnableConfigurationProperties({CloudiatorProperties.class, MelodicSecurityProperties.class})
 @Slf4j
 @AllArgsConstructor
+
 public class DLMSWebServiceApplication {
 
 	private final Environment env;
