@@ -2,6 +2,7 @@ package eu.melodic.upperware.guibackend.controller.byon;
 
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.model.byon.ByonDefinition;
+import eu.melodic.upperware.guibackend.model.byon.ByonEnums;
 import eu.melodic.upperware.guibackend.service.byon.ByonService;
 import io.github.cloudiator.rest.model.ByonNode;
 import lombok.AllArgsConstructor;
@@ -84,5 +85,12 @@ public class ByonController {
         log.info("DELETE request for byon Cloudiator node with id {}", byonId);
         cloudiatorApi.deleteByon(byonId);
         log.info("Byon with id {} successfully deleted from Cloudiator", byonId);
+    }
+
+    @GetMapping("/enum")
+    @ResponseStatus(HttpStatus.OK)
+    public ByonEnums getByonEnums() {
+        log.info("GET request for byon enums");
+        return byonService.getByonEnums();
     }
 }

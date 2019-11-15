@@ -3,8 +3,11 @@ package eu.melodic.upperware.guibackend.service.provider;
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.exception.CloudDefinitionNotFoundException;
 import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
+import eu.melodic.upperware.guibackend.model.provider.Provider;
+import eu.melodic.upperware.guibackend.model.provider.ProviderEnums;
 import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
 import eu.melodic.upperware.guibackend.service.yaml.YamlDataService;
+import io.github.cloudiator.rest.model.CloudType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -157,5 +161,20 @@ public class ProviderService {
                 .collect(Collectors.toList());
 
         yamlDataService.updateCloudDefinitionInYamlFile(cloudDefinitionsForAllProviders);
+    }
+
+    public ProviderEnums getProviderEnums() {
+        List<String> providerNames = new ArrayList<>();
+        for (Provider value : Provider.values()) {
+            providerNames.add(value.value);
+        }
+        List<String> cloudTypes = new ArrayList<>();
+        for (CloudType value : CloudType.values()) {
+            cloudTypes.add(value.getValue());
+        }
+        return ProviderEnums.builder()
+                .providerNames(providerNames)
+                .cloudTypes(cloudTypes)
+                .build();
     }
 }

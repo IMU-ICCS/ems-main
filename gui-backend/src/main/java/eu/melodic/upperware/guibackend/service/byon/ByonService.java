@@ -3,13 +3,15 @@ package eu.melodic.upperware.guibackend.service.byon;
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.exception.ByonDefinitionNotFoundException;
 import eu.melodic.upperware.guibackend.model.byon.ByonDefinition;
+import eu.melodic.upperware.guibackend.model.byon.ByonEnums;
 import eu.melodic.upperware.guibackend.service.yaml.YamlDataService;
-import io.github.cloudiator.rest.model.ByonNode;
+import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -70,5 +72,30 @@ public class ByonService {
         byonDefinitionsList.add(byonDefinitionToUpdate);
         yamlDataService.updateByonDefinitionInYamlFile(byonDefinitionsList);
         return getByonDefinition(byonDefinitionId);
+    }
+
+    public ByonEnums getByonEnums() {
+        List<String> ipAddressesTypes = new ArrayList<>();
+        List<String> ipVersions = new ArrayList<>();
+        List<String> osFamilies = new ArrayList<>();
+        List<String> osArchitecture = new ArrayList<>();
+        for (IpAddressType value : IpAddressType.values()) {
+            ipAddressesTypes.add(value.getValue());
+        }
+        for (IpVersion value : IpVersion.values()) {
+            ipVersions.add(value.getValue());
+        }
+        for (OperatingSystemFamily value : OperatingSystemFamily.values()) {
+            osFamilies.add(value.getValue());
+        }
+        for (OperatingSystemArchitecture value : OperatingSystemArchitecture.values()) {
+            osArchitecture.add(value.getValue());
+        }
+        return ByonEnums.builder()
+                .ipAddressTypes(ipAddressesTypes)
+                .ipVersions(ipVersions)
+                .osArchitectures(osArchitecture)
+                .osFamilies(osFamilies)
+                .build();
     }
 }
