@@ -9,6 +9,7 @@
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.ConstraintProblemExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
@@ -17,6 +18,7 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.dlms.DLMSConverter;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyConverter;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
@@ -47,7 +49,7 @@ public class UtilityFunctionEvaluator {
     private Collection<ArgumentConverter> converters;
 
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
-                                    MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
+                                    MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService) {
 
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
@@ -65,7 +67,7 @@ public class UtilityFunctionEvaluator {
         fromCamelModelExtractor.setUtilityFunctionFormula(formula);
         NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
 
-        this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter, melodicSecurityProperties, jwtService);
+        this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
         this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
 
         fromCamelModelExtractor.endWorkWithCamelModel();
@@ -73,9 +75,10 @@ public class UtilityFunctionEvaluator {
     }
 
     private Collection<ArgumentConverter> createConverters(UtilityGeneratorProperties properties, FromCamelModelExtractor fromCamelModelExtractor, String formula, NodeCandidatesConverter nodeCandidatesConverter,
-                                                           MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
+                                                           MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         Collection<ArgumentConverter> argConverters = new ArrayList<>();
         argConverters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, this.deployedConfiguration, melodicSecurityProperties, jwtService));
+        argConverters.add(new PenaltyConverter(fromCamelModelExtractor, this.deployedConfiguration, penaltyFunctionProperties));
         argConverters.add(new VariableConverter(this.variablesFromConstraintProblem, formula));
         argConverters.add(nodeCandidatesConverter);
         return argConverters;

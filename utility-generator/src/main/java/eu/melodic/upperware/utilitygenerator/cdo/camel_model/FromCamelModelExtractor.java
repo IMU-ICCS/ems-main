@@ -119,6 +119,19 @@ public class FromCamelModelExtractor {
                 .collect(Collectors.toList());
     }
 
+
+    public String getReconfigurationPenaltyAttribute() {
+        Collection<MetricVariableImpl> reconfigurationPenaltyAttributes = filterVariables(this::isReconfigurationPenaltyAttribute);
+        if (reconfigurationPenaltyAttributes.size() == 0) {
+            log.info("Reconfiguration penalty has not been declared.");
+            return EMPTY_STRING;
+        }
+        else if (reconfigurationPenaltyAttributes.size() > 1) {
+            log.warn("Reconfiguration penalty has been declared more than once in the CAMEL Model: {}, only the first one will be considered", reconfigurationPenaltyAttributes.stream().toString());
+        }
+        return reconfigurationPenaltyAttributes.iterator().next().getName();
+    }
+
     /* optimisation requirement - utility function */
     private Optional<String> getUtilityFormula() {
         RequirementModel requirementModel = CdoTool.getFirstElement(model.getRequirementModels());
@@ -177,4 +190,11 @@ public class FromCamelModelExtractor {
         return CamelMetadataTool.isFromDlmsUtility(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName());
     }
+
+    private boolean isReconfigurationPenaltyAttribute(MetricVariableImpl variable){
+        return CamelMetadataTool.isFromPenalty(variable)
+                && isInFormula(utilityFunctionFormula, variable.getName());
+    }
+
+
 }
