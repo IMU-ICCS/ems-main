@@ -16,7 +16,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class ConfigurationElement {
+public class PenaltyConfigurationElement {
 
     private String id;
     private NodeCandidate nodeCandidate;

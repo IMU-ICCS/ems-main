@@ -1,6 +1,6 @@
 package groovy.eu.melodic.upperware.utilitygenerator
 
-import eu.melodic.upperware.penaltycalculator.ConfigurationElement
+import eu.melodic.upperware.penaltycalculator.PenaltyConfigurationElement
 import eu.melodic.upperware.penaltycalculator.PenaltyFunction
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
@@ -14,8 +14,8 @@ class PenaltyCalculatorTest extends Specification{
 
 
 
-    Collection<ConfigurationElement> actualConfiguration = new ArrayList<>()
-    Collection<ConfigurationElement> proposedConfiguration = new ArrayList<>()
+    Collection<PenaltyConfigurationElement> actualConfiguration = new ArrayList<>()
+    Collection<PenaltyConfigurationElement> proposedConfiguration = new ArrayList<>()
 
     NodeCandidate smallNC
     NodeCandidate mediumNC
@@ -80,8 +80,8 @@ class PenaltyCalculatorTest extends Specification{
     def "initial test"() {
 
         given:
-        proposedConfiguration.add(new ConfigurationElement("first", smallNC, 2))
-        actualConfiguration.add(new ConfigurationElement("first", smallNC, 1))
+        proposedConfiguration.add(new PenaltyConfigurationElement("first", smallNC, 2))
+        actualConfiguration.add(new PenaltyConfigurationElement("first", smallNC, 1))
 
         PenaltyFunction function = new PenaltyFunction()
         function.properties = properties

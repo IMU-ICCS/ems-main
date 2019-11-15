@@ -1,5 +1,6 @@
 package eu.melodic.upperware.utilitygenerator.reconfiguration_penalty;
 
+import eu.melodic.upperware.penaltycalculator.PenaltyConfigurationElement;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunction;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
@@ -25,16 +26,16 @@ public class PenaltyServiceImpl implements PenaltyService{
     @Override
     public double getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
 
-        Collection<eu.melodic.upperware.penaltycalculator.ConfigurationElement> actConfigurationForPenalty = convertToPenaltyConfigurationElement(actConfiguration);
-        Collection<eu.melodic.upperware.penaltycalculator.ConfigurationElement> newConfigurationForPenalty = convertToPenaltyConfigurationElement(newConfiguration);
+        Collection<PenaltyConfigurationElement> actConfigurationForPenalty = convertToPenaltyConfigurationElement(actConfiguration);
+        Collection<PenaltyConfigurationElement> newConfigurationForPenalty = convertToPenaltyConfigurationElement(newConfiguration);
 
         return penaltyFunction.evaluatePenaltyFunction(actConfigurationForPenalty, newConfigurationForPenalty);
     }
 
 
-    private Collection<eu.melodic.upperware.penaltycalculator.ConfigurationElement> convertToPenaltyConfigurationElement(Collection<ConfigurationElement> configuration) {
+    private Collection<PenaltyConfigurationElement> convertToPenaltyConfigurationElement(Collection<ConfigurationElement> configuration) {
         return configuration.stream()
-                .map(element -> new eu.melodic.upperware.penaltycalculator.ConfigurationElement(element.getId(), element.getNodeCandidate(), element.getCardinality()))
+                .map(element -> new PenaltyConfigurationElement(element.getId(), element.getNodeCandidate(), element.getCardinality()))
                 .collect(Collectors.toList());
     }
 }
