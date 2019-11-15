@@ -4,6 +4,8 @@ import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
+import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Specification
 
@@ -12,6 +14,8 @@ class UtilityGeneratorFCRTest extends Specification{
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
     UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
+    MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
+    JWTService jwtService
 
     String cardinalityName = "AppCardinality"
     String providerName = "provider_Component_App"
@@ -39,6 +43,8 @@ class UtilityGeneratorFCRTest extends Specification{
 
         properties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
         properties.getUtilityGenerator().setDlmsControllerUrl("")
+
+        jwtService = GroovyMock(JWTService)
     }
 
     def "FCR initial deployment"() {
@@ -49,7 +55,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
         newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, "src/main/test/resources/FCRCPModel.xmi", true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, "src/main/test/resources/FCRCPModel.xmi", true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -69,7 +75,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
         newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -90,7 +96,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -110,7 +116,7 @@ class UtilityGeneratorFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
 
         path = "src/main/test/resources/FCRWithoutUnmoveable.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath,true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath,true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -132,7 +138,7 @@ class UtilityGeneratorFCRTest extends Specification{
 
 
         path = "src/main/test/resources/FCRwithoutOptimisationRequirement.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath,true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath,true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -153,7 +159,7 @@ class UtilityGeneratorFCRTest extends Specification{
 
         path = "src/main/test/resources/FCRwithDLMS.xmi"
 //toupdate
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
