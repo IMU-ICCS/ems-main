@@ -5,16 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ByonDefinition {
+public class NodeProperties {
     private long id;
-    private String name;
-    private LoginCredential loginCredential;
-    private List<IpAddress> ipAddresses;
-    private NodeProperties nodeProperties;
+    private String providerId;
+    private Integer numberOfCores;
+    private Long memory;
+    private Float disk;
+    private OperatingSystem operatingSystem;
+    private GeoLocation geoLocation;
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -22,15 +23,17 @@ public class ByonService {
     private YamlDataService yamlDataService;
     private ByonIdCreatorService byonIdCreatorService;
     private CloudiatorApi cloudiatorApi;
+    private ByonMapper byonMapper;
 
-    public List<ByonDefinition> getByonDefinitionsList() {
+    public Optional<List<ByonDefinition>> getByonDefinitionsList() {
         //todo fill login credentilas from secure store
-        return yamlDataService.getDataFromYaml().getByonDefinitions();
+        List<ByonDefinition> byonDefinitions = yamlDataService.getDataFromYaml().getByonDefinitions();
+        return Optional.ofNullable(byonDefinitions);
     }
 
     public ByonDefinition createNewByonDefinition(ByonDefinition newByonDefinitionRequest) {
-        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsList();
-        byonIdCreatorService.addIdForByonDefinition(newByonDefinitionRequest, byonDefinitionsList);
+        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsList().orElseGet(ArrayList::new);
+        byonIdCreatorService.addIdsForByonDefinition(newByonDefinitionRequest, byonDefinitionsList);
 
         // todo save login credentials in secure way (maybe in SecureStore?)
 
@@ -41,16 +44,19 @@ public class ByonService {
 
     public ByonNode createByonNodeFromByonDefinition(int byonDefinitionId) {
         // todo fill login credentials
-        ByonDefinition byonDefinitionForNode = getByonDefinitionsList().stream()
+        ByonDefinition byonDefinitionForNode = getByonDefinitionsList().orElseGet(ArrayList::new)
+                .stream()
                 .filter(byonDefinition -> byonDefinition.getId() == byonDefinitionId)
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
-        return cloudiatorApi.createNewByonNode(byonDefinitionForNode);
+        NewNode newNode = byonMapper.mapByonDefinitionToNewNode(byonDefinitionForNode);
+        return cloudiatorApi.createNewByonNode(newNode);
     }
 
     public ByonDefinition getByonDefinition(int byonDefinitionId) {
         // todo get login credentials from secure way (maybe in SecureStore?)
-        return getByonDefinitionsList().stream()
+        return getByonDefinitionsList().orElseGet(ArrayList::new)
+                .stream()
                 .filter(byonDefinition -> byonDefinitionId == byonDefinition.getId())
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
@@ -58,20 +64,28 @@ public class ByonService {
 
     public void deleteByonDefinition(int byonDefinitionId) {
         // todo delete login credentials from secure store
-        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsList();
-        ByonDefinition byonDefinitionToDelete = getByonDefinition(byonDefinitionId);
-        byonDefinitionsList.remove(byonDefinitionToDelete);
+        List<ByonDefinition> byonDefinitionsList = deleteByonDefinitionFromList(byonDefinitionId);
         yamlDataService.updateByonDefinitionInYamlFile(byonDefinitionsList);
     }
 
     public ByonDefinition updateByonDefinition(int byonDefinitionId, ByonDefinition byonDefinitionToUpdate) {
-        // todo update login credentials
-        ByonDefinition oldByonDefinition = getByonDefinition(byonDefinitionId);
-        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsList();
-        byonDefinitionsList.remove(oldByonDefinition);
+        // todo update login credentials in secure store
+        List<ByonDefinition> currentByonDefinitionsList = getByonDefinitionsList().orElseGet(ArrayList::new);
+        byonIdCreatorService.addMissingIdsInIpAddressesForByonDefinition(byonDefinitionToUpdate, currentByonDefinitionsList);
+        List<ByonDefinition> byonDefinitionsList = deleteByonDefinitionFromList(byonDefinitionId);
         byonDefinitionsList.add(byonDefinitionToUpdate);
         yamlDataService.updateByonDefinitionInYamlFile(byonDefinitionsList);
         return getByonDefinition(byonDefinitionId);
+    }
+
+    private List<ByonDefinition> deleteByonDefinitionFromList(int byonDefinitionId) {
+        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsList().orElseGet(ArrayList::new);
+        ByonDefinition byonDefinitionToDelete = byonDefinitionsList.stream()
+                .filter(byonDefinition -> byonDefinitionId == byonDefinition.getId())
+                .findFirst()
+                .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
+        byonDefinitionsList.remove(byonDefinitionToDelete);
+        return byonDefinitionsList;
     }
 
     public ByonEnums getByonEnums() {

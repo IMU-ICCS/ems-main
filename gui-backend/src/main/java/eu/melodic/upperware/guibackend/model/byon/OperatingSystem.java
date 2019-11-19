@@ -5,16 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ByonDefinition {
+public class OperatingSystem extends io.github.cloudiator.rest.model.OperatingSystem {
     private long id;
-    private String name;
-    private LoginCredential loginCredential;
-    private List<IpAddress> ipAddresses;
-    private NodeProperties nodeProperties;
 }

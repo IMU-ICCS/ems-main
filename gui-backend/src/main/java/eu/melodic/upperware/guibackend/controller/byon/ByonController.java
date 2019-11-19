@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class ByonController {
     @ResponseStatus(HttpStatus.OK)
     public List<ByonDefinition> getByonDefinitionList() {
         log.info("GET request for byon definitions list");
-        return byonService.getByonDefinitionsList();
+        return byonService.getByonDefinitionsList().orElseGet(ArrayList::new);
     }
 
     @PostMapping()

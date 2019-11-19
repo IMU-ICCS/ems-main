@@ -5,16 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ByonDefinition {
+public class GeoLocation extends io.github.cloudiator.rest.model.GeoLocation {
     private long id;
-    private String name;
-    private LoginCredential loginCredential;
-    private List<IpAddress> ipAddresses;
-    private NodeProperties nodeProperties;
 }
