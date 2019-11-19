@@ -9,6 +9,9 @@
 package eu.melodic.upperware.simulationHandler;
 
 
+import eu.melodic.models.interfaces.simulationHandler.SimulatedMetricValuesRequest;
+import eu.melodic.models.interfaces.simulationHandler.SimulatedMetricValuesRequestImpl;
+import eu.melodic.models.interfaces.simulationHandler.SimulatedMetricValuesResponseImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,10 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -44,27 +44,10 @@ public class SimulationHandlerController {
 
     public void setAuthenticationToken(String s) { if (StringUtils.isNotEmpty(s)) jwtToken = s.trim(); }
 
-    @RequestMapping(value = "/sendSimulatedMetricsToMetaSolver", method = POST)
-    public String sendSimulatedMetricsToMetaSolver(@RequestBody String metrics,
-                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
-    {
-        setAuthenticationToken(jwtToken);
-
-        // Get simulated metric valuse from request
-        com.google.gson.Gson gson = new com.google.gson.Gson();
-        Map<String, String> metricValueEventsMap = gson.fromJson(metrics, Map.class);
-
-        // Evaluate new solution
-        log.info("Send simulated metrics to MetaSolver: ");
-        coordinator.sendMetricsToMetaSolver(metricValueEventsMap);
-
-        return "OK";
-    }
-
+    //received from EMS (not passing through mule)
     @RequestMapping(value = "/updateMetricSendersConfiguration", method = POST)
     public String updateMetricSenderConfiguration(@RequestBody String configStr,
-                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+                                                  @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
     {
         setAuthenticationToken(jwtToken);
@@ -85,6 +68,42 @@ public class SimulationHandlerController {
         coordinator.updateSubscriptions(subscriptions);
 
         return "OK";
+    }
+
+    @RequestMapping(value = "/getMetricsNames", method = {GET, POST})
+    public String getMetricsNames(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("SimulationHandler.getMetricsNames(): Received request");
+        log.trace("SimulationHandler.getMetricsNames(): JWT token: {}", jwtToken);
+
+        //String currentCamelModelId = coordinator.getCurrentCamelModelId();
+
+        //log.info("SimulationHandler.getMetricsNames(): Current CAMEL model: {}", currentCamelModelId);
+
+        return "OK";
+    }
+
+    @RequestMapping(value = "/provideSimulatedMetricValues", method = POST)
+    public SimulatedMetricValuesResponseImpl provideSimulatedMetricValues(@RequestBody SimulatedMetricValuesRequestImpl request,
+                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        log.info("received sth");
+        setAuthenticationToken(jwtToken);
+        String applicationId = request.getApplicationId();
+        String requestUuid = request.getWatermark().getUuid();
+        log.info("Received request: " + applicationId + " " + requestUuid);
+
+        // Evaluate new solution
+        log.info("Sending simulated metrics to MetaSolver: ");
+        coordinator.sendMetricsToMetaSolver(request.getMetricValues());
+        log.info("Sending Simulated metrics finished: ");
+
+        SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
+        response.setApplicationId(applicationId);
+        response.setWatermark(coordinator.prepareWatermark(requestUuid));
+
+        return response;
     }
 
     @RequestMapping(value = "/health", method = GET)

@@ -1,5 +1,8 @@
 package eu.melodic.upperware.simulationHandler;
 
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.interfaces.simulationHandler.KeyValuePair;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContextAware;
@@ -7,9 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -28,15 +29,19 @@ public class Coordinator implements ApplicationContextAware {
     }
 
 
-    public void sendMetricsToMetaSolver(Map<String, String> metricValueEventsMap) {
+    public void sendMetricsToMetaSolver(List<KeyValuePair> metricValueEvents) {
         //In this version we even don't to look inside received metrics. We simply push them forward
-        for (Map.Entry<String, String> entry : metricValueEventsMap.entrySet()) {
-            try {
-                metricValueSenders.get(entry.getKey()).publishEvent(entry.getValue());
-            } catch (JMSException e) {
-                e.printStackTrace();
-            }
+        if((metricValueEvents.size() == 0) || (metricValueSenders == null)) {
+            log.info("MetaSolver.Coordinator: sendMetricsToMetaSolver(): nothing to send or no activeMQs defined");
+        } else {
 
+            for (KeyValuePair pair : metricValueEvents) {
+                try {
+                    metricValueSenders.get(pair.getKey()).publishEvent(pair.getValue());
+                } catch (JMSException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -66,6 +71,15 @@ public class Coordinator implements ApplicationContextAware {
         log.info("SimulationHandler.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");
     }
 
+    public Watermark prepareWatermark(String uuid) {
+        Watermark watermark = new WatermarkImpl();
+        watermark.setUser("simulationHandler");
+        watermark.setSystem("simulationHandler");
+        watermark.setDate(new Date());
+        watermark.setUuid(uuid);
+        return watermark;
+    }
+
     void setMvvMap(Map<String,String> mvvMap) {
         log.info("MetaSolver.Coordinator: setMvvMap(): map={}", mvvMap);
         mvvToCurrentConfigVarsMap = mvvMap;
@@ -75,4 +89,5 @@ public class Coordinator implements ApplicationContextAware {
     private void resetMetricValueSenders() {
         this.metricValueSenders = new HashMap<>();
     }
+
 }

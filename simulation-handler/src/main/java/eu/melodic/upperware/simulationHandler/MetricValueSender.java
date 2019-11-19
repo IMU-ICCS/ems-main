@@ -41,6 +41,7 @@ class MetricValueSender {
 
     synchronized void publishEvent(String metricValue) throws JMSException {
         // open or reuse connection
+
         boolean _closeConn = false;
         if (session==null) {
             openConnection();
