@@ -73,7 +73,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity webSecurity) throws Exception {
         webSecurity
                 .ignoring()
-                .antMatchers("/provideSimulatedMetricValues");
+                .antMatchers("/provideSimulatedMetricValues")
+                .antMatchers("/updateMetricSendersConfiguration");
     }
 
 }

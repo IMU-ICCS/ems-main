@@ -52,23 +52,24 @@ public class Coordinator implements ApplicationContextAware {
         for (Map p : subscriptions) {
             String type = (String) p.get("type");
             if (!"MVV".equals(type)) {
-                log.debug("SimulationHandler.Coordinator: updateSubscriptions(): aborting not MVV Topic type: {}", type);
+                log.info("SimulationHandler.Coordinator: updateSubscriptions(): aborting not MVV Topic type: {}", type);
+            } else {
+
+                String url = (String) p.get("url");
+                String username = (String) p.get("username");
+                String password = (String) p.get("password");
+                String certificate = (String) p.get("certificate");
+                String topicName = (String) p.get("topic");
+                String clientId = (String) p.get("client-id");
+
+                log.info("SimulationController.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, username={}, topic={}, client-id={}, type={}", url, username, topicName, clientId, type);
+
+                metricValueSenders.put(topicName, new MetricValueSender(url, topicName, username, password));
+
+                log.info("SimulationHandler.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
             }
-
-            String url = (String) p.get("url");
-            String username = (String) p.get("username");
-            String password = (String) p.get("password");
-            String certificate = (String) p.get("certificate");
-            String topicName = (String) p.get("topic");
-            String clientId = (String) p.get("client-id");
-
-            log.info("SimulationController.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, username={}, topic={}, client-id={}, type={}", url, username, topicName, clientId, type);
-
-            metricValueSenders.put(topicName, new MetricValueSender(url, topicName, username, password));
-
-            log.info("SimulationHandler.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
         }
-        log.info("SimulationHandler.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");
+        log.info("SimulationHandler.Coordinator: updateSubscriptions(): Subscribing to current topics finished");
     }
 
     public Watermark prepareWatermark(String uuid) {
