@@ -30,7 +30,7 @@
         <module>jwt-server</module>
         <module>melodic-commons</module>
         <module>melodic-cache</module>
-<!--        <module>adapter</module>-->
+        <module>adapter</module>
         <module>cp_generator</module>
         <module>gui-backend</module>
         <module>meta_solver</module>

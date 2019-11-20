@@ -34,9 +34,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @EnableAsync
 @SpringBootApplication
-//@ComponentScan(basePackages = {
-//		"eu.melodic.upperware.guibackend",
-//		"eu.passage.upperware.commons.cloudiator"})
 @EnableConfigurationProperties({CloudiatorProperties.class, MelodicSecurityProperties.class})
 @Slf4j
 @AllArgsConstructor
