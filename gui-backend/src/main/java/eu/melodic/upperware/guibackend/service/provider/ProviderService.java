@@ -32,9 +32,6 @@ public class ProviderService {
     private SecureStoreService secureStoreService;
     private YamlDataService yamlDataService;
 
-    private final static String SECURE_VARIABLE_PREFIX = "{{";
-    private final static String SECURE_VARIABLE_SUFFIX = "}}";
-
 
     // todo get from DB
     public List<CloudDefinition> getCloudDefinitionsForAllProviders() {
@@ -84,15 +81,10 @@ public class ProviderService {
     }
 
     private void saveSecretInSecureStore(CloudDefinition cloudDefinition) {
-        Pair<String, String> keyLabelForSecret = createKeyLabelForSecret(cloudDefinition);
+        Pair<String, String> keyLabelForSecret = secureStoreService.createKeyLabelForSecret(cloudDefinition);
         log.info("Saving secret in secure store for user {} under key: {}", cloudDefinition.getCredential().getUser(), keyLabelForSecret.getKey());
         this.cloudiatorApi.storeSecureVariable(keyLabelForSecret.getKey(), cloudDefinition.getCredential().getSecret());
         cloudDefinition.getCredential().setSecret(keyLabelForSecret.getValue());
-    }
-
-    private Pair<String, String> createKeyLabelForSecret(CloudDefinition cloudDefinition) {
-        String keyForSecret = cloudDefinition.getApi().getProviderName() + "-" + cloudDefinition.getCredential().getUser() + "-SECRET";
-        return Pair.of(keyForSecret, SECURE_VARIABLE_PREFIX + keyForSecret + SECURE_VARIABLE_SUFFIX);
     }
 
     // todo update in DB
@@ -118,7 +110,7 @@ public class ProviderService {
         cloudDefinitionsForAllProviders.remove(oldCloudDefinition);
 
         if (providerUserChanged(oldCloudDefinition, cloudDefinitionToUpdate)) {
-            String oldSecureVariableKey = createKeyLabelForSecret(oldCloudDefinition).getKey();
+            String oldSecureVariableKey = secureStoreService.createKeyLabelForSecret(oldCloudDefinition).getKey();
             try {
                 cloudiatorApi.deleteSecureVariable(oldSecureVariableKey);
                 log.info("Provider user changed and secure variable from key {} deleted", oldSecureVariableKey);
@@ -149,7 +141,7 @@ public class ProviderService {
                 .orElseThrow(() -> new CloudDefinitionNotFoundException(cloudDefId));
         cloudDefinitionsForAllProviders.remove(cloudDefinitionToDelete);
 
-        cloudiatorApi.deleteSecureVariable(createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
+        cloudiatorApi.deleteSecureVariable(secureStoreService.createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
         updateCloudDefinitionsInYamlFile(cloudDefinitionsForAllProviders);
     }
 
@@ -157,7 +149,7 @@ public class ProviderService {
         // replace plain text secrets with labels
         cloudDefinitionsForAllProviders = cloudDefinitionsForAllProviders.stream()
                 .peek(cloudDefinition -> cloudDefinition.getCredential()
-                        .setSecret(createKeyLabelForSecret(cloudDefinition).getValue()))
+                        .setSecret(secureStoreService.createKeyLabelForSecret(cloudDefinition).getValue()))
                 .collect(Collectors.toList());
 
         yamlDataService.updateCloudDefinitionInYamlFile(cloudDefinitionsForAllProviders);

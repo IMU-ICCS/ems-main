@@ -27,7 +27,7 @@ public class ByonController {
     @ResponseStatus(HttpStatus.OK)
     public List<ByonDefinition> getByonDefinitionList() {
         log.info("GET request for byon definitions list");
-        return byonService.getByonDefinitionsList().orElseGet(ArrayList::new);
+        return byonService.getByonDefinitionsListWithFilledCredentials().orElseGet(ArrayList::new);
     }
 
     @PostMapping()
