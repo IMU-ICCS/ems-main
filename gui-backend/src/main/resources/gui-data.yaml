@@ -1,37 +1,5 @@
 !!eu.melodic.upperware.guibackend.properties.GuiYamlData
 byonDefinitions:
-  - diagnostic: null
-    id: 1
-    ipAddresses:
-      - {ipAddressType: PUBLIC_IP, ipVersion: V4, value: 34.244.249.26}
-    loginCredential: {password: melodic, privateKey: null, username: ubuntu}
-    name: byonNode0
-    nodeCandidate: null
-    nodeProperties:
-      disk: 0.0
-      geoLocation: {city: Dublin, country: IE, latitude: 53.33306, longitude: -6.24889}
-      memory: 1024
-      numberOfCores: 1
-      operatingSystem: {operatingSystemArchitecture: AMD64, operatingSystemFamily: UBUNTU,
-                        operatingSystemVersion: !!float '1604'}
-      providerId: bf6b9a0b5b22e1c4b08d7b508487b7e2
-    reason: null
-  - diagnostic: null
-    id: 2
-    ipAddresses:
-      - {ipAddressType: PUBLIC_IP, ipVersion: V4, value: 34.244.249.26}
-    loginCredential: {password: melodic, privateKey: null, username: ubuntu}
-    name: byonNode2
-    nodeCandidate: null
-    nodeProperties:
-      disk: 0.0
-      geoLocation: {city: Dublin, country: IE, latitude: 53.33306, longitude: -6.24889}
-      memory: 1024
-      numberOfCores: 1
-      operatingSystem: {operatingSystemArchitecture: AMD64, operatingSystemFamily: UBUNTU,
-                        operatingSystemVersion: !!float '1604'}
-      providerId: bf6b9a0b5b22e1c4b08d7b508487b7e2
-    reason: null
 cloudDefinitions:
   - api: {id: 1, providerName: openstack4j}
     cloudConfiguration:
