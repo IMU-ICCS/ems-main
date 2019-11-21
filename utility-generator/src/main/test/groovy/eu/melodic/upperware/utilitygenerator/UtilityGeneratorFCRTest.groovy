@@ -195,25 +195,25 @@ class UtilityGeneratorFCRTest extends Specification{
         result != 0
     }
 
-//    def "FCR with dlms utility - test"() {
-//
-//        given:
-//        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
-//        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
-//        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
-//        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
-//
-//        path = "src/main/test/resources/FCRwithDLMS.xmi"
-////toupdate
-//        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties)
-//
-//        when:
-//        double result = utilityGenerator.evaluate(newConfiguration)
-//
-//        then:
-//        noExceptionThrown()
-//        result != 0
-//    }
+    def "FCR with dlms utility - test"() {
+
+        given:
+        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
+        newConfiguration.add(new IntVariableValueDTO(providerName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
+        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 0))
+
+        path = "src/main/test/resources/FCRwithDLMS.xmi"
+//toupdate
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties)
+
+        when:
+        double result = utilityGenerator.evaluate(newConfiguration)
+
+        then:
+        noExceptionThrown()
+        result != 0
+    }
 
 
     def "FCR with penalty - test"() {

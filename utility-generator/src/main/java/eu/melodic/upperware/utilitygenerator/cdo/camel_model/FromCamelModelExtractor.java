@@ -32,6 +32,7 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 
@@ -57,7 +58,6 @@ public class FromCamelModelExtractor {
 
     @Getter @Setter
     private String utilityFunctionFormula;
-    private static final String EMPTY_STRING = "";
 
     public FromCamelModelExtractor(String path, boolean readFromFile) {
         if (readFromFile) {
@@ -72,7 +72,7 @@ public class FromCamelModelExtractor {
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
         this.metricVariables = extractMetricVariables(model.getMetricModels());
-        this.utilityFunctionFormula = getUtilityFormula().orElse(EMPTY_STRING);
+        this.utilityFunctionFormula = getUtilityFormula().orElse(StringUtils.EMPTY);
     }
 
     private Collection<MetricVariableImpl> extractMetricVariables(EList<MetricModel> metricModels) {
@@ -124,7 +124,7 @@ public class FromCamelModelExtractor {
         Collection<MetricVariableImpl> reconfigurationPenaltyAttributes = filterVariables(this::isReconfigurationPenaltyAttribute);
         if (reconfigurationPenaltyAttributes.size() == 0) {
             log.info("Reconfiguration penalty has not been declared.");
-            return EMPTY_STRING;
+            return StringUtils.EMPTY;
         }
         else if (reconfigurationPenaltyAttributes.size() > 1) {
             log.warn("Reconfiguration penalty has been declared more than once in the CAMEL Model: {}, only the first one will be considered", reconfigurationPenaltyAttributes.stream().toString());

@@ -51,7 +51,13 @@ public class PenaltyConverter implements ArgumentConverter {
             penalty = 0.0;
 
         }
-        log.info("The value of Reconfiguration Penalty: {}", penalty);
+        if (Double.isNaN(penalty)){
+            log.warn("The value of Reconfiguration Penalty is NaN, returning 0");
+            penalty = 0.0;
+        }
+        else {
+            log.info("The value of Reconfiguration Penalty: {}", penalty);
+        }
         return Stream.of(new Argument(penaltyAttributeName, penalty)).collect(Collectors.toList());
     }
 }

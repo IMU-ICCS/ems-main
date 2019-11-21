@@ -11,6 +11,8 @@ package eu.melodic.upperware.penaltycalculator;
 
 import com.whalin.MemCached.MemCachedClient;
 import com.whalin.MemCached.SockIOPool;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.log4j.BasicConfigurator;
@@ -27,15 +29,8 @@ import java.util.*;
 public class PenaltyFunction {
 
     @Autowired
+    @Getter @Setter
     private PenaltyFunctionProperties properties;
-
-    public PenaltyFunctionProperties getProperties() {
-        return properties;
-    }
-
-    public void setProperties(PenaltyFunctionProperties properties){
-        this.properties = properties;
-    }
 
     public double evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
 		log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
