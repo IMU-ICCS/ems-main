@@ -7,9 +7,10 @@
 
 package eu.melodic.upperware.dlms;
 
-import eu.melodic.models.interfaces.dlms.*;
+import eu.melodic.models.interfaces.dlms.ConfigurationResponse;
+import eu.melodic.models.interfaces.dlms.ConfigurationResponseImpl;
+import eu.melodic.models.interfaces.dlms.DataModelRequest;
 import eu.melodic.upperware.dlms.component.ComponentId;
-import eu.melodic.upperware.dlms.camel.ModelConnectionAnalyzer;
 import eu.melodic.upperware.dlms.component.ConnectedComponentsFinder;
 import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
 import io.github.cloudiator.rest.ApiException;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

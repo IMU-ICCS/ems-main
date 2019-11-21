@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Class responsible for finding instances connected to a given node and creating a list of them.
@@ -21,7 +20,7 @@ class ConnectedComponentsFinder {
     private List<String> communicatingComponentsNames;
     private ComponentId comp;
 
-    public ConnectedComponentsFinder(String agentNodeName, ComponentId comp) throws ApiException {
+    public ConnectedComponentsFinder(String agentNodeName, ComponentId comp) {
         this.agentNodeName = agentNodeName;
         this.communicatingComponentsNames = new ModelConnectionAnalyzer(agentNodeName).findCommunicatingComponentsNames();
         this.comp = comp;
@@ -29,23 +28,17 @@ class ConnectedComponentsFinder {
 
     // Get agent node location from cloudiator
     private String findNodeLocation(String nodeName) throws ApiException {
-        log.info("Invoking ConnectedComponentsFinder:findNodeLocation for nodeName " + nodeName);
-        final Optional<String> agentNodeLocationOptional = this.comp.findNodeLocation(nodeName);
-        if (!agentNodeLocationOptional.isPresent()) {
+        return comp.findNodeLocation(nodeName).orElseGet(() -> {
             log.error("Cloudiator could not find node location for a given agent node: " + nodeName);
             return "ERROR";
-        }
-        return agentNodeLocationOptional.get();
-//        return comp.findNodeLocation(nodeName).orElse("ERROR");
+        });
     }
 
     private String findNodeIp(String nodeName) throws ApiException {
-        final Optional<String> nodeIpOptional = comp.findNodeIp(nodeName);
-        if (!nodeIpOptional.isPresent()) {
-            log.error("Cloudiator could not find node ip for a given component: " + nodeName);
+        return comp.findNodeIp(nodeName).orElseGet(() -> {
+            log.error("Cloudiator could not find node location for a given agent node: " + nodeName);
             return "ERROR";
-        }
-        return nodeIpOptional.get();
+        });
 
     }
 

@@ -1,7 +1,6 @@
 package eu.melodic.upperware.dlms.camel;
 
 import camel.core.CamelModel;
-import camel.core.NamedElement;
 import camel.deployment.*;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
@@ -45,17 +44,6 @@ class ModelConnectionAnalyzer {
 
     // Find component with the same id as the id from cloudiator and save its provided ports.
     private List<Integer> findProvidedPorts() {
-        // A list of component's provided ports - linked components have it as a required port:
-        List<Integer> providedPorts = new ArrayList<>();
-        for (SoftwareComponentInstance comp : deploymentSoftwareComponentsInstances) {
-            if (comp.getName().equals(this.agentNodeName)) {
-                for (ProvidedCommunicationInstance prov : comp.getProvidedCommunicationInstances()) {
-                    providedPorts.add(prov.getType().getPortNumber());
-                }
-            }
-        }
-//        return providedPorts;
-
         return deploymentSoftwareComponentsInstances.stream()
                 .filter(softwareComponentInstance -> this.agentNodeName.equals(softwareComponentInstance.getName()))
                 .map(ComponentInstance::getProvidedCommunicationInstances)
@@ -69,19 +57,13 @@ class ModelConnectionAnalyzer {
         log.info("Looking for components communicating with " + this.agentNodeName);
         List<Integer> providedPorts = this.findProvidedPorts();
         List<String> names = new ArrayList<>();
-        for (SoftwareComponentInstance comp : deploymentSoftwareComponentsInstances) {
-            for (RequiredCommunicationInstance req : comp.getRequiredCommunicationInstances()) {
-                if (providedPorts.contains(req.getType().getPortNumber())) {
-                    names.add(comp.getName());
-                }
-            }
-        }
-//        return names;
-        return deploymentSoftwareComponentsInstances.stream()
-                .flatMap(comp -> comp.getRequiredCommunicationInstances().stream())
-                .filter(req -> providedPorts.contains(req.getType().getPortNumber()))
-                .map(NamedElement::getName)
-                .collect(Collectors.toCollection(() -> names));
+        deploymentSoftwareComponentsInstances
+                .forEach(softwareComponentInstance -> softwareComponentInstance.getRequiredCommunicationInstances()
+                        .stream()
+                        .filter(req -> providedPorts.contains(req.getType().getPortNumber()))
+                        .findFirst()
+                        .ifPresent(requiredCommunicationInstance -> names.add(softwareComponentInstance.getName())));
+        return names;
     }
 
     private List<CamelModel> getCamelModels() {
