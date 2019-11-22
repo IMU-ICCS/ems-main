@@ -30,15 +30,15 @@ public class ByonService {
     private ByonMapper byonMapper;
     private SecureStoreService secureStoreService;
 
-    public Optional<List<ByonDefinition>> getByonDefinitionsListWithFilledCredentials() {
+    public Optional<List<ByonDefinition>> getByonDefList(boolean fillSecureVariables) {
         List<ByonDefinition> byonDefinitions = yamlDataService.getDataFromYaml().getByonDefinitions();
-        if (byonDefinitions != null) {
-            fillLoginCredentialsInByonDefinition(byonDefinitions);
+        if (byonDefinitions != null && fillSecureVariables) {
+            fillCredentials(byonDefinitions);
         }
         return Optional.ofNullable(byonDefinitions);
     }
 
-    private void fillLoginCredentialsInByonDefinition(List<ByonDefinition> byonDefinitions) {
+    private void fillCredentials(List<ByonDefinition> byonDefinitions) {
         byonDefinitions.forEach(byonDefinition -> {
             if (fieldIsDefined(byonDefinition.getLoginCredential().getPassword())) {
                 String password = secureStoreService.getValueForSecureVariableLabel(byonDefinition.getLoginCredential().getPassword());
@@ -51,18 +51,18 @@ public class ByonService {
         });
     }
 
-    public ByonDefinition createNewByonDefinition(ByonDefinition newByonDefinitionRequest) {
-        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsListWithoutFillingSecureVariables().orElseGet(ArrayList::new);
+    public ByonDefinition createByonDef(ByonDefinition newByonDefinitionRequest) {
+        List<ByonDefinition> byonDefinitionsList = getByonDefList(false).orElseGet(ArrayList::new);
         byonIdCreatorService.addIdsForByonDefinition(newByonDefinitionRequest, byonDefinitionsList);
 
-        saveLoginCredentialsInSecureStore(newByonDefinitionRequest);
+        saveCredentialsInSecureStore(newByonDefinitionRequest);
 
         byonDefinitionsList.add(newByonDefinitionRequest);
         yamlDataService.updateByonDefinitionInYamlFile(byonDefinitionsList);
         return newByonDefinitionRequest;
     }
 
-    private void saveLoginCredentialsInSecureStore(ByonDefinition newByonDefinitionRequest) {
+    private void saveCredentialsInSecureStore(ByonDefinition newByonDefinitionRequest) {
         LoginCredential loginCredential = newByonDefinitionRequest.getLoginCredential();
         if (fieldIsDefined(loginCredential.getPassword())) {
             Pair<String, String> keyLabelForByonPassword = secureStoreService.createKeyLabelForByonPassword(loginCredential);
@@ -78,45 +78,40 @@ public class ByonService {
         }
     }
 
-    public ByonDefinition getByonDefinition(int byonDefinitionId) {
-        return getByonDefinitionsListWithFilledCredentials().orElseGet(ArrayList::new)
+    public ByonDefinition getByonDef(int byonDefinitionId) {
+        return getByonDefList(true).orElseGet(ArrayList::new)
                 .stream()
                 .filter(byonDefinition -> byonDefinitionId == byonDefinition.getId())
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
     }
 
-    public void deleteByonDefinition(int byonDefinitionId) {
-        List<ByonDefinition> byonDefinitionsList = deleteByonDefinitionFromList(byonDefinitionId);
+    public void deleteByonDef(int byonDefinitionId) {
+        List<ByonDefinition> byonDefinitionsList = getByonDefList(false).orElseGet(ArrayList::new);
+        deleteByonDefFromList(byonDefinitionId, byonDefinitionsList);
         yamlDataService.updateByonDefinitionInYamlFile(byonDefinitionsList);
     }
 
-    public ByonDefinition updateByonDefinition(int byonDefinitionId, ByonDefinition byonDefinitionToUpdate) {
-        List<ByonDefinition> currentByonDefinitionsList = getByonDefinitionsListWithoutFillingSecureVariables().orElseGet(ArrayList::new);
+    public ByonDefinition updateByonDef(int byonDefinitionId, ByonDefinition byonDefinitionToUpdate) {
+        List<ByonDefinition> currentByonDefinitionsList = getByonDefList(false).orElseGet(ArrayList::new);
         byonIdCreatorService.addMissingIdsInIpAddressesForByonDefinition(byonDefinitionToUpdate, currentByonDefinitionsList);
-        List<ByonDefinition> byonDefinitionsList = deleteByonDefinitionFromList(byonDefinitionId);
-        saveLoginCredentialsInSecureStore(byonDefinitionToUpdate);
-        byonDefinitionsList.add(byonDefinitionToUpdate);
-        yamlDataService.updateByonDefinitionInYamlFile(byonDefinitionsList);
-        return getByonDefinition(byonDefinitionId);
+        deleteByonDefFromList(byonDefinitionId, currentByonDefinitionsList);
+        saveCredentialsInSecureStore(byonDefinitionToUpdate);
+        currentByonDefinitionsList.add(byonDefinitionToUpdate);
+        yamlDataService.updateByonDefinitionInYamlFile(currentByonDefinitionsList);
+        return getByonDef(byonDefinitionId);
     }
 
-    private List<ByonDefinition> deleteByonDefinitionFromList(int byonDefinitionId) {
-        List<ByonDefinition> byonDefinitionsList = getByonDefinitionsListWithoutFillingSecureVariables().orElseGet(ArrayList::new);
+    private void deleteByonDefFromList(int byonDefinitionId, List<ByonDefinition> byonDefinitionsList) {
         ByonDefinition byonDefinitionToDelete = byonDefinitionsList.stream()
                 .filter(byonDefinition -> byonDefinitionId == byonDefinition.getId())
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
-        deleteSecureVariablesForByonDefinition(byonDefinitionToDelete);
+        deleteSecureVariables(byonDefinitionToDelete);
         byonDefinitionsList.remove(byonDefinitionToDelete);
-        return byonDefinitionsList;
     }
 
-    private Optional<List<ByonDefinition>> getByonDefinitionsListWithoutFillingSecureVariables() {
-        return Optional.ofNullable(yamlDataService.getDataFromYaml().getByonDefinitions());
-    }
-
-    private void deleteSecureVariablesForByonDefinition(ByonDefinition byonDefinitionToDelete) {
+    private void deleteSecureVariables(ByonDefinition byonDefinitionToDelete) {
         if (fieldIsDefined(byonDefinitionToDelete.getLoginCredential().getPassword())) {
             secureStoreService.deleteSecureVariableByLabel(byonDefinitionToDelete.getLoginCredential().getPassword());
         }
@@ -125,8 +120,8 @@ public class ByonService {
         }
     }
 
-    public ByonNode createByonNodeFromByonDefinition(int byonDefinitionId) {
-        ByonDefinition byonDefinitionForNode = getByonDefinitionsListWithFilledCredentials().orElseGet(ArrayList::new)
+    public ByonNode createByonNode(int byonDefinitionId) {
+        ByonDefinition byonDefinitionForNode = getByonDefList(true).orElseGet(ArrayList::new)
                 .stream()
                 .filter(byonDefinition -> byonDefinition.getId() == byonDefinitionId)
                 .findFirst()

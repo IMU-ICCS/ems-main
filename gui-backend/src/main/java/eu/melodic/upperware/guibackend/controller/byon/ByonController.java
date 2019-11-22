@@ -27,14 +27,14 @@ public class ByonController {
     @ResponseStatus(HttpStatus.OK)
     public List<ByonDefinition> getByonDefinitionList() {
         log.info("GET request for byon definitions list");
-        return byonService.getByonDefinitionsListWithFilledCredentials().orElseGet(ArrayList::new);
+        return byonService.getByonDefList(true).orElseGet(ArrayList::new);
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ByonDefinition createByonDefinition(@RequestBody ByonDefinition newByonDefinitionRequest) {
         log.info("POST request for new byon definition with name: {}", newByonDefinitionRequest.getName());
-        ByonDefinition newByonDefinition = byonService.createNewByonDefinition(newByonDefinitionRequest);
+        ByonDefinition newByonDefinition = byonService.createByonDef(newByonDefinitionRequest);
         log.info("New byon definition with name: {} and id: {} successfully added to configuration", newByonDefinition.getName(), newByonDefinition.getId());
         return newByonDefinition;
     }
@@ -43,14 +43,14 @@ public class ByonController {
     @ResponseStatus(HttpStatus.OK)
     public ByonDefinition getByonDefinition(@PathVariable(value = "byonDefinitionId") int byonDefinitionId) {
         log.info("GET request for byon definition with id {}", byonDefinitionId);
-        return byonService.getByonDefinition(byonDefinitionId);
+        return byonService.getByonDef(byonDefinitionId);
     }
 
     @DeleteMapping("/{byonDefinitionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByonDefinition(@PathVariable(value = "byonDefinitionId") int byonDefinitionId) {
         log.info("DELETE request for byon definition with id {}", byonDefinitionId);
-        byonService.deleteByonDefinition(byonDefinitionId);
+        byonService.deleteByonDef(byonDefinitionId);
         log.info("Byon definition with id {} successfully deleted", byonDefinitionId);
     }
 
@@ -59,7 +59,7 @@ public class ByonController {
     public ByonDefinition updateByonDefinition(@PathVariable(value = "byonDefinitionId") int byonDefinitionId,
                                                @RequestBody ByonDefinition byonDefinitionToUpdate) {
         log.info("PUT request for byon definition with id {}", byonDefinitionId);
-        ByonDefinition byonDefinition = byonService.updateByonDefinition(byonDefinitionId, byonDefinitionToUpdate);
+        ByonDefinition byonDefinition = byonService.updateByonDef(byonDefinitionId, byonDefinitionToUpdate);
         log.info("Byon definition with id {} successfully updated", byonDefinitionId);
         return byonDefinition;
     }
@@ -68,7 +68,7 @@ public class ByonController {
     @ResponseStatus(HttpStatus.CREATED)
     public ByonNode createByonNode(@PathVariable(value = "byonDefinitionId") int byonDefinitionId) {
         log.info("POST request for creating new byon node from byon definition with id {}", byonDefinitionId);
-        ByonNode byonNode = byonService.createByonNodeFromByonDefinition(byonDefinitionId);
+        ByonNode byonNode = byonService.createByonNode(byonDefinitionId);
         log.info("Byon node with id {} successfully added to Cloudiator", byonNode.getId());
         return byonNode;
     }
