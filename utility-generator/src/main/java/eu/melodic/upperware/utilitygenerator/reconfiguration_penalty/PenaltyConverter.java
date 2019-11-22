@@ -6,6 +6,7 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.mariuszgromada.math.mxparser.Argument;
 
 import java.util.Collection;
@@ -20,14 +21,11 @@ public class PenaltyConverter implements ArgumentConverter {
     private String penaltyAttributeName;
     private Collection<ConfigurationElement> actConfiguration;
 
-    private static final String EMPTY_STRING = "";
-
-
-    public PenaltyConverter(FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration, PenaltyFunctionProperties penaltyFunctionProperties){
+    public PenaltyConverter(FromCamelModelExtractor fromCamelModelExtractor, Collection<ConfigurationElement> actConfiguration, PenaltyFunctionProperties penaltyFunctionProperties) {
         this.penaltyService = new PenaltyServiceImpl(penaltyFunctionProperties);
         this.actConfiguration = actConfiguration;
         this.penaltyAttributeName = fromCamelModelExtractor.getReconfigurationPenaltyAttribute();
-        if (!EMPTY_STRING.equals(penaltyAttributeName)){
+        if (StringUtils.isNotEmpty(penaltyAttributeName)) {
             log.info("ReconfigurationPenalty attribute: {}", penaltyAttributeName);
         }
     }
@@ -38,24 +36,22 @@ public class PenaltyConverter implements ArgumentConverter {
 
         double penalty;
 
-        if (penaltyAttributeName.equals(EMPTY_STRING)){
+        if (StringUtils.isEmpty(penaltyAttributeName)) {
             return Collections.emptyList();
         }
         try {
             penalty = penaltyService.getPenalty(actConfiguration, newConfiguration);
 
         } catch (Exception e) {
-            log.warn("There was an error during invoking the Penalty Calculator library, returning 0 as a penalty value. The error:");
-            log.warn(e.toString());
+            log.warn("There was an error during invoking the Penalty Calculator library, returning 0 as a penalty value. The error: {}", e.toString());
             e.printStackTrace();
             penalty = 0.0;
 
         }
-        if (Double.isNaN(penalty)){
+        if (Double.isNaN(penalty)) {
             log.warn("The value of Reconfiguration Penalty is NaN, returning 0");
             penalty = 0.0;
-        }
-        else {
+        } else {
             log.info("The value of Reconfiguration Penalty: {}", penalty);
         }
         return Stream.of(new Argument(penaltyAttributeName, penalty)).collect(Collectors.toList());
