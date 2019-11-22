@@ -21,7 +21,7 @@ import java.util.Map;
 @Service
 @Data
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.config.properties")
+@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.penalty.properties")
 public class PenaltyFunctionProperties {
     private final Map<String, String> startupTimes = new HashMap<>();
 
