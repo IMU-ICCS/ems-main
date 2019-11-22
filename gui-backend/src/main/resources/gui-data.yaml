@@ -1,0 +1,31 @@
+!!eu.melodic.upperware.guibackend.properties.GuiYamlData
+byonDefinitions:
+cloudDefinitions:
+  - api: {id: 1, providerName: openstack4j}
+    cloudConfiguration:
+      id: 1
+      nodeGroup: mel
+      properties:
+        - id: 1
+          name: openstack-defaults
+          properties:
+            - {id: 1, key: sword.openstack4j.defaultNetwork, value: 065f36e5-3249-49fa-9673-58b12ee37c06}
+            - {id: 2, key: sword.providerId.blacklist, value: 'beta,cindertest,db-docker-vm-evaluation,hdd,internal,nova,ssd,noisy-neighbour,noisy-neighbour-ctrl'}
+    cloudType: PRIVATE
+    credential: {id: 1, secret: xxxxx, user: 'tenant-id-here:project-id-here:login-here'}
+    endpoint: https://omistack.e-technik.uni-ulm.de:5000/v3/
+    id: 1
+  - api: {id: 2, providerName: aws-ec2}
+    cloudConfiguration:
+      id: 2
+      nodeGroup: mel
+      properties:
+        - id: 2
+          name: 7bulls-production-images
+          properties:
+            - {id: 3, key: sword.ec2.ami.cc.query, value: tag-key=7BullsProductionImage}
+            - {id: 4, key: sword.ec2.ami.query, value: tag-key=7BullsProductionImage}
+    cloudType: PUBLIC
+    credential: {id: 2, secret: AWS-SECRET-HERE, user: AWS-KEY-HERE}
+    endpoint: ''
+    id: 2
