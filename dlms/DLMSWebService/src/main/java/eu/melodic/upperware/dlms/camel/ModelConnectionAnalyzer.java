@@ -1,7 +1,10 @@
 package eu.melodic.upperware.dlms.camel;
 
 import camel.core.CamelModel;
-import camel.deployment.*;
+import camel.deployment.ComponentInstance;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentModel;
+import camel.deployment.SoftwareComponentInstance;
 import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
@@ -20,75 +23,94 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class is designed for extracting information about connections between components from current camel model
+ * stored in cdo.
+ */
 @Getter
 @Slf4j
 public
 class ModelConnectionAnalyzer {
     private String agentNodeName;
     private List<CamelModel> camelModels;
-    private EList<SoftwareComponentInstance> deploymentSoftwareComponentsInstances;
-    private DeploymentTypeModel deploymentTypeModel;
-    private DeploymentInstanceModel deploymentInstanceModel;
+    private CDOView cdoView = null; // needs to be closed before returning from any public method
 
     public ModelConnectionAnalyzer(String agentNodeName) {
         log.info("Loading camel models from database.");
         this.agentNodeName = agentNodeName;
-        camelModels = this.getCamelModels();
-        CamelModel camelModel = camelModels.get(0);
-        EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
-        this.deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(deploymentModels);
-        this.deploymentInstanceModel = (DeploymentInstanceModel) CdoTool.getLastElement(deploymentModels);
-        assert deploymentInstanceModel != null : "deploymentInstanceModel is null";
-        this.deploymentSoftwareComponentsInstances = deploymentInstanceModel.getSoftwareComponentInstances();
     }
 
-    // Find component with the same id as the id from cloudiator and save its provided ports.
-    private List<Integer> findProvidedPorts() {
-        return deploymentSoftwareComponentsInstances.stream()
+    /**
+     * Returns a list of names of components, which have one of the ports in providedPorts as a required port
+     */
+    public List<String> findCommunicatingComponentsNames() {
+        log.info("Looking for components communicating with " + this.agentNodeName);
+        EList<SoftwareComponentInstance> deploymentInstances = this.loadDeploymentSoftwareComponentsInstances();
+        List<Integer> providedPorts = deploymentInstances
+                .stream()
                 .filter(softwareComponentInstance -> this.agentNodeName.equals(softwareComponentInstance.getName()))
                 .map(ComponentInstance::getProvidedCommunicationInstances)
                 .flatMap(Collection::stream)
                 .map(providedCommunicationInstance -> providedCommunicationInstance.getType().getPortNumber())
                 .collect(Collectors.toList());
-    }
-
-    // Create a list of names of components, which have one of the ports in providedPorts as a required port
-    public List<String> findCommunicatingComponentsNames() {
-        log.info("Looking for components communicating with " + this.agentNodeName);
-        List<Integer> providedPorts = this.findProvidedPorts();
         List<String> names = new ArrayList<>();
-        deploymentSoftwareComponentsInstances
+        deploymentInstances
                 .forEach(softwareComponentInstance -> softwareComponentInstance.getRequiredCommunicationInstances()
                         .stream()
                         .filter(req -> providedPorts.contains(req.getType().getPortNumber()))
                         .findFirst()
                         .ifPresent(requiredCommunicationInstance -> names.add(softwareComponentInstance.getName())));
+        this.closeCdoView();
         return names;
     }
 
-    private List<CamelModel> getCamelModels() {
-        List<CamelModel> result = new ArrayList<>();
-        CDOView cdoView = null;
-        try {
+    /**
+     * Checks if cdoView exists. Opens the view, if it doesn't.
+     */
+    private void openCdoView() {
+        if (cdoView == null) {
             CDOClient cdoClient = new CDOClient();
             cdoClient.registerPackage(CpPackage.eINSTANCE);
             cdoClient.registerPackage(TypesPackage.eINSTANCE);
-            cdoView = cdoClient.openView();
-            CDOQuery sql = cdoView.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
+            this.cdoView = cdoClient.openView();
+        }
+    }
 
-            result = sql.getResult().stream()
+    /**
+     * Checks if cdoView exists. Closes the view, if it does.
+     */
+    private void closeCdoView() {
+        if (this.cdoView != null) {
+            this.cdoView.close();
+        }
+    }
+
+    /**
+     * Opens the cdoview, loads and returns a list of deployment SoftwareComponentInstance instances from the cdo.
+     * Note: a cdoView needs to be closed in caller method after the execution.
+     */
+    private EList<SoftwareComponentInstance> loadDeploymentSoftwareComponentsInstances() {
+        this.openCdoView();
+        try {
+            CDOQuery sql = this.cdoView.createQuery("sql", "select * from repo1.camel_core_camelmodel;");
+            camelModels = sql.getResult().stream()
                     .map(o -> (CamelModel) o)
                     .collect(Collectors.toList());
+            CamelModel camelModel = camelModels.get(0);
+            EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
+//            DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(deploymentModels);
+            DeploymentInstanceModel deploymentInstanceModel = (DeploymentInstanceModel) CdoTool.getLastElement(deploymentModels);
+            if (deploymentInstanceModel == null) {
+                this.closeCdoView();
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "List of available DeploymentInstanceModels is empty.");
+            }
+            return deploymentInstanceModel.getSoftwareComponentInstances();
         } catch (ConnectorException ex) {
             log.error("Error by getting uploaded models. CDO is not responding", ex);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error by getting uploaded models. CDO does not respond.");
-        } catch (RuntimeException ex) {
-            log.debug("List of available models is empty:", ex);
-        } //finally {
-//				if (cdoView != null) {
-//					cdoView.close();
-//				}
-//			}
-        return result;
+            this.closeCdoView();
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Error by getting uploaded models. CDO does not respond.");
+        }
     }
 }

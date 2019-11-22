@@ -186,7 +186,7 @@ public class DLMSServiceController {
         ConfigurationResponse configResp = new ConfigurationResponseImpl();
         final String agentNodeName = comp.findNodeName(ip)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Cloudiator could not find node for a given agent IP: " + ip));
+                        "Cloudiator could not find node name for a given agent IP: " + ip));
         configResp.setConfigurations(new ConnectedComponentsFinder(agentNodeName, comp).createConfigurationList());
         return configResp;
     }

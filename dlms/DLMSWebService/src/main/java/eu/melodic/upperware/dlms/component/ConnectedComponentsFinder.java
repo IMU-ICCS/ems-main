@@ -16,17 +16,19 @@ import java.util.List;
 @Slf4j
 public
 class ConnectedComponentsFinder {
-    private String agentNodeName;
     private List<String> communicatingComponentsNames;
     private ComponentId comp;
+    private String agentNodeLocation;
 
-    public ConnectedComponentsFinder(String agentNodeName, ComponentId comp) {
-        this.agentNodeName = agentNodeName;
+    public ConnectedComponentsFinder(String agentNodeName, ComponentId comp) throws ApiException {
         this.communicatingComponentsNames = new ModelConnectionAnalyzer(agentNodeName).findCommunicatingComponentsNames();
         this.comp = comp;
+        this.agentNodeLocation = this.findNodeLocation(agentNodeName);
     }
 
-    // Get agent node location from cloudiator
+    /**
+     * Returns agent node location from cloudiator.
+     */
     private String findNodeLocation(String nodeName) throws ApiException {
         return comp.findNodeLocation(nodeName).orElseGet(() -> {
             log.error("Cloudiator could not find node location for a given agent node: " + nodeName);
@@ -34,24 +36,28 @@ class ConnectedComponentsFinder {
         });
     }
 
+    /**
+     * Returns agent node ip from cloudiator.
+     */
     private String findNodeIp(String nodeName) throws ApiException {
         return comp.findNodeIp(nodeName).orElseGet(() -> {
-            log.error("Cloudiator could not find node location for a given agent node: " + nodeName);
+            log.error("Cloudiator could not find node IP for a given agent node: " + nodeName);
             return "ERROR";
         });
-
     }
 
+    /**
+     * Creates a list of Configurations: objects storing information about instances connected to the agent.
+     */
     public List<Configuration> createConfigurationList() throws ApiException {
         List<Configuration> configs = new ArrayList<>();
-        String agentNodeLocation = this.findNodeLocation(this.agentNodeName); // TODO why this line in constructor results in NullPointerException?
 
         for (String name : this.communicatingComponentsNames) {
             LatencyConfiguration latConf = new LatencyConfigurationImpl();
             latConf.setComponentName(name);
             latConf.setComponentIP(this.findNodeIp(name));
             latConf.setComponentRegion(this.findNodeLocation(name));
-            latConf.setAgentRegion(agentNodeLocation);
+            latConf.setAgentRegion(this.agentNodeLocation);
             configs.add(new Configuration(latConf));
         }
 
