@@ -72,6 +72,7 @@
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository>127.0.0.1:5000/</docker.repository>
+        <!--suppress UnresolvedMavenProperty -->
         <docker.imagePrefix>melodic-${scmBranch}/</docker.imagePrefix>
         <docker.imageName>parent</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
