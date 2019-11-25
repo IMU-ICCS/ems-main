@@ -34,7 +34,6 @@ import java.util.Optional;
 public class DLMSServiceController {
 
     private final DLMSCoordinator dlmsCoordinator;
-
     private final DLMSService dlmsService;
     private final ComponentId comp;
 
