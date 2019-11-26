@@ -294,9 +294,11 @@ public class BrokerClient {
     public synchronized void openConnection(String connectionString, String username, String password, boolean preserveConnection) throws JMSException {
         checkProperties();
         if (connectionString == null) connectionString = properties.getBrokerUrl();
+        log.debug("BrokerClient: Credetials provided as arguments: username={}, password={}", username, password);
         if (StringUtils.isBlank(username)) {
             username = properties.getBrokerUsername();
             password = properties.getBrokerPassword();
+            log.debug("BrokerClient: Credetials read from properties: username={}, password={}", username, password);
         }
 
         // Create connection factory
