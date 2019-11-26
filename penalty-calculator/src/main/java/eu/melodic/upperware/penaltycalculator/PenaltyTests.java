@@ -7,7 +7,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware;
+package eu.melodic.upperware.penaltycalculator;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -18,7 +18,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -47,10 +46,10 @@ public class PenaltyTests implements CommandLineRunner {
     }
 
     public void run(String... args) throws Exception {
-        Collection<ConfigurationElement> collection_1 = readConfigElementsFromFile(args[0]);
+        Collection<PenaltyConfigurationElement> collection_1 = readConfigElementsFromFile(args[0]);
         log.info("Collection-1:\n{}", PenaltyFunction.toString(collection_1));
 
-        Collection<ConfigurationElement> collection_2 = readConfigElementsFromFile(args[0]);
+        Collection<PenaltyConfigurationElement> collection_2 = readConfigElementsFromFile(args[0]);
         log.info("Collection-2:\n{}", PenaltyFunction.toString(collection_2));
 
         double penaltyValue = penaltyCalculator.evaluatePenaltyFunction(collection_1, collection_2);
@@ -59,9 +58,9 @@ public class PenaltyTests implements CommandLineRunner {
         log.info("Normalized Average Time of VM Startup Time : {}", penaltyValue);
     }
 
-    protected Collection<ConfigurationElement> readConfigElementsFromFile(String fileName) throws IOException {
+    protected Collection<PenaltyConfigurationElement> readConfigElementsFromFile(String fileName) throws IOException {
         try (Reader reader = new FileReader(fileName)) {
-            Type listType = new TypeToken<ArrayList<ConfigurationElement>>() {}.getType();
+            Type listType = new TypeToken<ArrayList<PenaltyConfigurationElement>>() {}.getType();
             return new Gson().fromJson(reader, listType);
         }
     }

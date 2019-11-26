@@ -7,17 +7,17 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware;
+package eu.melodic.upperware.penaltycalculator;
 
 import com.whalin.MemCached.MemCachedClient;
 import com.whalin.MemCached.SockIOPool;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.log4j.BasicConfigurator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import java.util.*;
 
@@ -29,18 +29,19 @@ import java.util.*;
 public class PenaltyFunction {
 
     @Autowired
+    @Getter @Setter
     private PenaltyFunctionProperties properties;
 
-    public double evaluatePenaltyFunction(Collection<ConfigurationElement> actualConfiguration, Collection<ConfigurationElement> newConfiguration) {
+    public double evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
 		log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
 		log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
 		log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
 		log.info("PROPERTIES: Memcached Host operattion info:\n{}", properties.getHost());
 
 		// ........
-        List<ConfigurationElement> toBeDeleted = new ArrayList<ConfigurationElement>();
-        List<ConfigurationElement> toBeAdded = new ArrayList<ConfigurationElement>();
-        List<ConfigurationElement> toBeChanged = new ArrayList<ConfigurationElement>();
+        List<PenaltyConfigurationElement> toBeDeleted = new ArrayList<>();
+        List<PenaltyConfigurationElement> toBeAdded = new ArrayList<>();
+        List<PenaltyConfigurationElement> toBeChanged = new ArrayList<>();
         double resultss = 0;
         double result = 0;
         int value1 = 0;
@@ -50,7 +51,7 @@ public class PenaltyFunction {
 
         // find the elements in actual-current config. but not in new configuration
         // these elements will be deleted.
-        for (ConfigurationElement s : actualConfiguration) {
+        for (PenaltyConfigurationElement s : actualConfiguration) {
             //log.debug("LOOP-1: checking CE: {}", toString(s));
             if (!containsEquivalent(newConfiguration, s)) {
                 
@@ -62,7 +63,7 @@ public class PenaltyFunction {
 
         // find the elelements that exist in new configuration but not in actual-current configuration
         // these elements will be added.
-        for (ConfigurationElement s : newConfiguration) {
+        for (PenaltyConfigurationElement s : newConfiguration) {
             if (!containsEquivalent(actualConfiguration, s)) {
                 toBeAdded.add(s);
                 log.info(">>>>>>>>>: mcc: {}", toBeAdded);
@@ -73,11 +74,11 @@ public class PenaltyFunction {
 
         // find the elements that exist in current configuration and will be in the new config also.
         // for these elements calculate the diff in cardinalities (number)
-        for (ConfigurationElement s1 : newConfiguration) {
-            for (ConfigurationElement s2 : actualConfiguration) {
+        for (PenaltyConfigurationElement s1 : newConfiguration) {
+            for (PenaltyConfigurationElement s2 : actualConfiguration) {
                 if (isEquivalent(s1, s2)) {
                     int newCardinality = s1.getCardinality() - s2.getCardinality();
-                    ConfigurationElement s_new = new ConfigurationElement(s1.getId(), s1.getNodeCandidate(), newCardinality);
+                    PenaltyConfigurationElement s_new = new PenaltyConfigurationElement(s1.getId(), s1.getNodeCandidate(), newCardinality);
                     if (newCardinality > 0) {
                         toBeChanged.add(s_new);
                     } else {
@@ -89,7 +90,7 @@ public class PenaltyFunction {
         
 
         //The results we need are: 'toBeAdded'&'toBeChanged'
-        List<ConfigurationElement> results = new ArrayList<ConfigurationElement>(toBeChanged);
+        List<PenaltyConfigurationElement> results = new ArrayList<PenaltyConfigurationElement>(toBeChanged);
         results.addAll(toBeAdded);
 
         log.info("----------------------------------------------------------------------");
@@ -306,7 +307,7 @@ public class PenaltyFunction {
 
             // value=((Integer) hm.get(key)).intValue();//here is an ERROR
             value = Integer.parseInt((String) hm.get(key));
-            for (ConfigurationElement s33 : results) {
+            for (PenaltyConfigurationElement s33 : results) {
                 log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
 
                 if (key.equals(s33.getNodeCandidate().getHardware().getName())) {
@@ -486,7 +487,7 @@ public class PenaltyFunction {
 			
 			// value=((Integer) hm.get(key)).intValue();//here is an ERROR 
 			value=Integer.parseInt((String) hm.get(key));
-			for (ConfigurationElement s33 : results) {
+			for (PenaltyConfigurationElement s33 : results) {
 				log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
 				
 				if (key.equals(s33.getNodeCandidate().getHardware().getName())){
@@ -524,8 +525,8 @@ public class PenaltyFunction {
 
   
 
-    public static boolean containsEquivalent(Collection<ConfigurationElement> collection, ConfigurationElement element) {
-        for (ConfigurationElement ce : collection) {
+    public static boolean containsEquivalent(Collection<PenaltyConfigurationElement> collection, PenaltyConfigurationElement element) {
+        for (PenaltyConfigurationElement ce : collection) {
             //log.debug("containsEquivalent: comparing col. elem. to given elem.: \n\t{}\n\t{}", toString(ce), toString(element));
             if (isEquivalent(ce, element)) {
                 //log.debug("containsEquivalent: ARE EQUIV");
@@ -536,7 +537,7 @@ public class PenaltyFunction {
         return false;
     }
 
-    public static boolean isEquivalent(ConfigurationElement a, ConfigurationElement b) {
+    public static boolean isEquivalent(PenaltyConfigurationElement a, PenaltyConfigurationElement b) {
 		/*log.debug("isEquivalent:              checking: {} <--> {}", toString(a), toString(b));
 		log.debug("isEquivalent:                  ram:   {} <--> {}", a.getNodeCandidate().getHardware().getRam()-b.getNodeCandidate().getHardware().getRam()==0);
 		log.debug("isEquivalent:                  cores: {} <--> {}", a.getNodeCandidate().getHardware().getCores()-b.getNodeCandidate().getHardware().getCores()==0);
@@ -563,7 +564,7 @@ public class PenaltyFunction {
         return false;
     }
 
-    public static String toString(ConfigurationElement ce) {
+    public static String toString(PenaltyConfigurationElement ce) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append("id=").append(ce.getId());
@@ -580,11 +581,11 @@ public class PenaltyFunction {
         return sb.toString();
     }
 
-    public static String toString(Collection<ConfigurationElement> collection) {
+    public static String toString(Collection<PenaltyConfigurationElement> collection) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
-        for (ConfigurationElement ce : collection) {
+        for (PenaltyConfigurationElement ce : collection) {
             if (first) first = false;
             else sb.append(",");
             sb.append(toString(ce));

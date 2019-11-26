@@ -6,7 +6,7 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-package eu.melodic.upperware;
+package eu.melodic.upperware.penaltycalculator;
 
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class ConfigurationElement {
+public class PenaltyConfigurationElement {
 
     private String id;
     private NodeCandidate nodeCandidate;

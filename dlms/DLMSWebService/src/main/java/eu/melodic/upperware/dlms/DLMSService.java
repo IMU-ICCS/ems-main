@@ -35,7 +35,7 @@ public interface DLMSService {
 	boolean hasDataSourceByName(String name);
 
 	/**
-	 * Returns all datasources in the database.
+ArrayList<Tuple<String, String[]>> list = new ArrayList<>();	 * Returns all datasources in the database.
 	 */
 	List<DataSource> getAllDataSources();
 
@@ -53,7 +53,7 @@ public interface DLMSService {
 	 * Returns the SendToDlmsAgent for cloudiator to run for the particular component name.
 	 */
 	SendToDlmsAgent getDlmsAgentParams(String cmpName);
-	
+
 	/**
 	 * Add data source linked to the component name along with the mount point in
 	 * the database.

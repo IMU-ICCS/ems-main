@@ -52,7 +52,7 @@ public class BrokerClientProperties {
 
     @Value("${broker-username:}")
     private String brokerUsername;
-    @Value("${broker-passwotd:}")
+    @Value("${broker-password:}")
     private String brokerPassword;
 
     public BrokerClientProperties() {
@@ -90,7 +90,7 @@ public class BrokerClientProperties {
         clientAuthRequired = Boolean.parseBoolean(p.getProperty("brokerclient.ssl.client-auth.required", "false"));
 
         brokerUsername = p.getProperty("brokerclient.broker-username", "");
-        brokerPassword = p.getProperty("brokerclient.broker-passwotd", "");
+        brokerPassword = p.getProperty("brokerclient.broker-password", "");
 
         brokerUrlProperties = brokerUrlProperties.replace("${brokerclient.ssl.client-auth.required}", Boolean.toString(clientAuthRequired));
     }

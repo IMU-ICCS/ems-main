@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.controller.provider;
 
 import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
+import eu.melodic.upperware.guibackend.model.provider.ProviderEnums;
 import eu.melodic.upperware.guibackend.service.provider.ProviderService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,5 +53,12 @@ public class ProviderController {
                                                  @RequestBody CloudDefinition cloudDefinitionToUpdate) {
         log.info("PUT request for cloud definition with id: {}", cloudDefId);
         return providerService.updateCloudDefinition(cloudDefId, cloudDefinitionToUpdate);
+    }
+
+    @GetMapping("/enum")
+    @ResponseStatus(HttpStatus.OK)
+    public ProviderEnums getProviderEnums() {
+        log.info("GET request for provider enums");
+        return providerService.getProviderEnums();
     }
 }
