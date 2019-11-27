@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,6 +32,15 @@ public class PenaltyFunction {
     private PenaltyFunctionProperties properties;
 
     public double evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
+        try {
+            return _evaluatePenaltyFunction(actualConfiguration, newConfiguration);
+        } catch (Throwable t) {
+            log.error("-----> EXCEPTION: ", t);
+            throw t;
+        }
+    }
+
+    private double _evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
         log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
         log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
         log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
@@ -40,12 +50,6 @@ public class PenaltyFunction {
         List<PenaltyConfigurationElement> toBeDeleted = new ArrayList<>();
         List<PenaltyConfigurationElement> toBeAdded = new ArrayList<>();
         List<PenaltyConfigurationElement> toBeChanged = new ArrayList<>();
-        double resultss = 0;
-        double result = 0;
-        int value1 = 0;
-        double value2 = 0;
-        double result2 = 0;
-        int tableStringLength;
 
         // find the elements in actual-current config. but not in new configuration
         // these elements will be deleted.
@@ -130,6 +134,12 @@ public class PenaltyFunction {
         log.info(arr);
 
         //check if we have Null Component Deployment Times and act accordingy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        double resultss = 0;
+        double result = 0;
+        int value1 = 0;
+        double value2 = 0;
+        double result2 = 0;
 
         if (arr != null && !arr.isEmpty()) {
 
@@ -222,7 +232,7 @@ public class PenaltyFunction {
 
             log.info(">>>>>>>>>: y.length: ", y.length);
 
-            tableStringLength = y.length;
+            int tableStringLength = y.length;
 
             log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
 
@@ -332,7 +342,7 @@ public class PenaltyFunction {
         } else {
             //do appropriate things for only VM startup times existing
             //XXX: HashMap<String, String> hm = new HashMap<String, String>();
-
+            log.info("-----> Point A");
 
             // load first properties file--REMOVED
 
@@ -344,8 +354,10 @@ public class PenaltyFunction {
             prop.forEach((key, value) -> hm.put((String) key, (String) value));
             log.info(">>>>>>>>>: hm: {}", hm);*/
 
+            log.info("-----> Adding VM data to Memcache");
             properties.getVmData().entrySet()
                     .forEach(entry -> mcc.set(entry.getKey(), Integer.toString(entry.getValue().getStartupTime())));
+            log.info("-----> Point B");
 
             // get the values of the HashMap hm returned as an Array
             //XXX: String[] yy = hm.values().toArray(new String[0]);
@@ -354,7 +366,9 @@ public class PenaltyFunction {
 
             //Instantiate data for train of OLSMulitple regression algorithm
             //convert String Array to double Array
-            double[] y = properties.getVmData().values().stream().mapToDouble(data -> data.getStartupTime()).toArray();
+            double[] y = properties.getVmData().values().stream()
+                    .mapToDouble(data -> data.getStartupTime()).toArray();
+            log.info("-----> VM startup times (y-data): {}", y);
             //XXX: double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
 
             //Find the maximum VM Startup time
@@ -381,7 +395,7 @@ public class PenaltyFunction {
             log.info("The min VM Startup value is " + min);
 
 
-            log.info(">>>>>>>>>: y: {}", y);
+            /*XXX: log.info(">>>>>>>>>: y: {}", y);
 
 
             log.info(">>>>>>>>>: y.length: ", y.length);
@@ -390,17 +404,20 @@ public class PenaltyFunction {
 
             log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
 
-            log.info("y={}", y.length);
+            log.info("y={}", y.length);*/
 
 
             //instantiate the double array
             //XXX: double[][] xx = new double[tableStringLength][3];
-            double[][] xx = (double[][]) properties.getVmData().values()
-                    .stream().map(PenaltyFunctionProperties.VmData::getX).toArray();
-            log.info("------> xx: {}", Arrays.deepToString(xx));
+            double[][] xx = properties.getVmData().values().stream()
+                    .map(PenaltyFunctionProperties.VmData::getX)
+                    .collect(Collectors.toList())
+                    .toArray(new double[0][0]);
+            log.info("------> VM core/ram/disk (x-data): {}", Arrays.deepToString(xx));
 
-            log.info("xx.len={}", xx.length);
+            //XXX: log.info("xx.len={}", xx.length);
 
+            log.info("------> Point C");
             OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
 
 
@@ -440,20 +457,22 @@ public class PenaltyFunction {
             log.info(">>>>>>>>>: xx: {}", xx);
 */
 
+            log.info("-----> Calculating regression parameters...");
             regression.newSampleData(y, xx);
             regression.setNoIntercept(true);
+
             // Get the regression parameters and residuals
             double[] betaHat = regression.estimateRegressionParameters();
             double[] residuals = regression.estimateResiduals();
             double rSquared = regression.calculateRSquared();
-            //print them
 
-            log.info("Regression parameters: {}", Arrays.toString(betaHat));
+            //print them
+            log.info("-----> Regression parameters: {}", Arrays.toString(betaHat));
             /*XXX: for (int i = 0; i < betaHat.length; i++) {
                 log.info("betaHat[{}]={}", i, betaHat[i]);
             }*/
 
-            log.info("Residual parameter: {}", Arrays.toString(residuals));
+            log.info("-----> Residual parameter: {}", Arrays.toString(residuals));
             /*XXX: for (int i = 0; i < residuals.length; i++) {
                 log.info("residuals[{}]={}", i, residuals[i]);
             }*/
@@ -496,12 +515,14 @@ public class PenaltyFunction {
 
             }*/
 
+            log.info("-----> Point D");
             int sumOfStartupTimesPerPCE = 0;
             int sumOfEstimatedStartupTimesPerPCE = 0;
             int numOfStartupTimesPerPCE = results.size();
 
             for (PenaltyConfigurationElement pce : results) {
-                String hardwareName = pce.getNodeCandidate().getHardware().getName();
+                String hardwareName = pce.getNodeCandidate().getHardware().getName()
+                        .replace(".", "_");
                 log.info("-----> PCE: {}", hardwareName);
 
                 if (properties.getVmData().containsKey(hardwareName)) {
@@ -525,8 +546,9 @@ public class PenaltyFunction {
             double averageStartupTime = (sumOfStartupTimesPerPCE+sumOfEstimatedStartupTimesPerPCE)/numOfStartupTimesPerPCE;
             double normalizedValue = (averageStartupTime - min) / (max - min);
 
-            log.info("-------->  sum={}, sumest={}, num={}, avg={}, min={}, max={} --> resultss={}",
-                    sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE, min, max, normalizedValue);
+            log.info("----->  sum={}, sum-reg={}, num={}, avg={}, min={}, max={} --> resultss={}",
+                    sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE,
+                    averageStartupTime, min, max, normalizedValue);
 
             return normalizedValue;
 
