@@ -331,7 +331,7 @@ public class PenaltyFunction {
 
         } else {
             //do appropriate things for only VM startup times existing
-            HashMap<String, String> hm = new HashMap<String, String>();
+            //XXX: HashMap<String, String> hm = new HashMap<String, String>();
 
 
             // load first properties file--REMOVED
@@ -339,40 +339,45 @@ public class PenaltyFunction {
 
             // load old first properties file DATA
             //IPAT:
-            Map<String, String> prop = properties.getStartupTimes();
+            /*XXX: Map<String, String> prop = properties.getStartupTimes();
             prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
             prop.forEach((key, value) -> hm.put((String) key, (String) value));
-            log.info(">>>>>>>>>: hm: {}", hm);
+            log.info(">>>>>>>>>: hm: {}", hm);*/
 
+            properties.getVmData().entrySet()
+                    .forEach(entry -> mcc.set(entry.getKey(), Integer.toString(entry.getValue().getStartupTime())));
 
             // get the values of the HashMap hm returned as an Array
-            String[] yy = hm.values().toArray(new String[0]);
+            //XXX: String[] yy = hm.values().toArray(new String[0]);
 
-            log.info(Arrays.toString(yy));
+            //XXX: log.info(Arrays.toString(yy));
 
             //Instantiate data for train of OLSMulitple regression algorithm
             //convert String Array to double Array
-            double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
+            double[] y = properties.getVmData().values().stream().mapToDouble(data -> data.getStartupTime()).toArray();
+            //XXX: double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
 
             //Find the maximum VM Startup time
-            double max = y[0];
+            double max = Arrays.stream(y).max().getAsDouble();
+            /*XXX: double max = y[0];
             for (int i = 1; i < y.length; i++) {
                 if (max < y[i]) {
                     max = y[i]; //swapping
                     y[i] = y[0];
                 }
-            }
+            }*/
             log.info("The max VM Startup value is " + max);
 
 
             //Find the mimimum VM Startup time
-            double min = y[0];
+            double min = Arrays.stream(y).min().getAsDouble();
+            /*XXX: double min = y[0];
             for (int i = 1; i < y.length; i++) {
                 if (min > y[i]) {
                     min = y[i]; //swapping
                     y[i] = y[0];
                 }
-            }
+            }*/
             log.info("The min VM Startup value is " + min);
 
 
@@ -389,15 +394,18 @@ public class PenaltyFunction {
 
 
             //instantiate the double array
-            double[][] xx = new double[tableStringLength][3];
+            //XXX: double[][] xx = new double[tableStringLength][3];
+            double[][] xx = (double[][]) properties.getVmData().values()
+                    .stream().map(PenaltyFunctionProperties.VmData::getX).toArray();
+            log.info("------> xx: {}", Arrays.deepToString(xx));
 
             log.info("xx.len={}", xx.length);
 
             OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
 
 
+/*XXX:
             //  load second properties files ----- REMOVED
-
 
             // load old second properties file DATA : STEFANIDI
 
@@ -405,7 +413,7 @@ public class PenaltyFunction {
 
 
             //create the two dimensional array with correct size
-            String[][] array = new String[a.length][a.length];
+            String[][] array = new String[a.length][];
 
             //combine the arrays split by semicolin and comma
             for (int i = 0; i < a.length; i++) {
@@ -430,7 +438,7 @@ public class PenaltyFunction {
             log.info("xx_after_fill: " + java.util.Arrays.deepToString(xx));
 
             log.info(">>>>>>>>>: xx: {}", xx);
-
+*/
 
             regression.newSampleData(y, xx);
             regression.setNoIntercept(true);
@@ -440,21 +448,21 @@ public class PenaltyFunction {
             double rSquared = regression.calculateRSquared();
             //print them
 
-            log.info("Regression parameters: ");
-            for (int i = 0; i < betaHat.length; i++) {
+            log.info("Regression parameters: {}", Arrays.toString(betaHat));
+            /*XXX: for (int i = 0; i < betaHat.length; i++) {
                 log.info("betaHat[{}]={}", i, betaHat[i]);
-            }
+            }*/
 
-            log.info("Residual parameter:");
-            for (int i = 0; i < residuals.length; i++) {
+            log.info("Residual parameter: {}", Arrays.toString(residuals));
+            /*XXX: for (int i = 0; i < residuals.length; i++) {
                 log.info("residuals[{}]={}", i, residuals[i]);
-            }
+            }*/
 
             //log.info("residual: " + residuals);
-            log.info("rSquared: " + rSquared);
+            log.info("rSquared: {}", rSquared);
 
 
-            for (String key : hm.keySet()) {
+/*            for (String key : hm.keySet()) {
                 int value = 0;
 
 
@@ -486,14 +494,46 @@ public class PenaltyFunction {
                 }
 
 
+            }*/
+
+            int sumOfStartupTimesPerPCE = 0;
+            int sumOfEstimatedStartupTimesPerPCE = 0;
+            int numOfStartupTimesPerPCE = results.size();
+
+            for (PenaltyConfigurationElement pce : results) {
+                String hardwareName = pce.getNodeCandidate().getHardware().getName();
+                log.info("-----> PCE: {}", hardwareName);
+
+                if (properties.getVmData().containsKey(hardwareName)) {
+                    log.info("     MATCH FOUND: {}", hardwareName);
+                    int hardwareStartupTime = properties.getVmData().get(hardwareName).getStartupTime();
+
+                    sumOfStartupTimesPerPCE += hardwareStartupTime;
+                    log.info("RESULT:{}", sumOfStartupTimesPerPCE);
+                    log.info("PCE:" + hardwareName + " VALUE:" + hardwareStartupTime);
+                } else {
+                    log.info("     NO MATCH FOUND FOR: {}", hardwareName);
+
+                    int hardwareCores = pce.getNodeCandidate().getHardware().getCores();
+                    long hardwareRam = pce.getNodeCandidate().getHardware().getRam();
+                    double hardwareDisk = pce.getNodeCandidate().getHardware().getDisk();
+                    double estimatedStartupTime = betaHat[0] + betaHat[1] * hardwareCores + betaHat[2] * hardwareRam + betaHat[3] * hardwareDisk;
+                    log.info("value custom:" + estimatedStartupTime);
+                    sumOfEstimatedStartupTimesPerPCE += estimatedStartupTime;
+                }
             }
+            double averageStartupTime = (sumOfStartupTimesPerPCE+sumOfEstimatedStartupTimesPerPCE)/numOfStartupTimesPerPCE;
+            double normalizedValue = (averageStartupTime - min) / (max - min);
 
+            log.info("-------->  sum={}, sumest={}, num={}, avg={}, min={}, max={} --> resultss={}",
+                    sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE, min, max, normalizedValue);
 
-            resultss = ((((result + result2) / value1) - min) / (max - min));
+            return normalizedValue;
 
+            /*resultss = ((((result + result2) / value1) - min) / (max - min));
             log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, min={}, max={} --> resultss={}", result, result2, value1, min, max, resultss);
 
-            return resultss;
+            return resultss;*/
         }
     }
 
