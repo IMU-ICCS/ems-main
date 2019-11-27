@@ -538,11 +538,18 @@ public class PenaltyFunction {
                     int hardwareCores = pce.getNodeCandidate().getHardware().getCores();
                     long hardwareRam = pce.getNodeCandidate().getHardware().getRam();
                     double hardwareDisk = pce.getNodeCandidate().getHardware().getDisk();
+                    log.info("     VM params: cores={}, ram={}, disk={}", hardwareCores, hardwareRam, hardwareDisk);
                     double estimatedStartupTime = betaHat[0] + betaHat[1] * hardwareCores + betaHat[2] * hardwareRam + betaHat[3] * hardwareDisk;
                     log.info("value custom:" + estimatedStartupTime);
                     sumOfEstimatedStartupTimesPerPCE += estimatedStartupTime;
+
+                    // update min/max
+                    if (max < estimatedStartupTime) max = estimatedStartupTime;
+                    if (min > estimatedStartupTime) min = estimatedStartupTime;
                 }
             }
+            log.info("----->  new-min={}, new-max={}", min, max);
+
             double averageStartupTime = (sumOfStartupTimesPerPCE+sumOfEstimatedStartupTimesPerPCE)/numOfStartupTimesPerPCE;
             double normalizedValue = (averageStartupTime - min) / (max - min);
 
