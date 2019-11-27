@@ -26,10 +26,4 @@ public class PenaltyConfigurationElement {
     public String toString() {
         return String.format("Component: %s ( cardinality = %d,  %s)", id, cardinality, nodeCandidate.toString());
     }
-
 }
-
-
-
-
-

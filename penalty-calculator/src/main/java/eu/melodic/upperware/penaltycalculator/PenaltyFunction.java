@@ -21,24 +21,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-
-
-
 @Slf4j
 @Service
 public class PenaltyFunction {
 
     @Autowired
-    @Getter @Setter
+    @Getter
+    @Setter
     private PenaltyFunctionProperties properties;
 
     public double evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
-		log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
-		log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
-		log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
-		log.info("PROPERTIES: Memcached Host operattion info:\n{}", properties.getHost());
+        log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
+        log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
+        log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
+        log.info("PROPERTIES: Memcached Host operattion info:\n{}", properties.getHost());
 
-		// ........
+        // ........
         List<PenaltyConfigurationElement> toBeDeleted = new ArrayList<>();
         List<PenaltyConfigurationElement> toBeAdded = new ArrayList<>();
         List<PenaltyConfigurationElement> toBeChanged = new ArrayList<>();
@@ -54,12 +52,12 @@ public class PenaltyFunction {
         for (PenaltyConfigurationElement s : actualConfiguration) {
             //log.debug("LOOP-1: checking CE: {}", toString(s));
             if (!containsEquivalent(newConfiguration, s)) {
-                
+
                 toBeDeleted.add(s);
                 log.info(">>>>>>>>>: mcc: {}", toBeDeleted);
             }
         }
-        
+
 
         // find the elelements that exist in new configuration but not in actual-current configuration
         // these elements will be added.
@@ -70,7 +68,7 @@ public class PenaltyFunction {
 
             }
         }
-        
+
 
         // find the elements that exist in current configuration and will be in the new config also.
         // for these elements calculate the diff in cardinalities (number)
@@ -87,7 +85,7 @@ public class PenaltyFunction {
                 }
             }
         }
-        
+
 
         //The results we need are: 'toBeAdded'&'toBeChanged'
         List<PenaltyConfigurationElement> results = new ArrayList<PenaltyConfigurationElement>(toBeChanged);
@@ -98,18 +96,17 @@ public class PenaltyFunction {
         log.info("Penalty: ++++++");
         String str1 = "";
         String str2 = "";
-	    // Get memcached connection info from properties file
-		str1 = properties.getHost(); 
-		str2 = properties.getPort();
-		
+        // Get memcached connection info from properties file
+        str1 = properties.getHost();
+        str2 = properties.getPort();
+
 
         //initialize the SockIOPool that maintains the Memcached Server Connection Pool
 
         BasicConfigurator.configure();
         String[] servers = {str1 + ":" + str2};
         SockIOPool pool = SockIOPool.getInstance("Test2");
-        System.out.println(servers);
-        System.out.println(Arrays.toString(servers));
+        log.info("servers: {}", Arrays.toString(servers));
 
 
         pool.setServers(servers);
@@ -129,20 +126,19 @@ public class PenaltyFunction {
         // connect to Daniel's InfluxDB and created database with queries...unused yet
 
 
-        
-		String arr = null;
-        System.out.println(arr);
-		
-		//check if we have Null Component Deployment Times and act accordingy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		
-	if (arr != null && !arr.isEmpty()) {
-            
-        
-        //Find the Average Component Deployment Time ==>  avg
-        // cnt are the number of Components Deployed along with their times
-        double sum = 0;
-        int cnt = 0;
-        double avg = 0;
+        String arr = null;
+        log.info(arr);
+
+        //check if we have Null Component Deployment Times and act accordingy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        if (arr != null && !arr.isEmpty()) {
+
+
+            //Find the Average Component Deployment Time ==>  avg
+            // cnt are the number of Components Deployed along with their times
+            double sum = 0;
+            int cnt = 0;
+            double avg = 0;
         /*
         for (ComponMeasurement cm : ComponMeasurements) {
 
@@ -154,12 +150,12 @@ public class PenaltyFunction {
             avg = sum / cnt;
         } else
             throw new RuntimeException("some error message"); */
-        System.out.println(cnt);
-        System.out.println(avg);
+            log.info("cnt={}", cnt);
+            log.info("avg={}", avg);
 
 
-        //Find the maximum Component Deployment time
-        double maxx = 0;
+            //Find the maximum Component Deployment time
+            double maxx = 0;
         /*
         for (ComponMeasurement cmm : ComponMeasurements) {
 
@@ -171,99 +167,93 @@ public class PenaltyFunction {
         }
         */
 
-        System.out.println("The max Component Deployment Time value is " + maxx);
-
-      
-        //Close connection to Influx DB 
-
-        //influxDB.close();
-		
-        		
-		
-
-        HashMap<String, String> hm = new HashMap<String, String>();
+            log.info("The max Component Deployment Time value is " + maxx);
 
 
-        // load old first properties file DATA 
-		//IPATINI:
-		Map<String,String> prop = properties.getStartupTimes();
-		prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
-		prop.forEach((key, value) -> hm.put((String) key, (String) value));
-		log.info(">>>>>>>>>: hm: {}", hm);
-		
+            //Close connection to Influx DB
 
-        // get the values of the HashMap hm returned as an Array
-        String[] yy = hm.values().toArray(new String[0]);
+            //influxDB.close();
 
-        System.out.println(Arrays.toString(yy));
 
-        //Instantiate data for train of OLSMulitple regression algorithm
-        //convert String Array to double Array
-        double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
+            HashMap<String, String> hm = new HashMap<String, String>();
 
-        //Find the maximum VM Startup time
-        double max = y[0];
-        for (int i = 1; i < y.length; i++) {
-            if (max < y[i]) {
-                max = y[i]; //swapping
-                y[i] = y[0];
+
+            // load old first properties file DATA
+            //IPATINI:
+            Map<String, String> prop = properties.getStartupTimes();
+            prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
+            prop.forEach((key, value) -> hm.put((String) key, (String) value));
+            log.info(">>>>>>>>>: hm: {}", hm);
+
+
+            // get the values of the HashMap hm returned as an Array
+            String[] yy = hm.values().toArray(new String[0]);
+
+            log.info(Arrays.toString(yy));
+
+            //Instantiate data for train of OLSMulitple regression algorithm
+            //convert String Array to double Array
+            double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
+
+            //Find the maximum VM Startup time
+            double max = y[0];
+            for (int i = 1; i < y.length; i++) {
+                if (max < y[i]) {
+                    max = y[i]; //swapping
+                    y[i] = y[0];
+                }
             }
-        }
-        System.out.println("The max VM Startup value is " + max);
+            log.info("The max VM Startup value is " + max);
 
 
-        //Find the mimimum VM Startup time		
-        double min = y[0];
-        for (int i = 1; i < y.length; i++) {
-            if (min > y[i]) {
-                min = y[i]; //swapping
-                y[i] = y[0];
+            //Find the mimimum VM Startup time
+            double min = y[0];
+            for (int i = 1; i < y.length; i++) {
+                if (min > y[i]) {
+                    min = y[i]; //swapping
+                    y[i] = y[0];
+                }
             }
-        }
-        System.out.println("The min VM Startup value is " + min);
+            log.info("The min VM Startup value is " + min);
 
 
-        log.info(">>>>>>>>>: y: {}", y);
-        
-
-        log.info(">>>>>>>>>: y.length: ", y.length);
-        System.out.println(y.length);
-
-        tableStringLength = y.length;
-
-        log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
-
-        System.out.println(y.length);
-        
-
-        //instantiate the double array
-        double[][] xx = new double[tableStringLength][3];
-
-        System.out.println(xx.length);
-
-        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-        
-        
-		// load old second properties file DATA : STEFANIDI
-		
-	    String[] a = properties.getStateInfo().split(";");
+            log.info(">>>>>>>>>: y: {}", y);
 
 
+            log.info(">>>>>>>>>: y.length: ", y.length);
 
-        //create the two dimensional array with correct size
-        String[][] array = new String[a.length][a.length];
+            tableStringLength = y.length;
 
-        //combine the arrays split by semicolin and comma
-        for (int i = 0; i < a.length; i++) {
-            array[i] = a[i].split(",");
-         }
+            log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
 
-        //Convert two dimensions String Array to two dimensions Double Array
 
-        System.out.println(a.length);
-        System.out.println(xx.length);
-        System.out.println("array: " + java.util.Arrays.deepToString(array));
-        System.out.println("xx: " + java.util.Arrays.deepToString(xx));
+            //instantiate the double array
+            double[][] xx = new double[tableStringLength][3];
+
+            log.info("xx.len={}", xx.length);
+
+            OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+
+
+            // load old second properties file DATA : STEFANIDI
+
+            String[] a = properties.getStateInfo().split(";");
+
+
+            //create the two dimensional array with correct size
+            String[][] array = new String[a.length][a.length];
+
+            //combine the arrays split by semicolin and comma
+            for (int i = 0; i < a.length; i++) {
+                array[i] = a[i].split(",");
+            }
+
+            //Convert two dimensions String Array to two dimensions Double Array
+
+            log.info("a.len={}", a.length);
+            log.info("xx.len={}", xx.length);
+            log.info("array: " + java.util.Arrays.deepToString(array));
+            log.info("xx: " + java.util.Arrays.deepToString(xx));
             for (int k = 0; k < tableStringLength; k++) {
                 for (int j = 0; j < 3; j++) {
                     //tableDouble[k][j]= Double.parseDouble(tableString[k][j]);
@@ -273,257 +263,240 @@ public class PenaltyFunction {
                 }
             }
 
-        System.out.println("array: " + java.util.Arrays.deepToString(array));
-        System.out.println("xx_after_fill: " + java.util.Arrays.deepToString(xx));
-         
-        log.info(">>>>>>>>>: xx: {}", xx);
-        
+            log.info("array: " + java.util.Arrays.deepToString(array));
+            log.info("xx_after_fill: " + java.util.Arrays.deepToString(xx));
 
-        regression.newSampleData(y, xx);
-        regression.setNoIntercept(true);
-        // Get the regression parameters and residuals
-        double[] betaHat = regression.estimateRegressionParameters();
-        double[] residuals = regression.estimateResiduals();
-        double rSquared = regression.calculateRSquared();
-        //print them
-
-        System.out.println("Regression parameters: ");
-        for (int i = 0; i < betaHat.length; i++) {
-            System.out.println(betaHat[i]);
-        }
-
-        System.out.println("Residual parameter:");
-        for (int i = 0; i < residuals.length; i++) {
-            System.out.println(residuals[i]);
-        }
-
-        //System.out.println("residual: " + residuals);
-        System.out.println("rSquared: " + rSquared);
+            log.info(">>>>>>>>>: xx: {}", xx);
 
 
-        for (String key : hm.keySet()) {
-            int value = 0;
+            regression.newSampleData(y, xx);
+            regression.setNoIntercept(true);
+            // Get the regression parameters and residuals
+            double[] betaHat = regression.estimateRegressionParameters();
+            double[] residuals = regression.estimateResiduals();
+            double rSquared = regression.calculateRSquared();
+            //print them
+
+            log.info("Regression parameters: ");
+            for (int i = 0; i < betaHat.length; i++) {
+                log.info("beta[{}]={}", i, betaHat[i]);
+            }
+
+            log.info("Residual parameter:");
+            for (int i = 0; i < residuals.length; i++) {
+                log.info("residual[{}]={}", i, residuals[i]);
+            }
+
+            //log.info("residual: " + residuals);
+            log.info("rSquared: " + rSquared);
 
 
-            // value=((Integer) hm.get(key)).intValue();//here is an ERROR
-            value = Integer.parseInt((String) hm.get(key));
-            for (PenaltyConfigurationElement s33 : results) {
-                log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
+            for (String key : hm.keySet()) {
+                int value = 0;
 
-                if (key.equals(s33.getNodeCandidate().getHardware().getName())) {
 
-                    //value = Integer.valueOf((String) hm.get(key));
-                    result += value;
-                    log.info("RESULT:{}", result);
-                    value1 = value1 + 1;
-                    System.out.println("KEY:" + key + " VALUE:" + hm.get(key));
+                // value=((Integer) hm.get(key)).intValue();//here is an ERROR
+                value = Integer.parseInt((String) hm.get(key));
+                for (PenaltyConfigurationElement s33 : results) {
+                    log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
+
+                    if (key.equals(s33.getNodeCandidate().getHardware().getName())) {
+
+                        //value = Integer.valueOf((String) hm.get(key));
+                        result += value;
+                        log.info("RESULT:{}", result);
+                        value1 = value1 + 1;
+                        log.info("KEY:" + key + " VALUE:" + hm.get(key));
+                    }
+
+                    if (!(hm.containsKey(s33.getNodeCandidate().getHardware().getName()))) {
+
+                        value2 = betaHat[0] + betaHat[1] * (s33.getNodeCandidate().getHardware().getCores()) + betaHat[2] * (s33.getNodeCandidate().getHardware().getRam()) + betaHat[3] * (s33.getNodeCandidate().getHardware().getDisk());
+                        log.info("value custom:" + value2);
+                        result2 += value2;
+                        value1 = value1 + 1;
+                    }
+
+
                 }
-
-                if (!(hm.containsKey(s33.getNodeCandidate().getHardware().getName()))) {
-
-                    value2 = betaHat[0] + betaHat[1] * (s33.getNodeCandidate().getHardware().getCores()) + betaHat[2] * (s33.getNodeCandidate().getHardware().getRam()) + betaHat[3] * (s33.getNodeCandidate().getHardware().getDisk());
-                    System.out.println("value custom:" + value2);
-                    result2 += value2;
-                    value1 = value1 + 1;
-                }
-
 
 
             }
 
 
-        }
+            resultss = ((((((result + result2) / value1) + avg) / 2) - min) / (maxx - min));
+            log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, avg={}, min={}, max={} --> resultss={}", result, result2, value1, avg, min, max, resultss);
+            return resultss;
 
 
+        } else {
+            //do appropriate things for only VM startup times existing
+            HashMap<String, String> hm = new HashMap<String, String>();
 
 
-        resultss = ((((((result + result2) / value1) + avg) / 2) - min) / (maxx - min));
-        return resultss;
-		
-		
-		
-	}
-    else {
-          //do appropriate things for only VM startup times existing  
-	    HashMap<String,String> hm = new HashMap<String, String>();
-		
-		
-		// load first properties file--REMOVED
+            // load first properties file--REMOVED
 
 
-		
-		
-        // load old first properties file DATA 
-		//IPAT:
-		Map<String,String> prop = properties.getStartupTimes();
-		prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
-		prop.forEach((key, value) -> hm.put((String) key, (String) value));
-		log.info(">>>>>>>>>: hm: {}", hm);
-		
+            // load old first properties file DATA
+            //IPAT:
+            Map<String, String> prop = properties.getStartupTimes();
+            prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
+            prop.forEach((key, value) -> hm.put((String) key, (String) value));
+            log.info(">>>>>>>>>: hm: {}", hm);
 
-         // get the values of the HashMap hm returned as an Array
-		String[] yy = hm.values().toArray(new String[0]);
-		
-		System.out.println(Arrays.toString(yy));
-		
-		//Instantiate data for train of OLSMulitple regression algorithm
-		//convert String Array to double Array
-		double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
-		
-		//Find the maximum VM Startup time
-		double max = y[0];
-        for (int i = 1; i < y.length; i++){
-             if(max<y[i]){
-                  max=y[i]; //swapping
-                  y[i]=y[0];
+
+            // get the values of the HashMap hm returned as an Array
+            String[] yy = hm.values().toArray(new String[0]);
+
+            log.info(Arrays.toString(yy));
+
+            //Instantiate data for train of OLSMulitple regression algorithm
+            //convert String Array to double Array
+            double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
+
+            //Find the maximum VM Startup time
+            double max = y[0];
+            for (int i = 1; i < y.length; i++) {
+                if (max < y[i]) {
+                    max = y[i]; //swapping
+                    y[i] = y[0];
                 }
             }
-            System.out.println("The max VM Startup value is "+ max);
-		
+            log.info("The max VM Startup value is " + max);
 
-        //Find the mimimum VM Startup time		
-		double min = y[0];
-        for (int i = 1; i < y.length; i++){
-             if(min>y[i]){
-                  min=y[i]; //swapping
-                  y[i]=y[0];
+
+            //Find the mimimum VM Startup time
+            double min = y[0];
+            for (int i = 1; i < y.length; i++) {
+                if (min > y[i]) {
+                    min = y[i]; //swapping
+                    y[i] = y[0];
                 }
             }
-            System.out.println("The min VM Startup value is "+ min);
-		
-		
-		
-		
-		
-		
-         log.info(">>>>>>>>>: y: {}",y);
-		 
-		
-		log.info(">>>>>>>>>: y.length: ",y.length);
-		System.out.println(y.length); 
-		
-		tableStringLength=y.length;
-		   
-		log.info(">>>>>>>>>: tableStringLength: ",tableStringLength);
-		 
-		System.out.println(y.length); 
-        
-		   
-		//instantiate the double array
-        double[][] xx = new double[tableStringLength][3];
-		   
-		System.out.println(xx.length);
-		  
-		OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-	    
-		 
-		 
-		//  load second properties files ----- REMOVED  
-		
-           
-			
-	       
-		// load old second properties file DATA : STEFANIDI
-		
-	    String[] a = properties.getStateInfo().split(";");
+            log.info("The min VM Startup value is " + min);
 
 
+            log.info(">>>>>>>>>: y: {}", y);
 
-        //create the two dimensional array with correct size
-        String[][] array = new String[a.length][a.length];
 
-        //combine the arrays split by semicolin and comma
-        for (int i = 0; i < a.length; i++) {
-            array[i] = a[i].split(",");
-         }
+            log.info(">>>>>>>>>: y.length: ", y.length);
 
-        //Convert two dimensions String Array to two dimensions Double Array
+            tableStringLength = y.length;
 
-        System.out.println(a.length);
-        System.out.println(xx.length);
-        System.out.println("array: " + java.util.Arrays.deepToString(array));
-        System.out.println("xx: " + java.util.Arrays.deepToString(xx));
+            log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
+
+            log.info("y={}", y.length);
+
+
+            //instantiate the double array
+            double[][] xx = new double[tableStringLength][3];
+
+            log.info("xx.len={}", xx.length);
+
+            OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+
+
+            //  load second properties files ----- REMOVED
+
+
+            // load old second properties file DATA : STEFANIDI
+
+            String[] a = properties.getStateInfo().split(";");
+
+
+            //create the two dimensional array with correct size
+            String[][] array = new String[a.length][a.length];
+
+            //combine the arrays split by semicolin and comma
+            for (int i = 0; i < a.length; i++) {
+                array[i] = a[i].split(",");
+            }
+
+            //Convert two dimensions String Array to two dimensions Double Array
+
+            log.info("a={}", a.length);
+            log.info("xx.len={}", xx.length);
+            log.info("array: " + java.util.Arrays.deepToString(array));
+            log.info("xx: " + java.util.Arrays.deepToString(xx));
             for (int k = 0; k < tableStringLength; k++) {
                 for (int j = 0; j < 3; j++) {
-                    
+
                     xx[k][j] = Double.parseDouble(array[k][j]);
 
                 }
             }
 
-        System.out.println("array: " + java.util.Arrays.deepToString(array));
-        System.out.println("xx_after_fill: " + java.util.Arrays.deepToString(xx));
-         
-        log.info(">>>>>>>>>: xx: {}", xx);   
-	       
+            log.info("array: " + java.util.Arrays.deepToString(array));
+            log.info("xx_after_fill: " + java.util.Arrays.deepToString(xx));
 
-	    regression.newSampleData(y, xx);
-	    regression.setNoIntercept(true);
-	    // Get the regression parameters and residuals
-	    double[] betaHat = regression.estimateRegressionParameters();
-	    double[] residuals = regression.estimateResiduals();
-	    double rSquared = regression.calculateRSquared();
-	    //print them
-	        
-	    System.out.println("Regression parameters: ");
-	    for (int i = 0; i < betaHat.length; i++) {
-	            System.out.println(betaHat[i]);
-	    }
+            log.info(">>>>>>>>>: xx: {}", xx);
 
-	    System.out.println("Residual parameter:");
-	    for (int i = 0; i < residuals.length; i++) {
-	            System.out.println(residuals[i]);
-	    }
-	        
-	    //System.out.println("residual: " + residuals);
-	    System.out.println("rSquared: " + rSquared);
-			
-			
-	    
-		
-	for(String key : hm.keySet()){
-			int value =0;
-			
-			
-			// value=((Integer) hm.get(key)).intValue();//here is an ERROR 
-			value=Integer.parseInt((String) hm.get(key));
-			for (PenaltyConfigurationElement s33 : results) {
-				log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
-				
-				if (key.equals(s33.getNodeCandidate().getHardware().getName())){
-			
-			//value = Integer.valueOf((String) hm.get(key));
-			result += value; 
-			log.info("RESULT:{}", result);
-			value1 = value1 + 1;
-			System.out.println("KEY:"+key+" VALUE:"+hm.get(key));
-			}
-			
-			if (!(hm.containsKey(s33.getNodeCandidate().getHardware().getName()))){
-				
-			value2=betaHat[0]+betaHat[1] * (s33.getNodeCandidate().getHardware().getCores())+betaHat[2] * (s33.getNodeCandidate().getHardware().getRam())+betaHat[3] * (s33.getNodeCandidate().getHardware().getDisk());
-            System.out.println("value custom:"+value2);
-            result2 += value2;			
-			value1 = value1 + 1;
-			}
-				
-	
-			
-			
-		}
-			
-			
-			
-	}
-	   
-	   
-	   resultss= ((((result+result2)/value1)-min)/(max-min));
-		
-		return resultss;
+
+            regression.newSampleData(y, xx);
+            regression.setNoIntercept(true);
+            // Get the regression parameters and residuals
+            double[] betaHat = regression.estimateRegressionParameters();
+            double[] residuals = regression.estimateResiduals();
+            double rSquared = regression.calculateRSquared();
+            //print them
+
+            log.info("Regression parameters: ");
+            for (int i = 0; i < betaHat.length; i++) {
+                log.info("betaHat[{}]={}", i, betaHat[i]);
+            }
+
+            log.info("Residual parameter:");
+            for (int i = 0; i < residuals.length; i++) {
+                log.info("residuals[{}]={}", i, residuals[i]);
+            }
+
+            //log.info("residual: " + residuals);
+            log.info("rSquared: " + rSquared);
+
+
+            for (String key : hm.keySet()) {
+                int value = 0;
+
+
+                // value=((Integer) hm.get(key)).intValue();//here is an ERROR
+                value = Integer.parseInt((String) hm.get(key));
+                for (PenaltyConfigurationElement s33 : results) {
+                    log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
+
+                    if (key.equals(s33.getNodeCandidate().getHardware().getName())) {
+                        log.info("     MATCH FOUND: {}", key);
+
+                        //value = Integer.valueOf((String) hm.get(key));
+                        result += value;
+                        log.info("RESULT:{}", result);
+                        value1 = value1 + 1;
+                        log.info("KEY:" + key + " VALUE:" + hm.get(key));
+                    }
+
+                    if (!(hm.containsKey(s33.getNodeCandidate().getHardware().getName()))) {
+                        log.info("     NO MATCH FOUND FOR: {}", s33.getNodeCandidate().getHardware().getName());
+
+                        value2 = betaHat[0] + betaHat[1] * (s33.getNodeCandidate().getHardware().getCores()) + betaHat[2] * (s33.getNodeCandidate().getHardware().getRam()) + betaHat[3] * (s33.getNodeCandidate().getHardware().getDisk());
+                        log.info("value custom:" + value2);
+                        result2 += value2;
+                        value1 = value1 + 1;
+                    }
+
+
+                }
+
+
+            }
+
+
+            resultss = ((((result + result2) / value1) - min) / (max - min));
+
+            log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, min={}, max={} --> resultss={}", result, result2, value1, min, max, resultss);
+
+            return resultss;
+        }
     }
-    }
 
-  
 
     public static boolean containsEquivalent(Collection<PenaltyConfigurationElement> collection, PenaltyConfigurationElement element) {
         for (PenaltyConfigurationElement ce : collection) {
@@ -546,12 +519,12 @@ public class PenaltyFunction {
             //log.debug("isEquivalent:                  PASS-1");
             if (a.getNodeCandidate().getHardware().getCores() - b.getNodeCandidate().getHardware().getCores() == 0) {
                 //log.debug("isEquivalent:                  PASS-2");
-                if (a.getNodeCandidate().getHardware().getName() == b.getNodeCandidate().getHardware().getName()) {
+                if (a.getNodeCandidate().getHardware().getName().equals( b.getNodeCandidate().getHardware().getName() )) {
                     //log.debug("isEquivalent:                  PASS-3");
                     if (a.getNodeCandidate().getHardware().getDisk() - b.getNodeCandidate().getHardware().getDisk() == 0) {
-					/*if (a.getCardinality() == b.getCardinality()){
-						return false;
-					}*/
+                        /*if (a.getCardinality() == b.getCardinality()){
+                            return false;
+                        }*/
                         //log.debug("isEquivalent:              checking: EQUIV");
                         return true;
                     }
@@ -559,7 +532,7 @@ public class PenaltyFunction {
             }
 
         }
-        
+
         //log.debug("isEquivalent:              checking: NOT EQUIV");
         return false;
     }
@@ -593,6 +566,4 @@ public class PenaltyFunction {
         sb.append("]");
         return sb.toString();
     }
-	
-
 }
