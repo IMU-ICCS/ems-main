@@ -19,11 +19,13 @@ class ConnectedComponentsFinder {
     private List<String> communicatingComponentsNames;
     private ComponentId comp;
     private String agentNodeLocation;
+    private String agentNodeProvider;
 
     public ConnectedComponentsFinder(String agentNodeName, ComponentId comp) throws ApiException {
         this.communicatingComponentsNames = new ModelConnectionAnalyzer(agentNodeName).findCommunicatingComponentsNames();
         this.comp = comp;
         this.agentNodeLocation = this.findNodeLocation(agentNodeName);
+        this.agentNodeProvider = this.findNodeProvider(agentNodeName);
     }
 
     /**
@@ -31,7 +33,7 @@ class ConnectedComponentsFinder {
      */
     private String findNodeLocation(String nodeName) throws ApiException {
         return comp.findNodeLocation(nodeName).orElseGet(() -> {
-            log.error("Cloudiator could not find node location for a given agent node: " + nodeName);
+            log.error("Cloudiator could not find node location for a given node: " + nodeName);
             return "ERROR";
         });
     }
@@ -41,7 +43,14 @@ class ConnectedComponentsFinder {
      */
     private String findNodeIp(String nodeName) throws ApiException {
         return comp.findNodeIp(nodeName).orElseGet(() -> {
-            log.error("Cloudiator could not find node IP for a given agent node: " + nodeName);
+            log.error("Cloudiator could not find node IP for a given node: " + nodeName);
+            return "ERROR";
+        });
+    }
+
+    private String findNodeProvider(String nodeName) throws ApiException {
+        return comp.findNodeProvider(nodeName).orElseGet(() -> {
+            log.error("Cloudiator could not find node provider for a given node: " + nodeName);
             return "ERROR";
         });
     }
@@ -53,11 +62,14 @@ class ConnectedComponentsFinder {
         List<Configuration> configs = new ArrayList<>();
 
         for (String name : this.communicatingComponentsNames) {
+            comp.findNodeProvider(name);
             LatencyConfiguration latConf = new LatencyConfigurationImpl();
             latConf.setComponentName(name);
             latConf.setComponentIP(this.findNodeIp(name));
             latConf.setComponentRegion(this.findNodeLocation(name));
             latConf.setAgentRegion(this.agentNodeLocation);
+            latConf.setComponentCloud(this.findNodeProvider(name));
+            latConf.setAgentCloud(this.agentNodeProvider);
             configs.add(new Configuration(latConf));
         }
 
