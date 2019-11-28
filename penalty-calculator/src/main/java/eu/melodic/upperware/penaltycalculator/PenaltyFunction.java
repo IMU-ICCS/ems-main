@@ -128,50 +128,9 @@ public class PenaltyFunction {
         MemCachedClient mcc = new MemCachedClient("Test2");
 
         // connect to Daniel's InfluxDB and created database with queries...unused yet
-        String dbName = "cloudiator.autogen";
-
-        InfluxDB influxDB = InfluxDBFactory.connect("http://134.60.152.213:8888", "vasilis", "EiWeif0w");
-
-        // Flush every 2000 Points, at least every 100ms
-        influxDB.enableBatch(2000, 100, TimeUnit.MILLISECONDS);
-
-        for (int i = 0; i < 1; i++) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            Point point2 = Point.measurement("ComponentTime")
-                    .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
-                    .addField("timeDepl", Math.random() * 400L)
-                    .addField("ComponentName", "AppResponse")
-                    .build();
-            influxDB.write(dbName, "autogen", point2);
-        }
-
-        System.out.println();
-
-        Query query = new Query("SELECT * FROM ComponentTime", dbName);
-        influxDB.query(query);
-        System.out.println(influxDB.query(query));
-
-        //InfluxDB connection = connectDatabase();
-
-        // querying from centos_test_db DB
-
-        InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
-        //Query query1 = select("timeDepl").from(dbName,"ComponentTime");
-        //Query query1 = new Query("SELECT timeDepl FROM ComponentTime", dbName);
-		
-		Query query1 = new Query("SELECT mean("value") AS "mean_value" FROM "cloudiator"."autogen"."process-start-time" WHERE "task"='database' GROUP BY time(:interval:) FILL(null)",dbName);
-        //Logger.info("Executing query "+query1.getCommand());
-        List<ComponMeasurement> ComponMeasurements = influxDBMapper.query(query1, ComponMeasurement.class);
-        ComponMeasurements.forEach(System.out::println);
 
 
-        String arr = ComponMeasurements.toString();
-
-        //String arr = null;
+        String arr = null;
         log.info(arr);
 
         //check if we have Null Component Deployment Times and act accordingy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
