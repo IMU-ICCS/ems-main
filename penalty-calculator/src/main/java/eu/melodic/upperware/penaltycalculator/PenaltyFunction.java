@@ -16,10 +16,17 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.log4j.BasicConfigurator;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.Point;
+import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
+import org.influxdb.impl.InfluxDBMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -128,10 +135,58 @@ public class PenaltyFunction {
         MemCachedClient mcc = new MemCachedClient("Test2");
 
         // connect to Daniel's InfluxDB and created database with queries...unused yet
+//XXX:BEGIN
+        String dbName = "cloudiator";
+
+        log.info("INFLUX point A - START");
+        InfluxDB influxDB = InfluxDBFactory.connect("http://134.60.152.213:8086", "vasilis", "EiWeif0w");
+        log.info("INFLUX point B - connected");
+
+        // Flush every 2000 Points, at least every 100ms
+        influxDB.enableBatch(2000, 100, TimeUnit.MILLISECONDS);
+
+        for (int i = 0; i < 5; i++) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Point point2 = Point.measurement("ComponentTime")
+                    .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+                    .addField("timeDepl", Math.random() * 400L)
+                    .addField("ComponentName", "AppResponse")
+                    .build();
+            influxDB.write(dbName, "autogen", point2);
+        }
+        log.info("INFLUX point C - Added point");
+
+        Query query = new Query("SELECT * FROM ComponentTime", dbName);
+        QueryResult queryResult = influxDB.query(query);
+        log.info("InfluxDB query result: {}", queryResult);
+
+        //InfluxDB connection = connectDatabase();
+
+        // querying from centos_test_db DB
+
+        InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
+        //Query query1 = select("timeDepl").from(dbName,"ComponentTime");
+        //Query query1 = new Query("SELECT timeDepl FROM ComponentTime", dbName);
+        log.info("INFLUX point D - InfluxDB Mapper initialized");
+
+        Query query1 = new Query("SELECT mean(\"value\") AS \"mean_value\" FROM \"cloudiator\".\"autogen\".\"process-start-time\" WHERE \"task\"='database' GROUP BY time(5s) FILL(null)", dbName);
+        //Logger.info("Executing query "+query1.getCommand());
+        List<ComponMeasurement> ComponMeasurements = influxDBMapper.query(query1, ComponMeasurement.class);
+        log.info("INFLUX point E - Query ok: size={}", ComponMeasurements.size());
+        ComponMeasurements.forEach(r -> log.info(" - {}", r));
 
 
-        String arr = null;
+        log.info("INFLUX point F - Query results listed");
+        String arr = ComponMeasurements.toString();
+        log.info("INFLUX point G - arr: {}", arr);
+
+        //String arr = null;
         log.info(arr);
+//XXX:END
 
         //check if we have Null Component Deployment Times and act accordingy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
