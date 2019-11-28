@@ -31,7 +31,7 @@ public class PenaltyFunction {
     @Setter
     private PenaltyFunctionProperties properties;
 
-    public double evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
+    public PenaltyFunctionResult evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
         try {
             return _evaluatePenaltyFunction(actualConfiguration, newConfiguration);
         } catch (Throwable t) {
@@ -40,7 +40,7 @@ public class PenaltyFunction {
         }
     }
 
-    private double _evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
+    private PenaltyFunctionResult _evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
         log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
         log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
         log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
@@ -334,10 +334,14 @@ public class PenaltyFunction {
             }
 
 
-            resultss = ((((((result + result2) / value1) + avg) / 2) - min) / (maxx - min));
+            double avgTime = ((((result + result2) / value1) + avg) / 2) - min;
+            resultss = avgTime / (maxx - min);
             log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, avg={}, min={}, max={} --> resultss={}", result, result2, value1, avg, min, max, resultss);
-            return resultss;
+            //return resultss;
 
+            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(resultss, avgTime);
+
+            return pfResult;
 
         } else {
             //do appropriate things for only VM startup times existing
@@ -557,7 +561,10 @@ public class PenaltyFunction {
                     sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE,
                     averageStartupTime, min, max, normalizedValue);
 
-            return normalizedValue;
+            // prepare results object
+            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(normalizedValue, averageStartupTime);
+
+            return pfResult;
 
             /*resultss = ((((result + result2) / value1) - min) / (max - min));
             log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, min={}, max={} --> resultss={}", result, result2, value1, min, max, resultss);

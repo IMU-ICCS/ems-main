@@ -1,6 +1,8 @@
 package eu.melodic.upperware.utilitygenerator.reconfiguration_penalty;
 
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
+import eu.melodic.upperware.penaltycalculator.PenaltyFunctionResult;
+
 import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
@@ -40,7 +42,8 @@ public class PenaltyConverter implements ArgumentConverter {
             return Collections.emptyList();
         }
         try {
-            penalty = penaltyService.getPenalty(actConfiguration, newConfiguration);
+            PenaltyFunctionResult penaltyResult = penaltyService.getPenalty(actConfiguration, newConfiguration);
+            penalty = penaltyResult.getPenaltyValue();
 
         } catch (Exception e) {
             log.warn("There was an error during invoking the Penalty Calculator library, returning 0 as a penalty value. The error: {}", e.toString());

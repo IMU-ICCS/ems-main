@@ -3,6 +3,7 @@ package eu.melodic.upperware.utilitygenerator.reconfiguration_penalty;
 import eu.melodic.upperware.penaltycalculator.PenaltyConfigurationElement;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunction;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
+import eu.melodic.upperware.penaltycalculator.PenaltyFunctionResult;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,7 +25,7 @@ public class PenaltyServiceImpl implements PenaltyService{
     }
 
     @Override
-    public double getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
+    public PenaltyFunctionResult getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
 
         Collection<PenaltyConfigurationElement> actConfigurationForPenalty = convertToPenaltyConfigurationElement(actConfiguration);
         Collection<PenaltyConfigurationElement> newConfigurationForPenalty = convertToPenaltyConfigurationElement(newConfiguration);
