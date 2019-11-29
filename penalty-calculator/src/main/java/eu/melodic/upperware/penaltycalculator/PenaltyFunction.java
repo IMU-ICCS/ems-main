@@ -105,6 +105,15 @@ public class PenaltyFunction {
         log.info("----------------------------------------------------------------------");
         log.info("Uncommon elements:\n{}", PenaltyFunction.toString(results));
         log.info("Penalty: ++++++");
+
+        // Check if there is no difference
+        if (results.size()==0) {
+            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(0, 0);
+            log.warn("-----> No difference between solutions: result will be: {}", pfResult);
+            return pfResult;
+        }
+
+        // Memchache staff here
         String str1 = "";
         String str2 = "";
         // Get memcached connection info from properties file
