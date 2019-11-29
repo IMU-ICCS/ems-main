@@ -106,6 +106,7 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
             return new LanceInterface()
                     .updateAction(((AdapterLanceInterface) adapterTaskInterface).getUpdate())
                     .containerType(LanceInterface.ContainerTypeEnum.valueOf(((AdapterLanceInterface) adapterTaskInterface).getContainterType()))
+                    .operatingSystem(convertToOperatingSystem(((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem()))
                     .preInstall(((AdapterLanceInterface) adapterTaskInterface).getPreInstall())
                     .install(((AdapterLanceInterface) adapterTaskInterface).getInstall())
                     .postInstall(((AdapterLanceInterface) adapterTaskInterface).getPostInstall())
@@ -141,6 +142,14 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .type(FaasInterface.class.getSimpleName());
         }
         throw new AdapterException(format("Unknown TaskInterface type: %s", adapterTaskInterface.getClass().getSimpleName()));
+    }
+
+    private OperatingSystem convertToOperatingSystem(AdapterOperatingSystem adapterOperatingSystem) {
+        OperatingSystem operatingSystem = new OperatingSystem();
+        operatingSystem.setOperatingSystemFamily(OperatingSystemFamily.valueOf(adapterOperatingSystem.getOperatingSystemFamily().toString()));
+        operatingSystem.setOperatingSystemArchitecture(OperatingSystemArchitecture.valueOf(adapterOperatingSystem.getOperatingSystemArchitecture().toString()));
+        operatingSystem.setOperatingSystemVersion(adapterOperatingSystem.getOperatingSystemVersion());
+        return operatingSystem;
     }
 
     private List<Communication> convertToCommunications(List<AdapterCommunication> communications) {
