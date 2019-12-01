@@ -1,8 +1,6 @@
 import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.metamodel.cp.*;
-import sun.tools.jstat.Operator;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,7 +40,11 @@ public class ExpressionEvaluator {
                 return values.stream()
                         .reduce((double) 1, (subtotal, element) -> subtotal * element);
             case DIV:
-                return values.get(0) / values.get(1); // TODO czy sprawdzac dzielenie przez zero
+                if ( values.get(1) == 0.0) {
+                    throw new RuntimeException("Division by zero encountered");
+                } else {
+                    return values.get(0) / values.get(1);
+                }
             case EQ:
                 double diff = values.get(0) - values.get(1);
                 return Math.abs(diff) <= ExpressionEvaluator.PRECISION ? 1.0 : 0.0;
@@ -67,6 +69,7 @@ public class ExpressionEvaluator {
             } else if (isCpVariable(exp)) {
                 return variables.get(exp.getId());
             } else if (isComposedExpression(exp)) {
+
                 return evaluateComposedExpression((ComposedExpression) exp, variables);
             }
             //TODO throw
@@ -84,7 +87,7 @@ public class ExpressionEvaluator {
             case LESS_OR_EQUAL_TO:
                 return argRight - argLeft > -ExpressionEvaluator.PRECISION;
             case LESS_THAN:
-                return argRight - argLeft > ExpressionEvaluator.PRECISION;;
+                return argRight - argLeft > ExpressionEvaluator.PRECISION;
             case DIFFERENT:
                 return Math.abs(argLeft - argRight) > ExpressionEvaluator.PRECISION;
 
