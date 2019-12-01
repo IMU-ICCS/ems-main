@@ -80,6 +80,6 @@ class ArConstraintImplTest {
         vars.put(names[1], 3.0);
         vars.put(names[2], 5.0);
         ArConstraint constraint = new ArConstraintImpl(ComparatorEnum.GREATER_OR_EQUAL_TO, div, sum);
-        assertTrue(constraint.evaluate(vars));
+        assertFalse(constraint.evaluate(vars));
     }
 }

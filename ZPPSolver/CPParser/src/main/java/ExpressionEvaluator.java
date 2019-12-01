@@ -96,19 +96,19 @@ public class ExpressionEvaluator {
         return false;
     }
 
-    private static boolean isConstant(Expression expression){
+    protected static boolean isConstant(Expression expression){
         return expression instanceof Constant;
     }
 
-    private static boolean isCpVariable(Expression expression){
+    protected static boolean isCpVariable(Expression expression){
         return expression instanceof CpVariable;
     }
 
-    private static boolean isCpMetric(Expression expression){
+    protected static boolean isCpMetric(Expression expression){
         return expression instanceof CpMetric;
     }
 
-    private static boolean isComposedExpression(Expression expression){
+    protected static boolean isComposedExpression(Expression expression){
         return expression instanceof ComposedExpression;
     }
 }
