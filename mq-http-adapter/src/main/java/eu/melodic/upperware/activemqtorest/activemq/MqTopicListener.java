@@ -54,11 +54,11 @@ public class MqTopicListener {
 						influxDbConnector.writeMqDataEntry(dataPoint.get());
 						activeMqStatisticHolder.increaseMsgCount();
 					} else {
+						activeMqStatisticHolder.increaseErrorCount();
 						log.warn("Could not extract incoming message.");
 					}
 				});
 			} catch (Exception e) {
-				activeMqStatisticHolder.increaseErrorCount();
 				log.error("Error while using BrokerCLient.", e);
 				restartAfterMqFailure();
 			}
