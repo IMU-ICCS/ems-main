@@ -7,7 +7,6 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-
 package eu.melodic.upperware.penaltycalculator;
 
 import org.influxdb.annotation.Column;

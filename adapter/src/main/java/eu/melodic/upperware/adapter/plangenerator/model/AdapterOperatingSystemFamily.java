@@ -1,0 +1,31 @@
+package eu.melodic.upperware.adapter.plangenerator.model;
+
+public enum AdapterOperatingSystemFamily {
+    UBUNTU,
+    UNKOWN_OS_FAMILY,
+    AIX,
+    ARCH,
+    CENTOS,
+    DARWIN,
+    DEBIAN,
+    ESX,
+    FEDORA,
+    FREEBSD,
+    GENTOO,
+    HPUX,
+    COREOS,
+    AMZN_LINUX,
+    MANDRIVA,
+    NETBSD,
+    OEL,
+    OPENBSD,
+    RHEL,
+    SCIENTIFIC,
+    CEL,
+    SLACKWARE,
+    SOLARIS,
+    SUSE,
+    TURBOLINUX,
+    CLOUD_LINUX,
+    WINDOWS
+}
