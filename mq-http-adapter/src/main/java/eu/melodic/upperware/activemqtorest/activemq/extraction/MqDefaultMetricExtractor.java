@@ -47,6 +47,9 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, StringUtils.EMPTY));
 		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, StringUtils.EMPTY);
 		mqDataEntry.setTopic(topic);
+
+		activeMqStatisticHolder.addExtractedMetricDescription(mqDataEntry.getTopic(), mqDataEntry.getTimestamp());
+
 		String producerHost = MqConstants.PRODUCER_HOST_DEFAULT_VALUE;
 		try {
 			producerHost = (String)activeMQMessage.getProperty(MqConstants.PRODUCER_HOST);

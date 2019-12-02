@@ -30,6 +30,9 @@ public class MqEmsInstanceInfoExtractor extends MqDataEntryBaseExtractor impleme
 			mqInstanceInfoEntry.setInstanceId(jsonObject.get("id").getAsString());
 			mqInstanceInfoEntry.setProviderId(jsonObject.get("providerId").getAsString());
 			mqInstanceInfoEntry.setTimestamp(String.valueOf(activeMQMessage.getTimestamp()));
+
+			activeMqStatisticHolder.addExtractedMetricDescription(mqInstanceInfoEntry.getName(), mqInstanceInfoEntry.getTimestamp());
+
 			return mqInstanceInfoEntry;
 		});
 	}

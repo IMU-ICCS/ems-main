@@ -1,5 +1,7 @@
 package eu.melodic.upperware.activemqtorest.entry;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;
@@ -14,5 +16,5 @@ public class ActiveMqStatistics {
 
 	private long msqCount;
 	private long errorCount;
-
+	private Map<String, String> recentExtractedMetricsDescriptions;
 }

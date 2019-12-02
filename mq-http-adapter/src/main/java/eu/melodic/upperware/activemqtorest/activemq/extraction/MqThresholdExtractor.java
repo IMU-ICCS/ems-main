@@ -25,6 +25,9 @@ public class MqThresholdExtractor extends MqDataEntryBaseExtractor implements IM
 			mqThresholdEntry.setOperator(jsonObject.get("operator").getAsString());
 			mqThresholdEntry.setThreshold(jsonObject.get("threshold").getAsString());
 			mqThresholdEntry.setTimestamp(String.valueOf(activeMQMessage.getTimestamp()));
+
+			activeMqStatisticHolder.addExtractedMetricDescription(mqThresholdEntry.getName(), mqThresholdEntry.getTimestamp());
+
 			return mqThresholdEntry;
 		});
 	}
