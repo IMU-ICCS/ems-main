@@ -1,24 +1,31 @@
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.types.*;
-import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
 public class ArConstraintImpl implements ArConstraint {
-
     private Collection<String> variablesNames;
-
     private ComparatorEnum comparator;
+    private Expression leftExpression;
+    private Expression rightExpression;
 
-    Expression leftExpression;
+    public ArConstraintImpl(ComparatorEnum comp, Expression exp1, Expression exp2){
+        this.comparator = comp;
+        this.leftExpression = exp1;
+        this.rightExpression = exp2;
+        variablesNames = new ArrayList<>();
+        collectVariableNames();
+    }
 
-    Expression rightExpression;
+    private void collectVariableNames() {
+        collectVariableNamesFromExpression(leftExpression);
+        collectVariableNamesFromExpression(rightExpression);
+    }
 
     private void collectVariableNamesFromExpression(Expression exp) {
         if (ExpressionEvaluator.isCpVariable(exp)) {
-            String name = ((CpVariable) exp).getId();
+            String name = exp.getId();
             if(!variablesNames.contains(name)) {
                 variablesNames.add(name);
             }
@@ -31,21 +38,8 @@ public class ArConstraintImpl implements ArConstraint {
         }
     }
 
-    private void collectVariableNames() {
-        collectVariableNamesFromExpression(leftExpression);
-        collectVariableNamesFromExpression(rightExpression);
-    }
-
     private boolean checkVariables(Collection<String> vars) {
         return vars.containsAll(variablesNames);
-    }
-
-    public ArConstraintImpl(ComparatorEnum comp, Expression exp1, Expression exp2){
-        this.comparator = comp;
-        this.leftExpression = exp1;
-        this.rightExpression = exp2;
-        variablesNames = new ArrayList<>();
-        collectVariableNames();
     }
 
     @Override

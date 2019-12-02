@@ -1,9 +1,6 @@
 import java.util.*;
 
 public class ConstraintGraph {
-    /*
-        
-     */
     private Collection<ArConstraint> constraints;
     private Collection<String> variables;
     private Map<String, Map<Integer, Set<String>>> neighbourhoodList;

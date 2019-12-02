@@ -10,7 +10,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ArConstraintImplMockup {
+class ArConstraintImplTest {
     private static List<CpVariable> variables;
     private static final String[] names = new String[]{"Variable", "qwerty", "wewrfdvdfbfdvd"};
     @BeforeAll

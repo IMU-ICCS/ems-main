@@ -1,5 +1,4 @@
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import lombok.AllArgsConstructor;
 import org.eclipse.emf.cdo.CDOLock;
 import org.eclipse.emf.cdo.CDOObjectHistory;

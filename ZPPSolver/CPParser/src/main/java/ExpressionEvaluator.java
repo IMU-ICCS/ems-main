@@ -49,8 +49,7 @@ public class ExpressionEvaluator {
                 double diff = values.get(0) - values.get(1);
                 return Math.abs(diff) <= ExpressionEvaluator.PRECISION ? 1.0 : 0.0;
         }
-        //TODO throw
-        return 0.0;
+        throw new RuntimeException("Unsupported operation type");
     }
 
     private static double evaluateComposedExpression(ComposedExpression exp, Map<String, Double> variables) {
@@ -72,8 +71,7 @@ public class ExpressionEvaluator {
 
                 return evaluateComposedExpression((ComposedExpression) exp, variables);
             }
-            //TODO throw
-            return 0.0;
+            throw new RuntimeException("Unsupported Expression type");
     }
 
     public static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
@@ -92,8 +90,7 @@ public class ExpressionEvaluator {
                 return Math.abs(argLeft - argRight) > ExpressionEvaluator.PRECISION;
 
         }
-        //TODO throws
-        return false;
+        throw new RuntimeException("Unsupported comparator type");
     }
 
     protected static boolean isConstant(Expression expression){
