@@ -5,7 +5,7 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class ConstantImplTest extends NumericExpressionImpl implements Constant {
+public class ConstantImplMockup extends NumericExpressionImpl implements Constant {
     private BasicTypeEnum type;
     private NumericValueUpperware value;
     @Override

@@ -5,7 +5,7 @@ import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class CpMetricImplTest extends NumericExpressionImpl implements CpMetric {
+public class CpMetricImplMockup extends NumericExpressionImpl implements CpMetric {
     private BasicTypeEnum type;
     private NumericValueUpperware value;
     @Override

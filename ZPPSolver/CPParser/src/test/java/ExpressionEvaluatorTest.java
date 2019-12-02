@@ -61,11 +61,11 @@ class ExpressionEvaluatorTest {
     @Test
     public void basicExpressionEvaluationTest() {
         double a = Math.random();
-        NumericValueUpperware val = new NumericValueUpperwareImplTest(a);
-        Constant c = new ConstantImplTest(BasicTypeEnum.DOUBLE, val);
+        NumericValueUpperware val = new NumericValueUpperwareImplMockup(a);
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, val);
         assertTrue(ExpressionEvaluator.evaluateExpression(c, new HashMap<String, Double>()) == a);
 
-        CpMetric m = new CpMetricImplTest(BasicTypeEnum.DOUBLE, val);
+        CpMetric m = new CpMetricImplMockup(BasicTypeEnum.DOUBLE, val);
         assertTrue(ExpressionEvaluator.evaluateExpression(m, new HashMap<String, Double>()) == a);
     }
 
@@ -73,7 +73,7 @@ class ExpressionEvaluatorTest {
     public void variableEvaluationTest() {
         double a = Math.random();
         String name = "Variable11";
-        CpVariable var = new CpVariableImplTest(name, VariableType.CPU);
+        CpVariable var = new CpVariableImplMockup(name, VariableType.CPU);
         Map<String, Double> vars = new HashMap<>();
         vars.put(name, a);
         assertTrue(ExpressionEvaluator.evaluateExpression(var, vars) == a);
@@ -88,24 +88,24 @@ class ExpressionEvaluatorTest {
         double realValue = (((vals[0] + vals[2]) * vals[1]) - vals[3])/vals[4];
 
         String[] names = new String[]{"Variable", "qwerty", "wewrfdvdfbfdvd"};
-        Constant c = new ConstantImplTest(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplTest(vals[0]));
-        CpMetric m = new CpMetricImplTest(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplTest(vals[1]));
-        CpVariable var1 = new CpVariableImplTest(names[0], VariableType.CORES);
-        CpVariable var2 = new CpVariableImplTest(names[1], VariableType.CORES);
-        CpVariable var3 = new CpVariableImplTest(names[2], VariableType.CORES);
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(vals[0]));
+        CpMetric m = new CpMetricImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(vals[1]));
+        CpVariable var1 = new CpVariableImplMockup(names[0], VariableType.CORES);
+        CpVariable var2 = new CpVariableImplMockup(names[1], VariableType.CORES);
+        CpVariable var3 = new CpVariableImplMockup(names[2], VariableType.CORES);
 
         EList<NumericExpression> exprs = new BasicEList<>();
         exprs.add(c); exprs.add(var1);
-        NumericExpression sum = new ComposedExpressionImplTest(exprs, OperatorEnum.PLUS);
+        NumericExpression sum = new ComposedExpressionImplMockup(exprs, OperatorEnum.PLUS);
         exprs = new BasicEList<>();
         exprs.add(sum); exprs.add(m);
-        NumericExpression times = new ComposedExpressionImplTest(exprs, OperatorEnum.TIMES);
+        NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
         exprs = new BasicEList<>();
         exprs.add(times); exprs.add(var2);
-        NumericExpression minus = new ComposedExpressionImplTest(exprs, OperatorEnum.MINUS);
+        NumericExpression minus = new ComposedExpressionImplMockup(exprs, OperatorEnum.MINUS);
         exprs = new BasicEList<>();
         exprs.add(minus); exprs.add(var3);
-        NumericExpression composed = new ComposedExpressionImplTest(exprs, OperatorEnum.DIV);
+        NumericExpression composed = new ComposedExpressionImplMockup(exprs, OperatorEnum.DIV);
 
         Map<String, Double> vars = new HashMap<>();
         vars.put(names[0], vals[2]);

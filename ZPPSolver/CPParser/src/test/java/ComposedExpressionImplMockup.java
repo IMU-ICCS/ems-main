@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import org.eclipse.emf.common.util.EList;
 
 @AllArgsConstructor
-public class ComposedExpressionImplTest extends NumericExpressionImpl implements ComposedExpression {
+public class ComposedExpressionImplMockup extends NumericExpressionImpl implements ComposedExpression {
     private EList<NumericExpression> expressions;
     private OperatorEnum operator;
 

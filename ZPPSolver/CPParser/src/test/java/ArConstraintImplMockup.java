@@ -10,15 +10,15 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ArConstraintImplTest {
+class ArConstraintImplMockup {
     private static List<CpVariable> variables;
     private static final String[] names = new String[]{"Variable", "qwerty", "wewrfdvdfbfdvd"};
     @BeforeAll
     public static void setup(){
         variables = new ArrayList<>();
-        variables.add(new CpVariableImplTest(names[0], VariableType.CORES));
-        variables.add(new CpVariableImplTest(names[1], VariableType.CORES));
-        variables.add(new CpVariableImplTest(names[2], VariableType.CORES));
+        variables.add(new CpVariableImplMockup(names[0], VariableType.CORES));
+        variables.add(new CpVariableImplMockup(names[1], VariableType.CORES));
+        variables.add(new CpVariableImplMockup(names[2], VariableType.CORES));
     }
     @Test
     public void shouldThrowEmptyVariables(){
@@ -43,7 +43,7 @@ class ArConstraintImplTest {
 
     @Test
     public void linearConstraintEvaluationTest(){
-        Constant c = new ConstantImplTest(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplTest(1.0));
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(1.0));
 
         Map<String, Double> vars = new HashMap<>();
         vars.put(names[0], 2.0);
@@ -52,7 +52,7 @@ class ArConstraintImplTest {
 
         EList<NumericExpression> exprs = new BasicEList<>();
         exprs.addAll(variables);
-        Expression sum = new ComposedExpressionImplTest(exprs, OperatorEnum.PLUS);
+        Expression sum = new ComposedExpressionImplMockup(exprs, OperatorEnum.PLUS);
 
         ArConstraint constraint = new ArConstraintImpl(ComparatorEnum.GREATER_OR_EQUAL_TO, sum, c);
 
@@ -67,13 +67,13 @@ class ArConstraintImplTest {
     public void composedConstraintEvaluationTest() {
         BasicEList<NumericExpression> exprs = new BasicEList<>();
         exprs.add(variables.get(0)); exprs.add(variables.get(1));
-        NumericExpression times = new ComposedExpressionImplTest(exprs, OperatorEnum.TIMES);
+        NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
 
         exprs = new BasicEList<>(); exprs.add(times); exprs.add(variables.get(2));
-        NumericExpression div = new ComposedExpressionImplTest(exprs, OperatorEnum.DIV);
+        NumericExpression div = new ComposedExpressionImplMockup(exprs, OperatorEnum.DIV);
 
         exprs = new BasicEList<>(); exprs.addAll(variables);
-        NumericExpression sum = new ComposedExpressionImplTest(exprs, OperatorEnum.PLUS);
+        NumericExpression sum = new ComposedExpressionImplMockup(exprs, OperatorEnum.PLUS);
 
         Map<String, Double> vars = new HashMap<>();
         vars.put(names[0], 2.0);

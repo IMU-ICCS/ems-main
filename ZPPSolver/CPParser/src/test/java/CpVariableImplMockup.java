@@ -3,11 +3,11 @@ import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.paasage.upperware.metamodel.cp.impl.NumericExpressionImpl;
 
-public class CpVariableImplTest extends NumericExpressionImpl implements CpVariable {
+public class CpVariableImplMockup extends NumericExpressionImpl implements CpVariable {
     private String id;
     private VariableType type;
     private Domain domain;
-    public CpVariableImplTest(String id, VariableType type) {
+    public CpVariableImplMockup(String id, VariableType type) {
         this.id = id;
         this.type = type;
     }

@@ -20,7 +20,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import java.lang.reflect.InvocationTargetException;
 
 @AllArgsConstructor
-public class NumericValueUpperwareImplTest implements DoubleValueUpperware {
+public class NumericValueUpperwareImplMockup implements DoubleValueUpperware {
     private double value;
 
     @Override

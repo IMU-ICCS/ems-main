@@ -49,13 +49,13 @@ class ConstraintGraphTest {
             vars.add(variables.get(i % varsSize));
             constraints.add(new ConstraintMockup(vars));
         }
-        ConstraintGraph graph = new ConstraintGraph(new ArrayList<ArConstraint>(), variables);
+        ConstraintGraph graph = new ConstraintGraph(constraints, variables);
 
-        for (int i = 0; i < varsSize/2 - 1; i++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(0), 2*i) == 2);
+        for (int i = 1; i < varsSize/2 - 1; i++) {
+            assertTrue(graph.getNumberOfNeighbours(variables.get(0), i) == 2);
         }
-        for (int i = varsSize/2; i < 2*varsSize; i++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(0), 2*i) == 0);
+        for (int i = varsSize/2 + 1; i < 2*varsSize; i++) {
+            assertTrue(graph.getNumberOfNeighbours(variables.get(0), i) == 0);
         }
     }
 
@@ -65,9 +65,9 @@ class ConstraintGraphTest {
         Collection<ArConstraint> constraints = new ArrayList<>();
         ArConstraint constraint = new ConstraintMockup(variables);
         constraints.add(constraint);
-        ConstraintGraph graph = new ConstraintGraph(new ArrayList<ArConstraint>(), variables);
+        ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (String var : variables) {
-            assertTrue(graph.getNumberOfNeighbours(var, 2) == varsSize -1);
+            assertTrue(graph.getNumberOfNeighbours(var, 1) == varsSize -1);
         }
     }
 
@@ -79,15 +79,15 @@ class ConstraintGraphTest {
         for (int i = 0; i < noOfConstraints; i ++ ) {
             constraints.add(new ConstraintMockup(variables));
         }
-        ConstraintGraph graph = new ConstraintGraph(new ArrayList<ArConstraint>(), variables);
+        ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (String var : variables) {
-            assertTrue(graph.getNumberOfNeighbours(var, 2) == varsSize -1);
+            assertTrue(graph.getNumberOfNeighbours(var, 1) == varsSize -1);
         }
-        for (int dist = 4; dist <= 1000; dist+=2) {
+        for (int dist = 2; dist <= 1000; dist++) {
             assertTrue(graph.getNumberOfNeighbours(variables.get(0), dist) == 0);
         }
 
-        assertTrue(graph.getNumberOfNeighbours(variables.get(0), 1) == noOfConstraints);
+        assertTrue(graph.getConstraints(variables.get(0)).size() == noOfConstraints);
     }
 
     @Test
@@ -95,12 +95,12 @@ class ConstraintGraphTest {
         Collection<ArConstraint> constraints = new ArrayList<>();
         int varsSize = variables.size();
         for(int i = 0; i < varsSize; i++) {
-            constraints.add(new ConstraintMockup(variables.subList(0,i)));
+            constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (int i = 0; i < varsSize; i++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(i), 2) == varsSize - 1 );
-            assertTrue(graph.getNumberOfNeighbours(variables.get(i), 1) == varsSize - i);
+            assertTrue(graph.getNumberOfNeighbours(variables.get(i), 1) == varsSize - 1 );
+            assertTrue(graph.getConstraints(variables.get(i)).size() == varsSize - i);
         }
     }
 
