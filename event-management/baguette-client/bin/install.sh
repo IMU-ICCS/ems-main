@@ -8,6 +8,9 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
+INSTALL_LOG=/opt/baguette-install.log
+echo "START: `date -Iseconds`" >> $INSTALL_LOG
+
 # Command line arguments: <server cert. file> <server url> <server api-key>
 SERVER_CERT=$1
 BASE_URL=$2
@@ -46,12 +49,13 @@ STARTUP_SCRIPT=$BIN_DIRECTORY/baguette-client
 SERVICE_NAME=baguette-client
 CLIENT_CONF_FILE=$CONF_DIRECTORY/baguette-client.properties
 CLIENT_ID_FILE=$CONF_DIRECTORY/id.txt
-CREDENTIALS_FILE=$CONF_DIRECTORY/baguette-server.credentials
+#CREDENTIALS_FILE=$CONF_DIRECTORY/baguette-server.credentials
 
 # Check if already installed
 if [ -f /opt/baguette-client/conf/ok.txt ]; then
   echo "Already installed. Exiting..."
   date -Iseconds
+  echo "END: Already installed: `date -Iseconds`" >> $INSTALL_LOG
   exit 0
 fi
 
@@ -64,6 +68,7 @@ if [ $? != 0 ]; then
   echo "Failed to create installation directory ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: mkdir: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 
@@ -76,6 +81,7 @@ if [ $? != 0 ]; then
   echo "Failed to download installation package ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: download: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 date -Iseconds
@@ -90,6 +96,7 @@ if [ $? != 0 ]; then
   echo "Failed to download installation package ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: download MD5: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 date -Iseconds
@@ -107,6 +114,7 @@ else
   echo "Checksum: wrong"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: wrong MD5: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 
@@ -120,6 +128,7 @@ if [ $? != 0 ]; then
   echo "Failed to extract installation package contents ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: extract: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 date -Iseconds
@@ -133,6 +142,7 @@ if [ $? != 0 ]; then
   echo "Failed to copy service script to /etc/init.d/ directory ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: chmod: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 
@@ -145,6 +155,7 @@ if [ $? != 0 ]; then
   echo "Failed to copy service script to /etc/init.d/ directory ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: cp init.d: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 
@@ -153,28 +164,47 @@ if [ $? != 0 ]; then
   echo "Failed to register service script to /etc/init.d/ directory ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: update-rc.d: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 
 # Add Id, Credentials and Client configuration files
 echo "Add Id, Credentials and Client configuration files"
 date -Iseconds
-touch $CLIENT_ID_FILE $CREDENTIALS_FILE $CLIENT_CONF_FILE
+#touch $CLIENT_ID_FILE $CREDENTIALS_FILE $CLIENT_CONF_FILE
+touch $CLIENT_ID_FILE $CLIENT_CONF_FILE
 if [ $? != 0 ]; then
   echo "Failed to 'touch' configuration files ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: touch: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
 
-chmod u=rw,og-rwx $CLIENT_ID_FILE $CREDENTIALS_FILE $CLIENT_CONF_FILE
-touch $CLIENT_ID_FILE $CREDENTIALS_FILE
+#chmod u=rw,og-rwx $CLIENT_ID_FILE $CREDENTIALS_FILE $CLIENT_CONF_FILE
+chmod u=rw,og-rwx $CLIENT_ID_FILE $CLIENT_CONF_FILE
+#touch $CLIENT_ID_FILE $CREDENTIALS_FILE
 if [ $? != 0 ]; then
   echo "Failed to change permissions of configuration files ($?)"
   echo "Aborting installation..."
   date -Iseconds
+  echo "ABORT: chmod 2: `date -Iseconds`" >> $INSTALL_LOG
   exit 1
 fi
+
+# Write successful installation file
+echo "Write successful installation file"
+date -Iseconds
+sudo touch $CONF_DIRECTORY/ok.txt
+
+echo "END: OK: `date -Iseconds`" >> $INSTALL_LOG
+
+# Launch Baguette Client
+echo "Launch Baguette Client"
+date -Iseconds
+sudo service baguette-client start
+
+echo "RUN: `date -Iseconds`" >> $INSTALL_LOG
 
 # Success
 echo ""
