@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.entry.ActiveMqStatistics;
+import eu.melodic.upperware.activemqtorest.entry.ExtractedMetricsDescriptions;
 
 @Service
 public class ActiveMqStatisticHolder {
@@ -30,7 +31,7 @@ public class ActiveMqStatisticHolder {
 	@Autowired
 	private MelodicConfiguration melodicConfiguration;
 
-	private Cache<String, String> metricDescriptionCache;
+	private Cache<String, ExtractedMetricsDescriptions> metricDescriptionCache;
 
 	public void increaseMsgCount() {
 		activeMqStatistics.setMsqCount(activeMqStatistics.getMsqCount() + 1);
@@ -40,12 +41,12 @@ public class ActiveMqStatisticHolder {
 		activeMqStatistics.setErrorCount(activeMqStatistics.getErrorCount() + 1);
 	}
 
-	public void addExtractedMetricDescription(String description, String lastOccurrence){
-		metricDescriptionCache.put(description, lastOccurrence);
+	public void addExtractedMetricDescription(String description, ExtractedMetricsDescriptions extractedMetricsDescriptions){
+		metricDescriptionCache.put(description, extractedMetricsDescriptions);
 	}
 
 	public ActiveMqStatistics getActiveMqStatistics() {
-		Map<String, String> metricDescriptions = Maps.newHashMap();
+		Map<String, ExtractedMetricsDescriptions> metricDescriptions = Maps.newHashMap();
 		metricDescriptionCache.iterator().forEachRemaining(s -> {
 			metricDescriptions.put(s.getKey(), s.getValue());
 		});
@@ -61,6 +62,6 @@ public class ActiveMqStatisticHolder {
 		Expiry<Object, Object> objectObjectExpiry = Expirations.timeToLiveExpiration(Duration.of(melodicConfiguration.getMqRecentMetricsExpiryInterval(),
 				TimeUnit.SECONDS));
 		metricDescriptionCache = cacheManager.createCache("metricDescriptionCache", CacheConfigurationBuilder.newCacheConfigurationBuilder(
-				String.class, String.class, heap).withExpiry(objectObjectExpiry).build());
+				String.class, ExtractedMetricsDescriptions.class, heap).withExpiry(objectObjectExpiry).build());
 	}
 }

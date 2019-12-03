@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.stereotype.Component;
 
+import eu.melodic.upperware.activemqtorest.entry.ExtractedMetricsDescriptions;
 import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
 import eu.melodic.upperware.activemqtorest.entry.MqThresholdEntry;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ public class MqThresholdExtractor extends MqDataEntryBaseExtractor implements IM
 			mqThresholdEntry.setThreshold(jsonObject.get("threshold").getAsString());
 			mqThresholdEntry.setTimestamp(String.valueOf(activeMQMessage.getTimestamp()));
 
-			activeMqStatisticHolder.addExtractedMetricDescription(mqThresholdEntry.getName(), mqThresholdEntry.getTimestamp());
+			activeMqStatisticHolder.addExtractedMetricDescription(mqThresholdEntry.getName(), new ExtractedMetricsDescriptions(mqThresholdEntry.getClass().toString(), mqThresholdEntry.toString()));
 
 			return mqThresholdEntry;
 		});

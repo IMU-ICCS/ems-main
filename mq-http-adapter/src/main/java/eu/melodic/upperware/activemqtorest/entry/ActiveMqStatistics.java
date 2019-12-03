@@ -16,5 +16,5 @@ public class ActiveMqStatistics {
 
 	private long msqCount;
 	private long errorCount;
-	private Map<String, String> recentExtractedMetricsDescriptions;
+	private Map<String, ExtractedMetricsDescriptions> recentExtractedMetricsDescriptions;
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.stereotype.Component;
 
+import eu.melodic.upperware.activemqtorest.entry.ExtractedMetricsDescriptions;
 import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
 import eu.melodic.upperware.activemqtorest.entry.MqInstanceInfoEntry;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class MqEmsInstanceInfoExtractor extends MqDataEntryBaseExtractor impleme
 			mqInstanceInfoEntry.setProviderId(jsonObject.get("providerId").getAsString());
 			mqInstanceInfoEntry.setTimestamp(String.valueOf(activeMQMessage.getTimestamp()));
 
-			activeMqStatisticHolder.addExtractedMetricDescription(mqInstanceInfoEntry.getName(), mqInstanceInfoEntry.getTimestamp());
+			activeMqStatisticHolder.addExtractedMetricDescription(mqInstanceInfoEntry.getName(), new ExtractedMetricsDescriptions(mqInstanceInfoEntry.getClass().toString(), mqInstanceInfoEntry.toString()));
 
 			return mqInstanceInfoEntry;
 		});
