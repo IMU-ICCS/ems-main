@@ -51,10 +51,9 @@ echo "Starting baguette client..." &>> ${LOG_FILE}
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}" &>> ${LOG_FILE}
 echo "LOG_FILE=${LOG_FILE}" &>> ${LOG_FILE}
 
-java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &>> ${LOG_FILE}
-#java ... &
-#PID=`jps | grep BaguetteClient | cut -d " " -f 1`
-#PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
-#echo "Baguette client PID: $PID"
+java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &>> ${LOG_FILE} &
+PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
+echo "Baguette client PID: $PID"
 
 cd $PREVWORKDIR
