@@ -68,7 +68,6 @@ public class ExpressionEvaluator {
             } else if (isCpVariable(exp)) {
                 return variables.get(exp.getId());
             } else if (isComposedExpression(exp)) {
-
                 return evaluateComposedExpression((ComposedExpression) exp, variables);
             }
             throw new RuntimeException("Unsupported Expression type");
@@ -88,7 +87,6 @@ public class ExpressionEvaluator {
                 return argRight - argLeft > ExpressionEvaluator.PRECISION;
             case DIFFERENT:
                 return Math.abs(argLeft - argRight) > ExpressionEvaluator.PRECISION;
-
         }
         throw new RuntimeException("Unsupported comparator type");
     }
