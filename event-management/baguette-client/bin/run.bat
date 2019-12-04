@@ -14,6 +14,7 @@ cd %PWD%..
 set BASEDIR=%cd%
 IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\conf
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
+IF NOT DEFINED JASYPT_PASSWORD set JASYPT_PASSWORD=melodic
 
 :: Copy dependencies if missing
 if exist pom.xml (
@@ -23,7 +24,8 @@ if exist pom.xml (
 :: Run Baguette Client
 set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
- -Djavax.net.ssl.trustStoreType=pkcs12
+ -Djavax.net.ssl.trustStoreType=pkcs12 ^
+ -Djasypt.encryptor.password=%JASYPT_PASSWORD%
 ::set JAVA_OPTS=-Djavax.net.debug=all %JAVA_OPTS%
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%

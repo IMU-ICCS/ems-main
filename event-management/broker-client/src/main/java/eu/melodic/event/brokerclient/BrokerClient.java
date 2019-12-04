@@ -23,6 +23,7 @@ import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTempQueue;
 import org.apache.activemq.command.ActiveMQTempTopic;
 import org.apache.activemq.command.ActiveMQTopic;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -293,16 +294,21 @@ public class BrokerClient {
     public synchronized void openConnection(String connectionString, String username, String password, boolean preserveConnection) throws JMSException {
         checkProperties();
         if (connectionString == null) connectionString = properties.getBrokerUrl();
-        if (username==null) username = properties.getBrokerUsername();
-        if (password==null) password = properties.getBrokerPassword();
+        log.debug("BrokerClient: Credetials provided as arguments: username={}, password={}", username, password);
+        if (StringUtils.isBlank(username)) {
+            username = properties.getBrokerUsername();
+            password = properties.getBrokerPassword();
+            log.debug("BrokerClient: Credetials read from properties: username={}, password={}", username, password);
+        }
 
         // Create connection factory
         ActiveMQConnectionFactory connectionFactory = createConnectionFactory();
         connectionFactory.setBrokerURL(connectionString);
-        if (username != null && password != null) {
+        if (StringUtils.isNotBlank(username) && password != null) {
             connectionFactory.setUserName(username);
             connectionFactory.setPassword(password);
         }
+        log.debug("BrokerClient: Connection credentials: username={}, password={}", username, password);
 
         // Create a Connection
         log.info("BrokerClient: Connecting to broker: {}...", connectionString);

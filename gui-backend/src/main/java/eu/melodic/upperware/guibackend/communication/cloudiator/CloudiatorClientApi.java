@@ -28,6 +28,7 @@ public class CloudiatorClientApi implements CloudiatorApi {
     private QueueApi queueApi;
     private JobApi jobApi;
     private MonitoringApi monitoringApi;
+    private QueueInspector queueInspector;
     private final static String CLOUDIATOR_ERROR_MESSAGE = "Problem in communication with Cloudiator. Cloudiator not working. Please try again.";
 
     @Override
@@ -241,6 +242,37 @@ public class CloudiatorClientApi implements CloudiatorApi {
             return monitoringApi.findMonitors();
         } catch (ApiException e) {
             log.error("Error by getting monitors list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public List<ByonNode> getByonsList() {
+        try {
+            return nodeApi.findByons();
+        } catch (ApiException e) {
+            log.error("Error by getting Cloudiator Byons list: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public ByonNode createNewByonNode(NewNode newNode) {
+        try {
+            return nodeApi.addByon(newNode);
+        } catch (ApiException e) {
+            log.error("Error by creating new Byon: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void deleteByon(String byonId) {
+        try {
+            Queue deleteByonQueue = nodeApi.deleteByon(byonId);
+            queueInspector.waitForQueueFinish(deleteByonQueue.getId());
+        } catch (ApiException e) {
+            log.error("Error by deleting Byon from Cloudiator: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, CLOUDIATOR_ERROR_MESSAGE);
         }
     }

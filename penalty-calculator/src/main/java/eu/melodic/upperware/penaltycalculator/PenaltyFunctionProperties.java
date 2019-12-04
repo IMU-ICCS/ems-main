@@ -7,24 +7,20 @@
  * http://mozilla.org/MPL/2.0/.
  */
 
-
-package eu.melodic.upperware;
+package eu.melodic.upperware.penaltycalculator;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 @Data
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.config.properties")
+@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.penalty.properties")
 public class PenaltyFunctionProperties {
     private final Map<String, String> startupTimes = new HashMap<>();
 
@@ -32,7 +28,24 @@ public class PenaltyFunctionProperties {
 	private String host;
 	private String port;
 
+	private final Map<String,VmData> vmData = new HashMap<>();
 
+	public Map<String,VmData> getVmData() {
+	    return vmData;
+    }
+
+	@Data
+    public static class VmData {
+        int cores;
+        double ram;
+        double disk;
+        int startupTime;
+
+        public double[] getX() {
+            double[] x = {cores, ram, disk};
+            return x;
+        }
+
+        public double getY() { return startupTime; }
+    }
 }
-
-

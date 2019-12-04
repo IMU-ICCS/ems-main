@@ -1,5 +1,6 @@
 package eu.melodic.upperware.dlms;
 
+import io.github.cloudiator.rest.api.CloudApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -45,5 +46,9 @@ public class DLMSWebServiceContext {
 		return new ProcessApi(apiClient);
 	}
 
+	@Bean
+	public CloudApi cloudApi(ApiClient apiClient) {
+		return new CloudApi(apiClient);
+	}
 	
 }

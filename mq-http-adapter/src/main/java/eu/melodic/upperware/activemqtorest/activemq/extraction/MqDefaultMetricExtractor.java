@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Maps;
 
 import eu.melodic.upperware.activemqtorest.activemq.MqConstants;
+import eu.melodic.upperware.activemqtorest.entry.ExtractedMetricsDescriptions;
 import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
 import eu.melodic.upperware.activemqtorest.entry.MqDefaultMetricEntry;
 import lombok.extern.slf4j.Slf4j;
@@ -47,9 +48,12 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 		mqDataEntry.setVmName(keyValueMap.getOrDefault(MqConstants.VM_NAME, StringUtils.EMPTY));
 		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, StringUtils.EMPTY);
 		mqDataEntry.setTopic(topic);
+
+		mqAdapterStatusHolder.addExtractedMetricDescription(mqDataEntry.getTopic(), new ExtractedMetricsDescriptions(mqDataEntry.getClass().toString(), mqDataEntry.toString()));
+
 		String producerHost = MqConstants.PRODUCER_HOST_DEFAULT_VALUE;
 		try {
-			producerHost = (String)activeMQMessage.getProperty(MqConstants.PRODUCER_HOST);
+			producerHost = (String) activeMQMessage.getProperty(MqConstants.PRODUCER_HOST);
 		} catch (IOException e) {
 			log.error("Could not resolve '{}' on incoming message.", MqConstants.PRODUCER_HOST);
 		}
