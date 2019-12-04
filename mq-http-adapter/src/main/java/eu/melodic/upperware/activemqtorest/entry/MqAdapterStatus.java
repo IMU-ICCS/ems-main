@@ -16,7 +16,7 @@ import lombok.ToString;
 @Component
 public class MqAdapterStatus {
 
-	private long msqCount;
+	private long msgCount;
 	private long errorCount;
 	private Map<String, ExtractedMetricsDescriptions> recentExtractedMetricsDescriptions;
 	@Autowired

@@ -34,7 +34,7 @@ public class MqAdapterStatusHolder {
 	private Cache<String, ExtractedMetricsDescriptions> metricDescriptionCache;
 
 	public void increaseMsgCount() {
-		mqAdapterStatus.setMsqCount(mqAdapterStatus.getMsqCount() + 1);
+		mqAdapterStatus.setMsgCount(mqAdapterStatus.getMsgCount() + 1);
 	}
 
 	public void increaseErrorCount() {
