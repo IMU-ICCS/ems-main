@@ -225,6 +225,10 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         }
     }
 
+    public void setMetricValueInRegistry(String name, String value) {
+        this.registry.setMetricValue(name, value);
+    }
+
 
     @Getter
     @Setter

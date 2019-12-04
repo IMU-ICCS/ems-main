@@ -18,6 +18,9 @@ import camel.type.TypeFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.interfaces.adapter.DeploymentModelResponse;
+import eu.melodic.models.interfaces.adapter.DeploymentModelResponseImpl;
 import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
@@ -26,6 +29,7 @@ import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaver;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaverImpl;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
+import eu.melodic.upperware.adapter.extractor.*;
 import eu.melodic.upperware.adapter.notification.DeploymentNotificationSenderImpl;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
@@ -57,10 +61,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -167,7 +169,9 @@ public class DeployCoordinator {
             if (isValid) {
                 log.info("Deployment plan authorized, executing...");
 
-                planExecutor.executePlan(plan);
+                if (!properties.getIsSimulation()) {
+                    planExecutor.executePlan(plan);
+                }
                 cdoServerUpdater.updateCamelModel(resourceName);
                 camelToFileSaver.toFile(resourceName, CamelToFileSaverImpl.DEFAULT_NAME_AFTER_DEPLOYMENT_FUNCTION);
                 deploymentNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
@@ -277,5 +281,52 @@ public class DeployCoordinator {
     private void registerPackages(CDOClient cdoClient) {
         cdoClient.registerPackage(CpPackage.eINSTANCE);
         cdoClient.registerPackage(TypesPackage.eINSTANCE);
+    }
+
+    //simulation
+    //------------------------------------------------------------------------------------------------
+    DeploymentInstanceModel getDeploymentModel(String camelModelId) {
+        CDOSessionX session = cdoServerApi.openSession();
+        CDOTransaction transaction = session.openTransaction();
+
+        return cdoServerApi.getDeployedModel(camelModelId, transaction);
+    }
+
+    DeploymentModelResponse prepareResponseNodeData(DeploymentInstanceModel deploymentInstanceModel, String applicationId, String uuid) {
+        DeploymentModelResponse response = new DeploymentModelResponseImpl();
+        response.setApplicationId(applicationId);
+        response.setWatermark(prepareWatermark(uuid));
+
+
+        InstanceSetExtractor instanceSetExtractor = new InstanceSetExtractor();
+        RamSetExtractor ramSetExtractor = new RamSetExtractor();
+        StorageSetExtractor storageSetExtractor = new StorageSetExtractor();
+        CountryExtractor countryExtractor = new CountryExtractor();
+        CoreSetExtractor coreSetExtractor = new CoreSetExtractor();
+
+        response.setInstanceSet(intsToList(instanceSetExtractor.getValue(deploymentInstanceModel)));
+        response.setRamSet(longsTooList(ramSetExtractor.getValue(deploymentInstanceModel)));
+        response.setStorageSet(doublesToList(storageSetExtractor.getValue(deploymentInstanceModel)));
+        response.setCoreSet(intsToList(coreSetExtractor.getValue(deploymentInstanceModel)));
+        response.setCountrySet(new ArrayList<>(countryExtractor.getValue(deploymentInstanceModel)));
+
+        return response;
+    }
+
+
+    private List<BigDecimal> intsToList(Set<Integer> set) {
+        return set.stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+    }
+
+    private List<BigDecimal> doublesToList(Set<Double> set) {
+        return set.stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+    }
+
+    private List<BigDecimal> longsTooList(Set<Long> set) {
+        return set.stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+    }
+
+    private Watermark prepareWatermark(String uuid) {
+    return deploymentNotificationSenderImpl.prepareWatermark(uuid);
     }
 }

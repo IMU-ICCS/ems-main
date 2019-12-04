@@ -38,7 +38,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        if (securityEnabled) {
+        //ToDo enable security
+        if (!securityEnabled) {
             log.info("Running WITH security");
             http.cors().and().csrf().disable().authorizeRequests()
                     .anyRequest().authenticated()

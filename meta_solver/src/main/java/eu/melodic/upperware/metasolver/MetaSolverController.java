@@ -12,6 +12,8 @@ import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
 //import lombok.RequiredArgsConstructor;
+import eu.melodic.models.interfaces.simulationHandler.SimulatedMetricValuesRequestImpl;
+import eu.melodic.models.interfaces.simulationHandler.SimulatedMetricValuesResponseImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -164,6 +166,29 @@ public class MetaSolverController {
         coordinator.updateSubscriptions(subscriptions);
 
         return "OK";
+    }
+
+    @RequestMapping(value = "/simulateReconfiguration", method = POST)
+    public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
+                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        log.info("received sth");
+        setAuthenticationToken(jwtToken);
+        String applicationId = request.getApplicationId();
+        String requestUuid = request.getWatermark().getUuid();
+        log.info("Received request: " + applicationId + " " + requestUuid);
+
+        // Evaluate new solution
+        String result = coordinator.simulateReconfiguration(request.getMetricValues());
+        log.info("Setting Simulated metrics finished: ");
+
+        SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
+        response.setApplicationId(applicationId);
+        response.setWatermark(coordinator.prepareWatermark(requestUuid));
+        response.setResult(result);
+
+        return response;
     }
 
     @RequestMapping(value = "/health", method = GET)

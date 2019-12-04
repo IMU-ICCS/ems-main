@@ -42,6 +42,10 @@ public class AdapterProperties {
   @NotNull
   private CloudiatorV2 cloudiatorV2;
 
+  @NotNull
+  @Getter
+  private Boolean isSimulation;
+
   @Getter
   @Setter
   public static class Esb {

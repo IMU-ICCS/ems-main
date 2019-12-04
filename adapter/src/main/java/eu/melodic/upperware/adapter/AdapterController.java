@@ -9,10 +9,11 @@
 
 package eu.melodic.upperware.adapter;
 
-import eu.melodic.models.interfaces.adapter.ApplicationDeploymentRequestImpl;
-import eu.melodic.models.interfaces.adapter.ApplySolutionRequestImpl;
-import eu.melodic.models.interfaces.adapter.DifferenceRequestImpl;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.DeploymentModel;
+import eu.melodic.models.interfaces.adapter.*;
 import eu.melodic.models.services.adapter.DifferenceResponse;
+import eu.melodic.upperware.adapter.extractor.*;
 import eu.melodic.upperware.adapter.service.DiffResponseConverter;
 import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
@@ -71,6 +72,19 @@ public class AdapterController {
         String prevDeploymentInstanceName = request.getPrevDeploymentInstanceName();
 
         return diffResponseConverter.convert(deployCoordinator.calculateDifference(applicationId, currDeploymentInstanceName, prevDeploymentInstanceName));
+    }
+
+    @PostMapping(value = "/getDeploymentModel", consumes = APPLICATION_JSON_VALUE)
+    public DeploymentModelResponse getDeploymentModel(@RequestBody DeploymentModelRequest request) {
+
+        String applicationId = request.getApplicationId();
+        String requestUuid = request.getWatermark().getUuid();
+
+        log.info("Received request: {} {}", applicationId, requestUuid);
+
+        DeploymentInstanceModel deploymentModel = deployCoordinator.getDeploymentModel(applicationId);
+
+        return deployCoordinator.prepareResponseNodeData(deploymentModel, applicationId, requestUuid);
     }
 
     @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)

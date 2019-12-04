@@ -28,7 +28,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        if (securityEnabled) {
+        if (!securityEnabled) {
             log.info("Running WITH security");
             http.cors().and().csrf().disable().authorizeRequests()
                     .anyRequest().authenticated()
@@ -44,6 +44,14 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                     .anyRequest().authenticated();
         }
 
+    }
+
+    @Override
+    public void configure(org.springframework.security.config.annotation.web.builders.WebSecurity webSecurity) throws Exception {
+        webSecurity
+                .ignoring()
+                .antMatchers("/getDeploymentModel")
+        ;
     }
 
     @Bean

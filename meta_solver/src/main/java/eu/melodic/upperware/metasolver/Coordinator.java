@@ -10,6 +10,7 @@ package eu.melodic.upperware.metasolver;
 
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.interfaces.simulationHandler.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
@@ -350,4 +351,27 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
         return token;
     }
+
+    // --------------------------------------------------------------------------
+    String simulateReconfiguration(List<KeyValuePair> metricValues) {
+        String response = "ERROR";
+        if (metaSolverProperties.getIsSimulation()) {
+            log.info("Setting simulated metrics inside MetaSolver: ");
+            MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
+            for (KeyValuePair nameValuePair : metricValues) {
+                monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
+            }
+            log.info("Simulated metrics set");
+            try {
+                log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
+                requestStartProcessForScaling();
+                response = "STARTED";
+            } catch (Exception ex) {
+                log.error("processScaleEvent: EXCEPTION: ", ex);
+            }
+        }
+
+        return response;
+    }
+
 }
