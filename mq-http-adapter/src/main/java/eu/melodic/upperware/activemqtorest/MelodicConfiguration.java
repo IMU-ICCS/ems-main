@@ -3,11 +3,14 @@ package eu.melodic.upperware.activemqtorest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.Getter;
 
 
 @Configuration
 @Getter
+@JsonSerialize(as=MelodicConfiguration.class)
 public class MelodicConfiguration {
 
 	@Value("${activemq.broker.url}")

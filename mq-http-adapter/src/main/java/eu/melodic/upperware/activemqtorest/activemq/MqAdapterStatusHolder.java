@@ -19,14 +19,14 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Maps;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
-import eu.melodic.upperware.activemqtorest.entry.ActiveMqStatistics;
+import eu.melodic.upperware.activemqtorest.entry.MqAdapterStatus;
 import eu.melodic.upperware.activemqtorest.entry.ExtractedMetricsDescriptions;
 
 @Service
-public class ActiveMqStatisticHolder {
+public class MqAdapterStatusHolder {
 
 	@Autowired
-	private ActiveMqStatistics activeMqStatistics;
+	private MqAdapterStatus mqAdapterStatus;
 
 	@Autowired
 	private MelodicConfiguration melodicConfiguration;
@@ -34,24 +34,24 @@ public class ActiveMqStatisticHolder {
 	private Cache<String, ExtractedMetricsDescriptions> metricDescriptionCache;
 
 	public void increaseMsgCount() {
-		activeMqStatistics.setMsqCount(activeMqStatistics.getMsqCount() + 1);
+		mqAdapterStatus.setMsqCount(mqAdapterStatus.getMsqCount() + 1);
 	}
 
 	public void increaseErrorCount() {
-		activeMqStatistics.setErrorCount(activeMqStatistics.getErrorCount() + 1);
+		mqAdapterStatus.setErrorCount(mqAdapterStatus.getErrorCount() + 1);
 	}
 
 	public void addExtractedMetricDescription(String description, ExtractedMetricsDescriptions extractedMetricsDescriptions){
 		metricDescriptionCache.put(description, extractedMetricsDescriptions);
 	}
 
-	public ActiveMqStatistics getActiveMqStatistics() {
+	public MqAdapterStatus getMqAdapterStatus() {
 		Map<String, ExtractedMetricsDescriptions> metricDescriptions = Maps.newHashMap();
 		metricDescriptionCache.iterator().forEachRemaining(s -> {
 			metricDescriptions.put(s.getKey(), s.getValue());
 		});
-		activeMqStatistics.setRecentExtractedMetricsDescriptions(metricDescriptions);
-		return this.activeMqStatistics;
+		mqAdapterStatus.setRecentExtractedMetricsDescriptions(metricDescriptions);
+		return this.mqAdapterStatus;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)

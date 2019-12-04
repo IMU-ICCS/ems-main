@@ -31,7 +31,7 @@ public class MqTopicListener {
 	private MelodicConfiguration melodicConfiguration;
 
 	@Autowired
-	private ActiveMqStatisticHolder activeMqStatisticHolder;
+	private MqAdapterStatusHolder mqAdapterStatusHolder;
 
 	@Autowired
 	private Set<IMqDataEntryExtractor> mqDataEntryExtractors;
@@ -52,9 +52,9 @@ public class MqTopicListener {
 
 					if (dataPoint.isPresent()) {
 						influxDbConnector.writeMqDataEntry(dataPoint.get());
-						activeMqStatisticHolder.increaseMsgCount();
+						mqAdapterStatusHolder.increaseMsgCount();
 					} else {
-						activeMqStatisticHolder.increaseErrorCount();
+						mqAdapterStatusHolder.increaseErrorCount();
 						log.warn("Could not extract incoming message.");
 					}
 				});

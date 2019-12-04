@@ -12,7 +12,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
-import eu.melodic.upperware.activemqtorest.activemq.ActiveMqStatisticHolder;
+import eu.melodic.upperware.activemqtorest.activemq.MqAdapterStatusHolder;
 import eu.melodic.upperware.activemqtorest.activemq.MqConstants;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +23,7 @@ public abstract class MqDataEntryBaseExtractor {
 	MelodicConfiguration melodicConfiguration;
 
 	@Autowired
-	ActiveMqStatisticHolder activeMqStatisticHolder;
+	MqAdapterStatusHolder mqAdapterStatusHolder;
 
 	String extractUsedSeparator(String[] keyValuePairs) {
 		int delimiterConsistentCounter = (int) Arrays.stream(keyValuePairs).filter(string -> string.contains(MqConstants.VALUE_SEPARATOR_JSON)).count();

@@ -49,7 +49,7 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 		String topic = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX, StringUtils.EMPTY);
 		mqDataEntry.setTopic(topic);
 
-		activeMqStatisticHolder.addExtractedMetricDescription(mqDataEntry.getTopic(), new ExtractedMetricsDescriptions(mqDataEntry.getClass().toString(), mqDataEntry.toString()));
+		mqAdapterStatusHolder.addExtractedMetricDescription(mqDataEntry.getTopic(), new ExtractedMetricsDescriptions(mqDataEntry.getClass().toString(), mqDataEntry.toString()));
 
 		String producerHost = MqConstants.PRODUCER_HOST_DEFAULT_VALUE;
 		try {
