@@ -15,8 +15,8 @@
     <!-- Change ref="CONSOLE" to ref="STDOUT" in the logger entries -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <!--<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</Pattern>-->
-            <Pattern>BC> %msg%n</Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</Pattern>
+            <!--<Pattern>BC> %msg%n</Pattern>-->
         </layout>
     </appender>
 
