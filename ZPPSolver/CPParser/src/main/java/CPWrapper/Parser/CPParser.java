@@ -19,6 +19,7 @@ public class CPParser {
         parseMetrics(cp);
         parseVariables(cp);
         parseConstraints(cp);
+        cpParsedData.init();
         return cpParsedData;
     }
 

@@ -1,0 +1,60 @@
+package CPWrapper.Utils;
+
+import org.javatuples.Pair;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
+public class HeuristicVariableOrderer implements VariableOrderer {
+    private Map<Integer, String> indexToVariableName;
+
+    public HeuristicVariableOrderer(ConstraintGraph graph) {
+        indexToVariableName = new HashMap<>();
+        orderVariablesHeuristically(graph);
+    }
+
+    @Override
+    public String indexToVariableName(int var) {
+        return indexToVariableName.get(var);
+    }
+
+    private Map<String, Pair<Integer, Integer>> evaluateVariables(ConstraintGraph constraintGraph) {
+        Map<String, Pair<Integer, Integer>> nameToValue = new HashMap<>();
+        for (String var : constraintGraph.getNodes()) {
+            int constraints = constraintGraph.getConstraints(var).size();
+            int eval = constraintGraph.getNumberOfNeighbours(var, 1);
+            nameToValue.put(var, new Pair(constraints, eval));
+        }
+        return nameToValue;
+    }
+
+    private void orderVariablesHeuristically(ConstraintGraph constraintGraph) {
+        Map<String, Pair<Integer, Integer>> nameToValue = evaluateVariables(constraintGraph);
+
+        Stream<Map.Entry<String,Pair<Integer, Integer>>> sorted =
+                nameToValue.entrySet().stream()
+                        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue(
+                                (p1, p2) -> {
+                                    if (p1.getValue0() < p2.getValue0()) {
+                                        return -1;
+                                    } else if (p1.getValue0() == p2.getValue0()) {
+                                        if (p1.getValue1() < p2.getValue1()) {
+                                            return -1;
+                                        } else if (p1.getValue1() == p2.getValue1()) {
+                                            return 0;
+                                        } else {
+                                            return 1;
+                                        }
+                                    } else {
+                                        return 1;
+                                    }
+                                }
+                        )));
+        final int[] order = {0};
+        sorted.forEachOrdered(p -> {
+            indexToVariableName.put(order[0], p.getKey());
+            order[0]++;
+        });
+    }
+}

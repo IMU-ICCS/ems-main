@@ -7,7 +7,6 @@ package CPWrapper.Utils;
     iff there exists a constraint containing both.
  */
 
-import CPWrapper.Utils.ArConstraint;
 
 import java.util.*;
 
@@ -127,11 +126,47 @@ public class ConstraintGraph {
         }
     }
 
+    /*
+        Counts number of distinct variables which are either involved in
+        constraint @c or are a neighbour of some variable which is involved in @c.
+     */
+    private int countConstraintVariablesAndTheirNeighbours(ArConstraint c) {
+        Set<String> vars = new HashSet<>();
+        for (String var : c.getVariableNames()) {
+            vars.addAll(neighbourhoodList.get(var).get(1));
+        }
+        vars.addAll(c.getVariableNames());
+        return vars.size();
+    }
+
+    /*
+        A value of a constraint is defined to be equal to 0 if
+        it is satisfied (under assignment @variables), p otherwise.
+        Where p is equal to number of distinct variables which are either involved in the constraint or
+        or neighbours of some variable involved in the constrained.
+
+        Heuristic evaluation of a variable is defined to be a sum of violated constrains
+        which involve the variable.
+     */
+    public int getVariableHeuristicEvaluation(String variable, Map<String, Double> variables) {
+        int result = 0;
+        for (ArConstraint c : variableToConstraint.get(variable)) {
+            if (!c.evaluate(variables)) {
+                result += countConstraintVariablesAndTheirNeighbours(c) - 1;
+            }
+        }
+        return result;
+    }
+
     public Collection<ArConstraint> getConstraints(String variable) {
         return variableToConstraint.get(variable);
     }
 
     public int getNumberOfNeighbours(String node, int distance) {
         return getNeighbours(node, distance).size();
+    }
+
+    public Collection<String> getNodes() {
+        return variables;
     }
 }

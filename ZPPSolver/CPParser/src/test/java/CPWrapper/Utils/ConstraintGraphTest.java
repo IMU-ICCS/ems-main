@@ -1,8 +1,6 @@
 package CPWrapper.Utils;
 
-import CPWrapper.Utils.ArConstraint;
-import CPWrapper.Utils.ConstraintGraph;
-import lombok.AllArgsConstructor;
+import CPWrapper.Mockups.ConstraintMockup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -11,20 +9,6 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConstraintGraphTest {
-    @AllArgsConstructor
-    private static class ConstraintMockup implements ArConstraint {
-        private Collection<String> variables;
-
-        @Override
-        public Collection<String> getVariableNames() {
-            return variables;
-        }
-
-        @Override
-        public boolean evaluate(Map<String, Double> variables) {
-            return false;
-        }
-    };
     private static List<String> variables;
     @BeforeAll
     static void setUp() {

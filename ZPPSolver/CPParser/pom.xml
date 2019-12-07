@@ -36,6 +36,17 @@
             <artifactId>antlr</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>eu.melodic</groupId>
+            <artifactId>utility-generator</artifactId>
+            <version>2.5.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
 
 

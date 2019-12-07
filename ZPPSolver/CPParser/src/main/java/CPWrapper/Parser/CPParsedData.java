@@ -5,8 +5,11 @@ import CPWrapper.Utils.ConstraintGraph;
 import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.CpMetric;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
+import eu.paasage.upperware.metamodel.cp.Domain;
+import lombok.Getter;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,8 +19,18 @@ public class CPParsedData {
     private Collection<CpMetric> metrics;
     private Collection<ArConstraint> constraints;
     private Collection<CpVariable> variables;
+    @Getter
     private ConstraintGraph constraintGraph;
+    private Map<String, CpVariable> nameToVariable;
 
+    public Collection<String> getVariableNames() {
+        return nameToVariable.keySet();
+    }
+
+    public void init() {
+        initializeConstraintGraph();
+        initializeNameToVariable();
+    }
 
     public boolean isFeasible(Map<String, Double> variables) {
         for (ArConstraint c : constraints) {
@@ -36,12 +49,24 @@ public class CPParsedData {
         return count;
     }
 
-    public int getHeuristicEvaluation(String variable) {
-        return 0;
+    public int getHeuristicEvaluation(String variable, Map<String, Double> variables) {
+        return constraintGraph.getVariableHeuristicEvaluation(variable, variables);
     }
 
-    
+    public void updateMetrics(Collection<CpMetric> metrics) {
+        //TODO
+    }
 
+    public Domain getVariableDomain(String variable) {
+        return nameToVariable.get(variable).getDomain();
+    }
+
+    private void initializeNameToVariable() {
+        nameToVariable = new HashMap<String, CpVariable>();
+        for (CpVariable var : variables) {
+            nameToVariable.put(var.getId(), var);
+        }
+    }
 
     private void initializeConstraintGraph() {
         List<String> variableNames =
