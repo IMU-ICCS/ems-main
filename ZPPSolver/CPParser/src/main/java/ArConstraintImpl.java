@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.Map;
 
 public class ArConstraintImpl implements ArConstraint {
+    /*
+        Names of variables which are used in the constraint
+     */
     private Collection<String> variablesNames;
     private ComparatorEnum comparator;
     private Expression leftExpression;

@@ -1,3 +1,8 @@
+/*
+    This class is used to parse and evaluate Expression
+    interfaces from eu.paasage.upperware.metamodel.cp.package
+ */
+
 import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.metamodel.cp.*;
 
@@ -6,6 +11,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExpressionEvaluator {
+    /*
+        Precision used to compare floating point numbers.
+        For instance if precision is set to 0.01,
+        1 and 1.005 are considered equal.
+     */
     public static final double PRECISION = 0.1;
 
     private static double getValueOfNumericInterface(NumericValueUpperware value) {

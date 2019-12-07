@@ -1,8 +1,21 @@
+/*
+    This class implements constraint graph.
+    A constraint graph is created from a set of
+    variables and constraints (i.e. subsets of the set of variables).
+    Each node corresponds to a variable. Two nodes are connected by an edge
+    iff there exists a constraint containing both.
+ */
+
 import java.util.*;
 
 public class ConstraintGraph {
     private Collection<ArConstraint> constraints;
     private Collection<String> variables;
+    /*
+           For variable var and natural number d
+           @neighbourhoodList[var][d] contains set of variables
+
+     */
     private Map<String, Map<Integer, Set<String>>> neighbourhoodList;
     private Map<String, Collection<ArConstraint>> variableToConstraint;
 
@@ -18,6 +31,10 @@ public class ConstraintGraph {
         return neighbourhoodList.get(node).get(1);
     }
 
+    /*
+        for variable var, @knownDistances[var] contains set of
+        variables from which the distance to var is known.
+     */
     private void initializeKnownDistances(Map<String, List<String>> knownDistances) {
         for (String var : variables) {
             knownDistances.put(var, new LinkedList<String>());
@@ -71,6 +88,17 @@ public class ConstraintGraph {
         } while (neighbourhoodSweep(distance, knownDistances));
     }
 
+    /*
+        This function assumes all distances up to @dist-1 have been calculated.
+        For each variable @var, @knownDistances[@var] contains list of variables
+        from which distance to @var has already been calculated.
+        We iterate through nodes.
+            Let n denote some node. For each pair u, v where dist(u,n) == 1
+               and dist(v, n) == @dist - 1, if distance between v and u is not known
+               set it to be equal to @dist.
+        Returns @true if some new shortest path between nodes has been found,
+        @false otherwise.
+     */
     private boolean neighbourhoodSweep(int dist, Map<String, List<String>> knownDistances){
         boolean foundPath = false;
         for (String node: variables) {
