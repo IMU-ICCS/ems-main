@@ -1,3 +1,5 @@
+package CPWrapper.Mockups;
+
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.VariableType;

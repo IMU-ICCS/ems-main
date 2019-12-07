@@ -1,3 +1,5 @@
+package CPWrapper.Mockups;
+
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import lombok.AllArgsConstructor;
 import org.eclipse.emf.cdo.CDOLock;

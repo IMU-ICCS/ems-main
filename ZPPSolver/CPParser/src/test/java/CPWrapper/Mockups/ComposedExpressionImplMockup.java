@@ -1,3 +1,5 @@
+package CPWrapper.Mockups;
+
 import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;

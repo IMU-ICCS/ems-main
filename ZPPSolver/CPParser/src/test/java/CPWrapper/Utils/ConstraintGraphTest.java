@@ -1,3 +1,5 @@
+package CPWrapper.Utils;
+
 import CPWrapper.Utils.ArConstraint;
 import CPWrapper.Utils.ConstraintGraph;
 import lombok.AllArgsConstructor;

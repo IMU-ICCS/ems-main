@@ -1,4 +1,6 @@
-import CPWrapper.Utils.ExpressionEvaluator;
+package CPWrapper.Utils;
+
+import CPWrapper.Mockups.*;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
