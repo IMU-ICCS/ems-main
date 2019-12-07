@@ -1,10 +1,44 @@
 package CPWrapper.Parser;
 
+import CPWrapper.Utils.ArConstraint;
+import CPWrapper.Utils.ArConstraintImpl;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 
-public class CPParser {
+import java.util.List;
+import java.util.stream.Collectors;
 
-    public CPParsedData parse(ConstraintProblem constraintProblem) {
-        return null;
+public class CPParser {
+    private CPParsedData cpParsedData;
+
+    public CPParser() {
+        cpParsedData = new CPParsedData();
+    }
+
+    public CPParsedData parse(ConstraintProblem cp) {
+        parseConstants(cp);
+        parseMetrics(cp);
+        parseVariables(cp);
+        parseConstraints(cp);
+        return cpParsedData;
+    }
+
+    private void parseConstants(ConstraintProblem cp) {
+        cpParsedData.postConstants(cp.getConstants());
+    }
+
+    private void parseMetrics(ConstraintProblem cp) {
+        cpParsedData.postMetrics(cp.getCpMetrics());
+    }
+
+    private void parseVariables(ConstraintProblem cp) {
+        cpParsedData.postVariables(cp.getCpVariables());
+    }
+
+    private void parseConstraints(ConstraintProblem cp) {
+        List<ArConstraint> constraints =
+                cp.getConstraints().stream()
+                .map(compExp -> new ArConstraintImpl(compExp.getComparator(), compExp.getExp1(), compExp.getExp2()))
+                .collect(Collectors.toList());
+        cpParsedData.postConstraints(constraints);
     }
 }
