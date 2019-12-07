@@ -1,6 +1,7 @@
+package CPWrapper.Utils;
 /*
     This class is used to parse and evaluate Expression
-    interfaces from eu.paasage.upperware.metamodel.cp.package
+    interfaces from eu.paasage.upperware.metamodel.cp package
  */
 
 import eu.paasage.upperware.metamodel.types.*;

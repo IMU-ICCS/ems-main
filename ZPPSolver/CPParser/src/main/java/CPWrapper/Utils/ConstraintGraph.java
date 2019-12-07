@@ -1,3 +1,4 @@
+package CPWrapper.Utils;
 /*
     This class implements constraint graph.
     A constraint graph is created from a set of
@@ -5,6 +6,8 @@
     Each node corresponds to a variable. Two nodes are connected by an edge
     iff there exists a constraint containing both.
  */
+
+import CPWrapper.Utils.ArConstraint;
 
 import java.util.*;
 

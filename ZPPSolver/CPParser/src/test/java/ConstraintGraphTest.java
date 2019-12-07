@@ -1,3 +1,5 @@
+import CPWrapper.Utils.ArConstraint;
+import CPWrapper.Utils.ConstraintGraph;
 import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -8,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ConstraintGraphTest {
     @AllArgsConstructor
-    private static class ConstraintMockup implements ArConstraint{
+    private static class ConstraintMockup implements ArConstraint {
         private Collection<String> variables;
 
         @Override

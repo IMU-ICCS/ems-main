@@ -1,4 +1,6 @@
 
+import CPWrapper.Utils.ArConstraint;
+import CPWrapper.Utils.ArConstraintImpl;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import org.eclipse.emf.common.util.BasicEList;
