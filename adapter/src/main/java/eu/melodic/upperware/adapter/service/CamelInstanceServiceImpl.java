@@ -5,7 +5,10 @@ import camel.core.Feature;
 import camel.deployment.*;
 import com.google.gson.Gson;
 import eu.passage.upperware.commons.model.tools.CdoTool;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -63,7 +66,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent, Counters counters) {
         // Create Instance + name + type
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
-        softwareComponentInstance.setName(softwareComponent.getName() + "_Instance_" + counters.getGlobalCount() + "_" + counters.getLocalCount());
+        softwareComponentInstance.setName(softwareComponent.getName() + "_instance_" + counters.getGlobalCount() + "_" + counters.getLocalCount());
         softwareComponentInstance.setType(softwareComponent);
 
         //Create ProvidedCommunicationInstance
