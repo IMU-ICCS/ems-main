@@ -69,6 +69,9 @@ public class CPParsedData {
     }
 
     private void initializeConstraintGraph() {
+        for (CpVariable var: variables ) {
+            System.out.println("Nazwa: " + var.getId());
+        }
         List<String> variableNames =
                 variables.stream()
                         .map(var -> var.getId())

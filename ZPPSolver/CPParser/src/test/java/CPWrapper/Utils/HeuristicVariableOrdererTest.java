@@ -1,5 +1,5 @@
 package CPWrapper.Utils;
-import CPWrapper.Mockups.ConstraintMockup;
+import CPWrapper.Mockups.ArConstraintMockup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ class HeuristicVariableOrdererTest {
         Collection<ArConstraint> constraints = new ArrayList<>();
         int varsSize = variables.size();
         for(int i = 0; i < varsSize; i++) {
-            constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+            constraints.add(new ArConstraintMockup(variables.subList(0,i+1)));
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         return graph;
@@ -30,9 +30,9 @@ class HeuristicVariableOrdererTest {
         Collection<ArConstraint> constraints = new ArrayList<>();
         int varsSize = variables.size();
         for(int i = 0; i < varsSize; i++) {
-            constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+            constraints.add(new ArConstraintMockup(variables.subList(0,i+1)));
             for (int j = i + 1; j < varsSize; j++) {
-                constraints.add(new ConstraintMockup(variables.subList(j, j+1)));
+                constraints.add(new ArConstraintMockup(variables.subList(j, j+1)));
             }
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
@@ -64,9 +64,9 @@ class HeuristicVariableOrdererTest {
     @Test
     public void simpleGraphTest() {
         Collection<ArConstraint> constraints = new ArrayList<>();
-        constraints.add(new ConstraintMockup(variables.subList(0,1)));
-        constraints.add(new ConstraintMockup(variables.subList(1,3)));
-        constraints.add(new ConstraintMockup(variables.subList(2,3)));
+        constraints.add(new ArConstraintMockup(variables.subList(0,1)));
+        constraints.add(new ArConstraintMockup(variables.subList(1,3)));
+        constraints.add(new ArConstraintMockup(variables.subList(2,3)));
         ConstraintGraph graph = new ConstraintGraph(constraints, variables.subList(0,3));
         HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph);
 

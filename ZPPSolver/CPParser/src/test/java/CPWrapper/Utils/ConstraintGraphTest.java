@@ -1,6 +1,6 @@
 package CPWrapper.Utils;
 
-import CPWrapper.Mockups.ConstraintMockup;
+import CPWrapper.Mockups.ArConstraintMockup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +35,7 @@ class ConstraintGraphTest {
             List<String> vars = new ArrayList<>();
             vars.add(variables.get(i-1));
             vars.add(variables.get(i % varsSize));
-            constraints.add(new ConstraintMockup(vars));
+            constraints.add(new ArConstraintMockup(vars));
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
 
@@ -51,7 +51,7 @@ class ConstraintGraphTest {
     public void fullGraphTest() {
         int varsSize = variables.size();
         Collection<ArConstraint> constraints = new ArrayList<>();
-        ArConstraint constraint = new ConstraintMockup(variables);
+        ArConstraint constraint = new ArConstraintMockup(variables);
         constraints.add(constraint);
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (String var : variables) {
@@ -65,7 +65,7 @@ class ConstraintGraphTest {
         Collection<ArConstraint> constraints = new ArrayList<>();
         int noOfConstraints = 10000;
         for (int i = 0; i < noOfConstraints; i ++ ) {
-            constraints.add(new ConstraintMockup(variables));
+            constraints.add(new ArConstraintMockup(variables));
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (String var : variables) {
@@ -83,7 +83,7 @@ class ConstraintGraphTest {
         Collection<ArConstraint> constraints = new ArrayList<>();
         int varsSize = variables.size();
         for(int i = 0; i < varsSize; i++) {
-            constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+            constraints.add(new ArConstraintMockup(variables.subList(0,i+1)));
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (int i = 0; i < varsSize; i++) {

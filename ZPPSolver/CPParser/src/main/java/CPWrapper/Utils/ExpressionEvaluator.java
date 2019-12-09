@@ -19,7 +19,7 @@ public class ExpressionEvaluator {
      */
     public static final double PRECISION = 0.1;
 
-    private static double getValueOfNumericInterface(NumericValueUpperware value) {
+    protected static double getValueOfNumericInterface(NumericValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
             return (double)((IntegerValueUpperware) value).getValue();
         } else if (value instanceof LongValueUpperware) {

@@ -24,7 +24,7 @@ public class CpVariableImplMockup extends NumericExpressionImpl implements CpVar
 
     @Override
     public void setDomain(Domain value) {
-        this.domain = domain;
+        this.domain = value;
     }
 
     @Override
