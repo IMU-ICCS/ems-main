@@ -19,6 +19,10 @@ public class HeuristicVariableOrderer implements VariableOrderer {
         return indexToVariableName.get(var);
     }
 
+    /*
+        For each variable record its number of constraints and number of other variables which
+        appear in those constraints.
+     */
     private Map<String, Pair<Integer, Integer>> evaluateVariables(ConstraintGraph constraintGraph) {
         Map<String, Pair<Integer, Integer>> nameToValue = new HashMap<>();
         for (String var : constraintGraph.getNodes()) {

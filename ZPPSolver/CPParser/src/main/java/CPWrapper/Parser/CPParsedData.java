@@ -1,4 +1,7 @@
 package CPWrapper.Parser;
+/*
+    This class contains all data representing a specific constraint problem.
+ */
 
 import CPWrapper.Utils.ArConstraint;
 import CPWrapper.Utils.ConstraintGraph;
@@ -27,7 +30,7 @@ public class CPParsedData {
         return nameToVariable.keySet();
     }
 
-    public void init() {
+    protected void init() {
         initializeConstraintGraph();
         initializeNameToVariable();
     }
@@ -69,9 +72,6 @@ public class CPParsedData {
     }
 
     private void initializeConstraintGraph() {
-        for (CpVariable var: variables ) {
-            System.out.println("Nazwa: " + var.getId());
-        }
         List<String> variableNames =
                 variables.stream()
                         .map(var -> var.getId())
@@ -91,5 +91,4 @@ public class CPParsedData {
     protected void postVariables(Collection<CpVariable> variables) {
         this.variables = variables;
     }
-
 }

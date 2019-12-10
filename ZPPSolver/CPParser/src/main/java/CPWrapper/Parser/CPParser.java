@@ -1,5 +1,9 @@
 package CPWrapper.Parser;
-
+/*
+    This class is responsible for transforming ConstraintProblem interface into
+    CPParser class. The only work that is done here is transforming ComparisonExpression interface
+    into less abstract ArConstraint instance.
+ */
 import CPWrapper.Utils.ArConstraint;
 import CPWrapper.Utils.ArConstraintImpl;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;

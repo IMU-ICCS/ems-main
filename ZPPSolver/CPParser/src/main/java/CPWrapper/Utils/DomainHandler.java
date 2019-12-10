@@ -1,5 +1,10 @@
 package CPWrapper.Utils;
-
+/*
+    All variable domains are abstracted as finite sequences of subsequent
+    natural numbers - this class is responsible for turning those "domain indices"
+    into corresponding values. Currently only RangeDomain and NumericListDomain
+    domains are supported.
+ */
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.NumericListDomain;
 import eu.paasage.upperware.metamodel.cp.RangeDomain;
