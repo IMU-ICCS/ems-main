@@ -30,6 +30,8 @@ class CPWrapperTest {
               @constraint2 : @var1 * @var2 * @var3 >= @const1;
 
               @constraint3: @var1 * @var2 >= @var3
+
+              @constraint4: @var3 == @var3
          */
         variables = Arrays.asList(new String[]{"var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8"});
         EList<CpVariable> vars = new BasicEList<>();
@@ -63,6 +65,10 @@ class CPWrapperTest {
         constraint2.setExp1(times);constraint2.setExp2(c);
         constraint2.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
 
+        ConstraintMockup constraint4 = new ConstraintMockup();
+        constraint4.setExp1(vars.get(2));constraint4.setExp2(vars.get(2));
+        constraint4.setComparator(ComparatorEnum.EQUAL_TO);
+
         EList<Constant> consts = new BasicEList<>();
         consts.add(c);
 
@@ -70,7 +76,7 @@ class CPWrapperTest {
         for (int i = 0; i < 3; i++) varsE.add(vars.get(i));
 
         EList<ComparisonExpression> constraints = new BasicEList<>();
-        constraints.addAll(Arrays.asList(new ComparisonExpression[] { constraint1, constraint2, constraint3}));
+        constraints.addAll(Arrays.asList(new ComparisonExpression[] { constraint1, constraint2, constraint3, constraint4}));
 
         ConstraintProblem cp = new ConstraintProblemMockup(consts,null, varsE, constraints );
 
@@ -78,6 +84,10 @@ class CPWrapperTest {
         cpWrapper.parse(cp, new UtilityProviderMockup());
     }
 
+    /*
+           Variable order is var3, var1, var2, because
+           HeuristicVariableOrderer is used.
+     */
     @Test
     public void countViolatedConstraintsTest() {
 
@@ -85,7 +95,9 @@ class CPWrapperTest {
 
         assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {0, 0, 2})) == 2);
 
-        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {0, 2, 2})) == 0);
+        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {2, 0, 2})) == 0);
+
+        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {2, 2, 2})) == 1);
     }
 
     @Test
@@ -94,11 +106,17 @@ class CPWrapperTest {
 
         assertFalse( cpWrapper.isFeasible(Arrays.asList(new Integer[] {0, 0, 2})));
 
-        assertTrue( cpWrapper.isFeasible(Arrays.asList(new Integer[] {0, 2, 2})));
+        assertTrue( cpWrapper.isFeasible(Arrays.asList(new Integer[] {2, 0, 2})));
     }
 
     @Test
     public void getHeuristicEvaluationTest() {
-        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0) == 3);
+        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 1) == 2);
+
+        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0) == 2);
+
+        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0) == 2);
+
+        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {5,2,2}), 0) == 0);
     }
 }
