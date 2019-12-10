@@ -87,7 +87,7 @@ public class ExpressionEvaluator {
     public static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
         switch (comparator) {
             case GREATER_THAN:
-                return argLeft - argRight > ExpressionEvaluator.PRECISION;
+                return argLeft > argRight;
             case GREATER_OR_EQUAL_TO:
                 return argLeft - argRight > -ExpressionEvaluator.PRECISION;
             case EQUAL_TO:
@@ -95,7 +95,7 @@ public class ExpressionEvaluator {
             case LESS_OR_EQUAL_TO:
                 return argRight - argLeft > -ExpressionEvaluator.PRECISION;
             case LESS_THAN:
-                return argRight - argLeft > ExpressionEvaluator.PRECISION;
+                return argLeft < argRight;
             case DIFFERENT:
                 return Math.abs(argLeft - argRight) > ExpressionEvaluator.PRECISION;
         }
