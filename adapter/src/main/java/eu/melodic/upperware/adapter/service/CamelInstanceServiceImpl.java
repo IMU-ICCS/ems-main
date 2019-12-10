@@ -66,7 +66,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent, Counters counters) {
         // Create Instance + name + type
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
-        softwareComponentInstance.setName(softwareComponent.getName() + "_instance_" + counters.getGlobalCount() + "_" + counters.getLocalCount());
+        softwareComponentInstance.setName(softwareComponent.getName().toLowerCase() + "-instance-" + counters.getGlobalCount() + "-" + counters.getLocalCount());
         softwareComponentInstance.setType(softwareComponent);
 
         //Create ProvidedCommunicationInstance
