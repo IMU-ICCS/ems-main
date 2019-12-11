@@ -1,5 +1,6 @@
 package CPComponents;
 
+import CPWrapper.PTCPWrapper;
 import org.jamesframework.core.problems.sol.RandomSolutionGenerator;
 
 import java.util.Random;
