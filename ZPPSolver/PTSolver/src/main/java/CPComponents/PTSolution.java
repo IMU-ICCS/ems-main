@@ -35,12 +35,14 @@ public class PTSolution extends Solution {
 
     @Override
     public Solution copy() {
-        List<Integer> varsClone = new ArrayList<>();
-        Collections.copy(varAssignments, varsClone);
+        List<Integer> varsClone = new ArrayList<>(varAssignments);
         return new PTSolution(varsClone);
     }
 
     private boolean equals(PTSolution s) {
+        if (s.varAssignments.size() != varAssignments.size()) {
+            return false;
+        }
         for (int i = 0; i < varAssignments.size(); i++) {
             if (s.varAssignments.get(i) != varAssignments.get(i)) {
                 return false;
