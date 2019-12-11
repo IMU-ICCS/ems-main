@@ -20,7 +20,7 @@ public class PTCPWrapper {
         return 0;
     }
 
-    public PTSolution generateRandom(Random random, PTCPWrapper ptcpWrapper) {
+    public PTSolution generateRandom(Random random) {
         //TODO must use CPWrapper
         return null;
     }

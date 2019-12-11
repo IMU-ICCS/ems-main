@@ -1,5 +1,7 @@
 package CPComponents;
-
+/*
+    This class
+ */
 import org.jamesframework.core.search.neigh.Move;
 import org.jamesframework.core.search.neigh.Neighbourhood;
 

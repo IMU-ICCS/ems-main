@@ -1,5 +1,10 @@
 package CPComponents;
-
+/*
+    Class which abstracts moves in CP search space.
+    There are only two types of moves:
+        for given variable we may either increase its value by 1
+        or decrease it by 1.
+ */
 import org.jamesframework.core.search.neigh.Move;
 
 import java.util.Collections;
@@ -25,11 +30,11 @@ public class PTMover implements Move<PTSolution> {
      */
     @Override
     public void apply(PTSolution cpSolution) {
-            if (move.values().contains(MOVE_DIRECTION.UP)) {
-                cpSolution.increaseValue(move.keySet().iterator().next());
-            } else {
-                cpSolution.decreaseValue(move.keySet().iterator().next());
-            }
+        if (move.values().contains(MOVE_DIRECTION.UP)) {
+            cpSolution.increaseValue(move.keySet().iterator().next());
+        } else {
+            cpSolution.decreaseValue(move.keySet().iterator().next());
+        }
     }
 
     @Override

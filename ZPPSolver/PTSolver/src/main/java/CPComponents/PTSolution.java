@@ -11,13 +11,14 @@ import java.util.Objects;
 
 @AllArgsConstructor
 public class PTSolution extends Solution {
-    private static List<Integer> minVariableValues;
-    private static List<Integer> maxVariableValues;
+    public static List<Integer> minVariableValues;
+    public static List<Integer> maxVariableValues;
     @Getter
     private List<Integer> varAssignments;
 
     protected void increaseValue(int variableIndex) {
-        varAssignments.set(variableIndex, varAssignments.get(variableIndex) + 1);
+        int varValue = varAssignments.get(variableIndex);
+        varAssignments.set(variableIndex, varValue + 1);
     }
 
     protected void decreaseValue(int variableIndex) {
