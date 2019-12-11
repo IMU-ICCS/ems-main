@@ -1,11 +1,12 @@
 package CPComponents;
-
+/*
+    Search space element for Parallel Tempering
+ */
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jamesframework.core.problems.sol.Solution;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,22 +14,31 @@ import java.util.Objects;
 public class PTSolution extends Solution {
     public static List<Integer> minVariableValues;
     public static List<Integer> maxVariableValues;
+    /*
+        Value at index i corresponds to i'th variable's value
+     */
     @Getter
     private List<Integer> varAssignments;
 
     protected void increaseValue(int variableIndex) {
-        int varValue = varAssignments.get(variableIndex);
-        varAssignments.set(variableIndex, varValue + 1);
+        varAssignments.set(variableIndex, varAssignments.get(variableIndex) + 1);
     }
 
     protected void decreaseValue(int variableIndex) {
         varAssignments.set(variableIndex, varAssignments.get(variableIndex) - 1);
     }
 
+    /*
+        True if increasing current @var variable value by one will not exceed
+        domain range
+     */
     public boolean canMoveUp(int var) {
         return PTSolution.maxVariableValues.get(var) > varAssignments.get(var);
     }
-
+    /*
+        True if decreasing current @var variable value by one will not exceed
+        domain range
+     */
     public boolean canMoveDown(int var) {
         return PTSolution.minVariableValues.get(var) < varAssignments.get(var);
     }

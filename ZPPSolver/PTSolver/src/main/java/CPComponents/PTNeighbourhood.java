@@ -1,6 +1,8 @@
 package CPComponents;
 /*
-    This class
+    Neighbourhood of a search space element - V -
+    is defined to be a set of all elements which may be transformed to
+    V with one move.
  */
 import org.jamesframework.core.search.neigh.Move;
 import org.jamesframework.core.search.neigh.Neighbourhood;
