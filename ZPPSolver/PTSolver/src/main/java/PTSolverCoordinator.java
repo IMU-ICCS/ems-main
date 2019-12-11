@@ -1,6 +1,7 @@
 public class PTSolverCoordinator {
 
     public void prepareProblem() {
+        //TODO must Set PTSolution static data
         // create data
         //TSPData data = new TSPData(dist);
 // create objective

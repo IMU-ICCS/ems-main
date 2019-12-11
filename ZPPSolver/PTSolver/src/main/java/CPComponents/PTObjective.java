@@ -7,7 +7,7 @@ import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 public class PTObjective implements Objective<PTSolution, PTCPWrapper> {
     @Override
     public Evaluation evaluate(PTSolution cpSolution, PTCPWrapper ptcpWrapper) {
-        return null;
+        return ptcpWrapper.evaluate(cpSolution.getVarAssignments());
     }
 
     @Override

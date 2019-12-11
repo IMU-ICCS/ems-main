@@ -1,6 +1,7 @@
 package CPComponents;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.jamesframework.core.problems.sol.Solution;
 
 import java.util.ArrayList;
@@ -10,8 +11,26 @@ import java.util.Objects;
 
 @AllArgsConstructor
 public class PTSolution extends Solution {
-
+    private static List<Integer> minVariableValues;
+    private static List<Integer> maxVariableValues;
+    @Getter
     private List<Integer> varAssignments;
+
+    protected void increaseValue(int variableIndex) {
+        varAssignments.set(variableIndex, varAssignments.get(variableIndex) + 1);
+    }
+
+    protected void decreaseValue(int variableIndex) {
+        varAssignments.set(variableIndex, varAssignments.get(variableIndex) - 1);
+    }
+
+    public boolean canMoveUp(int var) {
+        return PTSolution.maxVariableValues.get(var) > varAssignments.get(var);
+    }
+
+    public boolean canMoveDown(int var) {
+        return PTSolution.minVariableValues.get(var) < varAssignments.get(var);
+    }
 
     @Override
     public Solution copy() {
