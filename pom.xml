@@ -43,6 +43,7 @@
         <module>ZPPSolver/CPParser</module>
         <module>ZPPSolver/GeneticSolver</module>
         <module>ZPPSolver/MCTSSolver</module>
+        <module>ZPPSolver/PTSolver</module>
     </modules>
 
 
