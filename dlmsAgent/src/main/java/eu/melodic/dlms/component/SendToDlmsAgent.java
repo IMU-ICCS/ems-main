@@ -12,6 +12,8 @@ import lombok.Setter;
 public class SendToDlmsAgent {
 
 	private String componentId;
-	private String command;
+	private String metricName;
+	private AlluxioParam alluxio;
+	private MysqlParam mysql;
 	
 }

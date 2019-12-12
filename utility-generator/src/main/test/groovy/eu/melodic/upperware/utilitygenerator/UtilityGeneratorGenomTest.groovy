@@ -5,6 +5,8 @@ import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
+import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.GeoLocation
 import io.github.cloudiator.rest.model.Hardware
 import io.github.cloudiator.rest.model.Location
@@ -16,6 +18,8 @@ class UtilityGeneratorGenomTest extends Specification{
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
     UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
+    MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
+    JWTService jwtService
 
     String cardinalityName = "WorkerCardinality"
     String providerName = "provider_ComponentSparkWorker"
@@ -57,6 +61,8 @@ class UtilityGeneratorGenomTest extends Specification{
 
         properties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
         properties.getUtilityGenerator().setDlmsControllerUrl("")
+        jwtService = GroovyMock(JWTService)
+
     }
 
     def "Genom initial deployment"() {
@@ -69,7 +75,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 405 ))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, properties,securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -90,7 +96,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(latitudeName, 47))
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 509))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

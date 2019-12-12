@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@AllArgsConstructor
 public class DataSource {
 
 	@Id
@@ -37,6 +39,7 @@ public class DataSource {
 	private String accessKey; /* access information for datasources with username and password */
 	private boolean isReadOnly = false; /* check if modifications can be done on the mount point */
 	private String localMountPont;	/* local mount to the VM instance that is going to be commissoned */
+	private String hostPort; /* port for mysql */
 	
 	
 	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint, String localMountPoint) {
@@ -62,6 +65,12 @@ public class DataSource {
 			boolean isReadOnly) {
 		this(name, dataSourceType, ufsURI, mountPoint, localMountPoint, accessKey);
 		this.isReadOnly = isReadOnly;
+	}
+	
+	public DataSource(String name, DataSourceType dataSourceType, String ufsURI, String mountPoint, String localMountPoint, String accessKey,
+			boolean isReadOnly, String hostPort) {
+		this(name, dataSourceType, ufsURI, mountPoint, localMountPoint, accessKey, isReadOnly);
+		this.hostPort = hostPort;
 	}
 
 }

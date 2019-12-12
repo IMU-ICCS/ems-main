@@ -4,6 +4,8 @@ import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
+import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
+import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.NodeCandidate
 import spock.lang.Specification
 
@@ -13,6 +15,8 @@ class WithoutMetricModelTest extends Specification{
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
 
     UtilityGeneratorProperties properties = new UtilityGeneratorProperties()
+    MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
+    JWTService jwtService
 
     Collection<IntVariableValueDTO> newConfiguration = new ArrayList<>()
     Collection<IntVariableValueDTO> secondConfiguration = new ArrayList<>()
@@ -47,6 +51,9 @@ class WithoutMetricModelTest extends Specification{
         secondConfiguration.add(new IntVariableValueDTO(providerApp, 1))
         secondConfiguration.add(new IntVariableValueDTO(cardinalityDB, 1))
         secondConfiguration.add(new IntVariableValueDTO(providerDB, 0))
+
+        jwtService = GroovyMock(JWTService)
+
     }
 
     def "Without metric model initial deployment test"() {
@@ -55,7 +62,7 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -75,7 +82,7 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModelWithSolution.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, properties, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

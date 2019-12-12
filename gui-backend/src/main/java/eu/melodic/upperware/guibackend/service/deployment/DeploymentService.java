@@ -9,6 +9,7 @@ import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentR
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
+import eu.melodic.upperware.guibackend.service.cdo.ModelNameGenerator;
 import eu.melodic.upperware.guibackend.service.provider.ProviderService;
 import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,7 @@ public class DeploymentService {
     private CdoService cdoService;
     private ProviderService providerService;
     private SecureStoreService secureStoreService;
+    private ModelNameGenerator modelNameGenerator;
 
     public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token, String refreshToken) {
         deploymentRequest.setCloudDefinitions(deploymentRequest.getCloudDefinitions()
@@ -65,8 +67,6 @@ public class DeploymentService {
 
     public String uploadXmi(MultipartFile uploadXmiRequest) {
 
-        String cdoName = cdoService.getCdoName(uploadXmiRequest.getResource().getFilename(), ".xmi");
-
         try {
             if (uploadXmiRequest.getOriginalFilename() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. Please try again.", uploadXmiRequest.getResource().getFilename()));
@@ -74,11 +74,14 @@ public class DeploymentService {
 
             File xmiFile = new File(uploadXmiRequest.getOriginalFilename());
             Files.copy(uploadXmiRequest.getInputStream(), Paths.get(xmiFile.getPath()), StandardCopyOption.REPLACE_EXISTING);
-
+            String cdoName = modelNameGenerator.getModelName(xmiFile);
+            log.info("File {} will be stored under name: {}", uploadXmiRequest.getResource().getFilename(), cdoName);
             if (!cdoService.storeFileInCdo(cdoName, xmiFile)) {
                 log.error("Error by storing xmi model into cdo");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your xmi model is invalid or connection timeout occurred. Please try again.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Your xmi model %s is invalid or connection timeout occurred. Please try again.", uploadXmiRequest.getResource().getFilename()));
             }
+            return cdoName;
+
         } catch (IOException e) {
             log.error("Error by uploading xmi file:", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. Please try again.", uploadXmiRequest.getResource().getFilename()));
@@ -89,7 +92,6 @@ public class DeploymentService {
             log.error("Error by uploading xmi file:", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. CDO repository is in pending state. Please try again.", uploadXmiRequest.getResource().getFilename()));
         }
-        return cdoName;
     }
 
     public void deleteXmiModel(String xmiName) {
@@ -133,6 +135,7 @@ public class DeploymentService {
                 response.add(createUploadSingleXmiResponse(multipartFile, cdoName));
             } catch (ResponseStatusException ex) {
                 response.add(UploadXmiResponse.builder()
+                        .modelName(multipartFile.getName())
                         .httpStatus(HttpStatus.BAD_REQUEST)
                         .message(ex.getMessage())
                         .build());

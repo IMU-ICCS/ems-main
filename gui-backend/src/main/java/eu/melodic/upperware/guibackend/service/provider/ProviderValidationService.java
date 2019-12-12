@@ -5,9 +5,13 @@ import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class ProviderValidationService {
+
+    private final static Pattern NODE_GROUP_PATTERN = Pattern.compile("^[a-z0-9]{3,}$");
+
     public void validateProviderUser(CloudDefinition cloudDefinition, List<CloudDefinition> cloudDefinitionsForAllProviders) {
         //user must be unique for credentials from one provider
         if (cloudDefinitionsForAllProviders.stream()
@@ -54,5 +58,11 @@ public class ProviderValidationService {
                         validatedParentProperty.getName(), cloudDefinition.getApi().getProviderName()));
             }
         });
+    }
+
+    public void validateNodeGroup(String nodeGroup) {
+        if (!NODE_GROUP_PATTERN.matcher(nodeGroup).matches()) {
+            throw new ValidationException(String.format("Invalid node group: %s. Required min 3 sings length, built only from lowercase and digits.", nodeGroup));
+        }
     }
 }

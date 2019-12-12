@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.event.control;
@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
 import eu.melodic.event.baguette.client.install.OrchestrationHelper;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
@@ -220,6 +221,36 @@ public class ControlServiceController {
     }
 
     // ------------------------------------------------------------------------------------------------------------
+    // Broker-CEP query & control methods
+    // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/broker/credentials", method = {GET,POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("ControlServiceController.getBrokerCredentials(): BEGIN");
+        log.trace("ControlServiceController.getBrokerCredentials(): JWT token: {}", jwtToken);
+
+        // Retrieve sensor information
+        String brokerClientsUrl = coordinator.getBrokerCep().getBrokerCepProperties().getBrokerUrlForClients();
+        String brokerUsername = coordinator.getBrokerCep().getBrokerUsername();
+        String brokerPassword = coordinator.getBrokerCep().getBrokerPassword();
+        String brokerCertificatePem = coordinator.getBrokerCep().getBrokerCertificate();
+
+        // Prepare response
+        Map<String,String> response = new HashMap<>();
+        response.put("url", brokerClientsUrl);
+        response.put("username", brokerUsername);
+        response.put("password", brokerPassword);
+        response.put("certificate", brokerCertificatePem);
+        HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+        log.info("ControlServiceController.getBrokerCredentials(): Response: {}", response);
+
+        //return response;
+        return entity;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
@@ -258,12 +289,16 @@ public class ControlServiceController {
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
-        String baseUrl = request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+        String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
+        String baseUrl =
+                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
+                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
+                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Prepare Baguette Client installation instructions for node
         OrchestrationHelper.InstallationInstructions installationInstructions =
-                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette);
+                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;

@@ -10,6 +10,8 @@ package eu.melodic.upperware.dlms;
 import java.net.URI;
 import java.util.List;
 
+import eu.melodic.upperware.dlms.component.SendToDlmsAgent;
+
 /**
  * DLMS service providing various functionality regarding datasources.
  */
@@ -33,7 +35,7 @@ public interface DLMSService {
 	boolean hasDataSourceByName(String name);
 
 	/**
-	 * Returns all datasources in the database.
+ArrayList<Tuple<String, String[]>> list = new ArrayList<>();	 * Returns all datasources in the database.
 	 */
 	List<DataSource> getAllDataSources();
 
@@ -48,10 +50,10 @@ public interface DLMSService {
 	AcDsMountPoint getAcDsMpByName(String name);
 
 	/**
-	 * Returns the command for cloudiator to run for the particular component name.
+	 * Returns the SendToDlmsAgent for cloudiator to run for the particular component name.
 	 */
-	String getAlluxioCmd(String cmpName);
-	
+	SendToDlmsAgent getDlmsAgentParams(String cmpName);
+
 	/**
 	 * Add data source linked to the component name along with the mount point in
 	 * the database.
