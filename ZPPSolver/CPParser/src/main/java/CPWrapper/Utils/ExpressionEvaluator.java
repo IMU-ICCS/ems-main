@@ -44,7 +44,7 @@ public class ExpressionEvaluator {
         switch (oper) {
             case PLUS:
                 return values.stream()
-                        .reduce((double) 0, (subtotal, element) -> subtotal + element);
+                        .reduce((double) 0, Double::sum);
             case MINUS:
                 return values.get(0) - values.get(1);
             case TIMES:

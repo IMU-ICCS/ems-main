@@ -35,11 +35,7 @@ public class ArConstraintImpl implements ArConstraint {
                 variablesNames.add(name);
             }
         } else if (ExpressionEvaluator.isComposedExpression(exp)) {
-            ((ComposedExpression) exp).getExpressions()
-                    .stream()
-                    .forEach( e -> {
-                        this.collectVariableNamesFromExpression(e);
-                    });
+            ((ComposedExpression) exp).getExpressions().forEach(this::collectVariableNamesFromExpression);
         }
     }
 
