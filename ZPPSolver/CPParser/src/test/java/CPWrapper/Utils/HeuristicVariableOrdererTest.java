@@ -22,8 +22,7 @@ class HeuristicVariableOrdererTest {
         for(int i = 0; i < varsSize; i++) {
             constraints.add(new ArConstraintMockup(variables.subList(0,i+1)));
         }
-        ConstraintGraph graph = new ConstraintGraph(constraints, variables);
-        return graph;
+        return new ConstraintGraph(constraints, variables);
     }
 
     private static ConstraintGraph sameNumberOfConstraintsGraph() {
@@ -35,8 +34,7 @@ class HeuristicVariableOrdererTest {
                 constraints.add(new ArConstraintMockup(variables.subList(j, j+1)));
             }
         }
-        ConstraintGraph graph = new ConstraintGraph(constraints, variables);
-        return graph;
+        return new ConstraintGraph(constraints, variables);
     }
 
     @Test
