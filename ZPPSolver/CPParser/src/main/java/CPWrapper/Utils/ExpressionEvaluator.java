@@ -36,7 +36,7 @@ public class ExpressionEvaluator {
         return (oper == OperatorEnum.MINUS || oper == OperatorEnum.DIV || oper == OperatorEnum.EQ);
     }
 
-    public static double evaluateOnOperator(OperatorEnum oper, List<Double> values) {
+    static double evaluateOnOperator(OperatorEnum oper, List<Double> values) {
         if (isTwoArgsOperator(oper) && values.size() != 2) {
             throw new RuntimeException("MINUS, DIV, EQ operators must be evaluated on exactly two arguments");
         }
@@ -71,7 +71,7 @@ public class ExpressionEvaluator {
         return evaluateOnOperator(exp.getOperator(), expressionsValues);
     }
 
-    public static double evaluateExpression(Expression exp, Map<String, Double> variables) {
+    static double evaluateExpression(Expression exp, Map<String, Double> variables) {
             if (isConstant(exp)) {
                 return getValueOfNumericInterface(((Constant) exp).getValue());
             } else if (isCpMetric(exp)) {
@@ -84,7 +84,13 @@ public class ExpressionEvaluator {
             throw new RuntimeException("Unsupported Expression type");
     }
 
-    public static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
+    public static boolean evaluateComparator(ComparatorEnum comparator, Expression leftExp, Expression rightExp, Map<String, Double> variables) {
+        double leftExpValue = evaluateExpression(leftExp, variables);
+        double rightExpValue = evaluateExpression(rightExp, variables);
+        return evaluateComparator(comparator, leftExpValue, rightExpValue);
+    }
+
+    static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
         switch (comparator) {
             case GREATER_THAN:
                 return argLeft > argRight;

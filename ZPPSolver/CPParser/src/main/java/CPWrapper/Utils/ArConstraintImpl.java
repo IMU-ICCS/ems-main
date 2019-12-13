@@ -48,9 +48,7 @@ public class ArConstraintImpl implements ArConstraint {
         if (!checkVariables(variables.keySet())) {
             throw new RuntimeException("Can't evaluate - some variables are missing");
         }
-        double leftExpValue = ExpressionEvaluator.evaluateExpression(leftExpression, variables);
-        double rightExpValue = ExpressionEvaluator.evaluateExpression(rightExpression, variables);
-        return ExpressionEvaluator.evaluateComparator(comparator, leftExpValue, rightExpValue);
+        return ExpressionEvaluator.evaluateComparator(comparator, leftExpression, rightExpression, variables);
     }
 
     @Override
