@@ -39,7 +39,6 @@ public class ConstraintGraph {
      */
     private void initializeKnownDistances(Map<String, List<String>> knownDistances) {
         for (String var : variables) {
-            System.out.println("probuj2e "  + var + " " + variables.size());
             knownDistances.put(var, new LinkedList<String>());
             knownDistances.get(var).add(var);
         }
@@ -73,7 +72,6 @@ public class ConstraintGraph {
         for (ArConstraint constraint : constraints) {
             Collection<String> variables = constraint.getVariableNames();
             for (String var : variables) {
-                System.out.println("probuje "  + var);
                 knownDistances.get(var).addAll(variables);
                 neighbourhoodList.get(var).get(1).addAll(variables);
                 neighbourhoodList.get(var).get(1).remove(var);

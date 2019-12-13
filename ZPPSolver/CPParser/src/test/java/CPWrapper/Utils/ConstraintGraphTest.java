@@ -21,7 +21,7 @@ class ConstraintGraphTest {
         ConstraintGraph graph = new ConstraintGraph(new ArrayList<ArConstraint>(), variables);
         for (int distance = 1; distance < 10; distance ++) {
             for (String v : variables) {
-                assertTrue(graph.getNumberOfNeighbours(v, distance) == 0);
+                assertEquals(graph.getNumberOfNeighbours(v, distance), 0);
             }
         }
     }
@@ -40,10 +40,10 @@ class ConstraintGraphTest {
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
 
         for (int i = 1; i < varsSize/2 - 1; i++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(0), i) == 2);
+            assertEquals(graph.getNumberOfNeighbours(variables.get(0), i), 2);
         }
         for (int i = varsSize/2 + 1; i < 2*varsSize; i++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(0), i) == 0);
+            assertEquals(graph.getNumberOfNeighbours(variables.get(0), i), 0);
         }
     }
 
@@ -55,7 +55,7 @@ class ConstraintGraphTest {
         constraints.add(constraint);
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (String var : variables) {
-            assertTrue(graph.getNumberOfNeighbours(var, 1) == varsSize -1);
+            assertEquals(graph.getNumberOfNeighbours(var, 1), varsSize -1);
         }
     }
 
@@ -69,13 +69,13 @@ class ConstraintGraphTest {
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (String var : variables) {
-            assertTrue(graph.getNumberOfNeighbours(var, 1) == varsSize -1);
+            assertEquals(graph.getNumberOfNeighbours(var, 1), varsSize - 1);
         }
         for (int dist = 2; dist <= 1000; dist++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(0), dist) == 0);
+            assertEquals(graph.getNumberOfNeighbours(variables.get(0), dist), 0);
         }
 
-        assertTrue(graph.getConstraints(variables.get(0)).size() == noOfConstraints);
+        assertEquals(graph.getConstraints(variables.get(0)).size(), noOfConstraints);
     }
 
     @Test
@@ -87,8 +87,8 @@ class ConstraintGraphTest {
         }
         ConstraintGraph graph = new ConstraintGraph(constraints, variables);
         for (int i = 0; i < varsSize; i++) {
-            assertTrue(graph.getNumberOfNeighbours(variables.get(i), 1) == varsSize - 1 );
-            assertTrue(graph.getConstraints(variables.get(i)).size() == varsSize - i);
+            assertEquals(graph.getNumberOfNeighbours(variables.get(i), 1), varsSize - 1 );
+            assertEquals(graph.getConstraints(variables.get(i)).size(), varsSize - i);
         }
     }
 

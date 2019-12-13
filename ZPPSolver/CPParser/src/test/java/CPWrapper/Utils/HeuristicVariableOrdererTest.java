@@ -58,7 +58,7 @@ class HeuristicVariableOrdererTest {
         for (int i = 0; i < variables.size(); i++) {
             vars.add(orderer.indexToVariableName(i));
         }
-        assertTrue(vars.size() == variables.size());
+        assertEquals(vars.size(), variables.size());
     }
 
     @Test

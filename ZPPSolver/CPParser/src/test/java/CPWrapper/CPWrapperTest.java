@@ -91,13 +91,13 @@ class CPWrapperTest {
     @Test
     public void countViolatedConstraintsTest() {
 
-        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {0, 0, 0})) == 2);
+        assertEquals( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {0, 0, 0})), 2);
 
-        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {0, 0, 2})) == 2);
+        assertEquals( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {0, 0, 2})), 2);
 
-        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {2, 0, 2})) == 0);
+        assertEquals( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {2, 0, 2})), 0);
 
-        assertTrue( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {2, 2, 2})) == 1);
+        assertEquals( cpWrapper.countViolatedConstraints(Arrays.asList(new Integer[] {2, 2, 2})), 1);
     }
 
     @Test
@@ -111,12 +111,12 @@ class CPWrapperTest {
 
     @Test
     public void getHeuristicEvaluationTest() {
-        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 1) == 2);
+        assertEquals( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 1), 2);
 
-        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0) == 2);
+        assertEquals( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0), 2);
 
-        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0) == 2);
+        assertEquals( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {2,2,2}), 0), 2);
 
-        assertTrue( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {5,2,2}), 0) == 0);
+        assertEquals( cpWrapper.getHeuristicEvaluation(Arrays.asList(new Integer[] {5,2,2}), 0), 0);
     }
 }

@@ -44,7 +44,6 @@ class ExpressionEvaluatorTest {
         Double[] results = new Double[]{a+b, a-b, a*b, a/b, a==b ? 1.0 : 0.0};
         for (int i = 0; i < results.length; i++) {
             double res = ExpressionEvaluator.evaluateOnOperator(operators[i], args);
-            System.out.println("Wynik: " + res + " " + i + " should be " + results[i]);
             assertTrue(Math.abs(res - results[i]) <= ExpressionEvaluator.PRECISION);
         }
     }
@@ -66,10 +65,10 @@ class ExpressionEvaluatorTest {
         double a = Math.random();
         NumericValueUpperware val = new NumericValueUpperwareImplMockup(a);
         Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, val);
-        assertTrue(ExpressionEvaluator.evaluateExpression(c, new HashMap<String, Double>()) == a);
+        assertEquals(ExpressionEvaluator.evaluateExpression(c, new HashMap<String, Double>()), a);
 
         CpMetric m = new CpMetricImplMockup(BasicTypeEnum.DOUBLE, val);
-        assertTrue(ExpressionEvaluator.evaluateExpression(m, new HashMap<String, Double>()) == a);
+        assertEquals(ExpressionEvaluator.evaluateExpression(m, new HashMap<String, Double>()), a);
     }
 
     @Test
@@ -79,7 +78,7 @@ class ExpressionEvaluatorTest {
         CpVariable var = new CpVariableImplMockup(name, VariableType.CPU);
         Map<String, Double> vars = new HashMap<>();
         vars.put(name, a);
-        assertTrue(ExpressionEvaluator.evaluateExpression(var, vars) == a);
+        assertEquals(ExpressionEvaluator.evaluateExpression(var, vars) , a);
     }
 
     @Test
@@ -114,6 +113,6 @@ class ExpressionEvaluatorTest {
         vars.put(names[0], vals[2]);
         vars.put(names[1], vals[3]);
         vars.put(names[2], vals[4]);
-        assertTrue(ExpressionEvaluator.evaluateExpression(composed, vars) == realValue);
+        assertEquals(ExpressionEvaluator.evaluateExpression(composed, vars) , realValue);
     }
 }
