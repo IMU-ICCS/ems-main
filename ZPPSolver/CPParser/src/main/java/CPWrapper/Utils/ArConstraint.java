@@ -5,7 +5,7 @@ import java.util.Map;
 
 public interface ArConstraint {
 
-    public Collection<String> getVariableNames();
+    Collection<String> getVariableNames();
 
-    public boolean evaluate(Map<String, Double> variables);
+    boolean evaluate(Map<String, Double> variables);
 }

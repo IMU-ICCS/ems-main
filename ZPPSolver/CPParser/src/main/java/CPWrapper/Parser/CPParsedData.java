@@ -74,16 +74,16 @@ public class CPParsedData {
         constraintGraph = new ConstraintGraph(constraints, variableNames);
     }
 
-    protected void postConstants(Collection<Constant> constants) {
+    void postConstants(Collection<Constant> constants) {
         this.constants = constants;
     }
-    protected void postMetrics(Collection<CpMetric> metrics) {
+    void postMetrics(Collection<CpMetric> metrics) {
         this.metrics = metrics;
     }
-    protected void postConstraints(Collection<ArConstraint> constraints) {
+    void postConstraints(Collection<ArConstraint> constraints) {
         this.constraints = constraints;
     }
-    protected void postVariables(Collection<CpVariable> variables) {
+    void postVariables(Collection<CpVariable> variables) {
         this.variables = variables;
     }
 }

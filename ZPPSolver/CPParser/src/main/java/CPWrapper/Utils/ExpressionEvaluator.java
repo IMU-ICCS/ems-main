@@ -19,7 +19,7 @@ public class ExpressionEvaluator {
      */
     public static final double PRECISION = 0.1;
 
-    protected static double getValueOfNumericInterface(NumericValueUpperware value) {
+    static double getValueOfNumericInterface(NumericValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
             return (double)((IntegerValueUpperware) value).getValue();
         } else if (value instanceof LongValueUpperware) {
@@ -102,19 +102,19 @@ public class ExpressionEvaluator {
         throw new RuntimeException("Unsupported comparator type");
     }
 
-    protected static boolean isConstant(Expression expression){
+    static boolean isConstant(Expression expression){
         return expression instanceof Constant;
     }
 
-    protected static boolean isCpVariable(Expression expression){
+    static boolean isCpVariable(Expression expression){
         return expression instanceof CpVariable;
     }
 
-    protected static boolean isCpMetric(Expression expression){
+    static boolean isCpMetric(Expression expression){
         return expression instanceof CpMetric;
     }
 
-    protected static boolean isComposedExpression(Expression expression){
+    static boolean isComposedExpression(Expression expression){
         return expression instanceof ComposedExpression;
     }
 }
