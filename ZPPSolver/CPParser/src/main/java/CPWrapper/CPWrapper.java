@@ -54,7 +54,6 @@ public class CPWrapper {
     private Map<String, Double> getAssignmentFromValueList(List<Integer> assignments) {
         Map<String, Double> vars = new HashMap<>();
         for (int i = 0; i < assignments.size(); i++) {
-            System.out.println("OK: " + i);
             vars.put(variableOrderer.indexToVariableName(i), getVariableValueFromDomainIndex(i, assignments.get(i)));
         }
         return vars;

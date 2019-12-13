@@ -5,10 +5,7 @@ package CPWrapper.Parser;
 
 import CPWrapper.Utils.ArConstraint;
 import CPWrapper.Utils.ConstraintGraph;
-import eu.paasage.upperware.metamodel.cp.Constant;
-import eu.paasage.upperware.metamodel.cp.CpMetric;
-import eu.paasage.upperware.metamodel.cp.CpVariable;
-import eu.paasage.upperware.metamodel.cp.Domain;
+import eu.paasage.upperware.metamodel.cp.*;
 import lombok.Getter;
 
 import java.util.Collection;
@@ -45,11 +42,9 @@ public class CPParsedData {
     }
 
     public int countViolatedConstraints(Map<String, Double> variables) {
-        int count =
-                constraints.stream()
-                        .map(c -> c.evaluate(variables) ?  0 : 1)
-                        .reduce( (int) 0, (subtotal, el) -> subtotal + el);
-        return count;
+        return constraints.stream()
+                .map(c -> c.evaluate(variables) ?  0 : 1)
+                .reduce( 0, Integer::sum);
     }
 
     public int getHeuristicEvaluation(String variable, Map<String, Double> variables) {
@@ -74,7 +69,7 @@ public class CPParsedData {
     private void initializeConstraintGraph() {
         List<String> variableNames =
                 variables.stream()
-                        .map(var -> var.getId())
+                        .map(CPElement::getId)
                         .collect(Collectors.toList());
         constraintGraph = new ConstraintGraph(constraints, variableNames);
     }
