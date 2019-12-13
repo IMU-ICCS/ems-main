@@ -40,18 +40,10 @@ public class HeuristicVariableOrderer implements VariableOrderer {
                 nameToValue.entrySet().stream()
                         .sorted(Collections.reverseOrder(Map.Entry.comparingByValue(
                                 (p1, p2) -> {
-                                    if (p1.getValue0() < p2.getValue0()) {
-                                        return -1;
-                                    } else if (p1.getValue0() == p2.getValue0()) {
-                                        if (p1.getValue1() < p2.getValue1()) {
-                                            return -1;
-                                        } else if (p1.getValue1() == p2.getValue1()) {
-                                            return 0;
-                                        } else {
-                                            return 1;
-                                        }
+                                    if (p1.getValue0().equals(p2.getValue0())) {
+                                        return p1.getValue1().compareTo(p2.getValue1());
                                     } else {
-                                        return 1;
+                                        return p1.getValue0().compareTo(p2.getValue0());
                                     }
                                 }
                         )));
