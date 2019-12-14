@@ -18,13 +18,13 @@ class PTMoverTest {
         for (int i = 0; i < assignments.size() ; i++) {
             PTMover m = PTMover.newUpMove(i);
             m.apply(solution);
-            assertTrue( solution.getVarAssignments().get(i) == assignments.get(i) + 1);
+            assertEquals( (int) solution.getVarAssignments().get(i), assignments.get(i).intValue() + 1);
         }
 
         for (int i = 0; i < assignments.size() ; i++) {
             PTMover m = PTMover.newDownMove(i);
             m.apply(solution);
-            assertTrue( solution.getVarAssignments().get(i) == assignments.get(i));
+            assertEquals( solution.getVarAssignments().get(i), assignments.get(i));
         }
 
     }

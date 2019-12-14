@@ -10,6 +10,9 @@ public class PTObjective implements Objective<PTSolution, PTCPWrapper> {
         return ptcpWrapper.evaluate(cpSolution.getVarAssignments());
     }
 
+    /*
+        True if are goal is to minimize the objective
+     */
     @Override
     public boolean isMinimizing() {
         return false;

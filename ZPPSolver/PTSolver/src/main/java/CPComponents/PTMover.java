@@ -37,6 +37,9 @@ public class PTMover implements Move<PTSolution> {
         }
     }
 
+    /*
+        Here we may assume that the move is possible
+     */
     @Override
     public void undo(PTSolution cpSolution) {
         if (move.values().contains(MOVE_DIRECTION.DOWN)) {

@@ -18,15 +18,15 @@ class PTNeighbourhoodTest {
         PTSolution.minVariableValues = minValues;
         PTNeighbourhood neighbourhood = new PTNeighbourhood();
         PTSolution sol = new PTSolution(assignments);
-        assertTrue( neighbourhood.getAllMoves(sol).size() == 0);
+        assertEquals( neighbourhood.getAllMoves(sol).size(), 0);
 
         maxValues =  Arrays.asList(new Integer[] {10,20,30,40,50});
         PTSolution.maxVariableValues= maxValues;
-        assertTrue( neighbourhood.getAllMoves(sol).size() == assignments.size());
+        assertEquals( neighbourhood.getAllMoves(sol).size(), assignments.size());
 
         minValues = Arrays.asList(new Integer[] {1,0,0,0,0});
         PTSolution.minVariableValues = minValues;
-        assertTrue( neighbourhood.getAllMoves(sol).size() == 2 * assignments.size() - 1);
+        assertEquals( neighbourhood.getAllMoves(sol).size(), 2 * assignments.size() - 1);
     }
 
 }
