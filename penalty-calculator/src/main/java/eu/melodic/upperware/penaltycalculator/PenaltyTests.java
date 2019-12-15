@@ -49,7 +49,7 @@ public class PenaltyTests implements CommandLineRunner {
         Collection<PenaltyConfigurationElement> collection_1 = readConfigElementsFromFile(args[0]);
         log.info("Collection-1:\n{}", PenaltyFunction.toString(collection_1));
 
-        Collection<PenaltyConfigurationElement> collection_2 = readConfigElementsFromFile(args[0]);
+        Collection<PenaltyConfigurationElement> collection_2 = readConfigElementsFromFile(args[1]);
         log.info("Collection-2:\n{}", PenaltyFunction.toString(collection_2));
 
         PenaltyFunctionResult penaltyResults = penaltyCalculator.evaluatePenaltyFunction(collection_1, collection_2);
