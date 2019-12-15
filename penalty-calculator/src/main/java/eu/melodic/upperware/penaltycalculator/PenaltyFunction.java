@@ -25,6 +25,7 @@ import org.influxdb.impl.InfluxDBMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -182,15 +183,50 @@ public class PenaltyFunction {
         //Query query1 = new Query("SELECT timeDepl FROM ComponentTime", dbName);
         log.info("INFLUX point D - InfluxDB Mapper initialized");
 
-        Query query1 = new Query("SELECT mean(\"value\") AS \"mean_value\" FROM \"cloudiator\".\"autogen\".\"process-start-time\" WHERE \"task\"='database' GROUP BY time(5s) FILL(null)", dbName);
+        /*//Query query1 = new Query("SELECT mean(\"value\") AS \"mean_value\" FROM \"cloudiator\".\"autogen\".\"process-start-time\" WHERE \"task\"='database' GROUP BY time(5s) FILL(null)", dbName);
+        Query query1 = new Query("SELECT \"time\" AS \"time\", \"task\" AS \"ComponentName\", \"value\" AS \"timeDepl\" FROM \"cloudiator\".\"autogen\".\"process-start-time\" WHERE \"task\"='database'", dbName);
         //Logger.info("Executing query "+query1.getCommand());
         List<ComponMeasurement> ComponMeasurements = influxDBMapper.query(query1, ComponMeasurement.class);
         log.info("INFLUX point E - Query ok: size={}", ComponMeasurements.size());
-        ComponMeasurements.forEach(r -> log.info(" - {}", r));
+        ComponMeasurements.forEach(r -> log.info(" - {}", r));*/
 
+        Query query1 = new Query("SELECT \"time\" AS \"time\", \"task\" AS \"ComponentName\", \"value\" AS \"timeDepl\" FROM \"cloudiator\".\"autogen\".\"process-start-time\" WHERE \"task\"='database'", dbName);
+        QueryResult queryResult1 = influxDB.query(query1);
+        //log.info("INFLUX point E-2 - Results: {}", queryResult1);
+        List<ComponMeasurement> listComponMeasurements = new ArrayList<>();
+        queryResult1.getResults().forEach(result -> {
+            log.info(">>>>>>>>>>>  result: {}", result.toString());
+            result.getSeries().forEach(series -> {
+                String name = series.getName();
+                Class<? extends QueryResult.Series> clazz = series.getClass();
+                log.info("#################  series: name={}, class={}", name, clazz);
+                List<String> columns = series.getColumns();
+                log.info("#################  series: cols={}", columns);
+                //Map<String, String> tags = series.getTags();
+                //log.info("#################  series: tags={}", tags);
+                List<List<Object>> values = series.getValues();
+                //log.info("#################  values: {}", values);
+
+                values.forEach(row -> {
+                    for (int i=0; i<columns.size(); i++) {
+                        log.info("   -------->    {} = {} / {}", columns.get(i), row.get(i), row.get(i).getClass());
+
+                        eu.melodic.upperware.penaltycalculator.ComponMeasurement cm;
+                        cm = new eu.melodic.upperware.penaltycalculator.ComponMeasurement();
+                        cm.setTime(Instant.parse(row.get(0).toString()));
+                        cm.setComponentName(row.get(1).toString());
+                        cm.timeDepl(Double.parseDouble(row.get(2).toString()));
+
+                        listComponMeasurements.add(cm);
+                    }
+                });
+            });
+        });
+        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@>>>> listComponMeasurements: {}", listComponMeasurements);
 
         log.info("INFLUX point F - Query results listed");
-        String arr = ComponMeasurements.toString();
+        //String arr = ComponMeasurements.toString();
+        String arr = listComponMeasurements.toString();
         log.info("INFLUX point G - arr: {}", arr);
 
         //String arr = null;
