@@ -29,7 +29,7 @@ public class ComponMeasurement {
     @Column(name = "timeDepl")
     private double timeDepl;
  
-    /*public Instant getTime() {
+    public Instant getTime() {
         return time;
     }
  
@@ -53,5 +53,5 @@ public class ComponMeasurement {
         this.timeDepl = timeDepl;
     }
 	
-	public String toString() { return timeDepl+""; }*/
+	public String toString() { return timeDepl+""; }
 }

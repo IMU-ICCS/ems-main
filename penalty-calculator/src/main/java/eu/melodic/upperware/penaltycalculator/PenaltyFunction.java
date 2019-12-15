@@ -151,7 +151,7 @@ public class PenaltyFunction {
         log.info("INFLUX point A - START");
         InfluxDB influxDB = InfluxDBFactory.connect("http://134.60.152.213:8086", "vasilis", "EiWeif0w");
         log.info("INFLUX point B - connected");
-
+        
         // Flush every 2000 Points, at least every 100ms
         influxDB.enableBatch(2000, 100, TimeUnit.MILLISECONDS);
 
@@ -242,25 +242,25 @@ public class PenaltyFunction {
             double sum = 0;
             int cnt = 0;
             double avg = 0;
-        /*
-        for (ComponMeasurement cm : ComponMeasurements) {
+        
+        for (ComponMeasurement cmmm : listComponMeasurements) {
 
-            sum += cm.timeDepl();
+            sum += cmmm.timeDepl();
             cnt++;
         }
 
         if (cnt > 0) {
             avg = sum / cnt;
         } else
-            throw new RuntimeException("some error message"); */
+            throw new RuntimeException("some error message"); 
             log.info("cnt={}", cnt);
             log.info("avg={}", avg);
 
 
             //Find the maximum Component Deployment time
             double maxx = 0;
-        /*
-        for (ComponMeasurement cmm : ComponMeasurements) {
+        
+        for (ComponMeasurement cmm : listComponMeasurements) {
 
             if (maxx < cmm.timeDepl()) {
                 maxx = cmm.timeDepl(); //swapping
@@ -268,14 +268,14 @@ public class PenaltyFunction {
             }
 
         }
-        */
+        
 
             log.info("The max Component Deployment Time value is " + maxx);
 
 
             //Close connection to Influx DB
 
-            //influxDB.close();
+            influxDB.close();
 
 
             HashMap<String, String> hm = new HashMap<String, String>();
@@ -427,9 +427,10 @@ public class PenaltyFunction {
             }
 
 
-            double avgTime = ((((result + result2) / value1) + avg) / 2) - min;
-            resultss = avgTime / (maxx - min);
-            log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, avg={}, min={}, max={} --> resultss={}", result, result2, value1, avg, min, max, resultss);
+            double avgTime = ((((result + result2) / value1) + (avg/1000)) / 2) - min;
+            resultss = avgTime / ((maxx/1000) - min);
+			log.info("The max Component Deployment Time value is " + maxx/1000);
+            log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, avg={}, min={}, max={} --> resultss={}", result, result2, value1, avg/1000, min, maxx/1000, resultss);
             //return resultss;
 
             PenaltyFunctionResult pfResult = new PenaltyFunctionResult(resultss, avgTime);

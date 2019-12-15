@@ -55,8 +55,8 @@ public class PenaltyTests implements CommandLineRunner {
         PenaltyFunctionResult penaltyResults = penaltyCalculator.evaluatePenaltyFunction(collection_1, collection_2);
 
         //normalized average startup time using max-min normalization
-        log.info("Average Time of VM Startup Time : {}", penaltyResults.getStartupTime());
-        log.info("Normalized Average Time of VM Startup Time : {}", penaltyResults.getPenaltyValue());
+        log.info("Average Time of VM and Component Startup Time : {}", penaltyResults.getStartupTime());
+        log.info("Normalized Average Time of VM and Component Startup Time : {}", penaltyResults.getPenaltyValue());
     }
 
     protected Collection<PenaltyConfigurationElement> readConfigElementsFromFile(String fileName) throws IOException {
