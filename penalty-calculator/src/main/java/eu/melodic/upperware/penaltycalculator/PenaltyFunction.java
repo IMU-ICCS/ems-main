@@ -194,35 +194,28 @@ public class PenaltyFunction {
         QueryResult queryResult1 = influxDB.query(query1);
         //log.info("INFLUX point E-2 - Results: {}", queryResult1);
         List<ComponMeasurement> listComponMeasurements = new ArrayList<>();
-        queryResult1.getResults().forEach(result -> {
-            log.info(">>>>>>>>>>>  result: {}", result.toString());
-            result.getSeries().forEach(series -> {
-                String name = series.getName();
-                Class<? extends QueryResult.Series> clazz = series.getClass();
-                log.info("#################  series: name={}, class={}", name, clazz);
-                List<String> columns = series.getColumns();
-                log.info("#################  series: cols={}", columns);
-                //Map<String, String> tags = series.getTags();
-                //log.info("#################  series: tags={}", tags);
-                List<List<Object>> values = series.getValues();
-                //log.info("#################  values: {}", values);
+        QueryResult.Series series = queryResult1.getResults().get(0).getSeries().get(0);
+        String seriesName = series.getName();
+        List<String> seriesColumns = series.getColumns();
+        log.info("#################  series: name={}, columns={}", seriesName, seriesColumns);
+        List<List<Object>> seriesValues = series.getValues();
+        //log.info("#################  values: {}", seriesValues);
 
-                values.forEach(row -> {
-                    for (int i=0; i<columns.size(); i++) {
-                        log.info("   -------->    {} = {} / {}", columns.get(i), row.get(i), row.get(i).getClass());
+        seriesValues.forEach(row -> {
+            for (int i=0; i<seriesColumns.size(); i++) {
+                //log.info("   -------->    {} = {} / {}", seriesColumns.get(i), row.get(i), row.get(i).getClass());
 
-                        eu.melodic.upperware.penaltycalculator.ComponMeasurement cm;
-                        cm = new eu.melodic.upperware.penaltycalculator.ComponMeasurement();
-                        cm.setTime(Instant.parse(row.get(0).toString()));
-                        cm.setComponentName(row.get(1).toString());
-                        cm.timeDepl(Double.parseDouble(row.get(2).toString()));
+                eu.melodic.upperware.penaltycalculator.ComponMeasurement cm;
+                cm = new eu.melodic.upperware.penaltycalculator.ComponMeasurement();
+                cm.setTime(Instant.parse(row.get(0).toString()));
+                cm.setComponentName(row.get(1).toString());
+                cm.setTimeDepl(Double.parseDouble(row.get(2).toString()));
 
-                        listComponMeasurements.add(cm);
-                    }
-                });
-            });
+                listComponMeasurements.add(cm);
+            }
         });
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@>>>> listComponMeasurements: {}", listComponMeasurements);
+        log.info("INFLUX point E-new - Query ok: size={}", listComponMeasurements.size());
+        log.info("ComponMeasurements: {}", listComponMeasurements);
 
         log.info("INFLUX point F - Query results listed");
         //String arr = ComponMeasurements.toString();

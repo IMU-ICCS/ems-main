@@ -9,12 +9,14 @@
 
 package eu.melodic.upperware.penaltycalculator;
 
+import lombok.Data;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
- 
+
+@Data
 @Measurement(name = "ComponentTime", timeUnit = TimeUnit.SECONDS)
 public class ComponMeasurement {
  
@@ -27,7 +29,7 @@ public class ComponMeasurement {
     @Column(name = "timeDepl")
     private double timeDepl;
  
-    public Instant getTime() {
+    /*public Instant getTime() {
         return time;
     }
  
@@ -51,5 +53,5 @@ public class ComponMeasurement {
         this.timeDepl = timeDepl;
     }
 	
-	public String toString() { return timeDepl+""; }
+	public String toString() { return timeDepl+""; }*/
 }
