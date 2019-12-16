@@ -98,4 +98,8 @@ public class CPWrapper {
                 cpParsedData.getVariableDomain(variableOrderer.indexToVariableName(variable))
         );
     }
+
+    public int getVariablesCount() {
+        return cpParsedData.getVariableNames().size();
+    }
 }
