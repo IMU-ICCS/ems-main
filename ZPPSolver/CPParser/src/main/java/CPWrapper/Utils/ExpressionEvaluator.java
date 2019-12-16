@@ -32,6 +32,13 @@ public class ExpressionEvaluator {
         throw new RuntimeException("Unsupported NumericValueUpperware implementation");
     }
 
+    static int getValueOfIntegerNumericInterface(IntegerValueUpperware value) {
+        if (value instanceof IntegerValueUpperware) {
+            return ((IntegerValueUpperware) value).getValue();
+        }
+        throw new RuntimeException("Only integer values are supported");
+    }
+
     private static boolean isTwoArgsOperator(OperatorEnum oper) {
         return (oper == OperatorEnum.MINUS || oper == OperatorEnum.DIV || oper == OperatorEnum.EQ);
     }

@@ -86,4 +86,16 @@ public class CPWrapper {
         List<VariableValueDTO> vars = assignmentToVariableValueDTOList(assignments);
         return this.utilityProvider.evaluate(vars);
     }
+
+    public int getMaxDomainValue(int variable) {
+        return DomainHandler.getMaxDomainValue(
+                cpParsedData.getVariableDomain(variableOrderer.indexToVariableName(variable))
+        );
+    }
+
+    public int getMinDomainValue(int variable) {
+        return DomainHandler.getMinDomainValue(
+                cpParsedData.getVariableDomain(variableOrderer.indexToVariableName(variable))
+        );
+    }
 }

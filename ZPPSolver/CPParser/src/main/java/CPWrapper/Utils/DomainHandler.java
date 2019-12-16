@@ -38,4 +38,30 @@ public class DomainHandler {
         }
         return ExpressionEvaluator.getValueOfNumericInterface(values.get(valueIndex));
     }
+
+    public static int getMaxDomainValue(Domain domain) {
+        if (domain instanceof NumericListDomain) {
+            return ((NumericListDomain) domain).getValues().size() - 1;
+        } else if (domain instanceof RangeDomain) {
+            return ExpressionEvaluator
+                    .getValueOfIntegerNumericInterface(
+                            (IntegerValueUpperware) ((RangeDomain) domain).getTo()
+                    );
+        }
+
+        throw new RuntimeException("Only integer RangeDomains are supported!");
+    }
+
+    public static int getMinDomainValue(Domain domain) {
+        if (domain instanceof NumericListDomain) {
+            return 0;
+        } else if (domain instanceof RangeDomain) {
+            return ExpressionEvaluator
+                    .getValueOfIntegerNumericInterface(
+                            (IntegerValueUpperware) ((RangeDomain) domain).getFrom()
+                    );
+        }
+
+        throw new RuntimeException("Only integer RangeDomains are supported!");
+    }
 }
