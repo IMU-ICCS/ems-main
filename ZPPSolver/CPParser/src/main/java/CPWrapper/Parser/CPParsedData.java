@@ -5,6 +5,8 @@ package CPWrapper.Parser;
 
 import CPWrapper.Utils.ArConstraint;
 import CPWrapper.Utils.ConstraintGraph;
+import CPWrapper.Utils.VariableNumericType;
+import eu.melodic.upperware.cpsolver.solver.parser.creator.IntVarCreator;
 import eu.paasage.upperware.metamodel.cp.*;
 import lombok.Getter;
 
@@ -15,10 +17,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CPParsedData {
-    private Collection<Constant> constants;
-    private Collection<CpMetric> metrics;
-    private Collection<ArConstraint> constraints;
-    private Collection<CpVariable> variables;
+    private List<Constant> constants;
+    private List<CpMetric> metrics;
+    private List<ArConstraint> constraints;
+    private List<CpVariable> variables;
+    private IntVarCreator intVarCreator;
     @Getter
     private ConstraintGraph constraintGraph;
     private Map<String, CpVariable> nameToVariable;
@@ -59,6 +62,13 @@ public class CPParsedData {
         return nameToVariable.get(variable).getDomain();
     }
 
+    public VariableNumericType getVariableType(String name) {
+        if (intVarCreator.is(nameToVariable.get(name))) {
+            return VariableNumericType.INT;
+        } else {
+            return VariableNumericType.DOUBLE;
+        }
+    }
     private void initializeNameToVariable() {
         nameToVariable = new HashMap<String, CpVariable>();
         for (CpVariable var : variables) {
@@ -74,16 +84,16 @@ public class CPParsedData {
         constraintGraph = new ConstraintGraph(constraints, variableNames);
     }
 
-    void postConstants(Collection<Constant> constants) {
+    void postConstants(List<Constant> constants) {
         this.constants = constants;
     }
-    void postMetrics(Collection<CpMetric> metrics) {
+    void postMetrics(List<CpMetric> metrics) {
         this.metrics = metrics;
     }
-    void postConstraints(Collection<ArConstraint> constraints) {
+    void postConstraints(List<ArConstraint> constraints) {
         this.constraints = constraints;
     }
-    void postVariables(Collection<CpVariable> variables) {
+    void postVariables(List<CpVariable> variables) {
         this.variables = variables;
     }
 }

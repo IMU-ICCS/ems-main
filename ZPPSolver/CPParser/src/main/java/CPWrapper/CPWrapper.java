@@ -4,10 +4,12 @@ import CPWrapper.Parser.CPParsedData;
 import CPWrapper.Parser.CPParser;
 import CPWrapper.Utils.DomainHandler;
 import CPWrapper.Utils.HeuristicVariableOrderer;
+import CPWrapper.Utils.VariableNumericType;
 import CPWrapper.Utils.VariableOrderer;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.paasage.upperware.metamodel.cp.*;
+import org.eclipse.ocl.pivot.internal.values.NumberValueImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,9 +79,25 @@ public class CPWrapper {
     }
 
     private List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
-        //TODO
-        //VariableValueDTOFactory.createElement()
-        return new ArrayList<>();
+        List<VariableValueDTO> result = new ArrayList<>();
+        for (int i = 0; i < assignments.size(); i++) {
+            if (cpParsedData.getVariableType(variableOrderer.indexToVariableName(i)) == VariableNumericType.INT) {
+                result.add(
+                        VariableValueDTOFactory.createElement(
+                            variableOrderer.indexToVariableName(i),
+                            (int) getVariableValueFromDomainIndex(i, assignments.get(i))
+                    )
+                );
+            } else {
+                result.add(
+                        VariableValueDTOFactory.createElement(
+                                variableOrderer.indexToVariableName(i),
+                                 getVariableValueFromDomainIndex(i, assignments.get(i))
+                        )
+                );
+            }
+        }
+        return result;
     }
 
     public double getUtility(List<Integer> assignments) {

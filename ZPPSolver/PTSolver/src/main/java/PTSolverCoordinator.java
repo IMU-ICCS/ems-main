@@ -5,6 +5,7 @@ import PTCPWrapper.PTCPWrapper;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
+import org.jamesframework.core.search.Search;
 import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 
@@ -28,16 +29,20 @@ public class PTSolverCoordinator {
         preparePTSolver();
     }
 
-    public void solve(StopCriterion stopCriterion) {
+    /*
+        This method must return something different - PTSolution is only for tests.
+     */
+    public PTSolution solve(StopCriterion stopCriterion) {
         // np new MaxRuntime(timeLimit, TimeUnit.SECONDS)
         parallelTemperingSolver.addStopCriterion(stopCriterion);
         parallelTemperingSolver.start();
 
         if(parallelTemperingSolver.getBestSolution() != null){
-           // TODO
+           return parallelTemperingSolver.getBestSolution();
         } else {
             System.out.println("No valid solution found...");
         }
+        throw new RuntimeException("Couldn't find a solution");
         //TODO should return solution;
     }
 
