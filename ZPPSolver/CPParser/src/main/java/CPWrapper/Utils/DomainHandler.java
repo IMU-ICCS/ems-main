@@ -46,6 +46,10 @@ public class DomainHandler {
             return ExpressionEvaluator
                     .getValueOfIntegerNumericInterface(
                             (IntegerValueUpperware) ((RangeDomain) domain).getTo()
+                    ) -
+                    ExpressionEvaluator
+                    .getValueOfIntegerNumericInterface(
+                            (IntegerValueUpperware) ((RangeDomain) domain).getFrom()
                     );
         }
 
@@ -53,13 +57,8 @@ public class DomainHandler {
     }
 
     public static int getMinDomainValue(Domain domain) {
-        if (domain instanceof NumericListDomain) {
+        if (domain instanceof NumericListDomain || domain instanceof  RangeDomain) {
             return 0;
-        } else if (domain instanceof RangeDomain) {
-            return ExpressionEvaluator
-                    .getValueOfIntegerNumericInterface(
-                            (IntegerValueUpperware) ((RangeDomain) domain).getFrom()
-                    );
         }
 
         throw new RuntimeException("Only integer RangeDomains are supported!");

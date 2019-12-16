@@ -31,6 +31,7 @@ public class CPParsedData {
     }
 
     protected void init() {
+        intVarCreator = new IntVarCreator();
         initializeConstraintGraph();
         initializeNameToVariable();
     }

@@ -5,7 +5,6 @@ import PTCPWrapper.PTCPWrapper;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
-import org.jamesframework.core.search.Search;
 import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 
@@ -50,6 +49,7 @@ public class PTSolverCoordinator {
         PTSolution.minVariableValues = new ArrayList<>();
         PTSolution.maxVariableValues = new ArrayList<>();
         for (int i = 0; i < ptcpWrapper.getVariablesCount(); i++) {
+            System.out.println("Variable " + i + " " + ptcpWrapper.getMinValue(i) + " " + ptcpWrapper.getMaxValue(i));
             PTSolution.minVariableValues.add(ptcpWrapper.getMinValue(i));
             PTSolution.maxVariableValues.add(ptcpWrapper.getMaxValue(i));
         }

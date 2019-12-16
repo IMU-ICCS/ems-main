@@ -80,14 +80,23 @@ class PTSolverCoordinatorTest {
         constraints.addAll(Arrays.asList(constraint1, constraint2, constraint3, constraint4));
 
         ConstraintProblem cp = new ConstraintProblemMockup(consts,null, varsE, constraints );
-        return Collections.singletonMap(cp, new UtilityProvider() {
-            @Override
-            public double evaluate(List<VariableValueDTO> result) {
-                return 1;
+        return Collections.singletonMap(cp, result -> {
+            double sum = 0;
+            for (VariableValueDTO v : result) {
+                if (v.getValue() instanceof Double) {
+                    sum += v.getValue().doubleValue();
+                } else {
+                    sum += v.getValue().intValue();
+                }
             }
+            return sum;
         });
     }
 
+    /*
+        Since the solver is non-deterministic, in theory the test may not pass,
+        but 10 seconds should be enough for exact optimization.
+     */
     @Test
     public void simpleConstraintProblemTest() {
         Map<ConstraintProblem, UtilityProvider> problem = prepareSimpleConstraintProblem();
@@ -100,8 +109,10 @@ class PTSolverCoordinatorTest {
         List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5);
         List<Double> domain3 = Arrays.asList(0.0, 1.0,2.0,3.0,4.0,5.0, 6.0, 7.0, 8.0, 9.0);
         List<Integer> assignment = solution.getVarAssignments();
-
-        assertTrue(domain1.get(assignment.get(0)) < domain3.get(assignment.get(2)));
+        System.out.println("values: " + domain1.get(assignment.get(1))  +  domain2.get(assignment.get(2))+ " "+ domain3.get(assignment.get(0)));
+        assertEquals((double) domain1.get(assignment.get(1)), 5.0);
+        assertEquals((double) domain2.get(assignment.get(2)), 2.5);
+        assertEquals((double) domain3.get(assignment.get(0)), 9);
 
     }
 }
