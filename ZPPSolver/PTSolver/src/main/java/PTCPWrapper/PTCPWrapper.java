@@ -1,14 +1,15 @@
-package CPWrapper;
+package PTCPWrapper;
 
 import CPComponents.PTEvaluation;
 import CPComponents.PTSolution;
+import CPWrapper.CPWrapper;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 
 import java.util.List;
 import java.util.Random;
 
 public class PTCPWrapper {
-
+    private CPWrapper cpWrapper;
     public Evaluation evaluate(List<Integer> assignments) {
         //TODO Use cpWrapper to check constraint
         //TODO Use CpWrapper to calc utility
