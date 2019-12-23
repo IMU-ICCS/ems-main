@@ -17,10 +17,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CPParsedData {
-    private List<Constant> constants;
-    private List<CpMetric> metrics;
-    private List<Constraint> constraints;
-    private List<CpVariable> variables;
+    private Collection<Constant> constants;
+    private Collection<CpMetric> metrics;
+    private Collection<Constraint> constraints;
+    private Collection<CpVariable> variables;
     private IntVarCreator intVarCreator;
     @Getter
     private ConstraintGraph constraintGraph;
@@ -85,16 +85,16 @@ public class CPParsedData {
         constraintGraph = new ConstraintGraph(constraints, variableNames);
     }
 
-    void postConstants(List<Constant> constants) {
+    void postConstants(Collection<Constant> constants) {
         this.constants = constants;
     }
-    void postMetrics(List<CpMetric> metrics) {
+    void postMetrics(Collection<CpMetric> metrics) {
         this.metrics = metrics;
     }
-    void postConstraints(List<Constraint> constraints) {
+    void postConstraints(Collection<Constraint> constraints) {
         this.constraints = constraints;
     }
-    void postVariables(List<CpVariable> variables) {
+    void postVariables(Collection<CpVariable> variables) {
         this.variables = variables;
     }
 }
