@@ -32,10 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -101,13 +98,13 @@ public class CPSolverCoordinator {
             log.info("Found {} solutions:", solutions.size());
             solutions.forEach(solution -> log.info("Solution: {}", solution));
 
-            if (CollectionUtils.isEmpty(solutions)){
+            if (CollectionUtils.isEmpty(solutions)) {
                 log.info("Problem is infeasible");
                 notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
                 return;
             }
 
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false , nodeCandidates, utilityGeneratorProperties,
+            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
             double maxUtility = 0.0;
@@ -188,10 +185,10 @@ public class CPSolverCoordinator {
             if (from instanceof IntegerValueUpperware) {
                 Number variableValue = findVariableValue(bestSolution, var);
                 return CPModelTool.createCpVariableValue(var, createIntegerValueUpperware(variableValue.intValue()));
-            } else if (from instanceof LongValueUpperware){
+            } else if (from instanceof LongValueUpperware) {
                 Number variableValue = findVariableValue(bestSolution, var);
                 return CPModelTool.createCpVariableValue(var, createLongValueUpperware(variableValue.longValue()));
-            } else if (from instanceof DoubleValueUpperware){
+            } else if (from instanceof DoubleValueUpperware) {
                 Number variableValue = findVariableValue(bestSolution, var);
                 return CPModelTool.createCpVariableValue(var, createDoubleValueUpperware(variableValue.doubleValue()));
             } else {
@@ -204,10 +201,10 @@ public class CPSolverCoordinator {
             if (type.equals(BasicTypeEnum.INTEGER)) {
                 Number variableValue = findVariableValue(bestSolution, var);
                 return CPModelTool.createCpVariableValue(var, createIntegerValueUpperware(variableValue.intValue()));
-            } else if (type.equals(BasicTypeEnum.LONG)){
+            } else if (type.equals(BasicTypeEnum.LONG)) {
                 Number variableValue = findVariableValue(bestSolution, var);
                 return CPModelTool.createCpVariableValue(var, createLongValueUpperware(variableValue.longValue()));
-            } else if (type.equals(BasicTypeEnum.DOUBLE)){
+            } else if (type.equals(BasicTypeEnum.DOUBLE)) {
                 Number variableValue = findVariableValue(bestSolution, var);
                 return CPModelTool.createCpVariableValue(var, createDoubleValueUpperware(variableValue.doubleValue()));
             } else {
@@ -218,7 +215,7 @@ public class CPSolverCoordinator {
         throw new RuntimeException("Unsupported method type: " + dom.getClass());
     }
 
-    private Number findVariableValue(List<VariableValueDTO> bestSolution, CpVariable var){
+    private Number findVariableValue(List<VariableValueDTO> bestSolution, CpVariable var) {
         return bestSolution
                 .stream()
                 .filter(variableValueDTO -> variableValueDTO.getName().equals(var.getId()))
@@ -234,22 +231,56 @@ public class CPSolverCoordinator {
         deployedSolution.setUtilityValue(createDoubleValueUpperware(0.0));
     }
 
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+        try {
+            NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
+            ConstraintProblem cp = getCPFromFile(cpModelFilePath);
+            List<CpSolution> solutions = cpSolver.solve(cp);
 
-    public void generateCPSolutionFromFile(String applicationId, String cdoFilePath, String cpResourcePath, String nodeCandidatesFilePath) throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet!");
-//        NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
-//        ConstraintProblem cp = getCPFromFile(cdoFilePath);
-//        List<CpSolution> solve = cpSolver.solve(cp);
-//
-//        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, true , nodeCandidates, utilityGeneratorProperties);
+            log.info("Found {} solutions:", solutions.size());
+            solutions.forEach(solution -> log.info("Solution: {}", solution));
 
+            if (CollectionUtils.isEmpty(solutions)) {
+                log.info("Problem is infeasible");
+                return;
+            }
+
+            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
+                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+
+            double maxUtility = 0.0;
+            List<VariableValueDTO> bestSolution = Collections.emptyList();
+            for (CpSolution solution : solutions) {
+                //calculate utility
+                List<VariableValueDTO> result = convertToVariableValues(solution);
+                double utility = utilityGenerator.evaluate(result);
+                if (utility > maxUtility) {
+                    log.debug("New utility value {} is greater than {}", utility, maxUtility);
+                    maxUtility = utility;
+                    bestSolution = result;
+                } else {
+                    log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);
+                }
+            }
+
+            if (maxUtility > 0.0) {
+                // update cp to contain te best solution
+                saveBestSolutionInCDO(cp, maxUtility, bestSolution);
+            }
+
+            log.info("Solution has been produced, saving to file " + applicationId);
+            // if path was: cpPath.xml, save under: cpPath-solution.xml
+            clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
+        } catch (Exception e) {
+            log.error("CPSolver returned exception.", e);
+        }
     }
 
-    private String createCacheKey(String cdoResourcePath){
+    private String createCacheKey(String cdoResourcePath) {
         return cdoResourcePath.substring(cdoResourcePath.indexOf("/") + 1);
     }
 
-    private Optional<ConstraintProblem> getCPFromCDO(String pathName, CDOTransaction trans){
+    private Optional<ConstraintProblem> getCPFromCDO(String pathName, CDOTransaction trans) {
         CDOResource resource = trans.getResource(pathName);
         return resource.getContents()
                 .stream()
@@ -258,7 +289,8 @@ public class CPSolverCoordinator {
                 .findFirst();
     }
 
-    private ConstraintProblem getCPFromFile(String pathName){
+    private ConstraintProblem getCPFromFile(String pathName) {
+        log.info("ConstraintProblem.getCPFromFile: reading file from path " + pathName);
         return (ConstraintProblem) clientX.loadModel(pathName);
     }
 
@@ -269,7 +301,7 @@ public class CPSolverCoordinator {
         sendNotification(notification, notificationUri);
     }
 
-    private void notifySolutionNotApplied(String camelModelID, String notificationUri, String uuid)  {
+    private void notifySolutionNotApplied(String camelModelID, String notificationUri, String uuid) {
         log.info("Sending solution NOT available notification");
         NotificationResult result = prepareErrorNotificationResult("Solution was not generated.");
         ConstraintProblemSolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
@@ -289,10 +321,11 @@ public class CPSolverCoordinator {
             log.info("Sending notification to: {}", esbUrl);
             restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
             log.info("Notification sent.");
-        } catch (RestClientException restException){
+        } catch (RestClientException restException) {
             log.error("Error sending notification: ", restException);
         }
     }
+
     private Watermark prepareWatermark(String uuid) {
         Watermark watermark = new WatermarkImpl();
         watermark.setUser("CPSolver");
