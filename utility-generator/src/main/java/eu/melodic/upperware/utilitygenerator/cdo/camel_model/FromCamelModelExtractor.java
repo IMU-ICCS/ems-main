@@ -71,6 +71,7 @@ public class FromCamelModelExtractor {
         this.sessionX = cdoService.openSession();
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
+        CamelModel model2 = this.model;
         this.metricVariables = extractMetricVariables(model.getMetricModels());
         this.utilityFunctionFormula = getUtilityFormula().orElse(StringUtils.EMPTY);
     }

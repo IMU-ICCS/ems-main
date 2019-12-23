@@ -61,10 +61,10 @@ public class ModelAnalyzer {
 
 			CamelModel camelModel = null;
 			if (StringUtils.isNotBlank(camelId)) {
-				CDOResource camelModelRes = view.getResource(camelId);
-				EList<EObject> contents = camelModelRes.getContents();
-				camelModel = (CamelModel) contents.get(contents.size() - 1);
-
+//				CDOResource camelModelRes = view.getResource(camelId);
+//				EList<EObject> contents = camelModelRes.getContents();
+//				camelModel = (CamelModel) contents.get(contents.size() - 1);
+				camelModel = (CamelModel) cdoClient.loadModel(camelId);
 				// newly added different from DLMS web service
 				EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
 				DeploymentTypeModel deployModel = null;
