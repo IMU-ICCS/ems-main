@@ -11,13 +11,13 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
-//import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
@@ -164,6 +164,40 @@ public class MetaSolverController {
         coordinator.updateSubscriptions(subscriptions);
 
         return "OK";
+    }
+
+    @RequestMapping(value = "/simulateReconfiguration", method = POST)
+    public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
+                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        setAuthenticationToken(jwtToken);
+        String applicationId = request.getApplicationId();
+        String requestUuid = request.getWatermark().getUuid();
+        log.info("Received request: " + applicationId + " " + requestUuid);
+
+        // set metrics and request reconfiguration
+        String result = coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
+        log.info("SimulateReconfiguration: Setting Simulated metrics finished ");
+
+        SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
+        response.setApplicationId(applicationId);
+        response.setWatermark(coordinator.prepareWatermark(requestUuid));
+        response.setResult(result);
+
+        return response;
+    }
+
+    @GetMapping("/getMetricNames")
+    @ResponseStatus(HttpStatus.OK)
+    public MetricsNamesResponse getMetricNames(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false)
+                                                           String jwtToken) throws ConcurrentAccessException {
+        setAuthenticationToken(jwtToken);
+        log.info("Received request for metric names: ");
+        MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
+        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames());
+
+        return metricsNamesResponse;
     }
 
     @RequestMapping(value = "/health", method = GET)

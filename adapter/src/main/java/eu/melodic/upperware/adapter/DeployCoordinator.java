@@ -57,10 +57,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -96,7 +93,7 @@ public class DeployCoordinator {
     private DiffCalculator<AdapterRequirement, String> diffCalculator;
 
     @Async
-    public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
+    public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization, boolean isSimulation) {
         try {
             acquireLock(resourceName);
         } catch (Exception e) {
@@ -106,7 +103,7 @@ public class DeployCoordinator {
         }
         log.info("Starting new model deployment process");
         try {
-            run(resourceName, notificationUri, uuid, authorization);
+            run(resourceName, notificationUri, uuid, authorization, isSimulation);
         } catch (Exception e) {
             log.error("An exception occurred during deployment process", e);
             deploymentNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
@@ -124,7 +121,7 @@ public class DeployCoordinator {
         }
     }
 
-    private void run(String resourceName, String notificationUri, String uuid, String authorization) {
+    private void run(String resourceName, String notificationUri, String uuid, String authorization, boolean isSimulation) {
         Plan plan;
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
         CDOTransaction tr = cdoSessionX.openTransaction();
@@ -167,7 +164,9 @@ public class DeployCoordinator {
             if (isValid) {
                 log.info("Deployment plan authorized, executing...");
 
-                planExecutor.executePlan(plan);
+                if (!isSimulation) {
+                    planExecutor.executePlan(plan);
+                }
                 cdoServerUpdater.updateCamelModel(resourceName);
                 camelToFileSaver.toFile(resourceName, CamelToFileSaverImpl.DEFAULT_NAME_AFTER_DEPLOYMENT_FUNCTION);
                 deploymentNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
@@ -278,4 +277,5 @@ public class DeployCoordinator {
         cdoClient.registerPackage(CpPackage.eINSTANCE);
         cdoClient.registerPackage(TypesPackage.eINSTANCE);
     }
+
 }
