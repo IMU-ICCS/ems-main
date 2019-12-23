@@ -10,7 +10,7 @@ package eu.melodic.upperware.metasolver;
 
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
-import eu.melodic.models.interfaces.simulationHandler.KeyValuePair;
+import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
@@ -196,7 +196,7 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
 
-    public void requestStartProcessForScaling() throws ConcurrentAccessException {
+    public void requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
@@ -208,17 +208,18 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
 
         // Send request to start Deployment Process (reusing existing CP model)
-        DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
+        DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath, isSimulation);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
         sendNotification(notification);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
     }
 
-    private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath) {
+    private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath, boolean isSimulation) {
         DeploymentProcessRequest notification = new DeploymentProcessRequestImpl();
         notification.setApplicationId(appId);
         notification.setUseExistingCP(true);        // For scaling we need to re-use the existing CP model
         notification.setCdoResourcePath(cpModelPath);
+        notification.setIsSimulation(Boolean.toString(isSimulation));
 
         notification.setUsername(melodicSecurityProperties.getUser().getUsername());
         notification.setPassword(melodicSecurityProperties.getUser().getPassword());
@@ -235,7 +236,7 @@ public class Coordinator implements ApplicationContextAware {
         }
         log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Request to ESB: url={}, notification={}", esbUrl, notification.toString());
         ResponseEntity<String> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
-        log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
+        log.info("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
                 response.getStatusCode(), response.getBody());
     }
 
@@ -353,25 +354,33 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     // --------------------------------------------------------------------------
-    String simulateReconfiguration(List<KeyValuePair> metricValues) {
+    String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) {
         String response = "ERROR";
-        if (metaSolverProperties.getIsSimulation()) {
-            log.info("Setting simulated metrics inside MetaSolver: ");
+
+        log.info("Setting simulated metrics inside MetaSolver: ");
+        if (!cacheAppId.equals(applicationId)) {
+            log.warn("applications Ids don't match");
+        } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
             for (KeyValuePair nameValuePair : metricValues) {
                 monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
             }
             log.info("Simulated metrics set");
+
             try {
                 log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
-                requestStartProcessForScaling();
+                requestStartProcessForScaling(true);
                 response = "STARTED";
             } catch (Exception ex) {
                 log.error("processScaleEvent: EXCEPTION: ", ex);
             }
         }
-
         return response;
+    }
+
+    List<String> getMetricNames(){
+        MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
+        return new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
     }
 
 }

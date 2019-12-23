@@ -46,9 +46,6 @@ public class MetaSolverProperties {
     private double utilityThresholdFactor;
     @Valid
     private String emsUrl;
-    @NotNull
-    @Getter
-    private Boolean isSimulation;
 
     // --------------------------------------------------------------
 

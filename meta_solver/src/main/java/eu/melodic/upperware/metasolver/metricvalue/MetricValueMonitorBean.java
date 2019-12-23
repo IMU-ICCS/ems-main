@@ -82,6 +82,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 else clientId = clientId.trim();
                 if (type == null) type = TopicType.UNKNOWN;
                 log.debug("Topic : {}", pst);
+                if (type==TopicType.MVV) {
+                    registry.addPossibleMetricName(topicName);
+                }
 
                 // Subscribe to topic
                 _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type);
@@ -161,6 +164,12 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             log.trace("*****   SUBSCRIBE: connection started");
 
             log.info("*****   SUBSCRIBE: ok");
+
+            //saving metricNames
+            if (type==TopicType.MVV) {
+                registry.addPossibleMetricName(topicName);
+            }
+
 
         } catch (Exception e) {
             log.error("*****   SUBSCRIBE: ERROR: ", e);

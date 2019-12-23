@@ -10,10 +10,8 @@
 package eu.melodic.upperware.adapter;
 
 import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.DeploymentModel;
 import eu.melodic.models.interfaces.adapter.*;
 import eu.melodic.models.services.adapter.DifferenceResponse;
-import eu.melodic.upperware.adapter.extractor.*;
 import eu.melodic.upperware.adapter.service.DiffResponseConverter;
 import eu.melodic.upperware.adapter.validation.DeploymentRequestValidator;
 import lombok.AllArgsConstructor;
@@ -48,8 +46,9 @@ public class AdapterController {
         String resourceName = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
+        boolean isSimulation = Boolean.parseBoolean(request.getIsSimulation());
 
-        deployCoordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization);
+        deployCoordinator.deployNewModel(resourceName, notificationUri, requestUuid, authorization, isSimulation);
     }
 
     @PostMapping(value = "/applySolution", consumes = APPLICATION_JSON_VALUE)
