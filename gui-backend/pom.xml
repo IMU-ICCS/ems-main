@@ -18,7 +18,7 @@
         <cdo.version>3.0.0-SNAPSHOT</cdo.version>
         <upperware.version>3.0.0-SNAPSHOT</upperware.version>
         <!--DOCKER plugin properties-->
-        <docker.imageName>gui-backend</docker.imageName>
+        <docker.imageName>gui-backend-mriedl</docker.imageName>
     </properties>
 
     <dependencies>
