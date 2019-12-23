@@ -4,6 +4,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.influxdb.dto.Point;
 
+import com.google.common.base.Strings;
+
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.AllArgsConstructor;
@@ -46,15 +48,15 @@ public class MqInstanceInfoEntry extends MqBaseEntry {
 		String timestamp = normalizeTimestamp(getTimestamp());
 		Point point = Point.measurement("_Instances")
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
-				.addField("name", getName())
-				.addField("random", getRandom())
-				.addField("ipAddress", getIpAddress())
+				.addField("name", Strings.nullToEmpty(getName()))
+				.addField("random", Strings.nullToEmpty(getRandom()))
+				.addField("ipAddress", Strings.nullToEmpty(getIpAddress()))
 				.addField("countryCode", ipGeoCoder.getCountryCode(getIpAddress()))
-				.addField("type", getType())
-				.addField("os", getOs())
-				.addField("baguetteClientId", getBaguetteClientId())
-				.addField("providerId", getProviderId())
-				.addField("instanceId", getInstanceId())
+				.addField("type", Strings.nullToEmpty(getType()))
+				.addField("os", Strings.nullToEmpty(getOs()))
+				.addField("baguetteClientId", Strings.nullToEmpty(getBaguetteClientId()))
+				.addField("providerId", Strings.nullToEmpty(getProviderId()))
+				.addField("instanceId", Strings.nullToEmpty(getInstanceId()))
 				.build();
 		return point;
 	}

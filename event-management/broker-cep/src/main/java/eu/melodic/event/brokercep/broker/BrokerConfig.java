@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.event.brokercep.broker;
@@ -15,7 +15,10 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
-import org.apache.activemq.broker.*;
+import org.apache.activemq.broker.BrokerPlugin;
+import org.apache.activemq.broker.BrokerService;
+import org.apache.activemq.broker.SslBrokerService;
+import org.apache.activemq.broker.inteceptor.MessageInterceptor;
 import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.security.AuthenticationUser;
@@ -38,10 +41,13 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
@@ -122,7 +128,14 @@ public class BrokerConfig implements InitializingBean {
             sap.setAnonymousAccessAllowed(false);
             sap.setUsers(userList);
             brokerAuthenticationPlugin = sap;
-            log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}", sap.isAnonymousAccessAllowed(), sap.getUserPasswords());
+
+            if (log.isDebugEnabled()) {
+                log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}",
+                        sap.isAnonymousAccessAllowed(),
+                        sap.getUserPasswords().entrySet().stream()
+                                .collect(Collectors.toMap(Map.Entry::getKey, e -> passwordUtil.encodePassword(e.getValue())))
+                );
+            }
         }
 
         // initialize authorization (requires authentication being enabled)
@@ -155,6 +168,9 @@ public class BrokerConfig implements InitializingBean {
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
                 .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryNameValue());
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
+                properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword(),
+                properties.getSsl().getKeyEntryNameValue(), this.brokerCert);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }
 
@@ -324,16 +340,30 @@ public class BrokerConfig implements InitializingBean {
     }
 
     private void registerMessageInterceptors(BrokerService brokerService) {
-        log.info("BrokerConfig: Registering Message Interceptors...");
+        log.info("BrokerConfig: Registering message interceptors...");
 
         // get message interceptor registry
         final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
         log.trace("BrokerConfig: Message interceptor registry: {}", registry);
 
         // register interceptor for adding source (producer) address to messages
-        String applyToAllDestinations = ">";
-        registry.addMessageInterceptorForTopic(applyToAllDestinations, new SourceAddressMessageUpdateInterceptor(registry));
-        log.info("BrokerConfig: Registered SourceAddressMessageUpdateInterceptor");
+        properties.getMessageInterceptors()
+                .forEach(bi -> {
+                    log.debug("BrokerConfig: Registering message interceptor: {}", bi);
+                    String part[] = bi.split(":");
+                    String destinationPattern = part[0];
+                    String interceptorClassName = part[1];
+                    try {
+                        Class<MessageInterceptor> interceptorClass = (Class<MessageInterceptor>) Class.forName(interceptorClassName);
+                        MessageInterceptor interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class).newInstance(registry);
+                        registry.addMessageInterceptorForTopic(destinationPattern, interceptor);
+                        log.info("BrokerConfig: Message interceptor registered: {}", bi);
+                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                        log.error("BrokerConfig: Error while registering message interceptor: {}. Exception: {}", bi, e);
+                    }
+                });
+
+        log.info("BrokerConfig: Registering message interceptors... done");
     }
 
     private BrokerService _createSslBrokerService() throws Exception {

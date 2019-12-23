@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>eu.melodic</groupId>
 		<artifactId>dlms</artifactId>
-		<version>2.5.1-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -117,12 +117,6 @@
 		<dependency>
 			<groupId>org.ow2.paasage</groupId>
 			<artifactId>melodic-commons</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.ow2.paasage</groupId>
-					<artifactId>upperware-metamodel</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 

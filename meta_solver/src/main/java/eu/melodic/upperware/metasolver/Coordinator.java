@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.upperware.metasolver;
@@ -19,7 +18,6 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
-import eu.melodic.upperware.metasolver.util.HistoryHelper;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -54,7 +52,6 @@ public class Coordinator implements ApplicationContextAware {
     private String cacheAppId;
     private String cacheCpModelPath;
     private Map<String,String> mvvToCurrentConfigVarsMap;
-    private HistoryHelper historyHelper;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -65,38 +62,17 @@ public class Coordinator implements ApplicationContextAware {
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
-        this.historyHelper = new HistoryHelper();
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
-
-        // Initialize history helper
-        if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
-            if (StringUtils.isNotEmpty(metaSolverProperties.getHistory().getBasePath())) {
-                historyHelper.initHelperMetadata(
-                        metaSolverProperties.getHistory().getBasePath(),
-                        metaSolverProperties.getHistory().getActionsBasePath(),
-                        metaSolverProperties.getHistory().getComponentsBasePath(),
-                        metaSolverProperties.getHistory().getTransitionsBasePath(),
-                        metaSolverProperties.getHistory().getMetasolverPath(),
-                        metaSolverProperties.getHistory().getCpSolutionProducedPath(),
-                        metaSolverProperties.getHistory().getCpSolutionFailedPath()
-                );
-                log.debug("MetaSolver.Coordinator: setApplicationContext(): History helper initialized from properties: {}", metaSolverProperties.getHistory());
-            }
-        }
     }
 
     /**
      * How can we select the most appropriate solver??
-     * For R1.5 it will always be CP solver
+     * For R2.5 it will always be CP solver
      */
     public ConstraintProblemEnhancementResponse.DesignatedSolverType selectSolver(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.info("MetaSolver.Coordinator: selectSolver(): appId={}, model={}", applicationId, cpModelPath);
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
-
-        //XXX: DELETE:
-        //Uncomment for testing calls to ESB without scaling events
-        //requestStartProcessForScaling();
 
         log.warn("MetaSolver.Coordinator: selectSolver(): ** NOTE: CP Solver is ALWAYS selected **");
         log.warn("MetaSolver.Coordinator: selectSolver(): ** NOT IMPLEMENTED **");
@@ -146,24 +122,20 @@ public class Coordinator implements ApplicationContextAware {
         // check if an error occurred
         if (solUv == null) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: An error occurred: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "An error occurred");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[0] == -2) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "No solutions found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
         if (solUv[1] == -1) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No candidate solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "No candidate solution found in CP model");
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
 
         // check if a solution is deployed. If no solution is deployed accept new solution
         if (solUv[0] < 0) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, true, "No deployed solution found. Accepting new solution");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         }
 
@@ -173,20 +145,11 @@ public class Coordinator implements ApplicationContextAware {
         double newSolUv = solUv[1];
         if (newSolUv > uvThresholdFactor * depSolUv) {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, true, "New solution is ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         } else {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
-            logCpSolutionInfo(applicationId, cpModelPath, false, "New solution is NOT ACCEPTED");
             return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
         }
-    }
-
-    private void logCpSolutionInfo(String applicationId, String cpModelPath, boolean success, String description) throws ConcurrentAccessException {
-        if (metaSolverProperties.getHistory()!=null && metaSolverProperties.getHistory().isEnabled()) {
-			//historyHelper.addCpSolutionHistoryInfo(applicationId, cpModelPath, success, description);
-			log.warn("MetaSolver.Coordinator: logCpSolutionInfo(): Logging to history has been deactivated from code");
-		}
     }
 
     /**
@@ -242,11 +205,6 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
         setMetricValuesInCpModel(appId, cpModelPath);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
-
-        // Create a new execution history record
-        if (metaSolverProperties.getHistory()==null || metaSolverProperties.getHistory().isEnabled()) {
-            historyHelper.addNewHistoryRecord(appId, "APPLICATION_RECONFIGURATION", null, null, null, null);
-        }
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
@@ -313,11 +271,14 @@ public class Coordinator implements ApplicationContextAware {
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics...");
         for (Map p : subscriptions) {
             String url = (String) p.get("url");
+            String username = (String) p.get("username");
+            String password = (String) p.get("password");
+            String certificate = (String) p.get("certificate");
             String topicName = (String) p.get("topic");
             String clientId = (String) p.get("client-id");
             TopicType type = TopicType.valueOf((String) p.get("type"));
-            log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, topic={}, client-id={}, type={}", url, topicName, clientId, type);
-            metricValueMonitorBean.subscribe(url, topicName, clientId, type);
+            log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to topic: url={}, username={}, topic={}, client-id={}, type={}", url, username, topicName, clientId, type);
+            metricValueMonitorBean.subscribe(url, username, password, certificate, topicName, clientId, type);
             log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
         }
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");

@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.event.brokercep;
@@ -17,6 +17,7 @@ import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -233,9 +234,11 @@ public class BrokerCepService {
         // Get username/password for local broker service
         String username = null;
         String password = null;
-        if (connectionString==null || brokerConfig.getBrokerUrl().equals(connectionString)) {
+        if (_isLocalBrokerUrl(connectionString)) {
             username = brokerConfig.getBrokerLocalAdminUsername();
             password = brokerConfig.getBrokerLocalAdminPassword();
+            log.debug("BrokerCepService._publishEvent(): Setting LOCAL BROKER credentials: {} / {}",
+                    username, passwordUtil.encodePassword(password));
         }
         _publishEvent(connectionString, username, password, destinationName, event);
     }
@@ -297,6 +300,26 @@ public class BrokerCepService {
         producer.send(message);
         //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
         log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
+    }
+
+    private String getAddressFromBrokerUrl(String url) {
+        return StringUtils.substringBetween(url, "://",":");
+    }
+
+    private boolean _isLocalBrokerUrl(String url) {
+        if (StringUtils.isEmpty(url)) {
+            log.debug("BrokerCepService._isLocalBrokerUrl(): url={}, is-local=true", url);
+            return true;
+        }
+        log.trace("BrokerCepService._isLocalBrokerUrl(): url={}", url);
+        try {
+            String address = getAddressFromBrokerUrl(url);
+            boolean isLocal = NetUtil.isLocalAddress(address);
+            log.debug("BrokerCepService._isLocalBrokerUrl(): url={}, address={}, is-local={}", url, address, isLocal);
+            return isLocal;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public void setBrokerCredentials(String username, String password) {

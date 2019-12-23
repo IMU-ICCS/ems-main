@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+# Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
 #
-# This Source Code Form is subject to the terms of the
-# Mozilla Public License, v. 2.0. If a copy of the MPL
-# was not distributed with this file, You can obtain one at
-# http://mozilla.org/MPL/2.0/.
+# This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+# Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+# If a copy of the MPL was not distributed with this file, you can obtain one at
+# https://www.mozilla.org/en-US/MPL/2.0/
 #
 
 PREVWORKDIR=`pwd`
@@ -15,7 +15,7 @@ if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; 
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 
 # Get IP addresses
-UTIL_FILE=util-2.5.1-SNAPSHOT-jar-with-dependencies.jar
+UTIL_FILE=util-3.0.0-SNAPSHOT-jar-with-dependencies.jar
 UTIL_PATH_0=util/target/${UTIL_FILE}
 UTIL_PATH_1=jars/util/${UTIL_FILE}
 UTIL_PATH_2=../util/target/${UTIL_FILE}
@@ -29,7 +29,7 @@ elif [ -f ${UTIL_PATH_2} ]; then
 elif [ -f ${UTIL_PATH_3} ]; then
 	UTIL_JAR=${UTIL_PATH_3}
 else
-	echo "ERROR: Couldn't find 'util-2.5.1-SNAPSHOT-jar-with-dependencies.jar'"
+	echo "ERROR: Couldn't find 'util-3.0.0-SNAPSHOT-jar-with-dependencies.jar'"
 	echo "ERROR: Skipping keystore initialization"
 	cd ${PREVWORKDIR}
 	exit 1

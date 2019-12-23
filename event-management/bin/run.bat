@@ -1,11 +1,11 @@
 @echo off
 ::
-:: Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+:: Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
 ::
-:: This Source Code Form is subject to the terms of the
-:: Mozilla Public License, v. 2.0. If a copy of the MPL
-:: was not distributed with this file, You can obtain one at
-:: http://mozilla.org/MPL/2.0/.
+:: This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+:: Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+:: If a copy of the MPL was not distributed with this file, you can obtain one at
+:: https://www.mozilla.org/en-US/MPL/2.0/
 ::
 
 setlocal
@@ -41,7 +41,7 @@ if "%JASYPT_PASSWORD%"=="" (
 
 :: check logger configuration
 if "%LOG_CONFIG_FILE%"=="" (
-    set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-spring.xml
+    set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-conf\logback-spring.xml
 )
 echo Using logback config.: %LOG_CONFIG_FILE%
 

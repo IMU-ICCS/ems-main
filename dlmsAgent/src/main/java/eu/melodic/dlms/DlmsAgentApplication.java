@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import eu.melodic.dlms.component.AlluxioParam;
 import eu.melodic.dlms.component.SendToDlmsAgent;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,22 +57,21 @@ public class DlmsAgentApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return args -> {
-			String metricsRangeProperty = System.getProperties().getProperty("metricsRange");
-			MetricsRange metricsRange = MetricsRange.valueOf(metricsRangeProperty);
-			log.info("Application started with metricsRange {} set", metricsRangeProperty);
-
-			String url = System.getProperties().getProperty("mode"); //TODO "mode" --> "url"??
+			String url = System.getProperties().getProperty("mode"); //TODO "mode" --> "url"?? in the unixInstaller at cloudiator
 			log.info("Application started and URL {} identified", url);
 
 			String publicIp = System.getProperties().getProperty("ip.public");
-			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getAlluxioCmd/" + publicIp;
+			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getDlmsAgentParams/" + publicIp;
 
 			final SendToDlmsAgent sendToDlmsAgent = fetchSendToDlmsAgent(webServiceUrl);
 			
-			if (StringUtils.isNotBlank(sendToDlmsAgent.getCommand())
-					&& StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())) {
+			if (StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())
+					&& (sendToDlmsAgent.getAlluxio() != null || sendToDlmsAgent.getMysql() != null)) {
 				// application component is the same and command needs to be executed once
-				String appComp = runCommands(sendToDlmsAgent);
+				String appComp = sendToDlmsAgent.getComponentId();
+				String metricsRange = sendToDlmsAgent.getMetricName();
+				
+				log.info("Application started with metricsRange {} set", metricsRange);
 
 				TimerTask timerTask = new TimerTask() {
 					@Override
@@ -79,17 +79,19 @@ public class DlmsAgentApplication {
 						log.info("Running metrics collection for {}", url);
 						
 						switch (metricsRange) {
-						case ALLUXIO: {
+						case "ALLUXIO": {
 							log.info("Starting to collect Alluxio metrics");
+							runCommands(sendToDlmsAgent.getAlluxio());					
 							metricsController.collectAlluxioMetrics(url);
 							break;
 						}
-						case MY_SQL: {
+						case "MYSQL": {
 							log.info("Starting to collect MySql metrics");
+							
 							metricsController.collectMySqlMetrics();
 							break;
 						}
-						case ALL: {
+						case "ALL": {
 							log.info("Starting to collect both Alluxio and MySql metrics");
 							metricsController.collectAlluxioMetrics(url);
 							metricsController.collectMySqlMetrics();
@@ -136,7 +138,7 @@ public class DlmsAgentApplication {
 			throw new DLMSAgentException(String.format("Could not fetch response of %s", webServiceUrl));
 		}
 
-		log.info("Result of {} invocation is: [componentId:{}, command:{}]", webServiceUrl, sendToDlmsAgent.getComponentId(), sendToDlmsAgent.getCommand());
+		log.info("Result of {} invocation is: [componentId:{}, metric:{}]", webServiceUrl, sendToDlmsAgent.getComponentId(), sendToDlmsAgent.getMetricName());
 		return sendToDlmsAgent;
 	}
 
@@ -165,16 +167,16 @@ public class DlmsAgentApplication {
 	 */
 	public boolean isNull(SendToDlmsAgent sendToDlmsAgent) {
 		if (sendToDlmsAgent != null) { // safety check first
-			return sendToDlmsAgent.getCommand() == null && sendToDlmsAgent.getComponentId() == null;
+			return (sendToDlmsAgent.getComponentId() == null && (sendToDlmsAgent.getAlluxio()==null || sendToDlmsAgent.getMysql()==null));
 		}
 		return true;
 	}
 
 	/**
-	 * Execute command and send back component id
+	 * Execute command to fuse mount for alluxio
 	 */
-	public String runCommands(SendToDlmsAgent sendToDlmsAgent) {
-		String cmd = sendToDlmsAgent.getCommand();
+	public void runCommands(AlluxioParam alluxio) {
+		String cmd = alluxio.getCommand();
 		String[] commands = { "/bin/bash", "-c", cmd };
 
 		try {
@@ -183,8 +185,7 @@ public class DlmsAgentApplication {
 			p.waitFor();
 		} catch (Exception e) {
 			log.error("There was a problem while executing the command from dlms web service api", e);
-		}
-		return sendToDlmsAgent.getComponentId();
+		}	
 	}
 
 }

@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.upperware.metasolver.metricvalue;
@@ -42,10 +41,11 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private String brokerUsername;
 	@Value("${ems-broker-password:#{null}}")
 	private String brokerPassword;
+	@Value("${ems-broker-certificate:#{null}}")
+	private String brokerCertificate;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        //this.applicationContext = applicationContext;
         this.properties = applicationContext.getBean(MetaSolverProperties.class);
         this.coordinator = applicationContext.getBean(Coordinator.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
@@ -84,33 +84,35 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 log.debug("Topic : {}", pst);
 
                 // Subscribe to topic
-                _do_subscribe(url, topicName, clientId, type);
+                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type);
                 i++;
             }
         }
         log.debug("Subscribing to topics: ok");
     }
 
-    public void subscribe(String url, String topicName, String clientId, TopicType type) {
+    public void subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
         // Check if Pub/Sub should be activated
         if (! properties.getPubsub().isOn()) {
             log.info("*****   Pub/Sub is SWITCHED OFF");
             return;
         }
 
-        _do_subscribe(url, topicName, clientId, type);
+        _do_subscribe(url, username, password, certificate, topicName, clientId, type);
     }
 
-    protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) {
+    private void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
         try {
-            log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url, topicName, clientId, type);
+            log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Username : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}",
+                    url, username, topicName, clientId, type);
 
             // Get ActiveMQ connection to the server
             log.trace("*****   SUBSCRIBE: connection factory created: url={}", url);
             ConnectionConf cconf = connectionCache.get(url);
             if (cconf == null) {
                 ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
-                Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
+                //Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
+                Connection connection = connectionFactory.createConnection(username, password);
                 log.trace("*****   SUBSCRIBE: connection created");
                 if (!clientId.isEmpty()) {
                     connection.setClientID(clientId);
@@ -161,8 +163,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             log.info("*****   SUBSCRIBE: ok");
 
         } catch (Exception e) {
-            log.error("*****   SUBSCRIBE: ERROR: {}", e);
-            //e.printStackTrace(System.err);
+            log.error("*****   SUBSCRIBE: ERROR: ", e);
         }
     }
 
@@ -198,7 +199,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                                     log.debug("      Unsubscribing from topic: {} : ok", topicName);
                                 } catch (Exception e) {
                                     log.error("      Unsubscribing from topic: {} : ERROR: {}", topicName, e);
-                                    //e.printStackTrace(System.err);
                                 }
                             }
 
@@ -206,7 +206,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                             log.debug("    Closing session: {} : ok", sconf);
                         } catch (Exception e) {
                             log.error("    Closing session: {} : ERROR: {}", sconf, e);
-                            //e.printStackTrace(System.err);
                         }
                     }
 
@@ -214,15 +213,13 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                     log.debug("  Closing connection to url: {} : ok", cconf.getUrl());
                 } catch (Exception e) {
                     log.error("  Closing connection to url: {} : ERROR: {}", cconf.getUrl(), e);
-                    //e.printStackTrace(System.err);
                 }
             }
 
             log.info("*****   UN-SUBSCRIBE: ok");
 
         } catch (Exception e) {
-            log.error("*****   SUBSCRIBE: ERROR: {}", e);
-            //e.printStackTrace(System.err);
+            log.error("*****   SUBSCRIBE: ERROR: ", e);
         } finally {
             connectionCache.clear();
         }

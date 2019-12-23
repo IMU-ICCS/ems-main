@@ -5,7 +5,10 @@ import camel.core.Feature;
 import camel.deployment.*;
 import com.google.gson.Gson;
 import eu.passage.upperware.commons.model.tools.CdoTool;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -26,6 +29,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
 
     private CamelEnricherService camelEnricherService;
     private Gson gson;
+    private final static String SEPARATOR_NAME_SIGN = "-";
 
     @Override
     public DeploymentInstanceModel createDeploymentInstanceModel(DeploymentTypeModel deploymentTypeModel, List<SoftwareInstanceDetail> softwareInstanceDetails) {
@@ -63,7 +67,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent, Counters counters) {
         // Create Instance + name + type
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
-        softwareComponentInstance.setName(softwareComponent.getName() + "_Instance_" + counters.getGlobalCount() + "_" + counters.getLocalCount());
+        softwareComponentInstance.setName(createSoftCompInstNamePrefix(softwareComponent.getName()) + SEPARATOR_NAME_SIGN + "instance" + SEPARATOR_NAME_SIGN + counters.getGlobalCount() + SEPARATOR_NAME_SIGN + counters.getLocalCount());
         softwareComponentInstance.setType(softwareComponent);
 
         //Create ProvidedCommunicationInstance
@@ -82,6 +86,22 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent, counters));
 
         return softwareComponentInstance;
+    }
+
+    private String createSoftCompInstNamePrefix(String name) {
+        // 1. add separator after each capital letter except first
+        String result = name.replaceAll("([A-Z])", SEPARATOR_NAME_SIGN + "$1");
+        result = result.startsWith(SEPARATOR_NAME_SIGN) ? result.substring(1) : result;
+        result = result.endsWith(SEPARATOR_NAME_SIGN) ? result.substring(0, result.length() - 2) : result;
+
+        // 2. to lower case
+        result = result.toLowerCase();
+
+        // 3. remove all special signs except separator, lowercase and digits
+        result = result.replaceAll("[^-a-z0-9]", "");
+
+        log.info("Created name = {} for software component instance: {}", result, name);
+        return result;
     }
 
     private RequiredHostInstance getRequiredHostInstance(SoftwareComponent softwareComponent, Counters counters) {
@@ -250,12 +270,12 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         }
 
         private String removeSuffixFromInstance(String vmName) {
-            //we need to remove everything after last two '_'
+            //we need to remove everything after last two separator sings
             return removeSuffix(removeSuffix(vmName));
         }
 
         private String removeSuffix(String name) {
-            return StringUtils.substringBeforeLast(name, "_");
+            return StringUtils.substringBeforeLast(name, SEPARATOR_NAME_SIGN);
         }
     }
 
