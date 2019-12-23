@@ -47,10 +47,9 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(org.springframework.security.config.annotation.web.builders.WebSecurity webSecurity){
+    public void configure(org.springframework.security.config.annotation.web.builders.WebSecurity webSecurity) {
         webSecurity
                 .ignoring()
-                .antMatchers("/areYouThere")
                 .antMatchers("/constraintProblemSolutionFromFile");
     }
 
