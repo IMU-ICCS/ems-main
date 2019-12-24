@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>PTSolver</artifactId>
+    <artifactId>pt-solver</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.jamesframework</groupId>
@@ -35,13 +35,13 @@
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>CPParser</artifactId>
+            <artifactId>cp-parser</artifactId>
             <version>2.5.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>CPParser</artifactId>
+            <artifactId>cp-parser</artifactId>
             <version>2.5.1-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>

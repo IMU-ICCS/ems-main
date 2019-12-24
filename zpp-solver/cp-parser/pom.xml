@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>CPParser</artifactId>
+    <artifactId>cp-parser</artifactId>
     <dependencies>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
