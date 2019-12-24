@@ -40,10 +40,7 @@
         <module>dlms</module>
         <module>event-management</module>
         <module>mq-http-adapter</module>
-        <module>zpp-solver/cp-parser</module>
-        <module>zpp-solver/genetic-solver</module>
-        <module>zpp-solver/mcts-solver</module>
-        <module>zpp-solver/pt-solver</module>
+        <module>zpp-solver</module>
     </modules>
 
 
