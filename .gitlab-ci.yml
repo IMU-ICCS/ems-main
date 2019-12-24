@@ -6,7 +6,7 @@ variables:
   MAVEN_OPTS: "-Xmx2048m -Xms2048m"
   SKIP_TESTS: "true"
 
-  DOCKER_CLI: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v maven-repo:/root/.m2 -w /usr/src/mymaven -env MAVEN_OPTS=\\\"$MAVEN_OPTS\\\""
+  DOCKER_CLI: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v maven-repo:/root/.m2 -w /usr/src/mymaven --env MAVEN_OPTS=\"$MAVEN_OPTS\""
   UPPERWARE_CLI: "mvn clean install deploy -N -Dmaven.test.skip=$SKIP_TESTS"  
   
 image: docker:19.03.1
