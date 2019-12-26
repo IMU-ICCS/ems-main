@@ -3,10 +3,9 @@ variables:
   DOCKER_PUSH: "false"
   DOCKER_REPO: "172.31.1.100:5000"
   MAVEN_IMAGE: "maven:3.5.2-jdk-8"
-  MAVEN_OPTS: "-Xmx2048m -Xms2048m"
   SKIP_TESTS: "true"
 
-  DOCKER_CLI: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v maven-repo:/root/.m2 -w /usr/src/mymaven --env MAVEN_OPTS=\"$MAVEN_OPTS\""
+  DOCKER_CLI: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v maven-repo:/root/.m2 -w /usr/src/mymaven --env-file .env.list"
   UPPERWARE_CLI: "mvn clean install deploy -N -Dmaven.test.skip=$SKIP_TESTS"  
   
 image: docker:19.03.1
