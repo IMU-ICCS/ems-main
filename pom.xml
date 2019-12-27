@@ -41,6 +41,7 @@
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>penalty-calculator</module>
+        <module>zpp-solver</module>
     </modules>
 
 
