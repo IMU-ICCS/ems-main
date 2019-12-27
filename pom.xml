@@ -41,9 +41,6 @@
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>penalty-calculator</module>
-        <module>ZPPSolver/CPParser</module>
-        <module>ZPPSolver/GeneticSolver</module>
-        <module>ZPPSolver/MCTSSolver</module>
     </modules>
 
 
