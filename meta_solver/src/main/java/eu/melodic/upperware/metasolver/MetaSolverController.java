@@ -190,9 +190,8 @@ public class MetaSolverController {
 
     @GetMapping("/getMetricNames")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse getMetricNames(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false)
-                                                           String jwtToken) throws ConcurrentAccessException {
-        setAuthenticationToken(jwtToken);
+    public MetricsNamesResponse getMetricNames() {
+
         log.info("Received request for metric names: ");
         MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
         metricsNamesResponse.setMetricsNames(coordinator.getMetricNames());

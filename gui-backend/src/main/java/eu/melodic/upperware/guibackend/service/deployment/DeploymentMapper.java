@@ -25,7 +25,7 @@ public class DeploymentMapper {
         DeploymentProcessRequest deploymentProcessRequest = new DeploymentProcessRequestImpl();
         deploymentProcessRequest.setApplicationId(deploymentRequest.getApplicationId());
         deploymentProcessRequest.setWatermark(watermark);
-        deploymentProcessRequest.setIsSimulation("true");
+        deploymentProcessRequest.setIsSimulation(deploymentRequest.getIsSimulation());
         deploymentProcessRequest.setCloudDefinitions(mapCloudDefinitionsToRequest(deploymentRequest.getCloudDefinitions()));
         return deploymentProcessRequest;
     }
