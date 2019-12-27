@@ -9,12 +9,6 @@ import java.util.*;
 
 public class NodeCandidatesPool {
     private NCWrapper ncWrapper;
-    private enum  MovementType {
-        CARDINALITY,
-        VM_SPECIFICATION,
-        VM_LOCATION,
-        PROVIDER
-    };
 
     private List<String> components;
      /*
@@ -27,6 +21,11 @@ public class NodeCandidatesPool {
         Coordinates must be sorted lexicographically in ascending order
      */
     private Map<Integer, List<GeographicCoordinate>> vmLocations;
+
+    public NodeCandidatesPool(NCWrapper ncWrapper) {
+        this.components = ncWrapper.getComponents();
+        this.ncWrapper = ncWrapper;
+    }
 
     public void postVMConfiguration(int provider, VMConfiguration configuration) {
         if (!vmConfigurations.containsKey(provider)) {
@@ -48,6 +47,21 @@ public class NodeCandidatesPool {
         }
         for ( Integer key : vmLocations.keySet()) {
             Collections.sort(vmLocations.get(key));
+        }
+    }
+    private Collection<VMConfiguration> getVMConfigurationOrItsNeighbours(int provider, VMConfiguration conf) {
+        if (Collections.binarySearch(vmConfigurations.get(provider), conf) >= 0) {
+            return Arrays.asList(conf);
+        } else {
+            return getVMConfigurationNeighbours(provider, conf);
+        }
+    }
+
+    private Collection<GeographicCoordinate> getVMLocationOrItsNeighbours(int provider, GeographicCoordinate loc) {
+        if (Collections.binarySearch(vmLocations.get(provider), loc) >= 0) {
+            return Arrays.asList(loc);
+        } else {
+            return getVMLocationNeighbours(provider, loc);
         }
     }
 
@@ -136,6 +150,7 @@ public class NodeCandidatesPool {
                 vmConfiguration.getRam());
         newAssignment.set(index + VariableTypeOrderer.mapTypeToIndex(VariableType.STORAGE),
                 vmConfiguration.getDisk());
+
         return newAssignment;
     }
 
@@ -194,7 +209,29 @@ public class NodeCandidatesPool {
         return result;
     }
 
-    private Collection<PTMover> getAllProviderChangeMove(List<Integer> assignment, int component) {
+    private Collection<PTMover> getAllProviderChangeMoves(List<Integer> assignment, int component, int provider) {
+        Collection<PTMover> result = new ArrayList<>();
+        Collection<VMConfiguration> confs =
+                getVMConfigurationOrItsNeighbours(provider, extractVMConfiguration(component, assignment));
+        for (VMConfiguration conf : confs) {
+            Collection<GeographicCoordinate> locs = getVMLocationOrItsNeighbours( provider, extractVMLocation(component, assignment));
+            for (GeographicCoordinate loc : locs) {
+                result.add(new PTMover(
+                        assignment,
+                        updateComponentConfiguration(
+                                assignment,
+                                component,
+                                provider,
+                                conf,
+                                loc
+                        )
+                ));
+            }
+        }
+        return result;
+    }
+
+    private Collection<PTMover> getAllProviderChangeMoves(List<Integer> assignment, int component) {
         int provider = extractProvider(component, assignment);
         int maxProvider = ncWrapper.getMaxValue(component * VariableTypeOrderer.variablesPerComponent);
         int minProvider = ncWrapper.getMinValue(component * VariableTypeOrderer.variablesPerComponent);
@@ -206,7 +243,7 @@ public class NodeCandidatesPool {
         Collection<PTMover> result = getAllVMConfigurationChangeMoves(assignment, component);
         result.addAll(getAllVMLocationChangeMoves(assignment, component));
         result.addAll(getAllCardinalityChangeMoves(assignment, component));
-        result.addAll(getAllProviderChangeMove(assignment, component));
+        result.addAll(getAllProviderChangeMoves(assignment, component));
         return result;
     }
 

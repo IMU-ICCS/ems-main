@@ -3,8 +3,9 @@ package nc_wrapper;
 import cp_components.PTEvaluation;
 import cp_components.PTSolution;
 import cp_wrapper.CPWrapper;
-import cp_wrapper.utils.variable_orderer.VariableOrderer;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
+import variable_orderer.ComponentVariableOrderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +13,17 @@ import java.util.Random;
 
 public class NCWrapper {
     private CPWrapper cpWrapper;
-    private List<String> components;
-    private VariableOrderer variableOrderer;
+    private ComponentVariableOrderer variableOrderer;
+
+    public NCWrapper(CPWrapper cpWrapper, ConstraintProblem cp) {
+        this.cpWrapper = cpWrapper;
+        this.variableOrderer = new ComponentVariableOrderer(cp);
+        cpWrapper.setVariableOrdering(variableOrderer);
+    }
+
+    public List<String> getComponents() {
+        return variableOrderer.getComponents();
+    }
 
     public Evaluation evaluate(List<Integer> assignments) {
         if (cpWrapper.checkIfFeasible(assignments)) {
@@ -26,10 +36,16 @@ public class NCWrapper {
         Returns maximal value of variable @variable
      */
     public int getMaxValue(int variable) {
+        if (!variableOrderer.exists(variable)) {
+            return 0;
+        }
         return cpWrapper.getMaxDomainValue(variable);
     }
 
     public int getMinValue(int variable) {
+        if (!variableOrderer.exists(variable)) {
+            return 0;
+        }
         return cpWrapper.getMinDomainValue(variable);
     }
 
@@ -37,22 +53,22 @@ public class NCWrapper {
         Generates random (uniform) value for variable @variable
      */
     private int generateRandomValue(int variable, Random random) {
+        if (!variableOrderer.exists(variable)) {
+            return 0;
+        }
         int domainSize = getMaxValue(variable) - getMinValue(variable) + 1;
         int value = random.nextInt(domainSize);
         value += getMinValue(variable);
         return value;
     }
 
-    public int getVariablesCount() {
-        return cpWrapper.getVariablesCount();
-    }
     /*
         Generates random solution to the constraint problem.
         Used to sample starting point for parallel tempering.
      */
     public PTSolution generateRandom(Random random) {
         List<Integer> assignment = new ArrayList<>();
-        for (int i = 0; i < cpWrapper.getVariablesCount(); i++) {
+        for (int i = 0; i < variableOrderer.getMaxIndex(); i++) {
             assignment.add(generateRandomValue(i, random));
         }
         return new PTSolution(assignment);

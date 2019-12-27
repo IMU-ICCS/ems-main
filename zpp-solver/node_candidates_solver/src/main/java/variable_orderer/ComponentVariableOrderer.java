@@ -3,7 +3,7 @@ package variable_orderer;
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
-import eu.paasage.upperware.metamodel.cp.VariableType;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,13 +12,19 @@ import java.util.Map;
 
 public class ComponentVariableOrderer implements VariableOrderer {
     private ConstraintProblem constraintProblem;
+    @Getter
     private List<String> components;
     private final int variablesPerComponent = 7;
     private Map<Integer, String> indexToVariableName;
 
     public ComponentVariableOrderer(ConstraintProblem cp) {
         constraintProblem = cp;
+        fillComponents();
         fillIndexToVariable();
+    }
+
+    public boolean exists(int index) {
+        return indexToVariableName.get(index) != null;
     }
 
     private void fillComponents() {
@@ -30,6 +36,9 @@ public class ComponentVariableOrderer implements VariableOrderer {
         }
     }
 
+    public int getMaxIndex() {
+        return components.size() * VariableTypeOrderer.variablesPerComponent;
+    }
     private int getComponentIndex(String name) {
         for (int i = 0; i < components.size(); i++) {
             if (components.get(i).equals(name)) {

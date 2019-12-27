@@ -2,7 +2,7 @@ import cp_components.*;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.UtilityProvider;
 import nc_wrapper.NCWrapper;
-import ptcp_wrapper.PTCPWrapper;
+import node_candidate.NodeCandidatesPool;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
@@ -10,7 +10,9 @@ import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 
 import java.util.ArrayList;
-
+/*
+    TODO trzeba dodac dodwanie node candidates do NodeCandidatesPool
+ */
 public class NCSolverCoordinator {
     private NCWrapper ncWrapper;
     private Problem<PTSolution> CPProblem;
@@ -18,6 +20,7 @@ public class NCSolverCoordinator {
     private double maxTemp;
     private int numReplicas;
     private ParallelTempering<PTSolution> parallelTemperingSolver;
+    private NodeCandidatesPool candidatesPool;
 
     public NCSolverCoordinator(double minTemp, double maxTemp, int numReplicas, ConstraintProblem cp, UtilityProvider utility) {
         this.minTemp = minTemp;
@@ -25,8 +28,10 @@ public class NCSolverCoordinator {
         this.numReplicas = numReplicas;
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(cp, utility);
-        this.ncWrapper = new NCWrapper(cpWrapper);
+        this.ncWrapper = new NCWrapper(cpWrapper, cp);
+        candidatesPool = new NodeCandidatesPool(ncWrapper);
         preparePTSolver();
+
     }
 
     /*
@@ -46,25 +51,15 @@ public class NCSolverCoordinator {
         //TODO should return solution;
     }
 
-    private void setMaxMinDomainValues() {
-        PTSolution.minVariableValues = new ArrayList<>();
-        PTSolution.maxVariableValues = new ArrayList<>();
-        for (int i = 0; i < ptcpWrapper.getVariablesCount(); i++) {
-            System.out.println("Variable " + i + " " + ptcpWrapper.getMinValue(i) + " " + ptcpWrapper.getMaxValue(i));
-            PTSolution.minVariableValues.add(ptcpWrapper.getMinValue(i));
-            PTSolution.maxVariableValues.add(ptcpWrapper.getMaxValue(i));
-        }
-    }
     private void prepareProblem() {
-        setMaxMinDomainValues();
-        CPProblem = new GenericProblem<>(ptcpWrapper, new PTObjective(), new PTRandomGenerator());
+        CPProblem = new GenericProblem<>(ncWrapper, new PTObjective(), new PTRandomGenerator());
     }
 
     private void preparePTSolver() {
         prepareProblem();
         parallelTemperingSolver = new ParallelTempering<>(
                 CPProblem,
-                new PTNeighbourhood(),
+                new PTNeighbourhood(candidatesPool),
                 numReplicas, minTemp, maxTemp);
     }
 }

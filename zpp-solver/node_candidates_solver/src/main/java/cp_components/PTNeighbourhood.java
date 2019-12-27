@@ -1,13 +1,13 @@
 package cp_components;
 
+import lombok.AllArgsConstructor;
 import node_candidate.NodeCandidatesPool;
 import org.jamesframework.core.search.neigh.Move;
 import org.jamesframework.core.search.neigh.Neighbourhood;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-
+@AllArgsConstructor
 public class PTNeighbourhood implements Neighbourhood<PTSolution> {
     private NodeCandidatesPool nodeCandidatesPool;
     @Override
