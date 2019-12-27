@@ -14,11 +14,11 @@ public class VariableTypeOrderer {
                 return 2;
             case STORAGE:
                 return 3;
-            case CARDINALITY:
-                return 4;
             case LATITUDE:
-                return 5;
+                return 4;
             case LONGITUDE:
+                return 5;
+            case CARDINALITY:
                 return 6;
             default:
                 throw new RuntimeException("Unsupported Variable type !");

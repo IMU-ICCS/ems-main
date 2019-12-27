@@ -29,9 +29,8 @@ public class NCSolverCoordinator {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(cp, utility);
         this.ncWrapper = new NCWrapper(cpWrapper, cp);
-        candidatesPool = new NodeCandidatesPool(ncWrapper);
+        candidatesPool = new NodeCandidatesPool(ncWrapper, ncWrapper.getComponents());
         preparePTSolver();
-
     }
 
     /*

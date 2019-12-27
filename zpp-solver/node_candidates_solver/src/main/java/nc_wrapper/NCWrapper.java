@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class NCWrapper {
+public class NCWrapper implements MarginalDomainValuesProvider{
     private CPWrapper cpWrapper;
     private ComponentVariableOrderer variableOrderer;
 
