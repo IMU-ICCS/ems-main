@@ -1,5 +1,6 @@
 package cp_components;
 
+import lombok.AllArgsConstructor;
 import org.jamesframework.core.search.neigh.Move;
 
 import java.util.List;

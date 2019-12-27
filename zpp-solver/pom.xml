@@ -5,7 +5,7 @@
     <parent>
         <artifactId>upperware</artifactId>
         <groupId>org.ow2.paasage</groupId>
-        <version>2.5.1-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,6 +14,7 @@
         <module>genetic-solver</module>
         <module>mcts-solver</module>
         <module>pt-solver</module>
+        <module>node-candidates-solver</module>
     </modules>
     <artifactId>zpp-solver</artifactId>
     <dependencies>
@@ -24,7 +25,7 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>utility-generator</artifactId>
-            <version>2.5.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -35,7 +36,7 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>cp-solver</artifactId>
-            <version>2.5.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

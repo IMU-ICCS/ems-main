@@ -1,14 +1,14 @@
 package node_candidate;
 
 import cp_components.PTMover;
+import eu.paasage.upperware.metamodel.cp.VariableType;
+import nc_wrapper.NCWrapper;
+import variable_orderer.VariableTypeOrderer;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-//TODO musi miec maksymalne wartosci
+import java.util.*;
+
 public class NodeCandidatesPool {
-    private final int variablesPerComponent = 7;
-
+    private NCWrapper ncWrapper;
     private enum  MovementType {
         CARDINALITY,
         VM_SPECIFICATION,
@@ -21,50 +21,202 @@ public class NodeCandidatesPool {
         Provider -> VM specification
         NodeCandidates must be sorted lexicographically in ascending order
      */
-    private Map<Integer,List<NodeCandidate>> nodeCandidates;
+    private Map<Integer, List<VMConfiguration>> vmConfigurations;
     /*
         Provider -> VM location.
         Coordinates must be sorted lexicographically in ascending order
      */
     private Map<Integer, List<GeographicCoordinate>> vmLocations;
 
-    public void postNodeCandidate() {
-
+    public void postVMConfiguration(int provider, VMConfiguration configuration) {
+        if (!vmConfigurations.containsKey(provider)) {
+            vmConfigurations.put(provider, new ArrayList<VMConfiguration>());
+        }
+        vmConfigurations.get(provider).add(configuration);
     }
 
-    private NodeCandidate extractNodeCandidate(int component, List<Integer> assignment) {
-        int index = component * variablesPerComponent;
-        return new NodeCandidate(
-                assignment.get(index + 1), assignment.get(index+2), assignment.get(index+3)
+    public void postVMLocation(int provider, GeographicCoordinate location) {
+        if (!vmLocations.containsKey(provider)) {
+            vmLocations.put(provider, new ArrayList<GeographicCoordinate>());
+        }
+        vmLocations.get(provider).add(location);
+    }
+
+    public void initNodeCandidates() {
+        for ( Integer key : vmConfigurations.keySet()) {
+            Collections.sort(vmConfigurations.get(key));
+        }
+        for ( Integer key : vmLocations.keySet()) {
+            Collections.sort(vmLocations.get(key));
+        }
+    }
+
+    private Collection<VMConfiguration> getVMConfigurationNeighbours(int provider, VMConfiguration conf) {
+        int index = Collections.binarySearch(vmConfigurations.get(provider), conf);
+        Collection<VMConfiguration> result = new ArrayList<>();
+        if(index >= 0) {
+            if (index > 0) {
+                result.add(vmConfigurations.get(provider).get(index-1));
+            }
+            if (index + 1 < vmConfigurations.get(provider).size()) {
+                result.add(vmConfigurations.get(provider).get(index+1));
+            }
+        } else {
+            index = (-index) - 1;
+            if (index > 0) {
+                result.add(vmConfigurations.get(provider).get(index-1));
+            }
+            if (index < vmConfigurations.get(provider).size()) {
+                result.add(vmConfigurations.get(provider).get(index));
+            }
+        }
+        return result;
+    }
+
+    private Collection<GeographicCoordinate> getVMLocationNeighbours(int provider, GeographicCoordinate loc) {
+        Collection<GeographicCoordinate> result = new ArrayList<>();
+        int index = Collections.binarySearch(vmLocations.get(provider), loc);
+        if(index >= 0) {
+            if (index > 0) {
+                result.add(vmLocations.get(provider).get(index-1));
+            }
+            if (index + 1 < vmLocations.get(provider).size()) {
+                result.add(vmLocations.get(provider).get(index+1));
+            }
+        } else {
+            index = (-index) - 1;
+            if (index > 0) {
+                result.add(vmLocations.get(provider).get(index-1));
+            }
+            if (index < vmLocations.get(provider).size()) {
+                result.add(vmLocations.get(provider).get(index));
+            }
+        }
+        return result;
+    }
+
+
+    private VMConfiguration extractVMConfiguration(int component, List<Integer> assignment) {
+        int index = component * VariableTypeOrderer.variablesPerComponent;
+        return new VMConfiguration(
+                assignment.get(index + VariableTypeOrderer.mapTypeToIndex(VariableType.CORES)),
+                assignment.get(index + VariableTypeOrderer.mapTypeToIndex(VariableType.RAM)),
+                assignment.get(index + VariableTypeOrderer.mapTypeToIndex(VariableType.STORAGE))
         );
     }
 
     private GeographicCoordinate extractVMLocation(int component, List<Integer> assignment) {
-        int index = component * variablesPerComponent;
+        int index = component * VariableTypeOrderer.variablesPerComponent;
         return new GeographicCoordinate(
-                assignment.get(index + 5), assignment.get(index+6)
+                assignment.get(index + VariableTypeOrderer.mapTypeToIndex(VariableType.LATITUDE)),
+                assignment.get(index + VariableTypeOrderer.mapTypeToIndex(VariableType.LONGITUDE))
         );
     }
 
-    private MovementType sampleMovementType(Random random) {
-        int rand = random.nextInt(variablesPerComponent);
-        if (rand == 0) return MovementType.CARDINALITY;
-        else if (rand >= 5) return MovementType.VM_LOCATION;
-        else if ( rand <= 3) return MovementType.VM_SPECIFICATION;
-        else return MovementType.PROVIDER;
-    }
-
     private int extractProvider(int component, List<Integer> assignment) {
-
+        return assignment.get(VariableTypeOrderer.variablesPerComponent * component);
     }
 
-    private PTMover sampleVMSpecificationMove(int component, List<Integer> assignment, Random random) {
-        NodeCandidate node = extractNodeCandidate(component, assignment);
-        // TODO binsearch node and sample one of the neighbours - if any exists
+    private List<Integer> updateComponentConfiguration(List<Integer> assignment, int component,
+                                                       int provider, VMConfiguration vmConfiguration,
+                                                       GeographicCoordinate vmLocation) {
+        int index = component * VariableTypeOrderer.variablesPerComponent;
+        List<Integer> newAssignment = new ArrayList<>(assignment);
+
+        newAssignment.set(index, provider);
+
+        newAssignment.set(index + VariableTypeOrderer.mapTypeToIndex(VariableType.LATITUDE),
+                vmLocation.getLatitude());
+        newAssignment.set(index + VariableTypeOrderer.mapTypeToIndex(VariableType.LONGITUDE),
+                vmLocation.getLongitude());
+
+        newAssignment.set(index + VariableTypeOrderer.mapTypeToIndex(VariableType.CORES),
+                vmConfiguration.getCores());
+        newAssignment.set(index + VariableTypeOrderer.mapTypeToIndex(VariableType.RAM),
+                vmConfiguration.getRam());
+        newAssignment.set(index + VariableTypeOrderer.mapTypeToIndex(VariableType.STORAGE),
+                vmConfiguration.getDisk());
+        return newAssignment;
     }
 
-    public PTMover getRandomMove(List<Integer> assignment, Random random) {
-        int component = random.nextInt(components.size());
-
+    private Collection<PTMover> getAllVMConfigurationChangeMoves(List<Integer> assignment, int component) {
+        Collection<PTMover> result = new ArrayList<>();
+        VMConfiguration conf = extractVMConfiguration(component, assignment);
+        int provider = extractProvider(component, assignment);
+        Collection<VMConfiguration> neighbours = getVMConfigurationNeighbours(provider, conf);
+        if (neighbours.isEmpty()) {
+            return result;
+        }
+        for (VMConfiguration n : neighbours) {
+            result.add(new PTMover(
+                    assignment,
+                    updateComponentConfiguration(assignment,
+                            component, provider, n, extractVMLocation(component, assignment))
+                    ));
+        }
+        return result;
     }
+
+    private Collection<PTMover> getAllVMLocationChangeMoves(List<Integer> assignment, int component) {
+        Collection<PTMover> result = new ArrayList<>();
+        GeographicCoordinate loc = extractVMLocation(component, assignment);
+        int provider = extractProvider(component, assignment);
+        Collection<GeographicCoordinate> neighbours = getVMLocationNeighbours(provider, loc);
+        if (neighbours.isEmpty()) {
+            return result;
+        }
+        for (GeographicCoordinate n : neighbours) {
+            result.add(new PTMover(
+                    assignment,
+                    updateComponentConfiguration(assignment,
+                            component, provider, extractVMConfiguration(component, assignment), n)
+            ));
+        }
+        return result;
+    }
+
+    private Collection<PTMover> getAllCardinalityChangeMoves(List<Integer> assignment, int component) {
+        int index = component * VariableTypeOrderer.variablesPerComponent
+                + VariableTypeOrderer.mapTypeToIndex(VariableType.CARDINALITY);
+        int maxCardinality = ncWrapper.getMaxValue(index);
+        int minCardinality = ncWrapper.getMinValue(index);
+        Collection<PTMover> result = new ArrayList<>();
+        if (assignment.get(index) < maxCardinality) {
+            List<Integer> newAssignment = new ArrayList<>(assignment);
+            newAssignment.set(index, assignment.get(index) + 1);
+            result.add(new PTMover(assignment, newAssignment));
+        }
+        if (assignment.get(index) > minCardinality) {
+            List<Integer> newAssignment = new ArrayList<>(assignment);
+            newAssignment.set(index, assignment.get(index) - 1);
+            result.add(new PTMover(assignment, newAssignment));
+        }
+        return result;
+    }
+
+    private Collection<PTMover> getAllProviderChangeMove(List<Integer> assignment, int component) {
+        int provider = extractProvider(component, assignment);
+        int maxProvider = ncWrapper.getMaxValue(component * VariableTypeOrderer.variablesPerComponent);
+        int minProvider = ncWrapper.getMinValue(component * VariableTypeOrderer.variablesPerComponent);
+
+        return null;
+    }
+
+    public Collection<PTMover> getAllMovesComponent(List<Integer> assignment, int component) {
+        Collection<PTMover> result = getAllVMConfigurationChangeMoves(assignment, component);
+        result.addAll(getAllVMLocationChangeMoves(assignment, component));
+        result.addAll(getAllCardinalityChangeMoves(assignment, component));
+        result.addAll(getAllProviderChangeMove(assignment, component));
+        return result;
+    }
+
+    public List<PTMover> getAllMoves(List<Integer> assignment) {
+        List<PTMover> moves = new ArrayList<>();
+        for (int i = 0; i < components.size(); i++) {
+            moves.addAll(getAllMovesComponent(assignment, i));
+        }
+        return moves;
+    }
+
+
 }

@@ -1,5 +1,7 @@
 package cp_components;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.jamesframework.core.problems.sol.Solution;
 
 import java.util.ArrayList;
