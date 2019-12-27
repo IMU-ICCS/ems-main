@@ -1,11 +1,11 @@
 package eu.melodic.upperware.guibackend.communication.metasolver;
 
 import eu.melodic.models.interfaces.metaSolver.MetricsNamesResponse;
-import eu.melodic.models.services.adapter.DifferenceRequestImpl;
-import eu.melodic.models.services.adapter.DifferenceResponse;
-import eu.melodic.upperware.guibackend.communication.adapter.AdapterApi;
+import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesRequest;
+import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesResponse;
 import eu.melodic.upperware.guibackend.communication.commons.RestCommunicationService;
 import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
+import eu.melodic.upperware.guibackend.controller.simulation.request.SimulationRequest;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -32,5 +32,17 @@ public class MetaSolverClientApi extends RestCommunicationService implements Met
                 new ParameterizedTypeReference<MetricsNamesResponse>() {
                 };
         return getResponse(metaSolverUrl, responseType, null, ServiceName.METASOLVER.name, HttpMethod.GET).getBody();
+    }
+
+    @Override
+    public SimulatedMetricValuesResponse simulateMetricValues(SimulatedMetricValuesRequest simulatedMetricValuesRequest,
+                                                              String token) {
+        String metaSolverUrl = guiBackendProperties.getMetaSolver().getUrl() + "/simulateReconfiguration";
+        ParameterizedTypeReference<SimulatedMetricValuesResponse> responseType =
+                new ParameterizedTypeReference<SimulatedMetricValuesResponse>() {
+                };
+        HttpEntity<SimulatedMetricValuesRequest> request =
+                createHttpEntityWithAuthorizationHeader(simulatedMetricValuesRequest, token);
+        return getResponse(metaSolverUrl, responseType, request, ServiceName.METASOLVER.name, HttpMethod.POST).getBody();
     }
 }

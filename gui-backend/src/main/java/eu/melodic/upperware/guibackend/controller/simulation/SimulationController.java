@@ -2,10 +2,14 @@ package eu.melodic.upperware.guibackend.controller.simulation;
 
 
 import eu.melodic.models.interfaces.metaSolver.MetricsNamesResponse;
+import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesRequest;
+import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesResponse;
+import eu.melodic.upperware.guibackend.controller.simulation.request.SimulationRequest;
 import eu.melodic.upperware.guibackend.service.simulation.SimulationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +21,19 @@ public class SimulationController {
 
     private SimulationService simulationService;
 
-    @GetMapping(value = "/{processId}")
+    @GetMapping("/metric")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse checkProcessVariables(@PathVariable("processId") String processId) {
-        log.info("GET request for metric names with process id: {}", processId);
+    public MetricsNamesResponse getMeticNames() {
+        log.info("GET request for metric names");
         return simulationService.getMetricNames();
     }
+
+    @PostMapping("/metric")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SimulatedMetricValuesResponse simulateMetricValues(@RequestBody SimulationRequest simulationRequest,
+                                                              @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
+        log.info("POST request for simulating metric values");
+        return simulationService.simulateMetricValues(simulationRequest, token);
+    }
+
 }

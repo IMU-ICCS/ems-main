@@ -173,8 +173,7 @@ public class MetaSolverController {
     {
         setAuthenticationToken(jwtToken);
         String applicationId = request.getApplicationId();
-        String requestUuid = request.getWatermark().getUuid();
-        log.info("Received request: " + applicationId + " " + requestUuid);
+        log.info("Received request: " + applicationId);
 
         // set metrics and request reconfiguration
         String result = coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
@@ -182,7 +181,6 @@ public class MetaSolverController {
 
         SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
         response.setApplicationId(applicationId);
-        response.setWatermark(coordinator.prepareWatermark(requestUuid));
         response.setResult(result);
 
         return response;
