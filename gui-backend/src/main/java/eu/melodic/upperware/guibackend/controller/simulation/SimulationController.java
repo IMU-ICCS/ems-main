@@ -23,9 +23,9 @@ public class SimulationController {
 
     @GetMapping("/metric")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse getMeticNames() {
+    public MetricsNamesResponse getMetricNames(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("GET request for metric names");
-        return simulationService.getMetricNames();
+        return simulationService.getMetricNames(token);
     }
 
     @PostMapping("/metric")

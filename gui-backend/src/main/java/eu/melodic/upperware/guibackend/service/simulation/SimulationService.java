@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 public class SimulationService {
     private MetaSolverApi metaSolverApi;
 
-    public MetricsNamesResponse getMetricNames() {
-        return metaSolverApi.getMetricNames();
+    public MetricsNamesResponse getMetricNames(String token) {
+        return metaSolverApi.getMetricNames(token);
     }
 
     public SimulatedMetricValuesResponse simulateMetricValues(SimulationRequest simulationRequest,

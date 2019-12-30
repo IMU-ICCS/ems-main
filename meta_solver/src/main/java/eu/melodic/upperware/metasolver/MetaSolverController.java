@@ -168,7 +168,7 @@ public class MetaSolverController {
 
     @RequestMapping(value = "/simulateReconfiguration", method = POST)
     public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
-                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken)
             throws ConcurrentAccessException
     {
         setAuthenticationToken(jwtToken);
@@ -188,8 +188,9 @@ public class MetaSolverController {
 
     @GetMapping("/getMetricNames")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse getMetricNames() {
+    public MetricsNamesResponse getMetricNames(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
 
+        setAuthenticationToken(jwtToken);
         log.info("Received request for metric names: ");
         MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
         metricsNamesResponse.setMetricsNames(coordinator.getMetricNames());

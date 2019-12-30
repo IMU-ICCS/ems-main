@@ -6,7 +6,7 @@ import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesResponse;
 
 public interface MetaSolverApi {
 
-    MetricsNamesResponse getMetricNames();
+    MetricsNamesResponse getMetricNames(String token);
 
     SimulatedMetricValuesResponse simulateMetricValues(
             SimulatedMetricValuesRequest simulatedMetricValuesRequest, String token);

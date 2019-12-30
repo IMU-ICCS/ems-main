@@ -26,12 +26,14 @@ public class MetaSolverClientApi extends RestCommunicationService implements Met
     }
 
     @Override
-    public MetricsNamesResponse getMetricNames() {
+    public MetricsNamesResponse getMetricNames(String token) {
         String metaSolverUrl = guiBackendProperties.getMetaSolver().getUrl() + "/getMetricNames";
         ParameterizedTypeReference<MetricsNamesResponse> responseType =
                 new ParameterizedTypeReference<MetricsNamesResponse>() {
                 };
-        return getResponse(metaSolverUrl, responseType, null, ServiceName.METASOLVER.name, HttpMethod.GET).getBody();
+        HttpEntity<SimulatedMetricValuesRequest> request =
+                createHttpEntityWithAuthorizationHeader(null, token);
+        return getResponse(metaSolverUrl, responseType, request, ServiceName.METASOLVER.name, HttpMethod.GET).getBody();
     }
 
     @Override
