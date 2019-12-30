@@ -1,24 +1,35 @@
 variables:
-  BRANCH_NAME: "rc3.0"
   DOCKER_PUSH: "false"
   DOCKER_REPO: "172.31.1.100:5000"
   MAVEN_IMAGE: "maven:3.5.2-jdk-8"
+  DOCKER_DIND_IMAGE: "docker:19.03.1"
+  DOCKER_DIND_SERVICE: "$DOCKER_DIND_IMAGE-dind"
+  DOCKER_DRIVER: overlay
+  DOCKER_TLS_CERTDIR: "/certs"
+  
+  MAVEN_OPTS: "-Xmx2048m -Xms2048m"
   SKIP_TESTS: "true"
 
-  DOCKER_CLI: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v maven-repo:/root/.m2 -w /usr/src/mymaven --env-file .env.list"
-  UPPERWARE_CLI: "mvn clean install deploy -N -Dmaven.test.skip=$SKIP_TESTS"  
-  
-image: docker:19.03.1
-
+  DOCKER_CLI: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $CI_PROJECT_DIR/maven_repo:/root/.m2 -w /usr/src/mymaven -v $CI_PROJECT_DIR:/usr/src/mymaven --env-file .env.list $MAVEN_IMAGE"
+  MELODIC_UPPERWARE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f pom.xml" 
 cache:
   paths:
-    - .m2/repository
+    - maven_repo/
 
-deploy:docker:melodic-integration:
+before_script:
+  - mkdir -p $HOME/.m2
+  - echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                            https://maven.apache.org/xsd/settings-1.0.0.xsd">
+                <localRepository>'$CI_PROJECT_DIR'/maven_repo</localRepository>
+          </settings>' > $HOME/.m2/settings.xml
+  - echo "MAVEN_OPTS=$MAVEN_OPTS" > $CI_PROJECT_DIR/.env.list
+
+deploy:melodic-upperware:
   stage: deploy
+  image: $DOCKER_DIND_IMAGE
   services:
-    - docker:19.03.1-dind
-  variables:
-    DOCKER_TLS_CERTDIR: "/certs"
+    - $DOCKER_DIND_SERVICE
   script:
-    - $DOCKER_CLI -v "$(pwd):/usr/src/mymaven" $MAVEN_IMAGE $UPPERWARE_CLI
+    - $DOCKER_CLI $MELODIC_UPPERWARE_CLI clean install deploy
