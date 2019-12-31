@@ -24,6 +24,7 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
@@ -355,14 +356,14 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
     String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) {
-        String response;
+        String result;
 
         log.info("Setting simulated metrics inside MetaSolver: ");
         if (!cacheAppId.equals(applicationId)) {
-            response = "WRONG_APPLICATION_ID";
+            result = "WRONG_APPLICATION_ID";
             log.warn("applications Ids don't match");
         } else {
-            response = "SUCCESS";
+            result = "SUCCESS";
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
             Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
             for (KeyValuePair nameValuePair : metricValues) {
@@ -370,7 +371,7 @@ public class Coordinator implements ApplicationContextAware {
                     monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
                 } else {
                     log.warn("Received invalid metric: {}", nameValuePair.getKey());
-                    response = "PARTIAL_SUCCESS";
+                    result = "PARTIAL_SUCCESS";
                 }
             }
             log.info("Simulated metrics set");
@@ -379,21 +380,28 @@ public class Coordinator implements ApplicationContextAware {
                 log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
                 requestStartProcessForScaling(true);
             } catch (Exception ex) {
-                response = "ERROR_STARTING_PROCESS";
+                result = "ERROR_STARTING_PROCESS";
                 log.error("processScaleEvent: EXCEPTION: ", ex);
             }
         }
-        return response;
+        return result;
     }
 
-    List<String> getMetricNames(String applicationId){
+    Pair<List<String>, String> getMetricNames(String applicationId){
+        String result = "SUCCESS";
+        List<String> metricNames;
         if (!cacheAppId.equals(applicationId)) {
             log.warn("applications Ids don't match");
-            return new ArrayList<>();
+            result = "WRONG_APPLICATION_ID";
+            metricNames = new ArrayList<>();
+        } else {
+            MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
+            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
+            if (metricNames.isEmpty()) {
+                result = "NO_METRICS_DEFINED_OR_NOT_YET_RECEIVED";
+            }
         }
-
-        MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-        return new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
+        return new ImmutablePair<>(metricNames, result);
     }
 
 }

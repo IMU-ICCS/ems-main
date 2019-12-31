@@ -21,10 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -188,13 +185,15 @@ public class MetaSolverController {
 
     @GetMapping("/getMetricNames/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applcationId,
+    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
                                                @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
 
         setAuthenticationToken(jwtToken);
         log.info("Received request for metric names: ");
         MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
-        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applcationId));
+        Pair<List<String>, String> metricNamesAndResult = coordinator.getMetricNames(applicationId);
+        metricsNamesResponse.setMetricsNames(metricNamesAndResult.getLeft());
+        metricsNamesResponse.setResult(metricNamesAndResult.getRight());
 
         return metricsNamesResponse;
     }
