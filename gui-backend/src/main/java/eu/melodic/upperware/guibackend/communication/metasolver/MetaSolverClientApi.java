@@ -37,7 +37,7 @@ public class MetaSolverClientApi extends RestCommunicationService implements Met
     }
 
     @Override
-    public SimulatedMetricValuesResponse simulateMetricValues(SimulatedMetricValuesRequest simulatedMetricValuesRequest,
+    public SimulatedMetricValuesResponse simulateReconfiguration(SimulatedMetricValuesRequest simulatedMetricValuesRequest,
                                                               String token) {
         String metaSolverUrl = guiBackendProperties.getMetaSolver().getUrl() + "/simulateReconfiguration";
         ParameterizedTypeReference<SimulatedMetricValuesResponse> responseType =
