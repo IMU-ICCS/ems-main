@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
 public class SimulationService {
     private MetaSolverApi metaSolverApi;
 
-    public MetricsNamesResponse getMetricNames(String token) {
-        return metaSolverApi.getMetricNames(token);
+    public MetricsNamesResponse getMetricNames(String applicationId, String token) {
+        return metaSolverApi.getMetricNames(applicationId, token);
     }
 
-    public SimulatedMetricValuesResponse simulateMetricValues(SimulationRequest simulationRequest,
+    public SimulatedMetricValuesResponse simulateReconfiguration(SimulationRequest simulationRequest,
                                                               String token){
         SimulatedMetricValuesRequest simulatedMetricValuesRequest = new SimulatedMetricValuesRequestImpl();
         simulatedMetricValuesRequest.setApplicationId(simulationRequest.getApplicationId());
@@ -32,6 +32,6 @@ public class SimulationService {
             return p;
         }).collect(Collectors.toList()));
 
-        return metaSolverApi.simulateMetricValues(simulatedMetricValuesRequest, token);
+        return metaSolverApi.simulateReconfiguration(simulatedMetricValuesRequest, token);
     }
 }

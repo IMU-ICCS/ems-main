@@ -21,19 +21,20 @@ public class SimulationController {
 
     private SimulationService simulationService;
 
-    @GetMapping("/metric")
+    @GetMapping("/metric/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse getMetricNames(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
+    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
+                                               @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("GET request for metric names");
-        return simulationService.getMetricNames(token);
+        return simulationService.getMetricNames(applicationId, token);
     }
 
     @PostMapping("/metric")
     @ResponseStatus(HttpStatus.CREATED)
-    public SimulatedMetricValuesResponse simulateMetricValues(@RequestBody SimulationRequest simulationRequest,
+    public SimulatedMetricValuesResponse simulateReconfiguration(@RequestBody SimulationRequest simulationRequest,
                                                               @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("POST request for simulating metric values");
-        return simulationService.simulateMetricValues(simulationRequest, token);
+        return simulationService.simulateReconfiguration(simulationRequest, token);
     }
 
 }

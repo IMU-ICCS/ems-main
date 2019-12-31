@@ -355,30 +355,43 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
     String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) {
-        String response = "ERROR";
+        String response;
 
         log.info("Setting simulated metrics inside MetaSolver: ");
         if (!cacheAppId.equals(applicationId)) {
+            response = "WRONG_APPLICATION_ID";
             log.warn("applications Ids don't match");
         } else {
+            response = "SUCCESS";
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
+            Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
             for (KeyValuePair nameValuePair : metricValues) {
-                monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
+                if (metricNames.contains(nameValuePair.getKey())) {
+                    monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
+                } else {
+                    log.warn("Received invalid metric: {}", nameValuePair.getKey());
+                    response = "PARTIAL_SUCCESS";
+                }
             }
             log.info("Simulated metrics set");
 
             try {
                 log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
                 requestStartProcessForScaling(true);
-                response = "STARTED";
             } catch (Exception ex) {
+                response = "ERROR_STARTING_PROCESS";
                 log.error("processScaleEvent: EXCEPTION: ", ex);
             }
         }
         return response;
     }
 
-    List<String> getMetricNames(){
+    List<String> getMetricNames(String applicationId){
+        if (!cacheAppId.equals(applicationId)) {
+            log.warn("applications Ids don't match");
+            return new ArrayList<>();
+        }
+
         MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
         return new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
     }

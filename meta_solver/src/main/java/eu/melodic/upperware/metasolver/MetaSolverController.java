@@ -186,14 +186,15 @@ public class MetaSolverController {
         return response;
     }
 
-    @GetMapping("/getMetricNames")
+    @GetMapping("/getMetricNames/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
-    public MetricsNamesResponse getMetricNames(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
+    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applcationId,
+                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
 
         setAuthenticationToken(jwtToken);
         log.info("Received request for metric names: ");
         MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
-        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames());
+        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applcationId));
 
         return metricsNamesResponse;
     }
