@@ -358,10 +358,9 @@ public class Coordinator implements ApplicationContextAware {
     String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) {
         String result;
 
-        log.info("Setting simulated metrics inside MetaSolver: ");
         if (!cacheAppId.equals(applicationId)) {
             result = "WRONG_APPLICATION_ID";
-            log.warn("applications Ids don't match");
+            log.warn("applications Ids don't match, aborting");
         } else {
             result = "SUCCESS";
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
@@ -370,7 +369,7 @@ public class Coordinator implements ApplicationContextAware {
                 if (metricNames.contains(nameValuePair.getKey())) {
                     monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
                 } else {
-                    log.warn("Received invalid metric: {}", nameValuePair.getKey());
+                    log.warn("Received invalid metric name: {}", nameValuePair.getKey());
                     result = "PARTIAL_SUCCESS";
                 }
             }

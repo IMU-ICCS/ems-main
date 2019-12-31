@@ -173,8 +173,9 @@ public class MetaSolverController {
         log.info("Received request: " + applicationId);
 
         // set metrics and request reconfiguration
+        log.info("Setting Simulated metrics and reconfiguration request ");
         String result = coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
-        log.info("SimulateReconfiguration: Setting Simulated metrics finished ");
+        log.info("SimulateReconfiguration: Setting Simulated metrics and reconfiguration request finished ");
 
         SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
         response.setApplicationId(applicationId);

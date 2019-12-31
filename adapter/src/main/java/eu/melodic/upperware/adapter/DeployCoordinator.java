@@ -162,10 +162,11 @@ public class DeployCoordinator {
         log.info("Authorizing deployment plan with Authorization-Service...");
         try {
             if (isValid) {
-                log.info("Deployment plan authorized, executing...");
-
                 if (!isSimulation) {
+                    log.info("Deployment plan authorized, executing...");
                     planExecutor.executePlan(plan);
+                } else {
+                    log.info("Deployment plan authorized, simulation mode on: execution stopped");
                 }
                 cdoServerUpdater.updateCamelModel(resourceName);
                 camelToFileSaver.toFile(resourceName, CamelToFileSaverImpl.DEFAULT_NAME_AFTER_DEPLOYMENT_FUNCTION);
