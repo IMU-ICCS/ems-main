@@ -84,7 +84,7 @@ public class Coordinator implements ApplicationContextAware {
     /**
      * Update CP model with current metric variable values
      */
-    public void setMetricValuesInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+    public boolean setMetricValuesInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException, NumberFormatException {
         log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}", applicationId, cpModelPath);
 
         // get metric values from metric value registry
@@ -94,9 +94,10 @@ public class Coordinator implements ApplicationContextAware {
 
         // Update CP model with current metric variable values
         CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
-        helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+        boolean succeeded = helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
 
-        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model updated with current MVV's");
+        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model update with current MVV's finished");
+        return succeeded;
     }
 
     /**
@@ -197,7 +198,7 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
 
-    public void requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
+    public boolean requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
@@ -205,7 +206,11 @@ public class Coordinator implements ApplicationContextAware {
 
         // Set metric values in CP model
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
-        setMetricValuesInCpModel(appId, cpModelPath);
+        if (!setMetricValuesInCpModel(appId, cpModelPath)) {
+            log.debug("MetaSolver.Coordinator: requestStartProcessForScaling():" +
+                    " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
+            return false;
+        }
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
 
         // Send request to start Deployment Process (reusing existing CP model)
@@ -213,6 +218,7 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
         sendNotification(notification);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
+        return true;
     }
 
     private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath, boolean isSimulation) {
@@ -355,7 +361,7 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     // --------------------------------------------------------------------------
-    String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) {
+    String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) throws ConcurrentAccessException {
         String result;
 
         if (!cacheAppId.equals(applicationId)) {
@@ -375,13 +381,11 @@ public class Coordinator implements ApplicationContextAware {
             }
             log.info("Simulated metrics set");
 
-            try {
-                log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
-                requestStartProcessForScaling(true);
-            } catch (Exception ex) {
-                result = "ERROR_STARTING_PROCESS";
-                log.error("processScaleEvent: EXCEPTION: ", ex);
+            log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
+            if(!requestStartProcessForScaling(true)) {
+                result = "ONE_METRIC_IN_WRONG_FORMAT";
             }
+
         }
         return result;
     }
@@ -390,7 +394,7 @@ public class Coordinator implements ApplicationContextAware {
         String result = "SUCCESS";
         List<String> metricNames;
         if (!cacheAppId.equals(applicationId)) {
-            log.warn("applications Ids don't match");
+            log.warn("Applications Ids don't match");
             result = "WRONG_APPLICATION_ID";
             metricNames = new ArrayList<>();
         } else {

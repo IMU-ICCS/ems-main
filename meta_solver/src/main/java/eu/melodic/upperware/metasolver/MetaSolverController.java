@@ -164,6 +164,7 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/simulateReconfiguration", method = POST)
+    @ResponseStatus(HttpStatus.OK)
     public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
                                                                           @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken)
             throws ConcurrentAccessException

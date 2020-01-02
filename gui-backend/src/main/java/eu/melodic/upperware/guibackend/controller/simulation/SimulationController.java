@@ -30,7 +30,7 @@ public class SimulationController {
     }
 
     @PostMapping("/metric")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     public SimulatedMetricValuesResponse simulateReconfiguration(@RequestBody SimulationRequest simulationRequest,
                                                               @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("POST request for simulating metric values");
