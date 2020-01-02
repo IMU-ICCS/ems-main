@@ -164,7 +164,6 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/simulateReconfiguration", method = POST)
-    @ResponseStatus(HttpStatus.OK)
     public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
                                                                           @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken)
             throws ConcurrentAccessException
@@ -175,27 +174,23 @@ public class MetaSolverController {
 
         // set metrics and request reconfiguration
         log.info("Setting Simulated metrics and reconfiguration request ");
-        String result = coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
+        coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
         log.info("SimulateReconfiguration: Setting Simulated metrics and reconfiguration request finished ");
 
         SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
         response.setApplicationId(applicationId);
-        response.setResult(result);
 
         return response;
     }
 
     @GetMapping("/getMetricNames/{applicationId}")
-    @ResponseStatus(HttpStatus.OK)
     public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
                                                @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
 
         setAuthenticationToken(jwtToken);
         log.info("Received request for metric names: ");
         MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
-        Pair<List<String>, String> metricNamesAndResult = coordinator.getMetricNames(applicationId);
-        metricsNamesResponse.setMetricsNames(metricNamesAndResult.getLeft());
-        metricsNamesResponse.setResult(metricNamesAndResult.getRight());
+        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applicationId));
 
         return metricsNamesResponse;
     }

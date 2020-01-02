@@ -22,7 +22,6 @@ public class SimulationController {
     private SimulationService simulationService;
 
     @GetMapping("/metric/{applicationId}")
-    @ResponseStatus(HttpStatus.OK)
     public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
                                                @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("GET request for metric names");
@@ -30,7 +29,6 @@ public class SimulationController {
     }
 
     @PostMapping("/metric")
-    @ResponseStatus(HttpStatus.OK)
     public SimulatedMetricValuesResponse simulateReconfiguration(@RequestBody SimulationRequest simulationRequest,
                                                               @RequestHeader(value = HttpHeaders.AUTHORIZATION) String token) {
         log.info("POST request for simulating metric values");

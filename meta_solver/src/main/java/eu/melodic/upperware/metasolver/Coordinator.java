@@ -30,12 +30,10 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -361,14 +359,11 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     // --------------------------------------------------------------------------
-    String simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) throws ConcurrentAccessException {
-        String result;
-
+    void simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) throws ConcurrentAccessException {
         if (!cacheAppId.equals(applicationId)) {
-            result = "WRONG_APPLICATION_ID";
             log.warn("applications Ids don't match, aborting");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong application Id");
         } else {
-            result = "SUCCESS";
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
             Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
             for (KeyValuePair nameValuePair : metricValues) {
@@ -376,35 +371,31 @@ public class Coordinator implements ApplicationContextAware {
                     monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
                 } else {
                     log.warn("Received invalid metric name: {}", nameValuePair.getKey());
-                    result = "PARTIAL_SUCCESS";
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Received invalid metric name");
                 }
             }
             log.info("Simulated metrics set");
 
             log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
             if(!requestStartProcessForScaling(true)) {
-                result = "ONE_METRIC_IN_WRONG_FORMAT";
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Received metric value in invalid format");
             }
-
         }
-        return result;
     }
 
-    Pair<List<String>, String> getMetricNames(String applicationId){
-        String result = "SUCCESS";
+    List<String> getMetricNames(String applicationId) {
         List<String> metricNames;
         if (!cacheAppId.equals(applicationId)) {
             log.warn("Applications Ids don't match");
-            result = "WRONG_APPLICATION_ID";
-            metricNames = new ArrayList<>();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong application Id");
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
             metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
             if (metricNames.isEmpty()) {
-                result = "NO_METRICS_DEFINED_OR_NOT_YET_RECEIVED";
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No metrics defined or net yet received");
             }
         }
-        return new ImmutablePair<>(metricNames, result);
+        return metricNames;
     }
 
 }
