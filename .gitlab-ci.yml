@@ -39,3 +39,5 @@ deploy:melodic-upperware:
     - $DOCKER_DIND_SERVICE
   script:
     - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
+  only:
+    - master
