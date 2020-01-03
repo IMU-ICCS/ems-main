@@ -26,10 +26,16 @@ before_script:
           </settings>' > $HOME/.m2/settings.xml
   - echo "MAVEN_OPTS=$MAVEN_OPTS" > $CI_PROJECT_DIR/.env.list
 
+build:melodic-upperware:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
+
 deploy:melodic-upperware:
   stage: deploy
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   script:
-    - $DOCKER_CLI $MELODIC_UPPERWARE_CLI clean install deploy
+    - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
