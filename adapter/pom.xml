@@ -33,7 +33,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.8</java.version>
     <!--DOCKER plugin properties-->
-    <docker.imageName>adapter-mriedl</docker.imageName>
+    <docker.imageName>adapter</docker.imageName>
     <gmaven-plugin.version>1.4</gmaven-plugin.version>
   </properties>
   <dependencies>
