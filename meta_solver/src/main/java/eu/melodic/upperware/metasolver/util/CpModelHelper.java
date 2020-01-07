@@ -86,7 +86,7 @@ public class CpModelHelper extends AbstractCdoHelper {
                             }
                             c.setValue(newVal);
                         } else {
-                            log.debug("Skipped metric update (no value): {}", mvName);
+                            log.debug("Skipped metric update (value: {}): {}", numericValueUpperwareToDouble(c.getValue()), mvName);
                         }
                     }
 

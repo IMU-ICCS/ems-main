@@ -23,7 +23,7 @@
 
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>metasolver-mriedl</docker.imageName>
+        <docker.imageName>metasolver-mriedl-demo</docker.imageName>
     </properties>
 
     <dependencies>
