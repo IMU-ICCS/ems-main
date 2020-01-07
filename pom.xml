@@ -32,8 +32,8 @@
         <!--        <module>melodic-cache</module>-->
 <!--        <module>adapter</module>-->
         <!--        <module>cp_generator</module>-->
-<!--        <module>gui-backend</module>-->
-        <module>meta_solver</module>
+        <module>gui-backend</module>
+<!--        <module>meta_solver</module>-->
         <!--        <module>utility-generator</module>-->
         <!--        <module>cp-solver</module>-->
         <!--        <module>la_converter</module>-->
