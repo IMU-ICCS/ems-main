@@ -25,7 +25,7 @@ import java.util.List;
 
 public class NumericListDomainImplMockup implements NumericListDomain {
     private EList<NumericValueUpperware> values = new BasicEList<>();
-
+    private BasicTypeEnum type;
     @Override
     public EList<NumericValueUpperware> getValues() {
         return values;
@@ -39,12 +39,12 @@ public class NumericListDomainImplMockup implements NumericListDomain {
 
     @Override
     public BasicTypeEnum getType() {
-        return null;
+        return type;
     }
 
     @Override
     public void setType(BasicTypeEnum value) {
-
+        this.type = value;
     }
 
     @Override

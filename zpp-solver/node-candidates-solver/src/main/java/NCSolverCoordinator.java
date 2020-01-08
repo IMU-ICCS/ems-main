@@ -1,18 +1,23 @@
 import cp_components.*;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.UtilityProvider;
+import cp_wrapper.parser.CPParsedData;
+import eu.melodic.cache.NodeCandidates;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import nc_wrapper.NCWrapper;
+import node_candidate.GeographicCoordinate;
 import node_candidate.NodeCandidatesPool;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import node_candidate.VMConfiguration;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
 import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 
 import java.util.ArrayList;
-/*
-    TODO trzeba dodac dodwanie node candidates do NodeCandidatesPool
- */
+import java.util.List;
+import java.util.Map;
+
 public class NCSolverCoordinator {
     private NCWrapper ncWrapper;
     private Problem<PTSolution> CPProblem;
@@ -22,22 +27,36 @@ public class NCSolverCoordinator {
     private ParallelTempering<PTSolution> parallelTemperingSolver;
     private NodeCandidatesPool candidatesPool;
 
-    public NCSolverCoordinator(double minTemp, double maxTemp, int numReplicas, ConstraintProblem cp, UtilityProvider utility) {
+    public NCSolverCoordinator(double minTemp, double maxTemp, int numReplicas, ConstraintProblem cp, UtilityProvider utility, NodeCandidates nodeCandidates) {
         this.minTemp = minTemp;
         this.maxTemp = maxTemp;
         this.numReplicas = numReplicas;
-        CPWrapper cpWrapper = new CPWrapper();
-        cpWrapper.parse(cp, utility);
-        this.ncWrapper = new NCWrapper(cpWrapper, cp);
+        this.ncWrapper = new NCWrapper(cp, utility);
         candidatesPool = new NodeCandidatesPool(ncWrapper, ncWrapper.getComponents());
+        ncWrapper.setNodeCandidatesPool(candidatesPool);
         preparePTSolver();
+        postNodeCandidates(nodeCandidates);
+    }
+
+    private void postNodeCandidates(NodeCandidates nodeCandidates) {
+        Map<String, Map<Integer, List<NodeCandidate>>> nodes = nodeCandidates.get();
+        for (Map<Integer, List<NodeCandidate>> n : nodes.values()) {
+            for (Integer prov : n.keySet()) {
+                n.get(prov).stream().forEach((el) -> {
+                    candidatesPool.postVMLocation(prov,
+                            new GeographicCoordinate(el.getLocation().getGeoLocation().getLatitude(), el.getLocation().getGeoLocation().getLongitude()));
+                    candidatesPool.postVMConfiguration(prov,
+                            new VMConfiguration(el.getHardware().getCores(), el.getHardware().getRam(), el.getHardware().getDisk()));
+                });
+            }
+        }
+        candidatesPool.initNodeCandidates();
     }
 
     /*
         This method must return something different - PTSolution is only for tests.
      */
     public PTSolution solve(StopCriterion stopCriterion) {
-        // np new MaxRuntime(timeLimit, TimeUnit.SECONDS)
         parallelTemperingSolver.addStopCriterion(stopCriterion);
         parallelTemperingSolver.start();
 

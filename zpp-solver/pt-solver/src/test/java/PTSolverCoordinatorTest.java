@@ -39,9 +39,11 @@ class PTSolverCoordinatorTest {
         for (int i= 0; i < 3; i++) vars.add(new CpVariableImplMockup(variables.get(i), VariableType.CARDINALITY));
         RangeDomainImpMockup dom1  = new RangeDomainImpMockup();
         RangeDomainImpMockup dom3  = new RangeDomainImpMockup();
+        dom3.setType(BasicTypeEnum.INTEGER); dom1.setType(BasicTypeEnum.INTEGER);
         dom1.setFrom(1);dom3.setFrom(0);dom1.setTo(5);dom3.setTo(9);
         NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
         dom2.setValues(Arrays.asList(0.5, 1.5, 2.5));
+        dom2.setType(BasicTypeEnum.DOUBLE);
         List<Domain> domains = Arrays.asList(new Domain[] {dom1, dom2, dom3});
         for (int i = 0; i <3 ; i++ ){
             vars.get(i).setDomain(domains.get(i));
@@ -109,7 +111,6 @@ class PTSolverCoordinatorTest {
         List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5);
         List<Double> domain3 = Arrays.asList(0.0, 1.0,2.0,3.0,4.0,5.0, 6.0, 7.0, 8.0, 9.0);
         List<Integer> assignment = solution.getVarAssignments();
-        System.out.println("values: " + domain1.get(assignment.get(1))  +  domain2.get(assignment.get(2))+ " "+ domain3.get(assignment.get(0)));
         assertEquals((double) domain1.get(assignment.get(1)), 5.0);
         assertEquals((double) domain2.get(assignment.get(2)), 2.5);
         assertEquals((double) domain3.get(assignment.get(0)), 9);

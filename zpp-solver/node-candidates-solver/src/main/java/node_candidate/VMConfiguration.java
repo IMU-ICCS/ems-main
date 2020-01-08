@@ -6,11 +6,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class VMConfiguration implements Comparable<VMConfiguration> {
     @Getter
-    private int cores;
+    private long cores;
     @Getter
-    private int ram;
+    private long ram;
     @Getter
-    private int disk;
+    private double disk;
 
     @Override
     public boolean equals(Object obj) {

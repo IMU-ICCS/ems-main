@@ -6,9 +6,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GeographicCoordinate implements Comparable<GeographicCoordinate>{
     @Getter
-    private int latitude;
+    private double latitude;
     @Getter
-    private int longitude;
+    private double longitude;
 
     @Override
     public boolean equals(Object obj) {

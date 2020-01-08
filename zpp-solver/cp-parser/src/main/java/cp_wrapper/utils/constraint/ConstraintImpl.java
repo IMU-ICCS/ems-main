@@ -2,6 +2,7 @@ package cp_wrapper.utils.constraint;
 
 import cp_wrapper.utils.ExpressionEvaluator;
 import cp_wrapper.utils.constraint.Constraint;
+import cp_wrapper.utils.numeric_value_impl.NumericValue;
 import eu.paasage.upperware.metamodel.cp.*;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class ConstraintImpl implements Constraint {
     }
 
     @Override
-    public boolean evaluate(Map<String, Double> variables){
+    public boolean evaluate(Map<String, NumericValue> variables){
         if (!checkVariables(variables.keySet())) {
             throw new RuntimeException("Can't evaluate - some variables are missing");
         }

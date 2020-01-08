@@ -2,21 +2,25 @@ package cp_components;
 
 import lombok.AllArgsConstructor;
 import org.jamesframework.core.search.neigh.Move;
+/*
+    Class which abstracts moves in CP search space.
+    Here the move means changing full variable assignment from
+    @beforeMoveAssignment to @asterMoveAssignment
+ */
 
-import java.util.List;
 @AllArgsConstructor
 public class PTMover implements Move<PTSolution> {
-    private List<Integer> beforeMoveAssignment;
-    private List<Integer> afterMoveAssignment;
+    private PTSolution beforeMoveAssignment;
+    private PTSolution afterMoveAssignment;
 
     @Override
     public void apply(PTSolution ptSolution) {
-        ptSolution.setVarAssignments(afterMoveAssignment);
+        ptSolution.setVarAssignments(afterMoveAssignment.getVarAssignments());
     }
 
     @Override
     public void undo(PTSolution ptSolution) {
-        ptSolution.setVarAssignments(beforeMoveAssignment);
+        ptSolution.setVarAssignments(beforeMoveAssignment.getVarAssignments());
     }
 
     @Override

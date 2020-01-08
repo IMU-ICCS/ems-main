@@ -1,8 +1,8 @@
 package cp_components;
 
-        import nc_wrapper.NCWrapper;
-        import org.jamesframework.core.problems.objectives.Objective;
-        import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
+import nc_wrapper.NCWrapper;
+import org.jamesframework.core.problems.objectives.Objective;
+import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 
 public class PTObjective implements Objective<PTSolution, NCWrapper> {
     @Override

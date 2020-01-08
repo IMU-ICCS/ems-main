@@ -5,6 +5,9 @@ package cp_wrapper.utils;
     into corresponding values. Currently only RangeDomain and NumericListDomain
     domains are supported.
  */
+import cp_wrapper.utils.numeric_value_impl.IntValueInterface;
+import cp_wrapper.utils.numeric_value_impl.IntegerValue;
+import cp_wrapper.utils.numeric_value_impl.NumericValue;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.NumericListDomain;
 import eu.paasage.upperware.metamodel.cp.RangeDomain;
@@ -22,21 +25,21 @@ public class DomainHandler {
         return domain instanceof NumericListDomain;
     }
 
-    public static double getRangeValue(int valueIndex, RangeDomain domain) {
+    public static NumericValue getRangeValue(int valueIndex, RangeDomain domain) {
         NumericValueUpperware min = domain.getFrom();
         if (min instanceof IntegerValueUpperware) {
-            return (((IntegerValueUpperware) min).getValue() + valueIndex);
+            return new IntegerValue(((IntegerValueUpperware) min).getValue() + valueIndex);
         } else {
             throw new RuntimeException("Only integer RangeDomains are supported!");
         }
     }
 
-    public static double getNumericListValue(int valueIndex, NumericListDomain domain) {
+    public static NumericValue getNumericListValue(int valueIndex, NumericListDomain domain) {
         List<NumericValueUpperware> values = domain.getValues();
         if (values.size() <= valueIndex) {
             throw new RuntimeException();
         }
-        return ExpressionEvaluator.getValueOfNumericInterface(values.get(valueIndex));
+        return ExpressionEvaluator.convertNumericInterfaceToNumericValue(values.get(valueIndex));
     }
 
     public static int getMaxDomainValue(Domain domain) {
@@ -62,5 +65,49 @@ public class DomainHandler {
         }
 
         throw new RuntimeException("Only integer RangeDomains are supported!");
+    }
+
+    public static NumericValue getMaxValue(Domain domain) {
+        if (isRangeDomain(domain)) {
+            return ExpressionEvaluator.convertNumericInterfaceToNumericValue(((RangeDomain) domain).getTo());
+        } else if (isNumericListDomain(domain)) {
+            List<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
+            return ExpressionEvaluator.convertNumericInterfaceToNumericValue(values.get(values.size() - 1));
+        }
+        throw new RuntimeException("Unsupported dmain type");
+    }
+
+    public static NumericValue getMinValue(Domain domain) {
+        if (isRangeDomain(domain)) {
+            return ExpressionEvaluator.convertNumericInterfaceToNumericValue(((RangeDomain) domain).getFrom());
+        } else if (isNumericListDomain(domain)) {
+            List<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
+            return ExpressionEvaluator.convertNumericInterfaceToNumericValue(values.get(0));
+        }
+        throw new RuntimeException("Unsupported dmain type");
+    }
+
+    private static boolean isInList(NumericValue value, List<NumericValueUpperware> list) {
+        for (NumericValueUpperware v : list) {
+            if (value.equals(ExpressionEvaluator.convertNumericInterfaceToNumericValue(v))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isInDomain(NumericValue value, Domain domain) {
+        if (isRangeDomain(domain)) {
+            if (!(value instanceof IntValueInterface)) {
+                return false;
+            }
+            int val = ((IntValueInterface) value).getIntValue();
+            return val >= ExpressionEvaluator.getValueOfNumericInterface(((RangeDomain) domain).getFrom())
+                    &&
+                    val <= ExpressionEvaluator.getValueOfNumericInterface(((RangeDomain) domain).getTo());
+        } else if (isNumericListDomain(domain)) {
+               return isInList(value, ((NumericListDomain) domain).getValues());
+        }
+        throw new RuntimeException("");
     }
 }

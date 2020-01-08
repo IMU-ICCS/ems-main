@@ -3,12 +3,14 @@ package cp_wrapper;
 import cp_wrapper.parser.CPParsedData;
 import cp_wrapper.parser.CPParser;
 import cp_wrapper.utils.DomainHandler;
+import cp_wrapper.utils.numeric_value_impl.*;
 import cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import cp_wrapper.utils.VariableNumericType;
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.paasage.upperware.metamodel.cp.*;
+import io.github.cloudiator.rest.model.Runtime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +42,7 @@ public class CPWrapper {
         return cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(variableIndex));
     }
 
-    private double getVariableValueFromDomainIndex(int varIndex, int value) {
+    private NumericValue getVariableValueFromDomainIndex(int varIndex, int value) {
             String variableName = variableOrderer.getNameFromIndex(varIndex);
             Domain domain = cpParsedData.getVariableDomain(variableName);
             if (DomainHandler.isRangeDomain(domain)) {
@@ -52,8 +54,8 @@ public class CPWrapper {
             throw new RuntimeException("Only domaind of types RangeDomain, NumericListDomain are supported!");
     }
 
-    private Map<String, Double> getAssignmentFromValueList(List<Integer> assignments) {
-        Map<String, Double> vars = new HashMap<>();
+    private Map<String, NumericValue> getAssignmentFromValueList(List<Integer> assignments) {
+        Map<String, NumericValue> vars = new HashMap<>();
         for (int i = 0; i < assignments.size(); i++) {
             if (variableOrderer.exists(i)) {
                 vars.put(variableOrderer.getNameFromIndex(i), getVariableValueFromDomainIndex(i, assignments.get(i)));
@@ -82,18 +84,25 @@ public class CPWrapper {
     private List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
         List<VariableValueDTO> result = new ArrayList<>();
         for (int i = 0; i < assignments.size(); i++) {
+            NumericValue val = getVariableValueFromDomainIndex(i, assignments.get(i));
             if (cpParsedData.getVariableType(variableOrderer.getNameFromIndex(i)) == VariableNumericType.INT) {
+                if (!(val instanceof IntValueInterface)) {
+                    throw new RuntimeException("");
+                }
                 result.add(
                         VariableValueDTOFactory.createElement(
                             variableOrderer.getNameFromIndex(i),
-                            (int) getVariableValueFromDomainIndex(i, assignments.get(i))
+                                ((IntValueInterface) val).getIntValue()
                     )
                 );
             } else {
+                if (!(val instanceof DoubleValue)) {
+                    throw new RuntimeException("Variable " + variableOrderer.getNameFromIndex(i) +" is not of double type!");
+                }
                 result.add(
                         VariableValueDTOFactory.createElement(
                                 variableOrderer.getNameFromIndex(i),
-                                 getVariableValueFromDomainIndex(i, assignments.get(i))
+                                ((DoubleValue) val).getValue()
                         )
                 );
             }

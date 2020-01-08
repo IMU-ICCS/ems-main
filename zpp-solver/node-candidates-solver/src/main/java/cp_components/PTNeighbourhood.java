@@ -1,5 +1,9 @@
 package cp_components;
-
+/*
+    Neighbourhood of a search space element - V -
+    is defined to be a set of all elements which may be transformed to
+    V with one move.
+ */
 import lombok.AllArgsConstructor;
 import node_candidate.NodeCandidatesPool;
 import org.jamesframework.core.search.neigh.Move;
@@ -18,6 +22,6 @@ public class PTNeighbourhood implements Neighbourhood<PTSolution> {
 
     @Override
     public List<? extends Move<? super PTSolution>> getAllMoves(PTSolution ptSolution) {
-        return nodeCandidatesPool.getAllMoves(ptSolution.getVarAssignments());
+        return nodeCandidatesPool.getAllMoves(ptSolution);
     }
 }

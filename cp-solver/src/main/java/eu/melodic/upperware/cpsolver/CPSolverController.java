@@ -44,7 +44,7 @@ public class CPSolverController {
     @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
     public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
         String camelModelFilePath = request.getCamelModelFilePath();
-        String cpModelPath = "sdad";//request.getCpProblemFilePath();
+        String cpModelPath = request.getCpProblemFilePath();
         String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
         log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
 

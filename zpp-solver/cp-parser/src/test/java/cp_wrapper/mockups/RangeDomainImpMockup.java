@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 public class RangeDomainImpMockup implements RangeDomain {
     private int min;
     private int max;
+    BasicTypeEnum type;
 
     private class IntegerValueUpperwareImplMockup implements IntegerValueUpperware {
         private int value;
@@ -247,12 +248,12 @@ public class RangeDomainImpMockup implements RangeDomain {
 
     @Override
     public BasicTypeEnum getType() {
-        return null;
+        return type;
     }
 
     @Override
     public void setType(BasicTypeEnum value) {
-
+        this.type = value;
     }
 
     @Override
