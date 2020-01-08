@@ -1,6 +1,6 @@
 package implementation;
 
-import cPGeneticWrapper.CPGeneticWrapper;
+import cPGeneticWrapper.ACPGeneticWrapper;
 import io.jenetics.Gene;
 import io.jenetics.util.ISeq;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 public class OurGene implements Gene<Integer, OurGene> {
     private Integer value;
     private Integer index;
-    private CPGeneticWrapper cpGeneticWrapper;
+    private ACPGeneticWrapper cpGeneticWrapper;
 
     @Override
     public Integer getAllele() {
@@ -42,11 +42,11 @@ public class OurGene implements Gene<Integer, OurGene> {
         return seq(length, cpGeneticWrapper);
     }
 
-    static ISeq<OurGene> seq(Integer length, CPGeneticWrapper cpGeneticWrapper) {
+    public static ISeq<OurGene> seq(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         List<OurGene> list = new ArrayList<>();
 
         for (int i = 0; i < length; i++)
             list.add(new OurGene(cpGeneticWrapper.generateRandomValue(i), i, cpGeneticWrapper));
-        return ISeq.<OurGene>of(list);
+        return ISeq.of(list);
     }
 }

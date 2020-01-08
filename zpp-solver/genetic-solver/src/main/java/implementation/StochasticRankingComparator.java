@@ -20,13 +20,11 @@ public class StochasticRankingComparator implements Comparator<Phenotype<OurGene
         double leftUtility, rightUtility;
         int leftBroken, rightBroken;
 
-
-        // TODO Maybe such a casting isn't going to work.
         OurChromosome l = (OurChromosome) left.getGenotype().getChromosome();
         OurChromosome r = (OurChromosome) right.getGenotype().getChromosome();
 
-        leftUtility = l.getUtility();
-        rightUtility = r.getUtility();
+        leftUtility = left.getFitness();
+        rightUtility = right.getFitness();
         leftBroken = l.getBrokenConstraints();
         rightBroken = r.getBrokenConstraints();
 

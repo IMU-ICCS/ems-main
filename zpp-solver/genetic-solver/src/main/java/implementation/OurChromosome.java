@@ -1,21 +1,23 @@
 package implementation;
 
-import cPGeneticWrapper.CPGeneticWrapper;
+import cPGeneticWrapper.ACPGeneticWrapper;
 import io.jenetics.Chromosome;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
+import lombok.Getter;
 
 
 public class OurChromosome implements Chromosome<OurGene> {
+    @Getter
     private ISeq<OurGene> genes;
     private Integer length;
     private boolean isFeasible;
     private double utility;
     private int brokenConstraints;
     private Boolean valid;
-    private CPGeneticWrapper cpGeneticWrapper;
+    private ACPGeneticWrapper cpGeneticWrapper;
 
-    public OurChromosome(ISeq<OurGene> genes, Integer length, CPGeneticWrapper cpGeneticWrapper) {
+    public OurChromosome(ISeq<OurGene> genes, Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         this.genes = genes;
         this.length = length;
         this.cpGeneticWrapper = cpGeneticWrapper;
@@ -67,8 +69,8 @@ public class OurChromosome implements Chromosome<OurGene> {
         return of(length, cpGeneticWrapper);
     }
 
-    // Creates randomly generated Chromosome. Static version of above method
-    public static OurChromosome of(Integer length, CPGeneticWrapper cpGeneticWrapper) {
+    // Creates randomly generated Chromosome. Static version of above method.
+    public static OurChromosome of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         ISeq<OurGene> genes = OurGene.seq(length, cpGeneticWrapper);
         return new OurChromosome(genes, length, cpGeneticWrapper);
     }
@@ -78,9 +80,9 @@ public class OurChromosome implements Chromosome<OurGene> {
         return of(length, size, cpGeneticWrapper);
     }
 
-    public static ISeq<OurChromosome> of(Integer length, Integer size, CPGeneticWrapper cpGeneticWrapper) {
-        return MSeq.<OurChromosome>ofLength(size)
-                .fill(() -> of(length, cpGeneticWrapper))
+    public static ISeq<OurChromosome> of(Integer length, Integer size, ACPGeneticWrapper cpGeneticWrapper) {
+        return MSeq.<OurChromosome>ofLength(length)
+                .fill(() -> of(size, cpGeneticWrapper))
                 .toISeq();
     }
 
