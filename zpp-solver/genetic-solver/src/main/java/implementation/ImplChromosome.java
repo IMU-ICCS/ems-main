@@ -11,8 +11,11 @@ public class OurChromosome implements Chromosome<OurGene> {
     @Getter
     private ISeq<OurGene> genes;
     private Integer length;
+    @Getter
     private boolean isFeasible;
+    @Getter
     private double utility;
+    @Getter
     private int brokenConstraints;
     private Boolean valid;
     private ACPGeneticWrapper cpGeneticWrapper;
@@ -84,17 +87,5 @@ public class OurChromosome implements Chromosome<OurGene> {
         return MSeq.<OurChromosome>ofLength(length)
                 .fill(() -> of(size, cpGeneticWrapper))
                 .toISeq();
-    }
-
-    public double getUtility() {
-        return utility;
-    }
-
-    public int getBrokenConstraints() {
-        return brokenConstraints;
-    }
-
-    public boolean getIsFeasible() {
-        return isFeasible;
     }
 }

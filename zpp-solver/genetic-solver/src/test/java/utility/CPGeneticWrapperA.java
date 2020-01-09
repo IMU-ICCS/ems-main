@@ -1,6 +1,6 @@
 import cPGeneticWrapper.ACPGeneticWrapper;
 import cp_wrapper.CPWrapper;
-import implementation.OurGene;
+import implementation.ImplGene;
 import io.jenetics.util.ISeq;
 
 import java.util.List;
@@ -11,7 +11,7 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
     }
 
     @Override
-    public int calculateHeuristicBest(ISeq<OurGene> values) {
+    public int calculateHeuristicBest(ISeq<ImplGene> values) {
         return 0;
     }
 
@@ -21,7 +21,7 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
     }
 
     @Override
-    public double calculateUtility(ISeq<OurGene> genes) {
+    public double calculateUtility(ISeq<ImplGene> genes) {
         double res = 0.;
         List<Integer> list = genesToIntegerList(genes);
         for (int i = 0; i < list.size() - 1; i+=2)
@@ -30,7 +30,7 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
     }
 
     @Override
-    public int countViolatedConstraints(ISeq<OurGene> genes) {
+    public int countViolatedConstraints(ISeq<ImplGene> genes) {
         return 0;
     }
 
@@ -40,7 +40,7 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
     }
 
     @Override
-    public boolean getIsFeasible(ISeq<OurGene> genes) {
+    public boolean getIsFeasible(ISeq<ImplGene> genes) {
         return true;
     }
 

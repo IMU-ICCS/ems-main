@@ -1,3 +1,4 @@
+import comparators.StochasticRankingComparator;
 import cPGeneticWrapper.ACPGeneticWrapper;
 import cPGeneticWrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
@@ -21,22 +22,20 @@ public class Runner {
     @Setter
     private double mutatorProbability = 0.05;
     @Setter
-    private double comparatorProbability = 0.4;
-    @Setter
-    private int guesses = 10;
+    private double comparatorProbability = 0.1;
 
 
-    private final Function<Genotype<OurGene>, Double> fitnessFunction = new EvalFunction();
+    private final Function<Genotype<ImplGene>, Double> fitnessFunction = new EvalFunction();
 
     public List<Integer> run(ACPGeneticWrapper geneticWrapper) {
-        Alterer<OurGene, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
-        Mutator<OurGene, Double> mutator = new OurMutator(mutatorProbability, guesses, geneticWrapper);
-        Selector<OurGene, Double> selector = new OurSelector(new StochasticRankingComparator(comparatorProbability));
+        Alterer<ImplGene, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
+        Mutator<ImplGene, Double> mutator = new ImplMutator(mutatorProbability, geneticWrapper);
+        Selector<ImplGene, Double> selector = new ImplSelector(new StochasticRankingComparator(comparatorProbability));
 
-        Factory<Genotype<OurGene>> gtf =
-                Genotype.of(OurChromosome.of(populationSize, geneticWrapper.getSize(), geneticWrapper));
+        Factory<Genotype<ImplGene>> gtf =
+                Genotype.of(ImplChromosome.of(populationSize, geneticWrapper.getSize(), geneticWrapper));
 
-        final Engine<OurGene, Double> engine =
+        final Engine<ImplGene, Double> engine =
                 Engine.builder(fitnessFunction, gtf)
                         .alterers(crossoverAlterer, mutator)
                         .selector(selector)

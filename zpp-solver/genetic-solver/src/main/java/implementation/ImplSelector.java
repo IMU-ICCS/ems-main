@@ -13,13 +13,13 @@ import java.util.Comparator;
 import static java.util.Collections.reverseOrder;
 
 @AllArgsConstructor
-public class OurSelector implements Selector<OurGene, Double> {
-    private Comparator<Phenotype<OurGene, Double>> comparator;
+public class OurSelector implements Selector<ImplGene, Double> {
+    private Comparator<Phenotype<ImplGene, Double>> comparator;
 
     @Override
-    public ISeq<Phenotype<OurGene, Double>> select(Seq<Phenotype<OurGene, Double>> seq, int size, Optimize optimize) {
-        MSeq<Phenotype<OurGene, Double>> mseq = seq.asMSeq();
-        mseq.sort(reverseOrder(comparator));
+    public ISeq<Phenotype<ImplGene, Double>> select(Seq<Phenotype<ImplGene, Double>> seq, int size, Optimize optimize) {
+        MSeq<Phenotype<ImplGene, Double>> mseq = seq.asMSeq().copy();
+        mseq.sort(comparator);
 
         return mseq.subSeq(size).toISeq();
     }

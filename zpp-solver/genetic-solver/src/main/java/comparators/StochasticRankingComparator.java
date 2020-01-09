@@ -2,26 +2,23 @@ package implementation;
 
 import io.jenetics.Phenotype;
 import io.jenetics.util.RandomRegistry;
+import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 import java.util.Random;
 
-public class StochasticRankingComparator implements Comparator<Phenotype<OurGene, Double>> {
+@AllArgsConstructor
+public class StochasticRankingComparator implements Comparator<Phenotype<ImplGene, Double>> {
     static final Random random = RandomRegistry.getRandom();
     private double probability;
 
-    public StochasticRankingComparator(double probability) {
-        assert probability >= 0 && probability <= 1;
-        this.probability = probability;
-    }
-
     @Override
-    public int compare(Phenotype<OurGene, Double> left, Phenotype<OurGene, Double> right) {
+    public int compare(Phenotype<ImplGene, Double> left, Phenotype<ImplGene, Double> right) {
         double leftUtility, rightUtility;
         int leftBroken, rightBroken;
 
-        OurChromosome l = (OurChromosome) left.getGenotype().getChromosome();
-        OurChromosome r = (OurChromosome) right.getGenotype().getChromosome();
+        ImplChromosome l = (ImplChromosome) left.getGenotype().getChromosome();
+        ImplChromosome r = (ImplChromosome) right.getGenotype().getChromosome();
 
         leftUtility = left.getFitness();
         rightUtility = right.getFitness();
@@ -33,7 +30,7 @@ public class StochasticRankingComparator implements Comparator<Phenotype<OurGene
 
         if (leftBroken == rightBroken)
             return Double.compare(leftUtility, rightUtility);
-        else if ((l.getIsFeasible() || r.getIsFeasible()) && random.nextDouble() < probability)
+        else if ((l.isFeasible() || r.isFeasible()) && random.nextDouble() < probability)
             return Double.compare(leftUtility, rightUtility);
         else
             return Integer.compare(rightBroken, leftBroken);

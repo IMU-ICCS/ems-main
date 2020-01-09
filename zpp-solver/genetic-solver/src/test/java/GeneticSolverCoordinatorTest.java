@@ -1,8 +1,8 @@
-import cPGeneticWrapper.ACPGeneticWrapper;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.*;
 import org.junit.Test;
+import utility.Methods;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,29 +13,16 @@ import static org.junit.Assert.assertEquals;
 public class RunnerTest {
 
     @Test
-    public void SimpleRunnerWithGeneticWrapperA() {
-        ACPGeneticWrapper geneticWrapper = new CPGeneticWrapperA(null);
-
-        Runner runner = new Runner();
-        runner.setGuesses(10);
-        runner.setMutatorProbability(0.05);
-        runner.setPopulationSize(10);
-        runner.setIterations(10000);
-
-        System.out.println(runner.run(geneticWrapper));
-    }
-
-    @Test
     public void SimpleTestGeneratedByTomek() {
-        Map<ConstraintProblem, UtilityProvider> problem = GeneticWrapperTest.prepareSimpleConstraintProblem();
+        Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareSimpleConstraintProblem();
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
         Runner runner = new Runner();
-        runner.setGuesses(10);
         runner.setMutatorProbability(0.2);
         runner.setPopulationSize(10);
         runner.setIterations(1000);
+        runner.setComparatorProbability(0.1);
 
         List<Integer> assignment = runner.run(cpWrapper);
 
