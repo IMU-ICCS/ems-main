@@ -8,8 +8,12 @@ import lombok.AllArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    ImplGene is a representation of variable assignment. It contains either index (for list defined variables) or
+    value (for range defined variables). It can produce other genes.
+ */
 @AllArgsConstructor
-public class OurGene implements Gene<Integer, OurGene> {
+public class ImplGene implements Gene<Integer, ImplGene> {
     private Integer value;
     private Integer index;
     private ACPGeneticWrapper cpGeneticWrapper;
@@ -20,33 +24,33 @@ public class OurGene implements Gene<Integer, OurGene> {
     }
 
     @Override
-    public OurGene newInstance() {
+    public ImplGene newInstance() {
         return of(index);
     }
 
     @Override
-    public OurGene newInstance(Integer k) {
-        return new OurGene(k, index, cpGeneticWrapper);
+    public ImplGene newInstance(Integer k) {
+        return new ImplGene(k, index, cpGeneticWrapper);
     }
 
     @Override
     public boolean isValid() {
-        return cpGeneticWrapper.isValid(value, index);
+        return true;
     }
 
-    private OurGene of(Integer index) {
-        return new OurGene(cpGeneticWrapper.generateRandomValue(index), index, cpGeneticWrapper);
+    private ImplGene of(Integer index) {
+        return new ImplGene(cpGeneticWrapper.generateRandomValue(index), index, cpGeneticWrapper);
     }
 
-    public ISeq<OurGene> seq(Integer length) {
+    public ISeq<ImplGene> seq(Integer length) {
         return seq(length, cpGeneticWrapper);
     }
 
-    public static ISeq<OurGene> seq(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
-        List<OurGene> list = new ArrayList<>();
+    public static ISeq<ImplGene> seq(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+        List<ImplGene> list = new ArrayList<>();
 
         for (int i = 0; i < length; i++)
-            list.add(new OurGene(cpGeneticWrapper.generateRandomValue(i), i, cpGeneticWrapper));
+            list.add(new ImplGene(cpGeneticWrapper.generateRandomValue(i), i, cpGeneticWrapper));
         return ISeq.of(list);
     }
 }

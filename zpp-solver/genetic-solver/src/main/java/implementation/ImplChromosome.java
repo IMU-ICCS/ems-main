@@ -6,10 +6,13 @@ import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 import lombok.Getter;
 
-
-public class OurChromosome implements Chromosome<OurGene> {
+/*
+    Chromosome is a population's individual. Phenotype and Genotype are just it's wrappers.
+    Chromosome consists of sequence of genes.
+ */
+public class ImplChromosome implements Chromosome<ImplGene> {
     @Getter
-    private ISeq<OurGene> genes;
+    private ISeq<ImplGene> genes;
     private Integer length;
     @Getter
     private boolean isFeasible;
@@ -17,26 +20,24 @@ public class OurChromosome implements Chromosome<OurGene> {
     private double utility;
     @Getter
     private int brokenConstraints;
-    private Boolean valid;
     private ACPGeneticWrapper cpGeneticWrapper;
 
-    public OurChromosome(ISeq<OurGene> genes, Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+    public ImplChromosome(ISeq<ImplGene> genes, Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         this.genes = genes;
         this.length = length;
         this.cpGeneticWrapper = cpGeneticWrapper;
-        this.isFeasible = cpGeneticWrapper.getIsFeasible(genes);
         this.utility = cpGeneticWrapper.calculateUtility(genes);
         this.brokenConstraints = cpGeneticWrapper.countViolatedConstraints(genes);
-        this.valid = checkIfValid(genes);
+        this.isFeasible = (brokenConstraints == 0);
     }
 
     @Override
-    public Chromosome<OurGene> newInstance(ISeq<OurGene> iSeq) {
-        return new OurChromosome(iSeq, iSeq.length(), cpGeneticWrapper);
+    public Chromosome<ImplGene> newInstance(ISeq<ImplGene> iSeq) {
+        return new ImplChromosome(iSeq, iSeq.length(), cpGeneticWrapper);
     }
 
     @Override
-    public OurGene getGene(int i) {
+    public ImplGene getGene(int i) {
         return genes.get(i);
     }
 
@@ -46,45 +47,34 @@ public class OurChromosome implements Chromosome<OurGene> {
     }
 
     @Override
-    public ISeq<OurGene> toSeq() {
+    public ISeq<ImplGene> toSeq() {
         return genes;
     }
 
     @Override
-    public Chromosome<OurGene> newInstance() {
+    public Chromosome<ImplGene> newInstance() {
         return of(length);
     }
 
     @Override
     public boolean isValid() {
-        return valid;
-    }
-
-    private boolean checkIfValid(ISeq<OurGene> genes) {
-        for (OurGene gene : genes)
-            if (!gene.isValid())
-                return false;
         return true;
     }
 
     // Creates randomly generated Chromosome.
-    public OurChromosome of(Integer length) {
+    public ImplChromosome of(Integer length) {
         return of(length, cpGeneticWrapper);
     }
 
     // Creates randomly generated Chromosome. Static version of above method.
-    public static OurChromosome of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
-        ISeq<OurGene> genes = OurGene.seq(length, cpGeneticWrapper);
-        return new OurChromosome(genes, length, cpGeneticWrapper);
+    public static ImplChromosome of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+        ISeq<ImplGene> genes = ImplGene.seq(length, cpGeneticWrapper);
+        return new ImplChromosome(genes, length, cpGeneticWrapper);
     }
 
     // Creates randomly generated sequence of Chromosomes.
-    public ISeq<OurChromosome> of(Integer length, Integer size) {
-        return of(length, size, cpGeneticWrapper);
-    }
-
-    public static ISeq<OurChromosome> of(Integer length, Integer size, ACPGeneticWrapper cpGeneticWrapper) {
-        return MSeq.<OurChromosome>ofLength(length)
+    public static ISeq<ImplChromosome> of(Integer length, Integer size, ACPGeneticWrapper cpGeneticWrapper) {
+        return MSeq.<ImplChromosome>ofLength(length)
                 .fill(() -> of(size, cpGeneticWrapper))
                 .toISeq();
     }

@@ -2,6 +2,8 @@ import comparators.StochasticRankingComparator;
 import cPGeneticWrapper.ACPGeneticWrapper;
 import cPGeneticWrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
+import cp_wrapper.UtilityProvider;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import implementation.*;
 import io.jenetics.*;
 import io.jenetics.engine.Engine;
@@ -12,7 +14,7 @@ import lombok.Setter;
 import java.util.List;
 import java.util.function.Function;
 
-public class Runner {
+public class GeneticSolverCoordinator {
     @Setter
     private Integer populationSize = 100;
     @Setter
@@ -26,6 +28,19 @@ public class Runner {
 
 
     private final Function<Genotype<ImplGene>, Double> fitnessFunction = new EvalFunction();
+
+    public List<Integer> run(ConstraintProblem cp, UtilityProvider utility) {
+        CPWrapper cpWrapper = new CPWrapper();
+        cpWrapper.parse(cp, utility);
+
+        return run(cpWrapper);
+    }
+
+    public List<Integer> run(CPWrapper cpWrapper) {
+        ACPGeneticWrapper cpGeneticWrapper = new CPGeneticWrapper(cpWrapper);
+
+        return run(cpGeneticWrapper);
+    }
 
     public List<Integer> run(ACPGeneticWrapper geneticWrapper) {
         Alterer<ImplGene, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
@@ -44,9 +59,4 @@ public class Runner {
         return ACPGeneticWrapper.genotypeToIntegerList(engine.stream().limit(iterations).collect(EvolutionResult.toBestGenotype()));
     }
 
-    public List<Integer> run(CPWrapper cpWrapper) {
-        ACPGeneticWrapper cpGeneticWrapper = new CPGeneticWrapper(cpWrapper);
-
-        return run(cpGeneticWrapper);
-    }
 }

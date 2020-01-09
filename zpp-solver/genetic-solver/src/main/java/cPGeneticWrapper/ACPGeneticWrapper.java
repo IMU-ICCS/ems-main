@@ -1,8 +1,8 @@
 package cPGeneticWrapper;
 
 import cp_wrapper.CPWrapper;
-import implementation.OurChromosome;
-import implementation.OurGene;
+import implementation.ImplChromosome;
+import implementation.ImplGene;
 import io.jenetics.Genotype;
 import io.jenetics.Phenotype;
 import io.jenetics.util.ISeq;
@@ -19,38 +19,38 @@ public abstract class ACPGeneticWrapper {
     protected CPWrapper cpWrapper;
 
     // Calculates which variable has highest heuristic value. Returns its index.
-    public abstract int calculateHeuristicBest(ISeq<OurGene> values);
+    public abstract int calculateHeuristicBest(ISeq<ImplGene> values);
 
     // Generates random value for variable indexed with index.
     public abstract int generateRandomValue(int index);
 
-    public abstract double calculateUtility(ISeq<OurGene> genes);
+    public abstract double calculateUtility(ISeq<ImplGene> genes);
 
-    public abstract int countViolatedConstraints(ISeq<OurGene> genes);
+    public abstract int countViolatedConstraints(ISeq<ImplGene> genes);
 
     public abstract boolean isValid(int value, int index);
 
-    public abstract boolean getIsFeasible(ISeq<OurGene> genes);
+    public abstract boolean getIsFeasible(ISeq<ImplGene> genes);
 
     public abstract int getSize();
 
 
-    public static List<Integer> phenotypeToIntegerList(Phenotype<OurGene, Double> phenotype) {
+    public static List<Integer> phenotypeToIntegerList(Phenotype<ImplGene, Double> phenotype) {
         return genotypeToIntegerList(phenotype.getGenotype());
     }
 
-    public static List<Integer> genotypeToIntegerList(Genotype<OurGene> genotype) {
-        return chromosomeToIntegerList((OurChromosome) genotype.getChromosome());
+    public static List<Integer> genotypeToIntegerList(Genotype<ImplGene> genotype) {
+        return chromosomeToIntegerList((ImplChromosome) genotype.getChromosome());
     }
 
-    private static List<Integer> chromosomeToIntegerList(OurChromosome chromosome) {
+    private static List<Integer> chromosomeToIntegerList(ImplChromosome chromosome) {
         return genesToIntegerList(chromosome.toSeq());
     }
 
-    protected static List<Integer> genesToIntegerList(ISeq<OurGene> genes) {
+    protected static List<Integer> genesToIntegerList(ISeq<ImplGene> genes) {
         List<Integer> list = new ArrayList<>();
 
-        for (OurGene gene : genes)
+        for (ImplGene gene : genes)
             list.add(gene.getAllele());
 
         return list;

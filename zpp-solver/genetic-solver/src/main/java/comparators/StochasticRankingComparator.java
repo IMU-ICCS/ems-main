@@ -1,5 +1,7 @@
-package implementation;
+package comparators;
 
+import implementation.ImplChromosome;
+import implementation.ImplGene;
 import io.jenetics.Phenotype;
 import io.jenetics.util.RandomRegistry;
 import lombok.AllArgsConstructor;
@@ -14,8 +16,8 @@ public class StochasticRankingComparator implements Comparator<Phenotype<ImplGen
 
     @Override
     public int compare(Phenotype<ImplGene, Double> left, Phenotype<ImplGene, Double> right) {
-        double leftUtility, rightUtility;
-        int leftBroken, rightBroken;
+        double leftUtility, rightUtility; // Utility value.
+        int leftBroken, rightBroken; // Number of broken constraints.
 
         ImplChromosome l = (ImplChromosome) left.getGenotype().getChromosome();
         ImplChromosome r = (ImplChromosome) right.getGenotype().getChromosome();

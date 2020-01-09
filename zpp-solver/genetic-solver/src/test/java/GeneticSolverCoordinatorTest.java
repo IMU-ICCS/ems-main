@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class RunnerTest {
+public class GeneticSolverCoordinatorTest {
 
     @Test
     public void SimpleTestGeneratedByTomek() {
@@ -18,13 +18,13 @@ public class RunnerTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        Runner runner = new Runner();
-        runner.setMutatorProbability(0.2);
-        runner.setPopulationSize(10);
-        runner.setIterations(1000);
-        runner.setComparatorProbability(0.1);
+        GeneticSolverCoordinator geneticSolverCoordinator = new GeneticSolverCoordinator();
+        geneticSolverCoordinator.setMutatorProbability(0.2);
+        geneticSolverCoordinator.setPopulationSize(10);
+        geneticSolverCoordinator.setIterations(1000);
+        geneticSolverCoordinator.setComparatorProbability(0.1);
 
-        List<Integer> assignment = runner.run(cpWrapper);
+        List<Integer> assignment = geneticSolverCoordinator.run(cpWrapper);
 
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);

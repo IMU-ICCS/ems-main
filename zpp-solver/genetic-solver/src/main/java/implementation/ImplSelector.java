@@ -12,8 +12,11 @@ import java.util.Comparator;
 
 import static java.util.Collections.reverseOrder;
 
+/*
+    Important part of this selector is that it can use custom comparators.
+ */
 @AllArgsConstructor
-public class OurSelector implements Selector<ImplGene, Double> {
+public class ImplSelector implements Selector<ImplGene, Double> {
     private Comparator<Phenotype<ImplGene, Double>> comparator;
 
     @Override

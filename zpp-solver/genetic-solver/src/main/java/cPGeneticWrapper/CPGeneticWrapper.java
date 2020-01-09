@@ -1,7 +1,7 @@
 package cPGeneticWrapper;
 
 import cp_wrapper.CPWrapper;
-import implementation.OurGene;
+import implementation.ImplGene;
 import io.jenetics.util.ISeq;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     // Calculates which variable has highest heuristic value. Returns its index.
     // TODO probably need to calculate it in other way - to get faster exec time (or maybe getHeuristicEvaluation is fast enough)
     @Override
-    public int calculateHeuristicBest(ISeq<OurGene> genes) {
+    public int calculateHeuristicBest(ISeq<ImplGene> genes) {
         int bestIndex = -1, bestValue = 0, tmp;
 
         List<Integer> values = genesToIntegerList(genes);
@@ -39,12 +39,12 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     }
 
     @Override
-    public double calculateUtility(ISeq<OurGene> genes) {
+    public double calculateUtility(ISeq<ImplGene> genes) {
         return cpWrapper.getUtility(genesToIntegerList(genes));
     }
 
     @Override
-    public int countViolatedConstraints(ISeq<OurGene> genes) {
+    public int countViolatedConstraints(ISeq<ImplGene> genes) {
         return cpWrapper.countViolatedConstraints(genesToIntegerList(genes));
     }
 
@@ -54,7 +54,7 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     }
 
     @Override
-    public boolean getIsFeasible(ISeq<OurGene> genes) {
+    public boolean getIsFeasible(ISeq<ImplGene> genes) {
         return cpWrapper.checkIfFeasible(genesToIntegerList(genes));
     }
 
