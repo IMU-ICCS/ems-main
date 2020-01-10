@@ -9,6 +9,7 @@ import io.jenetics.MutatorResult;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 
+import java.util.List;
 import java.util.Random;
 
 /*
@@ -40,39 +41,38 @@ public class ImplMutator extends Mutator<ImplGene, Double> {
             return mutateRandomly(chromosome, p, random);
 
         // There are broken constraints mutate variable that breaks most constraints.
-        MSeq<ImplGene> genes = chromosome.toSeq().asMSeq();
-        ImplGene mutatedGene;
-        ImplChromosome tmp, best, decreasingChromosome = null, increasingChromosome = null;
-        int index = geneticWrapper.calculateHeuristicBest(genes.asISeq());
-        int currentValue, initValue = genes.get(index).getAllele();
+        List<Integer> assignments = ACPGeneticWrapper.chromosomeToIntegerList((ImplChromosome) chromosome);
+        int decreasingValue, increasingValue, bestValue, initValue, currentValue, index, bestHeuristic, tmp;
 
-        mutatedGene = genes.get(index);
-        currentValue = initValue;
-        best = (ImplChromosome) chromosome;
+        index = geneticWrapper.calculateHeuristicBest(chromosome.toSeq());
+        initValue = assignments.get(index);
+        bestValue = initValue;
+        increasingValue = decreasingValue = -1;
+        bestHeuristic = geneticWrapper.getHeuristicEvaluation(assignments, index);
 
         /* We're going to check whether we should be decreasing or increasing value in order to get better result. */
         int direction = 0;
-        currentValue--;
+        currentValue = initValue - 1;
         if (geneticWrapper.isValid(currentValue, index)) {
-            genes.set(index, mutatedGene.newInstance(currentValue));
-            decreasingChromosome = (ImplChromosome) best.newInstance(genes.asISeq());
+            assignments.set(index, currentValue);
+            decreasingValue = geneticWrapper.getHeuristicEvaluation(assignments, index);
         }
-        currentValue += 2;
+        currentValue = initValue + 1;
         if (geneticWrapper.isValid(currentValue, index)) {
-            genes.set(index, mutatedGene.newInstance(currentValue));
-            increasingChromosome = (ImplChromosome) best.newInstance(genes.asISeq());
+            assignments.set(index, currentValue);
+            increasingValue = geneticWrapper.getHeuristicEvaluation(assignments, index);
         }
 
-        if (increasingChromosome == null && decreasingChromosome != null &&
-                AssignmentComparator.compare(decreasingChromosome, best, 0) > 0)
+        if (increasingValue == -1 && decreasingValue != -1 &&
+                decreasingValue < bestHeuristic)
             direction = -1;
-        else if (increasingChromosome != null && decreasingChromosome == null &&
-                AssignmentComparator.compare(increasingChromosome, best, 0) > 0)
+        else if (increasingValue != -1 && decreasingValue == -1 &&
+                increasingValue < bestHeuristic)
             direction = 1;
-        else if (increasingChromosome != null && decreasingChromosome != null) {
-            if (AssignmentComparator.compare(increasingChromosome, best, 0) > 0)
+        else if (increasingValue != -1 && decreasingValue != -1) {
+            if (increasingValue < bestHeuristic)
                 direction = 1;
-            else if (AssignmentComparator.compare(decreasingChromosome, best, 0) > 0)
+            else if (decreasingValue < bestHeuristic)
                 direction = -1;
         }
 
@@ -82,11 +82,14 @@ public class ImplMutator extends Mutator<ImplGene, Double> {
             currentValue += direction;
 
             if (geneticWrapper.isValid(currentValue, index)) {
-                genes.set(index, mutatedGene.newInstance(currentValue));
-                tmp = (ImplChromosome) best.newInstance(genes.asISeq());
+                assignments.set(index, currentValue);
+                tmp = geneticWrapper.getHeuristicEvaluation(assignments, index);
 
-                if (AssignmentComparator.compare(tmp, best, 0) > 0)
-                    best = tmp;
+
+                if (tmp < bestHeuristic) {
+                    bestHeuristic = tmp;
+                    bestValue = currentValue;
+                }
                 else
                     // Utility no longer increases -> break from while.
                     direction = 0;
@@ -98,7 +101,9 @@ public class ImplMutator extends Mutator<ImplGene, Double> {
         }
 
         // Modify chromosome using best value.
-        genes.set(index, mutatedGene.newInstance(best.toSeq().get(index).getAllele()));
+        MSeq<ImplGene> genes = chromosome.toSeq().asMSeq();
+        ImplGene mutatedGene = genes.get(index);
+        genes.set(index, mutatedGene.newInstance(bestValue));
         return MutatorResult.of(new ImplChromosome(genes.asISeq(), genes.length(), geneticWrapper));
     }
 

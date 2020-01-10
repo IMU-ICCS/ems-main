@@ -32,11 +32,13 @@ public abstract class ACPGeneticWrapper {
 
     public abstract int getSize();
 
+    public abstract int getHeuristicEvaluation(List<Integer> assignments, int variableIndex);
+
     public static List<Integer> genotypeToIntegerList(Genotype<ImplGene> genotype) {
         return chromosomeToIntegerList((ImplChromosome) genotype.getChromosome());
     }
 
-    private static List<Integer> chromosomeToIntegerList(ImplChromosome chromosome) {
+    public static List<Integer> chromosomeToIntegerList(ImplChromosome chromosome) {
         return genesToIntegerList(chromosome.toSeq());
     }
 

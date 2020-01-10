@@ -57,4 +57,9 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     public int getSize() {
         return cpWrapper.getVariablesCount();
     }
+
+    @Override
+    public int getHeuristicEvaluation(List<Integer> assignments, int variableIndex) {
+        return cpWrapper.getHeuristicEvaluation(assignments, variableIndex);
+    }
 }

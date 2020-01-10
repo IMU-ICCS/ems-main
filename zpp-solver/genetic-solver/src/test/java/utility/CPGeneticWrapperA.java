@@ -42,12 +42,12 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
     }
 
     @Override
-    public boolean getIsFeasible(ISeq<ImplGene> genes) {
-        return true;
+    public int getSize() {
+        return 10;
     }
 
     @Override
-    public int getSize() {
-        return 10;
+    public int getHeuristicEvaluation(List<Integer> assignments, int variableIndex) {
+        return 0;
     }
 }
