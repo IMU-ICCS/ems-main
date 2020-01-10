@@ -75,7 +75,6 @@ public class ConstraintGraph {
         for (Constraint constraint : constraints) {
             Collection<String> variables = constraint.getVariableNames();
             for (String var : variables) {
-                System.out.println(var);
                 knownDistances.get(var).addAll(variables);
                 neighbourhoodList.get(var).get(1).addAll(variables);
                 neighbourhoodList.get(var).get(1).remove(var);
