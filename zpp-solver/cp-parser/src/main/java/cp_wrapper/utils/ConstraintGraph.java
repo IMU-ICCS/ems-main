@@ -9,7 +9,7 @@ package cp_wrapper.utils;
 
 
 import cp_wrapper.utils.constraint.Constraint;
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 
 import java.util.*;
 
@@ -152,7 +152,7 @@ public class ConstraintGraph {
         Heuristic evaluation of a variable is defined to be a sum of violated constrains
         which involve the variable.
      */
-    public int getVariableHeuristicEvaluation(String variable, Map<String, NumericValue> variables) {
+    public int getVariableHeuristicEvaluation(String variable, Map<String, NumericValueInterface> variables) {
         int result = 0;
         for (Constraint c : variableToConstraint.get(variable)) {
             if (!c.evaluate(variables)) {

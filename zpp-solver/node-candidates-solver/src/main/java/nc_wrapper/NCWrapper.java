@@ -7,7 +7,10 @@ import cp_wrapper.parser.CPParsedData;
 import cp_wrapper.parser.CPParser;
 import cp_wrapper.utils.DomainHandler;
 import cp_wrapper.utils.VariableNumericType;
-import cp_wrapper.utils.numeric_value_impl.*;
+import cp_wrapper.utils.numeric_value.*;
+import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -69,8 +72,8 @@ public class NCWrapper implements DomainProvider {
         return variableOrderer.getComponents();
     }
 
-    private Map<String, NumericValue> convertAssignment(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignment) {
-        Map<String, NumericValue> res = new HashMap<>();
+    private Map<String, NumericValueInterface> convertAssignment(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignment) {
+        Map<String, NumericValueInterface> res = new HashMap<>();
         for (Integer comp : assignment.keySet()) {
             res.put(componentTypeToName.get(new Pair(comp, VariableType.PROVIDER)),
                     new IntegerValue((Integer) assignment.get(comp).getValue(0)));
@@ -90,11 +93,11 @@ public class NCWrapper implements DomainProvider {
         return res;
     }
 
-    private List<VariableValueDTO> assignmentToVariableValueDTOList(Map<String, NumericValue> assignments) {
+    private List<VariableValueDTO> assignmentToVariableValueDTOList(Map<String, NumericValueInterface> assignments) {
         List<VariableValueDTO> result = new ArrayList<>();
-        for (Map.Entry<String, NumericValue> a : assignments.entrySet()) {
+        for (Map.Entry<String, NumericValueInterface> a : assignments.entrySet()) {
             if (a.getKey() == null) continue;
-            NumericValue val = a.getValue();
+            NumericValueInterface val = a.getValue();
             if (cpParsedData.getVariableType(a.getKey()) == VariableNumericType.INT) {
                 if (!(val instanceof IntValueInterface)) {
                     throw new RuntimeException("Variable " + a.getKey() + " is not of integer type!");
@@ -110,13 +113,13 @@ public class NCWrapper implements DomainProvider {
         return result;
     }
 
-    private double getUtility(Map<String, NumericValue> assignments) {
+    private double getUtility(Map<String, NumericValueInterface> assignments) {
         List<VariableValueDTO> vars = assignmentToVariableValueDTOList(assignments);
         return utilityProvider.evaluate(vars);
     }
 
     public Evaluation evaluate(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignments) {
-        Map<String, NumericValue> a = convertAssignment(assignments);
+        Map<String, NumericValueInterface> a = convertAssignment(assignments);
         if (cpParsedData.checkIfFeasible(a)) {
             return new PTEvaluation(getUtility(a));
         } else {
@@ -127,7 +130,7 @@ public class NCWrapper implements DomainProvider {
         Returns maximal value of variable @variable
      */
     @Override
-    public NumericValue getMaxValue(int variable) {
+    public NumericValueInterface getMaxValue(int variable) {
         if (!variableOrderer.exists(variable)) {
             return new IntegerValue(0);
         }
@@ -135,7 +138,7 @@ public class NCWrapper implements DomainProvider {
     }
 
     @Override
-    public NumericValue getMinValue(int variable) {
+    public NumericValueInterface getMinValue(int variable) {
         if (!variableOrderer.exists(variable)) {
             return new IntegerValue(0);
         }
@@ -143,7 +146,7 @@ public class NCWrapper implements DomainProvider {
     }
 
     @Override
-    public boolean isInDomain(NumericValue value, int index) {
+    public boolean isInDomain(NumericValueInterface value, int index) {
         if (!variableOrderer.exists(index)) {
             return true;
         } else {

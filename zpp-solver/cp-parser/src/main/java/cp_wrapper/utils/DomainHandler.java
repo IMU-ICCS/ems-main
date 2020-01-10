@@ -5,9 +5,9 @@ package cp_wrapper.utils;
     into corresponding values. Currently only RangeDomain and NumericListDomain
     domains are supported.
  */
-import cp_wrapper.utils.numeric_value_impl.IntValueInterface;
-import cp_wrapper.utils.numeric_value_impl.IntegerValue;
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.IntValueInterface;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.NumericListDomain;
 import eu.paasage.upperware.metamodel.cp.RangeDomain;
@@ -25,7 +25,7 @@ public class DomainHandler {
         return domain instanceof NumericListDomain;
     }
 
-    public static NumericValue getRangeValue(int valueIndex, RangeDomain domain) {
+    public static NumericValueInterface getRangeValue(int valueIndex, RangeDomain domain) {
         NumericValueUpperware min = domain.getFrom();
         if (min instanceof IntegerValueUpperware) {
             return new IntegerValue(((IntegerValueUpperware) min).getValue() + valueIndex);
@@ -34,7 +34,7 @@ public class DomainHandler {
         }
     }
 
-    public static NumericValue getNumericListValue(int valueIndex, NumericListDomain domain) {
+    public static NumericValueInterface getNumericListValue(int valueIndex, NumericListDomain domain) {
         List<NumericValueUpperware> values = domain.getValues();
         if (values.size() <= valueIndex) {
             throw new RuntimeException();
@@ -67,7 +67,7 @@ public class DomainHandler {
         throw new RuntimeException("Only integer RangeDomains are supported!");
     }
 
-    public static NumericValue getMaxValue(Domain domain) {
+    public static NumericValueInterface getMaxValue(Domain domain) {
         if (isRangeDomain(domain)) {
             return ExpressionEvaluator.convertNumericInterfaceToNumericValue(((RangeDomain) domain).getTo());
         } else if (isNumericListDomain(domain)) {
@@ -77,7 +77,7 @@ public class DomainHandler {
         throw new RuntimeException("Unsupported domain type");
     }
 
-    public static NumericValue getMinValue(Domain domain) {
+    public static NumericValueInterface getMinValue(Domain domain) {
         if (isRangeDomain(domain)) {
             return ExpressionEvaluator.convertNumericInterfaceToNumericValue(((RangeDomain) domain).getFrom());
         } else if (isNumericListDomain(domain)) {
@@ -87,7 +87,7 @@ public class DomainHandler {
         throw new RuntimeException("Unsupported domain type");
     }
 
-    private static boolean isInList(NumericValue value, List<NumericValueUpperware> list) {
+    private static boolean isInList(NumericValueInterface value, List<NumericValueUpperware> list) {
         for (NumericValueUpperware v : list) {
             if (value.equals(ExpressionEvaluator.convertNumericInterfaceToNumericValue(v))) {
                 return true;
@@ -96,7 +96,7 @@ public class DomainHandler {
         return false;
     }
 
-    public static boolean isInDomain(NumericValue value, Domain domain) {
+    public static boolean isInDomain(NumericValueInterface value, Domain domain) {
         if (isRangeDomain(domain)) {
             if (!(value instanceof IntValueInterface)) {
                 return false;

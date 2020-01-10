@@ -35,9 +35,9 @@ package node_candidate;
  */
 import cp_components.PTMover;
 import cp_components.PTSolution;
-import cp_wrapper.utils.numeric_value_impl.DoubleValue;
-import cp_wrapper.utils.numeric_value_impl.IntegerValue;
-import cp_wrapper.utils.numeric_value_impl.LongValue;
+import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import nc_wrapper.DomainProvider;
 import variable_orderer.VariableTypeOrderer;

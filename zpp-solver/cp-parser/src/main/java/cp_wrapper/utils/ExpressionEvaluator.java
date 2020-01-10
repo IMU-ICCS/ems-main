@@ -4,10 +4,10 @@ package cp_wrapper.utils;
     interfaces from eu.paasage.upperware.metamodel.cp package
  */
 
-import cp_wrapper.utils.numeric_value_impl.DoubleValue;
-import cp_wrapper.utils.numeric_value_impl.IntegerValue;
-import cp_wrapper.utils.numeric_value_impl.LongValue;
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.metamodel.cp.*;
 
@@ -23,7 +23,7 @@ public class ExpressionEvaluator {
      */
     public static final double PRECISION = 0.1;
 
-    public static NumericValue convertNumericInterfaceToNumericValue(NumericValueUpperware value) {
+    public static NumericValueInterface convertNumericInterfaceToNumericValue(NumericValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
             return new IntegerValue(((IntegerValueUpperware) value).getValue());
         } else if (value instanceof LongValueUpperware) {
@@ -87,7 +87,7 @@ public class ExpressionEvaluator {
         throw new RuntimeException("Unsupported operation type");
     }
 
-    private static double evaluateComposedExpression(ComposedExpression exp, Map<String, NumericValue> variables) {
+    private static double evaluateComposedExpression(ComposedExpression exp, Map<String, NumericValueInterface> variables) {
         List<Double> expressionsValues = exp.getExpressions()
                 .stream()
                 .map(e -> evaluateExpression(e, variables))
@@ -95,7 +95,7 @@ public class ExpressionEvaluator {
         return evaluateOnOperator(exp.getOperator(), expressionsValues);
     }
 
-    private static double castNumericValueToDouble(NumericValue val) {
+    private static double castNumericValueToDouble(NumericValueInterface val) {
         if (val instanceof DoubleValue) {
             return ((DoubleValue) val).getValue();
         } else if (val instanceof IntegerValue) {
@@ -106,7 +106,7 @@ public class ExpressionEvaluator {
         throw new RuntimeException("Unsupported NumericValue type!");
     }
 
-    static double evaluateExpression(Expression exp, Map<String, NumericValue> variables) {
+    static double evaluateExpression(Expression exp, Map<String, NumericValueInterface> variables) {
             if (isConstant(exp)) {
                 return getValueOfNumericInterface(((Constant) exp).getValue());
             } else if (isCpMetric(exp)) {
@@ -119,7 +119,7 @@ public class ExpressionEvaluator {
             throw new RuntimeException("Unsupported Expression type");
     }
 
-    public static boolean evaluateComparator(ComparatorEnum comparator, Expression leftExp, Expression rightExp, Map<String, NumericValue> variables) {
+    public static boolean evaluateComparator(ComparatorEnum comparator, Expression leftExp, Expression rightExp, Map<String, NumericValueInterface> variables) {
         double leftExpValue = evaluateExpression(leftExp, variables);
         double rightExpValue = evaluateExpression(rightExp, variables);
         return evaluateComparator(comparator, leftExpValue, rightExpValue);

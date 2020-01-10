@@ -1,11 +1,11 @@
 package nc_wrapper;
 
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 
 public interface DomainProvider {
-    NumericValue getMaxValue(int variable);
+    NumericValueInterface getMaxValue(int variable);
 
-    NumericValue getMinValue(int variable);
+    NumericValueInterface getMinValue(int variable);
 
-    boolean isInDomain(NumericValue value, int index);
+    boolean isInDomain(NumericValueInterface value, int index);
 }

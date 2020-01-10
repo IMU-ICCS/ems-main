@@ -2,8 +2,8 @@ package node_candidate;
 
 import cp_components.PTMover;
 import cp_components.PTSolution;
-import cp_wrapper.utils.numeric_value_impl.IntegerValue;
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import nc_wrapper.DomainProvider;
 import org.javatuples.Quartet;
 import org.junit.jupiter.api.Test;
@@ -21,17 +21,17 @@ class NodeCandidatesPoolTest {
         return new NodeCandidatesPool(new DomainProvider() {
 
             @Override
-            public NumericValue getMaxValue(int variable) {
+            public NumericValueInterface getMaxValue(int variable) {
                 return new IntegerValue(2);
             }
 
             @Override
-            public NumericValue getMinValue(int variable) {
+            public NumericValueInterface getMinValue(int variable) {
                 return new IntegerValue(0);
             }
 
             @Override
-            public boolean isInDomain(NumericValue value, int index) {
+            public boolean isInDomain(NumericValueInterface value, int index) {
                 return true;
             }
         },

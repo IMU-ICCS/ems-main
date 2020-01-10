@@ -3,8 +3,8 @@ package cp_wrapper.utils;
 import cp_wrapper.mockups.*;
 import cp_wrapper.utils.constraint.Constraint;
 import cp_wrapper.utils.constraint.ConstraintImpl;
-import cp_wrapper.utils.numeric_value_impl.DoubleValue;
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import org.eclipse.emf.common.util.BasicEList;
@@ -28,7 +28,7 @@ class ConstraintImplTest {
     }
     @Test
     public void shouldThrowEmptyVariables(){
-        Map<String, NumericValue> emptyVars = new HashMap<>();
+        Map<String, NumericValueInterface> emptyVars = new HashMap<>();
         Constraint constraint = new ConstraintImpl(ComparatorEnum.DIFFERENT, variables.get(0), variables.get(1));
         assertThrows(RuntimeException.class, () -> {
             constraint.evaluate(emptyVars);
@@ -39,7 +39,7 @@ class ConstraintImplTest {
     public void shouldThrowWrongVariables(){
         Map<String, Double> emptyVars = new HashMap<>();
         Constraint constraint = new ConstraintImpl(ComparatorEnum.DIFFERENT, variables.get(0), variables.get(1));
-        Map<String, NumericValue> vars = new HashMap<>();
+        Map<String, NumericValueInterface> vars = new HashMap<>();
         vars.put(names[1], new DoubleValue(0.00123));
         vars.put(names[2], new DoubleValue(123.345));
         assertThrows(RuntimeException.class, () -> {
@@ -51,7 +51,7 @@ class ConstraintImplTest {
     public void linearConstraintEvaluationTest(){
         Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(1.0));
 
-        Map<String, NumericValue> vars = new HashMap<>();
+        Map<String, NumericValueInterface> vars = new HashMap<>();
         vars.put(names[0], new DoubleValue(2.0));
         vars.put(names[1], new DoubleValue(0.00123));
         vars.put(names[2], new DoubleValue(123.345));
@@ -81,7 +81,7 @@ class ConstraintImplTest {
         exprs = new BasicEList<>(); exprs.addAll(variables);
         NumericExpression sum = new ComposedExpressionImplMockup(exprs, OperatorEnum.PLUS);
 
-        Map<String, NumericValue> vars = new HashMap<>();
+        Map<String, NumericValueInterface> vars = new HashMap<>();
         vars.put(names[0], new DoubleValue(2.0));
         vars.put(names[1], new DoubleValue(3.0));
         vars.put(names[2], new DoubleValue(5.0));

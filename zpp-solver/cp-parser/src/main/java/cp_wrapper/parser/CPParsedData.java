@@ -6,7 +6,7 @@ package cp_wrapper.parser;
 import cp_wrapper.utils.constraint.Constraint;
 import cp_wrapper.utils.ConstraintGraph;
 import cp_wrapper.utils.VariableNumericType;
-import cp_wrapper.utils.numeric_value_impl.NumericValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.melodic.upperware.cpsolver.solver.parser.creator.IntVarCreator;
 import eu.paasage.upperware.metamodel.cp.*;
 import lombok.Getter;
@@ -37,7 +37,7 @@ public class CPParsedData {
         initializeNameToVariable();
     }
 
-    public boolean checkIfFeasible(Map<String, NumericValue> variables) {
+    public boolean checkIfFeasible(Map<String, NumericValueInterface> variables) {
         for (Constraint c : constraints) {
             if (!c.evaluate(variables)) {
                 return false;
@@ -46,13 +46,13 @@ public class CPParsedData {
         return true;
     }
 
-    public int countViolatedConstraints(Map<String, NumericValue> variables) {
+    public int countViolatedConstraints(Map<String, NumericValueInterface> variables) {
         return constraints.stream()
                 .map(c -> c.evaluate(variables) ?  0 : 1)
                 .reduce( 0, Integer::sum);
     }
 
-    public int getHeuristicEvaluation(String variable, Map<String, NumericValue> variables) {
+    public int getHeuristicEvaluation(String variable, Map<String, NumericValueInterface> variables) {
         return constraintGraph.getVariableHeuristicEvaluation(variable, variables);
     }
 
