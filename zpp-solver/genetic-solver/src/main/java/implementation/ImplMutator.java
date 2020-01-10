@@ -18,12 +18,14 @@ import java.util.Random;
  */
 public class ImplMutator extends Mutator<ImplGene, Double> {
     private ACPGeneticWrapper geneticWrapper;
+    private double probability;
     private int guesses;
 
-    public ImplMutator(double probability, ACPGeneticWrapper geneticWrapper, int guesses) {
+    public ImplMutator(double probability, ACPGeneticWrapper geneticWrapper, int guesses, double mutatorProbability) {
         super(probability);
         this.geneticWrapper = geneticWrapper;
         this.guesses = guesses;
+        this.probability = mutatorProbability;
     }
 
 
@@ -37,7 +39,7 @@ public class ImplMutator extends Mutator<ImplGene, Double> {
             return super.mutate(chromosome, p, random);
 
         // We should mutate randomly sometimes in order to leave local optimum.
-        if (random.nextDouble() < getProbability())
+        if (random.nextDouble() < probability)
             return mutateRandomly(chromosome, p, random);
 
         // There are broken constraints mutate variable that breaks most constraints.

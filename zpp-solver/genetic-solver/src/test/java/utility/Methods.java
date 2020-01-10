@@ -164,7 +164,7 @@ public class Methods {
         constraint5.setExp1(times);
         times = new ComposedExpressionImplMockup(exprs3, OperatorEnum.TIMES);
         constraint5.setExp2(times);
-        constraint5.setComparator(ComparatorEnum.LESS_OR_EQUAL_TO);
+        constraint5.setComparator(ComparatorEnum.LESS_THAN);
 
         EList<Constant> consts = new BasicEList<>();
         consts.add(c);
