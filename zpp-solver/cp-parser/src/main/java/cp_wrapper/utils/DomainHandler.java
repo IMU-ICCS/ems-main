@@ -74,7 +74,7 @@ public class DomainHandler {
             List<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
             return ExpressionEvaluator.convertNumericInterfaceToNumericValue(values.get(values.size() - 1));
         }
-        throw new RuntimeException("Unsupported dmain type");
+        throw new RuntimeException("Unsupported domain type");
     }
 
     public static NumericValue getMinValue(Domain domain) {
@@ -84,7 +84,7 @@ public class DomainHandler {
             List<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
             return ExpressionEvaluator.convertNumericInterfaceToNumericValue(values.get(0));
         }
-        throw new RuntimeException("Unsupported dmain type");
+        throw new RuntimeException("Unsupported domain type");
     }
 
     private static boolean isInList(NumericValue value, List<NumericValueUpperware> list) {
@@ -108,6 +108,6 @@ public class DomainHandler {
         } else if (isNumericListDomain(domain)) {
                return isInList(value, ((NumericListDomain) domain).getValues());
         }
-        throw new RuntimeException("");
+        throw new RuntimeException("Unsupported domain type");
     }
 }
