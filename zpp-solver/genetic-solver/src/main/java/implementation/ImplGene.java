@@ -42,10 +42,6 @@ public class ImplGene implements Gene<Integer, ImplGene> {
         return new ImplGene(cpGeneticWrapper.generateRandomValue(index), index, cpGeneticWrapper);
     }
 
-    public ISeq<ImplGene> seq(Integer length) {
-        return seq(length, cpGeneticWrapper);
-    }
-
     public static ISeq<ImplGene> seq(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         List<ImplGene> list = new ArrayList<>();
 

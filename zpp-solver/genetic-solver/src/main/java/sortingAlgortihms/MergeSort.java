@@ -3,20 +3,20 @@ package sortingAlgortihms;
 import comparators.StochasticRankingComparator;
 import implementation.ImplGene;
 import io.jenetics.Phenotype;
-import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/*
+    Simple merge sort that sorts using our comparator.
+ */
 public class MergeSort {
-    private static Comparator<Phenotype<ImplGene, Double>> comparator = new StochasticRankingComparator(0.1);
+    private static Comparator<Phenotype<ImplGene, Double>> comparator = new StochasticRankingComparator(0);
 
     public static void merge(List<Phenotype<ImplGene, Double>> list, int from, int mid, int to) {
         int ptr1 = 0, ptr2 = 0;
         List<Phenotype<ImplGene, Double>> left, right;
-
 
         left = list.subList(from, mid);
         right = list.subList(mid, to);

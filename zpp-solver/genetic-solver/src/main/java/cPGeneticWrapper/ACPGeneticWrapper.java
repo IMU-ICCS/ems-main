@@ -30,14 +30,7 @@ public abstract class ACPGeneticWrapper {
 
     public abstract boolean isValid(int value, int index);
 
-    public abstract boolean getIsFeasible(ISeq<ImplGene> genes);
-
     public abstract int getSize();
-
-
-    public static List<Integer> phenotypeToIntegerList(Phenotype<ImplGene, Double> phenotype) {
-        return genotypeToIntegerList(phenotype.getGenotype());
-    }
 
     public static List<Integer> genotypeToIntegerList(Genotype<ImplGene> genotype) {
         return chromosomeToIntegerList((ImplChromosome) genotype.getChromosome());

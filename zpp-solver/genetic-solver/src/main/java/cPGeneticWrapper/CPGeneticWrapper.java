@@ -54,11 +54,6 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     }
 
     @Override
-    public boolean getIsFeasible(ISeq<ImplGene> genes) {
-        return cpWrapper.checkIfFeasible(genesToIntegerList(genes));
-    }
-
-    @Override
     public int getSize() {
         return cpWrapper.getVariablesCount();
     }

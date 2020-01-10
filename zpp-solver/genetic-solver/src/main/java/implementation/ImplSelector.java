@@ -14,8 +14,6 @@ import sortingAlgortihms.MergeSort;
 
 import java.util.Comparator;
 
-import static java.util.Collections.reverseOrder;
-
 /*
     Important part of this selector is that it can use custom comparators.
  */
@@ -47,7 +45,6 @@ public class ImplSelector implements Selector<ImplGene, Double> {
 
             int size = count;
             do {
-                //final int length = min(min(copy.size(), size), _n);
                 final int length = min(copy.size(), size);
                 for (int i = 0; i < length; ++i) {
                     selection.set((count - size) + i, copy.get(i));

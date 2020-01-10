@@ -16,25 +16,10 @@ public class StochasticRankingComparator implements Comparator<Phenotype<ImplGen
 
     @Override
     public int compare(Phenotype<ImplGene, Double> left, Phenotype<ImplGene, Double> right) {
-        double leftUtility, rightUtility; // Utility value.
-        int leftBroken, rightBroken; // Number of broken constraints.
 
         ImplChromosome l = (ImplChromosome) left.getGenotype().getChromosome();
         ImplChromosome r = (ImplChromosome) right.getGenotype().getChromosome();
 
-        leftUtility = left.getFitness();
-        rightUtility = right.getFitness();
-        leftBroken = l.getBrokenConstraints();
-        rightBroken = r.getBrokenConstraints();
-
-        if (leftUtility == rightUtility && leftBroken == rightBroken)
-            return 0;
-
-        if (leftBroken == rightBroken)
-            return Double.compare(leftUtility, rightUtility);
-        else if ((l.isFeasible() || r.isFeasible()) && random.nextDouble() < probability)
-            return Double.compare(leftUtility, rightUtility);
-        else
-            return Integer.compare(rightBroken, leftBroken);
+        return AssignmentComparator.compare(l, r, probability);
     }
 }

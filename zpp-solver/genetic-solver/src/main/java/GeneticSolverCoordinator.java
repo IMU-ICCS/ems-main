@@ -22,9 +22,11 @@ public class GeneticSolverCoordinator {
     @Setter
     private double crossoverProbability = 0.2;
     @Setter
-    private double mutatorProbability = 0.05;
+    private double mutatorProbability = 0.1;
     @Setter
     private double comparatorProbability = 0.1;
+    @Setter
+    private int guesses = 10;
 
 
     private final Function<Genotype<ImplGene>, Double> fitnessFunction = new EvalFunction();
@@ -44,7 +46,7 @@ public class GeneticSolverCoordinator {
 
     public List<Integer> run(ACPGeneticWrapper geneticWrapper) {
         Alterer<ImplGene, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
-        Mutator<ImplGene, Double> mutator = new ImplMutator(mutatorProbability, geneticWrapper);
+        Mutator<ImplGene, Double> mutator = new ImplMutator(mutatorProbability, geneticWrapper, guesses);
         Selector<ImplGene, Double> selector = new ImplSelector(new StochasticRankingComparator(comparatorProbability));
 
         Factory<Genotype<ImplGene>> gtf =
