@@ -23,19 +23,6 @@ public class ExpressionEvaluator {
      */
     public static final double PRECISION = 0.1;
 
-    public static NumericValueInterface convertNumericInterfaceToNumericValue(NumericValueUpperware value) {
-        if (value instanceof IntegerValueUpperware) {
-            return new IntegerValue(((IntegerValueUpperware) value).getValue());
-        } else if (value instanceof LongValueUpperware) {
-            return new LongValue(((LongValueUpperware) value).getValue());
-        } else if (value instanceof DoubleValueUpperware) {
-            return new DoubleValue(((DoubleValueUpperware) value).getValue());
-        } else if (value instanceof FloatValueUpperware) {
-            return new DoubleValue(((FloatValueUpperware) value).getValue());
-        }
-        throw new RuntimeException("Unsupported NumericValueUpperware implementation");
-    }
-
     static double getValueOfNumericInterface(NumericValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
             return ((IntegerValueUpperware) value).getValue();
@@ -51,7 +38,7 @@ public class ExpressionEvaluator {
 
     static int getValueOfIntegerNumericInterface(IntegerValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
-            return ((IntegerValueUpperware) value).getValue();
+            return (value).getValue();
         }
         throw new RuntimeException("Only integer values are supported");
     }
@@ -95,24 +82,13 @@ public class ExpressionEvaluator {
         return evaluateOnOperator(exp.getOperator(), expressionsValues);
     }
 
-    private static double castNumericValueToDouble(NumericValueInterface val) {
-        if (val instanceof DoubleValue) {
-            return ((DoubleValue) val).getValue();
-        } else if (val instanceof IntegerValue) {
-            return ((IntegerValue) val).getValue();
-        } else if (val instanceof LongValue) {
-            return ((LongValue) val).getValue();
-        }
-        throw new RuntimeException("Unsupported NumericValue type!");
-    }
-
     static double evaluateExpression(Expression exp, Map<String, NumericValueInterface> variables) {
             if (isConstant(exp)) {
                 return getValueOfNumericInterface(((Constant) exp).getValue());
             } else if (isCpMetric(exp)) {
                 return getValueOfNumericInterface(((CpMetric) exp).getValue());
             } else if (isCpVariable(exp)) {
-                return castNumericValueToDouble(variables.get(exp.getId()));
+                return variables.get(exp.getId()).getDoubleValue();
             } else if (isComposedExpression(exp)) {
                 return evaluateComposedExpression((ComposedExpression) exp, variables);
             }

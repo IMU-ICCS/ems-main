@@ -5,6 +5,8 @@ import cp_wrapper.parser.CPParser;
 import cp_wrapper.utils.DomainHandler;
 import cp_wrapper.utils.numeric_value.*;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import cp_wrapper.utils.VariableNumericType;
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
@@ -51,7 +53,7 @@ public class CPWrapper {
                 return DomainHandler.getNumericListValue(value, (NumericListDomain) domain);
             }
 
-            throw new RuntimeException("Only domaind of types RangeDomain, NumericListDomain are supported!");
+            throw new RuntimeException("Only domains of types RangeDomain, NumericListDomain are supported!");
     }
 
     private Map<String, NumericValueInterface> getAssignmentFromValueList(List<Integer> assignments) {
@@ -86,13 +88,11 @@ public class CPWrapper {
         for (int i = 0; i < assignments.size(); i++) {
             NumericValueInterface val = getVariableValueFromDomainIndex(i, assignments.get(i));
             if (cpParsedData.getVariableType(variableOrderer.getNameFromIndex(i)) == VariableNumericType.INT) {
-                if (!(val instanceof IntValueInterface)) {
+                if (!(val.isInteger())) {
                     throw new RuntimeException("");
                 }
                 result.add(
-                        VariableValueDTOFactory.createElement(
-                            variableOrderer.getNameFromIndex(i),
-                                ((IntValueInterface) val).getIntValue()
+                        VariableValueDTOFactory.createElement(variableOrderer.getNameFromIndex(i), val.getIntValue()
                     )
                 );
             } else {
@@ -101,8 +101,7 @@ public class CPWrapper {
                 }
                 result.add(
                         VariableValueDTOFactory.createElement(
-                                variableOrderer.getNameFromIndex(i),
-                                ((DoubleValue) val).getValue()
+                                variableOrderer.getNameFromIndex(i), val.getDoubleValue()
                         )
                 );
             }

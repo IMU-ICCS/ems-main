@@ -1,32 +1,25 @@
 package node_candidate;
 
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
+import org.javatuples.Pair;
+import variable_orderer.ComponentVariableOrderer;
+import variable_orderer.VariableTypeOrderer;
 
+import java.util.Arrays;
+import java.util.List;
+
+@Data
 @AllArgsConstructor
-public class VMConfiguration implements Comparable<VMConfiguration> {
-    @Getter
+public class VMConfiguration implements Comparable<VMConfiguration>, VariableValueKeeperInterface{
     private long cores;
-    @Getter
     private long ram;
-    @Getter
     private double disk;
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        } else if (obj == null) {
-            return false;
-        } else if (obj instanceof VMConfiguration) {
-            return cores == ((VMConfiguration) obj).cores
-                    &&
-                    ram == ((VMConfiguration) obj).ram
-                    &&
-                    disk == ((VMConfiguration) obj).disk;
-        }
-        return false;
-    }
 
     @Override
     public int compareTo(VMConfiguration o) {
@@ -41,5 +34,17 @@ public class VMConfiguration implements Comparable<VMConfiguration> {
         } else {
             return -1;
         }
+    }
+
+    @Override
+    public List<Pair<NumericValueInterface, Integer>> getValues(int component) {
+        return Arrays.asList(
+                new Pair(new LongValue(cores), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                        + VariableTypeOrderer.mapTypeToIndex(VariableType.CORES)),
+                new Pair(new LongValue(ram), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                        + VariableTypeOrderer.mapTypeToIndex(VariableType.RAM)),
+                new Pair(new DoubleValue(disk), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                        + VariableTypeOrderer.mapTypeToIndex(VariableType.STORAGE))
+        );
     }
 }

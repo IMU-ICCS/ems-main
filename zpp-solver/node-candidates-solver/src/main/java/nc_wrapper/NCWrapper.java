@@ -38,7 +38,7 @@ public class NCWrapper implements DomainProvider {
     private CPParsedData cpParsedData;
     private ComponentVariableOrderer variableOrderer;
     private NodeCandidatesPool candidatesPool;
-    UtilityProvider utilityProvider;
+    private UtilityProvider utilityProvider;
 
     /*
         component, variable type -----> variable name
@@ -53,8 +53,51 @@ public class NCWrapper implements DomainProvider {
         fillComponentTypeToName(cp);
     }
 
+    /*
+       Returns maximal value of variable @variable
+    */
+    @Override
+    public NumericValueInterface getMaxValue(int variable) {
+        if (!variableOrderer.exists(variable)) {
+            return new IntegerValue(0);
+        }
+        return DomainHandler.getMaxValue(cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(variable)));
+    }
+
+    @Override
+    public NumericValueInterface getMinValue(int variable) {
+        if (!variableOrderer.exists(variable)) {
+            return new IntegerValue(0);
+        }
+        return DomainHandler.getMinValue(cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(variable)));
+    }
+
+    @Override
+    public boolean isInDomain(NumericValueInterface value, int index) {
+        return !variableOrderer.exists(index) ||
+                DomainHandler.isInDomain(value, cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(index)));
+    }
+
     public void setNodeCandidatesPool(NodeCandidatesPool candidatesPool) {
         this.candidatesPool = candidatesPool;
+    }
+
+    public List<String> getComponents() {
+        return variableOrderer.getComponents();
+    }
+
+    public Evaluation evaluate(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignments) {
+        Map<String, NumericValueInterface> numericAssignment = convertAssignment(assignments);
+        if (cpParsedData.checkIfFeasible(numericAssignment)) {
+            return new PTEvaluation(getUtility(numericAssignment));
+        } else {
+            return new PTEvaluation(0);
+        }
+    }
+
+    private double getUtility(Map<String, NumericValueInterface> assignments) {
+        List<VariableValueDTO> vars = assignmentToVariableValueDTOList(assignments);
+        return utilityProvider.evaluate(vars);
     }
 
     private void fillComponentTypeToName(ConstraintProblem cp) {
@@ -63,13 +106,18 @@ public class NCWrapper implements DomainProvider {
         for (int i = 0; i <components.size(); i++) {
             for (CpVariable var : cp.getCpVariables()) {
                 if (var.getComponentId().equals(components.get(i))) {
-                   componentTypeToName.put(new Pair(i, var.getVariableType()), var.getId());
+                    componentTypeToName.put(new Pair(i, var.getVariableType()), var.getId());
                 }
             }
         }
     }
-    public List<String> getComponents() {
-        return variableOrderer.getComponents();
+
+    /*
+        Generates random solution to the constraint problem.
+        Used to sample starting point for parallel tempering.
+     */
+    public PTSolution generateRandom(Random random) {
+        return candidatesPool.generateRandom(random);
     }
 
     private Map<String, NumericValueInterface> convertAssignment(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignment) {
@@ -99,66 +147,17 @@ public class NCWrapper implements DomainProvider {
             if (a.getKey() == null) continue;
             NumericValueInterface val = a.getValue();
             if (cpParsedData.getVariableType(a.getKey()) == VariableNumericType.INT) {
-                if (!(val instanceof IntValueInterface)) {
+                if (!(val.isInteger())) {
                     throw new RuntimeException("Variable " + a.getKey() + " is not of integer type!");
                 }
-                result.add(VariableValueDTOFactory.createElement(a.getKey(), ((IntValueInterface) val).getIntValue()));
+                result.add(VariableValueDTOFactory.createElement(a.getKey(), val.getIntValue()));
             } else {
                 if (!(val instanceof DoubleValue)) {
                     throw new RuntimeException("Variable " + a.getKey() +" is not of double type!");
                 }
-                result.add(VariableValueDTOFactory.createElement(a.getKey(), ((DoubleValue) val).getValue()));
+                result.add(VariableValueDTOFactory.createElement(a.getKey(), val.getDoubleValue()));
             }
         }
         return result;
-    }
-
-    private double getUtility(Map<String, NumericValueInterface> assignments) {
-        List<VariableValueDTO> vars = assignmentToVariableValueDTOList(assignments);
-        return utilityProvider.evaluate(vars);
-    }
-
-    public Evaluation evaluate(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignments) {
-        Map<String, NumericValueInterface> a = convertAssignment(assignments);
-        if (cpParsedData.checkIfFeasible(a)) {
-            return new PTEvaluation(getUtility(a));
-        } else {
-            return new PTEvaluation(0);
-        }
-    }
-    /*
-        Returns maximal value of variable @variable
-     */
-    @Override
-    public NumericValueInterface getMaxValue(int variable) {
-        if (!variableOrderer.exists(variable)) {
-            return new IntegerValue(0);
-        }
-        return DomainHandler.getMaxValue(cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(variable)));
-    }
-
-    @Override
-    public NumericValueInterface getMinValue(int variable) {
-        if (!variableOrderer.exists(variable)) {
-            return new IntegerValue(0);
-        }
-        return DomainHandler.getMinValue(cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(variable)));
-    }
-
-    @Override
-    public boolean isInDomain(NumericValueInterface value, int index) {
-        if (!variableOrderer.exists(index)) {
-            return true;
-        } else {
-            return DomainHandler.isInDomain(value, cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(index)));
-        }
-    }
-
-    /*
-        Generates random solution to the constraint problem.
-        Used to sample starting point for parallel tempering.
-     */
-    public PTSolution generateRandom(Random random) {
-        return candidatesPool.generateRandom(random);
     }
 }

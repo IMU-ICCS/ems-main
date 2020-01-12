@@ -4,6 +4,7 @@ package cp_components;
     a full assignment of values to variables
  */
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import node_candidate.GeographicCoordinate;
@@ -13,36 +14,18 @@ import org.javatuples.Quartet;
 
 import java.util.*;
 @AllArgsConstructor
+@EqualsAndHashCode
 public class PTSolution extends Solution
 {
+    private final int PROVIDER_INDEX = 0;
+    private final int CONFIGURATION_INDEX = 1;
+    private final int LOCATION_INDEX = 2;
+    private final int CARDINALITY_INDEX = 3;
     @Getter @Setter
     /*
         component -> (provider, Cores, Ram, Disk, latitude, longitude, cardinality)
      */
     private Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate,Integer>> varAssignments;
-
-    public int extractProvider(int component) {
-        return varAssignments.get(component).getValue0();
-    }
-
-    public VMConfiguration extractVMConfiguration(int component) {
-        return (VMConfiguration) varAssignments.get(component).getValue(1);
-    }
-
-    public GeographicCoordinate extractVMLocation(int component) {
-        return (GeographicCoordinate) varAssignments.get(component).getValue(2);
-    }
-
-    public int extractCardinality(int component) {
-        return (Integer) varAssignments.get(component).getValue(3);
-    }
-
-    public PTSolution updateComponentConfiguration(int component, int provider, VMConfiguration n,
-                                                   GeographicCoordinate l, int card) {
-        PTSolution sol = (PTSolution) this.copy();
-        sol.varAssignments.put(component, new Quartet<>(provider, n, l, card));
-        return sol;
-    }
 
     @Override
     public Solution copy() {
@@ -50,33 +33,26 @@ public class PTSolution extends Solution
         return new PTSolution(varsClone);
     }
 
-    private boolean equals(PTSolution s) {
-        if (s.varAssignments.size() != varAssignments.size()) {
-            return false;
-        }
-        for (Integer key : varAssignments.keySet()) {
-            if (!s.varAssignments.containsKey(key)
-                    || !varAssignments.get(key).equals(s.varAssignments.get(key))) {
-                return false;
-            }
-        }
-        return true;
+    public int extractProvider(int component) {
+        return (Integer) varAssignments.get(component).getValue(PROVIDER_INDEX);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        final PTSolution other = (PTSolution) o;
-        return equals(other);
+    public VMConfiguration extractVMConfiguration(int component) {
+        return (VMConfiguration) varAssignments.get(component).getValue(CONFIGURATION_INDEX);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(varAssignments);
+    public GeographicCoordinate extractVMLocation(int component) {
+        return (GeographicCoordinate) varAssignments.get(component).getValue(LOCATION_INDEX);
+    }
+
+    public int extractCardinality(int component) {
+        return (Integer) varAssignments.get(component).getValue(CARDINALITY_INDEX);
+    }
+
+    public PTSolution updateComponentConfiguration(int component, int provider, VMConfiguration conf,
+                                                   GeographicCoordinate loc, int card) {
+        PTSolution solution = (PTSolution) this.copy();
+        solution.varAssignments.put(component, new Quartet<>(provider, conf, loc, card));
+        return solution;
     }
 }

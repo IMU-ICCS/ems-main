@@ -1,6 +1,7 @@
 package cp_components;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import org.jamesframework.core.search.neigh.Move;
 /*
     Class which abstracts moves in CP search space.
@@ -9,6 +10,7 @@ import org.jamesframework.core.search.neigh.Move;
  */
 
 @AllArgsConstructor
+@EqualsAndHashCode
 public class PTMover implements Move<PTSolution> {
     private PTSolution beforeMoveAssignment;
     private PTSolution afterMoveAssignment;
@@ -23,17 +25,4 @@ public class PTMover implements Move<PTSolution> {
         ptSolution.setVarAssignments(beforeMoveAssignment.getVarAssignments());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (getClass() != o.getClass()) {
-            return false;
-        } else {
-            PTMover m = (PTMover) o;
-            return m.afterMoveAssignment.equals(afterMoveAssignment)
-                    &&
-                    m.beforeMoveAssignment.equals(beforeMoveAssignment);
-        }
-    }
 }

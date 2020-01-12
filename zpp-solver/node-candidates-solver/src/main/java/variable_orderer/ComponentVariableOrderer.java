@@ -5,10 +5,8 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 /*
     Components are ordered non-deterministically.
     Variables are ordered according to pairs
@@ -22,13 +20,19 @@ import java.util.Map;
 public class ComponentVariableOrderer implements VariableOrderer {
     @Getter
     private List<String> components;
-    private final int variablesPerComponent = 7;
     private Map<Integer, String> indexToVariableName;
+    public static final int VARIABLES_PER_COMPONENT = 7;
 
     public ComponentVariableOrderer(ConstraintProblem cp) {
         fillComponents(cp);
         fillIndexToVariable(cp);
     }
+
+    @Override
+    public String getNameFromIndex(int var) {
+        return indexToVariableName.get(var);
+    }
+
     /*
         True if variable with a given index exists in the model
      */
@@ -38,33 +42,28 @@ public class ComponentVariableOrderer implements VariableOrderer {
 
     private void fillComponents(ConstraintProblem cp) {
         components = new ArrayList<>();
-        for (CpVariable var : cp.getCpVariables()) {
+        cp.getCpVariables().forEach( var -> {
             if (!components.contains(var.getComponentId())) {
                 components.add(var.getComponentId());
-            }
-        }
+            }});
     }
 
     private int getComponentIndex(String name) {
-        for (int i = 0; i < components.size(); i++) {
-            if (components.get(i).equals(name)) {
-                return variablesPerComponent * i;
-            }
+        int componentIndex = components.indexOf(name);
+        if (componentIndex >= 0) {
+            return VARIABLES_PER_COMPONENT * componentIndex;
         }
-        throw new RuntimeException();
+        throw new RuntimeException("Component with name " + name + " does not exist!");
     }
 
     private void fillIndexToVariable(ConstraintProblem cp) {
         indexToVariableName = new HashMap<>();
-        for (CpVariable var : cp.getCpVariables()) {
-            int componentIndex = getComponentIndex(var.getComponentId());
-            int index = componentIndex + VariableTypeOrderer.mapTypeToIndex(var.getVariableType());
-            indexToVariableName.put(index, var.getId());
-        }
-    }
-
-    @Override
-    public String getNameFromIndex(int var) {
-        return indexToVariableName.get(var);
+        cp.getCpVariables().forEach(
+                var -> {
+                    int componentIndex = getComponentIndex(var.getComponentId());
+                    int index = componentIndex + VariableTypeOrderer.mapTypeToIndex(var.getVariableType());
+                    indexToVariableName.put(index, var.getId());
+                }
+        );
     }
 }

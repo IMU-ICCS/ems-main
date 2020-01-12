@@ -3,7 +3,6 @@ package variable_orderer;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 
 public class VariableTypeOrderer {
-    public static final int variablesPerComponent = 7;
     public static int mapTypeToIndex(VariableType type) {
         switch(type) {
             case PROVIDER:
