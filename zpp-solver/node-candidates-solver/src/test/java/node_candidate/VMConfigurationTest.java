@@ -1,5 +1,6 @@
 package node_candidate;
 
+import node_candidate.node_candidate_element.VMConfiguration;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

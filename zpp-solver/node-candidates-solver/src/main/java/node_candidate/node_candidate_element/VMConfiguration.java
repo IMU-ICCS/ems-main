@@ -1,4 +1,4 @@
-package node_candidate;
+package node_candidate.node_candidate_element;
 
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
@@ -6,7 +6,7 @@ import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
+import node_candidate.VariableValueKeeperInterface;
 import org.javatuples.Pair;
 import variable_orderer.ComponentVariableOrderer;
 import variable_orderer.VariableTypeOrderer;
@@ -16,7 +16,8 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class VMConfiguration implements Comparable<VMConfiguration>, VariableValueKeeperInterface{
+public class VMConfiguration implements Comparable<VMConfiguration>,
+        VariableValueKeeperInterface, NodeCandidateElementInterface {
     private long cores;
     private long ram;
     private double disk;

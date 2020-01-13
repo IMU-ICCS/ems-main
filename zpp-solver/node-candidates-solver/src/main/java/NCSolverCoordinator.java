@@ -1,20 +1,17 @@
 import cp_components.*;
-import cp_wrapper.CPWrapper;
 import cp_wrapper.UtilityProvider;
-import cp_wrapper.parser.CPParsedData;
 import eu.melodic.cache.NodeCandidates;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import nc_wrapper.NCWrapper;
-import node_candidate.GeographicCoordinate;
+import node_candidate.node_candidate_element.GeographicCoordinate;
 import node_candidate.NodeCandidatesPool;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import node_candidate.VMConfiguration;
+import node_candidate.node_candidate_element.VMConfiguration;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
 import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

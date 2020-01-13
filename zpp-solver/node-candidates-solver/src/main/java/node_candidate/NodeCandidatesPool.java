@@ -35,17 +35,14 @@ package node_candidate;
  */
 import cp_components.PTMover;
 import cp_components.PTSolution;
-import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import nc_wrapper.DomainProvider;
-import org.apache.commons.collections4.IterableGet;
+import node_candidate.node_candidate_element.GeographicCoordinate;
+import node_candidate.node_candidate_element.VMConfiguration;
 import variable_orderer.ComponentVariableOrderer;
 import variable_orderer.VariableTypeOrderer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
@@ -188,25 +185,23 @@ public class NodeCandidatesPool {
     private Collection<PTMover> getAllVMConfigurationChangeMoves(PTSolution assignment, int component) {
         int provider = assignment.extractProvider(component);
         return getVMConfigurationNeighbours(provider, assignment.extractVMConfiguration(component), component).stream()
-                .map(
-                        configuration ->
+                .map( configuration ->
                             new PTMover(
                                     assignment,
                                     assignment.updateComponentConfiguration(
                                             component, provider, configuration, assignment.extractVMLocation(component),
                                             assignment.extractCardinality(component))
                             )
-
                 ).collect(toList());
     }
 
     private Collection<PTMover> getAllVMLocationChangeMoves(PTSolution assignment, int component) {
         int provider = assignment.extractProvider(component);
-        return getVMLocationNeighbours(provider, assignment.extractVMLocation(component), component).stream().map(
-                location ->
-                new PTMover(
-                    assignment,
-                    assignment.updateComponentConfiguration(
+        return getVMLocationNeighbours(provider, assignment.extractVMLocation(component), component).stream()
+                .map(location ->
+                    new PTMover(
+                        assignment,
+                        assignment.updateComponentConfiguration(
                             component, provider, assignment.extractVMConfiguration(component), location,
                             assignment.extractCardinality(component))
                 )

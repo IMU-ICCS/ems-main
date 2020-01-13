@@ -7,8 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import node_candidate.GeographicCoordinate;
-import node_candidate.VMConfiguration;
+import node_candidate.node_candidate_element.GeographicCoordinate;
+import node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
+import node_candidate.node_candidate_element.NodeCandidateElementInterface;
+import node_candidate.node_candidate_element.VMConfiguration;
 import org.jamesframework.core.problems.sol.Solution;
 import org.javatuples.Quartet;
 
@@ -17,42 +19,47 @@ import java.util.*;
 @EqualsAndHashCode
 public class PTSolution extends Solution
 {
-    private final int PROVIDER_INDEX = 0;
-    private final int CONFIGURATION_INDEX = 1;
-    private final int LOCATION_INDEX = 2;
-    private final int CARDINALITY_INDEX = 3;
+    public static final int PROVIDER_INDEX = 0;
+    public static final int CONFIGURATION_INDEX = 1;
+    public static final int LOCATION_INDEX = 2;
+    public static final int CARDINALITY_INDEX = 3;
     @Getter @Setter
     /*
         component -> (provider, Cores, Ram, Disk, latitude, longitude, cardinality)
      */
-    private Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate,Integer>> varAssignments;
+    private Map<Integer, Map<Integer, NodeCandidateElementInterface>> varAssignments;
 
     @Override
     public Solution copy() {
-        Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate,Integer>> varsClone = new HashMap<>(varAssignments);
+        Map<Integer, Map<Integer, NodeCandidateElementInterface>> varsClone = new HashMap<>(varAssignments);
         return new PTSolution(varsClone);
     }
 
     public int extractProvider(int component) {
-        return (Integer) varAssignments.get(component).getValue(PROVIDER_INDEX);
+        return ((IntegerNodeCandidateElementImpl) varAssignments.get(component).get(PROVIDER_INDEX)).getValue();
     }
 
     public VMConfiguration extractVMConfiguration(int component) {
-        return (VMConfiguration) varAssignments.get(component).getValue(CONFIGURATION_INDEX);
+        return (VMConfiguration) varAssignments.get(component).get(CONFIGURATION_INDEX);
     }
 
     public GeographicCoordinate extractVMLocation(int component) {
-        return (GeographicCoordinate) varAssignments.get(component).getValue(LOCATION_INDEX);
+        return (GeographicCoordinate) varAssignments.get(component).get(LOCATION_INDEX);
     }
 
     public int extractCardinality(int component) {
-        return (Integer) varAssignments.get(component).getValue(CARDINALITY_INDEX);
+        return ((IntegerNodeCandidateElementImpl) varAssignments.get(component).get(CARDINALITY_INDEX)).getValue();
     }
 
-    public PTSolution updateComponentConfiguration(int component, int provider, VMConfiguration conf,
-                                                   GeographicCoordinate loc, int card) {
+    public PTSolution updateComponentConfiguration(int component, int provider, VMConfiguration configuration,
+                                                   GeographicCoordinate location, int cardinality) {
         PTSolution solution = (PTSolution) this.copy();
-        solution.varAssignments.put(component, new Quartet<>(provider, conf, loc, card));
+        solution.varAssignments.put(component, new HashMap<Integer, NodeCandidateElementInterface>(){{
+            put(PROVIDER_INDEX, new IntegerNodeCandidateElementImpl(provider));
+            put(CONFIGURATION_INDEX, configuration);
+            put(LOCATION_INDEX, location);
+            put(CARDINALITY_INDEX, new IntegerNodeCandidateElementImpl(cardinality));
+        }});
         return solution;
     }
 }

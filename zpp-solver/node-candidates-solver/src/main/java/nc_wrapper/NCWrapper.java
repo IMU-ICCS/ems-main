@@ -16,9 +16,11 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFa
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import node_candidate.GeographicCoordinate;
+import node_candidate.node_candidate_element.GeographicCoordinate;
 import node_candidate.NodeCandidatesPool;
-import node_candidate.VMConfiguration;
+import node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
+import node_candidate.node_candidate_element.NodeCandidateElementInterface;
+import node_candidate.node_candidate_element.VMConfiguration;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
@@ -86,7 +88,7 @@ public class NCWrapper implements DomainProvider {
         return variableOrderer.getComponents();
     }
 
-    public Evaluation evaluate(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignments) {
+    public Evaluation evaluate(Map<Integer, Map<Integer, NodeCandidateElementInterface>> assignments) {
         Map<String, NumericValueInterface> numericAssignment = convertAssignment(assignments);
         if (cpParsedData.checkIfFeasible(numericAssignment)) {
             return new PTEvaluation(getUtility(numericAssignment));
@@ -120,23 +122,25 @@ public class NCWrapper implements DomainProvider {
         return candidatesPool.generateRandom(random);
     }
 
-    private Map<String, NumericValueInterface> convertAssignment(Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate, Integer>> assignment) {
+    private Map<String, NumericValueInterface> convertAssignment(Map<Integer, Map<Integer, NodeCandidateElementInterface>> assignment) {
         Map<String, NumericValueInterface> res = new HashMap<>();
         for (Integer comp : assignment.keySet()) {
             res.put(componentTypeToName.get(new Pair(comp, VariableType.PROVIDER)),
-                    new IntegerValue((Integer) assignment.get(comp).getValue(0)));
+                    new IntegerValue(
+                            ((IntegerNodeCandidateElementImpl) assignment.get(comp).get(PTSolution.PROVIDER_INDEX)).getValue()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.CORES)),
-                    new LongValue(((VMConfiguration) assignment.get(comp).getValue(1)).getCores()));
+                    new LongValue(((VMConfiguration) assignment.get(comp).get(PTSolution.CONFIGURATION_INDEX)).getCores()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.RAM)),
-                    new LongValue(((VMConfiguration) assignment.get(comp).getValue(1)).getRam()));
+                    new LongValue(((VMConfiguration) assignment.get(comp).get(PTSolution.CONFIGURATION_INDEX)).getRam()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.STORAGE)),
-                    new DoubleValue(((VMConfiguration) assignment.get(comp).getValue(1)).getDisk()));
+                    new DoubleValue(((VMConfiguration) assignment.get(comp).get(PTSolution.CONFIGURATION_INDEX)).getDisk()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.LATITUDE)),
-                    new DoubleValue(((GeographicCoordinate) assignment.get(comp).getValue(2)).getLatitude()));
+                    new DoubleValue(((GeographicCoordinate) assignment.get(comp).get(PTSolution.LOCATION_INDEX)).getLatitude()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.LONGITUDE)),
-                    new DoubleValue(((GeographicCoordinate) assignment.get(comp).getValue(2)).getLongitude()));
+                    new DoubleValue(((GeographicCoordinate) assignment.get(comp).get(PTSolution.LOCATION_INDEX)).getLongitude()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.CARDINALITY)),
-                    new IntegerValue(((Integer) assignment.get(comp).getValue(3))));
+                    new IntegerValue(
+                            ((IntegerNodeCandidateElementImpl) assignment.get(comp).get(PTSolution.CARDINALITY_INDEX)).getValue()));
         }
         return res;
     }

@@ -5,6 +5,10 @@ import cp_components.PTSolution;
 import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import nc_wrapper.DomainProvider;
+import node_candidate.node_candidate_element.GeographicCoordinate;
+import node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
+import node_candidate.node_candidate_element.NodeCandidateElementInterface;
+import node_candidate.node_candidate_element.VMConfiguration;
 import org.javatuples.Quartet;
 import org.junit.jupiter.api.Test;
 
@@ -39,13 +43,18 @@ class NodeCandidatesPoolTest {
     }
 
     private PTSolution arrayToAssignment(List<Integer> arr) {
-        Map<Integer, Quartet<Integer, VMConfiguration, GeographicCoordinate,Integer>> a = new HashMap<>();
+        Map<Integer, Map<Integer, NodeCandidateElementInterface>> a = new HashMap<>();
         for (int i = 0; i < 3; i++) {
             int cardinality = arr.get(7*i + 6);
             int provider = arr.get(7*i);
             VMConfiguration conf = new VMConfiguration(arr.get(i*7 + 1), arr.get(i*7 +2), arr.get(i*7 +3));
             GeographicCoordinate loc = new GeographicCoordinate(arr.get(i*7+4), arr.get(i*7 + 5));
-            a.put(i, new Quartet<>(provider ,conf, loc, cardinality));
+            a.put(i, new HashMap<Integer, NodeCandidateElementInterface>(){{
+                put(PTSolution.PROVIDER_INDEX, new IntegerNodeCandidateElementImpl(provider));
+                put(PTSolution.CARDINALITY_INDEX, new IntegerNodeCandidateElementImpl(cardinality));
+                put(PTSolution.CONFIGURATION_INDEX, conf);
+                put(PTSolution.LOCATION_INDEX, loc);
+            }});
         }
         return new PTSolution(a);
     }
