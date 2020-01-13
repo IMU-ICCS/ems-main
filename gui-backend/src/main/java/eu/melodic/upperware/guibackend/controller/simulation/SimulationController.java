@@ -2,7 +2,6 @@ package eu.melodic.upperware.guibackend.controller.simulation;
 
 
 import eu.melodic.models.interfaces.metaSolver.MetricsNamesResponse;
-import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesRequest;
 import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesResponse;
 import eu.melodic.upperware.guibackend.controller.simulation.request.SimulationRequest;
 import eu.melodic.upperware.guibackend.service.simulation.SimulationService;
@@ -10,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

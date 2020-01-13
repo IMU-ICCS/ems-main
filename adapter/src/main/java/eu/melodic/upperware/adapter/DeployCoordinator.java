@@ -38,7 +38,6 @@ import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
 import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
@@ -57,7 +56,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;

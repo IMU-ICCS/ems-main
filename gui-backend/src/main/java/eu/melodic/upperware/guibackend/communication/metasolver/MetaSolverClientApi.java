@@ -5,7 +5,6 @@ import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesRequest;
 import eu.melodic.models.interfaces.metaSolver.SimulatedMetricValuesResponse;
 import eu.melodic.upperware.guibackend.communication.commons.RestCommunicationService;
 import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
-import eu.melodic.upperware.guibackend.controller.simulation.request.SimulationRequest;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
