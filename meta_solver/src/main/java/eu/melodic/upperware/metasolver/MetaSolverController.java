@@ -17,11 +17,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -170,12 +172,12 @@ public class MetaSolverController {
     {
         setAuthenticationToken(jwtToken);
         String applicationId = request.getApplicationId();
-        log.info("Received request: " + applicationId);
+        log.info("Received request: {}", applicationId);
 
         // set metrics and request reconfiguration
-        log.info("Setting Simulated metrics and reconfiguration request ");
+        log.info("Setting Simulated metrics and reconfiguration request");
         coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
-        log.info("SimulateReconfiguration: Setting Simulated metrics and reconfiguration request finished ");
+        log.info("SimulateReconfiguration: Setting Simulated metrics and reconfiguration request finished");
 
         SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
         response.setApplicationId(applicationId);

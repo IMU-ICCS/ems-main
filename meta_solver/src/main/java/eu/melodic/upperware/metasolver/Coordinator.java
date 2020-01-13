@@ -10,8 +10,8 @@ package eu.melodic.upperware.metasolver;
 
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
-import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
+import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequestImpl;
@@ -24,7 +24,6 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
@@ -362,7 +361,8 @@ public class Coordinator implements ApplicationContextAware {
     void simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) throws ConcurrentAccessException {
         if (!cacheAppId.equals(applicationId)) {
             log.warn("applications Ids don't match, aborting");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong application Id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("Wrong application Id: %s", applicationId));
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
             Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
@@ -371,7 +371,8 @@ public class Coordinator implements ApplicationContextAware {
                     monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
                 } else {
                     log.warn("Received invalid metric name: {}", nameValuePair.getKey());
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Received invalid metric name");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            String.format("Received invalid metric name: %s", nameValuePair.getKey()));
                 }
             }
             log.info("Simulated metrics set");
@@ -387,7 +388,8 @@ public class Coordinator implements ApplicationContextAware {
         List<String> metricNames;
         if (!cacheAppId.equals(applicationId)) {
             log.warn("Applications Ids don't match");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong application Id");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("Wrong application Id: %s", applicationId));
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
             metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
