@@ -17,4 +17,5 @@ public class ProcessVariables {
     private VariableStatus processState;
     private boolean isReconfigurationProcess;
     private String applicationId;
+    private boolean isSimulation;
 }

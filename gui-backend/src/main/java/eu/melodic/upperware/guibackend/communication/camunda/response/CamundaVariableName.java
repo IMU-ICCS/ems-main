@@ -15,7 +15,8 @@ public enum CamundaVariableName {
     DEPLOYED_SOLUTION_ID("deployedSolutionId"),
     DEPLOYMENT_INSTANCE_NAME("deploymentInstanceName"),
     PROCESS_FINISH_DATE("processFinishDate"),
-    PROCESS_START_DATE("processStartDate");
+    PROCESS_START_DATE("processStartDate"),
+    IS_SIMULATION("isSimulation");
 
     public final String label;
 
