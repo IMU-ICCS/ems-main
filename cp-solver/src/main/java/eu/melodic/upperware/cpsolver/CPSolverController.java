@@ -26,31 +26,30 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CPSolverController {
 
-  private CPSolverCoordinator cpSolverCoordinator;
+    private CPSolverCoordinator cpSolverCoordinator;
 
-  @RequestMapping(value = "/constraintProblemSolution", method = POST)
-  public void applySolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
-    String applicationId = request.getApplicationId();
-    String cdoResourcePath = request.getCdoModelsPath();
-    String notificationUri = request.getNotificationURI();
-    String requestUuid = request.getWatermark().getUuid();
-    log.info("Received request: " +applicationId +" " + cdoResourcePath + " " +notificationUri + " " +requestUuid);
+    @RequestMapping(value = "/constraintProblemSolution", method = POST)
+    public void applySolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
+        String applicationId = request.getApplicationId();
+        String cdoResourcePath = request.getCdoModelsPath();
+        String notificationUri = request.getNotificationURI();
+        String requestUuid = request.getWatermark().getUuid();
+        log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
 
-    cpSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
-    log.info("Sleeping...");
-  }
+        cpSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
+        log.info("Sleeping...");
+    }
 
-  @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
-  public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
-    String applicationId = request.getApplicationId();
-    String camelModelfilePath = request.getCamelModelFilePath();
-    String filePath = request.getFileModelsPath();
-    String requestUuid = request.getWatermark().getUuid();
-    String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
-    log.info("Received constraintProblemSolutionFromFile request: " +applicationId +" " + camelModelfilePath + " " + filePath + " " +requestUuid);
 
-    cpSolverCoordinator.generateCPSolutionFromFile(applicationId, camelModelfilePath, filePath, nodeCandidatesFilePath);
-    log.info("Sleeping...");
-  }
+    @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
+    public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
+        String camelModelFilePath = request.getCamelModelFilePath();
+        String cpModelPath = request.getCpProblemFilePath();
+        String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
+        log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
+
+        cpSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
+        log.info("Sleeping...");
+    }
 
 }
