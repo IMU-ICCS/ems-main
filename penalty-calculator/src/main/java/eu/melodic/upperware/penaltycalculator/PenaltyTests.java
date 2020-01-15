@@ -61,7 +61,8 @@ public class PenaltyTests implements CommandLineRunner {
 
     protected Collection<PenaltyConfigurationElement> readConfigElementsFromFile(String fileName) throws IOException {
         try (Reader reader = new FileReader(fileName)) {
-            Type listType = new TypeToken<ArrayList<PenaltyConfigurationElement>>() {}.getType();
+            Type listType = new TypeToken<ArrayList<PenaltyConfigurationElement>>() {
+            }.getType();
             return new Gson().fromJson(reader, listType);
         }
     }

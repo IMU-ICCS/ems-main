@@ -25,16 +25,24 @@ public class PenaltyFunctionProperties {
     private final Map<String, String> startupTimes = new HashMap<>();
 
     private String stateInfo;
-	private String host;
-	private String port;
+    private String host;
+    private String port;
+    private String DBHost;
+	private String DBPort;
+	private String User;
+	private String Passwd;
+	private String Name;
+	
+	
+	
+	
+    private final Map<String, VmData> vmData = new HashMap<>();
 
-	private final Map<String,VmData> vmData = new HashMap<>();
-
-	public Map<String,VmData> getVmData() {
-	    return vmData;
+    public Map<String, VmData> getVmData() {
+        return vmData;
     }
 
-	@Data
+    @Data
     public static class VmData {
         int cores;
         double ram;
@@ -46,6 +54,8 @@ public class PenaltyFunctionProperties {
             return x;
         }
 
-        public double getY() { return startupTime; }
+        public double getY() {
+            return startupTime;
+        }
     }
 }
