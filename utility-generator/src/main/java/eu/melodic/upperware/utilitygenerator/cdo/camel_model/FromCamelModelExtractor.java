@@ -24,6 +24,7 @@ import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
+import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CamelModelTool;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findPenaltyAttributeType;
 
 @Slf4j
 public class FromCamelModelExtractor {
@@ -120,16 +122,16 @@ public class FromCamelModelExtractor {
     }
 
 
-    public String getReconfigurationPenaltyAttribute() {
+    public Collection<PenaltyAttribute> getReconfigurationPenaltyAttributes() {
         Collection<MetricVariableImpl> reconfigurationPenaltyAttributes = filterVariables(this::isReconfigurationPenaltyAttribute);
         if (reconfigurationPenaltyAttributes.size() == 0) {
             log.info("Reconfiguration penalty has not been declared.");
-            return StringUtils.EMPTY;
+            return Collections.emptyList();
         }
-        else if (reconfigurationPenaltyAttributes.size() > 1) {
-            log.warn("Reconfiguration penalty has been declared more than once in the CAMEL Model: {}, only the first one will be considered", reconfigurationPenaltyAttributes.stream().toString());
-        }
-        return reconfigurationPenaltyAttributes.iterator().next().getName();
+        return reconfigurationPenaltyAttributes.stream()
+                .map(mv -> new PenaltyAttribute(mv.getName(), mv.getComponent().getName(),
+                        findPenaltyAttributeType(mv)))
+                .collect(Collectors.toList());
     }
 
     /* optimisation requirement - utility function */
