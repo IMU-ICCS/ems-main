@@ -27,32 +27,4 @@ public class ComponMeasurement {
 
     @Column(name = "timeDepl")
     private double timeDepl;
-
-    public Instant getTime() {
-        return time;
-    }
-
-    public void setTime(Instant time) {
-        this.time = time;
-    }
-
-    public String getComponentName() {
-        return ComponentName;
-    }
-
-    public void setComponentName(String ComponentName) {
-        this.ComponentName = ComponentName;
-    }
-
-    public double timeDepl() {
-        return timeDepl;
-    }
-
-    public void timeDepl(double timeDepl) {
-        this.timeDepl = timeDepl;
-    }
-
-    public String toString() {
-        return timeDepl + "";
-    }
 }

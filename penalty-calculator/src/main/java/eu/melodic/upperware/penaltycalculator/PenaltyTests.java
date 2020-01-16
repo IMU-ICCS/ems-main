@@ -46,10 +46,10 @@ public class PenaltyTests implements CommandLineRunner {
 
     public void run(String... args) throws Exception {
         Collection<PenaltyConfigurationElement> collection_1 = readConfigElementsFromFile(args[0]);
-        log.info("Collection-1:\n{}", PenaltyFunction.toString(collection_1));
+        log.debug("Collection-1:\n{}", PenaltyFunction.toString(collection_1));
 
         Collection<PenaltyConfigurationElement> collection_2 = readConfigElementsFromFile(args[1]);
-        log.info("Collection-2:\n{}", PenaltyFunction.toString(collection_2));
+        log.debug("Collection-2:\n{}", PenaltyFunction.toString(collection_2));
 
         PenaltyFunctionResult penaltyResults = penaltyCalculator.evaluatePenaltyFunction(collection_1, collection_2);
 
@@ -60,8 +60,7 @@ public class PenaltyTests implements CommandLineRunner {
 
     protected Collection<PenaltyConfigurationElement> readConfigElementsFromFile(String fileName) throws IOException {
         try (Reader reader = new FileReader(fileName)) {
-            Type listType = new TypeToken<ArrayList<PenaltyConfigurationElement>>() {
-            }.getType();
+            Type listType = new TypeToken<ArrayList<PenaltyConfigurationElement>>() {}.getType();
             return new Gson().fromJson(reader, listType);
         }
     }

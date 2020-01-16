@@ -282,7 +282,7 @@ public class PenaltyFunction {
 
             for (ComponMeasurement cmmm : listComponMeasurements) {
 
-                sum += cmmm.timeDepl();
+                sum += cmmm.getTimeDepl();
                 cnt++;
             }
 
@@ -299,8 +299,8 @@ public class PenaltyFunction {
 
             for (ComponMeasurement cmm : listComponMeasurements) {
 
-                if (maxx < cmm.timeDepl()) {
-                    maxx = cmm.timeDepl(); //swapping
+                if (maxx < cmm.getTimeDepl()) {
+                    maxx = cmm.getTimeDepl(); //swapping
 
                 }
 
