@@ -64,9 +64,9 @@ public class PenaltyConverter implements ArgumentConverter {
     }
 
     private double getPenaltyValue(PenaltyAttribute attribute, PenaltyFunctionResult penaltyResult){
-        if (attribute.getType().equals(CamelMetadata.PENALTY)) {
+        if (CamelMetadata.PENALTY.equals(attribute.getType())) {
             return  penaltyResult.getPenaltyValue();
-        } else if (attribute.getType().equals(CamelMetadata.RECONFIGURATION_TIME)) {
+        } else if (CamelMetadata.RECONFIGURATION_TIME.equals(attribute.getType())) {
             return penaltyResult.getStartupTime();
         }
         return 0.0;
