@@ -40,16 +40,9 @@ public class PenaltyConverter implements ArgumentConverter {
             return Collections.emptyList();
         }
         try {
-            penaltyResult = penaltyService.getPenalty(actConfiguration, newConfiguration);
-
-            if (penaltyResult == null){
-                log.warn("The value of Reconfiguration Penalty is null.");
-                throw new NullPointerException("The value of Reconfiguration Penalty is null.");
-            }
-
-            else {
-                log.info("The value of Reconfiguration Penalty is: penaltyValue = {} and startupTime = {}", penaltyResult.getPenaltyValue(), penaltyResult.getStartupTime());
-            }
+            penaltyResult = penaltyService.getPenalty(actConfiguration, newConfiguration).orElseThrow(() ->
+                new NullPointerException("The value of Reconfiguration Penalty is null.")
+            );
 
         } catch (Exception e) {
             log.warn("There was an error during invoking the Penalty Calculator library, returning 0.0 as a penalty value. The error: {}", e.toString());
@@ -57,6 +50,7 @@ public class PenaltyConverter implements ArgumentConverter {
             penaltyResult = new PenaltyFunctionResult(0.0, 0.0);
 
         }
+        log.info("The value of Reconfiguration Penalty is: penaltyValue = {} and startupTime = {}", penaltyResult.getPenaltyValue(), penaltyResult.getStartupTime());
         PenaltyFunctionResult finalPenaltyResult = penaltyResult;
         return penaltyAttributes.stream()
                 .map(attribute -> new Argument(attribute.getName(), getPenaltyValue(attribute, finalPenaltyResult)))

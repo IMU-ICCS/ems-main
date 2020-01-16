@@ -4,8 +4,9 @@ import eu.melodic.upperware.penaltycalculator.PenaltyFunctionResult;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public interface PenaltyService {
 
-    PenaltyFunctionResult getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration);
+    Optional<PenaltyFunctionResult> getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration);
 }
