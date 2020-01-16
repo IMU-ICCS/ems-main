@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
@@ -21,20 +21,22 @@ import java.util.Map;
 @ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.penalty.properties")
 public class PenaltyFunctionProperties {
-    private final Map<String, String> startupTimes = new HashMap<>();
-
-    private String stateInfo;
-
+    // Memcache connection settings
     private String memcacheHost;
-    private String memcachePort;
+    private int memcachePort;
 
-    private String influxDBHost;
-	private String influxDBPort;
-	private String influxDBUser;
-	private String influxDBPassword;
-	private String influxDBName;
+    // InfluxDB connection settings
+    private String influxDbHost;
+	private int influxDbPort;
+	private String influxDbUsername;
+	private String influxDbPassword;
+	private String influxDbName;
 
-    private final Map<String, VmData> vmData = new HashMap<>();
+    // Penalty calculation settings
+	private boolean skipComponentDeploymentTimes = false;
+
+	// Predefined VM characteristics and startup times
+    private final Map<String, VmData> vmData = new LinkedHashMap<>();
 
     public Map<String, VmData> getVmData() {
         return vmData;
@@ -47,13 +49,9 @@ public class PenaltyFunctionProperties {
         double disk;
         int startupTime;
 
-        public double[] getX() {
+        public double[] getCharacteristics() {
             double[] x = {cores, ram, disk};
             return x;
-        }
-
-        public double getY() {
-            return startupTime;
         }
     }
 }
