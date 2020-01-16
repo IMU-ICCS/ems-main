@@ -24,17 +24,16 @@ public class PenaltyFunctionProperties {
     private final Map<String, String> startupTimes = new HashMap<>();
 
     private String stateInfo;
-    private String host;
-    private String port;
-    private String DBHost;
-	private String DBPort;
-	private String User;
-	private String Passwd;
-	private String Name;
-	
-	
-	
-	
+
+    private String memcacheHost;
+    private String memcachePort;
+
+    private String influxDBHost;
+	private String influxDBPort;
+	private String influxDBUser;
+	private String influxDBPassword;
+	private String influxDBName;
+
     private final Map<String, VmData> vmData = new HashMap<>();
 
     public Map<String, VmData> getVmData() {

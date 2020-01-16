@@ -17,7 +17,6 @@ import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.log4j.BasicConfigurator;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
-import org.influxdb.dto.Point;
 import org.influxdb.dto.Query;
 import org.influxdb.dto.QueryResult;
 import org.influxdb.impl.InfluxDBMapper;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,35 +36,26 @@ public class PenaltyFunction {
     @Setter
     private PenaltyFunctionProperties properties;
 
-    public static boolean containsEquivalent(Collection<PenaltyConfigurationElement> collection, PenaltyConfigurationElement element) {
-        for (PenaltyConfigurationElement ce : collection) {
-            if (isEquivalent(ce, element)) {
-  
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
     public static boolean isEquivalent(PenaltyConfigurationElement a, PenaltyConfigurationElement b) {
-		
         if (a.getNodeCandidate().getHardware().getRam() - b.getNodeCandidate().getHardware().getRam() == 0) {
-           
             if (a.getNodeCandidate().getHardware().getCores() - b.getNodeCandidate().getHardware().getCores() == 0) {
-                
                 if (a.getNodeCandidate().getHardware().getName().equals(b.getNodeCandidate().getHardware().getName())) {
-                    
                     if (a.getNodeCandidate().getHardware().getDisk() - b.getNodeCandidate().getHardware().getDisk() == 0) {
-                        
                         return true;
                     }
                 }
             }
-
         }
+        return false;
+    }
 
-                return false;
+    public static boolean containsEquivalent(Collection<PenaltyConfigurationElement> collection, PenaltyConfigurationElement element) {
+        for (PenaltyConfigurationElement ce : collection) {
+            if (isEquivalent(ce, element)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String toString(PenaltyConfigurationElement ce) {
@@ -111,26 +100,27 @@ public class PenaltyFunction {
     private PenaltyFunctionResult _evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
         log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
         log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
-        log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
-        log.info("PROPERTIES: Memcached Host operattion info:\n{}", properties.getHost());
+        log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getMemcachePort());
+        log.info("PROPERTIES: Memcached Host operattion info:\n{}", properties.getMemcacheHost());
 
         // ........
         List<PenaltyConfigurationElement> toBeDeleted = new ArrayList<>();
         List<PenaltyConfigurationElement> toBeAdded = new ArrayList<>();
         List<PenaltyConfigurationElement> toBeChanged = new ArrayList<>();
-		
-		//Init Memchache variable info here
+
+        //Init Memchache variable info here
         String str1 = "";
         String str2 = "";
-		//Init  InfluxDB variable info here
-		String str3 = "";
-        String str4 = "";
-		String str5 = "";
-		String str6 = "";
-		String str7 = "";
 
-		// Init variables for OLS algorithm 
-		double resultss = 0;
+        //Init  InfluxDB variable info here
+        String str3 = "";
+        String str4 = "";
+        String str5 = "";
+        String str6 = "";
+        String str7 = "";
+
+        // Init variables for OLS algorithm
+        double resultss = 0;
         double result = 0;
         int value1 = 0;
         double value2 = 0;
@@ -139,7 +129,7 @@ public class PenaltyFunction {
         // find the elements in actual-current config. but not in new configuration
         // these elements will be deleted.
         for (PenaltyConfigurationElement s : actualConfiguration) {
-            
+
             if (!containsEquivalent(newConfiguration, s)) {
 
                 toBeDeleted.add(s);
@@ -193,9 +183,8 @@ public class PenaltyFunction {
 
 
         // Get memcached connection info from properties file
-        str1 = properties.getHost();
-        str2 = properties.getPort();
-		
+        str1 = properties.getMemcacheHost();
+        str2 = properties.getMemcachePort();
 
 
         //initialize the SockIOPool that maintains the Memcached Server Connection Pool
@@ -205,8 +194,8 @@ public class PenaltyFunction {
         SockIOPool pool = SockIOPool.getInstance("Test2");
         log.info("servers: {}", Arrays.toString(servers));
         pool.setServers(servers);
-        
-	    pool.setFailover(true);
+
+        pool.setFailover(true);
         pool.setInitConn(11);
         pool.setMinConn(5);
         pool.setMaxConn(250);
@@ -215,31 +204,30 @@ public class PenaltyFunction {
         pool.setSocketTO(3000);
         pool.setAliveCheck(true);
         pool.initialize();
-   	    
+
         //Get the Memcached Client from SockIOPool named Test2
         MemCachedClient mcc = new MemCachedClient("Test2");
 
         // connect to  InfluxDB --specify DB name 
 
-        
 
         log.info("INFLUX point A - START");
         // Start info for Connection session to Influx DB 
-		str3 = properties.getDBHost();
-        str4 = properties.getDBPort();
-		str5 = properties.getUser();
-		str6 = properties.getPasswd();
-		str7 = properties.getName();
-		
-		String dbName = str7;
-		InfluxDB influxDB = InfluxDBFactory.connect(str3 + ":" + str4,str5,str6);
+        str3 = properties.getInfluxDBHost();
+        str4 = properties.getInfluxDBPort();
+        str5 = properties.getInfluxDBUser();
+        str6 = properties.getInfluxDBPassword();
+        str7 = properties.getInfluxDBName();
+
+        String dbName = str7;
+        InfluxDB influxDB = InfluxDBFactory.connect(str3 + ":" + str4, str5, str6);
         log.info("INFLUX point B - connected");
 
 
         // querying from Daniel DB
 
         InfluxDBMapper influxDBMapper = new InfluxDBMapper(influxDB);
-        
+
         log.info("INFLUX point D - InfluxDB Mapper initialized");
 
         //query to Influx DB for Component Deployment Times 
@@ -271,8 +259,8 @@ public class PenaltyFunction {
         log.info("ComponMeasurements: {}", listComponMeasurements);
 
         log.info("INFLUX point F - Query results listed");
-        
-		
+
+
         String arr = listComponMeasurements.toString();
         log.info("INFLUX point G - arr: {}", arr);
 
@@ -281,7 +269,7 @@ public class PenaltyFunction {
 
 
         //check if we have Null Component Deployment Times and act accordingy 
-		
+
         //if we do not have null Componennt Deployment Times:
         if (arr != null && !arr.isEmpty()) {
 
@@ -331,7 +319,7 @@ public class PenaltyFunction {
 
 
             // load from properties file DATA of predefined types
-            
+
             Map<String, String> prop = properties.getStartupTimes();
             prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
             prop.forEach((key, value) -> hm.put((String) key, (String) value));
@@ -488,7 +476,7 @@ public class PenaltyFunction {
 
         } else {
             //do appropriate things for only VM startup times existing and NOT any Component Deployment Times
-           
+
             log.info("-----> Point A");
 
             //add VM data to Memcache
@@ -499,13 +487,13 @@ public class PenaltyFunction {
             log.info("-----> Point B");
 
             // get the values of the HashMap hm returned as an Array
-           
+
             //Instantiate data for train of OLSMulitple regression algorithm
             //convert String Array to double Array
             double[] y = properties.getVmData().values().stream()
                     .mapToDouble(data -> data.getStartupTime()).toArray();
             log.info("-----> VM startup times (y-data): {}", y);
-            
+
 
             //Find the maximum VM Startup time
             double max = Arrays.stream(y).max().getAsDouble();
@@ -513,20 +501,18 @@ public class PenaltyFunction {
 
 
             //Find the mimimum VM Startup time
-            double min = Arrays.stream(y).min().getAsDouble();   
+            double min = Arrays.stream(y).min().getAsDouble();
             log.info("The min VM Startup value is " + min);
 
 
-
             //instantiate the double array
-            
+
             double[][] xx = properties.getVmData().values().stream()
                     .map(PenaltyFunctionProperties.VmData::getX)
                     .collect(Collectors.toList())
                     .toArray(new double[0][0]);
             log.info("------> VM core/ram/disk (x-data): {}", Arrays.deepToString(xx));
 
-         
 
             log.info("------> Point C");
             OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
@@ -544,10 +530,10 @@ public class PenaltyFunction {
 
             //print them
             log.info("-----> Regression parameters: {}", Arrays.toString(betaHat));
-            
+
 
             log.info("-----> Residual parameter: {}", Arrays.toString(residuals));
-            
+
 
             //log.info("residual: " + residuals);
             log.info("rSquared: {}", rSquared);
@@ -599,7 +585,7 @@ public class PenaltyFunction {
 
             return pfResult;
 
-           
+
         }
     }
 }
