@@ -8,9 +8,11 @@ import implementation.*;
 import io.jenetics.*;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
+import io.jenetics.engine.Limits;
 import io.jenetics.util.Factory;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
 
@@ -29,6 +31,8 @@ public class GeneticSolverCoordinator {
     private double comparatorProbability = 0.1;
     @Setter
     private int guesses = 10;
+    @Setter
+    private int timeLimit = 0;
 
 
     private final Function<Genotype<ImplGene>, Double> fitnessFunction = new EvalFunction();
@@ -60,7 +64,9 @@ public class GeneticSolverCoordinator {
                         .selector(selector)
                         .build();
 
-        return ACPGeneticWrapper.genotypeToIntegerList(engine.stream().limit(iterations).collect(EvolutionResult.toBestGenotype()));
+        if (timeLimit == 0)
+            return ACPGeneticWrapper.genotypeToIntegerList(engine.stream().limit(iterations).collect(EvolutionResult.toBestGenotype()));
+        return ACPGeneticWrapper.genotypeToIntegerList(engine.stream().limit(Limits.byExecutionTime(Duration.ofSeconds(timeLimit))).collect(EvolutionResult.toBestGenotype()));
     }
 
 }
