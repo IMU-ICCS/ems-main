@@ -11,7 +11,6 @@ import java.util.Random;
 
 @AllArgsConstructor
 public class StochasticRankingComparator implements Comparator<Phenotype<ImplGene, Double>> {
-    static final Random random = RandomRegistry.getRandom();
     private double probability;
 
     @Override

@@ -13,10 +13,9 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     }
 
     // Calculates which variable has highest heuristic value. Returns its index.
-    // TODO probably need to calculate it in other way - to get faster exec time (or maybe getHeuristicEvaluation is fast enough)
     @Override
     public int calculateHeuristicBest(ISeq<ImplGene> genes) {
-        int bestIndex = -1, bestValue = 0, tmp;
+        int bestIndex = -1, bestValue = Integer.MIN_VALUE, tmp;
 
         List<Integer> values = genesToIntegerList(genes);
 
