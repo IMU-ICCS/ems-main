@@ -11,6 +11,7 @@ import nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
 import nc_solver.node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
 import nc_solver.node_candidate.node_candidate_element.NodeCandidateElementInterface;
 import nc_solver.node_candidate.node_candidate_element.VMConfiguration;
+import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 import org.jamesframework.core.problems.sol.Solution;
 
 import java.util.*;
@@ -27,11 +28,18 @@ public class PTSolution extends Solution
         component -> (provider, Cores, Ram, Disk, latitude, longitude, cardinality)
      */
     private Map<Integer, Map<Integer, NodeCandidateElementInterface>> varAssignments;
+    @Getter @Setter
+    private Evaluation utility;
+
+    public PTSolution(Map<Integer, Map<Integer, NodeCandidateElementInterface>> varAssignments) {
+        this.varAssignments = varAssignments;
+        this.utility = new PTEvaluation(0.0);
+    }
 
     @Override
     public Solution copy() {
         Map<Integer, Map<Integer, NodeCandidateElementInterface>> varsClone = new HashMap<>(varAssignments);
-        return new PTSolution(varsClone);
+        return new PTSolution(varsClone, new PTEvaluation(this.utility.getValue()));
     }
 
     public int extractProvider(int component) {
