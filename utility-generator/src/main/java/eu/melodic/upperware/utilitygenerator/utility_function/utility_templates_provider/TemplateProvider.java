@@ -5,6 +5,7 @@ import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.BasicTemplatesProvider.*;
@@ -19,7 +20,21 @@ public class TemplateProvider {
         CORES_RAM_DISK_COST_DISTANCE_MIN_MAX
     };
 
-    public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem, AvailableTemplates type) {
+    public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem,
+                                     List<AvailableTemplates> templates, List<Double> templateWeights) {
+        if (templates.size() == 1) {
+            return getTemplate(variablesFromConstraintProblem, templates.get(0));
+        } else {
+                return getSum(
+                        templates.stream().map(
+                        template ->
+                                multiply(templateWeights.get(templates.indexOf(template)).toString(),
+                                        getTemplate(variablesFromConstraintProblem, template))
+                ).collect(Collectors.toList()));
+        }
+    }
+
+    private static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem, AvailableTemplates type) {
         switch (type){
             case ONLY_COST:
                 return getOnlyCostUtility(variablesFromConstraintProblem);
@@ -32,7 +47,7 @@ public class TemplateProvider {
         }
     }
     /*
-        0.5 * 1/Price + 0.5* (  -0.333*( 1/(CORES)^2 -1 )  -0.333*( 1/(RAM)^2 -1 )  -0.333*( 1/(DISK)^2 -1 ))
+        0.5 * 1/Price + 0.5* (  -0.333*( 1/(CORES + 1)^2 -1 )  -0.333*( 1/(RAM + 1)^2 -1 )  -0.333*( 1/(DISK + 1)^2 -1 ))
      */
     private static String getSimpleUtility(Collection<VariableDTO> variablesFromConstraintProblem) {
         String cost = inverse(getCostFormula(variablesFromConstraintProblem));

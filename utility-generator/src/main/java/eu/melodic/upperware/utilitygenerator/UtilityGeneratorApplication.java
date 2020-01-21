@@ -13,12 +13,15 @@ import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
+import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class UtilityGeneratorApplication {
@@ -33,13 +36,22 @@ public class UtilityGeneratorApplication {
 
     public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, TemplateProvider.AvailableTemplates template) {
         log.info("Creating template Utility Generator");
-        utilityFunctionEvaluator = new TemplateUtilityEvaluator(cpModelFilePath, nodeCandidates, type);
+        utilityFunctionEvaluator =
+                new UtilityFunctionEvaluator(cpModelFilePath, nodeCandidates, Collections.singletonList(template),
+                        Collections.singletonList(1.0));
     }
 
     public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates,
                                        List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
         log.info("Creating template Utility Generator");
-        utilityFunctionEvaluator = new TemplateUtilityEvaluator(cpModelFilePath, nodeCandidates, type);
+        if (templateWeights.stream().collect(Collectors.summingDouble(d-> d)) > 1.0
+                || templateWeights.stream().filter(d -> d < 0).count() > 0 ) {
+            throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");
+        }
+        if (templateWeights.size() != templates.size()) {
+            throw new RuntimeException("Number of templates must be equal to number of weights!");
+        }
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(cpModelFilePath, nodeCandidates, templates, templateWeights);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {

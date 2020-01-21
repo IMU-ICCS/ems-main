@@ -11,7 +11,7 @@ import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidat
 
 public class BasicTemplatesProvider {
     static String polynomial(String expr) {
-        return "(-(" + expr +"^2 - 1))";
+        return "(-(" + add(expr, "1") +"^2 - 1))";
     }
     static String inverse(String expr) {
         return "(1/" + expr + ")";
@@ -69,6 +69,10 @@ public class BasicTemplatesProvider {
 
     static String getProduct(Collection<String> expressions) {
         return "(prod(" + String.join(",", expressions) + "))";
+    }
+
+    static String getSum(Collection<String> expressions) {
+        return "(sum(" + String.join("+", expressions) + "))";
     }
 
     static String getSumOfGivenTypeTimesCardinality(VariableType type, Collection<VariableDTO> variablesFromConstraintProblem) {
