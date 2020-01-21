@@ -18,6 +18,7 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 public class UtilityGeneratorApplication {
@@ -28,6 +29,17 @@ public class UtilityGeneratorApplication {
                                        MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         log.info("Creating of the Utility Generator");
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, penaltyFunctionProperties, jwtService);
+    }
+
+    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, TemplateProvider.AvailableTemplates template) {
+        log.info("Creating template Utility Generator");
+        utilityFunctionEvaluator = new TemplateUtilityEvaluator(cpModelFilePath, nodeCandidates, type);
+    }
+
+    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates,
+                                       List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
+        log.info("Creating template Utility Generator");
+        utilityFunctionEvaluator = new TemplateUtilityEvaluator(cpModelFilePath, nodeCandidates, type);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {

@@ -45,7 +45,7 @@ public class UtilityFunctionEvaluator {
     private Collection<ConfigurationElement> deployedConfiguration;
     private Collection<VariableDTO> variablesFromConstraintProblem;
     private NodeCandidates nodeCandidates;
-
+    private boolean fromTemplate = false;
     private Collection<ArgumentConverter> converters;
 
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
@@ -96,6 +96,22 @@ public class UtilityFunctionEvaluator {
             return 0;
         }
 
+        Collection<Argument> allArguments = this.converters.stream()
+                .map(converter -> converter.convertToArguments(solution, newConfiguration))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        return function.evaluateFunction(allArguments);
+    }
+
+    public double evaluateTemplate(Collection<VariableValueDTO> solution) {
+        printSolution(variablesFromConstraintProblem, solution);
+        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
+
+        if (newConfiguration.isEmpty()) {
+            log.info("No Node Candidate for the evaluated solution, returning 0");
+            return 0;
+        }
         Collection<Argument> allArguments = this.converters.stream()
                 .map(converter -> converter.convertToArguments(solution, newConfiguration))
                 .flatMap(Collection::stream)
