@@ -5,7 +5,7 @@
     <parent>
         <artifactId>zpp-solver</artifactId>
         <groupId>org.ow2.paasage</groupId>
-        <version>2.5.1-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -41,19 +41,19 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>utility-generator</artifactId>
-            <version>2.5.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>cp-parser</artifactId>
-            <version>2.5.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>cp-parser</artifactId>
-            <version>2.5.1-SNAPSHOT</version>
+            <version>3.0.0-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
