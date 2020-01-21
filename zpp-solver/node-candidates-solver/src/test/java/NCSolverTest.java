@@ -25,7 +25,7 @@ class NCSolverTest {
     private static Map<ConstraintProblem, UtilityProvider> prepareSimpleOneComponentConstraintProblem() {
         /*
               @var1 in {1,2,3,4,5}
-              @var3 in {0.5, 1.5, 2.5}
+              @var3 in {0, 1, 2}
               @var2 in {0,...,9}
               @const1 = 3
 
@@ -44,8 +44,8 @@ class NCSolverTest {
         dom3.setType(BasicTypeEnum.INTEGER); dom1.setType(BasicTypeEnum.INTEGER);
         dom1.setFrom(1);dom3.setFrom(0);dom1.setTo(5);dom3.setTo(9);
         NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
-        dom2.setValues(Arrays.asList(0.5, 1.5, 2.5));
-        dom2.setType(BasicTypeEnum.DOUBLE);
+        dom2.setIntValues(Arrays.asList(0, 1, 2));
+        dom2.setType(BasicTypeEnum.INTEGER);
 
         vars.add(new CpVariableImplMockup(variables.get(0), VariableType.CORES , dom1, "Component1"));
         vars.add(new CpVariableImplMockup(variables.get(1), VariableType.RAM , dom3, "Component1"));
@@ -102,14 +102,14 @@ class NCSolverTest {
         Location loc = new Location(); GeoLocation gl = new GeoLocation(); gl.setLatitude(100.0);gl.setLongitude(100.0);
         loc.setGeoLocation(gl);
         List<Integer> ar1 = Arrays.asList(1,2,3,4,5, 5,5,5,5,2);
-        List<Double> ar3 = Arrays.asList(0.5, 1.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5);
-        List<Integer> ar2 = Arrays.asList(0,1,2,3,4,5,6,7,8,9);
+        List<Integer> ar3 = Arrays.asList(2, 1, 0, 2, 2, 2, 2, 2, 2, 2);
+        List<Integer> ar2 = Arrays.asList(9,0,2,3,4,5,6,7,8,9);
         List<String> names = Arrays.asList("q", "w", "e", "r", "t", "y", "u", "i", "o", "p");
         for (int i = 0; i < ar3.size(); i++) {
             Hardware hd = new Hardware();
             hd.setCores(ar1.get(i));
             hd.setRam((long) ar2.get(i));
-            hd.setDisk(ar3.get(i));
+            hd.setDisk((double) ar3.get(i));
             NodeCandidate nc = new NodeCandidate();
             nc.setLocation(loc);
             nc.setHardware(hd);
@@ -128,27 +128,27 @@ class NCSolverTest {
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
         PTSolution solution = ncSolver.solve(new MaxRuntime(10, TimeUnit.SECONDS));
-        assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,2.5)));
+        assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(1,9,2)));
     }
 
     private static Map<ConstraintProblem, UtilityProvider> prepareSimpleTwoComponentConstraintProblem() {
         /*
               @var0 in {0, 1} - provider
               @var1 in {1,2,3,4,5}
-              @var3 in {0.5, 1.5, 2.5}
+              @var3 in 10* {0.5, 1.5, 2.5}
               @var2 in {0,...,9}
 
               @var4 in {0, 1}
               @var5 in {1,2,3,4,5}
-              @var7 in {0.5, 1.5, 2.5}
+              @var7 in 10 * {0.5, 1.5, 2.5}
               @var6 in {0,...,9}
 
-              @const1 = 3
+              @const1 = 30
 
-              @constraint1 : @var1 < @var3
+              @constraint1 : @var1 < @var3/10
 
               @constraint2 : @var1 * @var2 * @var3 >= @const1;
-              @constraint3: @var1 * @var2 >= @var3
+              @constraint3: @var1 * @var2 >= @var3/10
 
               @constraint4: @var3 == @var3
 
@@ -163,8 +163,8 @@ class NCSolverTest {
         dom3.setType(BasicTypeEnum.INTEGER); dom1.setType(BasicTypeEnum.INTEGER);
         dom1.setFrom(1);dom3.setFrom(0);dom1.setTo(5);dom3.setTo(9);
         NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
-        dom2.setValues(Arrays.asList(0.5, 1.5, 2.5));
-        dom2.setType(BasicTypeEnum.DOUBLE);
+        dom2.setIntValues(Arrays.asList(5, 15, 25));
+        dom2.setType(BasicTypeEnum.INTEGER);
         RangeDomainImpMockup dom0 = new RangeDomainImpMockup(); dom0.setFrom(0);dom0.setTo(1);
         dom0.setType(BasicTypeEnum.INTEGER);
 
@@ -176,18 +176,22 @@ class NCSolverTest {
         vars.add(new CpVariableImplMockup(variables.get(5), VariableType.CORES , dom1, "Component2"));
         vars.add(new CpVariableImplMockup(variables.get(6), VariableType.RAM , dom3, "Component2"));
         vars.add(new CpVariableImplMockup(variables.get(7), VariableType.STORAGE , dom2, "Component2"));
-        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(3));
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(30));
         Constant c2 = new ConstantImplMockup(BasicTypeEnum.INTEGER, new NumericValueUpperwareImplMockup(0));
+        Constant c3 = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(0.1));
 
+        EList<NumericExpression> exprs_ = new BasicEList<>();
+        exprs_.add(vars.get(3)); exprs_.add(c3);
+        NumericExpression storageDiv10 = new ComposedExpressionImplMockup(exprs_, OperatorEnum.TIMES);
         EList<NumericExpression> exprs = new BasicEList<>();
         exprs.add(vars.get(1)); exprs.add(vars.get(2));
         NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
         ComparisonExpressionMockup constraint1 = new ComparisonExpressionMockup();
-        constraint1.setExp1(vars.get(1));constraint1.setExp2(vars.get(3));
+        constraint1.setExp1(vars.get(1));constraint1.setExp2(storageDiv10);
         constraint1.setComparator(ComparatorEnum.LESS_THAN);
 
         ComparisonExpressionMockup constraint3 = new ComparisonExpressionMockup();
-        constraint3.setExp1(times);constraint3.setExp2(vars.get(3));
+        constraint3.setExp1(times);constraint3.setExp2(storageDiv10);
         constraint3.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
 
         exprs.add(vars.get(2));
@@ -234,14 +238,14 @@ class NCSolverTest {
         Location loc = new Location(); GeoLocation gl = new GeoLocation(); gl.setLatitude(100.0);gl.setLongitude(100.0);
         loc.setGeoLocation(gl);
         List<Integer> ar1 = Arrays.asList(1,2,3,4,5, 5,5,5,5,2);
-        List<Double> ar3 = Arrays.asList(0.5, 1.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5);
+        List<Integer> ar3 = Arrays.asList(5, 15, 25, 25, 25, 25, 25, 25, 25, 25);
         List<Integer> ar2 = Arrays.asList(0,1,2,3,4,5,6,7,8,9);
         List<String> names = Arrays.asList("q", "w", "e", "r", "t", "y", "u", "i", "o", "p");
         for (int i = 0; i < ar3.size(); i++) {
             Hardware hd = new Hardware();
             hd.setCores(ar1.get(i));
             hd.setRam((long) ar2.get(i));
-            hd.setDisk(ar3.get(i));
+            hd.setDisk((double) ar3.get(i));
             NodeCandidate nc = new NodeCandidate();
             nc.setLocation(loc);
             nc.setHardware(hd);
@@ -256,7 +260,7 @@ class NCSolverTest {
             Hardware hd = new Hardware();
             hd.setCores(ar1.get(i));
             hd.setRam((long) ar2.get(i));
-            hd.setDisk(ar3.get(i));
+            hd.setDisk( (double) ar3.get(i));
             NodeCandidate nc = new NodeCandidate();
             nc.setLocation(loc);
             nc.setHardware(hd);
@@ -275,10 +279,10 @@ class NCSolverTest {
         NodeCandidates nc = getNodesForTwoComponentSimpleProblem();
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
-        PTSolution solution = ncSolver.solve(new MaxRuntime(10, TimeUnit.SECONDS));
+        PTSolution solution = ncSolver.solve(new MaxRuntime(10 ,TimeUnit.SECONDS));
 
-        assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,2.5)));
-        assertTrue(solution.extractVMConfiguration(1).equals(new VMConfiguration(5,8,2.5)));
+        assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,25)));
+        assertTrue(solution.extractVMConfiguration(1).equals(new VMConfiguration(4,3,25)));
     }
 
 }

@@ -20,7 +20,7 @@ public class VMConfiguration implements Comparable<VMConfiguration>,
         VariableValueKeeperInterface, NodeCandidateElementInterface {
     private long cores;
     private long ram;
-    private double disk;
+    private long disk;
 
     @Override
     public int compareTo(VMConfiguration o) {
@@ -44,7 +44,7 @@ public class VMConfiguration implements Comparable<VMConfiguration>,
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.CORES)),
                 new Pair(new LongValue(ram), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.RAM)),
-                new Pair(new DoubleValue(disk), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair(new LongValue(disk), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.STORAGE))
         );
     }

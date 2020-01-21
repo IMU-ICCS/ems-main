@@ -33,6 +33,7 @@ package nc_solver.node_candidate;
     neighbours is to be conducted.
     Analogous masks are kept for GeographicCoordinates.
  */
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import nc_solver.cp_components.PTMover;
 import nc_solver.cp_components.PTSolution;
 import eu.paasage.upperware.metamodel.cp.VariableType;
@@ -208,23 +209,41 @@ public class NodeCandidatesPool {
         ).collect(toList());
     }
 
+    private Collection<Integer> getCardinalityNeighbours(int variable, int currentCardinality) {
+        int max = domainHandler.getMaxValue(variable).getIntValue();
+        int min = domainHandler.getMinValue(variable).getIntValue();
+        Collection<Integer> result = new ArrayList<>();
+        int value = currentCardinality + 1;
+        while (value <= max) {
+            if (domainHandler.isInDomain(new IntegerValue(value), variable)) {
+                result.add(value);
+                break;
+            }
+            value ++;
+        }
+        value = currentCardinality - 1;
+        while (value >= min) {
+            if (domainHandler.isInDomain(new IntegerValue(value), variable)) {
+                result.add(value);
+                break;
+            }
+            value--;
+        }
+        return result;
+    }
+
     private Collection<PTMover> getAllCardinalityChangeMoves(PTSolution assignment, int component) {
         int index = component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                 + VariableTypeOrderer.mapTypeToIndex(VariableType.CARDINALITY);
-        Collection<PTMover> result = new ArrayList<>();
-        if (assignment.extractCardinality(component) < domainHandler.getMaxValue(index).getIntValue()) {
-            result.add(new PTMover(assignment, assignment.updateComponentConfiguration(
-                    component, assignment.extractProvider(component), assignment.extractVMConfiguration(component),
-                    assignment.extractVMLocation(component), assignment.extractCardinality(component) + 1))
-            );
-        }
-        if (assignment.extractCardinality(component) > domainHandler.getMinValue(index).getIntValue()) {
-            result.add(new PTMover(assignment, assignment.updateComponentConfiguration(
-                    component, assignment.extractProvider(component), assignment.extractVMConfiguration(component),
-                    assignment.extractVMLocation(component), assignment.extractCardinality(component) - 1))
-            );
-        }
-        return result;
+        return getCardinalityNeighbours(index, assignment.extractCardinality(component)).stream()
+                .map( cardinality ->
+                        new PTMover(assignment,
+                                assignment.updateComponentConfiguration(
+                                    component, assignment.extractProvider(component),
+                                        assignment.extractVMConfiguration(component),
+                                        assignment.extractVMLocation(component), cardinality
+                                ))
+                ).collect(toList());
     }
 
     private Collection<PTMover> getAllProviderChangeMoves(PTSolution assignment, int component, int provider) {
@@ -283,8 +302,8 @@ public class NodeCandidatesPool {
     }
 
     private int getRandomProvider(Random random) {
-        Set<Integer> provs = vmConfigurations.keySet();
-        return provs.stream().skip(random.nextInt(provs.size())).findFirst().orElse(null);
+        Set<Integer> providers = vmConfigurations.keySet();
+        return providers.stream().skip(random.nextInt(providers.size())).findFirst().orElse(null);
     }
 
     private int getRandomCardinality(Random random, int component) {

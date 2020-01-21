@@ -37,15 +37,35 @@ public class NCSolver {
         postNodeCandidates(nodeCandidates);
     }
 
+    private VMConfiguration configurationFromNodeCandidate(NodeCandidate nodeCandidate) {
+        return new VMConfiguration(
+                nodeCandidate.getHardware().getCores(),
+                nodeCandidate.getHardware().getRam(), nodeCandidate.getHardware().getDisk().intValue()
+        );
+    }
+    /*
+        NodeCandidatesPool assume that whenever provider has some available configurations then it also
+        has at least one available location. But if CP model does not contain location then it may happen that
+        node candidate have null GeoLocations - in this case we add dummy location with latitude, longitude = 100.
+     */
+    private GeographicCoordinate locationFromNodeCandidate(NodeCandidate nodeCandidate) {
+        if (nodeCandidate.getLocation().getGeoLocation() == null) {
+            return new GeographicCoordinate(100, 100);
+        } else {
+            return new GeographicCoordinate(
+                    (long)(100 * nodeCandidate.getLocation().getGeoLocation().getLatitude()),
+                    (long)(100 *nodeCandidate.getLocation().getGeoLocation().getLongitude())
+            );
+        }
+    }
+
     private void postNodeCandidates(NodeCandidates nodeCandidates) {
         Map<String, Map<Integer, List<NodeCandidate>>> nodes = nodeCandidates.get();
         for (Map<Integer, List<NodeCandidate>> n : nodes.values()) {
-            for (Integer prov : n.keySet()) {
-                n.get(prov).stream().forEach((el) -> {
-                    candidatesPool.postVMLocation(prov,
-                            new GeographicCoordinate(el.getLocation().getGeoLocation().getLatitude(), el.getLocation().getGeoLocation().getLongitude()));
-                    candidatesPool.postVMConfiguration(prov,
-                            new VMConfiguration(el.getHardware().getCores(), el.getHardware().getRam(), el.getHardware().getDisk()));
+            for (Integer provider : n.keySet()) {
+                n.get(provider).stream().forEach((nodeCandidate) -> {
+                    candidatesPool.postVMLocation(provider, locationFromNodeCandidate(nodeCandidate));
+                    candidatesPool.postVMConfiguration(provider, configurationFromNodeCandidate(nodeCandidate));
                 });
             }
         }

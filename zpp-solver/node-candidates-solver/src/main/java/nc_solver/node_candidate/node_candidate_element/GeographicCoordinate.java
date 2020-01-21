@@ -2,6 +2,7 @@ package nc_solver.node_candidate.node_candidate_element;
 
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 public class GeographicCoordinate implements Comparable<GeographicCoordinate>,
         VariableValueKeeperInterface, NodeCandidateElementInterface {
-    private double latitude;
-    private double longitude;
+    private long latitude;
+    private long longitude;
 
     @Override
     public int compareTo(GeographicCoordinate o) {
@@ -34,9 +35,9 @@ public class GeographicCoordinate implements Comparable<GeographicCoordinate>,
     @Override
     public List<Pair<NumericValueInterface, Integer>> getValues(int component) {
         return Arrays.asList(
-                new Pair( new DoubleValue(latitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair( new LongValue(latitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.LATITUDE)),
-                new Pair( new DoubleValue(longitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair( new LongValue(longitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.LONGITUDE))
         );
     }

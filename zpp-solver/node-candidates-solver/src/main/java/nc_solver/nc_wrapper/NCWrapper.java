@@ -132,13 +132,13 @@ public class NCWrapper implements DomainProvider {
             res.put(componentTypeToName.get(new Pair(comp, VariableType.RAM)),
                     new LongValue(((VMConfiguration) assignment.get(comp).get(PTSolution.CONFIGURATION_INDEX)).getRam()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.STORAGE)),
-                    new DoubleValue(((VMConfiguration) assignment.get(comp).get(PTSolution.CONFIGURATION_INDEX)).getDisk()));
+                    new LongValue(((VMConfiguration) assignment.get(comp).get(PTSolution.CONFIGURATION_INDEX)).getDisk()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.LATITUDE)),
-                    new DoubleValue(((GeographicCoordinate) assignment.get(comp).get(PTSolution.LOCATION_INDEX)).getLatitude()));
+                    new LongValue(((GeographicCoordinate) assignment.get(comp).get(PTSolution.LOCATION_INDEX)).getLatitude()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.LONGITUDE)),
-                    new DoubleValue(((GeographicCoordinate) assignment.get(comp).get(PTSolution.LOCATION_INDEX)).getLongitude()));
+                    new LongValue(((GeographicCoordinate) assignment.get(comp).get(PTSolution.LOCATION_INDEX)).getLongitude()));
             res.put(componentTypeToName.get(new Pair(comp, VariableType.CARDINALITY)),
-                    new IntegerValue(
+                    new LongValue(
                             ((IntegerNodeCandidateElementImpl) assignment.get(comp).get(PTSolution.CARDINALITY_INDEX)).getValue()));
         }
         return res;

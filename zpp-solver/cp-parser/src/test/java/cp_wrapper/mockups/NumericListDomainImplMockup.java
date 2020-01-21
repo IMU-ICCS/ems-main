@@ -37,6 +37,12 @@ public class NumericListDomainImplMockup implements NumericListDomain {
         }
     }
 
+    public void setIntValues(List<Integer> values) {
+        for (int i = 0; i < values.size(); i++) {
+            this.values.add(new NumericValueUpperwareImplMockup(values.get(i)));
+        }
+    }
+
     @Override
     public BasicTypeEnum getType() {
         return type;
