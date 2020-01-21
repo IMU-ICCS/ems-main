@@ -9,7 +9,6 @@ public class PTObjective implements Objective<PTSolution, NCWrapper> {
     @Override
     public Evaluation evaluate(PTSolution cpSolution, NCWrapper ncWrapper) {
         Evaluation evaluation = ncWrapper.evaluate(cpSolution.getVarAssignments());
-        log.info("Solution utility: " + evaluation.getValue());
         cpSolution.setUtility(evaluation);
         return evaluation;
     }
