@@ -1,4 +1,4 @@
-import cp_components.PTSolution;
+import nc_solver.cp_components.PTSolution;
 import cp_wrapper.mockups.*;
 import cp_wrapper.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;

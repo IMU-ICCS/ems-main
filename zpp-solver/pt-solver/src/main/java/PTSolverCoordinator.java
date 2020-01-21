@@ -1,4 +1,4 @@
-import cp_components.*;
+import nc_solver.cp_components.*;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.UtilityProvider;
 import ptcp_wrapper.PTCPWrapper;
