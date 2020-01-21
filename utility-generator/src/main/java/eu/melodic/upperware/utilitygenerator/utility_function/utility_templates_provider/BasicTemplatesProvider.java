@@ -11,7 +11,7 @@ import static eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidat
 
 public class BasicTemplatesProvider {
     static String polynomial(String expr) {
-        return "(-(" + add(expr, "1") +"^2 - 1))";
+        return "(-(" + expr +"^2 - 1))";
     }
     static String inverse(String expr) {
         return "(1/" + expr + ")";

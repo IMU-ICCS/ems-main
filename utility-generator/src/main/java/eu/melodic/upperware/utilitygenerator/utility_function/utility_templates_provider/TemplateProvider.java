@@ -55,10 +55,10 @@ public class TemplateProvider {
         String CORES = getSumOfGivenTypeTimesCardinality(VariableType.CORES, variablesFromConstraintProblem);
         String DISK = getSumOfGivenTypeTimesCardinality(VariableType.STORAGE, variablesFromConstraintProblem);
         String configuration = add(
-                multiply(polynomial(inverse(DISK)), "0.333"),
+                multiply(polynomial(inverse(add(DISK, "1.0"))), "0.333"),
                 add(
-                        multiply(polynomial(inverse(CORES)), "0.333"),
-                        multiply(polynomial(inverse(RAM)), "0.333")
+                        multiply(polynomial(inverse(add(CORES, "1.0"))), "0.333"),
+                        multiply(polynomial(inverse(add(RAM, "1.0"))), "0.333")
                 )
         );
         return add(
