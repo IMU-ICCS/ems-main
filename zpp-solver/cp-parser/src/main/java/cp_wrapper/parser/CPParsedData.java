@@ -7,22 +7,24 @@ import cp_wrapper.utils.constraint.Constraint;
 import cp_wrapper.utils.ConstraintGraph;
 import cp_wrapper.utils.VariableNumericType;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
-import eu.melodic.upperware.cpsolver.solver.parser.creator.IntVarCreator;
+
+//import eu.melodic.upperware.cpsolver.solver.parser.creator.*;
 import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import lombok.Getter;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 public class CPParsedData {
     private Collection<Constant> constants;
     private Collection<CpMetric> metrics;
     private Collection<Constraint> constraints;
     private Collection<CpVariable> variables;
-    private IntVarCreator intVarCreator;
+    //private IntVarCreator intVarCreator;
+    static final List<BasicTypeEnum> ACCEPTED_INT_TYPES = Arrays.asList(BasicTypeEnum.INTEGER, BasicTypeEnum.LONG);
     @Getter
     private ConstraintGraph constraintGraph;
     private Map<String, CpVariable> nameToVariable;
@@ -32,7 +34,7 @@ public class CPParsedData {
     }
 
     protected void init() {
-        intVarCreator = new IntVarCreator();
+        //intVarCreator = new IntVarCreator();
         initializeConstraintGraph();
         initializeNameToVariable();
     }
@@ -46,6 +48,15 @@ public class CPParsedData {
         return true;
     }
 
+    BasicTypeEnum getDomainType(Domain domain) {
+        if (domain instanceof RangeDomain) {
+            return ((RangeDomain) domain).getType();
+        } else if (domain instanceof NumericListDomain) {
+            return ((NumericListDomain) domain).getType();
+        }
+        throw new RuntimeException(format("Unsupported Domain type %s, only RangeDomain and NumericListDomain are supported",
+                domain.getClass().getSimpleName()));
+    }
     public int countViolatedConstraints(Map<String, NumericValueInterface> variables) {
         return constraints.stream()
                 .map(c -> c.evaluate(variables) ?  0 : 1)
@@ -65,7 +76,7 @@ public class CPParsedData {
     }
 
     public VariableNumericType getVariableType(String name) {
-        if (intVarCreator.is(nameToVariable.get(name))) {
+        if (nameToVariable.get(name) instanceof CpVariable && ACCEPTED_INT_TYPES.contains(getDomainType((nameToVariable.get(name)).getDomain()))) {
             return VariableNumericType.INT;
         } else {
             return VariableNumericType.DOUBLE;
