@@ -29,7 +29,7 @@ public class PTSolution extends Solution
      */
     private Map<Integer, Map<Integer, NodeCandidateElementInterface>> varAssignments;
     @Getter @Setter
-    private Evaluation utility;
+    private PTEvaluation utility;
 
     public PTSolution(Map<Integer, Map<Integer, NodeCandidateElementInterface>> varAssignments) {
         this.varAssignments = varAssignments;

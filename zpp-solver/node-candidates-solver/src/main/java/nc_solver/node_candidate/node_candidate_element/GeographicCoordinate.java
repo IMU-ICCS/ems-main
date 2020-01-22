@@ -35,9 +35,9 @@ public class GeographicCoordinate implements Comparable<GeographicCoordinate>,
     @Override
     public List<Pair<NumericValueInterface, Integer>> getValues(int component) {
         return Arrays.asList(
-                new Pair( new LongValue(latitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair<>( new LongValue(latitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.LATITUDE)),
-                new Pair( new LongValue(longitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair<>( new LongValue(longitude), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.LONGITUDE))
         );
     }

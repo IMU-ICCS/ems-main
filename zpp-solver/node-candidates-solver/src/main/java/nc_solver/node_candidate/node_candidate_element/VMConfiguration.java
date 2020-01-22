@@ -40,11 +40,11 @@ public class VMConfiguration implements Comparable<VMConfiguration>,
     @Override
     public List<Pair<NumericValueInterface, Integer>> getValues(int component) {
         return Arrays.asList(
-                new Pair(new LongValue(cores), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair<>(new LongValue(cores), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.CORES)),
-                new Pair(new LongValue(ram), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair<>(new LongValue(ram), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.RAM)),
-                new Pair(new LongValue(disk), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
+                new Pair<>(new LongValue(disk), component * ComponentVariableOrderer.VARIABLES_PER_COMPONENT
                         + VariableTypeOrderer.mapTypeToIndex(VariableType.STORAGE))
         );
     }

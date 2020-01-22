@@ -8,7 +8,7 @@ import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 public class PTObjective implements Objective<PTSolution, NCWrapper> {
     @Override
     public Evaluation evaluate(PTSolution cpSolution, NCWrapper ncWrapper) {
-        Evaluation evaluation = ncWrapper.evaluate(cpSolution.getVarAssignments());
+        PTEvaluation evaluation = (PTEvaluation) ncWrapper.evaluate(cpSolution.getVarAssignments());
         cpSolution.setUtility(evaluation);
         return evaluation;
     }

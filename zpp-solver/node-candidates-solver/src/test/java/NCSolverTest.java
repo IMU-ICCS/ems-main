@@ -127,7 +127,7 @@ class NCSolverTest {
         NodeCandidates nc = getNodesForSimpleProblem();
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
-        PTSolution solution = ncSolver.solve(new MaxRuntime(10, TimeUnit.SECONDS));
+        PTSolution solution = ncSolver.solve(new MaxRuntime(20, TimeUnit.SECONDS));
         assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,3)));
     }
 
