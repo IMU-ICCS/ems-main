@@ -79,7 +79,7 @@ public class UtilityFunctionEvaluator {
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         this.fromTemplate = true;
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
-
+        this.unmoveableComponents = Collections.emptyList();
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
         String utilityFormula = TemplateProvider.getTemplate(variablesFromConstraintProblem, templates, templateWeights);
         log.info("Formula of the utility function: {}", utilityFormula);
@@ -110,14 +110,6 @@ public class UtilityFunctionEvaluator {
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
-        if (fromTemplate) {
-            return evaluateTemplate(solution);
-        } else {
-            return evaluateNoTemplate(solution);
-        }
-    }
-
-    public double evaluateNoTemplate(Collection<VariableValueDTO> solution) {
         printSolution(variablesFromConstraintProblem, solution);
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
@@ -129,23 +121,6 @@ public class UtilityFunctionEvaluator {
             return 0;
         }
 
-        Collection<Argument> allArguments = this.converters.stream()
-                .map(converter -> converter.convertToArguments(solution, newConfiguration))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-
-        return function.evaluateFunction(allArguments);
-    }
-
-    public double evaluateTemplate(Collection<VariableValueDTO> solution) {
-        printSolution(variablesFromConstraintProblem, solution);
-        log.info("Solution: " + solution.toString());
-        Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
-
-        if (newConfiguration.isEmpty()) {
-            log.info("No Node Candidate for the evaluated solution, returning 0");
-            return 0;
-        }
         Collection<Argument> allArguments = this.converters.stream()
                 .map(converter -> converter.convertToArguments(solution, newConfiguration))
                 .flatMap(Collection::stream)
