@@ -44,7 +44,6 @@ public class UtilityFunctionEvaluator {
     private Collection<ConfigurationElement> deployedConfiguration;
     private Collection<VariableDTO> variablesFromConstraintProblem;
     private NodeCandidates nodeCandidates;
-    private boolean fromTemplate = false;
     private Collection<ArgumentConverter> converters;
 
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
@@ -73,11 +72,11 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates,
+    public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+                                    MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
                                     List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
-        this.fromTemplate = true;
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
         this.unmoveableComponents = Collections.emptyList();
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();

@@ -34,14 +34,20 @@ public class UtilityGeneratorApplication {
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, penaltyFunctionProperties, jwtService);
     }
 
-    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, TemplateProvider.AvailableTemplates template) {
+    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile,
+                                       NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+                                       MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
+                                       TemplateProvider.AvailableTemplates template) {
         log.info("Creating template Utility Generator");
         utilityFunctionEvaluator =
-                new UtilityFunctionEvaluator(cpModelFilePath, nodeCandidates, Collections.singletonList(template),
+                new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
+                        melodicSecurityProperties, penaltyFunctionProperties, jwtService,
+                        Collections.singletonList(template),
                         Collections.singletonList(1.0));
     }
 
-    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates,
+    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+                                       MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
                                        List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
         log.info("Creating template Utility Generator");
         if (templateWeights.stream().collect(Collectors.summingDouble(d-> d)) > 1.0
@@ -51,7 +57,10 @@ public class UtilityGeneratorApplication {
         if (templateWeights.size() != templates.size()) {
             throw new RuntimeException("Number of templates must be equal to number of weights!");
         }
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(cpModelFilePath, nodeCandidates, templates, templateWeights);
+        utilityFunctionEvaluator =                 new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
+                melodicSecurityProperties, penaltyFunctionProperties, jwtService,
+                templates,
+                templateWeights);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
