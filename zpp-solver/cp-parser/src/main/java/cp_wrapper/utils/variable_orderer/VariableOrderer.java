@@ -5,4 +5,9 @@ package cp_wrapper.utils.variable_orderer;
  */
 public interface VariableOrderer {
     String getNameFromIndex(int var);
+
+    /*
+        True if @index represents some variable
+     */
+    boolean exists(int index);
 }

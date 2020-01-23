@@ -1,4 +1,4 @@
-package cp_components;
+package nc_solver.cp_components;
 
 import org.junit.jupiter.api.Test;
 

@@ -84,6 +84,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>eu.melodic</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${interfaces.version}</version>
@@ -93,6 +98,12 @@
                         <artifactId>jaxrs-code-generator-7bulls</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.paasage</groupId>
+                <artifactId>upperware-metamodel</artifactId>
+                <version>3.0.0-SNAPSHOT</version>
+                <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.ow2.paasage</groupId>

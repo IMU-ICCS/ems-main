@@ -1,4 +1,4 @@
-package cp_components;
+package nc_solver.cp_components;
 
 import ptcp_wrapper.PTCPWrapper;
 import org.jamesframework.core.problems.sol.RandomSolutionGenerator;
