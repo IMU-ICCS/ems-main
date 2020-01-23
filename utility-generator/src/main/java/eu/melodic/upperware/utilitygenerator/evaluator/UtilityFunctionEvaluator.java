@@ -75,6 +75,30 @@ public class UtilityFunctionEvaluator {
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                     MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
                                     List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
+        Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
+
+        FromCamelModelExtractor fromCamelModelExtractor = new FromCamelModelExtractor(camelModelFilePath, readFromFile);
+        ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, readFromFile);
+
+        this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
+        log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
+        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
+
+        String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, templates, templateWeights);
+        log.info("Formula of the utility function: {}", formula);
+        fromCamelModelExtractor.setUtilityFunctionFormula(formula);
+        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
+
+        this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+        this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
+
+        fromCamelModelExtractor.endWorkWithCamelModel();
+        constraintProblemExtractor.endWorkWithCPModel();
+    }
+
+    public UtilityFunctionEvaluator( String cpModelFilePath, NodeCandidates nodeCandidates, List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
