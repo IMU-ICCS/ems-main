@@ -66,7 +66,7 @@ public class UtilityGeneratorApplication {
     public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates,
                                        List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
         log.info("Creating template Utility Generator");
-        if (templateWeights.stream().collect(Collectors.summingDouble(d-> d)) > 1.0
+        if (templateWeights.stream().reduce(0.0, Double::sum) > 1.0
                 || templateWeights.stream().filter(d -> d < 0).count() > 0 ) {
             throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");
         }

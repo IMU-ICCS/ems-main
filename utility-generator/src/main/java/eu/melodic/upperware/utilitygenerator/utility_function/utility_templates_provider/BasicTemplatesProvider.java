@@ -72,7 +72,7 @@ public class BasicTemplatesProvider {
     }
 
     static String getSum(Collection<String> expressions) {
-        return "(sum(" + String.join("+", expressions) + "))";
+        return "(" + String.join("+", expressions) + ")";
     }
 
     static String getSumOfGivenTypeTimesCardinality(VariableType type, Collection<VariableDTO> variablesFromConstraintProblem) {
@@ -86,7 +86,7 @@ public class BasicTemplatesProvider {
                 .forEach(variableDTO -> componentToCardinalityVariable.put(variableDTO.getComponentId(),
                         variableDTO.getId()+ "*" + componentToCardinalityVariable.get(variableDTO.getComponentId())));
 
-        return "(" + String.join("+", componentToCardinalityVariable.values()) + ")";
+        return getSum(componentToCardinalityVariable.values());
     }
 
     static Collection<String> getVariablesOfGivenType(VariableType type, Collection<VariableDTO> variablesFromConstraintProblem) {
@@ -102,7 +102,7 @@ public class BasicTemplatesProvider {
                 .forEach(v -> componentCosts.add(v.getId() + "*"
                         + createAttributeName(v.getComponentId(), CamelMetadata.PRICE)));
 
-        return "(" + String.join("+", componentCosts) + ")";
+        return getSum(componentCosts);
     }
 
     static List<String> getComponentsNames(Collection<VariableDTO> variablesFromConstraintProblem) {

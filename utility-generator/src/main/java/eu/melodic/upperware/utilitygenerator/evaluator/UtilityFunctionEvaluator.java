@@ -103,6 +103,7 @@ public class UtilityFunctionEvaluator {
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
         this.unmoveableComponents = Collections.emptyList();
+        this.deployedConfiguration = Collections.emptyList();
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
         String utilityFormula = TemplateProvider.getTemplate(variablesFromConstraintProblem, templates, templateWeights);
         log.info("Formula of the utility function: {}", utilityFormula);
