@@ -1,4 +1,4 @@
-package cp_components;
+package nc_solver.cp_components;
 /*
     Class which abstracts moves in CP search space.
     There are only two types of moves:

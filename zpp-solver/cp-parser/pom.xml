@@ -6,6 +6,8 @@
         <artifactId>zpp-solver</artifactId>
         <groupId>org.ow2.paasage</groupId>
         <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,17 +17,6 @@
     <packaging>pom</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>

@@ -1,6 +1,7 @@
 package cp_wrapper.mockups;
 
 import cp_wrapper.utils.constraint.Constraint;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import lombok.AllArgsConstructor;
 
 import java.util.Collection;
@@ -16,7 +17,7 @@ public class ConstraintMockup implements Constraint {
         }
 
         @Override
-        public boolean evaluate(Map<String, Double> variables) {
+        public boolean evaluate(Map<String, NumericValueInterface> variables) {
             return false;
         }
 }
