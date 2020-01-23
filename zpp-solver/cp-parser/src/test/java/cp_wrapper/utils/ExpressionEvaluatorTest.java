@@ -1,6 +1,8 @@
 package cp_wrapper.utils;
 
 import cp_wrapper.mockups.*;
+import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
@@ -65,10 +67,10 @@ class ExpressionEvaluatorTest {
         double a = Math.random();
         NumericValueUpperware val = new NumericValueUpperwareImplMockup(a);
         Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, val);
-        assertEquals(ExpressionEvaluator.evaluateExpression(c, new HashMap<String, Double>()), a);
+        assertEquals(ExpressionEvaluator.evaluateExpression(c, new HashMap<String, NumericValueInterface>()), a);
 
         CpMetric m = new CpMetricImplMockup(BasicTypeEnum.DOUBLE, val);
-        assertEquals(ExpressionEvaluator.evaluateExpression(m, new HashMap<String, Double>()), a);
+        assertEquals(ExpressionEvaluator.evaluateExpression(m, new HashMap<String, NumericValueInterface>()), a);
     }
 
     @Test
@@ -76,8 +78,8 @@ class ExpressionEvaluatorTest {
         double a = Math.random();
         String name = "Variable11";
         CpVariable var = new CpVariableImplMockup(name, VariableType.CPU);
-        Map<String, Double> vars = new HashMap<>();
-        vars.put(name, a);
+        Map<String, NumericValueInterface> vars = new HashMap<>();
+        vars.put(name, new DoubleValue(a));
         assertEquals(ExpressionEvaluator.evaluateExpression(var, vars) , a);
     }
 
@@ -109,10 +111,10 @@ class ExpressionEvaluatorTest {
         exprs.add(minus); exprs.add(var3);
         NumericExpression composed = new ComposedExpressionImplMockup(exprs, OperatorEnum.DIV);
 
-        Map<String, Double> vars = new HashMap<>();
-        vars.put(names[0], vals[2]);
-        vars.put(names[1], vals[3]);
-        vars.put(names[2], vals[4]);
+        Map<String, NumericValueInterface> vars = new HashMap<>();
+        vars.put(names[0], new DoubleValue(vals[2]));
+        vars.put(names[1],new DoubleValue( vals[3]));
+        vars.put(names[2], new DoubleValue(vals[4]));
         assertEquals(ExpressionEvaluator.evaluateExpression(composed, vars) , realValue);
     }
 }

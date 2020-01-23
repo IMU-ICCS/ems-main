@@ -20,6 +20,11 @@ public class HeuristicVariableOrderer implements VariableOrderer {
         return indexToVariableName.get(var);
     }
 
+    @Override
+    public boolean exists(int index) {
+        return indexToVariableName.get(index) != null;
+    }
+
     /*
         For each variable record its number of constraints and number of other variables which
         appear in those constraints.

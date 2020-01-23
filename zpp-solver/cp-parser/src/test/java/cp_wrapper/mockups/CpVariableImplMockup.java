@@ -9,9 +9,16 @@ public class CpVariableImplMockup extends NumericExpressionImpl implements CpVar
     private String id;
     private VariableType type;
     private Domain domain;
+    private String componentId;
     public CpVariableImplMockup(String id, VariableType type) {
         this.id = id;
         this.type = type;
+    }
+    public CpVariableImplMockup(String id, VariableType type, Domain domain, String componentId) {
+        this.id = id;
+        this.type = type;
+        this.domain = domain;
+        this.componentId= componentId;
     }
     @Override
     public String getId() {
@@ -34,16 +41,16 @@ public class CpVariableImplMockup extends NumericExpressionImpl implements CpVar
 
     @Override
     public void setVariableType(VariableType value) {
-        this.type = type;
+        this.type = value;
     }
 
     @Override
     public String getComponentId() {
-        return id;
+        return componentId;
     }
 
     @Override
     public void setComponentId(String value) {
-        this.id = id;
+        this.componentId = componentId;
     }
 }

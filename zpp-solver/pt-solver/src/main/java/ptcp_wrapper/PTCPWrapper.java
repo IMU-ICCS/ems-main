@@ -2,8 +2,8 @@ package ptcp_wrapper;
 /*
     Thin layer on top of CPWrapper class from CPParser package.
  */
-import cp_components.PTEvaluation;
-import cp_components.PTSolution;
+import nc_solver.cp_components.PTEvaluation;
+import nc_solver.cp_components.PTSolution;
 import cp_wrapper.CPWrapper;
 import lombok.AllArgsConstructor;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;

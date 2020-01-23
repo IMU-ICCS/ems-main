@@ -1,4 +1,4 @@
-package cp_components;
+package nc_solver.cp_components;
 /*
     Neighbourhood of a search space element - V -
     is defined to be a set of all elements which may be transformed to

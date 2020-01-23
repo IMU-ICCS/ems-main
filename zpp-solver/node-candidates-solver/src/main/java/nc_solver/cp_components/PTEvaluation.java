@@ -1,11 +1,13 @@
-package cp_components;
+package nc_solver.cp_components;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 /*
     Wrapper over double type - required by James library
  */
-import lombok.AllArgsConstructor;
-import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
-
 @AllArgsConstructor
+@Data
 public class PTEvaluation implements Evaluation {
     private double value;
     @Override
