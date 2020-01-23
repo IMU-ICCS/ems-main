@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>genetic-solver</artifactId>
+    <name>Upperware - Genetic Solver</name>
     <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
