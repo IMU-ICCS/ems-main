@@ -1,4 +1,4 @@
-package cp_wrapper;
+package cp_wrapper.utility_provider;
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 

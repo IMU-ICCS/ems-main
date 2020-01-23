@@ -1,8 +1,10 @@
+package runner;
+
 import comparators.StochasticRankingComparator;
 import cPGeneticWrapper.ACPGeneticWrapper;
 import cPGeneticWrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import implementation.*;
 import io.jenetics.*;
@@ -10,13 +12,14 @@ import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.Limits;
 import io.jenetics.util.Factory;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
 
-public class GeneticSolverCoordinator {
+public class GeneticSolverRunner {
     @Setter
     private Integer populationSize = 100;
     @Setter
@@ -33,6 +36,9 @@ public class GeneticSolverCoordinator {
     private int guesses = 10;
     @Setter
     private int timeLimit = 0;
+
+    @Getter
+    private double finalUtility;
 
 
     private final Function<Genotype<ImplGene>, Double> fitnessFunction = new EvalFunction();
@@ -54,6 +60,7 @@ public class GeneticSolverCoordinator {
         Alterer<ImplGene, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
         Mutator<ImplGene, Double> mutator = new ImplMutator(mutationProbability, geneticWrapper, guesses, mutatorProbability);
         Selector<ImplGene, Double> selector = new ImplSelector(new StochasticRankingComparator(comparatorProbability));
+        ImplChromosome finalChromosome;
 
         Factory<Genotype<ImplGene>> gtf =
                 Genotype.of(ImplChromosome.of(populationSize, geneticWrapper.getSize(), geneticWrapper));
@@ -65,8 +72,13 @@ public class GeneticSolverCoordinator {
                         .build();
 
         if (timeLimit == 0)
-            return ACPGeneticWrapper.genotypeToIntegerList(engine.stream().limit(iterations).collect(EvolutionResult.toBestGenotype()));
-        return ACPGeneticWrapper.genotypeToIntegerList(engine.stream().limit(Limits.byExecutionTime(Duration.ofSeconds(timeLimit))).collect(EvolutionResult.toBestGenotype()));
+            finalChromosome = (ImplChromosome) (engine.stream().limit(iterations)
+                    .collect(EvolutionResult.toBestGenotype()).getChromosome());
+        else
+            finalChromosome = (ImplChromosome) (engine.stream().limit(Limits.byExecutionTime(Duration.ofSeconds(timeLimit)))
+                    .collect(EvolutionResult.toBestGenotype()).getChromosome());
+        finalUtility = finalChromosome.getUtility();
+        return ACPGeneticWrapper.chromosomeToIntegerList(finalChromosome);
     }
 
 }

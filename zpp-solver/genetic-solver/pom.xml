@@ -6,23 +6,20 @@
         <artifactId>zpp-solver</artifactId>
         <groupId>org.ow2.paasage</groupId>
         <version>3.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>genetic-solver</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
     <dependencies>
         <dependency>
             <groupId>io.jenetics</groupId>
             <artifactId>jenetics</artifactId>
             <version>5.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>eu.melodic</groupId>
-            <artifactId>utility-generator</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>cp-parser</artifactId>
@@ -40,11 +37,20 @@
             <groupId>eu.melodic</groupId>
             <artifactId>penalty-calculator</artifactId>
             <version>3.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>eu.melodic</groupId>
-            <artifactId>utility-generator</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

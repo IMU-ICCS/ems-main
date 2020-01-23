@@ -1,6 +1,6 @@
 package cp_wrapper.mockups;
 
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 
 import java.util.List;

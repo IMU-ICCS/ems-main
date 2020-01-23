@@ -3,9 +3,10 @@ package cPGeneticWrapper;
 import cp_wrapper.CPWrapper;
 import implementation.ImplGene;
 import io.jenetics.util.ISeq;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-
+@Slf4j
 public class CPGeneticWrapper extends ACPGeneticWrapper {
 
     public CPGeneticWrapper(CPWrapper cpWrapper) {

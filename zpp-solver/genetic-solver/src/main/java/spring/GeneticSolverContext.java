@@ -1,3 +1,5 @@
+package spring;
+
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.upperware.metamodel.cp.CpPackage;

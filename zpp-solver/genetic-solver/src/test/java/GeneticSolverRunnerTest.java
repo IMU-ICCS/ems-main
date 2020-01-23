@@ -1,7 +1,8 @@
 import cp_wrapper.CPWrapper;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.*;
 import org.junit.Test;
+import runner.GeneticSolverRunner;
 import utility.Methods;
 
 import java.util.Arrays;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class GeneticSolverCoordinatorTest {
+public class GeneticSolverRunnerTest {
 
     @Test
     public void SimpleTestGeneratedByTomek() {
@@ -18,13 +19,13 @@ public class GeneticSolverCoordinatorTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        GeneticSolverCoordinator geneticSolverCoordinator = new GeneticSolverCoordinator();
-        geneticSolverCoordinator.setMutatorProbability(0.15);
-        geneticSolverCoordinator.setPopulationSize(100);
-        geneticSolverCoordinator.setIterations(100);
-        geneticSolverCoordinator.setComparatorProbability(0.1);
+        GeneticSolverRunner geneticSolverRunner = new GeneticSolverRunner();
+        geneticSolverRunner.setMutatorProbability(0.15);
+        geneticSolverRunner.setPopulationSize(100);
+        geneticSolverRunner.setIterations(100);
+        geneticSolverRunner.setComparatorProbability(0.1);
 
-        List<Integer> assignment = geneticSolverCoordinator.run(cpWrapper);
+        List<Integer> assignment = geneticSolverRunner.run(cpWrapper);
 
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
@@ -42,13 +43,13 @@ public class GeneticSolverCoordinatorTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        GeneticSolverCoordinator geneticSolverCoordinator = new GeneticSolverCoordinator();
-        geneticSolverCoordinator.setMutatorProbability(0.1);
-        geneticSolverCoordinator.setPopulationSize(100);
-        geneticSolverCoordinator.setIterations(2000);
-        geneticSolverCoordinator.setComparatorProbability(0.05);
+        GeneticSolverRunner geneticSolverRunner = new GeneticSolverRunner();
+        geneticSolverRunner.setMutatorProbability(0.1);
+        geneticSolverRunner.setPopulationSize(100);
+        geneticSolverRunner.setIterations(2000);
+        geneticSolverRunner.setComparatorProbability(0.05);
 
-        List<Integer> assignment = geneticSolverCoordinator.run(cpWrapper);
+        List<Integer> assignment = geneticSolverRunner.run(cpWrapper);
 
 
         List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);

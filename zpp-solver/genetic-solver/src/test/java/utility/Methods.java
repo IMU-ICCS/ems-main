@@ -1,6 +1,6 @@
 package utility;
 
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.mockups.*;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;

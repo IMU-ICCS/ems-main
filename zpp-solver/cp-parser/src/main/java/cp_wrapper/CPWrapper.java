@@ -2,6 +2,7 @@ package cp_wrapper;
 
 import cp_wrapper.parser.CPParsedData;
 import cp_wrapper.parser.CPParser;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utils.DomainHandler;
 import cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import cp_wrapper.utils.VariableNumericType;

@@ -1,3 +1,5 @@
+package spring;
+
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;

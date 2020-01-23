@@ -1,7 +1,7 @@
 import cPGeneticWrapper.ACPGeneticWrapper;
 import cPGeneticWrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.*;
 
 import org.junit.Test;
