@@ -8,6 +8,7 @@ import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,12 +26,13 @@ public class PenaltyServiceImpl implements PenaltyService{
     }
 
     @Override
-    public PenaltyFunctionResult getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
+    public Optional<PenaltyFunctionResult> getPenalty(Collection<ConfigurationElement> actConfiguration, Collection<ConfigurationElement> newConfiguration) {
 
         Collection<PenaltyConfigurationElement> actConfigurationForPenalty = convertToPenaltyConfigurationElement(actConfiguration);
         Collection<PenaltyConfigurationElement> newConfigurationForPenalty = convertToPenaltyConfigurationElement(newConfiguration);
 
-        return penaltyFunction.evaluatePenaltyFunction(actConfigurationForPenalty, newConfigurationForPenalty);
+        return Optional.ofNullable(penaltyFunction.evaluatePenaltyFunction(actConfigurationForPenalty, newConfigurationForPenalty));
+
     }
 
 

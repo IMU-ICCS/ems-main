@@ -29,7 +29,8 @@ public enum CamelMetadata {
     SOURCE_AWARENESS("SourceAwareness", null,false, true, false),
     DLMS_TOTAL_UTILITY("DLMSTotalUtility", null, false, true, false),
 
-    PENALTY("AdapterUtility", null, false, false, true);
+    PENALTY("AdapterUtility", null, false, false, true),
+    RECONFIGURATION_TIME("ReconfigurationTime", null, false, false, true);
 
     public String camelName;
     public VariableType variableType;
@@ -41,6 +42,6 @@ public enum CamelMetadata {
     public static final List<CamelMetadata> VM_LIST = Collections.unmodifiableList(Arrays.asList(CORES, RAM, STORAGE, CARDINALITY, LATITUDE, LONGITUDE));
     public static final List<CamelMetadata> NC_LIST = Collections.unmodifiableList(Collections.singletonList(PRICE));
     public static final List<CamelMetadata> DLMS_LIST = Collections.unmodifiableList(Arrays.asList(AFFINITY_AWARENESS, DATA_CENTRE_AWARENESS, SOURCE_AWARENESS, DLMS_TOTAL_UTILITY));
-    public static final List<CamelMetadata> PENALTY_LIST = Collections.unmodifiableList(Collections.singletonList(PENALTY));
+    public static final List<CamelMetadata> PENALTY_LIST = Collections.unmodifiableList(Arrays.asList(PENALTY, RECONFIGURATION_TIME));
 
 }
