@@ -3,9 +3,15 @@ import eu.melodic.cache.NodeCandidates;
 import generator.ConstraintEvaluator;
 import generator.ConstraintGenerator;
 import generator.VariableGenerator;
+import io.github.cloudiator.rest.model.NodeCandidate;
 import node_candidates.NodeCandidatesPool;
+import org.javatuples.Pair;
+import utils.NamesProvider;
 
+import java.util.HashMap;
 import java.util.Random;
+import java.util.stream.IntStream;
+import java.util.*;
 
 public class Sampler {
     private final int COMPONENTS_COUNT = 5;
@@ -17,7 +23,7 @@ public class Sampler {
         return MIN_NUMBER_CONSTRAINTS + random.nextInt(MAX_NUMBER_CONSTRAINTS - MIN_NUMBER_CONSTRAINTS);
     }
 
-    public ConstraintProblemData_ sample(NodeCandidates nodeCandidates) {
+    public Pair<ConstraintProblemData_, NodeCandidates> sample(NodeCandidates nodeCandidates) {
         NodeCandidatesPool nodeCandidatesPool = new NodeCandidatesPool(nodeCandidates);
         VariableGenerator variableGenerator = new VariableGenerator(nodeCandidatesPool, COMPONENTS_COUNT);
         ConstraintEvaluator constraintEvaluator = new ConstraintEvaluator(variableGenerator, nodeCandidatesPool, COMPONENTS_COUNT);
@@ -28,6 +34,24 @@ public class Sampler {
             constraintProblem.postConstraint(constraintGenerator.generateConstraint());
             constraints--;
         }
-        return constraintProblem;
+        return new Pair<>(constraintProblem, convertNodeCandidatesToSampleProblem(nodeCandidates));
+    }
+
+    private NodeCandidates convertNodeCandidatesToSampleProblem(NodeCandidates nodeCandidates) {
+        Map<String, Map<Integer, List<NodeCandidate>>> candidates = nodeCandidates.get();
+        Map<String, Map<Integer, List<NodeCandidate>>> result = new HashMap<>();
+        IntStream.range(0, COMPONENTS_COUNT).forEach(
+                component -> {
+                    result.put(NamesProvider.getComponentName(component), new HashMap<>());
+                    candidates.forEach( (name, mapping) -> mapping.forEach(
+                            (provider, machines) -> {
+                                if (!result.get(component).containsKey(provider)) {
+                                    result.get(component).put(provider, new ArrayList<>());
+                                }
+                                result.get(component).get(provider).addAll(machines);
+                            }));
+                }
+        );
+        return NodeCandidates.of(result);
     }
 }
