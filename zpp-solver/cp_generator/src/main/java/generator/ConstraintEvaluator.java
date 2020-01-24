@@ -62,6 +62,7 @@ public class ConstraintEvaluator {
 
     private Map<String, NumericValueInterface> mapSampleToList(Map<Integer, Pair<VMConfiguration, GeographicCoordinate>> sample) {
         Map<String, NumericValueInterface> result = new HashMap<>();
+        Map<Integer, List<NumericValueInterface>> domains = variableGenerator.getVariableDomains();
         sample.keySet().stream().forEach(
                 component -> {
                     result.put(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.CORES)),
@@ -74,12 +75,12 @@ public class ConstraintEvaluator {
                             new LongValue(sample.get(component).getValue1().getLatitude()));
                     result.put(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.LONGITUDE)),
                             new LongValue(sample.get(component).getValue1().getLongitude()));
-                    List<NumericValueInterface> cardinalityDomain = variableGenerator.getVariableDomains()
-                            .get(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.CARDINALITY)));
+                    List<NumericValueInterface> cardinalityDomain = domains
+                            .get(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.CARDINALITY));
                     result.put(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.CARDINALITY)),
                             cardinalityDomain.get(random.nextInt(cardinalityDomain.size())));
-                    List<NumericValueInterface> providerDomain = variableGenerator.getVariableDomains()
-                            .get(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.PROVIDER)));
+                    List<NumericValueInterface> providerDomain = domains
+                            .get(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.PROVIDER));
                     result.put(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + VariableTypeOrderer.mapTypeToIndex(VariableType.PROVIDER)),
                             providerDomain.get(random.nextInt(providerDomain.size())));
                 }

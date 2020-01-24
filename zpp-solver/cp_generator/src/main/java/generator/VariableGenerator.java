@@ -11,7 +11,6 @@ import nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
 import nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import node_candidates.NodeCandidatesPool;
 import org.javatuples.Pair;
-import sun.rmi.rmic.Names;
 import utils.NamesProvider;
 
 import java.util.*;
@@ -28,11 +27,12 @@ public class VariableGenerator {
     private NodeCandidatesPool candidatesPool;
     private Random random = new Random();
     private final int MIN_DOMAIN_SIZE = 3;
+    private final double MIN_DOMAIN_PERCENTAGE = 0.3;
     private final int maxCardinality = 10;
     private final int minCardinality = 1;
     private int componentsCount;
     @Getter
-    private Map<Integer, List<NumericValueInterface>> variableDomains;
+    private Map<Integer, List<NumericValueInterface>> variableDomains = new HashMap<>();
     @Getter
     private Map<Integer, List<VMConfiguration>> componentToConfiguration= new HashMap<>();
     @Getter
@@ -64,6 +64,10 @@ public class VariableGenerator {
     }
 
     private List<NumericValueInterface> getLocationElementDomain(int component, VariableType type) {
+        System.out.println(component);
+        if (componentToLocation.get(component) == null) {
+            throw new RuntimeException("COCOCOCO");
+        }
         return componentToLocation.get(component).stream()
                 .map( location -> type == VariableType.LATITUDE ? location.getLatitude() : location.getLongitude())
                 .map(value -> new LongValue(value))
@@ -102,16 +106,16 @@ public class VariableGenerator {
     }
 
     private void sampleLocationDomains() {
-        List<VMConfiguration> configurations = candidatesPool.getAllConfigurations();
+        List<GeographicCoordinate> locations = candidatesPool.getAllLocations();
         IntStream.range(0, componentsCount).forEach( component ->
-                componentToConfiguration.put(component, removeRandomElementsFromList(new ArrayList<>(configurations), MIN_DOMAIN_SIZE)));
+                componentToLocation.put(component, removeRandomElementsFromList(new ArrayList<>(locations), MIN_DOMAIN_SIZE)));
     }
 
     private int sampleDomainSize(int fullDomainSize) {
-        int sampleBound = (int)((1-MIN_DOMAIN_SIZE)*fullDomainSize);
+        int sampleBound = ((int)( (1-MIN_DOMAIN_PERCENTAGE)*fullDomainSize));
         if (sampleBound == 0) return 1;
-        int r  = random.nextInt((int)((1-MIN_DOMAIN_SIZE)*fullDomainSize));
-        int size = r + (int) (MIN_DOMAIN_SIZE*fullDomainSize);
+        int r  = random.nextInt((int) ((1-MIN_DOMAIN_PERCENTAGE)*fullDomainSize));
+        int size = r + (int) (MIN_DOMAIN_PERCENTAGE*fullDomainSize);
         if (size > fullDomainSize) {
             return fullDomainSize;
         } else {
@@ -150,7 +154,6 @@ public class VariableGenerator {
     }
 
     private void sampleVariableDomains() {
-        variableDomains = new HashMap<>();
         sampleLocationDomains();
         sampleConfigurationDomains();
         range(0, getVariableCount()).filter(variable ->
@@ -161,16 +164,9 @@ public class VariableGenerator {
         );
     }
 
-    private Pair<Integer, Integer> sampleComponentPair() {
-        int component1 = random.nextInt(componentsCount);
-        int component2 = random.nextInt(componentsCount);
-        return new Pair<>(component1, component2);
-    }
-
     Pair<VariableExpression, VariableExpression> samplePairOfVariables() {
-        Pair<Integer, Integer> components = sampleComponentPair();
-        int component2 = components.getValue1();
-        int component1 = components.getValue0();
+        int component2 = random.nextInt(componentsCount);
+        int component1 = random.nextInt(componentsCount);
         List<Integer> availableVars = IntStream.range(0, NamesProvider.VARIABLES_PER_COMPONENT).boxed().collect(Collectors.toList());
         return new Pair<>(
                 new VariableExpression(NamesProvider.getVariableName(
