@@ -10,7 +10,7 @@ import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 import io.jenetics.util.Seq;
 import lombok.AllArgsConstructor;
-import sortingAlgortihms.MergeSort;
+import sorting_algortihms.MergeSort;
 
 import java.util.Comparator;
 

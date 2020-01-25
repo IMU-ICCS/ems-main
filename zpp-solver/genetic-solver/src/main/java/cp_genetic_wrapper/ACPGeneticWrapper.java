@@ -1,10 +1,9 @@
-package cPGeneticWrapper;
+package cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
 import implementation.ImplChromosome;
 import implementation.ImplGene;
 import io.jenetics.Genotype;
-import io.jenetics.Phenotype;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import lombok.AllArgsConstructor;

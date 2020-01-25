@@ -1,8 +1,8 @@
 package runner;
 
 import comparators.StochasticRankingComparator;
-import cPGeneticWrapper.ACPGeneticWrapper;
-import cPGeneticWrapper.CPGeneticWrapper;
+import cp_genetic_wrapper.ACPGeneticWrapper;
+import cp_genetic_wrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;

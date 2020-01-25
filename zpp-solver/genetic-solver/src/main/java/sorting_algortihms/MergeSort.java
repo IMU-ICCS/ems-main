@@ -1,4 +1,4 @@
-package sortingAlgortihms;
+package sorting_algortihms;
 
 import comparators.StochasticRankingComparator;
 import implementation.ImplGene;

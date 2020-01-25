@@ -1,12 +1,10 @@
 package implementation;
 
-import cPGeneticWrapper.ACPGeneticWrapper;
+import cp_genetic_wrapper.ACPGeneticWrapper;
 import comparators.AssignmentComparator;
 import io.jenetics.Chromosome;
-import io.jenetics.Gene;
 import io.jenetics.Mutator;
 import io.jenetics.MutatorResult;
-import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 
 import java.util.List;

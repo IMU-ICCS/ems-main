@@ -1,4 +1,4 @@
-import cPGeneticWrapper.ACPGeneticWrapper;
+import cp_genetic_wrapper.ACPGeneticWrapper;
 import implementation.EvalFunction;
 import implementation.ImplChromosome;
 import implementation.ImplGene;

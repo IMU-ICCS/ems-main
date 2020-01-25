@@ -1,4 +1,4 @@
-package cPGeneticWrapper;
+package cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
 import implementation.ImplGene;

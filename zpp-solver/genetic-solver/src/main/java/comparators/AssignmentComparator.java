@@ -15,7 +15,7 @@ public class AssignmentComparator {
         return compare(left.getUtility(), right.getUtility(), left.getBrokenConstraints(), right.getBrokenConstraints(), probability);
     }
 
-    public static int compare(double leftUtility, double rightUtility, int leftBroken, int rightBroken, double probability) {
+    private static int compare(double leftUtility, double rightUtility, int leftBroken, int rightBroken, double probability) {
         if (leftUtility == rightUtility && leftBroken == rightBroken)
             return 0;
 

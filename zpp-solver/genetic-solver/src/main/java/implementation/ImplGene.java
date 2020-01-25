@@ -1,6 +1,6 @@
 package implementation;
 
-import cPGeneticWrapper.ACPGeneticWrapper;
+import cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Gene;
 import io.jenetics.util.ISeq;
 import lombok.AllArgsConstructor;

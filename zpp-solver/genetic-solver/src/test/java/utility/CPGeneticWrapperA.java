@@ -1,6 +1,6 @@
 package utility;
 
-import cPGeneticWrapper.ACPGeneticWrapper;
+import cp_genetic_wrapper.ACPGeneticWrapper;
 import cp_wrapper.CPWrapper;
 import implementation.ImplGene;
 import io.jenetics.util.ISeq;
