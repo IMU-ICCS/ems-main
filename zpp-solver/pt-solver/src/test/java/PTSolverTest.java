@@ -1,7 +1,7 @@
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import cp_wrapper.mockups.*;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
@@ -105,7 +105,7 @@ class PTSolverTest {
         Map<ConstraintProblem, UtilityProvider> problem = prepareSimpleConstraintProblem();
         PTSolver solver = new PTSolver(1, 10, 4,
                 problem.keySet().iterator().next(), problem.values().iterator().next());
-        PTSolution solution = solver.solve(new MaxRuntime(10, TimeUnit.SECONDS));
+        PTSolution solution = solver.solvePTSolution(new MaxRuntime(10, TimeUnit.SECONDS));
 
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);

@@ -4,13 +4,14 @@ package eu.melodic.upperware.pt_solver.pt_solver.components;
     is defined to be a set of all elements which may be transformed to
     V with one move.
  */
+import lombok.extern.slf4j.Slf4j;
 import org.jamesframework.core.search.neigh.Move;
 import org.jamesframework.core.search.neigh.Neighbourhood;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+@Slf4j
 public class PTNeighbourhood implements Neighbourhood<PTSolution> {
     @Override
     public Move<? super PTSolution> getRandomMove(PTSolution cpSolution, Random random) {
@@ -30,6 +31,7 @@ public class PTNeighbourhood implements Neighbourhood<PTSolution> {
                 moves.add(PTMover.newDownMove(i));
             }
         }
+        log.debug("Calculating neighbourhood of solution: " +cpSolution.toString() + " number of moves: " + moves.size());
         return moves;
     }
 }

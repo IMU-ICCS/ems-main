@@ -27,4 +27,9 @@ public class PTSolverController {
         ptSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
         log.info("Sleeping...");
     }
+
+    @RequestMapping(value = "/constraintProblemSolutionFromFileWithTemplate", method = POST)
+    public void constraintProblemSolutionFromFileWithTemplate(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
+       throw new RuntimeException("Not implemented yet");
+    }
 }

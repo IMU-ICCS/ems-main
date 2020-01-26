@@ -5,20 +5,27 @@ package eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTEvaluation;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import cp_wrapper.CPWrapper;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 @AllArgsConstructor
+@Slf4j
 public class PTCPWrapper {
     private CPWrapper cpWrapper;
 
     public Evaluation evaluate(List<Integer> assignments) {
+        log.debug("Evaluating solution " + assignments.toString());
         if (cpWrapper.checkIfFeasible(assignments)) {
-            return new PTEvaluation(cpWrapper.getUtility(assignments));
+            Evaluation evaluation = new PTEvaluation(cpWrapper.getUtility(assignments));
+            log.debug("Solution is feasible, utility value: " + evaluation.getValue());
+            return evaluation;
         } else {
+            log.debug("Solution is not feasible, returning 0");
             return new PTEvaluation(0);
         }
     }
@@ -33,6 +40,9 @@ public class PTCPWrapper {
         return cpWrapper.getMinDomainValue(variable);
     }
 
+    public List<VariableValueDTO> solutionToVariableValueDTOList(PTSolution solution) {
+        return cpWrapper.assignmentToVariableValueDTOList(solution.getVarAssignments());
+    }
     /*
         Generates random (uniform) value for variable @variable
      */

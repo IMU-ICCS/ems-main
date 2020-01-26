@@ -1,7 +1,7 @@
 package nc_solver;
 
 import nc_solver.cp_components.*;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.cache.NodeCandidates;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import nc_solver.nc_wrapper.NCWrapper;

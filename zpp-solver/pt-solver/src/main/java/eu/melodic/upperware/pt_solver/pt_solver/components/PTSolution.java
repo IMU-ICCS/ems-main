@@ -3,14 +3,16 @@ package eu.melodic.upperware.pt_solver.pt_solver.components;
     Search space element for Parallel Tempering
  */
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import org.jamesframework.core.problems.sol.Solution;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @AllArgsConstructor
+@EqualsAndHashCode
 public class PTSolution extends Solution {
     public static List<Integer> minVariableValues;
     public static List<Integer> maxVariableValues;
@@ -19,15 +21,13 @@ public class PTSolution extends Solution {
      */
     @Getter
     private List<Integer> varAssignments;
+    @Getter@Setter
+    private PTEvaluation utility;
 
-    protected void increaseValue(int variableIndex) {
-        varAssignments.set(variableIndex, varAssignments.get(variableIndex) + 1);
+    public PTSolution(List<Integer> varAssignments) {
+        this.varAssignments = varAssignments;
+        utility = new PTEvaluation(0.0);
     }
-
-    protected void decreaseValue(int variableIndex) {
-        varAssignments.set(variableIndex, varAssignments.get(variableIndex) - 1);
-    }
-
     /*
         True if increasing current @var variable value by one will not exceed
         domain range
@@ -49,32 +49,12 @@ public class PTSolution extends Solution {
         return new PTSolution(varsClone);
     }
 
-    private boolean equals(PTSolution s) {
-        if (s.varAssignments.size() != varAssignments.size()) {
-            return false;
-        }
-        for (int i = 0; i < varAssignments.size(); i++) {
-            if (s.varAssignments.get(i) != varAssignments.get(i)) {
-                return false;
-            }
-        }
-        return true;
+    protected void increaseValue(int variableIndex) {
+        varAssignments.set(variableIndex, varAssignments.get(variableIndex) + 1);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        final PTSolution other = (PTSolution) o;
-        return equals(other);
+    protected void decreaseValue(int variableIndex) {
+        varAssignments.set(variableIndex, varAssignments.get(variableIndex) - 1);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(varAssignments);
-    }
 }

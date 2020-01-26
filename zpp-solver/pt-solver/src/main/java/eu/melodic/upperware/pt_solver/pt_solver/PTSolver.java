@@ -5,17 +5,21 @@ import eu.melodic.upperware.pt_solver.pt_solver.components.PTObjective;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTRandomGenerator;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper.PTCPWrapper;
-import nc_solver.cp_components.*;
 import cp_wrapper.CPWrapper;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import lombok.extern.slf4j.Slf4j;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
 import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.List;
 
+@Slf4j
 public class PTSolver {
     private PTCPWrapper ptcpWrapper;
     private Problem<PTSolution> CPProblem;
@@ -34,21 +38,29 @@ public class PTSolver {
         preparePTSolver();
     }
 
-    /*
-        This method must return something different - PTSolution is only for tests.
-     */
-    public PTSolution solve(StopCriterion stopCriterion) {
-        // np new MaxRuntime(timeLimit, TimeUnit.SECONDS)
+    public Pair<List<VariableValueDTO>, Double> solve(StopCriterion stopCriterion) {
         parallelTemperingSolver.addStopCriterion(stopCriterion);
         parallelTemperingSolver.start();
 
-        if(parallelTemperingSolver.getBestSolution() != null){
-           return parallelTemperingSolver.getBestSolution();
+        if(parallelTemperingSolver.getBestSolution() != null) {
+            PTSolution bestSolution = parallelTemperingSolver.getBestSolution();
+           return new Pair<>(ptcpWrapper.solutionToVariableValueDTOList(bestSolution), bestSolution.getUtility().getValue());
         } else {
-            System.out.println("No valid solution found...");
+            log.info("No valid solution found...");
         }
         throw new RuntimeException("Couldn't find a solution");
-        //TODO should return solution;
+    }
+
+    public PTSolution solvePTSolution(StopCriterion stopCriterion) {
+        parallelTemperingSolver.addStopCriterion(stopCriterion);
+        parallelTemperingSolver.start();
+
+        if(parallelTemperingSolver.getBestSolution() != null) {
+            return parallelTemperingSolver.getBestSolution();
+        } else {
+            log.info("No valid solution found...");
+        }
+        throw new RuntimeException("Couldn't find a solution");
     }
 
     private void setMaxMinDomainValues() {

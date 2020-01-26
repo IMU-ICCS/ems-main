@@ -2,7 +2,7 @@ package nc_solver.nc_wrapper;
 
 import nc_solver.cp_components.PTEvaluation;
 import nc_solver.cp_components.PTSolution;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.parser.CPParsedData;
 import cp_wrapper.parser.CPParser;
 import cp_wrapper.utils.DomainHandler;

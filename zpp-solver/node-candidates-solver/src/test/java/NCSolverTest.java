@@ -1,5 +1,5 @@
 import nc_solver.cp_components.PTSolution;
-import cp_wrapper.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.mockups.*;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
