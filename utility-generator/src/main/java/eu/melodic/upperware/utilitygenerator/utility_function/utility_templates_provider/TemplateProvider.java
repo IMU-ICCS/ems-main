@@ -2,10 +2,10 @@ package eu.melodic.upperware.utilitygenerator.utility_function.utility_templates
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import  java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +27,7 @@ public class TemplateProvider {
 
     @SafeVarargs
     public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem,
-                                     Pair<AvailableTemplates, Double>... utilityComponents) {
+                                     Map.Entry<AvailableTemplates, Double>... utilityComponents) {
                 return getSum( Stream.of(utilityComponents).map( (template) ->
                                 multiply( template.getValue().toString(), getTemplate(variablesFromConstraintProblem, template.getKey()))
                 ).collect(Collectors.toList()));

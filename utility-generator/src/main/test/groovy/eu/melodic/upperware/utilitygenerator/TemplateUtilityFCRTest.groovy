@@ -10,7 +10,7 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.Hardware
 import io.github.cloudiator.rest.model.NodeCandidate
-import javafx.util.Pair
+import java.util.AbstractMap;
 import lombok.extern.slf4j.Slf4j
 import spock.lang.Specification
 @Slf4j
@@ -130,14 +130,14 @@ class TemplateUtilityFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(lbStorageName, 10))
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
-                        mockNodeCandidates, new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0))
+                        mockNodeCandidates, new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
                         mockNodeCandidates,
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5),
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5*0.333),
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5*0.333),
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5*0.333))
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)
@@ -173,14 +173,14 @@ class TemplateUtilityFCRTest extends Specification{
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
                         mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0))
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
                         mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5),
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5*0.333),
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5*0.333),
-                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5*0.333))
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)

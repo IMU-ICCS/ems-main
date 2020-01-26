@@ -25,7 +25,6 @@ import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
 
@@ -75,7 +74,7 @@ public class UtilityFunctionEvaluator {
 
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                     MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
-                                    Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+                                    Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
@@ -99,7 +98,7 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
