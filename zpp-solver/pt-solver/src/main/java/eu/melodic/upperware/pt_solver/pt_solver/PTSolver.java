@@ -44,6 +44,8 @@ public class PTSolver {
 
         if(parallelTemperingSolver.getBestSolution() != null) {
             PTSolution bestSolution = parallelTemperingSolver.getBestSolution();
+            PTObjective objective = new PTObjective();
+            objective.evaluate(bestSolution, ptcpWrapper);
            return new Pair<>(ptcpWrapper.solutionToVariableValueDTOList(bestSolution), bestSolution.getUtility().getValue());
         } else {
             log.info("No valid solution found...");

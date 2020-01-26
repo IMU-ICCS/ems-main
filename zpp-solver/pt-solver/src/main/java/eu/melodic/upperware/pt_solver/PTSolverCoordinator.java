@@ -64,8 +64,8 @@ public class PTSolverCoordinator {
 
     private JWTService jwtService;
 
-    private double minTemp = 1;
-    private double maxTemp = 100;
+    private double minTemp = 100;
+    private double maxTemp = 10000;
     private int numThreads = 10;
     private int seconds = 10;
 
