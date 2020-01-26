@@ -1,4 +1,4 @@
-import nc_solver.cp_components.PTSolution;
+import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
 import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.mockups.*;
 import eu.melodic.cache.NodeCandidates;
@@ -9,8 +9,8 @@ import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.Hardware;
 import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import nc_solver.NCSolver;
-import nc_solver.node_candidate.node_candidate_element.VMConfiguration;
+import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.jamesframework.core.search.stopcriteria.MaxRuntime;
