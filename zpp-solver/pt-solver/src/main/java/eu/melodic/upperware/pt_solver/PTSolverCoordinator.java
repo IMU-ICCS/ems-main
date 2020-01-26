@@ -86,7 +86,7 @@ public class PTSolverCoordinator {
 
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
         } catch (Exception e) {
-            log.error("CPSolver returned exception.", e);
+            log.error("PTSolver returned exception.", e);
         }
     }
 

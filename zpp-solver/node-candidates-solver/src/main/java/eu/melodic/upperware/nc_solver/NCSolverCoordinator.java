@@ -74,7 +74,7 @@ public class NCSolverCoordinator {
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
-
+            log.info("Starting NC Solver with " + numThreads + " threads for " + seconds + " seconds");
             NCSolver solver = new NCSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator), nodeCandidates);
             Pair<List<VariableValueDTO>, Double> solution  = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
             log.info("Found solution with utility: " + solution.getValue1());
@@ -86,7 +86,7 @@ public class NCSolverCoordinator {
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
 
         } catch (Exception e) {
-            log.error("CPSolver returned exception.", e);
+            log.error("NCSolver returned exception.", e);
         }
     }
 
