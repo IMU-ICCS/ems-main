@@ -127,7 +127,7 @@ class NCSolverTest {
         NodeCandidates nc = getNodesForSimpleProblem();
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
-        PTSolution solution = ncSolver.solve(new MaxRuntime(20, TimeUnit.SECONDS));
+        PTSolution solution = ncSolver.solvePTSolution(new MaxRuntime(20, TimeUnit.SECONDS));
         assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,3)));
     }
 
@@ -275,7 +275,7 @@ class NCSolverTest {
         NodeCandidates nc = getNodesForTwoComponentSimpleProblem();
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
-        PTSolution solution = ncSolver.solve(new MaxRuntime(10 ,TimeUnit.SECONDS));
+        PTSolution solution = ncSolver.solvePTSolution(new MaxRuntime(10 ,TimeUnit.SECONDS));
 
         assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,3)));
         assertTrue(solution.extractVMConfiguration(1).equals(new VMConfiguration(4,3,3)));

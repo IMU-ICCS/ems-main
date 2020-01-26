@@ -64,7 +64,7 @@ public class NCSolverCoordinator {
 
     private double minTemp = 100;
     private double maxTemp = 10000;
-    private int numThreads = 10;
+    private int numThreads = 1;
     private int seconds = 10;
 
 
