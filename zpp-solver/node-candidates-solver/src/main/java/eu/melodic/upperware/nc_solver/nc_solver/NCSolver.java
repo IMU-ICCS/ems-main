@@ -41,18 +41,10 @@ public class NCSolver {
     }
 
     public Pair<List<VariableValueDTO>, Double> solve(StopCriterion stopCriterion) {
-        parallelTemperingSolver.addStopCriterion(stopCriterion);
-        parallelTemperingSolver.start();
-
-        if(parallelTemperingSolver.getBestSolution() != null){
-            PTSolution bestSolution = parallelTemperingSolver.getBestSolution();
-            PTObjective objective = new PTObjective();
-            objective.evaluate(bestSolution, ncWrapper);
-            return new Pair<>(ncWrapper.covertSolutionToVariableValueDTO(bestSolution), bestSolution.getUtility().getValue());
-        } else {
-            log.info("No valid solution found...");
-        }
-        throw new RuntimeException("Couldn't find a solution");
+        PTSolution bestSolution = solvePTSolution(stopCriterion);
+        PTObjective objective = new PTObjective();
+        objective.evaluate(bestSolution, ncWrapper);
+        return new Pair<>(ncWrapper.covertSolutionToVariableValueDTO(bestSolution), bestSolution.getUtility().getValue());
     }
 
     public PTSolution solvePTSolution(StopCriterion stopCriterion) {
