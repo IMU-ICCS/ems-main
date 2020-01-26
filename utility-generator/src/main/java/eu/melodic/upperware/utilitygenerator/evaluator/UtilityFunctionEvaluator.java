@@ -25,6 +25,7 @@ import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
 
@@ -74,7 +75,7 @@ public class UtilityFunctionEvaluator {
 
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                     MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
-                                    List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
+                                    Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
@@ -86,7 +87,7 @@ public class UtilityFunctionEvaluator {
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
-        String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, templates, templateWeights);
+        String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
         log.info("Formula of the utility function: {}", formula);
         fromCamelModelExtractor.setUtilityFunctionFormula(formula);
         NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
@@ -98,14 +99,14 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    public UtilityFunctionEvaluator( String cpModelFilePath, NodeCandidates nodeCandidates, List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
+    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
         this.unmoveableComponents = Collections.emptyList();
         this.deployedConfiguration = Collections.emptyList();
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
-        String utilityFormula = TemplateProvider.getTemplate(variablesFromConstraintProblem, templates, templateWeights);
+        String utilityFormula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
         log.info("Formula of the utility function: {}", utilityFormula);
         TemplateNodeCandidatesConverter nodeCandidatesConverter
                 = new TemplateNodeCandidatesConverter(nodeCandidates, this.variablesFromConstraintProblem);

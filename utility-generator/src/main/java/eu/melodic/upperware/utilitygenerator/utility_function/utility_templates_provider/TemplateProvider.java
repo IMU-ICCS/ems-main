@@ -2,11 +2,12 @@ package eu.melodic.upperware.utilitygenerator.utility_function.utility_templates
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.BasicTemplatesProvider.*;
 
@@ -14,83 +15,69 @@ import static eu.melodic.upperware.utilitygenerator.utility_function.utility_tem
 public class TemplateProvider {
 
     public enum AvailableTemplates {
-        ONLY_COST,
-        CORES_RAM_DISK_COST,
-        CORES_RAM_DISK_COST_DISTANCE,
-        CORES_RAM_DISK_COST_DISTANCE_MIN_MAX
+        COST,
+        CORES,
+        RAM,
+        DISK,
+        DISTANCE,
+        CORES_MIN_MAX,
+        DISK_MIN_MAX,
+        RAM_MIN_MAX
     };
 
     public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem,
-                                     List<AvailableTemplates> templates, List<Double> templateWeights) {
-        if (templates.size() == 1) {
-            return getTemplate(variablesFromConstraintProblem, templates.get(0));
-        } else {
-                return getSum(
-                        templates.stream().map(
-                        template ->
-                                multiply(templateWeights.get(templates.indexOf(template)).toString(),
-                                        getTemplate(variablesFromConstraintProblem, template))
+                                     Pair<AvailableTemplates, Double>... utilityComponents) {
+                return getSum( Stream.of(utilityComponents).map( (template) ->
+                                multiply( template.getValue().toString(), getTemplate(variablesFromConstraintProblem, template.getKey()))
                 ).collect(Collectors.toList()));
-        }
     }
 
     private static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem, AvailableTemplates type) {
         switch (type){
-            case ONLY_COST:
+            case COST:
                 return getOnlyCostUtility(variablesFromConstraintProblem);
-            case CORES_RAM_DISK_COST:
-                return getSimpleUtility(variablesFromConstraintProblem);
-            case CORES_RAM_DISK_COST_DISTANCE:
-                return getUtilityWithDistanceMinimization(variablesFromConstraintProblem);
-            default: //CORES_RAM_DISK_COST_DISTANCE_MIN_MAX
-                return getUtilityMinMaxCores(variablesFromConstraintProblem);
+            case CORES:
+            case RAM:
+            case DISK:
+                return polynomial(inverse(add(getSumOfGivenTypeTimesCardinality(templateToVariableType(type), variablesFromConstraintProblem), "1.0")));
+            case DISTANCE:
+                return getDistance(variablesFromConstraintProblem);
+            case RAM_MIN_MAX:
+            case DISK_MIN_MAX:
+            case CORES_MIN_MAX:
+                return getMinMaxPenalty(variablesFromConstraintProblem, templateToVariableType(type));
         }
+        throw new RuntimeException("Template type " + type.name() + " is not supported yet");
     }
-    /*
-        0.5 * 1/Price + 0.5* (  -0.333*( 1/(CORES + 1)^2 -1 )  -0.333*( 1/(RAM + 1)^2 -1 )  -0.333*( 1/(DISK + 1)^2 -1 ))
-     */
-    private static String getSimpleUtility(Collection<VariableDTO> variablesFromConstraintProblem) {
-        String cost = inverse(getCostFormula(variablesFromConstraintProblem));
-        String RAM = getSumOfGivenTypeTimesCardinality(VariableType.RAM, variablesFromConstraintProblem);
-        String CORES = getSumOfGivenTypeTimesCardinality(VariableType.CORES, variablesFromConstraintProblem);
-        String DISK = getSumOfGivenTypeTimesCardinality(VariableType.STORAGE, variablesFromConstraintProblem);
-        String configuration = add(
-                multiply(polynomial(inverse(add(DISK, "1.0"))), "0.333"),
-                add(
-                        multiply(polynomial(inverse(add(CORES, "1.0"))), "0.333"),
-                        multiply(polynomial(inverse(add(RAM, "1.0"))), "0.333")
-                )
-        );
-        return add(
-                multiply(cost, "0.5"),
-                multiply(configuration, "0.5")
-        );
+
+    private static VariableType templateToVariableType(AvailableTemplates type) {
+        switch (type) {
+            case RAM:
+            case RAM_MIN_MAX:
+                return VariableType.RAM;
+            case DISK:
+            case DISK_MIN_MAX:
+                return VariableType.STORAGE;
+            case CORES:
+            case CORES_MIN_MAX:
+                return VariableType.CORES;
+        }
+        throw new RuntimeException("Can't covert template " + type.name() + " to variable type");
     }
 
     private static String getOnlyCostUtility(Collection<VariableDTO> variablesFromConstraintProblem) {
         return inverse(getCostFormula(variablesFromConstraintProblem));
     }
 
-    private static String getUtilityWithDistanceMinimization(Collection<VariableDTO> variablesFromConstraintProblem) {
+    private static String getDistance(Collection<VariableDTO> variablesFromConstraintProblem) {
         Collection<String> distances = getDistancesBetweenConsecutiveComponents(variablesFromConstraintProblem);
-        String utility = getSimpleUtility(variablesFromConstraintProblem);
         distances = distances.stream().map(v -> invExp(v)).collect(Collectors.toList());
-        Integer componentsCount = getComponentsCount(variablesFromConstraintProblem);
-        return add(
-                multiply(utility,"0.7"), multiply(inverse(
-                multiply(componentsCount.toString(), String.join("+", distances))
-        ), "0.3"));
+        return multiply(getComponentsCount(variablesFromConstraintProblem).toString(), String.join("+", distances));
     }
 
-    private static String getUtilityMinMaxCores(Collection<VariableDTO> variablesFromConstraintProblem) {
-        String maxCores = getMax(getVariablesOfGivenType(VariableType.CORES, variablesFromConstraintProblem));
-        String minCores = getMin(getVariablesOfGivenType(VariableType.CORES, variablesFromConstraintProblem));
-        String coresDifference = normalizedMinusArcTangens(minus(maxCores, minCores));
-        Collection<String> distances = getDistancesBetweenConsecutiveComponents(variablesFromConstraintProblem);
-        distances = distances.stream().map(v -> invExp(v)).collect(Collectors.toList());
-        return add(
-                multiply(getSimpleUtility(variablesFromConstraintProblem),"0.5"),
-                multiply( "0.5", multiply(getProduct(distances), coresDifference))
-        );
+    private static String getMinMaxPenalty(Collection<VariableDTO> variablesFromConstraintProblem, VariableType type) {
+        String maxOfType = getMax(getVariablesOfGivenType(type, variablesFromConstraintProblem));
+        String minOfType = getMin(getVariablesOfGivenType(type, variablesFromConstraintProblem));
+        return normalizedMinusArcTangens(minus(maxOfType, minOfType));
     }
 }

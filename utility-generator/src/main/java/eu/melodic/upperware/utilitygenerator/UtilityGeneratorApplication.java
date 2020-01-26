@@ -16,12 +16,11 @@ import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperti
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 public class UtilityGeneratorApplication {
@@ -34,55 +33,30 @@ public class UtilityGeneratorApplication {
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, penaltyFunctionProperties, jwtService);
     }
 
-    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile,
-                                       NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
-                                       MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
-                                       TemplateProvider.AvailableTemplates template) {
-        log.info("Creating template Utility Generator");
-        utilityFunctionEvaluator =
-                new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
-                        melodicSecurityProperties, penaltyFunctionProperties, jwtService,
-                        Collections.singletonList(template),
-                        Collections.singletonList(1.0));
-    }
-
     public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                        MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
-                                       List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
+                                       Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
         log.info("Creating template Utility Generator");
-        if (templateWeights.stream().collect(Collectors.summingDouble(d-> d)) > 1.0
-                || templateWeights.stream().filter(d -> d < 0).count() > 0 ) {
-            throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");
-        }
-        if (templateWeights.size() != templates.size()) {
-            throw new RuntimeException("Number of templates must be equal to number of weights!");
-        }
+        checkWeightsOfUtilityComponents(utilityComponents);
         utilityFunctionEvaluator =                 new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
-                melodicSecurityProperties, penaltyFunctionProperties, jwtService,
-                templates,
-                templateWeights);
+                melodicSecurityProperties, penaltyFunctionProperties, jwtService, utilityComponents);
     }
 
-    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates,
-                                       List<TemplateProvider.AvailableTemplates> templates, List<Double> templateWeights) {
+    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
         log.info("Creating template Utility Generator");
-        if (templateWeights.stream().reduce(0.0, Double::sum) > 1.0
-                || templateWeights.stream().filter(d -> d < 0).count() > 0 ) {
-            throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");
-        }
-        if (templateWeights.size() != templates.size()) {
-            throw new RuntimeException("Number of templates must be equal to number of weights!");
-        }
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator( cpModelFilePath,  nodeCandidates, templates, templateWeights);
-    }
-
-    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, TemplateProvider.AvailableTemplates template) {
-        log.info("Creating template Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator( cpModelFilePath,  nodeCandidates, Collections.singletonList(template), Collections.singletonList(1.0));
+        checkWeightsOfUtilityComponents(utilityComponents);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator( cpModelFilePath,  nodeCandidates, utilityComponents);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
         return this.utilityFunctionEvaluator.evaluate(solution);
+    }
+
+    private void checkWeightsOfUtilityComponents(Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+        if (Stream.of(utilityComponents).map(Pair::getValue).reduce(0.0, Double::sum) > 1.0
+                || Stream.of(utilityComponents).map(Pair::getValue).anyMatch(weight -> weight < 0)) {
+            throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");
+        }
     }
 
 }
