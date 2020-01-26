@@ -25,6 +25,7 @@ public class TemplateProvider {
         RAM_MIN_MAX
     };
 
+    @SafeVarargs
     public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem,
                                      Pair<AvailableTemplates, Double>... utilityComponents) {
                 return getSum( Stream.of(utilityComponents).map( (template) ->
@@ -71,7 +72,7 @@ public class TemplateProvider {
 
     private static String getDistance(Collection<VariableDTO> variablesFromConstraintProblem) {
         Collection<String> distances = getDistancesBetweenConsecutiveComponents(variablesFromConstraintProblem);
-        distances = distances.stream().map(v -> invExp(v)).collect(Collectors.toList());
+        distances = distances.stream().map(BasicTemplatesProvider::invExp).collect(Collectors.toList());
         return multiply(getComponentsCount(variablesFromConstraintProblem).toString(), String.join("+", distances));
     }
 

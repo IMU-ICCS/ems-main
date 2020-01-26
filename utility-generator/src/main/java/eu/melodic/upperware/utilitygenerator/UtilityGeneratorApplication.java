@@ -33,6 +33,7 @@ public class UtilityGeneratorApplication {
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, penaltyFunctionProperties, jwtService);
     }
 
+    @SafeVarargs
     public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                        MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
                                        Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
@@ -42,6 +43,7 @@ public class UtilityGeneratorApplication {
                 melodicSecurityProperties, penaltyFunctionProperties, jwtService, utilityComponents);
     }
 
+    @SafeVarargs
     public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
         log.info("Creating template Utility Generator");
         checkWeightsOfUtilityComponents(utilityComponents);
@@ -52,7 +54,8 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(solution);
     }
 
-    private void checkWeightsOfUtilityComponents(Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+    @SafeVarargs
+    private final void checkWeightsOfUtilityComponents(Pair<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
         if (Stream.of(utilityComponents).map(Pair::getValue).reduce(0.0, Double::sum) > 1.0
                 || Stream.of(utilityComponents).map(Pair::getValue).anyMatch(weight -> weight < 0)) {
             throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");

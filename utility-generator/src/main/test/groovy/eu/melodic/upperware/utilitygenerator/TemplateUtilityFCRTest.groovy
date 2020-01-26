@@ -10,6 +10,7 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.Hardware
 import io.github.cloudiator.rest.model.NodeCandidate
+import javafx.util.Pair
 import lombok.extern.slf4j.Slf4j
 import spock.lang.Specification
 @Slf4j
@@ -45,7 +46,6 @@ class TemplateUtilityFCRTest extends Specification{
     String path = "src/main/test/resources/FCR.xmi"
 
     Collection<IntVariableValueDTO> newConfiguration = new ArrayList<>()
-    List<Double> weights = Arrays.asList(0.3d, 0.7d)
 
     def setup() {
         NodeCandidate nodeCandidate = GroovyMock(NodeCandidate)
@@ -130,28 +130,23 @@ class TemplateUtilityFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(lbStorageName, 10))
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
-                        mockNodeCandidates, TemplateProvider.AvailableTemplates.ONLY_COST)
+                        mockNodeCandidates, new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
-                        mockNodeCandidates, TemplateProvider.AvailableTemplates.CORES_RAM_DISK_COST)
-        UtilityGeneratorApplication utilityGeneratorCombined =
-                new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
-                        mockNodeCandidates, Arrays.asList(TemplateProvider.AvailableTemplates.CORES_RAM_DISK_COST, TemplateProvider.AvailableTemplates.ONLY_COST),
-                        weights)
-
+                        mockNodeCandidates,
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5),
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5*0.333),
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5*0.333),
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5*0.333))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)
-        double resultCombined = utilityGeneratorCombined.evaluate(newConfiguration)
         double expectedResult2 = 0.5 * 1/40.0 + 0.5*(-0.333 * (1/(81) -1) -0.333 * (1/(16008001) -1)-0.333 * (1/(1681) -1))
-        double expectedResultCombined = 0.7* result + 0.3*result2;
 
         then:
         noExceptionThrown()
-        result == 1/40.0
+        result == 1/40.0d
         Math.abs(result2 - expectedResult2) <= 0.001
-        Math.abs(resultCombined - expectedResultCombined) <= 0.001
-
     }
 
     def "FCR template evaluation test with full constructor"() {
@@ -177,26 +172,23 @@ class TemplateUtilityFCRTest extends Specification{
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties, TemplateProvider.AvailableTemplates.ONLY_COST)
+                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties, TemplateProvider.AvailableTemplates.CORES_RAM_DISK_COST)
-        UtilityGeneratorApplication utilityGeneratorCombined =
-                new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
                         mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
-                        Arrays.asList(TemplateProvider.AvailableTemplates.CORES_RAM_DISK_COST, TemplateProvider.AvailableTemplates.ONLY_COST),
-                        weights)
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5),
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5*0.333),
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5*0.333),
+                        new Pair<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5*0.333))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)
-        double resultCombined = utilityGeneratorCombined.evaluate(newConfiguration)
         double expectedResult2 = 0.5 * 1/40.0 + 0.5*(-0.333 * (1/(81) -1) -0.333 * (1/(16008001) -1)-0.333 * (1/(1681) -1))
-        double expectedResultCombined = 0.7* result + 0.3*result2;
 
         then:
         noExceptionThrown()
-        result == 1/40.0
+        result == 1/40.0d
         Math.abs(result2 - expectedResult2) <= 0.001
-        Math.abs(resultCombined - expectedResultCombined) <= 0.001
     }
 }

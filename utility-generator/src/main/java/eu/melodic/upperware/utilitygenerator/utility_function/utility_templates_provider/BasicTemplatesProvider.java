@@ -39,7 +39,7 @@ public class BasicTemplatesProvider {
     /*
         @expr should be an Latitude / Longitude variable
      */
-    static String convertToRadians(String expr) {
+    private static String convertToRadians(String expr) {
         return "((pi/18000)*" + expr + ")";
     }
 
@@ -48,7 +48,7 @@ public class BasicTemplatesProvider {
         return "(" + String.join("+", variables) + ")";
     }
 
-    static String getDistanceFormula(String lat1, String longt1, String lat2, String longt2) {
+    private static String getDistanceFormula(String lat1, String longt1, String lat2, String longt2) {
         lat1 = convertToRadians(lat1);
         lat2 = convertToRadians(lat2);
         longt1 = convertToRadians(longt1);
@@ -92,7 +92,7 @@ public class BasicTemplatesProvider {
     static Collection<String> getVariablesOfGivenType(VariableType type, Collection<VariableDTO> variablesFromConstraintProblem) {
         return variablesFromConstraintProblem.stream()
                 .filter(v -> type.equals(v.getType()))
-                .map(v -> v.getId()).collect(Collectors.toList());
+                .map(VariableDTO::getId).collect(Collectors.toList());
     }
 
     static String getCostFormula(Collection<VariableDTO> variablesFromConstraintProblem) {
@@ -105,10 +105,10 @@ public class BasicTemplatesProvider {
         return getSum(componentCosts);
     }
 
-    static List<String> getComponentsNames(Collection<VariableDTO> variablesFromConstraintProblem) {
+    private static List<String> getComponentsNames(Collection<VariableDTO> variablesFromConstraintProblem) {
         return variablesFromConstraintProblem.stream()
                 .filter(v -> VariableType.CARDINALITY.equals(v.getType()))
-                .map(v -> v.getComponentId())
+                .map(VariableDTO::getComponentId)
                 .collect(Collectors.toList());
     }
     static Integer getComponentsCount(Collection<VariableDTO> variablesFromConstraintProblem) {
