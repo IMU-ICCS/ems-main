@@ -1,4 +1,4 @@
-package nc_solver.cp_components;
+package eu.melodic.upperware.pt_solver.pt_solver.components;
 
 import org.junit.jupiter.api.Test;
 

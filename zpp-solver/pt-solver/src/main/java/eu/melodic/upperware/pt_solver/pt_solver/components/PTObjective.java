@@ -1,6 +1,6 @@
-package nc_solver.cp_components;
+package eu.melodic.upperware.pt_solver.pt_solver.components;
 
-import ptcp_wrapper.PTCPWrapper;
+import eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper.PTCPWrapper;
 import org.jamesframework.core.problems.objectives.Objective;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 

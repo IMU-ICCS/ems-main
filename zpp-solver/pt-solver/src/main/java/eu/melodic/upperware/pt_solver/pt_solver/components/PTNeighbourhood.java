@@ -1,4 +1,4 @@
-package nc_solver.cp_components;
+package eu.melodic.upperware.pt_solver.pt_solver.components;
 /*
     Neighbourhood of a search space element - V -
     is defined to be a set of all elements which may be transformed to

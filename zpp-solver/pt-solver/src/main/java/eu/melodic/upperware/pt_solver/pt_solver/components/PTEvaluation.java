@@ -1,4 +1,4 @@
-package nc_solver.cp_components;
+package eu.melodic.upperware.pt_solver.pt_solver.components;
 /*
     Wrapper over double type - required by James library
  */

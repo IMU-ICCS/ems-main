@@ -31,7 +31,7 @@ import java.util.*;
     - checking feasibility
     - generating random solutions
     - calculating utility
-    Unlike pt-solver.ptcp_wrapper.PTCPWrapper, it does not use CPWrapper class but
+    Unlike pt-solver.eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper.PTCPWrapper, it does not use CPWrapper class but
     directly interacts with CPParsedData. The main task of CPWrapper - abstracting values of variables to
     ranges of subsequent integers- is of no use here since we are dealing directly with node candidates.
  */

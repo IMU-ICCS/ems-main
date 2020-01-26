@@ -1,4 +1,4 @@
-package nc_solver.cp_components;
+package eu.melodic.upperware.pt_solver.pt_solver.components;
 /*
     Class which abstracts moves in CP search space.
     There are only two types of moves:

@@ -1,4 +1,5 @@
-import nc_solver.cp_components.PTSolution;
+import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
+import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import cp_wrapper.mockups.*;
 import cp_wrapper.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PTSolverCoordinatorTest {
+class PTSolverTest {
 
     private static Map<ConstraintProblem, UtilityProvider> prepareSimpleConstraintProblem() {
         /*
@@ -102,7 +103,7 @@ class PTSolverCoordinatorTest {
     @Test
     public void simpleConstraintProblemTest() {
         Map<ConstraintProblem, UtilityProvider> problem = prepareSimpleConstraintProblem();
-        PTSolverCoordinator solver = new PTSolverCoordinator(1, 10, 4,
+        PTSolver solver = new PTSolver(1, 10, 4,
                 problem.keySet().iterator().next(), problem.values().iterator().next());
         PTSolution solution = solver.solve(new MaxRuntime(10, TimeUnit.SECONDS));
 

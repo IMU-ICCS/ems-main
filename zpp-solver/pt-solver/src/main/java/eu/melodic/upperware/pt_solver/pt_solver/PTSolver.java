@@ -1,7 +1,13 @@
+package eu.melodic.upperware.pt_solver.pt_solver;
+
+import eu.melodic.upperware.pt_solver.pt_solver.components.PTNeighbourhood;
+import eu.melodic.upperware.pt_solver.pt_solver.components.PTObjective;
+import eu.melodic.upperware.pt_solver.pt_solver.components.PTRandomGenerator;
+import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
+import eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper.PTCPWrapper;
 import nc_solver.cp_components.*;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.UtilityProvider;
-import ptcp_wrapper.PTCPWrapper;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
@@ -10,7 +16,7 @@ import org.jamesframework.core.search.stopcriteria.StopCriterion;
 
 import java.util.ArrayList;
 
-public class PTSolverCoordinator {
+public class PTSolver {
     private PTCPWrapper ptcpWrapper;
     private Problem<PTSolution> CPProblem;
     private double minTemp;
@@ -18,7 +24,7 @@ public class PTSolverCoordinator {
     private int numReplicas;
     private ParallelTempering<PTSolution> parallelTemperingSolver;
 
-    public PTSolverCoordinator(double minTemp, double maxTemp, int numReplicas, ConstraintProblem cp, UtilityProvider utility) {
+    public PTSolver(double minTemp, double maxTemp, int numReplicas, ConstraintProblem cp, UtilityProvider utility) {
         this.minTemp = minTemp;
         this.maxTemp = maxTemp;
         this.numReplicas = numReplicas;
