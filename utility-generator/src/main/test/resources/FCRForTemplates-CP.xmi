@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types" id="FCRApp1546512389428">
+  <cpVariables id="AppCardinality" variableType="cardinality" componentId="Component_App">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="1"/>
+      <to xsi:type="types:IntegerValueUpperware" value="10"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="provider_Component_App" variableType="provider" componentId="Component_App">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="cardinality_Component_LB" variableType="cardinality" componentId="Component_LB">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="1"/>
+      <to xsi:type="types:IntegerValueUpperware" value="1"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="provider_Component_LB" variableType="provider" componentId="Component_LB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="cardinality_Component_DB" variableType="cardinality" componentId="Component_DB">
+    <domain xsi:type="cp:RangeDomain">
+      <from xsi:type="types:IntegerValueUpperware" value="1"/>
+      <to xsi:type="types:IntegerValueUpperware" value="1"/>
+    </domain>
+  </cpVariables>
+  <cpVariables id="provider_Component_DB" variableType="provider" componentId="Component_DB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware"/>
+    </domain>
+  </cpVariables>
+
+
+  <cpVariables id="cores_Component_App" variableType="cores" componentId="Component_App">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="8"/>
+    </domain>
+  </cpVariables>
+
+  <cpVariables id="ram_Component_App" variableType="ram" componentId="Component_App">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="1000"/>
+    </domain>
+  </cpVariables>
+
+  <cpVariables id="storage_Component_App" variableType="storage" componentId="Component_App">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="10"/>
+    </domain>
+  </cpVariables>
+
+
+  <cpVariables id="cores_Component_DB" variableType="cores" componentId="Component_DB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="8"/>
+    </domain>
+  </cpVariables>
+
+  <cpVariables id="ram_Component_DB" variableType="ram" componentId="Component_DB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="1000"/>
+    </domain>
+  </cpVariables>
+
+  <cpVariables id="storage_Component_DB" variableType="storage" componentId="Component_DB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="10"/>
+    </domain>
+  </cpVariables>
+
+
+  <cpVariables id="cores_Component_LB" variableType="cores" componentId="Component_LB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="8"/>
+    </domain>
+  </cpVariables>
+
+  <cpVariables id="ram_Component_LB" variableType="ram" componentId="Component_LB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="1000"/>
+    </domain>
+  </cpVariables>
+
+  <cpVariables id="storage_Component_LB" variableType="storage" componentId="Component_LB">
+    <domain xsi:type="cp:NumericListDomain">
+      <values xsi:type="types:IntegerValueUpperware" value="1"/>
+      <values xsi:type="types:IntegerValueUpperware" value="2"/>
+      <values xsi:type="types:IntegerValueUpperware" value="4"/>
+      <values xsi:type="types:IntegerValueUpperware" value="10"/>
+    </domain>
+  </cpVariables>
+</cp:ConstraintProblem>
