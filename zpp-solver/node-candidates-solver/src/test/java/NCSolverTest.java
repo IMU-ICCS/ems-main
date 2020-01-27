@@ -1,5 +1,5 @@
-import nc_solver.cp_components.PTSolution;
-import cp_wrapper.UtilityProvider;
+import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.mockups.*;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
@@ -9,8 +9,8 @@ import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.Hardware;
 import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import nc_solver.NCSolver;
-import nc_solver.node_candidate.node_candidate_element.VMConfiguration;
+import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.jamesframework.core.search.stopcriteria.MaxRuntime;
@@ -127,7 +127,7 @@ class NCSolverTest {
         NodeCandidates nc = getNodesForSimpleProblem();
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
-        PTSolution solution = ncSolver.solve(new MaxRuntime(20, TimeUnit.SECONDS));
+        PTSolution solution = ncSolver.solvePTSolution(new MaxRuntime(20, TimeUnit.SECONDS));
         assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,3)));
     }
 
@@ -275,7 +275,7 @@ class NCSolverTest {
         NodeCandidates nc = getNodesForTwoComponentSimpleProblem();
         NCSolver ncSolver = new NCSolver(1, 10, 10, data.keySet().iterator().next(),
                 data.values().iterator().next(), nc);
-        PTSolution solution = ncSolver.solve(new MaxRuntime(10 ,TimeUnit.SECONDS));
+        PTSolution solution = ncSolver.solvePTSolution(new MaxRuntime(10 ,TimeUnit.SECONDS));
 
         assertTrue(solution.extractVMConfiguration(0).equals(new VMConfiguration(2,9,3)));
         assertTrue(solution.extractVMConfiguration(1).equals(new VMConfiguration(4,3,3)));
