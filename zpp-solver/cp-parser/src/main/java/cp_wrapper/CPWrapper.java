@@ -2,11 +2,10 @@ package cp_wrapper;
 
 import cp_wrapper.parser.CPParsedData;
 import cp_wrapper.parser.CPParser;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utils.DomainHandler;
 import cp_wrapper.utils.numeric_value.*;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import cp_wrapper.utils.VariableNumericType;
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
@@ -83,7 +82,7 @@ public class CPWrapper {
                                                     getAssignmentFromValueList(assignments));
     }
 
-    private List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
+    public List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
         List<VariableValueDTO> result = new ArrayList<>();
         for (int i = 0; i < assignments.size(); i++) {
             NumericValueInterface val = getVariableValueFromDomainIndex(i, assignments.get(i));
@@ -91,18 +90,13 @@ public class CPWrapper {
                 if (!(val.isInteger())) {
                     throw new RuntimeException("");
                 }
-                result.add(
-                        VariableValueDTOFactory.createElement(variableOrderer.getNameFromIndex(i), val.getIntValue()
-                    )
+                result.add( VariableValueDTOFactory.createElement(variableOrderer.getNameFromIndex(i), val.getIntValue())
                 );
             } else {
                 if (!(val instanceof DoubleValue)) {
                     throw new RuntimeException("Variable " + variableOrderer.getNameFromIndex(i) +" is not of double type!");
                 }
-                result.add(
-                        VariableValueDTOFactory.createElement(
-                                variableOrderer.getNameFromIndex(i), val.getDoubleValue()
-                        )
+                result.add( VariableValueDTOFactory.createElement( variableOrderer.getNameFromIndex(i), val.getDoubleValue())
                 );
             }
         }
