@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="ASCII"?>
+<cp:ConstraintProblem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cp="http://www.paasage.eu/eu/paasage/upperware/metamodel/cp" xmlns:types="http://www.paasage.eu/eu/paasage/upperware/metamodel/types" id="SAMPLECP">
+<constants id=" 0">
+<value xsi:type="types:FloatValueUpperware" value="0.0"/>
+</constants><constants id=" 1">
+<value xsi:type="types:FloatValueUpperware" value="0.0"/>
+</constants><constants id=" 2">
+<value xsi:type="types:FloatValueUpperware" value="40.52150482369273"/>
+</constants><constants id=" 3">
+<value xsi:type="types:FloatValueUpperware" value="46.52150482369273"/>
+</constants><constants id=" 4">
+<value xsi:type="types:FloatValueUpperware" value="5.0"/>
+</constants><cpVariables id="C_0_storage" variableType="storage" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="10"/>
+<values xsi:type="types:IntegerValueUpperware" value="0"/>
+<values xsi:type="types:IntegerValueUpperware" value="1024"/>
+<values xsi:type="types:IntegerValueUpperware" value="420"/>
+<values xsi:type="types:IntegerValueUpperware" value="2097152"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_0_latitude" variableType="latitude" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="100"/>
+<values xsi:type="types:IntegerValueUpperware" value="5333"/>
+<values xsi:type="types:IntegerValueUpperware" value="5012"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_storage" variableType="storage" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="10"/>
+<values xsi:type="types:IntegerValueUpperware" value="0"/>
+<values xsi:type="types:IntegerValueUpperware" value="2097152"/>
+<values xsi:type="types:IntegerValueUpperware" value="1024"/>
+<values xsi:type="types:IntegerValueUpperware" value="420"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_cores" variableType="cores" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="1"/>
+<values xsi:type="types:IntegerValueUpperware" value="2"/>
+<values xsi:type="types:IntegerValueUpperware" value="4"/>
+<values xsi:type="types:IntegerValueUpperware" value="48"/>
+<values xsi:type="types:IntegerValueUpperware" value="8"/>
+<values xsi:type="types:IntegerValueUpperware" value="16"/>
+<values xsi:type="types:IntegerValueUpperware" value="32"/>
+<values xsi:type="types:IntegerValueUpperware" value="40"/>
+<values xsi:type="types:IntegerValueUpperware" value="64"/>
+<values xsi:type="types:IntegerValueUpperware" value="72"/>
+<values xsi:type="types:IntegerValueUpperware" value="36"/>
+<values xsi:type="types:IntegerValueUpperware" value="96"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_ram" variableType="ram" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="3750"/>
+<values xsi:type="types:IntegerValueUpperware" value="15616"/>
+<values xsi:type="types:IntegerValueUpperware" value="7680"/>
+<values xsi:type="types:IntegerValueUpperware" value="196608"/>
+<values xsi:type="types:IntegerValueUpperware" value="4096"/>
+<values xsi:type="types:IntegerValueUpperware" value="16384"/>
+<values xsi:type="types:IntegerValueUpperware" value="32768"/>
+<values xsi:type="types:IntegerValueUpperware" value="124928"/>
+<values xsi:type="types:IntegerValueUpperware" value="15360"/>
+<values xsi:type="types:IntegerValueUpperware" value="62464"/>
+<values xsi:type="types:IntegerValueUpperware" value="2048"/>
+<values xsi:type="types:IntegerValueUpperware" value="35020"/>
+<values xsi:type="types:IntegerValueUpperware" value="1740"/>
+<values xsi:type="types:IntegerValueUpperware" value="1024"/>
+<values xsi:type="types:IntegerValueUpperware" value="8192"/>
+<values xsi:type="types:IntegerValueUpperware" value="119808"/>
+<values xsi:type="types:IntegerValueUpperware" value="61952"/>
+<values xsi:type="types:IntegerValueUpperware" value="7168"/>
+<values xsi:type="types:IntegerValueUpperware" value="249856"/>
+<values xsi:type="types:IntegerValueUpperware" value="65536"/>
+<values xsi:type="types:IntegerValueUpperware" value="163840"/>
+<values xsi:type="types:IntegerValueUpperware" value="3840"/>
+<values xsi:type="types:IntegerValueUpperware" value="70041"/>
+<values xsi:type="types:IntegerValueUpperware" value="262144"/>
+<values xsi:type="types:IntegerValueUpperware" value="147456"/>
+<values xsi:type="types:IntegerValueUpperware" value="512"/>
+<values xsi:type="types:IntegerValueUpperware" value="22528"/>
+<values xsi:type="types:IntegerValueUpperware" value="61440"/>
+<values xsi:type="types:IntegerValueUpperware" value="73728"/>
+<values xsi:type="types:IntegerValueUpperware" value="23552"/>
+<values xsi:type="types:IntegerValueUpperware" value="499712"/>
+<values xsi:type="types:IntegerValueUpperware" value="17510"/>
+<values xsi:type="types:IntegerValueUpperware" value="393216"/>
+<values xsi:type="types:IntegerValueUpperware" value="30720"/>
+<values xsi:type="types:IntegerValueUpperware" value="31232"/>
+<values xsi:type="types:IntegerValueUpperware" value="630"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_latitude" variableType="latitude" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="100"/>
+<values xsi:type="types:IntegerValueUpperware" value="5333"/>
+<values xsi:type="types:IntegerValueUpperware" value="5012"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_longitude" variableType="longitude" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="100"/>
+<values xsi:type="types:IntegerValueUpperware" value="-625"/>
+<values xsi:type="types:IntegerValueUpperware" value="868"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_0_longitude" variableType="longitude" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="100"/>
+<values xsi:type="types:IntegerValueUpperware" value="-625"/>
+<values xsi:type="types:IntegerValueUpperware" value="868"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_0_cores" variableType="cores" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="8"/>
+<values xsi:type="types:IntegerValueUpperware" value="4"/>
+<values xsi:type="types:IntegerValueUpperware" value="16"/>
+<values xsi:type="types:IntegerValueUpperware" value="72"/>
+<values xsi:type="types:IntegerValueUpperware" value="2"/>
+<values xsi:type="types:IntegerValueUpperware" value="40"/>
+<values xsi:type="types:IntegerValueUpperware" value="1"/>
+<values xsi:type="types:IntegerValueUpperware" value="96"/>
+<values xsi:type="types:IntegerValueUpperware" value="36"/>
+<values xsi:type="types:IntegerValueUpperware" value="32"/>
+<values xsi:type="types:IntegerValueUpperware" value="64"/>
+<values xsi:type="types:IntegerValueUpperware" value="48"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_provider" variableType="provider" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="0"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_0_provider" variableType="provider" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="0"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_1_cardinality" variableType="cardinality" componentId="C_1">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="1"/>
+<values xsi:type="types:IntegerValueUpperware" value="2"/>
+<values xsi:type="types:IntegerValueUpperware" value="3"/>
+<values xsi:type="types:IntegerValueUpperware" value="4"/>
+<values xsi:type="types:IntegerValueUpperware" value="5"/>
+<values xsi:type="types:IntegerValueUpperware" value="6"/>
+<values xsi:type="types:IntegerValueUpperware" value="7"/>
+<values xsi:type="types:IntegerValueUpperware" value="8"/>
+<values xsi:type="types:IntegerValueUpperware" value="9"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_0_cardinality" variableType="cardinality" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="1"/>
+</domain>
+</cpVariables>
+<cpVariables id="C_0_ram" variableType="ram" componentId="C_0">
+<domain xsi:type="cp:NumericListDomain">
+<values xsi:type="types:IntegerValueUpperware" value="30720"/>
+<values xsi:type="types:IntegerValueUpperware" value="62464"/>
+<values xsi:type="types:IntegerValueUpperware" value="16384"/>
+<values xsi:type="types:IntegerValueUpperware" value="147456"/>
+<values xsi:type="types:IntegerValueUpperware" value="15616"/>
+<values xsi:type="types:IntegerValueUpperware" value="7680"/>
+<values xsi:type="types:IntegerValueUpperware" value="124928"/>
+<values xsi:type="types:IntegerValueUpperware" value="32768"/>
+<values xsi:type="types:IntegerValueUpperware" value="4096"/>
+<values xsi:type="types:IntegerValueUpperware" value="163840"/>
+<values xsi:type="types:IntegerValueUpperware" value="15360"/>
+<values xsi:type="types:IntegerValueUpperware" value="1740"/>
+<values xsi:type="types:IntegerValueUpperware" value="1024"/>
+<values xsi:type="types:IntegerValueUpperware" value="630"/>
+<values xsi:type="types:IntegerValueUpperware" value="3750"/>
+<values xsi:type="types:IntegerValueUpperware" value="3840"/>
+<values xsi:type="types:IntegerValueUpperware" value="393216"/>
+<values xsi:type="types:IntegerValueUpperware" value="8192"/>
+<values xsi:type="types:IntegerValueUpperware" value="7168"/>
+<values xsi:type="types:IntegerValueUpperware" value="31232"/>
+<values xsi:type="types:IntegerValueUpperware" value="61440"/>
+<values xsi:type="types:IntegerValueUpperware" value="249856"/>
+<values xsi:type="types:IntegerValueUpperware" value="65536"/>
+<values xsi:type="types:IntegerValueUpperware" value="2048"/>
+<values xsi:type="types:IntegerValueUpperware" value="262144"/>
+<values xsi:type="types:IntegerValueUpperware" value="70041"/>
+<values xsi:type="types:IntegerValueUpperware" value="61952"/>
+<values xsi:type="types:IntegerValueUpperware" value="499712"/>
+<values xsi:type="types:IntegerValueUpperware" value="196608"/>
+<values xsi:type="types:IntegerValueUpperware" value="22528"/>
+<values xsi:type="types:IntegerValueUpperware" value="73728"/>
+<values xsi:type="types:IntegerValueUpperware" value="35020"/>
+<values xsi:type="types:IntegerValueUpperware" value="17510"/>
+<values xsi:type="types:IntegerValueUpperware" value="119808"/>
+<values xsi:type="types:IntegerValueUpperware" value="512"/>
+<values xsi:type="types:IntegerValueUpperware" value="23552"/>
+</domain>
+</cpVariables>
+<constraints id="0" exp1="//@auxExpressions.0" exp2="//@constants.0" comparator="greaterOrEqualTo"/>
+<constraints id="1" exp1="//@auxExpressions.1" exp2="//@constants.1" comparator="lessOrEqualTo"/>
+<constraints id="2" exp1="//@auxExpressions.4" exp2="//@constants.3" comparator="lessThan"/>
+<constraints id="3" exp1="//@auxExpressions.5" exp2="//@constants.4" comparator="equalTo"/>
+<auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_0" expressions="//@cpVariables.0 //@cpVariables.2" operator="times"/>
+<auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_1" expressions="//@cpVariables.10 //@cpVariables.9" operator="times"/>
+<auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_2" expressions="//@cpVariables.8 //@cpVariables.2" operator="minus"/>
+<auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_3" expressions="//@cpVariables.8 //@constants.2" operator="plus"/>
+<auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_4" expressions="//@auxExpressions.2 //@auxExpressions.3" operator="plus"/>
+<auxExpressions xsi:type="cp:ComposedExpression" id="aux_expression_5" expressions="//@cpVariables.12 //@cpVariables.11" operator="times"/>
+</cp:ConstraintProblem>
