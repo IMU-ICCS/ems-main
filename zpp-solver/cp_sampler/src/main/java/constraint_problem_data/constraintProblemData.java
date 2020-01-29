@@ -9,33 +9,31 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 public class constraintProblemData {
     private Map<String, List<NumericValueInterface>> variableToDomain;
     private Collection<VariableExpression> variables;
-    private Collection<Constraint> constraints;
+    private Collection<Constraint> constraints = new ArrayList<>();
 
     public constraintProblemData(Map<String, List<NumericValueInterface>> variableToDomain) {
         this.variableToDomain = variableToDomain;
-        gatherVariables();
-        constraints = new ArrayList<>();
+        variables = gatherVariables();
     }
 
     public List<NumericValueInterface> getVariableDomain(String variable) {
         return variableToDomain.get(variable);
     }
 
-    private void gatherVariables() {
-        variables = new ArrayList<>();
-        for (String name : variableToDomain.keySet()) {
-            variables.add(new VariableExpression(name));
-        }
+    private Collection<VariableExpression> gatherVariables() {
+        return variableToDomain.keySet().stream().map(VariableExpression::new).collect(Collectors.toList());
     }
 
     public void postConstraint(Constraint constraint) {
         constraints.add(constraint);
     }
+
     @Override
     public String toString() {
         StringBuilder build = new StringBuilder();

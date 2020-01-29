@@ -42,6 +42,11 @@ public class ConstraintEvaluator {
     ConstantExpression getConstant(Expression expression) {
         List<Double> evaluatedResults = IntStream.range(0, SAMPLE_SIZE).mapToObj(
                 sample -> evaluateExpression(expression, mapSampleToList(sample()))).sorted().collect(Collectors.toList());
+        /*
+            At this point evaluated results have been sorted, hence SAMPLE_SIZE/2 -th element
+            will be the median. We choose samples median as a constraint constant because this guarantees us
+            approximately half of state space elements will not violate the constraint.
+         */
         return new ConstantExpression(new DoubleValue(evaluatedResults.get(SAMPLE_SIZE /2)));
     }
 

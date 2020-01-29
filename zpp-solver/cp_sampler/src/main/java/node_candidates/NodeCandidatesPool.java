@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 
 
 public class NodeCandidatesPool {
-    private Map<Integer, List<Pair<VMConfiguration, GeographicCoordinate>>> vmConfigurationsAndLocations = new HashMap<>();
+    private Map<Integer, List<Pair<VMConfiguration, GeographicCoordinate>>> vmConfigurationsAndLocations;
 
     public NodeCandidatesPool(NodeCandidates nodeCandidates) {
-        parseNodeCandidates(nodeCandidates);
+        vmConfigurationsAndLocations = parseNodeCandidates(nodeCandidates);
     }
 
     public List<NumericValueInterface> getProviderDomain() {
@@ -31,12 +31,23 @@ public class NodeCandidatesPool {
         return vmConfigurationsAndLocations.values().stream().flatMap(Collection::stream).distinct().collect(Collectors.toList());
     }
 
-    private void postVMConfigurationAndLocation(int provider, VMConfiguration configuration, GeographicCoordinate location) {
-        if (!vmConfigurationsAndLocations.containsKey(provider)) {
-            vmConfigurationsAndLocations.put(provider, new ArrayList<>());
+    private Pair<VMConfiguration, GeographicCoordinate> extractConfigurationLocationFromNodeCandidate(NodeCandidate nodeCandidate) {
+        return new Pair<>(
+                new VMConfiguration(
+                    nodeCandidate.getHardware().getCores(),
+                    nodeCandidate.getHardware().getRam(),
+                    nodeCandidate.getHardware().getDisk().intValue()
+                ),
+                locationFromNodeCandidate(nodeCandidate));
+    }
+
+    private void postVMConfigurationAndLocation(Map<Integer, List<Pair<VMConfiguration, GeographicCoordinate>>> nodes,
+                                                int provider, Pair<VMConfiguration, GeographicCoordinate> VMData) {
+        if (!nodes.containsKey(provider)) {
+            nodes.put(provider, new ArrayList<>());
         }
-        if (!vmConfigurationsAndLocations.get(provider).contains(new Pair<>(configuration, location))) {
-            vmConfigurationsAndLocations.get(provider).add(new Pair<>(configuration, location));
+        if (!nodes.get(provider).contains(VMData)) {
+            nodes.get(provider).add(VMData);
         }
     }
 
@@ -51,17 +62,13 @@ public class NodeCandidatesPool {
         }
     }
 
-    private void parseNodeCandidates(NodeCandidates nodeCandidates) {
-        nodeCandidates.get().values().forEach( node -> node.keySet().forEach( provider ->
+    private Map<Integer, List<Pair<VMConfiguration, GeographicCoordinate>>> parseNodeCandidates(NodeCandidates nodeCandidates) {
+        Map<Integer, List<Pair<VMConfiguration, GeographicCoordinate>>> parsedNodes = new HashMap<>();
+        nodeCandidates.get().values().forEach(node -> node.keySet().forEach( provider ->
             node.get(provider).forEach((element) ->
-                postVMConfigurationAndLocation(provider,
-                        new VMConfiguration(
-                                element.getHardware().getCores(),
-                                element.getHardware().getRam(),
-                                element.getHardware().getDisk().intValue()
-                        ),
-                        locationFromNodeCandidate(element)
+                postVMConfigurationAndLocation(parsedNodes, provider, extractConfigurationLocationFromNodeCandidate(element)
                 )))
         );
+        return parsedNodes;
     }
 }
