@@ -8,6 +8,7 @@
 
 package eu.melodic.upperware.metasolver.properties;
 
+import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse.DesignatedSolverType;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,8 +22,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -44,6 +45,8 @@ public class MetaSolverProperties {
     @Valid
     @NotNull
     private double utilityThresholdFactor;
+    @Valid
+    private DesignatedSolverType defaultSolver = DesignatedSolverType.CPSOLVER;
     @Valid
     private String emsUrl;
 
