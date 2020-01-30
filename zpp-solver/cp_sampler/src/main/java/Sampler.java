@@ -1,4 +1,4 @@
-import constraint_problem_data.constraintProblemData;
+import constraint_problem_data.ConstraintProblemData;
 import eu.melodic.cache.NodeCandidates;
 import generator.ConstraintEvaluator;
 import generator.ConstraintGenerator;
@@ -23,12 +23,12 @@ public class Sampler {
         return MIN_NUMBER_CONSTRAINTS + random.nextInt(MAX_NUMBER_CONSTRAINTS - MIN_NUMBER_CONSTRAINTS);
     }
 
-    public Pair<constraintProblemData, NodeCandidates> sample(NodeCandidates nodeCandidates) {
+    public Pair<ConstraintProblemData, NodeCandidates> sample(NodeCandidates nodeCandidates) {
         NodeCandidatesPool nodeCandidatesPool = new NodeCandidatesPool(nodeCandidates);
         VariableGenerator variableGenerator = new VariableGenerator(nodeCandidatesPool, COMPONENTS_COUNT);
         ConstraintEvaluator constraintEvaluator = new ConstraintEvaluator(variableGenerator);
         ConstraintGenerator constraintGenerator = new ConstraintGenerator(constraintEvaluator, variableGenerator);
-        constraintProblemData constraintProblem = new constraintProblemData(variableGenerator.getDomains());
+        ConstraintProblemData constraintProblem = new ConstraintProblemData(variableGenerator.getDomains());
         int constraints = sampleNumberOfConstraints();
         IntStream.range(0, constraints).forEach(number -> constraintProblem.postConstraint(constraintGenerator.generateConstraint()));
         return new Pair<>(constraintProblem, convertNodeCandidatesToSampleProblem(nodeCandidates));

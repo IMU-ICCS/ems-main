@@ -1,4 +1,4 @@
-import constraint_problem_data.constraintProblemData;
+import constraint_problem_data.ConstraintProblemData;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
 import org.javatuples.Pair;
@@ -19,7 +19,7 @@ class SamplerTest {
         Sampler sampler = new Sampler();
         FilecacheService filecacheService = new FilecacheService();
         NodeCandidates nodeCandidates = filecacheService.load(pathToNCModel);
-        Pair<constraintProblemData, NodeCandidates> cpNodes = sampler.sample(nodeCandidates);
+        Pair<ConstraintProblemData, NodeCandidates> cpNodes = sampler.sample(nodeCandidates);
         XMIWriter writer = new XMIWriter();
         writer.writeToFile(cpNodes.getValue0(), pathToSampledCPModel);
         filecacheService.store(pathToSampledNC, cpNodes.getValue1());

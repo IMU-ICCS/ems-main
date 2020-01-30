@@ -1,6 +1,6 @@
 package xmi_writer;
 
-import constraint_problem_data.constraintProblemData;
+import constraint_problem_data.ConstraintProblemData;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import expressions.*;
@@ -21,7 +21,7 @@ public class XMIWriter {
     private List<String> auxExpressions = new ArrayList<>();
     private Map<String, Integer> variableNameToIndex = new HashMap<>();
 
-    public void writeToFile(constraintProblemData cp, String filePath) throws IOException {
+    public void writeToFile(ConstraintProblemData cp, String filePath) throws IOException {
         cp.getVariables().forEach( variable -> postVariable(variable, cp.getVariableDomain(variable.getVariableName())));
         cp.getConstraints().forEach(this::postConstraint);
         writeContents(buildFileContent(), filePath);

@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
-public class constraintProblemData {
+public class ConstraintProblemData {
     private Map<String, List<NumericValueInterface>> variableToDomain;
     private Collection<VariableExpression> variables;
     private Collection<Constraint> constraints = new ArrayList<>();
 
-    public constraintProblemData(Map<String, List<NumericValueInterface>> variableToDomain) {
+    public ConstraintProblemData(Map<String, List<NumericValueInterface>> variableToDomain) {
         this.variableToDomain = variableToDomain;
         variables = gatherVariables();
     }
