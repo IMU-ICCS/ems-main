@@ -81,14 +81,18 @@ public class NodeCandidatesPool {
         if (!vmConfigurations.containsKey(provider)) {
             vmConfigurations.put(provider, new ArrayList<>());
         }
-        vmConfigurations.get(provider).add(configuration);
+        if (!vmConfigurations.get(provider).contains(configuration)) {
+            vmConfigurations.get(provider).add(configuration);
+        }
     }
 
     public void postVMLocation(int provider, GeographicCoordinate location) {
         if (!vmLocations.containsKey(provider)) {
             vmLocations.put(provider, new ArrayList<>());
         }
-        vmLocations.get(provider).add(location);
+        if (!vmLocations.get(provider).contains(location)) {
+            vmLocations.get(provider).add(location);
+        }
     }
 
     public void initNodeCandidates() {
