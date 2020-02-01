@@ -27,6 +27,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+
+
+import org.apache.commons.*; 
 
 @Slf4j
 @Service
@@ -143,13 +147,26 @@ public class PenaltyFunction {
         pool.initialize();
 
         // Create new Memcache Client instance
-        memCachedClient = new MemCachedClient("Test2");
+        //memCachedClient mcc= new MemCachedClient("Test2");
+		MemCachedClient mcc = new MemCachedClient("Test2");
 
-        /*// Add VM startup time from properties to Memcache
+        // Add VM startup time from properties to Memcache
         log.info("-----> Adding VM startup times to Memcache");
         properties.getVmData().forEach(
-                (vmName, vmData) -> memCachedClient.set(vmName, Integer.toString(vmData.getStartupTime())));*/
-
+                (vmName, vmData) -> mcc.set(vmName, Integer.toString(vmData.getStartupTime())));
+				
+	    //log.info(">>>>>>>>>: memCachedClient: {}", mcc);
+				
+		//log.info(">>>>>>>>>: memCachedClient: {}", Integer.toString(mcc.get()));
+		//log.info("------> mcc properties: {}", Arrays.deepToString(mcc));
+		
+		//HashMap<Object,Object> hm = (HashMap<Object, Object>) mcc.get();
+		//log.info(">>>>>>>>>: mcc: {}", hm);
+        
+		//map.forEach((key, value) -> System.out.println(key + ":" + value));
+		
+		
+		
         log.info("Memcache client initialized");
     }
 
@@ -273,8 +290,7 @@ public class PenaltyFunction {
         // Query Influx DB for Component Deployment Times
         String queryStr1 =
                 "SELECT \"time\" AS \"time\", \"task\" AS \"ComponentName\", \"value\" AS \"timeDepl\" " +
-                        "FROM \"cloudiator\".\"autogen\".\"process-start-time\" " +
-                        "WHERE \"task\"='database'";
+                        "FROM \"cloudiator\".\"autogen\".\"process-start-time\"";
         Query query1 = new Query(queryStr1, influxDbName);
         QueryResult queryResult1 = influxDB.query(query1);
         List<ComponMeasurement> listComponMeasurements = new ArrayList<>();
