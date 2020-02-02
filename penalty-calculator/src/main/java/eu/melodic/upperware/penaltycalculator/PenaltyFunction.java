@@ -28,9 +28,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.HashMap;
+import java.util.*;
+import java.util.Map;
+
+import java.util.Collection;
 
 
 import org.apache.commons.*; 
+
+import java.lang.Object;
+
+import java.lang.Number;
+
+import java.lang.Double;
+import java.lang.Integer; 
+
 
 @Slf4j
 @Service
@@ -147,7 +159,7 @@ public class PenaltyFunction {
         pool.initialize();
 
         // Create new Memcache Client instance
-        //memCachedClient mcc= new MemCachedClient("Test2");
+       
 		MemCachedClient mcc = new MemCachedClient("Test2");
 
         // Add VM startup time from properties to Memcache
@@ -165,13 +177,56 @@ public class PenaltyFunction {
         
 		//map.forEach((key, value) -> System.out.println(key + ":" + value));
 		
+		// Get multiple keys from MemCache
+       
 		
+		//log.info("statsitems:"+ mcc.statsItems());
+		//log.info("statsitems:"+ mcc.statsCacheDump(1,0));
+		//Map<String, Map<String, String>> Test = new Map<String, Map<String, String>>();
+		//Map<String, Map<String, String>> Test = new HashMap<String, Map<String,String>>();
+		Map<String, Map<String, String>> Test = mcc.statsCacheDump(1,0);
+        Map<String,String> newTest = new LinkedHashMap<String, String>();
+
+        for(Map.Entry<String, Map<String,String>> entry : Test.entrySet()) {
+            for (Map.Entry<String, String> value : entry.getValue().entrySet()) {
+                   newTest.put(value.getKey(),value.getValue());
+                 }
+             }
+		newTest.keySet().stream()
+				.forEach(System.out::println);
+		newTest.values().stream()
+				.forEach(System.out::println);
+		System.out.println(Arrays.asList(newTest)); // method 1
+		for (Map.Entry<String, String> entry : newTest.entrySet()) {
+             System.out.println(entry.getKey()+" : "+entry.getValue());
+        }
 		
+		String[] keys = newTest.keySet().toArray(new String[0]);
+		
+        HashMap<String,Object> hm = (HashMap<String, Object>) mcc.getMulti(keys);
+        int i = 0;
+        for(String key : hm.keySet())
+           {
+              log.info("KEY: "+key+" VALUE: "+hm.get(key));
+              // Add startupTimes to vmStartupTimesArray
+              //vmStartupTimesArray[Integer.parseInt(key)] = ((double)hm.get(key)); // θέλει την κατάλληλη σύνταξη
+              //vmStartupTimesArray[i] = ((double)hm.get(key)); // θέλει την κατάλληλη σύνταξη
+			 // vmStartupTimesArray[i] = (Double.valueOf((hm.get(key)).toString()).doubleValue()); //???? errorrrrrr
+			 // i++;
+		   }
+		
+		//Object obj = 10;
+        //String str = obj.toString(); double d = Double.valueOf(hm.get(key)).doubleValue();
+        //System.out.println("Double value is: = " + d);
+		
+		//newTest.forEach((key, value) -> System.out.println(key + ":" + value));
         log.info("Memcache client initialized");
     }
 
     private void loadVmStartupTimesFromMemcache() {
         vmStartupTimesArray = null;
+		
+		
     }
 
     private void loadVmStartupTimesFromProperties() {
