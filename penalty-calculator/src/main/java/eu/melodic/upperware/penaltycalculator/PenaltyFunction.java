@@ -44,6 +44,7 @@ import java.lang.Double;
 import java.lang.Integer; 
 
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -57,6 +58,10 @@ public class PenaltyFunction {
     private double vmStartupTimesMax;
     private double vmStartupTimesMin;
     private double[][] vmDataArray;
+ 
+	//private List<double> vmStartupTimesList;
+	private List<Double> vmStartupTimeslist = new ArrayList<>();
+	//List<double> aaa = new ArrayList<>(); 
 
     private List<ComponMeasurement> componentMeasurementsFromInfluxDbList;
     private long componentMeasurementsFromInfluxDbTimestamp = -1;
@@ -204,17 +209,32 @@ public class PenaltyFunction {
 		String[] keys = newTest.keySet().toArray(new String[0]);
 		
         HashMap<String,Object> hm = (HashMap<String, Object>) mcc.getMulti(keys);
-        int i = 0;
+        //int i = 0;
         for(String key : hm.keySet())
            {
               log.info("KEY: "+key+" VALUE: "+hm.get(key));
+			  //vmStartupTimeslist.add((double)hm.get(key));
+			  vmStartupTimeslist.add(Double.valueOf((hm.get(key)).toString()).doubleValue());
+			  //vmStartupTimesArray[i] = vmStartupTimeslist.toArray(new double[0]); 
+			  //vmStartupTimesArray[i] = vmStartupTimeslist.toArray(new double[0]); 
               // Add startupTimes to vmStartupTimesArray
               //vmStartupTimesArray[Integer.parseInt(key)] = ((double)hm.get(key)); // θέλει την κατάλληλη σύνταξη
               //vmStartupTimesArray[i] = ((double)hm.get(key)); // θέλει την κατάλληλη σύνταξη
 			 // vmStartupTimesArray[i] = (Double.valueOf((hm.get(key)).toString()).doubleValue()); //???? errorrrrrr
-			 // i++;
+			  //i++;
 		   }
+		   
+		for(int i=0;i<vmStartupTimeslist.size();i++){
+               System.out.println(vmStartupTimeslist.get(i));
+			  // vmStartupTimesArray[i] = vmStartupTimeslist.get(i); 
+        } 
 		
+		//vmStartupTimesArray = vmStartupTimeslist.toArray(vmStartupTimeslist.size());
+        //System.out.println("After insert    : " + Arrays.toString(vmStartupTimesArray));
+		//vmStartupTimesArray[1]=0.0;
+		//for (int j =0; j < vmStartupTimeslist.size(); j++) {
+        //    vmStartupTimesArray[j] = vmStartupTimeslist.get(j); 
+		//}
 		//Object obj = 10;
         //String str = obj.toString(); double d = Double.valueOf(hm.get(key)).doubleValue();
         //System.out.println("Double value is: = " + d);
