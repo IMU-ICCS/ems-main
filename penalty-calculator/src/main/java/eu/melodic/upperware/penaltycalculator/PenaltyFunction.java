@@ -223,12 +223,12 @@ public class PenaltyFunction {
 			 // vmStartupTimesArray[i] = (Double.valueOf((hm.get(key)).toString()).doubleValue()); //???? errorrrrrr
 			  //i++;
 		   }
-		   
+		/*   
 		for(int i=0;i<vmStartupTimeslist.size();i++){
                System.out.println(vmStartupTimeslist.get(i));
 			  // vmStartupTimesArray[i] = vmStartupTimeslist.get(i); 
         } 
-		
+		*/
 		//vmStartupTimesArray = vmStartupTimeslist.toArray(vmStartupTimeslist.size());
         //System.out.println("After insert    : " + Arrays.toString(vmStartupTimesArray));
 		//vmStartupTimesArray[1]=0.0;
