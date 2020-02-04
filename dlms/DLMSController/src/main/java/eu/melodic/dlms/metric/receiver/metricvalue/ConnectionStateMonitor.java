@@ -10,19 +10,19 @@ class ConnectionStateMonitor implements TransportListener {
     @Override
     public void onCommand(Object command)
     {
-        log.debug("Command detected: '" + command + "'");
+        log.debug("Command detected: '{}'", command);
     }
 
     @Override
     public void onException(IOException exception)
     {
-        log.error("Exception detected: '" + exception + "'");
+        log.error("Exception detected: '{}'", exception.getMessage());
     }
 
     @Override
     public void transportInterupted()
     {
-        log.error("Transport interuption detected.");
+        log.error("Transport interruption detected.");
     }
 
     @Override

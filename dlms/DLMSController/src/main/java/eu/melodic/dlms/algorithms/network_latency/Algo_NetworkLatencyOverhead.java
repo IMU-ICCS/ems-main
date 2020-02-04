@@ -25,14 +25,6 @@ public class Algo_NetworkLatencyOverhead {
     public void includeLatency(String regionA, String cloudServiceProviderA, String regionB, String cloudServiceProviderB, String executionId)
     {
         log.debug("includeLatency params: A: {}, {}, B: {}, {}", regionA, cloudServiceProviderA, regionB, cloudServiceProviderB);
-        Optional<CloudProvider> cp = Optional.ofNullable(cloudProviderRepository.findByName(cloudServiceProviderA));
-        if(cp.isPresent()) {
-            log.debug("Optional<CloudProvider> for cloudServiceProviderA is present: Id: {}", cp.get().getId());
-            Optional<Long> cloudServiceProviderAId_ = Optional.ofNullable(cloudProviderRepository.findByName(cloudServiceProviderA)).map(CloudProvider::getId);
-            log.debug("Optional<Long> for cloudServiceProviderA is: {}", cloudServiceProviderAId_.get());
-        } else {
-            log.debug("Optional<CloudProvider> for cloudServiceProviderA is NOT present");
-        }
 
         Long cloudServiceProviderAId = Optional.ofNullable(cloudProviderRepository.findByName(cloudServiceProviderA)).map(CloudProvider::getId).orElse(0L);
         if(cloudServiceProviderAId == 0L) {

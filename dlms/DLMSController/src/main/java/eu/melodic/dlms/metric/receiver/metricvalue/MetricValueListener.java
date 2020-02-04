@@ -107,7 +107,7 @@ public class MetricValueListener implements MessageListener {
 		}
 	}
 
-	protected void processMetricValueEventNetworkLatency(String metricName, String payload) {
+	private void processMetricValueEventNetworkLatency(String metricName, String payload) {
 		if (StringUtils.isNotBlank(metricName)) {
 			log.info("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
 			MetricValueEventNetworkLatency event = gson.fromJson(payload, MetricValueEventNetworkLatency.class);

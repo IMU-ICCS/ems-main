@@ -179,10 +179,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	}
 
 	private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
-		MessageListener listener = new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
+		return new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
 				this.regionRepository, this.twoDcRepository, this.acRepository, this.dsRepository,
 				this.acDsDataRepository, this.networkLatencyService);
-		return listener;
 	}
 
 	public void unsubscribe() {

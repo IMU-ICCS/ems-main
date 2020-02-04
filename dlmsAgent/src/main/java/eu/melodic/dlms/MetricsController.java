@@ -22,6 +22,8 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -59,7 +61,11 @@ public class MetricsController {
 
 	private final String jmsUrl;
 	private final String dlmsAgentPublicIp;
+	@Getter
+	@Setter
 	private String dlmsAgentRegion;
+	@Getter
+	@Setter
 	private String dlmsAgentCSP;
 
 	// Store the values to avoid getting cumulative values
@@ -430,19 +436,4 @@ public class MetricsController {
 		}
 	}
 
-	public String getDlmsAgentRegion() {
-		return dlmsAgentRegion;
-	}
-
-	public void setDlmsAgentRegion(String dlmsAgentRegion) {
-		this.dlmsAgentRegion = dlmsAgentRegion;
-	}
-
-	public String getDlmsAgentCSP() {
-		return dlmsAgentCSP;
-	}
-
-	public void setDlmsAgentCSP(String dlmsAgentCSP) {
-		this.dlmsAgentCSP = dlmsAgentCSP;
-	}
 }
