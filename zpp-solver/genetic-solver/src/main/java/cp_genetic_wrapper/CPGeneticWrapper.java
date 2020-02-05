@@ -1,21 +1,22 @@
 package cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
-import implementation.ImplGene;
+import jenetics_implementation.GeneImpl;
 import io.jenetics.util.ISeq;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.Time;
 import java.util.List;
 @Slf4j
 public class CPGeneticWrapper extends ACPGeneticWrapper {
 
     public CPGeneticWrapper(CPWrapper cpWrapper) {
-        super(cpWrapper);
+        super(0, 0, cpWrapper);
     }
 
     // Calculates which variable has highest heuristic value. Returns its index.
     @Override
-    public int calculateHeuristicBest(ISeq<ImplGene> genes) {
+    public int calculateHeuristicBest(ISeq<GeneImpl> genes) {
         int bestIndex = -1, bestValue = Integer.MIN_VALUE, tmp;
 
         List<Integer> values = genesToIntegerList(genes);
@@ -39,12 +40,17 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     }
 
     @Override
-    public double calculateUtility(ISeq<ImplGene> genes) {
-        return cpWrapper.getUtility(genesToIntegerList(genes));
+    public double calculateUtility(ISeq<GeneImpl> genes) {
+        double x1 = System.currentTimeMillis();
+        double x = cpWrapper.getUtility(genesToIntegerList(genes));
+        double sum = System.currentTimeMillis() - x1;
+        suma += sum;
+        times ++;
+        return x;
     }
 
     @Override
-    public int countViolatedConstraints(ISeq<ImplGene> genes) {
+    public int countViolatedConstraints(ISeq<GeneImpl> genes) {
         return cpWrapper.countViolatedConstraints(genesToIntegerList(genes));
     }
 

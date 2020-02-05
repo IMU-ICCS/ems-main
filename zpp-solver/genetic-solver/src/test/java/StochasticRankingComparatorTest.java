@@ -1,7 +1,7 @@
 import cp_genetic_wrapper.ACPGeneticWrapper;
-import implementation.EvalFunction;
-import implementation.ImplChromosome;
-import implementation.ImplGene;
+import jenetics_implementation.EvalFunction;
+import jenetics_implementation.ChromosomeImpl;
+import jenetics_implementation.GeneImpl;
 import comparators.StochasticRankingComparator;
 import io.jenetics.Genotype;
 import io.jenetics.Phenotype;
@@ -20,25 +20,25 @@ import static org.junit.Assert.assertEquals;
 public class StochasticRankingComparatorTest {
     @Test
     public void checkComparatorWithoutRandomnessAndBrokenConstraints() {
-        Comparator<Phenotype<ImplGene, Double>> comparator = new StochasticRankingComparator(0);
+        Comparator<Phenotype<GeneImpl, Double>> comparator = new StochasticRankingComparator(0);
         ACPGeneticWrapper geneticWrapper = new CPGeneticWrapperA(null);
 
-        ImplGene[] g = new ImplGene[8];
+        GeneImpl[] g = new GeneImpl[8];
 
-        g[0] = new ImplGene(0, 0, geneticWrapper);
-        g[1] = new ImplGene(0, 1, geneticWrapper);
-        g[2] = new ImplGene(0, 2, geneticWrapper);
-        g[3] = new ImplGene(0, 3, geneticWrapper);
-        g[4] = new ImplGene(1, 0, geneticWrapper);
-        g[5] = new ImplGene(1, 1, geneticWrapper);
-        g[6] = new ImplGene(1, 2, geneticWrapper);
-        g[7] = new ImplGene(1, 3, geneticWrapper);
+        g[0] = new GeneImpl(0, 0, geneticWrapper);
+        g[1] = new GeneImpl(0, 1, geneticWrapper);
+        g[2] = new GeneImpl(0, 2, geneticWrapper);
+        g[3] = new GeneImpl(0, 3, geneticWrapper);
+        g[4] = new GeneImpl(1, 0, geneticWrapper);
+        g[5] = new GeneImpl(1, 1, geneticWrapper);
+        g[6] = new GeneImpl(1, 2, geneticWrapper);
+        g[7] = new GeneImpl(1, 3, geneticWrapper);
 
-        List<ImplGene> lq1 = new ArrayList<>();
-        List<ImplGene> lq2 = new ArrayList<>();
-        List<ImplGene> lq3 = new ArrayList<>();
-        List<ImplGene> lq4 = new ArrayList<>();
-        List<ImplGene> lq5 = new ArrayList<>();
+        List<GeneImpl> lq1 = new ArrayList<>();
+        List<GeneImpl> lq2 = new ArrayList<>();
+        List<GeneImpl> lq3 = new ArrayList<>();
+        List<GeneImpl> lq4 = new ArrayList<>();
+        List<GeneImpl> lq5 = new ArrayList<>();
 
 
         // Best list with fitness 2.
@@ -53,13 +53,13 @@ public class StochasticRankingComparatorTest {
         lq5.add(g[0]); lq5.add(g[5]); lq5.add(g[2]); lq5.add(g[7]);
 
 
-        Phenotype<ImplGene, Double> pq1 = Phenotype.of(Genotype.of(new ImplChromosome(MSeq.of(lq1).toISeq(), 4, geneticWrapper)), 0);
-        Phenotype<ImplGene, Double> pq2 = Phenotype.of(Genotype.of(new ImplChromosome(MSeq.of(lq2).toISeq(), 4, geneticWrapper)), 0);
-        Phenotype<ImplGene, Double> pq3 = Phenotype.of(Genotype.of(new ImplChromosome(MSeq.of(lq3).toISeq(), 4, geneticWrapper)), 0);
-        Phenotype<ImplGene, Double> pq4 = Phenotype.of(Genotype.of(new ImplChromosome(MSeq.of(lq4).toISeq(), 4, geneticWrapper)), 0);
-        Phenotype<ImplGene, Double> pq5 = Phenotype.of(Genotype.of(new ImplChromosome(MSeq.of(lq5).toISeq(), 4, geneticWrapper)), 0);
+        Phenotype<GeneImpl, Double> pq1 = Phenotype.of(Genotype.of(new ChromosomeImpl(MSeq.of(lq1).toISeq(), 4, geneticWrapper)), 0);
+        Phenotype<GeneImpl, Double> pq2 = Phenotype.of(Genotype.of(new ChromosomeImpl(MSeq.of(lq2).toISeq(), 4, geneticWrapper)), 0);
+        Phenotype<GeneImpl, Double> pq3 = Phenotype.of(Genotype.of(new ChromosomeImpl(MSeq.of(lq3).toISeq(), 4, geneticWrapper)), 0);
+        Phenotype<GeneImpl, Double> pq4 = Phenotype.of(Genotype.of(new ChromosomeImpl(MSeq.of(lq4).toISeq(), 4, geneticWrapper)), 0);
+        Phenotype<GeneImpl, Double> pq5 = Phenotype.of(Genotype.of(new ChromosomeImpl(MSeq.of(lq5).toISeq(), 4, geneticWrapper)), 0);
 
-        Function<Genotype<ImplGene>, Double> fun = new EvalFunction();
+        Function<Genotype<GeneImpl>, Double> fun = new EvalFunction();
 
         pq1 = pq1.eval(fun);
         pq2 = pq2.eval(fun);
@@ -68,7 +68,7 @@ public class StochasticRankingComparatorTest {
         pq5 = pq5.eval(fun);
 
 
-        List<Phenotype<ImplGene, Double>> popq = new ArrayList<>();
+        List<Phenotype<GeneImpl, Double>> popq = new ArrayList<>();
         popq.add(pq4);
         popq.add(pq2);
         popq.add(pq3);
@@ -76,7 +76,7 @@ public class StochasticRankingComparatorTest {
         popq.add(pq5);
 
 
-        MSeq<Phenotype<ImplGene, Double>> populationq = MSeq.of(popq);
+        MSeq<Phenotype<GeneImpl, Double>> populationq = MSeq.of(popq);
 
         populationq.sort(reverseOrder(comparator));
 

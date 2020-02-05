@@ -8,18 +8,15 @@ import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
-import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import runner.GeneticSolverRunner;
-
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -27,9 +24,9 @@ public class GeneticSolverCoordinator {
 
     @Autowired
     public GeneticSolverCoordinator(CDOClientX clientX,
-                               UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
-                               RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
-                               JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
+                                    UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
+                                    RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
+                                    JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         this.clientX = clientX;
         this.filecacheService = new FilecacheService();
         this.utilityGeneratorProperties = utilityGeneratorProperties;
@@ -61,10 +58,15 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
+            double x = System.currentTimeMillis();
             GeneticSolverRunner runner = new GeneticSolverRunner();
-            runner.setTimeLimit(1);
+            runner.setPopulationSize(100);
+            runner.setIterations(1);
             runner.run(cp, new UtilityProviderImpl(utilityGenerator));
             log.info("Found solution with utility: " + runner.getFinalUtility());
+            double y = System.currentTimeMillis();
+
+            System.out.println(y - x + " total time");
 
         } catch (Exception e) {
             log.error("CPSolver returned exception.", e);

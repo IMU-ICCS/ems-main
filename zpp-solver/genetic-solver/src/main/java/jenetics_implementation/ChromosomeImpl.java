@@ -1,4 +1,4 @@
-package implementation;
+package jenetics_implementation;
 
 import cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Chromosome;
@@ -10,9 +10,9 @@ import lombok.Getter;
     Chromosome is a population's individual. Phenotype and Genotype are just it's wrappers.
     Chromosome consists of sequence of genes.
  */
-public class ImplChromosome implements Chromosome<ImplGene> {
+public class ChromosomeImpl implements Chromosome<GeneImpl> {
     @Getter
-    private ISeq<ImplGene> genes;
+    private ISeq<GeneImpl> genes;
     private Integer length;
     @Getter
     private boolean isFeasible;
@@ -22,7 +22,7 @@ public class ImplChromosome implements Chromosome<ImplGene> {
     private int brokenConstraints;
     private ACPGeneticWrapper cpGeneticWrapper;
 
-    public ImplChromosome(ISeq<ImplGene> genes, Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+    public ChromosomeImpl(ISeq<GeneImpl> genes, Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         this.genes = genes;
         this.length = length;
         this.cpGeneticWrapper = cpGeneticWrapper;
@@ -32,12 +32,12 @@ public class ImplChromosome implements Chromosome<ImplGene> {
     }
 
     @Override
-    public Chromosome<ImplGene> newInstance(ISeq<ImplGene> iSeq) {
-        return new ImplChromosome(iSeq, iSeq.length(), cpGeneticWrapper);
+    public Chromosome<GeneImpl> newInstance(ISeq<GeneImpl> iSeq) {
+        return new ChromosomeImpl(iSeq, iSeq.length(), cpGeneticWrapper);
     }
 
     @Override
-    public ImplGene getGene(int i) {
+    public GeneImpl getGene(int i) {
         return genes.get(i);
     }
 
@@ -47,12 +47,12 @@ public class ImplChromosome implements Chromosome<ImplGene> {
     }
 
     @Override
-    public ISeq<ImplGene> toSeq() {
+    public ISeq<GeneImpl> toSeq() {
         return genes;
     }
 
     @Override
-    public Chromosome<ImplGene> newInstance() {
+    public Chromosome<GeneImpl> newInstance() {
         return of(length);
     }
 
@@ -62,19 +62,19 @@ public class ImplChromosome implements Chromosome<ImplGene> {
     }
 
     // Creates randomly generated Chromosome.
-    public ImplChromosome of(Integer length) {
+    public ChromosomeImpl of(Integer length) {
         return of(length, cpGeneticWrapper);
     }
 
     // Creates randomly generated Chromosome. Static version of above method.
-    public static ImplChromosome of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
-        ISeq<ImplGene> genes = ImplGene.seq(length, cpGeneticWrapper);
-        return new ImplChromosome(genes, length, cpGeneticWrapper);
+    public static ChromosomeImpl of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+        ISeq<GeneImpl> genes = GeneImpl.createSequenceOfGenes(length, cpGeneticWrapper);
+        return new ChromosomeImpl(genes, length, cpGeneticWrapper);
     }
 
     // Creates randomly generated sequence of Chromosomes.
-    public static ISeq<ImplChromosome> of(Integer length, Integer size, ACPGeneticWrapper cpGeneticWrapper) {
-        return MSeq.<ImplChromosome>ofLength(length)
+    public static ISeq<ChromosomeImpl> of(Integer length, Integer size, ACPGeneticWrapper cpGeneticWrapper) {
+        return MSeq.<ChromosomeImpl>ofLength(length)
                 .fill(() -> of(size, cpGeneticWrapper))
                 .toISeq();
     }

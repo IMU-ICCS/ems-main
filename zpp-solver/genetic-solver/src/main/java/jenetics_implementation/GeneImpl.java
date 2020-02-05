@@ -1,4 +1,4 @@
-package implementation;
+package jenetics_implementation;
 
 import cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Gene;
@@ -13,7 +13,7 @@ import java.util.List;
     value (for range defined variables). It can produce other genes.
  */
 @AllArgsConstructor
-public class ImplGene implements Gene<Integer, ImplGene> {
+public class GeneImpl implements Gene<Integer, GeneImpl> {
     private Integer value;
     private Integer index;
     private ACPGeneticWrapper cpGeneticWrapper;
@@ -24,13 +24,13 @@ public class ImplGene implements Gene<Integer, ImplGene> {
     }
 
     @Override
-    public ImplGene newInstance() {
+    public GeneImpl newInstance() {
         return of(index);
     }
 
     @Override
-    public ImplGene newInstance(Integer k) {
-        return new ImplGene(k, index, cpGeneticWrapper);
+    public GeneImpl newInstance(Integer k) {
+        return new GeneImpl(k, index, cpGeneticWrapper);
     }
 
     @Override
@@ -38,15 +38,15 @@ public class ImplGene implements Gene<Integer, ImplGene> {
         return true;
     }
 
-    private ImplGene of(Integer index) {
-        return new ImplGene(cpGeneticWrapper.generateRandomValue(index), index, cpGeneticWrapper);
+    private GeneImpl of(Integer index) {
+        return new GeneImpl(cpGeneticWrapper.generateRandomValue(index), index, cpGeneticWrapper);
     }
 
-    public static ISeq<ImplGene> seq(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
-        List<ImplGene> list = new ArrayList<>();
+    public static ISeq<GeneImpl> createSequenceOfGenes(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+        List<GeneImpl> list = new ArrayList<>();
 
         for (int i = 0; i < length; i++)
-            list.add(new ImplGene(cpGeneticWrapper.generateRandomValue(i), i, cpGeneticWrapper));
+            list.add(new GeneImpl(cpGeneticWrapper.generateRandomValue(i), i, cpGeneticWrapper));
         return ISeq.of(list);
     }
 }

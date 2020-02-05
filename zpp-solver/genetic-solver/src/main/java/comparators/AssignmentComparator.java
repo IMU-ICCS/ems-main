@@ -1,7 +1,7 @@
 package comparators;
 
-import implementation.ImplChromosome;
 import io.jenetics.util.RandomRegistry;
+import jenetics_implementation.ChromosomeImpl;
 
 import java.util.Random;
 
@@ -11,7 +11,7 @@ import java.util.Random;
 public class AssignmentComparator {
     private final static Random random = RandomRegistry.getRandom();
 
-    public static int compare(ImplChromosome left, ImplChromosome right, double probability) {
+    public static int compare(ChromosomeImpl left, ChromosomeImpl right, double probability) {
         return compare(left.getUtility(), right.getUtility(), left.getBrokenConstraints(), right.getBrokenConstraints(), probability);
     }
 

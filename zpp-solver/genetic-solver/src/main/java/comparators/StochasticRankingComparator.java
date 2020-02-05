@@ -1,23 +1,21 @@
 package comparators;
 
-import implementation.ImplChromosome;
-import implementation.ImplGene;
 import io.jenetics.Phenotype;
-import io.jenetics.util.RandomRegistry;
+import jenetics_implementation.ChromosomeImpl;
+import jenetics_implementation.GeneImpl;
 import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
-import java.util.Random;
 
 @AllArgsConstructor
-public class StochasticRankingComparator implements Comparator<Phenotype<ImplGene, Double>> {
+public class StochasticRankingComparator implements Comparator<Phenotype<GeneImpl, Double>> {
     private double probability;
 
     @Override
-    public int compare(Phenotype<ImplGene, Double> left, Phenotype<ImplGene, Double> right) {
+    public int compare(Phenotype<GeneImpl, Double> left, Phenotype<GeneImpl, Double> right) {
 
-        ImplChromosome l = (ImplChromosome) left.getGenotype().getChromosome();
-        ImplChromosome r = (ImplChromosome) right.getGenotype().getChromosome();
+        ChromosomeImpl l = (ChromosomeImpl) left.getGenotype().getChromosome();
+        ChromosomeImpl r = (ChromosomeImpl) right.getGenotype().getChromosome();
 
         return AssignmentComparator.compare(l, r, probability);
     }

@@ -1,7 +1,7 @@
 package sorting_algortihms;
 
 import comparators.StochasticRankingComparator;
-import implementation.ImplGene;
+import jenetics_implementation.GeneImpl;
 import io.jenetics.Phenotype;
 import io.jenetics.util.MSeq;
 
@@ -12,36 +12,36 @@ import java.util.List;
     Simple merge sort that sorts using our comparator.
  */
 public class MergeSort {
-    private static Comparator<Phenotype<ImplGene, Double>> comparator = new StochasticRankingComparator(0);
+    private static Comparator<Phenotype<GeneImpl, Double>> comparator = new StochasticRankingComparator(0);
 
-    public static void merge(List<Phenotype<ImplGene, Double>> list, int from, int mid, int to) {
-        int ptr1 = 0, ptr2 = 0;
-        List<Phenotype<ImplGene, Double>> left, right;
+    private static void merge(List<Phenotype<GeneImpl, Double>> list, int from, int mid, int to) {
+        int pointerLeft = 0, pointerRight = 0;
+        List<Phenotype<GeneImpl, Double>> left, right;
 
         left = list.subList(from, mid);
         right = list.subList(mid, to);
 
-        while (ptr1 + ptr2 < to - from) {
-            if (ptr1 == mid - from) {
-                list.set(ptr1 + ptr2, right.get(ptr2));
-                ptr2++;
+        while (pointerLeft + pointerRight < to - from) {
+            if (pointerLeft == mid - from) {
+                list.set(pointerLeft + pointerRight, right.get(pointerRight));
+                pointerRight++;
             }
-            else if (ptr2 == to - mid) {
-                list.set(ptr1 + ptr2, left.get(ptr1));
-                ptr1++;
+            else if (pointerRight == to - mid) {
+                list.set(pointerLeft + pointerRight, left.get(pointerLeft));
+                pointerLeft++;
             }
-            else if (comparator.compare(left.get(ptr1), right.get(ptr2)) > 0) {
-                list.set(ptr1 + ptr2, left.get(ptr1));
-                ptr1++;
+            else if (comparator.compare(left.get(pointerLeft), right.get(pointerRight)) > 0) {
+                list.set(pointerLeft + pointerRight, left.get(pointerLeft));
+                pointerLeft++;
             }
             else {
-                list.set(ptr1 + ptr2, right.get(ptr2));
-                ptr2++;
+                list.set(pointerLeft + pointerRight, right.get(pointerRight));
+                pointerRight++;
             }
         }
     }
 
-    public static void sort(List<Phenotype<ImplGene, Double>> list, int from, int to) {
+    private static void sort(List<Phenotype<GeneImpl, Double>> list, int from, int to) {
         if (to - from < 2)
             return;
 
@@ -52,7 +52,7 @@ public class MergeSort {
         merge(list, from, mid, to);
     }
 
-    public static void sort(MSeq<Phenotype<ImplGene, Double>> seq) {
+    public static void sort(MSeq<Phenotype<GeneImpl, Double>> seq) {
         sort(seq.asList(), 0, seq.size());
     }
 }
