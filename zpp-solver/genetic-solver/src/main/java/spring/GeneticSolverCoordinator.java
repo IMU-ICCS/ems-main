@@ -60,8 +60,8 @@ public class GeneticSolverCoordinator {
 
             double x = System.currentTimeMillis();
             GeneticSolverRunner runner = new GeneticSolverRunner();
-            runner.setPopulationSize(100);
-            runner.setIterations(1);
+            runner.setPopulationSize(10);
+            runner.setIterations(30);
             runner.run(cp, new UtilityProviderImpl(utilityGenerator));
             log.info("Found solution with utility: " + runner.getFinalUtility());
             double y = System.currentTimeMillis();

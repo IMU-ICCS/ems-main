@@ -7,6 +7,11 @@ import lombok.AllArgsConstructor;
 
 import java.util.Comparator;
 
+/*
+* Not a real comparator as its a non deterministic comparator!!!
+* It means it can't be used in Collections.sort.
+*/
+
 @AllArgsConstructor
 public class StochasticRankingComparator implements Comparator<Phenotype<GeneImpl, Double>> {
     private double probability;

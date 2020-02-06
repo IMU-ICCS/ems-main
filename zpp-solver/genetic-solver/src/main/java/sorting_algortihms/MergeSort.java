@@ -1,10 +1,12 @@
 package sorting_algortihms;
 
 import comparators.StochasticRankingComparator;
+import jenetics_implementation.ChromosomeImpl;
 import jenetics_implementation.GeneImpl;
 import io.jenetics.Phenotype;
 import io.jenetics.util.MSeq;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -18,24 +20,24 @@ public class MergeSort {
         int pointerLeft = 0, pointerRight = 0;
         List<Phenotype<GeneImpl, Double>> left, right;
 
-        left = list.subList(from, mid);
-        right = list.subList(mid, to);
+        left = new ArrayList<>(list.subList(from, mid));
+        right = new ArrayList<>(list.subList(mid, to));
 
         while (pointerLeft + pointerRight < to - from) {
             if (pointerLeft == mid - from) {
-                list.set(pointerLeft + pointerRight, right.get(pointerRight));
+                list.set(from + pointerLeft + pointerRight, right.get(pointerRight));
                 pointerRight++;
             }
             else if (pointerRight == to - mid) {
-                list.set(pointerLeft + pointerRight, left.get(pointerLeft));
+                list.set(from + pointerLeft + pointerRight, left.get(pointerLeft));
                 pointerLeft++;
             }
             else if (comparator.compare(left.get(pointerLeft), right.get(pointerRight)) > 0) {
-                list.set(pointerLeft + pointerRight, left.get(pointerLeft));
+                list.set(from + pointerLeft + pointerRight, left.get(pointerLeft));
                 pointerLeft++;
             }
             else {
-                list.set(pointerLeft + pointerRight, right.get(pointerRight));
+                list.set(from + pointerLeft + pointerRight, right.get(pointerRight));
                 pointerRight++;
             }
         }
@@ -45,7 +47,7 @@ public class MergeSort {
         if (to - from < 2)
             return;
 
-        int mid = (to + from) / 2;
+        int mid = (to + from + 1) / 2;
         sort(list, from, mid);
         sort(list, mid, to);
 

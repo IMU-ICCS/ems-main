@@ -64,7 +64,7 @@ public class GeneticSolverRunner {
     private List<Integer> run(ACPGeneticWrapper geneticWrapper) {
         Alterer<GeneImpl, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
         Mutator<GeneImpl, Double> mutator = new MutatorImpl(mutationProbability, geneticWrapper, guesses, mutatorProbability);
-        Selector<GeneImpl, Double> selector = new SelectorImpl(new StochasticRankingComparator(comparatorProbability));
+        Selector<GeneImpl, Double> selector = new SelectorImpl();
         ChromosomeImpl finalChromosome;
 
         log.info("Starting runner.");

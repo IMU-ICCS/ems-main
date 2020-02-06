@@ -20,8 +20,6 @@ import static java.util.Objects.requireNonNull;
  */
 @AllArgsConstructor
 public class SelectorImpl implements Selector<GeneImpl, Double> {
-    private Comparator<Phenotype<GeneImpl, Double>> comparator;
-
     @Override
     public ISeq<Phenotype<GeneImpl, Double>> select(final Seq<Phenotype<GeneImpl, Double>> population, final int count,
                                                     final Optimize opt) {
