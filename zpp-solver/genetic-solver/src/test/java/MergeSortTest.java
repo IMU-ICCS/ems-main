@@ -8,11 +8,9 @@ import jenetics_implementation.ChromosomeImpl;
 import jenetics_implementation.GeneImpl;
 import org.junit.Test;
 import sorting_algortihms.MergeSort;
-import utility.CPGeneticWrapperA;
 import utility.merge_sort_utility.GeneticWrapperLengthIsUtility;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -20,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MergeSortTest {
     private static final Random rand = new Random();
-    private ACPGeneticWrapper wrapper = new GeneticWrapperLengthIsUtility(0, 0, null);
+    private ACPGeneticWrapper wrapper = new GeneticWrapperLengthIsUtility( null);
 
     private Phenotype<GeneImpl, Double> generatePhenotype(int utility) {
         ISeq<GeneImpl> genes = GeneImpl.createSequenceOfGenes(utility, wrapper);

@@ -8,8 +8,8 @@ import jenetics_implementation.GeneImpl;
 import java.util.List;
 
 public class GeneticWrapperLengthIsUtility extends ACPGeneticWrapper {
-    public GeneticWrapperLengthIsUtility(double suma, int times, CPWrapper cpWrapper) {
-        super(suma, times, cpWrapper);
+    public GeneticWrapperLengthIsUtility(CPWrapper cpWrapper) {
+        super(cpWrapper);
     }
 
     @Override

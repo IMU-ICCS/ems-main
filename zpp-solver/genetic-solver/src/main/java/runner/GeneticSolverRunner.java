@@ -38,10 +38,8 @@ public class GeneticSolverRunner {
     private int guesses = 10;
     @Setter
     private int timeLimit = 0;
-
     @Getter
     private double finalUtility;
-
 
     private final Function<Genotype<GeneImpl>, Double> fitnessFunction = new EvalFunction();
 
@@ -53,12 +51,7 @@ public class GeneticSolverRunner {
     }
 
     public List<Integer> run(CPWrapper cpWrapper) {
-        ACPGeneticWrapper cpGeneticWrapper = new CPGeneticWrapper(cpWrapper);
-
-        run(cpGeneticWrapper);
-        System.out.println(cpGeneticWrapper.suma);
-        System.out.println(cpGeneticWrapper.times);
-        return null;
+        return run(new CPGeneticWrapper(cpWrapper));
     }
 
     private List<Integer> run(ACPGeneticWrapper geneticWrapper) {

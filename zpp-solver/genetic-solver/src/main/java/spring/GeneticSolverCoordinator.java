@@ -58,15 +58,10 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            double x = System.currentTimeMillis();
             GeneticSolverRunner runner = new GeneticSolverRunner();
             runner.setPopulationSize(10);
             runner.setIterations(30);
             runner.run(cp, new UtilityProviderImpl(utilityGenerator));
-            log.info("Found solution with utility: " + runner.getFinalUtility());
-            double y = System.currentTimeMillis();
-
-            System.out.println(y - x + " total time");
 
         } catch (Exception e) {
             log.error("CPSolver returned exception.", e);

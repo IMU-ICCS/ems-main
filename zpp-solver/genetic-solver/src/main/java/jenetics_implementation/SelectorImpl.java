@@ -9,8 +9,6 @@ import io.jenetics.util.Seq;
 import lombok.AllArgsConstructor;
 import sorting_algortihms.MergeSort;
 
-import java.util.Comparator;
-
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;

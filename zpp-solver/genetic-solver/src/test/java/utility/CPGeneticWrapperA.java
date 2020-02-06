@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CPGeneticWrapperA extends ACPGeneticWrapper {
     public CPGeneticWrapperA(CPWrapper cpWrapper) {
-        super(0, 0, cpWrapper);
+        super(cpWrapper);
     }
 
     @Override

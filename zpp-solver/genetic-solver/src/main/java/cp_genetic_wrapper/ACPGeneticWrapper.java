@@ -1,11 +1,10 @@
 package cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
-import jenetics_implementation.ChromosomeImpl;
-import jenetics_implementation.GeneImpl;
-import io.jenetics.Genotype;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
+import jenetics_implementation.ChromosomeImpl;
+import jenetics_implementation.GeneImpl;
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
@@ -14,8 +13,6 @@ import java.util.Random;
 
 @AllArgsConstructor
 public abstract class ACPGeneticWrapper {
-    public double suma = 0; //TODO
-    public int times = 0;
     protected final static Random random = RandomRegistry.getRandom();
     protected CPWrapper cpWrapper;
 
@@ -34,10 +31,6 @@ public abstract class ACPGeneticWrapper {
     public abstract int getSize();
 
     public abstract int getHeuristicEvaluation(List<Integer> assignments, int variableIndex);
-
-    public static List<Integer> genotypeToIntegerList(Genotype<GeneImpl> genotype) {
-        return chromosomeToIntegerList((ChromosomeImpl) genotype.getChromosome());
-    }
 
     public static List<Integer> chromosomeToIntegerList(ChromosomeImpl chromosome) {
         return genesToIntegerList(chromosome.toSeq());
