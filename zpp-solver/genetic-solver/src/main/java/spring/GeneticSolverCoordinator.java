@@ -62,6 +62,7 @@ public class GeneticSolverCoordinator {
             runner.setPopulationSize(10);
             runner.setIterations(30);
             runner.run(cp, new UtilityProviderImpl(utilityGenerator));
+            log.info("Found solution with utility: " + runner.getFinalUtility());
 
         } catch (Exception e) {
             log.error("CPSolver returned exception.", e);
