@@ -8,7 +8,7 @@ import jenetics_implementation.ChromosomeImpl;
 import jenetics_implementation.GeneImpl;
 import org.junit.Test;
 import sorting_algortihms.MergeSort;
-import utility.merge_sort_utility.GeneticWrapperLengthIsUtility;
+import utility.merge_sort_utility.GeneticWrapperValueIsUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MergeSortTest {
     private static final Random rand = new Random();
-    private ACPGeneticWrapper wrapper = new GeneticWrapperLengthIsUtility( null);
+    private ACPGeneticWrapper wrapper = new GeneticWrapperValueIsUtility( null);
 
     private Phenotype<GeneImpl, Double> generatePhenotype(int utility) {
-        ISeq<GeneImpl> genes = GeneImpl.createSequenceOfGenes(utility, wrapper);
-        Chromosome<GeneImpl> chromosome = new ChromosomeImpl(genes, utility, wrapper);
+        ISeq<GeneImpl> genes = ISeq.of(new GeneImpl(utility, 0, wrapper));
+        Chromosome<GeneImpl> chromosome = new ChromosomeImpl(genes, 1, wrapper);
         Genotype<GeneImpl> genotype = Genotype.of(chromosome);
         return Phenotype.of(genotype, 0);
     }
@@ -118,7 +118,7 @@ public class MergeSortTest {
 
     @Test
     public void bigRandomTest() {
-        int size = 1000; // Size of sample.
+        int size = 50000; // Size of sample.
         int highestUtility = 10000; // Highest possible utility.
 
         List<Integer> l = new ArrayList<>();

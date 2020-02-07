@@ -7,8 +7,8 @@ import jenetics_implementation.GeneImpl;
 
 import java.util.List;
 
-public class GeneticWrapperLengthIsUtility extends ACPGeneticWrapper {
-    public GeneticWrapperLengthIsUtility(CPWrapper cpWrapper) {
+public class GeneticWrapperValueIsUtility extends ACPGeneticWrapper {
+    public GeneticWrapperValueIsUtility(CPWrapper cpWrapper) {
         super(cpWrapper);
     }
 
@@ -24,7 +24,8 @@ public class GeneticWrapperLengthIsUtility extends ACPGeneticWrapper {
 
     @Override
     public double calculateUtility(ISeq<GeneImpl> genes) {
-        return genes.size();
+        assert genes.size() == 1;
+        return genes.get(0).getAllele();
     }
 
     @Override
