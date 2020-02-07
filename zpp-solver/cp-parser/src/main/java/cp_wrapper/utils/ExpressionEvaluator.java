@@ -47,7 +47,7 @@ public class ExpressionEvaluator {
         return (oper == OperatorEnum.MINUS || oper == OperatorEnum.DIV || oper == OperatorEnum.EQ);
     }
 
-    static double evaluateOnOperator(OperatorEnum oper, List<Double> values) {
+    public static double evaluateOnOperator(OperatorEnum oper, List<Double> values) {
         if (isTwoArgsOperator(oper) && values.size() != 2) {
             throw new RuntimeException("MINUS, DIV, EQ operators must be evaluated on exactly two arguments");
         }

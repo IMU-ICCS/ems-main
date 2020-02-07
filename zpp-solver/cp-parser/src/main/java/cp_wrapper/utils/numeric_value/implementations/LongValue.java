@@ -2,10 +2,12 @@ package cp_wrapper.utils.numeric_value.implementations;
 
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @AllArgsConstructor
+@EqualsAndHashCode
 public class LongValue implements NumericValueInterface {
     @Getter
     @Setter
@@ -16,14 +18,6 @@ public class LongValue implements NumericValueInterface {
     @Override
     public boolean isInteger() {
         return true;
-    }
-
-    @Override
-    public boolean equals(NumericValueInterface value) {
-        if (value instanceof IntegerValue || value instanceof LongValue) {
-            return this.value == value.getIntValue();
-        }
-        return false;
     }
 
     @Override
