@@ -59,8 +59,8 @@ public class GeneticSolverCoordinator {
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
             GeneticSolverRunner runner = new GeneticSolverRunner();
-            runner.setPopulationSize(10);
-            runner.setIterations(30);
+            runner.setPopulationSize(5);
+            runner.setTimeLimit(10);
             runner.run(cp, new UtilityProviderImpl(utilityGenerator));
             log.info("Found solution with utility: " + runner.getFinalUtility());
 

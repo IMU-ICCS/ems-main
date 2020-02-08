@@ -37,8 +37,11 @@ public class Methods {
         RangeDomainImpMockup dom1  = new RangeDomainImpMockup();
         RangeDomainImpMockup dom3  = new RangeDomainImpMockup();
         dom1.setFrom(1);dom3.setFrom(0);dom1.setTo(5);dom3.setTo(9);
+        dom3.setType(BasicTypeEnum.INTEGER);
+        dom1.setType(BasicTypeEnum.INTEGER);
         NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
         dom2.setValues(Arrays.asList(0.5, 1.5, 2.5));
+        dom2.setType(BasicTypeEnum.DOUBLE);
         List<Domain> domains = Arrays.asList(new Domain[] {dom1, dom2, dom3});
         for (int i = 0; i <3 ; i++ ){
             vars.get(i).setDomain(domains.get(i));
@@ -120,10 +123,15 @@ public class Methods {
         dom1.setFrom(1); dom1.setTo(10);
         dom3.setFrom(0); dom3.setTo(9);
         dom4.setFrom(1); dom4.setTo(3);
+        dom1.setType(BasicTypeEnum.INTEGER);
+        dom3.setType(BasicTypeEnum.INTEGER);
+        dom4.setType(BasicTypeEnum.INTEGER);
         NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
         NumericListDomainImplMockup dom5 = new NumericListDomainImplMockup();
         dom2.setValues(Arrays.asList(0.5, 1.5, 2.5, 7.5, 10.0));
         dom5.setValues(Arrays.asList(0.5, 7.5, 12.5));
+        dom2.setType(BasicTypeEnum.DOUBLE);
+        dom5.setType(BasicTypeEnum.DOUBLE);
         List<Domain> domains = Arrays.asList(new Domain[] {dom1, dom2, dom3, dom4, dom5});
         for (int i = 0; i < 5 ; i++ ){
             vars.get(i).setDomain(domains.get(i));

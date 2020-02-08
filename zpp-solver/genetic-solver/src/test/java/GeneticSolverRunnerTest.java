@@ -37,6 +37,7 @@ public class GeneticSolverRunnerTest {
         assertEquals((double) domain3.get(assignment.get(0)), 9, 0.01);
     }
 
+    /* Its a fairly easy test aswell and 20s should be enough. */
     @Test
     public void LessSimpleTest() {
         Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareLessSimpleConstraintProblem();
@@ -45,8 +46,8 @@ public class GeneticSolverRunnerTest {
 
         GeneticSolverRunner geneticSolverRunner = new GeneticSolverRunner();
         geneticSolverRunner.setMutatorProbability(0.1);
-        geneticSolverRunner.setPopulationSize(100);
-        geneticSolverRunner.setIterations(2000);
+        geneticSolverRunner.setPopulationSize(50);
+        geneticSolverRunner.setTimeLimit(20);
         geneticSolverRunner.setComparatorProbability(0.05);
 
         List<Integer> assignment = geneticSolverRunner.run(cpWrapper);

@@ -16,14 +16,18 @@ public class AssignmentComparator {
     }
 
     private static int compare(double leftUtility, double rightUtility, int leftBroken, int rightBroken, double probability) {
-        if (leftUtility == rightUtility && leftBroken == rightBroken)
+        if (leftUtility == rightUtility && leftBroken == rightBroken) {
             return 0;
+        }
 
-        if (leftBroken == rightBroken)
+        if (leftBroken == rightBroken) {
             return Double.compare(leftUtility, rightUtility);
-        else if ((leftBroken == 0 || rightBroken == 0) && random.nextDouble() < probability)
+        }
+        else if ((leftBroken == 0 || rightBroken == 0) && random.nextDouble() < probability) {
             return Double.compare(leftUtility, rightUtility);
-        else
+        }
+        else {
             return Integer.compare(rightBroken, leftBroken);
+        }
     }
 }

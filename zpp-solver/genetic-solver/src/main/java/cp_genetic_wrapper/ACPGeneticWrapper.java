@@ -24,12 +24,14 @@ public abstract class ACPGeneticWrapper {
 
     public abstract double calculateUtility(ISeq<GeneImpl> genes);
 
+    // Counts number for constraints a chromosome breaks. Genes are a part of chromosome and define an individual.
     public abstract int countViolatedConstraints(ISeq<GeneImpl> genes);
 
     public abstract boolean isValid(int value, int index);
 
     public abstract int getSize();
 
+    // Get a heuristic evaluation of the indexed variable in the assignment.
     public abstract int getHeuristicEvaluation(List<Integer> assignments, int variableIndex);
 
     public static List<Integer> chromosomeToIntegerList(ChromosomeImpl chromosome) {
