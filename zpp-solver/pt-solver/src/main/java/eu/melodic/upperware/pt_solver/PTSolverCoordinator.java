@@ -4,30 +4,46 @@ import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.models.commons.NotificationResult;
+import eu.melodic.models.commons.NotificationResultImpl;
+import eu.melodic.models.commons.Watermark;
+import eu.melodic.models.commons.WatermarkImpl;
+import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
+import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
-import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
+import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.jamesframework.core.search.stopcriteria.MaxRuntime;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static eu.melodic.models.commons.NotificationResult.StatusType.ERROR;
+import static eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS;
 import static eu.passage.upperware.commons.model.tools.CPModelTool.*;
 import static eu.passage.upperware.commons.model.tools.CPModelTool.createFloatValueUpperware;
 
@@ -37,11 +53,13 @@ public class PTSolverCoordinator {
 
     @Autowired
     public PTSolverCoordinator(CDOClientX clientX,
+                               @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
                                RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
                                JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         this.clientX = clientX;
         this.filecacheService = new FilecacheService();
+        this.memcacheService = memcacheService;
         this.utilityGeneratorProperties = utilityGeneratorProperties;
         this.env = env;
         this.restTemplate = restTemplate;
@@ -52,6 +70,7 @@ public class PTSolverCoordinator {
 
     private CDOClientX clientX;
 
+    private CacheService<NodeCandidates> memcacheService;
     private CacheService<NodeCandidates> filecacheService;
 
     private UtilityGeneratorProperties utilityGeneratorProperties;
@@ -76,13 +95,7 @@ public class PTSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
-            PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
-            Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
-            log.info("Found solution with utility: " + solution.getValue1());
-
-            if (solution.getValue1() > 0.0) {
-                saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
-            }
+            solve(cp, utilityGenerator);
 
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
         } catch (Exception e) {
@@ -90,8 +103,55 @@ public class PTSolverCoordinator {
         }
     }
 
+    @Async
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+        try {
+            NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
+
+            CDOSessionX sessionX = clientX.getSession();
+            log.info("Loading resource from CDO: {}", cpResourcePath);
+            CDOTransaction trans = sessionX.openTransaction();
+
+            ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
+                    .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
+            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
+                    melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+
+            solve(cp, utilityGenerator);
+
+            trans.commit();
+            trans.close();
+            sessionX.closeSession();
+
+            log.info("Solution has been produced");
+            notifySolutionProduced(applicationId, notificationUri, requestUuid);
+        } catch (Exception e) {
+            log.error("PTSolver returned exception.", e);
+            notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
+        }
+    }
+
+    private void solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
+        PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
+        Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
+        log.info("Found solution with utility: " + solution.getValue1());
+
+        if (solution.getValue1() > 0.0) {
+            saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
+        }
+    }
+
     public void generateCPSolutionFromFileWithTemplate(String cpModelPath, String nodeCandidatesFilePath) {
-       //TODO
+        //TODO
+    }
+
+    private Optional<ConstraintProblem> getCPFromCDO(String pathName, CDOTransaction trans) {
+        CDOResource resource = trans.getResource(pathName);
+        return resource.getContents()
+                .stream()
+                .filter(eObject -> eObject instanceof ConstraintProblem)
+                .map(eObject -> (ConstraintProblem) eObject)
+                .findFirst();
     }
 
     private void saveBestSolutionInCDO(ConstraintProblem cp, double maxUtility, List<VariableValueDTO> bestSolution) {
@@ -109,6 +169,10 @@ public class PTSolverCoordinator {
         }
 
         cp.getSolution().add(createSolution(maxUtility, values));
+    }
+
+    private String createCacheKey(String cdoResourcePath) {
+        return cdoResourcePath.substring(cdoResourcePath.indexOf("/") + 1);
     }
 
     private CpVariableValue createCpVariableValue(List<VariableValueDTO> bestSolution, CpVariable var) {
@@ -162,4 +226,67 @@ public class PTSolverCoordinator {
         log.info("ConstraintProblem.getCPFromFile: reading file from path " + pathName);
         return (ConstraintProblem) clientX.loadModel(pathName);
     }
+
+    private void notifySolutionProduced(String camelModelID, String notificationUri, String uuid) {
+        log.info("Sending solution available notification");
+        NotificationResult result = prepareSuccessNotificationResult();
+        ConstraintProblemSolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
+        sendNotification(notification, notificationUri);
+    }
+
+    private void notifySolutionNotApplied(String camelModelID, String notificationUri, String uuid) {
+        log.info("Sending solution NOT available notification");
+        NotificationResult result = prepareErrorNotificationResult("Solution was not generated.");
+        ConstraintProblemSolutionNotificationRequest notification = prepareNotification(camelModelID, result, uuid);
+        sendNotification(notification, notificationUri);
+    }
+
+    private void sendNotification(ConstraintProblemSolutionNotificationRequest notification, String notificationUri) {
+        String esbUrl = env.getProperty("esb.url");
+
+        if (esbUrl.endsWith("/")) {
+            esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
+        }
+        if (notificationUri.startsWith("/")) {
+            notificationUri = notificationUri.substring(1);
+        }
+        try {
+            log.info("Sending notification to: {}", esbUrl);
+            restTemplate.postForEntity(esbUrl + "/" + notificationUri, notification, String.class);
+            log.info("Notification sent.");
+        } catch (RestClientException restException) {
+            log.error("Error sending notification: ", restException);
+        }
+    }
+
+    private Watermark prepareWatermark(String uuid) {
+        Watermark watermark = new WatermarkImpl();
+        watermark.setUser("CPSolver");
+        watermark.setSystem("CPSolver");
+        watermark.setDate(new Date());
+        watermark.setUuid(uuid);
+        return watermark;
+    }
+
+    private NotificationResult prepareSuccessNotificationResult() {
+        NotificationResult result = new NotificationResultImpl();
+        result.setStatus(SUCCESS);
+        return result;
+    }
+
+    private NotificationResult prepareErrorNotificationResult(String errorMsg) {
+        NotificationResult result = new NotificationResultImpl();
+        result.setErrorDescription(errorMsg);
+        result.setStatus(ERROR);
+        return result;
+    }
+
+    private ConstraintProblemSolutionNotificationRequest prepareNotification(String camelModelID, NotificationResult result, String uuid) {
+        ConstraintProblemSolutionNotificationRequest notification = new ConstraintProblemSolutionNotificationRequestImpl();
+        notification.setApplicationId(camelModelID);
+        notification.setResult(result);
+        notification.setWatermark(prepareWatermark(uuid));
+        return notification;
+    }
+
 }
