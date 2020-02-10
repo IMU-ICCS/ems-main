@@ -62,12 +62,12 @@ public class ChromosomeImpl implements Chromosome<GeneImpl> {
     }
 
     // Creates randomly generated Chromosome.
-    public ChromosomeImpl of(Integer length) {
+    private ChromosomeImpl of(Integer length) {
         return of(length, cpGeneticWrapper);
     }
 
     // Creates randomly generated Chromosome. Static version of above method.
-    public static ChromosomeImpl of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
+    private static ChromosomeImpl of(Integer length, ACPGeneticWrapper cpGeneticWrapper) {
         ISeq<GeneImpl> genes = GeneImpl.createSequenceOfGenes(length, cpGeneticWrapper);
         return new ChromosomeImpl(genes, length, cpGeneticWrapper);
     }

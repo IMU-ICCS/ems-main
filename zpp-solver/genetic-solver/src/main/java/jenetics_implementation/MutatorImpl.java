@@ -20,9 +20,9 @@ public class MutatorImpl extends Mutator<GeneImpl, Double> {
     private int guesses;
 
     private enum Direction {
-        up,
-        none,
-        down
+        UP,
+        NONE,
+        DOWN
     }
 
     public MutatorImpl(double probability, ACPGeneticWrapper geneticWrapper, int guesses, double mutatorProbability) {
@@ -40,7 +40,7 @@ public class MutatorImpl extends Mutator<GeneImpl, Double> {
         // Setting values for decreasingValue and increasingValue so that IDE doesn't cry.
         decreasingValue = increasingValue = Integer.MIN_VALUE;
         decreasingValid = increasingValid = false;
-        Direction direction = Direction.none;
+        Direction direction = Direction.NONE;
 
         // Checking which direction  gives better heuristic evaluation. Up (+1) or down (-1).
         currentValue = initValue - 1;
@@ -59,28 +59,29 @@ public class MutatorImpl extends Mutator<GeneImpl, Double> {
 
         if (!increasingValid && decreasingValid &&
                 decreasingValue < bestHeuristic) {
-            direction = Direction.down;
+            direction = Direction.DOWN;
         }
         else if (increasingValid && !decreasingValid &&
                 increasingValue < bestHeuristic) {
-            direction = Direction.up;
+            direction = Direction.UP;
         }
         else if (increasingValid && decreasingValid) {
             if (increasingValue < bestHeuristic) {
-                direction = Direction.up;
+                direction = Direction.UP;
             }
             else if (decreasingValue < bestHeuristic) {
-                direction = Direction.down;
+                direction = Direction.DOWN;
             }
         }
         return direction;
     }
 
     /* Increases gene's values as long as heuristicEvaluation increases. Returns value for variable. */
-    public int adjust(int bestHeuristic, int initValue, Direction direction, List<Integer> assignments, int index) {
+    private int adjust(int bestHeuristic, int initValue, Direction direction, List<Integer> assignments, int index) {
         int currentValue = initValue, currentEvaluation, bestValue = initValue;
-        while (true) {
-            if (direction == Direction.up) {
+        boolean increasing = true, valid = true;
+        while (increasing && valid) {
+            if (direction == Direction.UP) {
                 currentValue++;
             } else {
                 currentValue--;
@@ -90,20 +91,20 @@ public class MutatorImpl extends Mutator<GeneImpl, Double> {
                 assignments.set(index, currentValue);
                 currentEvaluation = geneticWrapper.getHeuristicEvaluation(assignments, index);
 
-
                 if (currentEvaluation < bestHeuristic) {
                     bestHeuristic = currentEvaluation;
                     bestValue = currentValue;
                 } else {
-                    // Utility no longer increases -> we got result.
-                    return bestValue;
+                    // Utility no longer increases.
+                    increasing = false;
                 }
 
             } else {
-                // Value no longer valid -> we got result.
-                return bestValue;
+                // Value no longer valid.
+                valid = false;
             }
         }
+        return bestValue;
     }
 
     @Override

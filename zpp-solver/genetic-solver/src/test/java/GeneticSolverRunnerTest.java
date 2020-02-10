@@ -47,7 +47,7 @@ public class GeneticSolverRunnerTest {
         GeneticSolverRunner geneticSolverRunner = new GeneticSolverRunner();
         geneticSolverRunner.setMutatorProbability(0.1);
         geneticSolverRunner.setPopulationSize(50);
-        geneticSolverRunner.setTimeLimit(20);
+        geneticSolverRunner.setTimeLimitMillis(20);
         geneticSolverRunner.setComparatorProbability(0.05);
 
         List<Integer> assignment = geneticSolverRunner.run(cpWrapper);

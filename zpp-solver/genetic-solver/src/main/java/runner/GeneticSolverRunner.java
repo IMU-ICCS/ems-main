@@ -1,6 +1,5 @@
 package runner;
 
-import comparators.StochasticRankingComparator;
 import cp_genetic_wrapper.ACPGeneticWrapper;
 import cp_genetic_wrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
@@ -16,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Function;
@@ -37,7 +37,7 @@ public class GeneticSolverRunner {
     @Setter
     private int guesses = 10;
     @Setter
-    private int timeLimit = 0;
+    private int timeLimitMillis = 0;
     @Getter
     private double finalUtility;
 
@@ -62,7 +62,7 @@ public class GeneticSolverRunner {
 
         log.info("Starting runner.");
         log.info("Population size: " + populationSize);
-        log.info((timeLimit == 0 ? "Iterations: " + iterations : "Time limit: " + timeLimit));
+        log.info((timeLimitMillis == 0 ? "Iterations: " + iterations : "Time limit: " + timeLimitMillis));
         log.info("Crossover probability: " + crossoverProbability);
         log.info("Mutator probability: " + mutatorProbability);
         log.info("Mutation probability: " + mutationProbability);
@@ -79,11 +79,14 @@ public class GeneticSolverRunner {
                         .selector(selector)
                         .build();
 
-        if (timeLimit == 0) {
+        log.info("Engine built.");
+        log.info("Starting execution stream.");
+
+        if (timeLimitMillis == 0) {
             finalChromosome = (ChromosomeImpl) (engine.stream().limit(iterations)
                     .collect(EvolutionResult.toBestGenotype()).getChromosome());
         } else {
-            finalChromosome = (ChromosomeImpl) (engine.stream().limit(Limits.byExecutionTime(Duration.ofSeconds(timeLimit)))
+            finalChromosome = (ChromosomeImpl) (engine.stream().limit(Limits.byExecutionTime(Duration.ofMillis(timeLimitMillis), Clock.systemUTC()))
                     .collect(EvolutionResult.toBestGenotype()).getChromosome());
         }
         finalUtility = finalChromosome.getUtility();
