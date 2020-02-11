@@ -50,7 +50,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     public void configure(org.springframework.security.config.annotation.web.builders.WebSecurity webSecurity) {
         webSecurity
                 .ignoring()
-                .antMatchers("/constraintProblemSolution*");
+                .antMatchers("/constraintProblemSolutionFromFile");
     }
 
     @Bean
