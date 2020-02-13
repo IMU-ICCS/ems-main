@@ -25,22 +25,22 @@
     <name>Upperware</name>
 
     <modules>
-        <module>upperware_metamodel</module>
-        <module>jwt-commons</module>
-        <module>jwt-server</module>
-        <module>melodic-commons</module>
-        <module>melodic-cache</module>
-        <module>adapter</module>
-        <module>cp_generator</module>
-        <module>gui-backend</module>
-        <module>meta_solver</module>
-        <module>utility-generator</module>
-        <module>cp-solver</module>
-        <module>la_converter</module>
-        <module>dlms</module>
-        <module>event-management</module>
-        <module>mq-http-adapter</module>
-        <module>penalty-calculator</module>
+        <!--<module>upperware_metamodel</module>-->
+       <!-- <module>jwt-commons</module>-->
+        <!--<module>jwt-server</module>-->
+       <!-- <module>melodic-commons</module>-->
+       <!-- <module>melodic-cache</module>-->
+       <!-- <module>adapter</module>-->
+       <!-- <module>cp_generator</module>-->
+       <!-- <module>gui-backend</module>-->
+       <!-- <module>meta_solver</module>-->
+       <!-- <module>utility-generator</module>-->
+       <!-- <module>cp-solver</module>-->
+       <!-- <module>la_converter</module>-->
+       <!-- <module>dlms</module>-->
+       <!-- <module>event-management</module>-->
+       <!-- <module>mq-http-adapter</module>-->
+       <!-- <module>penalty-calculator</module>-->
         <module>zpp-solver</module>
     </modules>
 
@@ -71,11 +71,11 @@
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
         <!--DOCKER plugin properties-->
-        <docker.push>false</docker.push>
-        <docker.repository>127.0.0.1:5000/</docker.repository>
+        <docker.push>true</docker.push>
+        <docker.repository>88.99.85.63/:5000/</docker.repository>
         <!--suppress UnresolvedMavenProperty -->
-        <docker.imagePrefix>melodic-${scmBranch}/</docker.imagePrefix>
-        <docker.imageName>parent</docker.imageName>
+        <docker.imagePrefix>melodic-zpp2019master/</docker.imagePrefix>
+        <docker.imageName>parent2</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
         <docker.spotify-plugin.version>0.4.10</docker.spotify-plugin.version>
     </properties>
