@@ -11,11 +11,11 @@
     <packaging>pom</packaging>
     <modules>
         <module>cp-parser</module>
-        <module>genetic-solver</module>
-        <module>mcts-solver</module>
+        <!--<module>genetic-solver</module>-->
+        <!--<module>mcts-solver</module>-->
         <module>pt-solver</module>
-        <module>node-candidates-solver</module>
-        <module>cp_sampler</module>
+        <!--<module>node-candidates-solver</module>-->
+        <!--<module>cp_sampler</module>-->
     </modules>
     <artifactId>zpp-solver</artifactId>
     <dependencies>
