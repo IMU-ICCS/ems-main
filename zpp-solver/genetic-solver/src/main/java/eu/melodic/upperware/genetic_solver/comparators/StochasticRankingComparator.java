@@ -1,8 +1,8 @@
-package comparators;
+package eu.melodic.upperware.genetic_solver.comparators;
 
 import io.jenetics.Phenotype;
-import jenetics_implementation.ChromosomeImpl;
-import jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import lombok.AllArgsConstructor;
 
 import java.util.Comparator;

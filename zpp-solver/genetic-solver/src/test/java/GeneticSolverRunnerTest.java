@@ -2,7 +2,7 @@ import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.*;
 import org.junit.Test;
-import runner.GeneticSolverRunner;
+import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
 import utility.Methods;
 
 import java.util.Arrays;
@@ -47,7 +47,7 @@ public class GeneticSolverRunnerTest {
         GeneticSolverRunner geneticSolverRunner = new GeneticSolverRunner();
         geneticSolverRunner.setMutatorProbability(0.1);
         geneticSolverRunner.setPopulationSize(50);
-        geneticSolverRunner.setTimeLimitMillis(20);
+        geneticSolverRunner.setTimeLimitSeconds(20);
         geneticSolverRunner.setComparatorProbability(0.05);
 
         List<Integer> assignment = geneticSolverRunner.run(cpWrapper);

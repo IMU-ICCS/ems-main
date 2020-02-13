@@ -1,4 +1,4 @@
-package spring;
+package eu.melodic.upperware.genetic_solver;
 
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -19,7 +19,6 @@ import java.util.Arrays;
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class GeneticSolverContext {
-
     ApplicationContext applicationContext;
 
     @Bean

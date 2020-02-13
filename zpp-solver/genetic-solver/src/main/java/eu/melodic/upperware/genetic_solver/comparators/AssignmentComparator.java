@@ -1,7 +1,7 @@
-package comparators;
+package eu.melodic.upperware.genetic_solver.comparators;
 
 import io.jenetics.util.RandomRegistry;
-import jenetics_implementation.ChromosomeImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImpl;
 
 import java.util.Random;
 

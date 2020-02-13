@@ -1,8 +1,8 @@
 package utility;
 
-import cp_genetic_wrapper.ACPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import cp_wrapper.CPWrapper;
-import jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import io.jenetics.util.ISeq;
 
 import java.util.List;

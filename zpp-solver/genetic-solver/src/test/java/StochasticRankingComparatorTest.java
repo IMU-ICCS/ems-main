@@ -1,8 +1,8 @@
-import cp_genetic_wrapper.ACPGeneticWrapper;
-import jenetics_implementation.EvalFunction;
-import jenetics_implementation.ChromosomeImpl;
-import jenetics_implementation.GeneImpl;
-import comparators.StochasticRankingComparator;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.EvalFunction;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.genetic_solver.comparators.StochasticRankingComparator;
 import io.jenetics.Genotype;
 import io.jenetics.Phenotype;
 import io.jenetics.util.MSeq;

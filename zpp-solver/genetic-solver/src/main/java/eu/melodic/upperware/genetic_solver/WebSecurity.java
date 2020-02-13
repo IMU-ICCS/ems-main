@@ -1,4 +1,4 @@
-package spring;
+package eu.melodic.upperware.genetic_solver;
 
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.token.JWTService;

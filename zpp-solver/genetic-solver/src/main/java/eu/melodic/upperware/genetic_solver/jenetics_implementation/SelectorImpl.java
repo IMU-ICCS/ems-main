@@ -1,4 +1,4 @@
-package jenetics_implementation;
+package eu.melodic.upperware.genetic_solver.jenetics_implementation;
 
 import io.jenetics.Optimize;
 import io.jenetics.Phenotype;
@@ -7,14 +7,14 @@ import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
 import io.jenetics.util.Seq;
 import lombok.AllArgsConstructor;
-import sorting_algortihms.MergeSort;
+import eu.melodic.upperware.genetic_solver.sorting_algortihms.MergeSort;
 
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 /*
-    Important part of this selector is that it can use custom comparators.
+    Important part of this selector is that it can use custom eu.melodic.upperware.genetic_solver.comparators.
  */
 @AllArgsConstructor
 public class SelectorImpl implements Selector<GeneImpl, Double> {

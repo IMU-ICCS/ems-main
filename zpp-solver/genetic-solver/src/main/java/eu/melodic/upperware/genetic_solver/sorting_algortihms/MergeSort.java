@@ -1,8 +1,7 @@
-package sorting_algortihms;
+package eu.melodic.upperware.genetic_solver.sorting_algortihms;
 
-import comparators.StochasticRankingComparator;
-import jenetics_implementation.ChromosomeImpl;
-import jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.genetic_solver.comparators.StochasticRankingComparator;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import io.jenetics.Phenotype;
 import io.jenetics.util.MSeq;
 

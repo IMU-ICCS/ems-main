@@ -1,6 +1,5 @@
 
-import jenetics_implementation.GeneImpl;
-import io.jenetics.util.Seq;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import org.junit.Test;
 import utility.CPGeneticWrapperA;
 

@@ -1,6 +1,6 @@
-package jenetics_implementation;
+package eu.melodic.upperware.genetic_solver.jenetics_implementation;
 
-import cp_genetic_wrapper.ACPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Gene;
 import io.jenetics.util.ISeq;
 import lombok.AllArgsConstructor;

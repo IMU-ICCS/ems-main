@@ -1,7 +1,7 @@
-package runner;
+package eu.melodic.upperware.genetic_solver.runner;
 
-import cp_genetic_wrapper.ACPGeneticWrapper;
-import cp_genetic_wrapper.CPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -10,7 +10,7 @@ import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.Limits;
 import io.jenetics.util.Factory;
-import jenetics_implementation.*;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class GeneticSolverRunner {
     @Setter
     private int guesses = 10;
     @Setter
-    private int timeLimitMillis = 0;
+    private int timeLimitSeconds = 0;
     @Getter
     private double finalUtility;
 
@@ -60,9 +60,9 @@ public class GeneticSolverRunner {
         Selector<GeneImpl, Double> selector = new SelectorImpl();
         ChromosomeImpl finalChromosome;
 
-        log.info("Starting runner.");
+        log.info("Starting eu.melodic.upperware.genetic_solver.runner.");
         log.info("Population size: " + populationSize);
-        log.info((timeLimitMillis == 0 ? "Iterations: " + iterations : "Time limit: " + timeLimitMillis));
+        log.info((timeLimitSeconds == 0 ? "Iterations: " + iterations : "Time limit: " + timeLimitSeconds));
         log.info("Crossover probability: " + crossoverProbability);
         log.info("Mutator probability: " + mutatorProbability);
         log.info("Mutation probability: " + mutationProbability);
@@ -82,11 +82,12 @@ public class GeneticSolverRunner {
         log.info("Engine built.");
         log.info("Starting execution stream.");
 
-        if (timeLimitMillis == 0) {
+        if (timeLimitSeconds == 0) {
             finalChromosome = (ChromosomeImpl) (engine.stream().limit(iterations)
                     .collect(EvolutionResult.toBestGenotype()).getChromosome());
         } else {
-            finalChromosome = (ChromosomeImpl) (engine.stream().limit(Limits.byExecutionTime(Duration.ofMillis(timeLimitMillis), Clock.systemUTC()))
+            finalChromosome = (ChromosomeImpl) (engine.stream().
+                    limit(Limits.byExecutionTime(Duration.ofSeconds(timeLimitSeconds), Clock.systemUTC()))
                     .collect(EvolutionResult.toBestGenotype()).getChromosome());
         }
         finalUtility = finalChromosome.getUtility();

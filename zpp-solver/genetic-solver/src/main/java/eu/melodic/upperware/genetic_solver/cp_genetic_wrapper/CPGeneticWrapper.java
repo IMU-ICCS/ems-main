@@ -1,8 +1,8 @@
-package cp_genetic_wrapper;
+package eu.melodic.upperware.genetic_solver.cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
 import io.jenetics.util.ISeq;
-import jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

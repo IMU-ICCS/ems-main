@@ -1,4 +1,4 @@
-package spring;
+package eu.melodic.upperware.genetic_solver;
 
 import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.CacheService;
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import runner.GeneticSolverRunner;
+import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
 
 @Slf4j
 @Service
@@ -60,7 +60,7 @@ public class GeneticSolverCoordinator {
 
             GeneticSolverRunner runner = new GeneticSolverRunner();
             runner.setPopulationSize(100);
-            runner.setTimeLimitMillis(10000);
+            runner.setTimeLimitSeconds(10);
             runner.run(cp, new UtilityProviderImpl(utilityGenerator));
             log.info("Found solution with utility: " + runner.getFinalUtility());
 

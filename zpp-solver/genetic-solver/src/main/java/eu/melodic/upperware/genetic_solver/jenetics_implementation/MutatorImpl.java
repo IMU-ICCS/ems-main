@@ -1,7 +1,7 @@
-package jenetics_implementation;
+package eu.melodic.upperware.genetic_solver.jenetics_implementation;
 
-import comparators.AssignmentComparator;
-import cp_genetic_wrapper.ACPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.comparators.AssignmentComparator;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Chromosome;
 import io.jenetics.Mutator;
 import io.jenetics.MutatorResult;

@@ -1,13 +1,13 @@
-import cp_genetic_wrapper.ACPGeneticWrapper;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Chromosome;
 import io.jenetics.Genotype;
 import io.jenetics.Phenotype;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.MSeq;
-import jenetics_implementation.ChromosomeImpl;
-import jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImpl;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import org.junit.Test;
-import sorting_algortihms.MergeSort;
+import eu.melodic.upperware.genetic_solver.sorting_algortihms.MergeSort;
 import utility.merge_sort_utility.GeneticWrapperValueIsUtility;
 
 import java.util.ArrayList;

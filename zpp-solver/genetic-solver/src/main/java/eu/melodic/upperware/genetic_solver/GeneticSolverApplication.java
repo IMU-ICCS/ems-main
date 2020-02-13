@@ -1,4 +1,4 @@
-package spring;
+package eu.melodic.upperware.genetic_solver;
 
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;

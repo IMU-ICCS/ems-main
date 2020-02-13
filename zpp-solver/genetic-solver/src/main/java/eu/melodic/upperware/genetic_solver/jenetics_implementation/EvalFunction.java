@@ -1,4 +1,4 @@
-package jenetics_implementation;
+package eu.melodic.upperware.genetic_solver.jenetics_implementation;
 
 import io.jenetics.Genotype;
 
