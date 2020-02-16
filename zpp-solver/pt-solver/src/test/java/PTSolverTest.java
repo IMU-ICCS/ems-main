@@ -1,0 +1,120 @@
+import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
+import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
+import cp_wrapper.mockups.*;
+import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import org.eclipse.emf.common.util.BasicEList;
+import org.eclipse.emf.common.util.EList;
+import org.jamesframework.core.search.stopcriteria.MaxRuntime;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class PTSolverTest {
+
+    private static Map<ConstraintProblem, UtilityProvider> prepareSimpleConstraintProblem() {
+        /*
+              @var1 in {1,2,3,4,5}
+              @var2 in {0.5, 1.5, 2.5}
+              @var3 in {0,...,9}
+              @const1 = 3
+
+              @constraint1 : @var1 < @var3
+
+              @constraint2 : @var1 * @var2 * @var3 >= @const1;
+
+              @constraint3: @var1 * @var2 >= @var3
+
+              @constraint4: @var3 == @var3
+         */
+        List<String> variables = Arrays.asList("var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8");
+        EList<CpVariable> vars = new BasicEList<>();
+        for (int i= 0; i < 3; i++) vars.add(new CpVariableImplMockup(variables.get(i), VariableType.CARDINALITY));
+        RangeDomainImpMockup dom1  = new RangeDomainImpMockup();
+        RangeDomainImpMockup dom3  = new RangeDomainImpMockup();
+        dom3.setType(BasicTypeEnum.INTEGER); dom1.setType(BasicTypeEnum.INTEGER);
+        dom1.setFrom(1);dom3.setFrom(0);dom1.setTo(5);dom3.setTo(9);
+        NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
+        dom2.setValues(Arrays.asList(0.5, 1.5, 2.5));
+        dom2.setType(BasicTypeEnum.DOUBLE);
+        List<Domain> domains = Arrays.asList(new Domain[] {dom1, dom2, dom3});
+        for (int i = 0; i <3 ; i++ ){
+            vars.get(i).setDomain(domains.get(i));
+        }
+
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(3));
+
+        EList<NumericExpression> exprs = new BasicEList<>();
+        exprs.add(vars.get(0)); exprs.add(vars.get(1));
+        NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
+        ComparisonExpressionMockup constraint1 = new ComparisonExpressionMockup();
+        constraint1.setExp1(vars.get(0));constraint1.setExp2(vars.get(2));
+        constraint1.setComparator(ComparatorEnum.LESS_THAN);
+
+        ComparisonExpressionMockup constraint3 = new ComparisonExpressionMockup();
+        constraint3.setExp1(times);constraint3.setExp2(vars.get(2));
+        constraint3.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
+
+        exprs.add(vars.get(2));
+        ComparisonExpressionMockup constraint2 = new ComparisonExpressionMockup();
+        times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
+        constraint2.setExp1(times);constraint2.setExp2(c);
+        constraint2.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
+
+        ComparisonExpressionMockup constraint4 = new ComparisonExpressionMockup();
+        constraint4.setExp1(vars.get(2));constraint4.setExp2(vars.get(2));
+        constraint4.setComparator(ComparatorEnum.EQUAL_TO);
+
+        EList<Constant> consts = new BasicEList<>();
+        consts.add(c);
+
+        EList<CpVariable> varsE = new BasicEList<>();
+        for (int i = 0; i < 3; i++) varsE.add(vars.get(i));
+
+        EList<ComparisonExpression> constraints = new BasicEList<>();
+        constraints.addAll(Arrays.asList(constraint1, constraint2, constraint3, constraint4));
+
+        ConstraintProblem cp = new ConstraintProblemMockup(consts,null, varsE, constraints );
+        return Collections.singletonMap(cp, result -> {
+            double sum = 0;
+            for (VariableValueDTO v : result) {
+                if (v.getValue() instanceof Double) {
+                    sum += v.getValue().doubleValue();
+                } else {
+                    sum += v.getValue().intValue();
+                }
+            }
+            return sum;
+        });
+    }
+
+    /*
+        Since the solver is non-deterministic, in theory the test may not pass,
+        but 10 seconds should be enough for exact optimization.
+     */
+    @Test
+    public void simpleConstraintProblemTest() {
+        Map<ConstraintProblem, UtilityProvider> problem = prepareSimpleConstraintProblem();
+        PTSolver solver = new PTSolver(1, 10, 4,
+                problem.keySet().iterator().next(), problem.values().iterator().next());
+        PTSolution solution = solver.solvePTSolution(new MaxRuntime(10, TimeUnit.SECONDS));
+
+
+        List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
+        List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5);
+        List<Double> domain3 = Arrays.asList(0.0, 1.0,2.0,3.0,4.0,5.0, 6.0, 7.0, 8.0, 9.0);
+        List<Integer> assignment = solution.getVarAssignments();
+        assertEquals((double) domain1.get(assignment.get(1)), 5.0);
+        assertEquals((double) domain2.get(assignment.get(2)), 2.5);
+        assertEquals((double) domain3.get(assignment.get(0)), 9);
+
+    }
+}
