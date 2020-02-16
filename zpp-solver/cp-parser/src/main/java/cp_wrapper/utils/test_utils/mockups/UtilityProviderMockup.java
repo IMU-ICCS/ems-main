@@ -1,4 +1,4 @@
-package mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;

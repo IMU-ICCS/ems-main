@@ -1,4 +1,4 @@
-package mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
 import cp_wrapper.utils.constraint.Constraint;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;

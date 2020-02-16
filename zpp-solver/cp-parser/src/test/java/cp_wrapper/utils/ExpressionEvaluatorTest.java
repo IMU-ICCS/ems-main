@@ -1,8 +1,8 @@
 package cp_wrapper.utils;
 
-import cp_wrapper.mockups.*;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import cp_wrapper.utils.test_utils.mockups.*;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;

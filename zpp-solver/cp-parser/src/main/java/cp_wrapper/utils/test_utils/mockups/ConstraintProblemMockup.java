@@ -1,8 +1,7 @@
-package mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.Expression;
+import eu.paasage.upperware.metamodel.cp.*;
+import lombok.AllArgsConstructor;
 import org.eclipse.emf.cdo.CDOLock;
 import org.eclipse.emf.cdo.CDOObjectHistory;
 import org.eclipse.emf.cdo.CDOState;
@@ -21,39 +20,12 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class ComparisonExpressionMockup implements ComparisonExpression {
-    Expression exp1;
-    Expression exp2;
-    ComparatorEnum comparator;
-    @Override
-    public Expression getExp1() {
-        return exp1;
-    }
-
-    @Override
-    public void setExp1(Expression value) {
-        exp1 = value;
-    }
-
-    @Override
-    public Expression getExp2() {
-        return exp2;
-    }
-
-    @Override
-    public void setExp2(Expression value) {
-        exp2 = value;
-    }
-
-    @Override
-    public ComparatorEnum getComparator() {
-        return comparator;
-    }
-
-    @Override
-    public void setComparator(ComparatorEnum value) {
-        comparator = value;
-    }
+@AllArgsConstructor
+public class ConstraintProblemMockup implements ConstraintProblem {
+    private EList<Constant> constants;
+    private EList<CpMetric> metrics;
+    private EList<CpVariable> variables;
+    private EList<ComparisonExpression> constraints;
 
     @Override
     public String getId() {
@@ -62,6 +34,61 @@ public class ComparisonExpressionMockup implements ComparisonExpression {
 
     @Override
     public void setId(String value) {
+
+    }
+
+    @Override
+    public EList<Goal> getGoals() {
+        return null;
+    }
+
+    @Override
+    public EList<Constant> getConstants() {
+        return constants;
+    }
+
+    @Override
+    public EList<CpVariable> getCpVariables() {
+        return variables;
+    }
+
+    @Override
+    public EList<ComparisonExpression> getConstraints() {
+        return constraints;
+    }
+
+    @Override
+    public EList<Expression> getAuxExpressions() {
+        return null;
+    }
+
+    @Override
+    public EList<CpMetric> getCpMetrics() {
+        return metrics;
+    }
+
+    @Override
+    public EList<Solution> getSolution() {
+        return null;
+    }
+
+    @Override
+    public int getDeployedSolutionId() {
+        return 0;
+    }
+
+    @Override
+    public void setDeployedSolutionId(int value) {
+
+    }
+
+    @Override
+    public int getCandidateSolutionId() {
+        return 0;
+    }
+
+    @Override
+    public void setCandidateSolutionId(int value) {
 
     }
 

@@ -1,10 +1,13 @@
 package cp_wrapper.utils;
 
-import cp_wrapper.mockups.*;
 import cp_wrapper.utils.constraint.Constraint;
 import cp_wrapper.utils.constraint.ConstraintImpl;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import cp_wrapper.utils.test_utils.mockups.ComposedExpressionImplMockup;
+import cp_wrapper.utils.test_utils.mockups.ConstantImplMockup;
+import cp_wrapper.utils.test_utils.mockups.CpVariableImplMockup;
+import cp_wrapper.utils.test_utils.mockups.NumericValueUpperwareImplMockup;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import org.eclipse.emf.common.util.BasicEList;

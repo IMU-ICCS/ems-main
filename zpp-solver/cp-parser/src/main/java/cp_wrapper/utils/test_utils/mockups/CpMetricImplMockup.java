@@ -1,4 +1,4 @@
-package mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
 import eu.paasage.upperware.metamodel.cp.CpMetric;
 import eu.paasage.upperware.metamodel.cp.impl.NumericExpressionImpl;
