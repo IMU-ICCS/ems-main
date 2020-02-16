@@ -1,4 +1,4 @@
-package cp_wrapper.mockups;
+package mockups;
 
 import eu.paasage.upperware.metamodel.cp.ComposedExpression;
 import eu.paasage.upperware.metamodel.cp.NumericExpression;

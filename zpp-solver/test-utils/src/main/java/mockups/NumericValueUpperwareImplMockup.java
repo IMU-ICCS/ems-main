@@ -1,4 +1,4 @@
-package cp_wrapper.mockups;
+package mockups;
 
 import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
 import lombok.AllArgsConstructor;

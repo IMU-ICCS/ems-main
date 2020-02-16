@@ -1,8 +1,8 @@
-package cp_wrapper.mockups;
+package mockups;
 
-import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
-import eu.paasage.upperware.metamodel.cp.Expression;
+import eu.paasage.upperware.metamodel.cp.NumericListDomain;
+import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import org.eclipse.emf.cdo.CDOLock;
 import org.eclipse.emf.cdo.CDOObjectHistory;
 import org.eclipse.emf.cdo.CDOState;
@@ -14,54 +14,52 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
-public class ComparisonExpressionMockup implements ComparisonExpression {
-    Expression exp1;
-    Expression exp2;
-    ComparatorEnum comparator;
+public class NumericListDomainImplMockup implements NumericListDomain {
+    private EList<NumericValueUpperware> values = new BasicEList<>();
+    private BasicTypeEnum type;
     @Override
-    public Expression getExp1() {
-        return exp1;
+    public EList<NumericValueUpperware> getValues() {
+        return values;
+    }
+
+    public void setValues(List<Double> values) {
+        for (int i = 0; i < values.size(); i++) {
+            this.values.add(new NumericValueUpperwareImplMockup(values.get(i)));
+        }
+    }
+
+    public void setIntValues(List<Integer> values) {
+        for (int i = 0; i < values.size(); i++) {
+            this.values.add(new NumericValueUpperwareImplMockup(values.get(i)));
+        }
     }
 
     @Override
-    public void setExp1(Expression value) {
-        exp1 = value;
+    public BasicTypeEnum getType() {
+        return type;
     }
 
     @Override
-    public Expression getExp2() {
-        return exp2;
+    public void setType(BasicTypeEnum value) {
+        this.type = value;
     }
 
     @Override
-    public void setExp2(Expression value) {
-        exp2 = value;
-    }
-
-    @Override
-    public ComparatorEnum getComparator() {
-        return comparator;
-    }
-
-    @Override
-    public void setComparator(ComparatorEnum value) {
-        comparator = value;
-    }
-
-    @Override
-    public String getId() {
+    public NumericValueUpperware getValue() {
         return null;
     }
 
     @Override
-    public void setId(String value) {
+    public void setValue(NumericValueUpperware value) {
 
     }
 

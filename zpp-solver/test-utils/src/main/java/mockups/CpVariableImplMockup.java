@@ -1,4 +1,4 @@
-package cp_wrapper.mockups;
+package mockups;
 
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.Domain;
