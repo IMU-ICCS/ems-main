@@ -16,7 +16,6 @@
         <module>pt-solver</module>
         <module>node-candidates-solver</module>
         <module>cp_sampler</module>
-        <module>test-utils</module>
     </modules>
     <artifactId>zpp-solver</artifactId>
     <dependencies>
