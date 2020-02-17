@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableConfigurationProperties({UtilityGeneratorProperties.class, MelodicSecurityProperties.class, CacheProperties.class, PenaltyFunctionProperties.class})
 public class PTSolverApplication {
-
+    /**/
     public static void main(String[] args) {
         SpringApplication.run(PTSolverApplication.class, args);
     }

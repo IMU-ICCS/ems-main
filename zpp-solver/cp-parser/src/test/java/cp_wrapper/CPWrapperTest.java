@@ -1,6 +1,6 @@
 package cp_wrapper;
 
-import cp_wrapper.mockups.*;
+import cp_wrapper.utils.test_utils.mockups.*;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import org.eclipse.emf.common.util.BasicEList;
