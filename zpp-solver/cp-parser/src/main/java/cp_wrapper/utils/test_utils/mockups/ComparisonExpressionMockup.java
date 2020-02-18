@@ -1,7 +1,8 @@
-package cp_wrapper.mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
-import eu.paasage.upperware.metamodel.types.DoubleValueUpperware;
-import lombok.AllArgsConstructor;
+import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
+import eu.paasage.upperware.metamodel.cp.ComparisonExpression;
+import eu.paasage.upperware.metamodel.cp.Expression;
 import org.eclipse.emf.cdo.CDOLock;
 import org.eclipse.emf.cdo.CDOObjectHistory;
 import org.eclipse.emf.cdo.CDOState;
@@ -20,18 +21,48 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import java.lang.reflect.InvocationTargetException;
 
-@AllArgsConstructor
-public class NumericValueUpperwareImplMockup implements DoubleValueUpperware {
-    private double value;
-
+public class ComparisonExpressionMockup implements ComparisonExpression {
+    Expression exp1;
+    Expression exp2;
+    ComparatorEnum comparator;
     @Override
-    public double getValue() {
-        return value;
+    public Expression getExp1() {
+        return exp1;
     }
 
     @Override
-    public void setValue(double value) {
-        this.value = value;
+    public void setExp1(Expression value) {
+        exp1 = value;
+    }
+
+    @Override
+    public Expression getExp2() {
+        return exp2;
+    }
+
+    @Override
+    public void setExp2(Expression value) {
+        exp2 = value;
+    }
+
+    @Override
+    public ComparatorEnum getComparator() {
+        return comparator;
+    }
+
+    @Override
+    public void setComparator(ComparatorEnum value) {
+        comparator = value;
+    }
+
+    @Override
+    public String getId() {
+        return null;
+    }
+
+    @Override
+    public void setId(String value) {
+
     }
 
     @Override

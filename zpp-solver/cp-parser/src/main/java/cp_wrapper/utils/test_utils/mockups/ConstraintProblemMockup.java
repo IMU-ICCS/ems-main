@@ -1,8 +1,7 @@
-package cp_wrapper.mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
-import eu.paasage.upperware.metamodel.cp.NumericListDomain;
-import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
-import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
+import eu.paasage.upperware.metamodel.cp.*;
+import lombok.AllArgsConstructor;
 import org.eclipse.emf.cdo.CDOLock;
 import org.eclipse.emf.cdo.CDOObjectHistory;
 import org.eclipse.emf.cdo.CDOState;
@@ -14,52 +13,82 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.resource.Resource;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
-public class NumericListDomainImplMockup implements NumericListDomain {
-    private EList<NumericValueUpperware> values = new BasicEList<>();
-    private BasicTypeEnum type;
-    @Override
-    public EList<NumericValueUpperware> getValues() {
-        return values;
-    }
-
-    public void setValues(List<Double> values) {
-        for (int i = 0; i < values.size(); i++) {
-            this.values.add(new NumericValueUpperwareImplMockup(values.get(i)));
-        }
-    }
-
-    public void setIntValues(List<Integer> values) {
-        for (int i = 0; i < values.size(); i++) {
-            this.values.add(new NumericValueUpperwareImplMockup(values.get(i)));
-        }
-    }
+@AllArgsConstructor
+public class ConstraintProblemMockup implements ConstraintProblem {
+    private EList<Constant> constants;
+    private EList<CpMetric> metrics;
+    private EList<CpVariable> variables;
+    private EList<ComparisonExpression> constraints;
 
     @Override
-    public BasicTypeEnum getType() {
-        return type;
-    }
-
-    @Override
-    public void setType(BasicTypeEnum value) {
-        this.type = value;
-    }
-
-    @Override
-    public NumericValueUpperware getValue() {
+    public String getId() {
         return null;
     }
 
     @Override
-    public void setValue(NumericValueUpperware value) {
+    public void setId(String value) {
+
+    }
+
+    @Override
+    public EList<Goal> getGoals() {
+        return null;
+    }
+
+    @Override
+    public EList<Constant> getConstants() {
+        return constants;
+    }
+
+    @Override
+    public EList<CpVariable> getCpVariables() {
+        return variables;
+    }
+
+    @Override
+    public EList<ComparisonExpression> getConstraints() {
+        return constraints;
+    }
+
+    @Override
+    public EList<Expression> getAuxExpressions() {
+        return null;
+    }
+
+    @Override
+    public EList<CpMetric> getCpMetrics() {
+        return metrics;
+    }
+
+    @Override
+    public EList<Solution> getSolution() {
+        return null;
+    }
+
+    @Override
+    public int getDeployedSolutionId() {
+        return 0;
+    }
+
+    @Override
+    public void setDeployedSolutionId(int value) {
+
+    }
+
+    @Override
+    public int getCandidateSolutionId() {
+        return 0;
+    }
+
+    @Override
+    public void setCandidateSolutionId(int value) {
 
     }
 

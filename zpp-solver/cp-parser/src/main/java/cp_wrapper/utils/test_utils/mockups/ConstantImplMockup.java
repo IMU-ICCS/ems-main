@@ -1,13 +1,13 @@
-package cp_wrapper.mockups;
+package cp_wrapper.utils.test_utils.mockups;
 
-import eu.paasage.upperware.metamodel.cp.CpMetric;
+import eu.paasage.upperware.metamodel.cp.Constant;
 import eu.paasage.upperware.metamodel.cp.impl.NumericExpressionImpl;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class CpMetricImplMockup extends NumericExpressionImpl implements CpMetric {
+public class ConstantImplMockup extends NumericExpressionImpl implements Constant {
     private BasicTypeEnum type;
     private NumericValueUpperware value;
     @Override
