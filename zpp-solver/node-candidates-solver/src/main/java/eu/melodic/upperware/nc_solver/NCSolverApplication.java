@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 
 @EnableAsync
-@ComponentScan(basePackages = {"eu.melodic.upperware.pt_solver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator"})
+@ComponentScan(basePackages = {"eu.melodic.upperware.nc_solver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator"})
 @Configuration
 @SpringBootApplication
 @EnableConfigurationProperties({UtilityGeneratorProperties.class, MelodicSecurityProperties.class, CacheProperties.class, PenaltyFunctionProperties.class})
