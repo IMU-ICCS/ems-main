@@ -9,7 +9,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <properties>
+        <!--DOCKER plugin properties-->
+        <docker.imageName>cpsolver</docker.imageName>
+    </properties>
     <artifactId>node-candidates-solver</artifactId>
     <build>
         <plugins>

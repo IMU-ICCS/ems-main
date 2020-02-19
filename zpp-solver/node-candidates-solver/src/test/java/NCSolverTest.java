@@ -1,6 +1,6 @@
+import cp_wrapper.utils.test_utils.mockups.*;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
 import cp_wrapper.utility_provider.UtilityProvider;
-import cp_wrapper.mockups.*;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;
