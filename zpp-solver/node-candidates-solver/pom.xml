@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>cpsolver</docker.imageName>
+        <docker.imageName>ncsolver</docker.imageName>
     </properties>
     <artifactId>node-candidates-solver</artifactId>
     <build>
@@ -41,6 +41,13 @@
                             <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
                         </buildArgs>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.activation</groupId>
+                            <artifactId>activation</artifactId>
+                            <version>1.1.1</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -59,7 +66,6 @@
             <artifactId>james-core</artifactId>
             <version>1.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>cp-parser</artifactId>
