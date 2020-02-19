@@ -33,6 +33,13 @@ public class NCSolverContext {
     }
 
     @Bean
+    public MemcachedClient memcachedClient(CacheProperties cacheProperties) throws IOException {
+        String host = cacheProperties.getCache().getHost();
+        Integer port = cacheProperties.getCache().getPort();
+        return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
+    }
+
+    @Bean
     public CDOClientX cDOClientX() {
         return new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
     }

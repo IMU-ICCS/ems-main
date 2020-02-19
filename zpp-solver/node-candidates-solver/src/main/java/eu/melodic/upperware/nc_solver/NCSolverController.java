@@ -1,6 +1,7 @@
 package eu.melodic.upperware.nc_solver;
 
 import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionFromFileRequestImpl;
+import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionRequestImpl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,18 @@ public class NCSolverController {
         log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
 
         ncSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
+        log.info("Sleeping...");
+    }
+
+    @RequestMapping(value = "/constraintProblemSolution", method = POST)
+    public void constraintProblemSolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
+        String applicationId = request.getApplicationId();
+        String cdoResourcePath = request.getCdoModelsPath();
+        String notificationUri = request.getNotificationURI();
+        String requestUuid = request.getWatermark().getUuid();
+        log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
+
+        ncSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
         log.info("Sleeping...");
     }
 }
