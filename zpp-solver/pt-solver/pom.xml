@@ -9,7 +9,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <properties>
+        <!--DOCKER plugin properties-->
+        <docker.imageName>ptsolver</docker.imageName>
+    </properties>
     <artifactId>pt-solver</artifactId>
     <dependencies>
         <dependency>
