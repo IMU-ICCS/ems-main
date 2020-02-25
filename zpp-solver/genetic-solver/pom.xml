@@ -12,7 +12,10 @@
     <artifactId>genetic-solver</artifactId>
     <name>Upperware - Genetic Solver</name>
     <version>3.0.0-SNAPSHOT</version>
-
+    <properties>
+        <!--DOCKER plugin properties-->
+        <docker.imageName>genetic</docker.imageName>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>io.jenetics</groupId>
@@ -27,4 +30,34 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <buildArgs>
+                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                    </buildArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>
