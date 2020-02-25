@@ -1,8 +1,10 @@
+package eu.melodic.upperware.genetic_solver.runner;
+
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.CPGeneticWrapper;
 import eu.paasage.upperware.metamodel.cp.*;
 import org.junit.Test;
-import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
 import utility.Methods;
 
 import java.util.Arrays;
@@ -25,7 +27,7 @@ public class GeneticSolverRunnerTest {
         geneticSolverRunner.setIterations(100);
         geneticSolverRunner.setComparatorProbability(0.1);
 
-        List<Integer> assignment = geneticSolverRunner.run(cpWrapper);
+        List<Integer> assignment = geneticSolverRunner.run(new CPGeneticWrapper(cpWrapper));
 
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
@@ -50,7 +52,7 @@ public class GeneticSolverRunnerTest {
         geneticSolverRunner.setTimeLimitSeconds(20);
         geneticSolverRunner.setComparatorProbability(0.05);
 
-        List<Integer> assignment = geneticSolverRunner.run(cpWrapper);
+        List<Integer> assignment = geneticSolverRunner.run(new CPGeneticWrapper(cpWrapper));
 
 
         List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
