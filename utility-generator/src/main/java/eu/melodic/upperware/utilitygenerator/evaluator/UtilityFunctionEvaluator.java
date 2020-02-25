@@ -61,7 +61,7 @@ public class UtilityFunctionEvaluator {
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
         String formula = prepareUtilityFunction(fromCamelModelExtractor);
-        log.info("Formula of the eu.melodic.upperware.genetic_solver.utility function: {}", formula);
+        log.info("Formula of the utility function: {}", formula);
         fromCamelModelExtractor.setUtilityFunctionFormula(formula);
         NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
 
@@ -88,7 +88,7 @@ public class UtilityFunctionEvaluator {
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
         String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
-        log.info("Formula of the eu.melodic.upperware.genetic_solver.utility function: {}", formula);
+        log.info("Formula of the utility function: {}", formula);
         fromCamelModelExtractor.setUtilityFunctionFormula(formula);
         NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
 
@@ -108,7 +108,7 @@ public class UtilityFunctionEvaluator {
         this.deployedConfiguration = Collections.emptyList();
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
         String utilityFormula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
-        log.info("Formula of the eu.melodic.upperware.genetic_solver.utility function: {}", utilityFormula);
+        log.info("Formula of the utility function: {}", utilityFormula);
         TemplateNodeCandidatesConverter nodeCandidatesConverter
                 = new TemplateNodeCandidatesConverter(nodeCandidates, this.variablesFromConstraintProblem);
 

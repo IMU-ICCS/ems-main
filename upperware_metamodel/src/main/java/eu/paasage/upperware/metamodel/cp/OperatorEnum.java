@@ -11,7 +11,7 @@ import org.eclipse.emf.common.util.Enumerator;
 /**
  * <!-- begin-user-doc -->
  * A representation of the literals of the enumeration '<em><b>Operator Enum</b></em>',
- * and eu.melodic.upperware.genetic_solver.utility methods for working with them.
+ * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getOperatorEnum()
  * @model

@@ -41,7 +41,7 @@ public class Algo_AffinityAwarenessRunner extends AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		log.debug("Calculating eu.melodic.upperware.genetic_solver.utility from Algo_AffinityAwarenessRunner");
+		log.debug("Calculating utility from Algo_AffinityAwarenessRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
 		Map<String, List<String>> compConMap = diff.getCompConMap();
 
@@ -57,7 +57,7 @@ public class Algo_AffinityAwarenessRunner extends AlgorithmRunner {
 				for (String toComp : toCompList) {
 					DlmsConfigurationElement toElement = getComp(proposed, toComp);
 					if (!isEmpty(toElement)) {
-						// calculate the eu.melodic.upperware.genetic_solver.utility between application component and datasource
+						// calculate the utility between application component and datasource
 						double currentUtility = algo.calculateAffinity(fromElement.getId(), toElement.getId());
 
 						// there is no historical data between the two connections
@@ -65,7 +65,7 @@ public class Algo_AffinityAwarenessRunner extends AlgorithmRunner {
 							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
 									toElement.getId());
 						} else {
-							// increase iteration and eu.melodic.upperware.genetic_solver.utility
+							// increase iteration and utility
 							numberConnection++;
 							utility += currentUtility;
 						}						

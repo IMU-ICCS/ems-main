@@ -4,7 +4,6 @@ import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.CPGeneticWrapper;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import io.jenetics.*;
 import io.jenetics.engine.Engine;
@@ -44,20 +43,24 @@ public class GeneticSolverRunner {
 
     private final Function<Genotype<GeneImpl>, Double> fitnessFunction = new EvalFunction();
 
-    public List<VariableValueDTO> run(ConstraintProblem cp, UtilityProvider utility) {
+    public List<Integer> run(ConstraintProblem cp, UtilityProvider utility) {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(cp, utility);
 
-        return cpWrapper.assignmentToVariableValueDTOList(run(new CPGeneticWrapper(cpWrapper)));
+        return run(cpWrapper);
     }
 
-     List<Integer> run(ACPGeneticWrapper geneticWrapper) {
+    public List<Integer> run(CPWrapper cpWrapper) {
+        return run(new CPGeneticWrapper(cpWrapper));
+    }
+
+    private List<Integer> run(ACPGeneticWrapper geneticWrapper) {
         Alterer<GeneImpl, Double> crossoverAlterer = new SinglePointCrossover<>(crossoverProbability);
         Mutator<GeneImpl, Double> mutator = new MutatorImpl(mutationProbability, geneticWrapper, guesses, mutatorProbability);
         Selector<GeneImpl, Double> selector = new SelectorImpl();
         ChromosomeImpl finalChromosome;
 
-        log.info("Starting eu.melodic.upperware.genetic_solver.eu.melodic.upperware.genetic_solver.runner.");
+        log.info("Starting eu.melodic.upperware.genetic_solver.runner.");
         log.info("Population size: " + populationSize);
         log.info((timeLimitSeconds == 0 ? "Iterations: " + iterations : "Time limit: " + timeLimitSeconds));
         log.info("Crossover probability: " + crossoverProbability);

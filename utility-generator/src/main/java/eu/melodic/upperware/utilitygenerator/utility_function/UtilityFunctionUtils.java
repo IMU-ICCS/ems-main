@@ -28,7 +28,7 @@ public class UtilityFunctionUtils {
 
 
     public static String createUtilityFunctionCostFormula(Collection<VariableDTO> variablesFromConstraintProblem) {
-        log.warn("The Optimisation requirement is not defined in the Camel Model, default eu.melodic.upperware.genetic_solver.utility function which optimises the cost will be created.");
+        log.warn("The Optimisation requirement is not defined in the Camel Model, default utility function which optimises the cost will be created.");
         Collection<String> componentCosts = new ArrayList<>();
         variablesFromConstraintProblem.stream()
                 .filter(v -> VariableType.CARDINALITY.equals(v.getType()))

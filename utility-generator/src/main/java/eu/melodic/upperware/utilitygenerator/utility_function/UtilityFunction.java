@@ -42,7 +42,7 @@ public class UtilityFunction {
         }
         double result = function.calculate();
         if (Double.isNaN(result)) {
-            log.warn("Result of calculating the eu.melodic.upperware.genetic_solver.utility function is NaN, returning 0");
+            log.warn("Result of calculating the utility function is NaN, returning 0");
             result = 0.0;
         }
         function.removeAllArguments();

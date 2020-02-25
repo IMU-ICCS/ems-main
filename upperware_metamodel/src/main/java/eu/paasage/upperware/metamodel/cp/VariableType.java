@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * <!-- begin-user-doc -->
  * A representation of the literals of the enumeration '<em><b>Variable Type</b></em>',
- * and eu.melodic.upperware.genetic_solver.utility methods for working with them.
+ * and utility methods for working with them.
  * <!-- end-user-doc -->
  * @see eu.paasage.upperware.metamodel.cp.CpPackage#getVariableType()
  * @model

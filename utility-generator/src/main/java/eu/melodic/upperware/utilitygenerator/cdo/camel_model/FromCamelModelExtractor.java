@@ -105,7 +105,7 @@ public class FromCamelModelExtractor {
         return createNodeCandidatesAttributes(filterVariables(this::isListOfAttributesOfNodeCandidates), true);
     }
 
-    /* dlms eu.melodic.upperware.genetic_solver.utility type */
+    /* dlms utility type */
     public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes() {
         return createDlmsUtilityAttributes(filterVariables(this::isDlmsUtilityAttribute));
     }
@@ -132,7 +132,7 @@ public class FromCamelModelExtractor {
         return reconfigurationPenaltyAttributes.iterator().next().getName();
     }
 
-    /* optimisation requirement - eu.melodic.upperware.genetic_solver.utility function */
+    /* optimisation requirement - utility function */
     private Optional<String> getUtilityFormula() {
         RequirementModel requirementModel = CdoTool.getFirstElement(model.getRequirementModels());
         Optional<Requirement> optimisationRequirement = requirementModel

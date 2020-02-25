@@ -1702,7 +1702,7 @@
     </regions>
   </locationModels>
   <metricModels xsi:type="metric:MetricTypeModel" name="FCRMetricModel">
-    <attributes xsi:type="core:MeasurableAttribute" name="eu.melodic.upperware.genetic_solver.utility"/>
+    <attributes xsi:type="core:MeasurableAttribute" name="utility"/>
     <attributes xsi:type="core:MeasurableAttribute" name="cardinality" annotations="Cardinality"/>
     <attributes xsi:type="core:MeasurableAttribute" name="price" annotations="Cost"/>
     <attributes xsi:type="core:MeasurableAttribute" name="responseTime" sensors="//@metricModels.0/@sensors.0"/>
@@ -2029,7 +2029,7 @@
         </concept>
       </concept>
       <concept id="UtilityNotions" uri="mms:UtilityNotions" name="Utility Notions">
-        <concept id="UtilityRelatedProperties" uri="mms:UtilityRelatedProperties" name="Properties related to eu.melodic.upperware.genetic_solver.utility">
+        <concept id="UtilityRelatedProperties" uri="mms:UtilityRelatedProperties" name="Properties related to utility">
           <concept id="Utility" uri="mms:Utility" name="Utility">
             <concept id="DLMSUtility" uri="mms:DSLMUtility" name="DLMS Utility">
               <property id="AffinityAwareness" uri="mms:AffinityAwareness" name="Affinity Awareness" rangeUri="xsd:double"/>

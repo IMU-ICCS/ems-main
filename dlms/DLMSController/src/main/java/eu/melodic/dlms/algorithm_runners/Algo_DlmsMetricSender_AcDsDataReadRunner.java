@@ -51,7 +51,7 @@ public class Algo_DlmsMetricSender_AcDsDataReadRunner extends AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		// currently eu.melodic.upperware.genetic_solver.utility is not necessary to generate eu.melodic.upperware.genetic_solver.utility by this algorithm
+		// currently utility is not necessary to generate utility by this algorithm
 		return 0;
 	}
 

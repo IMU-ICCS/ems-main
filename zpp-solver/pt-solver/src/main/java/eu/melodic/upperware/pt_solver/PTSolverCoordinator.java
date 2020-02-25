@@ -85,7 +85,13 @@ public class PTSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
-            solve(cp, utilityGenerator);
+            PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
+            Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
+            log.info("Found solution with utility: " + solution.getValue1());
+
+            if (solution.getValue1() > 0.0) {
+                saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
+            }
 
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
         } catch (Exception e) {
@@ -107,7 +113,13 @@ public class PTSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            solve(cp, utilityGenerator);
+            PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
+            Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
+            log.info("Found solution with utility: " + solution.getValue1());
+
+            if (solution.getValue1() > 0.0) {
+                saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
+            }
 
             trans.commit();
             trans.close();
@@ -118,16 +130,6 @@ public class PTSolverCoordinator {
         } catch (Exception e) {
             log.error("CPSolver returned exception.", e);
             solutionResultNotifier.notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
-        }
-    }
-
-    private void solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
-        PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
-        Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
-        log.info("Found solution with eu.melodic.upperware.genetic_solver.utility: " + solution.getValue1());
-
-        if (solution.getValue1() > 0.0) {
-            saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
         }
     }
 
@@ -153,7 +155,7 @@ public class PTSolverCoordinator {
                 .map(var -> CpVariableCreator.createCpVariableValue(bestSolution, var))
                 .collect(Collectors.toList());
 
-        log.info("Solution with best eu.melodic.upperware.genetic_solver.utility {}:", maxUtility);
+        log.info("Solution with best utility {}:", maxUtility);
         for (VariableValueDTO variableValueDTO : bestSolution) {
             log.info("\t{}: {}", variableValueDTO.getName(), variableValueDTO.getValue());
         }

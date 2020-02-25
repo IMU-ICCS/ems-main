@@ -1,8 +1,7 @@
-package eu.melodic.upperware.genetic_solver;
 
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import org.junit.Test;
-import eu.melodic.upperware.genetic_solver.utility.CPGeneticWrapperA;
+import utility.CPGeneticWrapperA;
 
 import static org.junit.Assert.*;
 

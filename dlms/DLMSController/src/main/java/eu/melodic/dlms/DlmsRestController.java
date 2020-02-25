@@ -40,7 +40,7 @@ public class DlmsRestController {
 	private final DLMSService dlmsService;
 
 	/**
-	 * Registers an algorithm/eu.melodic.upperware.genetic_solver.runner combination in the controller to be accessible
+	 * Registers an algorithm/runner combination in the controller to be accessible
 	 * via the webservice.
 	 */
 	public void registerAlgorithm(Algorithm algorithm, AlgorithmRunner runner) {
@@ -48,7 +48,7 @@ public class DlmsRestController {
 	}
 
 	/**
-	 * Returns a map of all active algorithms with the value their eu.melodic.upperware.genetic_solver.runner class
+	 * Returns a map of all active algorithms with the value their runner class
 	 * produced from the call of queryResults().
 	 */
 	@PostMapping(value = "/dlmsController/utilityValue")
@@ -56,9 +56,9 @@ public class DlmsRestController {
 		Map<String, Double> utilityValueMap = new HashMap<>(algorithms.size());
 
 		algorithms.forEach((Algorithm key, AlgorithmRunner runner) -> {
-			// skip eu.melodic.upperware.genetic_solver.utility algorithms
+			// skip utility algorithms
 			if (!key.getCamelId().contains("CAMEL")) { 
-				log.debug("Calculating eu.melodic.upperware.genetic_solver.utility for {}", key.getCamelId());
+				log.debug("Calculating utility for {}", key.getCamelId());
 				double algorithmResult = runner.queryResults(diffs);
 				log.debug("result for algorithm {}: {}", key.getCamelId(), algorithmResult);
 				utilityValueMap.put(key.getCamelId(), algorithmResult);

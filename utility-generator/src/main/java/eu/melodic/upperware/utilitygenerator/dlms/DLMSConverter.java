@@ -38,7 +38,7 @@ public class DLMSConverter implements ArgumentConverter {
         this.dlmsUtilityService = new DLMSServiceImpl(fromCamelModelExtractor.getCamelModelPath(), dlmsControllerUrl,
                 melodicSecurityProperties, jwtService);
         this.dlmsUtilityAttributes = fromCamelModelExtractor.getListOfDlmsUtilityAttributes();
-        log.info("Attributes of DLMS eu.melodic.upperware.genetic_solver.utility: {}", dlmsUtilityAttributes);
+        log.info("Attributes of DLMS utility: {}", dlmsUtilityAttributes);
         this.actConfiguration = actConfiguration;
     }
 
@@ -53,7 +53,7 @@ public class DLMSConverter implements ArgumentConverter {
         }
         UtilityMetrics dlmsUtility;
         try {
-            log.debug("Calling the dlms eu.melodic.upperware.genetic_solver.utility service");
+            log.debug("Calling the dlms utility service");
             dlmsUtility = dlmsUtilityService.getDLMSUtility(actConfiguration, newConfiguration);
 
             log.info("Utility was calculated {}", dlmsUtility);
@@ -72,7 +72,7 @@ public class DLMSConverter implements ArgumentConverter {
             log.info("Utility values stop");
 
         } catch (Exception e) {
-            log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS eu.melodic.upperware.genetic_solver.utility value. The error:");
+            log.warn("There was an error during invoking the DLMS Utility library, returning 0 as DLMS utility value. The error:");
             log.warn(e.toString());
             e.printStackTrace();
             return createDefaultValuesOfDLMSUtilityAttributes();
@@ -88,15 +88,15 @@ public class DLMSConverter implements ArgumentConverter {
 
     private static Number getDLMSUtilityAttributeValue(UtilityMetrics dlmsUtility, CamelMetadata type) {
         if (!CamelMetadata.DLMS_LIST.contains(type)) {
-            throw new IllegalArgumentException("Illegal type of DLMS eu.melodic.upperware.genetic_solver.utility attribute: " + type);
+            throw new IllegalArgumentException("Illegal type of DLMS utility attribute: " + type);
         }
         if (dlmsUtility == null || dlmsUtility.getResults() == null) {
-            log.warn("DLMSUtility is null, returning 0 as DLMS eu.melodic.upperware.genetic_solver.utility value");
+            log.warn("DLMSUtility is null, returning 0 as DLMS utility value");
             return 0;
         }
         Double dlmsUtilityResult = dlmsUtility.getResults().get(type.camelName);
         if (dlmsUtilityResult == null) {
-            log.warn("DLMS eu.melodic.upperware.genetic_solver.utility result for type: {} is null, returning 0 as a DLMS eu.melodic.upperware.genetic_solver.utility value", type.camelName);
+            log.warn("DLMS utility result for type: {} is null, returning 0 as a DLMS utility value", type.camelName);
             return 0;
         }
         log.debug("DLMSUtility:");

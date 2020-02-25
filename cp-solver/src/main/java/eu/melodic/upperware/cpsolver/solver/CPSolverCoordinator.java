@@ -110,15 +110,15 @@ public class CPSolverCoordinator {
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();
             for (CpSolution solution : solutions) {
-                //calculate eu.melodic.upperware.genetic_solver.utility
+                //calculate utility
                 List<VariableValueDTO> result = convertToVariableValues(solution);
                 double utility = utilityGenerator.evaluate(result);
                 if (utility > maxUtility) {
-                    log.debug("New eu.melodic.upperware.genetic_solver.utility value {} is greater than {}", utility, maxUtility);
+                    log.debug("New utility value {} is greater than {}", utility, maxUtility);
                     maxUtility = utility;
                     bestSolution = result;
                 } else {
-                    log.debug("New eu.melodic.upperware.genetic_solver.utility value {} is NOT greater than {}", utility, maxUtility);
+                    log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);
                 }
             }
 
@@ -168,7 +168,7 @@ public class CPSolverCoordinator {
                 .map(var -> createCpVariableValue(bestSolution, var))
                 .collect(Collectors.toList());
 
-        log.info("Solution with best eu.melodic.upperware.genetic_solver.utility {}:", maxUtility);
+        log.info("Solution with best utility {}:", maxUtility);
         for (VariableValueDTO variableValueDTO : bestSolution) {
             log.info("\t{}: {}", variableValueDTO.getName(), variableValueDTO.getValue());
         }
@@ -225,9 +225,9 @@ public class CPSolverCoordinator {
     }
 
     private void updateUtilityOfDeployedSolution(ConstraintProblem cp) {
-        log.debug("Updating eu.melodic.upperware.genetic_solver.utility of deployed solution = 0.0");
+        log.debug("Updating utility of deployed solution = 0.0");
         Solution deployedSolution = cp.getSolution().get(cp.getDeployedSolutionId());
-        log.debug("Previous eu.melodic.upperware.genetic_solver.utility of deployed solution was {}", ((DoubleValueUpperware) deployedSolution.getUtilityValue()).getValue());
+        log.debug("Previous utility of deployed solution was {}", ((DoubleValueUpperware) deployedSolution.getUtilityValue()).getValue());
         deployedSolution.setUtilityValue(createDoubleValueUpperware(0.0));
     }
 
@@ -251,15 +251,15 @@ public class CPSolverCoordinator {
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();
             for (CpSolution solution : solutions) {
-                //calculate eu.melodic.upperware.genetic_solver.utility
+                //calculate utility
                 List<VariableValueDTO> result = convertToVariableValues(solution);
                 double utility = utilityGenerator.evaluate(result);
                 if (utility > maxUtility) {
-                    log.debug("New eu.melodic.upperware.genetic_solver.utility value {} is greater than {}", utility, maxUtility);
+                    log.debug("New utility value {} is greater than {}", utility, maxUtility);
                     maxUtility = utility;
                     bestSolution = result;
                 } else {
-                    log.debug("New eu.melodic.upperware.genetic_solver.utility value {} is NOT greater than {}", utility, maxUtility);
+                    log.debug("New utility value {} is NOT greater than {}", utility, maxUtility);
                 }
             }
 

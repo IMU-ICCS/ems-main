@@ -12,6 +12,7 @@
     <artifactId>genetic-solver</artifactId>
     <name>Upperware - Genetic Solver</name>
     <version>3.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
@@ -26,5 +27,32 @@
             <version>3.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>cp-parser</artifactId>
+            <version>3.0.0-SNAPSHOT</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic</groupId>
+            <artifactId>penalty-calculator</artifactId>
+            <version>3.0.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
     </dependencies>
 </project>

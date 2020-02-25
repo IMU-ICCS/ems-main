@@ -7,24 +7,24 @@ import eu.melodic.dlms.utility.common.DlmsConfigurationElement;
 
 
 /**
- * Interface for algorithm eu.melodic.upperware.genetic_solver.runner classes.
+ * Interface for algorithm runner classes.
  */
 public abstract class AlgorithmRunner {
 
 	/**
-	 * Initializes the eu.melodic.upperware.genetic_solver.runner instance with a reference to the application to make the use of Spring injected repositories etc. possible.
+	 * Initializes the runner instance with a reference to the application to make the use of Spring injected repositories etc. possible.
 	 */
 	public abstract void initialize(DlmsControllerApplication application);
 
 	/**
-	 * Returns an eu.melodic.upperware.genetic_solver.utility value of all the collected results.
-	 * It is the eu.melodic.upperware.genetic_solver.runner's responsibility to make sure that the results are cleared afterwards (if necessary).
+	 * Returns an utility value of all the collected results. 
+	 * It is the runner's responsibility to make sure that the results are cleared afterwards (if necessary).
 	 */
 	public abstract double queryResults(DlmsConfigurationConnection diff);
 
 	/**
 	 * Method to run an algorithm. 
-	 * It is the eu.melodic.upperware.genetic_solver.runner's job to keep the result(s).
+	 * It is the runner's job to keep the result(s).
 	 * Takes an individual number of parameters.
 	 */
 	public abstract int update(Object... parameters);

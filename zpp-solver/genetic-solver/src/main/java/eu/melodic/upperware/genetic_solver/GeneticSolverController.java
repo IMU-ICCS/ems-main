@@ -1,7 +1,6 @@
 package eu.melodic.upperware.genetic_solver;
 
 import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionFromFileRequestImpl;
-import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionRequestImpl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,23 +25,6 @@ public class GeneticSolverController {
         log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
 
         geneticSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
-        log.info("Sleeping...");
-    }
-
-    @RequestMapping(value = "/constraintProblemSolutionFromFileWithTemplate", method = POST)
-    public void constraintProblemSolutionFromFileWithTemplate(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @RequestMapping(value = "/constraintProblemSolution", method = POST)
-    public void constraintProblemSolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
-        String applicationId = request.getApplicationId();
-        String cdoResourcePath = request.getCdoModelsPath();
-        String notificationUri = request.getNotificationURI();
-        String requestUuid = request.getWatermark().getUuid();
-        log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
-
-        geneticSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
         log.info("Sleeping...");
     }
 }

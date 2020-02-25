@@ -74,7 +74,7 @@
   <metadataModels name="MMS_MetaDataModel">
     <metadataElements xsi:type="mms:MmsConcept" id="MELODICMetadataSchema" uri="mms:MELODICMetadataSchema" name="MELODICMetadataSchema" description="The Melodic Metadata Schema that comprises the following model facets; Application Placement Model, Big Data Model, and Context Aware Security model.">
       <concept id="UtilityNotions" uri="mms:UtilityNotions" name="Utility Notions">
-        <concept id="UtilityRelatedProperties" uri="mms:UtilityRelatedProperties" name="Properties related to eu.melodic.upperware.genetic_solver.utility">
+        <concept id="UtilityRelatedProperties" uri="mms:UtilityRelatedProperties" name="Properties related to utility">
           <concept id="Utility" uri="mms:Utility" name="Utility">
             <concept id="DLMSUtility" uri="mms:DSLMUtility" name="DLMS Utility">
               <property id="AffinityAwareness" uri="mms:AffinityAwareness" name="Affinity Awareness" rangeUri="xsd:double"/>

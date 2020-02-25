@@ -1,4 +1,4 @@
-package eu.melodic.upperware.genetic_solver.utility;
+package utility;
 
 import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utils.test_utils.mockups.*;

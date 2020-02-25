@@ -21,7 +21,7 @@ public class Algorithm {
 	private String name;
 
 	/**
-	 * Classname of the algorithm's eu.melodic.upperware.genetic_solver.runner class.
+	 * Classname of the algorithm's runner class. 
 	 * To be included in the properties file.
 	 */
 	private String className;
@@ -39,7 +39,7 @@ public class Algorithm {
 	private Object[] arguments;
 
 	/**
-	 * Class of the algorithm's eu.melodic.upperware.genetic_solver.runner class.
+	 * Class of the algorithm's runner class. 
 	 * Set when algorithm is first run. 
 	 * Not to be included in the properties file.
 	 */
@@ -47,7 +47,7 @@ public class Algorithm {
 
 	/**
 	 * Time of the algorithm's most recent execution. 
-	 * Set on every execution of the eu.melodic.upperware.genetic_solver.runner instance.
+	 * Set on every execution of the runner instance. 
 	 * Not to be included in the properties file.
 	 */
 	private Date lastRun;

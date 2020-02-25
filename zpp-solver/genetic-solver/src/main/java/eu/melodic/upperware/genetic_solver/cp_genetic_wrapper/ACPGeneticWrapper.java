@@ -1,7 +1,6 @@
 package eu.melodic.upperware.genetic_solver.cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImpl;
@@ -31,8 +30,6 @@ public abstract class ACPGeneticWrapper {
     public abstract boolean isValid(int value, int index);
 
     public abstract int getSize();
-
-    public abstract List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments);
 
     // Get a heuristic evaluation of the indexed variable in the assignment.
     public abstract int getHeuristicEvaluation(List<Integer> assignments, int variableIndex);
