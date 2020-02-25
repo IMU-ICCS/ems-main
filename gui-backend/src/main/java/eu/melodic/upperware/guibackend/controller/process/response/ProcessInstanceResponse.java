@@ -14,4 +14,5 @@ public class ProcessInstanceResponse {
     private ProcessState processState;
     private String finishDate;
     private String startDate;
+    private boolean simulation;
 }
