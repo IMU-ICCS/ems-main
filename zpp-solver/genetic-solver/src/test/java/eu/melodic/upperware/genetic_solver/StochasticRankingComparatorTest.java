@@ -1,3 +1,5 @@
+package eu.melodic.upperware.genetic_solver;
+
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.EvalFunction;
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImpl;
@@ -7,7 +9,7 @@ import io.jenetics.Genotype;
 import io.jenetics.Phenotype;
 import io.jenetics.util.MSeq;
 import org.junit.Test;
-import utility.CPGeneticWrapperA;
+import eu.melodic.upperware.genetic_solver.utility.CPGeneticWrapperA;
 
 import java.util.ArrayList;
 import java.util.Comparator;

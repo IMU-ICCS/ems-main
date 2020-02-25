@@ -41,7 +41,7 @@ public class Algo_DlmsTotalCostsRunner extends AlgorithmRunner {
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
 		// TODO Auto-generated method stub
-		log.debug("Calculating utility from Algo_DlmsTotalCostsRunner");
+		log.debug("Calculating eu.melodic.upperware.genetic_solver.utility from Algo_DlmsTotalCostsRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
 		Map<String, List<String>> compConMap = diff.getCompConMap();
 
@@ -57,7 +57,7 @@ public class Algo_DlmsTotalCostsRunner extends AlgorithmRunner {
 				for (String toComp : toCompList) {
 					DlmsConfigurationElement toElement = getComp(proposed, toComp);
 					if (!isEmpty(toElement)) {
-						// calculate the total cost utility between components
+						// calculate the total cost eu.melodic.upperware.genetic_solver.utility between components
 						double currentUtility = algo.totalCost(fromElement.getId(), toElement.getId());
 
 						// there is no historical data between the two connections
@@ -65,7 +65,7 @@ public class Algo_DlmsTotalCostsRunner extends AlgorithmRunner {
 							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
 									toElement.getId());
 						} else{
-							// increase iteration and utility
+							// increase iteration and eu.melodic.upperware.genetic_solver.utility
 							numberConnection++;
 							utility += currentUtility;
 						}

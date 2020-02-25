@@ -329,7 +329,7 @@
         </concept>
       </concept>
       <concept id="UtilityNotions" uri="mms:UtilityNotions" name="Utility Notions">
-        <concept id="UtilityRelatedProperties" uri="mms:UtilityRelatedProperties" name="Properties related to utility">
+        <concept id="UtilityRelatedProperties" uri="mms:UtilityRelatedProperties" name="Properties related to eu.melodic.upperware.genetic_solver.utility">
           <concept id="Utility" uri="mms:Utility" name="Utility">
             <concept id="DLMSUtility" uri="mms:DSLMUtility" name="DLMS Utility">
               <property id="AffinityAwareness" uri="mms:AffinityAwareness" name="Affinity Awareness" rangeUri="xsd:double"/>

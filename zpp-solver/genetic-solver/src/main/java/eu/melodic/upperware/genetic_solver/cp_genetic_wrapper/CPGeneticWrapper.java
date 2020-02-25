@@ -1,6 +1,7 @@
 package eu.melodic.upperware.genetic_solver.cp_genetic_wrapper;
 
 import cp_wrapper.CPWrapper;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import io.jenetics.util.ISeq;
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,11 @@ public class CPGeneticWrapper extends ACPGeneticWrapper {
     @Override
     public int getSize() {
         return cpWrapper.getVariablesCount();
+    }
+
+    @Override
+    public List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
+        return cpWrapper.assignmentToVariableValueDTOList(assignments);
     }
 
     @Override

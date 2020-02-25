@@ -79,7 +79,7 @@
 
         <dependency>
             <groupId>eu.melodic</groupId>
-            <artifactId>utility-generator</artifactId>
+            <artifactId>eu.melodic.upperware.genetic_solver.utility-generator</artifactId>
             <version>${project.version}</version>
         </dependency>
 

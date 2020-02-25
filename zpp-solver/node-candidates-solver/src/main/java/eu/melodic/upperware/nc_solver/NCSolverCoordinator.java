@@ -128,7 +128,7 @@ public class NCSolverCoordinator {
     private void solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
         NCSolver solver = new NCSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator), nodeCandidates);
         Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
-        log.info("Found solution with utility: " + solution.getValue1());
+        log.info("Found solution with eu.melodic.upperware.genetic_solver.utility: " + solution.getValue1());
 
         if (solution.getValue1() > 0.0) {
             saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
@@ -144,7 +144,7 @@ public class NCSolverCoordinator {
                 .map(var -> createCpVariableValue(bestSolution, var))
                 .collect(Collectors.toList());
 
-        log.info("Solution with best utility {}:", maxUtility);
+        log.info("Solution with best eu.melodic.upperware.genetic_solver.utility {}:", maxUtility);
         for (VariableValueDTO variableValueDTO : bestSolution) {
             log.info("\t{}: {}", variableValueDTO.getName(), variableValueDTO.getValue());
         }

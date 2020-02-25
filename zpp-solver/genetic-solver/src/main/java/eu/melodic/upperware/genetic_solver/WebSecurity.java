@@ -22,8 +22,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     private final JWTService jwtService;
 
-    //@Value("${melodic.security.enabled:true}")
-    private boolean securityEnabled = false;
+    @Value("${melodic.security.enabled:true}")
+    private boolean securityEnabled;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {

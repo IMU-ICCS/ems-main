@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A utility to help interaction with the CDO server.
+ * A eu.melodic.upperware.genetic_solver.utility to help interaction with the CDO server.
  * <p>
  *
  * @author Shirley Crompton

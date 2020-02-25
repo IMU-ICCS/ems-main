@@ -130,7 +130,7 @@ public class MutatorImpl extends Mutator<GeneImpl, Double> {
         /* We're going to check whether we should be decreasing or increasing value in order to get better result. */
         Direction direction = checkDirection(initValue, index, bestHeuristic, assignments);
 
-        /* Adjust gene's values as long as utility increases. */
+        /* Adjust gene's values as long as eu.melodic.upperware.genetic_solver.utility increases. */
         bestValue = adjust(bestHeuristic, initValue, direction, assignments, index);
 
         // Modify chromosome using best value.

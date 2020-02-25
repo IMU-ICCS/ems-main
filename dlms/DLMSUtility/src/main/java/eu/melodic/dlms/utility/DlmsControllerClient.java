@@ -66,7 +66,7 @@ public class DlmsControllerClient {
     }
 
 	/**
-	 * Returns utility values from every algorithm running in the DlmsController.
+	 * Returns eu.melodic.upperware.genetic_solver.utility values from every algorithm running in the DlmsController.
 	 * The parameters are passed to the algorithms if a difference between actual
 	 * and proposed value is noted.
 	 */
@@ -99,7 +99,7 @@ public class DlmsControllerClient {
 			}
 			// if original solutions were empty
 			if (proposed.size() > 0) {
-				log.debug("Calculating the utility for the proposed solution");
+				log.debug("Calculating the eu.melodic.upperware.genetic_solver.utility for the proposed solution");
 				DlmsConfigurationConnection dlmsConfigCon = new DlmsConfigurationConnection(proposed, compConMap);
 
 				HttpEntity<DlmsConfigurationConnection> entity = new HttpEntity<>(dlmsConfigCon, headers);

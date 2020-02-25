@@ -22,7 +22,7 @@ public class PTCPWrapper {
         log.debug("Evaluating solution " + assignments.toString());
         if (cpWrapper.checkIfFeasible(assignments)) {
             Evaluation evaluation = new PTEvaluation(cpWrapper.getUtility(assignments));
-            log.debug("Solution is feasible, utility value: " + evaluation.getValue());
+            log.debug("Solution is feasible, eu.melodic.upperware.genetic_solver.utility value: " + evaluation.getValue());
             return evaluation;
         } else {
             log.debug("Solution is not feasible, returning 0");

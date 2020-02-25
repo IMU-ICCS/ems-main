@@ -48,7 +48,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 
 	@Override
 	public double queryResults(DlmsConfigurationConnection diff) {
-		log.debug("Calculating utility from Algo_DataCenterAwarenessRunner");
+		log.debug("Calculating eu.melodic.upperware.genetic_solver.utility from Algo_DataCenterAwarenessRunner");
 		Collection<DlmsConfigurationElement> proposed = diff.getProposedConfiguration();
 		Map<String, List<String>> compConMap = diff.getCompConMap();
 
@@ -57,7 +57,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 		for (Map.Entry<String, List<String>> comp : compConMap.entrySet()) {
 			String fromComp = comp.getKey();
 			List<String> toCompList = comp.getValue();
-			log.debug("Calculating utility");
+			log.debug("Calculating eu.melodic.upperware.genetic_solver.utility");
 			DlmsConfigurationElement fromElement = getComp(proposed, fromComp);
 
 			if (!isEmpty(fromElement)) {
@@ -65,7 +65,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 				for (String toComp : toCompList) {
 					DlmsConfigurationElement toElement = getComp(proposed, toComp);
 					if (!isEmpty(toElement)) {
-						// calculate the utility between application component and data center
+						// calculate the eu.melodic.upperware.genetic_solver.utility between application component and data center
 						double currentUtility = algo.calculatePerformance(fromElement.getId(), toElement.getId());
 
 						// there is no historical data between the two connections
@@ -73,7 +73,7 @@ public class Algo_DataCenterAwarenessRunner extends AlgorithmRunner {
 							log.debug("No historical data exists between: {} and {}", fromElement.getId(),
 									toElement.getId());
 						} else {
-							// increase iteration and utility
+							// increase iteration and eu.melodic.upperware.genetic_solver.utility
 							numberConnection++;
 							utility += currentUtility;
 						}

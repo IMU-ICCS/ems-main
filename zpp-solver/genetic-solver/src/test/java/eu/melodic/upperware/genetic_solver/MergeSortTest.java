@@ -1,3 +1,5 @@
+package eu.melodic.upperware.genetic_solver;
+
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import io.jenetics.Chromosome;
 import io.jenetics.Genotype;
@@ -8,7 +10,7 @@ import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImp
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 import org.junit.Test;
 import eu.melodic.upperware.genetic_solver.sorting_algortihms.MergeSort;
-import utility.merge_sort_utility.GeneticWrapperValueIsUtility;
+import eu.melodic.upperware.genetic_solver.utility.merge_sort_utility.GeneticWrapperValueIsUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +121,7 @@ public class MergeSortTest {
     @Test
     public void bigRandomTest() {
         int size = 50000; // Size of sample.
-        int highestUtility = 10000; // Highest possible utility.
+        int highestUtility = 10000; // Highest possible eu.melodic.upperware.genetic_solver.utility.
 
         List<Integer> l = new ArrayList<>();
         for (int i = 0; i < size; i++) {

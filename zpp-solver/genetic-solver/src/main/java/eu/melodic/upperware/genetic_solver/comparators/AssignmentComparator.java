@@ -6,7 +6,7 @@ import eu.melodic.upperware.genetic_solver.jenetics_implementation.ChromosomeImp
 import java.util.Random;
 
 /*
-    Compares two chromosomes using their utility and number of broken constraints.
+    Compares two chromosomes using their eu.melodic.upperware.genetic_solver.utility and number of broken constraints.
  */
 public class AssignmentComparator {
     private final static Random random = RandomRegistry.getRandom();

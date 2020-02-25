@@ -6,7 +6,7 @@ import eu.melodic.dlms.algorithms.utility.Algo_DlmsTotalUtility;
 import eu.melodic.dlms.utility.common.DlmsConfigurationConnection;
 
 /**
- * Calculate the total utility of solutions
+ * Calculate the total eu.melodic.upperware.genetic_solver.utility of solutions
  */
 
 // Not yet implemented

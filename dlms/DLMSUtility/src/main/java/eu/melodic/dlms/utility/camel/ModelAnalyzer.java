@@ -80,7 +80,7 @@ public class ModelAnalyzer {
 						SoftwareComponent fromComponent = (SoftwareComponent) reqComm.eContainer();
 
 						ProvidedCommunication provComm = comm.getProvidedCommunication();
-						// the component is provided by the utility generator and it has location
+						// the component is provided by the eu.melodic.upperware.genetic_solver.utility generator and it has location
 						SoftwareComponent toComponent = (SoftwareComponent) provComm.eContainer();
 
 						// get component that has connection only to datasource

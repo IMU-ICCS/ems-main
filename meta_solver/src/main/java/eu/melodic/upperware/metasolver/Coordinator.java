@@ -98,10 +98,10 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     /**
-     * Compare new and (currently) deployed solutions using their utility values.
+     * Compare new and (currently) deployed solutions using their eu.melodic.upperware.genetic_solver.utility values.
      * - If no deployed solution exists (first deployment) then 'accept' new solution
-     * - if a deployed solution exists then new solution's utility value must be better
-     * than deployed solution's utility value, at least 'uvThresholdFactor' times
+     * - if a deployed solution exists then new solution's eu.melodic.upperware.genetic_solver.utility value must be better
+     * than deployed solution's eu.melodic.upperware.genetic_solver.utility value, at least 'uvThresholdFactor' times
      */
     public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.info("MetaSolver.Coordinator: evaluateSolution(): appId={}, model={}", applicationId, cpModelPath);
@@ -115,7 +115,7 @@ public class Coordinator implements ApplicationContextAware {
         else if (newCanPos == -1) log.debug("MetaSolver.Coordinator: no candidate solution found");
         else log.debug("MetaSolver.Coordinator: an error occurred while looking for candidate solution");
 
-        // Get utility values of new and deployed solutions
+        // Get eu.melodic.upperware.genetic_solver.utility values of new and deployed solutions
         double[] solUv = helper.getSolutionUtilities(applicationId, cpModelPath);
         log.debug("MetaSolver.Coordinator: solUv: {}", solUv);
 
@@ -139,8 +139,8 @@ public class Coordinator implements ApplicationContextAware {
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         }
 
-        // a deployed solution exists. We need to compare the utility values of new and deployed solutions
-        log.debug("MetaSolver.Coordinator: evaluateSolution(): utility-threshold-factor={} : appId={}, model={}", uvThresholdFactor, applicationId, cpModelPath);
+        // a deployed solution exists. We need to compare the eu.melodic.upperware.genetic_solver.utility values of new and deployed solutions
+        log.debug("MetaSolver.Coordinator: evaluateSolution(): eu.melodic.upperware.genetic_solver.utility-threshold-factor={} : appId={}, model={}", uvThresholdFactor, applicationId, cpModelPath);
         double depSolUv = solUv[0];
         double newSolUv = solUv[1];
         if (newSolUv > uvThresholdFactor * depSolUv) {

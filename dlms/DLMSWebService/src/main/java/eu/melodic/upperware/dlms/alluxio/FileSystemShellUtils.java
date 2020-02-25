@@ -102,7 +102,7 @@ public final class FileSystemShellUtils {
 	}
 
 	/**
-	 * The utility function used to implement getAlluxioURIs.
+	 * The eu.melodic.upperware.genetic_solver.utility function used to implement getAlluxioURIs.
 	 *
 	 * Basically, it recursively iterates through the directory from the parent
 	 * directory of inputURI (e.g., for input "/a/b/*", it will start from "/a/b")
@@ -167,7 +167,7 @@ public final class FileSystemShellUtils {
 	}
 
 	/**
-	 * The utility function used to implement getFiles.
+	 * The eu.melodic.upperware.genetic_solver.utility function used to implement getFiles.
 	 *
 	 * It follows the same algorithm as {@link #getAlluxioURIs}.
 	 *

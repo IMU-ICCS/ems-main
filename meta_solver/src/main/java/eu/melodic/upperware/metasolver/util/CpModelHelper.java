@@ -120,14 +120,14 @@ public class CpModelHelper extends AbstractCdoHelper {
                     int depPos = cpModel.getDeployedSolutionId();
                     int newPos = cpModel.getCandidateSolutionId();
 
-                    // get deployed solution's utility value, if a deployed solution exists
+                    // get deployed solution's eu.melodic.upperware.genetic_solver.utility value, if a deployed solution exists
                     if (depPos < size && depPos >= 0) {
                         Solution depSol = solutions.get(depPos);
                         retUv[0] = ((DoubleValueUpperware) depSol.getUtilityValue()).getValue();
                     } else
                         retUv[0] = -1;
 
-                    // get new solution's utility value
+                    // get new solution's eu.melodic.upperware.genetic_solver.utility value
                     if (newPos < size && newPos >= 0) {
                         Solution newSol = solutions.get(newPos);
                         retUv[1] = ((DoubleValueUpperware) newSol.getUtilityValue()).getValue();
@@ -229,7 +229,7 @@ public class CpModelHelper extends AbstractCdoHelper {
 
             // find deployed solution
             Solution depSol = solutions.get(depPos);
-            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution: id={}, timestamp={}, utility={}",
+            log.debug("CpModelHelper.copyVarValuesFromDeployedSolution(): Deployed solution: id={}, timestamp={}, eu.melodic.upperware.genetic_solver.utility={}",
                     depPos, depSol.getTimestamp(), depSol.getUtilityValue());
 
             // get variable values from deployed solution

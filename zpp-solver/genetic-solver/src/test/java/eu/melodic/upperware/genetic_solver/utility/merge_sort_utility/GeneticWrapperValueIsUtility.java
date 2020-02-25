@@ -1,14 +1,15 @@
-package utility;
+package eu.melodic.upperware.genetic_solver.utility.merge_sort_utility;
 
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import cp_wrapper.CPWrapper;
-import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import io.jenetics.util.ISeq;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
 
 import java.util.List;
 
-public class CPGeneticWrapperA extends ACPGeneticWrapper {
-    public CPGeneticWrapperA(CPWrapper cpWrapper) {
+public class GeneticWrapperValueIsUtility extends ACPGeneticWrapper {
+    public GeneticWrapperValueIsUtility(CPWrapper cpWrapper) {
         super(cpWrapper);
     }
 
@@ -19,16 +20,13 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
 
     @Override
     public int generateRandomValue(int index) {
-        return random.nextInt(1001);
+        return 0;
     }
 
     @Override
     public double calculateUtility(ISeq<GeneImpl> genes) {
-        double res = 0.;
-        List<Integer> list = genesToIntegerList(genes);
-        for (int i = 0; i < list.size() - 1; i+=2)
-            res += list.get(i) - list.get(i + 1);
-        return res;
+        assert genes.size() == 1;
+        return genes.get(0).getAllele();
     }
 
     @Override
@@ -38,16 +36,21 @@ public class CPGeneticWrapperA extends ACPGeneticWrapper {
 
     @Override
     public boolean isValid(int value, int index) {
-        return value <= 1000 && value >= 0;
+        return false;
     }
 
     @Override
     public int getSize() {
-        return 10;
+        return 0;
     }
 
     @Override
     public int getHeuristicEvaluation(List<Integer> assignments, int variableIndex) {
         return 0;
+    }
+
+    @Override
+    public List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
+        return null;
     }
 }

@@ -195,7 +195,7 @@ class UtilityGeneratorFCRTest extends Specification{
         result != 0
     }
 
-    def "FCR with dlms utility - test"() {
+    def "FCR with dlms eu.melodic.upperware.genetic_solver.utility - test"() {
 
         given:
         newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
