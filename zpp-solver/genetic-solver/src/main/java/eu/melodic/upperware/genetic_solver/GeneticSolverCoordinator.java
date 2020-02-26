@@ -83,7 +83,11 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            solve(cp, utilityGenerator);
+            Boolean solutionFeasible = solve(cp, utilityGenerator);
+            if (!solutionFeasible) {
+                log.info("Solution is not feasible!");
+                return;
+            }
 
         } catch (Exception e) {
             log.error("GeneticSolver returned exception.", e);
@@ -104,7 +108,13 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            solve(cp, utilityGenerator);
+            Boolean solutionFeasible = solve(cp, utilityGenerator);
+
+            if (!solutionFeasible) {
+                log.info("Problem is infeasible");
+                solutionResultNotifier.notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
+                return;
+            }
 
             trans.commit();
             trans.close();
@@ -118,7 +128,7 @@ public class GeneticSolverCoordinator {
         }
     }
 
-    private void solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
+    private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
         GeneticSolverRunner runner = new GeneticSolverRunner();
         runner.setPopulationSize(populationSize);
         runner.setTimeLimitSeconds(timeLimit);
@@ -127,6 +137,9 @@ public class GeneticSolverCoordinator {
 
         if (runner.getFinalUtility() > 0.0) {
             saveBestSolutionInCDO(cp, runner.getFinalUtility(), solution);
+            return true;
+        } else {
+            return false;
         }
     }
 

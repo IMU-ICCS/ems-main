@@ -14,7 +14,7 @@
     <version>3.0.0-SNAPSHOT</version>
     <properties>
         <!--DOCKER plugin properties-->
-        <docker.imageName>genetic</docker.imageName>
+        <docker.imageName>geneticsolver</docker.imageName>
     </properties>
     <dependencies>
         <dependency>
