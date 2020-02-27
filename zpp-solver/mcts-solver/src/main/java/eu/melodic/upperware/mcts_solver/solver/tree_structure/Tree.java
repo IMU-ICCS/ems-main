@@ -16,7 +16,7 @@ public class Tree {
         this.policy = policy;
     }
 
-    public void backpropagation(Node current, Solution solution) {
+    private void backpropagate(Node current, Solution solution) {
         int maximalFitSize = solution.getMaximalFitSize();
         double utility = solution.getUtility();
 
@@ -27,13 +27,21 @@ public class Tree {
         }
     }
 
-    public Solution rollout(Node node, PartialAssignment partialAssignment) {
+    private Solution rollout(Node node, PartialAssignment partialAssignment) {
         return policy.finishAssignment(partialAssignment);
     }
 
-    public Pair<Node, PartialAssignment> search(){
+    private Pair<Node, PartialAssignment> search(){
         //TODO
         return null;
+    }
+
+    public void runIteration() {
+        Pair<Node, PartialAssignment> state = search();
+        Node leaf = state.getValue0();
+        PartialAssignment partialAssignment = state.getValue1();
+        Solution solution = rollout(leaf, partialAssignment);
+        backpropagate(leaf, solution);
     }
 
 
