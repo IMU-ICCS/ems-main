@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver;
+package eu.melodic.upperware.mcts_solver.utility;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver;
+package eu.melodic.upperware.mcts_solver.solver.tree_structure;
 
 import lombok.Getter;
 

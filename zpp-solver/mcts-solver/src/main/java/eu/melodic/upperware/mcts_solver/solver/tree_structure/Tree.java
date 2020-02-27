@@ -1,5 +1,8 @@
-package eu.melodic.upperware.mcts_solver;
+package eu.melodic.upperware.mcts_solver.solver.tree_structure;
 
+import eu.melodic.upperware.mcts_solver.utility.PartialAssignment;
+import eu.melodic.upperware.mcts_solver.solver.policy.Policy;
+import eu.melodic.upperware.mcts_solver.utility.Solution;
 import org.javatuples.Pair;
 
 public class Tree {

@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver;
+package eu.melodic.upperware.mcts_solver.utility;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +10,7 @@ public class PartialAssignment {
     @Getter
     private List<Integer> assignment;
     private int size;
-    private MCTSWrapper MCTSWrapper;
+    private eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper MCTSWrapper;
 
     public void add(int value) {
         size++;
