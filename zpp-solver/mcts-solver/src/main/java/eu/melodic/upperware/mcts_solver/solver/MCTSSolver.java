@@ -9,7 +9,6 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MCTSSolver {
@@ -28,6 +27,6 @@ public class MCTSSolver {
 
     private List<Integer> run(MCTSWrapper mctsWrapper) {
         //TODO
-        return new ArrayList<>();
+        return null;
     }
 }

@@ -3,7 +3,6 @@ package eu.melodic.upperware.mcts_solver.solver.tree_structure;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
 import lombok.Getter;
 
-//TODO constructor
 public class NodeStatistics {
     @Getter
     private double averageFailureDepth;

@@ -1,8 +1,11 @@
 package eu.melodic.upperware.mcts_solver.solver.tree_structure;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.selector_strategies.HeuristicNodeSelector;
+import eu.melodic.upperware.mcts_solver.solver.selector_strategies.NodeSelector;
+import eu.melodic.upperware.mcts_solver.solver.selector_strategies.UtilityNodeSelector;
 import eu.melodic.upperware.mcts_solver.solver.utility.PartialAssignment;
-import eu.melodic.upperware.mcts_solver.solver.policy.Policy;
+import eu.melodic.upperware.mcts_solver.solver.playout_policies.Policy;
 import eu.melodic.upperware.mcts_solver.solver.utility.Solution;
 import org.javatuples.Pair;
 
@@ -15,10 +18,12 @@ public class Tree {
     private double selectorCoefficient;
     private MCTSWrapper mctsWrapper;
 
-    public Tree(Policy policy) {
+    public Tree(Policy policy, HeuristicNodeSelector heuristicSelector, UtilityNodeSelector utilitySelector) {
         root = new Node(mctsWrapper);
         solution = new Solution();
         this.policy = policy;
+        this.heuristicSelector = heuristicSelector;
+        this.utilitySelector = utilitySelector;
     }
 
     private void backpropagate(Node current, Solution solution) {
@@ -32,23 +37,23 @@ public class Tree {
         }
     }
 
-    private Solution rollout(Node node, PartialAssignment partialAssignment) {
+    private Solution rollout(PartialAssignment partialAssignment) {
         return policy.finishAssignment(partialAssignment);
     }
 
-    /* Expansion needs to be done here.
-       n - number of potentail children number
-       m - number of current children
+    /*
+    public Node expand(Node node) {
+        //TODO
+        return null;
+    }*/
 
-       lambda * (log(n - m) - 1)
+    //TODO either expand nodes in expand method or do it while searching tree with search().
 
-
-    */
-    public Pair<Node, PartialAssignment> search() {
+    public Pair<Node, PartialAssignment> searchAndExpand() {
         Node current = root;
         PartialAssignment partialAssignment = new PartialAssignment(mctsWrapper);
 
-        while (current.hasChildren()) {
+        while (current.hasAllChildren()) {
             if (mctsWrapper.getRandomly(selectorCoefficient)) {
                 current = heuristicSelector.select(current.getChildren());
             }
@@ -57,18 +62,15 @@ public class Tree {
             }
             partialAssignment.add(current.getNodeStatistics().getValue());
         }
-        //TODO
-        return null;
+
+        return new Pair<>(current, partialAssignment);
     }
 
     public void runIteration() {
-        Pair<Node, PartialAssignment> state = search();
+        Pair<Node, PartialAssignment> state = searchAndExpand();
         Node leaf = state.getValue0();
         PartialAssignment partialAssignment = state.getValue1();
-        Solution solution = rollout(leaf, partialAssignment);
+        Solution solution = rollout(partialAssignment);
         backpropagate(leaf, solution);
     }
-
-
-
 }

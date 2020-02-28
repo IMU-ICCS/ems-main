@@ -28,4 +28,8 @@ public class MCTSWrapper {
         return random.nextDouble() < coefficient;
     }
 
+    public int domainSize(int index) {
+        return cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index);
+    }
+
 }

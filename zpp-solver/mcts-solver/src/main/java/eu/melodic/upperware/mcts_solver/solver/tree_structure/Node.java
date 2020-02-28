@@ -31,8 +31,7 @@ public class Node {
         nodeStatistics.update(maximalFitSize, utility);
     }
 
-    public boolean hasChildren() {
-        return children.size() > 0;
+    public boolean hasAllChildren() {
+        return children.size() == mctsWrapper.domainSize(nodeStatistics.getDepth());
     }
-    //public void addchild/expandchild
 }
