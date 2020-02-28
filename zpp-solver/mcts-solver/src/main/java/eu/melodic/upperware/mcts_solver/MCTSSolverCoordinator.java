@@ -7,6 +7,7 @@ import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
@@ -128,19 +129,17 @@ public class MCTSSolverCoordinator {
 
     private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
 
-        /*
-        MCTSRunner runner = new MCTSRunner();
-        List<VariableValueDTO> solution = runner.run(cp, new UtilityProviderImpl(utilityGenerator));
-        log.info("Found solution with utility: " + runner.getFinalUtility());
 
-        if (runner.getFinalUtility() > 0.0) {
-            saveBestSolutionInCDO(cp, runner.getFinalUtility(), solution);
+        MCTSSolver runner = new MCTSSolver();
+        List<VariableValueDTO> solution = runner.run(cp, new UtilityProviderImpl(utilityGenerator));
+        log.info("Found solution with utility: " + runner.getSolution().getUtility());
+
+        if (runner.getSolution().getUtility() > 0.0) {
+            saveBestSolutionInCDO(cp, runner.getSolution().getUtility(), solution);
             return true;
         } else {
             return false;
-        } */
-        //TODO
-        return false;
+        }
     }
 
     private ConstraintProblem getCPFromFile(String pathName) {

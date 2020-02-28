@@ -24,4 +24,8 @@ public class MCTSWrapper {
         return cpWrapper.getUtility(assignments);
     }
 
+    public boolean getRandomly(double coefficient) {
+        return random.nextDouble() < coefficient;
+    }
+
 }

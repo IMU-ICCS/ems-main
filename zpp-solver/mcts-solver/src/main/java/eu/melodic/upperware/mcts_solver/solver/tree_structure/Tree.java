@@ -1,17 +1,22 @@
 package eu.melodic.upperware.mcts_solver.solver.tree_structure;
 
-import eu.melodic.upperware.mcts_solver.utility.PartialAssignment;
+import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.utility.PartialAssignment;
 import eu.melodic.upperware.mcts_solver.solver.policy.Policy;
-import eu.melodic.upperware.mcts_solver.utility.Solution;
+import eu.melodic.upperware.mcts_solver.solver.utility.Solution;
 import org.javatuples.Pair;
 
 public class Tree {
-    protected Node root;
-    protected Solution solution;
-    protected Policy policy;
+    private Node root;
+    private Solution solution;
+    private Policy policy;
+    private NodeSelector heuristicSelector;
+    private NodeSelector utilitySelector;
+    private double selectorCoefficient;
+    private MCTSWrapper mctsWrapper;
 
     public Tree(Policy policy) {
-        root = new Node();
+        root = new Node(mctsWrapper);
         solution = new Solution();
         this.policy = policy;
     }
@@ -31,7 +36,27 @@ public class Tree {
         return policy.finishAssignment(partialAssignment);
     }
 
-    private Pair<Node, PartialAssignment> search(){
+    /* Expansion needs to be done here.
+       n - number of potentail children number
+       m - number of current children
+
+       lambda * (log(n - m) - 1)
+
+
+    */
+    public Pair<Node, PartialAssignment> search() {
+        Node current = root;
+        PartialAssignment partialAssignment = new PartialAssignment(mctsWrapper);
+
+        while (current.hasChildren()) {
+            if (mctsWrapper.getRandomly(selectorCoefficient)) {
+                current = heuristicSelector.select(current.getChildren());
+            }
+            else {
+                current = heuristicSelector.select(current.getChildren());
+            }
+            partialAssignment.add(current.getNodeStatistics().getValue());
+        }
         //TODO
         return null;
     }
@@ -43,6 +68,7 @@ public class Tree {
         Solution solution = rollout(leaf, partialAssignment);
         backpropagate(leaf, solution);
     }
+
 
 
 }

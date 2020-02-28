@@ -1,9 +1,9 @@
 package eu.melodic.upperware.mcts_solver.solver.policy;
 
-import eu.melodic.upperware.mcts_solver.utility.PartialAssignment;
-import eu.melodic.upperware.mcts_solver.utility.Solution;
+import eu.melodic.upperware.mcts_solver.solver.utility.PartialAssignment;
+import eu.melodic.upperware.mcts_solver.solver.utility.Solution;
 
 public interface Policy {
 
-    public Solution finishAssignment(PartialAssignment partialAssignment);
+    Solution finishAssignment(PartialAssignment partialAssignment);
 }
