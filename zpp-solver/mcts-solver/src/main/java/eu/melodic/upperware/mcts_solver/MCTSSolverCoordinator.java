@@ -72,8 +72,6 @@ public class MCTSSolverCoordinator {
     private JWTService jwtService;
 
     private SolutionResultNotifier solutionResultNotifier;
-    private int populationSize = 100;
-    private int timeLimit = 10;
 
     public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
         try {

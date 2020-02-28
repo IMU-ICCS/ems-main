@@ -63,6 +63,8 @@ public class Tree {
             partialAssignment.add(current.getNodeStatistics().getValue());
         }
 
+        //TODO either expand here or in runIteration
+
         return new Pair<>(current, partialAssignment);
     }
 
@@ -70,7 +72,16 @@ public class Tree {
         Pair<Node, PartialAssignment> state = searchAndExpand();
         Node leaf = state.getValue0();
         PartialAssignment partialAssignment = state.getValue1();
+        //TODO could be a good place for
         Solution solution = rollout(partialAssignment);
         backpropagate(leaf, solution);
+    }
+
+    public Solution run(int iterations) {
+        for (int i = 0; i < iterations; i++) {
+            runIteration();
+        }
+
+        return solution;
     }
 }

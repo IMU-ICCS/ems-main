@@ -16,6 +16,8 @@ public class MCTSSolver {
     private double heuristicCoefficient;
     @Getter
     private Solution solution;
+    @Setter
+    private int iterations;
 
     public List<VariableValueDTO> run(ConstraintProblem cp, UtilityProvider utility) {
         CPWrapper cpWrapper = new CPWrapper();
@@ -26,7 +28,7 @@ public class MCTSSolver {
     }
 
     private List<Integer> run(MCTSWrapper mctsWrapper) {
-        //TODO
-        return null;
+        Tree
+        return
     }
 }
