@@ -229,6 +229,7 @@ class UtilityGeneratorFCRTest extends Specification{
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
+        System.out.println("result = " + result)
 
         then:
         noExceptionThrown()

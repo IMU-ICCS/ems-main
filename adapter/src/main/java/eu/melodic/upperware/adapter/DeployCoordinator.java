@@ -38,7 +38,6 @@ import eu.melodic.upperware.adapter.plangenerator.model.ComparableModel;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.melodic.upperware.adapter.validation.DeploymentInstanceModelValidator;
 import eu.paasage.mddb.cdo.client.CDOClient;
-import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
@@ -96,7 +95,7 @@ public class DeployCoordinator {
     private DiffCalculator<AdapterRequirement, String> diffCalculator;
 
     @Async
-    public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization) {
+    public void deployNewModel(String resourceName, String notificationUri, String uuid, String authorization, boolean isSimulation) {
         try {
             acquireLock(resourceName);
         } catch (Exception e) {
@@ -106,7 +105,7 @@ public class DeployCoordinator {
         }
         log.info("Starting new model deployment process");
         try {
-            run(resourceName, notificationUri, uuid, authorization);
+            run(resourceName, notificationUri, uuid, authorization, isSimulation);
         } catch (Exception e) {
             log.error("An exception occurred during deployment process", e);
             deploymentNotificationSenderImpl.notifyErrorOccurred(resourceName, notificationUri, uuid, e);
@@ -124,7 +123,7 @@ public class DeployCoordinator {
         }
     }
 
-    private void run(String resourceName, String notificationUri, String uuid, String authorization) {
+    private void run(String resourceName, String notificationUri, String uuid, String authorization, boolean isSimulation) {
         Plan plan;
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
         CDOTransaction tr = cdoSessionX.openTransaction();
@@ -165,9 +164,12 @@ public class DeployCoordinator {
         log.info("Authorizing deployment plan with Authorization-Service...");
         try {
             if (isValid) {
-                log.info("Deployment plan authorized, executing...");
-
-                planExecutor.executePlan(plan);
+                if (!isSimulation) {
+                    log.info("Deployment plan authorized, executing...");
+                    planExecutor.executePlan(plan);
+                } else {
+                    log.info("Deployment plan authorized, simulation mode on: execution stopped");
+                }
                 cdoServerUpdater.updateCamelModel(resourceName);
                 camelToFileSaver.toFile(resourceName, CamelToFileSaverImpl.DEFAULT_NAME_AFTER_DEPLOYMENT_FUNCTION);
                 deploymentNotificationSenderImpl.notifyPlanApplied(resourceName, notificationUri, uuid);
@@ -278,4 +280,5 @@ public class DeployCoordinator {
         cdoClient.registerPackage(CpPackage.eINSTANCE);
         cdoClient.registerPackage(TypesPackage.eINSTANCE);
     }
+
 }

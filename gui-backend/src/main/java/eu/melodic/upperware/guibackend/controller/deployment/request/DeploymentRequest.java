@@ -16,5 +16,6 @@ public class DeploymentRequest {
 
     private String applicationId;
     private String username;
+    private String isSimulation;
     private List<CloudDefinition> cloudDefinitions;
 }
