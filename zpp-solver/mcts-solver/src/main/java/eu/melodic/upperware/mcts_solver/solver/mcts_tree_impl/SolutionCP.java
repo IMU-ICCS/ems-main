@@ -1,12 +1,13 @@
-package eu.melodic.upperware.mcts_solver.solver.utility;
+package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
+import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
 
 @AllArgsConstructor
-public class Solution {
+public class SolutionCP extends Solution {
     // A feasible solution to constraint problem, or null for a an unfeasible solution.
     @Getter
     private List<Integer> assignment;
@@ -20,7 +21,9 @@ public class Solution {
     private boolean feasible;
 
     // Creates empty solution.
-    public Solution() {
+    public SolutionCP() {
+        super();
+
         assignment = null;
         maximalFitSize = 0;
         utility = 0;
