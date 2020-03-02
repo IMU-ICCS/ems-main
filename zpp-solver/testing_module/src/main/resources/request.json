@@ -4,27 +4,9 @@
   "cpProblemFilePath" :"C:/Users/ZPP/Downloads/FCRclear-CP.xmi",
   "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/FCRclear-NC",
   "id": "FCR"
-},
-  {
-    "camelModelFilePath" : "C:/Users/ZPP/Downloads/Genom.xmi",
-    "cpProblemFilePath" :"C:/Users/ZPP/Downloads/Genom-CP.xmi",
-    "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/Genom-NC",
-    "id": "Genom"
-  },
-  {
-    "camelModelFilePath" : "C:/Users/ZPP/Downloads/TrafficDockerMulti",
-    "cpProblemFilePath" :"C:/Users/ZPP/Downloads/TrafficDockerMulti1576852678509.xmi",
-    "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/TrafficDockerMulti1576852678509",
-    "id": "TrafficDocker"
-  },
-  {
-    "camelModelFilePath" : "C:/Users/ZPP/Downloads/TestCases_TwoComponentApp_TwoComponentApp",
-    "cpProblemFilePath" :"C:/Users/ZPP/Downloads/TwoComponentApp1574860708591.xmi",
-    "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/TwoComponentApp1574860708591",
-    "id": "TwoComponent"
-  }
+}
   ],
-  "timeLimits": [10, 60,300],
+  "timeLimits": [10],
   "outputPath": "C:/Users/ZPP/Desktop/results.csv",
   "ptSolversParameters": [ {"minTmp": 100, "maxTmp": 10000, "numThreads" : 5}, {"minTmp":  100, "maxTmp":  10000, "numThreads":  10}],
   "geneticSolverParameters": [ {"populationSize":  100, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10}],
