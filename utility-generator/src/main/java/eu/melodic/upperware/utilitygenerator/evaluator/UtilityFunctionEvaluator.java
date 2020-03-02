@@ -72,10 +72,9 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    @SafeVarargs
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                     MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
-                                    Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+                                    List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
@@ -99,8 +98,7 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    @SafeVarargs
-    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
