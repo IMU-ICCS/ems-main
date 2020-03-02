@@ -4,5 +4,5 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl.SolutionImpl;
 
 public interface Policy {
 
-    SolutionImpl finishPath(Path path);
+    Solution finishPath(Path path);
 }
