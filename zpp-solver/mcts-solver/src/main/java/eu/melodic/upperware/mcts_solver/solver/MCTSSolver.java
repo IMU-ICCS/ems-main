@@ -3,7 +3,7 @@ package eu.melodic.upperware.mcts_solver.solver;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl.SolutionCP;
+import eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl.SolutionImpl;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.Getter;
@@ -15,7 +15,7 @@ public class MCTSSolver {
     @Setter
     private double heuristicCoefficient;
     @Getter
-    private SolutionCP solution;
+    private SolutionImpl solution;
     @Setter
     private int iterations;
 

@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.List;
 
 @AllArgsConstructor
-public class SolutionCP extends Solution {
+public class SolutionImpl extends Solution {
     // A feasible solution to constraint problem, or null for a an unfeasible solution.
     @Getter
     private List<Integer> assignment;
@@ -21,7 +21,7 @@ public class SolutionCP extends Solution {
     private boolean feasible;
 
     // Creates empty solution.
-    public SolutionCP() {
+    public SolutionImpl() {
         super();
 
         assignment = null;

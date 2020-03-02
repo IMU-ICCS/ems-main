@@ -4,13 +4,13 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
 
 import java.util.ArrayList;
 
-public class NodeCP extends Node {
+public class NodeImpl extends Node {
 
     @Override
     public void linkToTree(Node parent) {
         this.parent = parent;
         children = new ArrayList<>();
-        nodeStatistics = new NodeStatisticsCP(parent == null ? null : parent.getNodeStatistics());
+        nodeStatistics = new NodeStatisticsImpl(parent == null ? -1 : parent.getNodeStatistics().getDepth());
     }
 
 }
