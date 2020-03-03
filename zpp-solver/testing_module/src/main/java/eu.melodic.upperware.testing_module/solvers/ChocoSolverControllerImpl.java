@@ -30,7 +30,7 @@ public class ChocoSolverControllerImpl implements SolverController {
     @Override
     public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpID) {
         log.info("Starting " + SOLVER_ID + " on " + cpID);
-        ConstraintProblemParser constraintProblemParser = new CommonConstraintProblemParser(new IntVarCreator(), new IntConstantCreator(), new IntMetricCreator());
+        ConstraintProblemParser constraintProblemParser = new CommonConstraintProblemParser(new IntVarCreator(), new IntConstantCreator(), new IntMetricCreator(), null, null, null );
         SolverParsedData solverParsedData = constraintProblemParser.parse(cp);
         List<CpSolution> solutions = solverParsedData.solve(timeLimit);
         double maxUtility = 0.0;

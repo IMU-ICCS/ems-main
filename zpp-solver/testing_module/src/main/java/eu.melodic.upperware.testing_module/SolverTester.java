@@ -41,7 +41,7 @@ import java.util.stream.IntStream;
 @Slf4j
 public class SolverTester {
     private Gson gson = new Gson();
-    private Reader reader = new FileReader("C:/Users/ZPP/Desktop/genetic/zpp-solver/test-module2/src/main/resources/request.json");
+    private Reader reader = new FileReader("zpp-solver/testing_module/src/main/resources/request.json");
     private MelodicSecurityProperties melodicSecurityProperties;
     private PenaltyFunctionProperties penaltyFunctionProperties;
     private UtilityGeneratorProperties utilityGeneratorProperties;
@@ -67,10 +67,10 @@ public class SolverTester {
 
         List<String> results = new LinkedList<>();
         NodeCandidates samplerNodeCandidates = filecacheService.load(requestData.getCpSamplerData().getNodeCandidates());
-        Sampler sampler = new Sampler(requestData.getCpSamplerData().getNumberComponents(), requestData.getCpSamplerData().getMaxConstraints(), requestData.getCpSamplerData().getMinConstraints());
+        Sampler sampler = new Sampler(requestData.getCpSamplerData().getNumberComponents(), requestData.getCpSamplerData().getMinConstraints(), requestData.getCpSamplerData().getMaxConstraints());
 
         List<Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorApplication, String>> CPs = getAllNonRandomCP(requestData);
-        CPs.addAll(generatedRandomCP(requestData, samplerNodeCandidates, sampler));
+        CPs.addAll(generateRandomCP(requestData, samplerNodeCandidates, sampler));
 
         CPs.forEach(parsedCP -> {
             log.info("Testing solvers on CP "+ parsedCP.getValue3());
@@ -98,7 +98,7 @@ public class SolverTester {
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
-        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
+        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
         return solverControllers;
     }
 
@@ -114,7 +114,7 @@ public class SolverTester {
         return new Quartet<>(nodeCandidates, cp, utilityGenerator, cpFilesData.getId());
     }
 
-    private List<Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorApplication, String>> generatedRandomCP(RequestData requestData, NodeCandidates nodeCandidates, Sampler sampler) {
+    private List<Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorApplication, String>> generateRandomCP(RequestData requestData, NodeCandidates nodeCandidates, Sampler sampler) {
         List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityTemplate = (Arrays.stream(requestData.getCpSamplerData().getUtilityFunction()).map(TemplateUtilityComponent::parse).collect(Collectors.toList()));
 
         return IntStream.range(0, requestData.getNumberOfRandomCP()).mapToObj(randomCp -> {
