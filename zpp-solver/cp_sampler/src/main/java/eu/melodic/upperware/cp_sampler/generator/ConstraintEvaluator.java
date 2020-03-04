@@ -1,19 +1,19 @@
-package generator;
+package eu.melodic.upperware.cp_sampler.generator;
 
 import cp_wrapper.utils.ExpressionEvaluator;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.upperware.cp_sampler.expressions.ComposedExpression;
+import eu.melodic.upperware.cp_sampler.expressions.ConstantExpression;
+import eu.melodic.upperware.cp_sampler.expressions.Expression;
+import eu.melodic.upperware.cp_sampler.expressions.VariableExpression;
+import eu.melodic.upperware.cp_sampler.utils.NamesProvider;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.VariableTypeOrderer;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import expressions.ComposedExpression;
-import expressions.ConstantExpression;
-import expressions.Expression;
-import expressions.VariableExpression;
 import org.javatuples.Pair;
-import utils.NamesProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;

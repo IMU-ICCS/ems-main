@@ -1,11 +1,11 @@
-package generator;
+package eu.melodic.upperware.cp_sampler.generator;
 
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import eu.melodic.upperware.cp_sampler.expressions.*;
+import eu.melodic.upperware.cp_sampler.utils.priors.Priors;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
-import expressions.*;
 import org.javatuples.Pair;
-import utils.priors.Priors;
 
 import java.util.HashMap;
 import java.util.List;

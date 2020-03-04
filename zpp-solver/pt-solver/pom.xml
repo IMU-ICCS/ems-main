@@ -5,7 +5,7 @@
     <parent>
         <artifactId>zpp-solver</artifactId>
         <groupId>org.ow2.paasage</groupId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -13,6 +13,7 @@
         <!--DOCKER plugin properties-->
         <docker.imageName>ptsolver</docker.imageName>
     </properties>
+    <groupId>eu.melodic</groupId>
     <artifactId>pt-solver</artifactId>
     <dependencies>
         <dependency>
@@ -21,11 +22,10 @@
             <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>org.ow2.paasage</groupId>
+            <groupId>eu.melodic</groupId>
             <artifactId>cp-parser</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>${melodic.version}</version>
             <type>jar</type>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
     <build>
@@ -34,10 +34,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>

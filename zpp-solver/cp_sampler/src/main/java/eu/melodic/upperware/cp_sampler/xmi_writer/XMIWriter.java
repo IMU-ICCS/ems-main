@@ -1,10 +1,10 @@
-package xmi_writer;
+package eu.melodic.upperware.cp_sampler.xmi_writer;
 
-import constraint_problem_data.ConstraintProblemData;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_sampler.constraint_problem_data.ConstraintProblemData;
+import eu.melodic.upperware.cp_sampler.expressions.*;
+import eu.melodic.upperware.cp_sampler.utils.NamesProvider;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import expressions.*;
-import utils.NamesProvider;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

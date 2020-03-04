@@ -1,4 +1,4 @@
-package expressions;
+package eu.melodic.upperware.cp_sampler.expressions;
 
 import eu.paasage.upperware.metamodel.cp.OperatorEnum;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package utils;
+package eu.melodic.upperware.cp_sampler.utils;
 
 import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.ComponentVariableOrderer;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;

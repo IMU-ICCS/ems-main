@@ -1,4 +1,4 @@
-package expressions;
+package eu.melodic.upperware.cp_sampler.expressions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

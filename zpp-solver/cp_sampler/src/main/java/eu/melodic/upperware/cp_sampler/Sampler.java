@@ -1,16 +1,16 @@
-import constraint_problem_data.ConstraintProblemData;
+package eu.melodic.upperware.cp_sampler;
+
 import eu.melodic.cache.NodeCandidates;
-import generator.ConstraintEvaluator;
-import generator.ConstraintGenerator;
-import generator.VariableGenerator;
+import eu.melodic.upperware.cp_sampler.constraint_problem_data.ConstraintProblemData;
+import eu.melodic.upperware.cp_sampler.generator.ConstraintEvaluator;
+import eu.melodic.upperware.cp_sampler.generator.ConstraintGenerator;
+import eu.melodic.upperware.cp_sampler.generator.VariableGenerator;
+import eu.melodic.upperware.cp_sampler.node_candidates.NodeCandidatesPool;
+import eu.melodic.upperware.cp_sampler.utils.NamesProvider;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import node_candidates.NodeCandidatesPool;
 import org.javatuples.Pair;
-import utils.NamesProvider;
 
 import java.util.*;
-import java.util.HashMap;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 public class Sampler {

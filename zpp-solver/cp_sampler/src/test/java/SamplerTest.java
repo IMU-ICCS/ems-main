@@ -1,9 +1,10 @@
-import constraint_problem_data.ConstraintProblemData;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.upperware.cp_sampler.Sampler;
+import eu.melodic.upperware.cp_sampler.constraint_problem_data.ConstraintProblemData;
+import eu.melodic.upperware.cp_sampler.xmi_writer.XMIWriter;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Test;
-import xmi_writer.XMIWriter;
 
 import java.io.IOException;
 

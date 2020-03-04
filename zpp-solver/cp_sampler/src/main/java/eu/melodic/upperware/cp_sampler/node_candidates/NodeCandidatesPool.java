@@ -1,10 +1,9 @@
-package node_candidates;
+package eu.melodic.upperware.cp_sampler.node_candidates;
 
 
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import eu.melodic.cache.NodeCandidates;
-
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import io.github.cloudiator.rest.model.NodeCandidate;
