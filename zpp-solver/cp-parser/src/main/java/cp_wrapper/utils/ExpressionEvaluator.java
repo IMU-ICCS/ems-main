@@ -101,7 +101,7 @@ public class ExpressionEvaluator {
         return evaluateComparator(comparator, leftExpValue, rightExpValue);
     }
 
-    static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
+    public static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
         switch (comparator) {
             case GREATER_THAN:
                 return argLeft > argRight;

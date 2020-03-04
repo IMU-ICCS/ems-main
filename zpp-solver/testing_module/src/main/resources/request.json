@@ -1,18 +1,13 @@
 {
-"constraintProblems": [{
-  "camelModelFilePath" : "C:/Users/ZPP/Downloads/FCR.xmi",
-  "cpProblemFilePath" :"C:/Users/ZPP/Downloads/FCRclear-CP.xmi",
-  "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/FCRclear-NC",
-  "id": "FCR"
-}
+"constraintProblems": [
   ],
-  "timeLimits": [1],
+  "timeLimits": [100],
   "outputPath": "C:/Users/ZPP/Desktop/results.csv",
   "ptSolversParameters": [ {"minTmp": 100, "maxTmp": 10000, "numThreads" : 5}, {"minTmp":  100, "maxTmp":  10000, "numThreads":  10}],
   "geneticSolverParameters": [ {"populationSize":  100, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10}],
-  "repetitions": 2,
+  "repetitions": 1,
   "cpSamplerData": {
-    "numberComponents": 5,
+    "numberComponents": 2,
     "minConstraints" : 2,
     "maxConstraints": 4,
     "utilityFunction": [
@@ -22,5 +17,5 @@
     "nodeCandidates" : "C:/Users/ZPP/Downloads/TrafficDockerMulti1576852678509",
     "cpDirectory": "C:/Users/ZPP/Desktop/"
   },
-  "numberOfRandomCP" : 1
+  "numberOfRandomCP" : 3
 }

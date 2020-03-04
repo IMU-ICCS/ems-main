@@ -74,7 +74,7 @@ public class SolverTester {
 
         CPs.forEach(parsedCP -> {
             log.info("Testing solvers on CP "+ parsedCP.getValue3());
-            for (int i = 1; i < requestData.getRepetitions(); i++) {
+            for (int i = 1; i <= requestData.getRepetitions(); i++) {
                 results.addAll(
                         solverControllers.stream().map(solver -> solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue2(), parsedCP.getValue3())).collect(Collectors.toList())
                 );
@@ -98,7 +98,7 @@ public class SolverTester {
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
         return solverControllers;
     }
 
@@ -127,7 +127,7 @@ public class SolverTester {
             }
             ConstraintProblem cp = getCPFromFile(requestData.getCpSamplerData().getCpDirectory() + "sampledCP" + randomCp + ".xmi");
             UtilityGeneratorApplication utilityGeneratorApplication = new UtilityGeneratorApplication(requestData.getCpSamplerData().getCpDirectory() + "sampledCP" + randomCp + ".xmi",
-                    nodeCandidates, utilityTemplate);
+                    sample.getValue1(), utilityTemplate);
             return new Quartet<>(sample.getValue1(), cp, utilityGeneratorApplication, "RandomCP" + randomCp);
         }).collect(Collectors.toList());
     }

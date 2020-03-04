@@ -8,6 +8,7 @@ import eu.melodic.upperware.cp_sampler.generator.ConstraintGenerator;
 import eu.melodic.upperware.cp_sampler.generator.VariableGenerator;
 import eu.melodic.upperware.cp_sampler.node_candidates.NodeCandidatesPool;
 import eu.melodic.upperware.cp_sampler.utils.NamesProvider;
+import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import org.javatuples.Pair;
 
@@ -31,14 +32,26 @@ public class Sampler {
     }
 
     public Pair<ConstraintProblemData, NodeCandidates> sample(NodeCandidates nodeCandidates) {
+        int constraints = sampleNumberOfConstraints();
         NodeCandidatesPool nodeCandidatesPool = new NodeCandidatesPool(nodeCandidates);
         VariableGenerator variableGenerator = new VariableGenerator(nodeCandidatesPool, COMPONENTS_COUNT);
-        ConstraintEvaluator constraintEvaluator = new ConstraintEvaluator(variableGenerator);
-        ConstraintGenerator constraintGenerator = new ConstraintGenerator(constraintEvaluator, variableGenerator);
+        ConstraintEvaluator constraintEvaluator = new ConstraintEvaluator(variableGenerator, constraints);
+        ConstraintGenerator constraintGenerator = new ConstraintGenerator(constraintEvaluator, variableGenerator, COMPONENTS_COUNT);
         ConstraintProblemData constraintProblem = new ConstraintProblemData(variableGenerator.getDomains());
-        int constraints = sampleNumberOfConstraints();
         IntStream.range(0, constraints).forEach(number -> constraintProblem.postConstraint(constraintGenerator.generateConstraint()));
         return new Pair<>(constraintProblem, convertNodeCandidatesToSampleProblem(nodeCandidates));
+    }
+
+    private List<NodeCandidate> fillEmptyLocations(List<NodeCandidate> nodeCandidates) {
+        GeoLocation defaultGeoLocation = new GeoLocation();
+        defaultGeoLocation.setLongitude(1.0);
+        defaultGeoLocation.setLatitude(1.0);
+        nodeCandidates.forEach(node -> {
+            if(node.getLocation().getGeoLocation() == null) {
+                node.getLocation().setGeoLocation(defaultGeoLocation);
+            }
+        });
+        return nodeCandidates;
     }
 
     private NodeCandidates convertNodeCandidatesToSampleProblem(NodeCandidates nodeCandidates) {
@@ -52,7 +65,7 @@ public class Sampler {
                                 if (!result.get(NamesProvider.getComponentName(component)).containsKey(provider)) {
                                     result.get(NamesProvider.getComponentName(component)).put(provider, new ArrayList<>());
                                 }
-                                result.get(NamesProvider.getComponentName(component)).get(provider).addAll(machines);
+                                result.get(NamesProvider.getComponentName(component)).get(provider).addAll(fillEmptyLocations(machines));
                             }));
                 }
         );
