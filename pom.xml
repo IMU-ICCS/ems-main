@@ -41,6 +41,7 @@
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>penalty-calculator</module>
+        <module>zpp-solver</module>
     </modules>
 
 
@@ -83,6 +84,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>eu.melodic</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${interfaces.version}</version>
@@ -122,11 +128,6 @@
                 <artifactId>client</artifactId>
                 <version>3.1.0-SNAPSHOT</version>
                 <classifier>repackaged</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

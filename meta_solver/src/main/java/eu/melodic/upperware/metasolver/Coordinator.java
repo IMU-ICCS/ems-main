@@ -73,9 +73,9 @@ public class Coordinator implements ApplicationContextAware {
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
 
-        log.warn("MetaSolver.Coordinator: selectSolver(): ** NOTE: CP Solver is ALWAYS selected **");
-        log.warn("MetaSolver.Coordinator: selectSolver(): ** NOT IMPLEMENTED **");
-        return ConstraintProblemEnhancementResponse.DesignatedSolverType.CPSOLVER;
+        ConstraintProblemEnhancementResponse.DesignatedSolverType defaultSolver = metaSolverProperties.getDefaultSolver();
+        log.info("MetaSolver.Coordinator: selectSolver(): Solver selected: {}", defaultSolver);
+        return defaultSolver;
     }
 
     /**
