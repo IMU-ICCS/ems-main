@@ -130,14 +130,14 @@ class TemplateUtilityFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(lbStorageName, 10))
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
-                        mockNodeCandidates, new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d))
+                        mockNodeCandidates, Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
                         mockNodeCandidates,
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
+                        Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
                         new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
                         new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d))
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d)))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)
@@ -173,14 +173,14 @@ class TemplateUtilityFCRTest extends Specification{
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
                         mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d))
+                        Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
                         mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
+                        Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
                         new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
                         new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d))
+                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d)))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)

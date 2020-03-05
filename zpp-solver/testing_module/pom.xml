@@ -9,17 +9,35 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cp_sampler</artifactId>
+    <artifactId>testing_module</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>cp-parser</artifactId>
+            <artifactId>cp_sampler</artifactId>
             <version>${melodic.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
-            <artifactId>node-candidates-solver</artifactId>
+            <artifactId>genetic-solver</artifactId>
+            <version>${melodic.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>pt-solver</artifactId>
             <version>${melodic.version}</version>
             <scope>compile</scope>
         </dependency>

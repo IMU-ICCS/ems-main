@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>cp-parser</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>${melodic.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
@@ -34,10 +34,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>
