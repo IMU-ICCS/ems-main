@@ -10,11 +10,11 @@
 package eu.melodic.dlms.metric.receiver.properties;
 
 
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
+import eu.melodic.dlms.metric.receiver.metricvalue.TopicType;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotBlank;
@@ -23,11 +23,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
-import eu.melodic.dlms.metric.receiver.metricvalue.TopicType;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -63,6 +61,9 @@ public class DlmsMetricProperties {
 		private String on;
 
 		private List<Topic> topics;
+
+		private String username;
+		private String password;
 
 		public boolean isOn() {
 			return booleanValue(on);
