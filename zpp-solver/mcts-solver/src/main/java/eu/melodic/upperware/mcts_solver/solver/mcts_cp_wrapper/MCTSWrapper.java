@@ -28,6 +28,14 @@ public class MCTSWrapper {
         return random.nextDouble() < coefficient;
     }
 
+    public int getSize() {
+        return cpWrapper.getVariablesCount();
+    }
+
+    public int countViolatedConstraints(List<Integer> assignments) {
+        return cpWrapper.countViolatedConstraints(assignments);
+    }
+
     public int domainSize(int index) {
         return cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index);
     }

@@ -19,6 +19,14 @@ public class NodeStatisticsImpl extends NodeStatistics {
 
     @Override
     public void update(Solution solution) {
-        //TODO
+        double solutionUtility = ((SolutionImpl) solution).getUtility();
+
+        if (solutionUtility > maximalUtility) {
+            maximalUtility = solutionUtility;
+        }
+
+        // TODO high chance statement below is bugged
+        averageFailureDepth = (double) visitCount / (visitCount + 1.0) * averageFailureDepth
+                + 1.0 / (visitCount + 1.0) * (((SolutionImpl) solution).getSize() - depth);
     }
 }

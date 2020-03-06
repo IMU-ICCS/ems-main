@@ -21,4 +21,8 @@ public abstract class Node {
     public void update(Solution solution) {
         nodeStatistics.update(solution);
     }
+
+    public int childrenSize() {
+        return children.size();
+    }
 }
