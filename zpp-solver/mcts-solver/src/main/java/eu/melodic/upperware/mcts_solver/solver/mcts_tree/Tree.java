@@ -25,11 +25,11 @@ public class Tree {
         return policy.finishPath(path);
     }
 
-    public Pair<Node, Path> searchAndExpand() {
+    private Pair<Node, Path> searchAndExpand() {
         return moveProvider.searchAndExpand(root);
     }
 
-    public void runIteration() {
+    private void runIteration() {
         Pair<Node, Path> state = searchAndExpand();
         Node leaf = state.getValue0();
         Path path = state.getValue1();

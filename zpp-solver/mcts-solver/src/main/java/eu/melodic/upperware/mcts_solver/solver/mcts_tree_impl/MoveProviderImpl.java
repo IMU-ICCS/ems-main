@@ -23,6 +23,12 @@ public class MoveProviderImpl implements MoveProvider {
         this.mctsWrapper = mctsWrapper;
     }
 
+    private double getEvaluation(NodeStatisticsImpl nodeStats, NodeStatisticsImpl parentStats) {
+        return selectorCoefficient * nodeStats.getAverageFailureDepth() +
+                (1 - selectorCoefficient) * nodeStats.getMaximalUtility() +
+                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) nodeStats.getVisitCount()));
+    }
+
     private boolean compare(Node left, Node right, Node parent) {
         if (right == null)
             return true;
@@ -33,21 +39,33 @@ public class MoveProviderImpl implements MoveProvider {
         NodeStatisticsImpl rightStats = (NodeStatisticsImpl) right.getNodeStatistics();
         NodeStatisticsImpl parentStats = (NodeStatisticsImpl) parent.getNodeStatistics();
 
+        // If node hasn't been visited, then choose it.
         if (leftStats.getVisitCount() == 0)
             return true;
 
         if (rightStats.getVisitCount() == 0)
             return false;
 
-        double leftEval = selectorCoefficient * leftStats.getAverageFailureDepth() +
-                (1 - selectorCoefficient) * leftStats.getMaximalUtility() +
-                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) leftStats.getVisitCount()));
+        double leftEval = getEvaluation(leftStats, parentStats);
 
-        double rightEval = selectorCoefficient * rightStats.getAverageFailureDepth() +
-                (1 - selectorCoefficient) * rightStats.getMaximalUtility() +
-                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) rightStats.getVisitCount()));
+        double rightEval = getEvaluation(leftStats, parentStats);
 
         return leftEval <= rightEval;
+    }
+
+    private void expand(Node toExpand) {
+        int depth = toExpand.getNodeStatistics().getDepth();
+        if (depth  >= mctsWrapper.getSize()) {
+            return;
+        }
+        if (toExpand.childrenSize() == mctsWrapper.domainSize(depth)) {
+            return;
+        }
+
+        for (int i = mctsWrapper.getMinDomainValue(depth); i <= mctsWrapper.getMaxDomainValue(depth); i++) {
+            Node newNode = new NodeImpl(i);
+            newNode.linkToTree(toExpand);
+        }
     }
 
     @Override
@@ -62,7 +80,12 @@ public class MoveProviderImpl implements MoveProvider {
         while (current.childrenSize() == mctsWrapper.domainSize(depth) && depth < mctsWrapper.getSize()) {
             List<Node> children = current.getChildren();
             Node bestChild = null;
-            for (Node child : current.getChildren()) {
+
+            if (children == null) {
+                break;
+            }
+
+            for (Node child : children) {
                 if (compare(child, bestChild, current))
                     bestChild = child;
             }
@@ -71,7 +94,7 @@ public class MoveProviderImpl implements MoveProvider {
             current = bestChild;
         }
 
-        // TODO need to expand current node
+        expand(current);
 
         return new Pair<>(current, path);
     }

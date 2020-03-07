@@ -40,4 +40,11 @@ public class MCTSWrapper {
         return cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index);
     }
 
+    public int getMinDomainValue(int index) {
+        return cpWrapper.getMinDomainValue(index);
+    }
+
+    public int getMaxDomainValue(int index) {
+        return cpWrapper.getMaxDomainValue(index);
+    }
 }

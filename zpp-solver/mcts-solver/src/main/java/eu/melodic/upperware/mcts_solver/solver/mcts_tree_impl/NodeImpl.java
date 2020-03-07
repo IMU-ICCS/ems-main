@@ -6,6 +6,10 @@ import java.util.ArrayList;
 
 public class NodeImpl extends Node {
 
+    public NodeImpl(int value) {
+        super(value);
+    }
+
     @Override
     public void linkToTree(Node parent) {
         this.parent = parent;
