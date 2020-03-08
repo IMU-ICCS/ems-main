@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TemperatureAdjuster {
     private int timeLimit;
     private int numThreads;
-    private List<UtilityGeneratorApplication> utilityGenerators;
+    private ParallelUtilityProviderImpl parallelUtilityProvider;
     private ConstraintProblem cp;
 
     private final int MIN_TMP_DEFAULT = 100;
@@ -34,10 +34,10 @@ public class TemperatureAdjuster {
     private final List<Pair<List<VariableValueDTO>, Double>> solutions = Collections.synchronizedList(new ArrayList<>());
     private final List<TemperatureAdjusterThreadData> threadsInfo = Collections.synchronizedList(new ArrayList<>());
 
-    public TemperatureAdjuster(int timeLimit, int numThreads, List<UtilityGeneratorApplication> utilityGenerators, ConstraintProblem cp) {
+    public TemperatureAdjuster(int timeLimit, int numThreads, ParallelUtilityProviderImpl parallelUtilityProvider, ConstraintProblem cp) {
         this.timeLimit = timeLimit;
         this.numThreads = numThreads;
-        this.utilityGenerators = utilityGenerators;
+        this.parallelUtilityProvider = parallelUtilityProvider;
         this.cp = cp;
     }
 
@@ -52,7 +52,7 @@ public class TemperatureAdjuster {
         }
         int residualTimeLimit = getResidualTimeLimit(secondsPerTestThread);
         log.info("Setting min, max temperatures to: "+ minTmp + " " + maxTmp);
-        PTSolver solver = new PTSolver(minTmp, maxTmp, numThreads, cp, new ParallelUtilityProviderImpl(utilityGenerators));
+        PTSolver solver = new PTSolver(minTmp, maxTmp, numThreads, cp, parallelUtilityProvider);
         solutions.add(solver.solve(new MaxRuntime(residualTimeLimit, TimeUnit.SECONDS)));
         return getBestSolution();
     }
@@ -90,7 +90,7 @@ public class TemperatureAdjuster {
             testTemperatures(secondsPerThread, i, Math.min(maxTmps.size(), i + numThreads), maxTmps, true, 0);
         }
         int maxTmp = getBestTemperature();
-
+        threadsInfo.clear();
         for (int i = 0; i < minTmps.size(); i+= numThreads) {
             testTemperatures(secondsPerThread, i, Math.min(minTmps.size(), i + numThreads), minTmps, false, maxTmp);
         }
@@ -113,14 +113,16 @@ public class TemperatureAdjuster {
         List<Thread> threads = new ArrayList<>();
         temperatures.subList(leftIndex, rightIndex).forEach(tmp -> {
             Thread thread = new Thread( () -> {
+                if (maxTemperature != 0 && maxTemperature <= tmp) return;
                 PTSolver solver = testOfMaxTemperature ?
-                        new PTSolver(tmp, tmp, 1, cp, new ParallelUtilityProviderImpl(utilityGenerators))
-                        : new PTSolver(tmp, maxTemperature, 1, cp, new ParallelUtilityProviderImpl(utilityGenerators));
+                        new PTSolver(tmp, tmp + 1, 1, cp, parallelUtilityProvider)
+                        : new PTSolver(tmp, maxTemperature, 1, cp, parallelUtilityProvider);
                 Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(secondsPerThread, TimeUnit.SECONDS));
                 solutions.add(solution);
                 threadsInfo.add(new TemperatureAdjusterThreadData(solution, tmp));
             });
             threads.add(thread);
+            thread.start();
         });
         threads.forEach((thread -> {
             try {

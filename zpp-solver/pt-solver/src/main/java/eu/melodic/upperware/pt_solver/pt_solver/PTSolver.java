@@ -57,17 +57,7 @@ public class PTSolver {
         throw new RuntimeException("Couldn't find a solution");
     }
 
-    private void setMaxMinDomainValues() {
-        PTSolution.minVariableValues = new ArrayList<>();
-        PTSolution.maxVariableValues = new ArrayList<>();
-        for (int i = 0; i < ptcpWrapper.getVariablesCount(); i++) {
-            System.out.println("Variable " + i + " " + ptcpWrapper.getMinValue(i) + " " + ptcpWrapper.getMaxValue(i));
-            PTSolution.minVariableValues.add(ptcpWrapper.getMinValue(i));
-            PTSolution.maxVariableValues.add(ptcpWrapper.getMaxValue(i));
-        }
-    }
     private void prepareProblem() {
-        setMaxMinDomainValues();
         CPProblem = new GenericProblem<>(ptcpWrapper, new PTObjective(), new PTRandomGenerator());
     }
 
@@ -75,7 +65,7 @@ public class PTSolver {
         prepareProblem();
         parallelTemperingSolver = new ParallelTempering<>(
                 CPProblem,
-                new PTNeighbourhood(),
+                new PTNeighbourhood(ptcpWrapper),
                 numReplicas, minTemp, maxTemp);
     }
 }
