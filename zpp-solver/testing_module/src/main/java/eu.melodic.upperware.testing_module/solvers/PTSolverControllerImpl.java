@@ -1,5 +1,6 @@
 package eu.melodic.upperware.testing_module.solvers;
 
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
@@ -24,9 +25,9 @@ public class PTSolverControllerImpl implements SolverController {
     private final static String SOLVER_ID = "PTSolver";
 
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpID) {
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityProvider utility, String cpID) {
         log.info("Starting " + SOLVER_ID + " on " + cpID);
-        PTSolver solver = new PTSolver(ptParameters.getMinTmp(), ptParameters.getMaxTmp(), ptParameters.getNumThreads(), cp, new UtilityProviderImpl(utilityGenerator));
+        PTSolver solver = new PTSolver(ptParameters.getMinTmp(), ptParameters.getMaxTmp(), ptParameters.getNumThreads(), cp, utility);
         return solutionToString(solver.solve(new MaxRuntime(timeLimit, TimeUnit.SECONDS)), cpID);
     }
 

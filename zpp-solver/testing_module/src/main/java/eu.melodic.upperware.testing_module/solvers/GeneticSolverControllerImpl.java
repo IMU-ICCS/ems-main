@@ -1,6 +1,7 @@
 package eu.melodic.upperware.testing_module.solvers;
 
 
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
@@ -23,10 +24,10 @@ public class GeneticSolverControllerImpl implements SolverController {
     private final static String SOLVER_ID = "GeneticSolver";
 
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpId) {
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityProvider utility, String cpId) {
         log.info("Starting " + SOLVER_ID + " on " + cpId);
         GeneticSolverRunner runner = setParameters(new GeneticSolverRunner());
-        List<VariableValueDTO> solution = runner.run(cp, new UtilityProviderImpl(utilityGenerator));
+        List<VariableValueDTO> solution = runner.run(cp, utility);
         return solutionToString(new Pair<>(solution, runner.getFinalUtility()), cpId);
     }
 
