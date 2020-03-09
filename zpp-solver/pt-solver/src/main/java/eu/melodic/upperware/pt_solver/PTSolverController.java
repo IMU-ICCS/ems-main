@@ -23,9 +23,10 @@ public class PTSolverController {
         String camelModelFilePath = request.getCamelModelFilePath();
         String cpModelPath = request.getCpProblemFilePath();
         String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
+        int seconds = request.getTimeLimit();
         log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
 
-        ptSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
+        ptSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath, seconds);
         log.info("Sleeping...");
     }
 
@@ -40,9 +41,10 @@ public class PTSolverController {
         String cdoResourcePath = request.getCdoModelsPath();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
+        int seconds = request.getTimeLimit();
         log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
 
-        ptSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
+        ptSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, seconds);
         log.info("Sleeping...");
     }
 }
