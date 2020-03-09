@@ -1,29 +1,10 @@
 package eu.melodic.dlms;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.Topic;
-
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-
+import eu.melodic.dlms.data.Metrics;
+import eu.melodic.dlms.exception.NoMetricsException;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -36,9 +17,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import eu.melodic.dlms.data.Metrics;
-import eu.melodic.dlms.exception.NoMetricsException;
-import lombok.extern.slf4j.Slf4j;
+import javax.jms.*;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Combined collector and store of metrics, controller for the webservice to
@@ -332,7 +323,7 @@ public class MetricsController {
 
 	private Connection initializeConnection() throws JMSException {
 		log.info("Trying to initialize connection");
-		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl);
+		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(metricsProperties.getUsername(), metricsProperties.getPassword(), jmsUrl);
 		Connection connection = activeMQConnectionFactory.createConnection();
 		connection.start();
 		return connection;
