@@ -33,14 +33,15 @@ public class MCTSSolver {
         cpWrapper.parse(cp, utility);
         MCTSWrapper mctsWrapper = new MCTSWrapper(cpWrapper);
 
-        return cpWrapper.assignmentToVariableValueDTOList(run(mctsWrapper));
+        run(mctsWrapper);
+        return cpWrapper.assignmentToVariableValueDTOList(solution.getAssignment());
     }
 
-    private List<Integer> run(MCTSWrapper mctsWrapper) {
+    private void run(MCTSWrapper mctsWrapper) {
         MoveProvider moveProvider = new MoveProviderImpl(selectorCoeffcient, explorationCoefficient, mctsWrapper);
         Policy policy = new RandomPolicyImpl();
         Node root = new NodeImpl(-1);
         Tree mctsTree = new Tree(root, policy, moveProvider);
-        return ((SolutionImpl) mctsTree.run(iterations)).getAssignment();
+        solution = (SolutionImpl) mctsTree.run(iterations);
     }
 }

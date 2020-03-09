@@ -5,6 +5,7 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -23,7 +24,7 @@ public class SolutionImpl extends Solution {
     public SolutionImpl() {
         super();
 
-        assignment = null;
+        assignment = new ArrayList<>();
         maximalFitSize = 0;
         utility = 0;
     }

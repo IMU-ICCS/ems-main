@@ -11,19 +11,18 @@ import java.util.List;
 import java.util.Random;
 
 public class MoveProviderImpl implements MoveProvider {
-    private double selectorCoefficient;
-    private double explorationCoefficient;
     private MCTSWrapper mctsWrapper;
 
-    public MoveProviderImpl(double selectorCoefficient, double explorationCoefficient, MCTSWrapper mctsWrapper) {
+    public MoveProviderImpl(MCTSWrapper mctsWrapper) {
         super();
 
-        this.selectorCoefficient = selectorCoefficient;
-        this.explorationCoefficient = explorationCoefficient;
         this.mctsWrapper = mctsWrapper;
     }
 
     private double getEvaluation(NodeStatisticsImpl nodeStats, NodeStatisticsImpl parentStats) {
+        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
+        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
+
         return selectorCoefficient * nodeStats.getAverageFailureDepth() +
                 (1 - selectorCoefficient) * nodeStats.getMaximalUtility() +
                 explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) nodeStats.getVisitCount()));
