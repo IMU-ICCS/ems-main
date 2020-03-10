@@ -18,11 +18,7 @@ public class PenaltyServiceImpl implements PenaltyService{
     private PenaltyFunction penaltyFunction;
 
     public PenaltyServiceImpl(PenaltyFunctionProperties properties){
-        this.penaltyFunction = new PenaltyFunction();
-        if (penaltyFunction.getProperties() == null){
-            log.warn("Properties for penaltyFunction are null, using properties from CP Solver");
-            penaltyFunction.setProperties(properties);
-        }
+        this.penaltyFunction = new PenaltyFunction(properties);
     }
 
     @Override
