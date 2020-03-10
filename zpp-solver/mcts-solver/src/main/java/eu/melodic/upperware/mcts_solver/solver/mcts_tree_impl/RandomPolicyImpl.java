@@ -12,15 +12,21 @@ import java.util.List;
 public class RandomPolicyImpl implements Policy {
     private MCTSWrapper mctsWrapper;
 
+    public RandomPolicyImpl(MCTSWrapper mctsWrapper) {
+        this.mctsWrapper = mctsWrapper;
+    }
+
     @Override
     public Solution finishPath(Path path) {
         List<Integer> assignment = new ArrayList<>();
         List<Node> nodes = path.getPath();
-        for (Node node : nodes) {
-            assignment.add(node.getValue());
+        int nodesSize = nodes.size();
+
+        for (int i = 1; i < nodesSize; i++) {
+            assignment.add(nodes.get(i).getValue());
         }
 
-        for (int i = assignment.size(); i <= mctsWrapper.getSize(); i++) {
+        for (int i = assignment.size(); i < mctsWrapper.getSize(); i++) {
             assignment.add(mctsWrapper.generateRandomValue(i));
         }
 

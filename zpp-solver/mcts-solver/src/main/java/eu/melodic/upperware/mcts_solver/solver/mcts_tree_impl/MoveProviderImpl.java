@@ -8,7 +8,6 @@ import org.javatuples.Pair;
 import java.lang.Math;
 
 import java.util.List;
-import java.util.Random;
 
 public class MoveProviderImpl implements MoveProvider {
     private MCTSWrapper mctsWrapper;
@@ -53,8 +52,11 @@ public class MoveProviderImpl implements MoveProvider {
     }
 
     private void expand(Node toExpand) {
+
+        assert toExpand.getNodeStatistics() != null;
+
         int depth = toExpand.getNodeStatistics().getDepth();
-        if (depth  >= mctsWrapper.getSize()) {
+        if (depth >= mctsWrapper.getSize()) {
             return;
         }
         if (toExpand.childrenSize() == mctsWrapper.domainSize(depth)) {

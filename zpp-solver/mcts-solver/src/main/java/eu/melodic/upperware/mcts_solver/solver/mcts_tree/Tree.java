@@ -8,10 +8,11 @@ public class Tree {
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
     private Solution bestSolution;
 
-    public Tree(Node root, Policy policy, MoveProvider moveProvider) {
+    public Tree(Node root, Policy policy, MoveProvider moveProvider, Solution bestSolution) {
         this.root = root;
         this.policy = policy;
         this.moveProvider = moveProvider;
+        this.bestSolution = bestSolution;
     }
 
     private void backpropagate(Node current, Solution solution) {

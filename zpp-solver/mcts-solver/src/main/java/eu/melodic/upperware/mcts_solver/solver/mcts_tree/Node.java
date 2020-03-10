@@ -2,6 +2,7 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
 
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -16,6 +17,7 @@ public abstract class Node {
     protected NodeStatistics nodeStatistics;
 
     public Node (int value) {
+        children = new ArrayList<>();
         this.value = value;
     }
 

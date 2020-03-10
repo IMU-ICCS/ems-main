@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-public class SolutionImpl extends Solution {
+public class SolutionImpl implements Solution {
     // A feasible solution to constraint problem, or null for a an unfeasible solution.
     @Getter
     private List<Integer> assignment;
