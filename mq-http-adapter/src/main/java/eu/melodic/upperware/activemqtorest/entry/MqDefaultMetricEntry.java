@@ -32,7 +32,6 @@ public class MqDefaultMetricEntry extends MqBaseEntry {
 	private String sourceIpAddress;
 	private String vmName;
 
-
 	@Override
 	public Point getInfluxDbDataPoint(IIpGeoCoder ipGeoCoder) {
 		String timestamp = normalizeTimestamp(getTimestamp());

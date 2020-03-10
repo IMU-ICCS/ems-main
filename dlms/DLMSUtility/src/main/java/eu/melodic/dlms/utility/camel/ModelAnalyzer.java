@@ -64,7 +64,6 @@ public class ModelAnalyzer {
 				CDOResource camelModelRes = view.getResource(camelId);
 				EList<EObject> contents = camelModelRes.getContents();
 				camelModel = (CamelModel) contents.get(contents.size() - 1);
-
 				// newly added different from DLMS web service
 				EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
 				DeploymentTypeModel deployModel = null;

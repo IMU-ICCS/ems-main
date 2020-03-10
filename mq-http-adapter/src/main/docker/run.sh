@@ -1,5 +1,7 @@
 #!/bin/sh
 
+sleep 60
+
 curl -XPOST 'http://ui-influxdb:8086/query' --data-urlencode 'q=CREATE DATABASE melodic_ui'
 
 sleep 30

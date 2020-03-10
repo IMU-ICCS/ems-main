@@ -21,6 +21,7 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.Topic;
 
+import eu.melodic.dlms.db.repository.*;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.BeansException;
@@ -28,13 +29,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
-import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
-import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.CloudProviderRepository;
-import eu.melodic.dlms.db.repository.DataCenterRepository;
-import eu.melodic.dlms.db.repository.DataSourceRepository;
-import eu.melodic.dlms.db.repository.RegionRepository;
-import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
 import eu.melodic.dlms.metric.receiver.properties.DlmsMetricProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,6 +47,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private ApplicationComponentRepository acRepository;
 	private DataSourceRepository dsRepository;
 	private ApplicationComponentDataSourceDataRepository acDsDataRepository;
+	private MetricValueNetworkLatencyService networkLatencyService;
 
 	private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
 
@@ -69,6 +64,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		this.acRepository = applicationContext.getBean(ApplicationComponentRepository.class);
 		this.dsRepository = applicationContext.getBean(DataSourceRepository.class);
 		this.acDsDataRepository = applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
+		this.networkLatencyService = applicationContext.getBean(MetricValueNetworkLatencyService.class);
 	}
 
 	public void subscribe() throws JMSException {
@@ -126,6 +122,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 			if (cconf == null) {
 				ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
 				Connection connection = connectionFactory.createConnection();
+				((ActiveMQConnection)connection).addTransportListener(new ConnectionStateMonitor());
+
 				log.info("*****   SUBSCRIBE: connection created");
 				if (!clientId.isEmpty()) {
 					connection.setClientID(clientId);
@@ -181,10 +179,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	}
 
 	private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
-		MessageListener listener = new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
+		return new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
 				this.regionRepository, this.twoDcRepository, this.acRepository, this.dsRepository,
-				this.acDsDataRepository);
-		return listener;
+				this.acDsDataRepository, this.networkLatencyService);
 	}
 
 	public void unsubscribe() {

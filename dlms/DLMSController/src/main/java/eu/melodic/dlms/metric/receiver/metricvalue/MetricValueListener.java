@@ -39,6 +39,7 @@ public class MetricValueListener implements MessageListener {
 	private final ApplicationComponentRepository acRepository;
 	private final DataSourceRepository dsRepository;
 	private final ApplicationComponentDataSourceDataRepository acDsDataRepository;
+	private final MetricValueNetworkLatencyService networkLatencyService;
 
 	private Topic topic;
 	private String topicName;
@@ -48,7 +49,8 @@ public class MetricValueListener implements MessageListener {
 	public MetricValueListener( Topic topic, TopicType type,
 			CloudProviderRepository cpRepository,
 			DataCenterRepository dcRepository, RegionRepository regionRepository,
-			TwoDataCentersRepository twoDcRepository, ApplicationComponentRepository acRepository, DataSourceRepository dsRepository, ApplicationComponentDataSourceDataRepository acDsDataRepository) throws JMSException {
+			TwoDataCentersRepository twoDcRepository, ApplicationComponentRepository acRepository, DataSourceRepository dsRepository, ApplicationComponentDataSourceDataRepository acDsDataRepository,
+			MetricValueNetworkLatencyService networkLatencyService) throws JMSException {
 		log.info("MetricValueListener.<init>: type={}", type);
 
 		this.topic = topic;
@@ -62,6 +64,7 @@ public class MetricValueListener implements MessageListener {
 		this.acRepository = acRepository;
 		this.dsRepository = dsRepository;
 		this.acDsDataRepository = acDsDataRepository;
+		this.networkLatencyService = networkLatencyService;
 		
 		gson = new Gson();
 	}
@@ -89,6 +92,10 @@ public class MetricValueListener implements MessageListener {
 					log.info("Listener of topic {}: Got a data write event: ", topicName);
 					processMetricValueEventAcDsDataWrite(metricName, payload);
 					break;
+				case LATENCY_MILLIS:
+					log.info("Listener of topic {}: Got a network latency event: ", topicName);
+					processMetricValueEventNetworkLatency(metricName, payload);
+					break;
 				default:
 					log.warn("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
 				}
@@ -97,6 +104,20 @@ public class MetricValueListener implements MessageListener {
 			}
 		} catch (JMSException e) {
 			log.error("Caught: {}", e);
+		}
+	}
+
+	private void processMetricValueEventNetworkLatency(String metricName, String payload) {
+		if (StringUtils.isNotBlank(metricName)) {
+			log.info("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
+			MetricValueEventNetworkLatency event = gson.fromJson(payload, MetricValueEventNetworkLatency.class);
+			StringBuilder sb = new StringBuilder();
+			event.getLatencies().forEach(e -> e.forEach((s, s2) -> sb.append(s).append(" :: ").append(s2).append(System.lineSeparator())));
+			log.info("Listener of topic {}: MetricValueEvent instance:{}dlmsAgentPublicIp: {}; dlmsAgentRegion: {}; dlmsAgentCSP: {}{}{}", topicName, System.lineSeparator(), event.getDlmsAgentPublicIp(), event.getDlmsAgentRegion(), event.getDlmsAgentCSP(), System.lineSeparator(), sb.toString());
+			log.info("Listener of topic {}: event.getLatencies().toString():{}{}", topicName, System.lineSeparator(), event.getLatencies().toString());
+			networkLatencyService.saveOrUpdateNetworkLatencies(event.getDlmsAgentRegion(), event.getDlmsAgentCSP(), event.getLatencies());
+		} else {
+			log.warn("Missing property: 'topic_name'");
 		}
 	}
 

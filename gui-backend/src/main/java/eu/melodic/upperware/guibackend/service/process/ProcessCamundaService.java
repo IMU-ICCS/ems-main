@@ -54,6 +54,7 @@ public class ProcessCamundaService {
                 .processState(processVariablesMap.containsKey(CamundaVariableName.PROCESS_STATE.label) ? ProcessState.valueOf(processVariablesMap.get(CamundaVariableName.PROCESS_STATE.label).getValue()) : ProcessState.STARTED)
                 .finishDate(processVariablesMap.containsKey(CamundaVariableName.PROCESS_FINISH_DATE.label) ? processVariablesMap.get(CamundaVariableName.PROCESS_FINISH_DATE.label).getValue() : null)
                 .startDate(processVariablesMap.containsKey(CamundaVariableName.PROCESS_START_DATE.label) ? processVariablesMap.get(CamundaVariableName.PROCESS_START_DATE.label).getValue() : null)
+                .simulation(processVariablesMap.containsKey(CamundaVariableName.IS_SIMULATION.label) ? Boolean.valueOf(processVariablesMap.get(CamundaVariableName.IS_SIMULATION.label).getValue()) : false)
                 .build();
     }
 
@@ -76,14 +77,25 @@ public class ProcessCamundaService {
 
     private ProcessVariables mapCamundaResponseToProcessVariables(Map<String, CamundaVariableResponseItem> camundaVariables) {
         ProcessVariables result = new ProcessVariables();
-        result.setDiscoveryServiceResult(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.DISCOVERY_SERVICE_RESULT.label, null), null));
-        result.setCpCreationResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.CP_CREATION_RESULT_CODE.label, null), result.getDiscoveryServiceResult()));
+        mapCamundaResponseVariablesDependingOnReconfiguration(result, camundaVariables);
+
         result.setCpSolutionResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.CP_SOLUTION_RESULT_CODE.label, null), result.getCpCreationResultCode()));
         result.setApplicationDeploymentResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.APPLICATION_DEPLOYMENT_RESULT_CODE.label, null), result.getCpSolutionResultCode()));
         result.setProcessState(mapProcessStateToVariableStatus(camundaVariables.containsKey(CamundaVariableName.PROCESS_STATE.label) ? ProcessState.valueOf(camundaVariables.get(CamundaVariableName.PROCESS_STATE.label).getValue()) : ProcessState.UNKNOWN, result.getApplicationDeploymentResultCode()));
-        result.setReconfigurationProcess(camundaVariables.containsKey(CamundaVariableName.USE_EXISTING_CP.label) ? Boolean.valueOf(camundaVariables.get(CamundaVariableName.USE_EXISTING_CP.label).getValue()) : false);
         result.setApplicationId(camundaVariables.containsKey(CamundaVariableName.APPLICATION_ID.label) ? camundaVariables.get(CamundaVariableName.APPLICATION_ID.label).getValue() : "");
+        result.setSimulation(camundaVariables.containsKey(CamundaVariableName.IS_SIMULATION.label) ? Boolean.valueOf(camundaVariables.get(CamundaVariableName.IS_SIMULATION.label).getValue()) : false);
         return result;
+    }
+
+    private void mapCamundaResponseVariablesDependingOnReconfiguration(ProcessVariables result, Map<String, CamundaVariableResponseItem> camundaVariables) {
+        result.setReconfigurationProcess(camundaVariables.containsKey(CamundaVariableName.USE_EXISTING_CP.label) ? Boolean.valueOf(camundaVariables.get(CamundaVariableName.USE_EXISTING_CP.label).getValue()) : false);
+        if (result.isReconfigurationProcess()) {
+            result.setDiscoveryServiceResult(VariableStatus.SUCCESS);
+            result.setCpCreationResultCode(VariableStatus.SUCCESS);
+        } else {
+            result.setDiscoveryServiceResult(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.DISCOVERY_SERVICE_RESULT.label, null), null));
+            result.setCpCreationResultCode(mapCamundaVariableToVariableStatus(camundaVariables.getOrDefault(CamundaVariableName.CP_CREATION_RESULT_CODE.label, null), result.getDiscoveryServiceResult()));
+        }
     }
 
     private VariableStatus mapCamundaVariableToVariableStatus(CamundaVariableResponseItem camundaVariableResponseItem, VariableStatus previousVariableStatus) {
