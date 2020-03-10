@@ -11,7 +11,6 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
-//import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -164,6 +163,38 @@ public class MetaSolverController {
         coordinator.updateSubscriptions(subscriptions);
 
         return "OK";
+    }
+
+    @RequestMapping(value = "/simulateReconfiguration", method = POST)
+    public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
+                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        setAuthenticationToken(jwtToken);
+        String applicationId = request.getApplicationId();
+        log.info("Received request: {}", applicationId);
+
+        // set metrics and request reconfiguration
+        log.info("Setting Simulated metrics and reconfiguration request");
+        coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
+        log.info("SimulateReconfiguration: Setting Simulated metrics and reconfiguration request finished");
+
+        SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
+        response.setApplicationId(applicationId);
+
+        return response;
+    }
+
+    @GetMapping("/getMetricNames/{applicationId}")
+    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
+                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
+
+        setAuthenticationToken(jwtToken);
+        log.info("Received request for metric names: ");
+        MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
+        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applicationId));
+
+        return metricsNamesResponse;
     }
 
     @RequestMapping(value = "/health", method = GET)

@@ -9,15 +9,23 @@ package eu.melodic.dlms;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.time.Duration;
+import java.util.*;
+import java.util.function.Supplier;
 
-import eu.melodic.dlms.exception.DLMSAgentException;
-import org.apache.commons.lang.StringUtils;
+import eu.melodic.models.interfaces.dlms.Configuration;
+import eu.melodic.models.interfaces.dlms.ConfigurationResponse;
+import io.github.resilience4j.retry.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,27 +35,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import eu.melodic.dlms.component.AlluxioParam;
-import eu.melodic.dlms.component.SendToDlmsAgent;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Application class for the DLMS agent.
  */
 @SpringBootApplication
-@Slf4j
 public class DlmsAgentApplication {
-
 	private static final int DELAY_AFTER_STARTUP = 1000;
 	private static final int CALL_INTERVAL = 60000;
 
+	private static final Logger log = LoggerFactory.getLogger(DlmsAgentApplication.class);
+
 	@Autowired
 	private MetricsController metricsController;
+
+	private static ApplicationContext context;
 
 	/**
 	 * Main method for starting. No arguments needed for normal use.
 	 */
 	public static void main(String[] args) {
-		SpringApplication.run(DlmsAgentApplication.class, args);
+		context = SpringApplication.run(DlmsAgentApplication.class, args);
 	}
 
 	/**
@@ -61,131 +69,104 @@ public class DlmsAgentApplication {
 			log.info("Application started and URL {} identified", url);
 
 			String publicIp = System.getProperties().getProperty("ip.public");
-			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getDlmsAgentParams/" + publicIp;
+			String webServiceUrl = System.getProperties().getProperty("webServiceUrl") + "/getConfiguration/" + publicIp;
+			Map<List<String>, String> latencyConfigMap = new HashMap<>();
 
-			final SendToDlmsAgent sendToDlmsAgent = fetchSendToDlmsAgent(webServiceUrl);
-			
-			if (StringUtils.isNotBlank(sendToDlmsAgent.getComponentId())
-					&& (sendToDlmsAgent.getAlluxio() != null || sendToDlmsAgent.getMysql() != null)) {
-				// application component is the same and command needs to be executed once
-				String appComp = sendToDlmsAgent.getComponentId();
-				String metricsRange = sendToDlmsAgent.getMetricName();
-				
-				log.info("Application started with metricsRange {} set", metricsRange);
+			final Optional<ConfigurationResponse> configurationResponse = Optional.ofNullable(getConfigurationResponse(webServiceUrl));
 
-				TimerTask timerTask = new TimerTask() {
-					@Override
-					public void run() {
-						log.info("Running metrics collection for {}", url);
-						
-						switch (metricsRange) {
-						case "ALLUXIO": {
-							log.info("Starting to collect Alluxio metrics");
-							runCommands(sendToDlmsAgent.getAlluxio());					
-							metricsController.collectAlluxioMetrics(url);
-							break;
-						}
-						case "MYSQL": {
-							log.info("Starting to collect MySql metrics");
-							
-							metricsController.collectMySqlMetrics();
-							break;
-						}
-						case "ALL": {
-							log.info("Starting to collect both Alluxio and MySql metrics");
-							metricsController.collectAlluxioMetrics(url);
-							metricsController.collectMySqlMetrics();
-							break;
-						}
-						}
-						metricsController.sendMetrics(appComp);
+			if(configurationResponse.map(ConfigurationResponse::getConfigurations).map(List::size).orElse(0) > 0)
+			{
+				for(Configuration config: configurationResponse.get().getConfigurations()) {
+					if(config.isLatencyConfiguration()) {
+						log.info("Received Latency Configuration");
+						log.info("Component Name: {}", config.getLatencyConfiguration().getComponentName());
+						log.info("Component IP: {}", config.getLatencyConfiguration().getComponentIP());
+						log.info("Component Cloud: {}", config.getLatencyConfiguration().getComponentCloud());
+						log.info("Component Region: {}", config.getLatencyConfiguration().getComponentRegion());
+						log.info("Agent Region: {}", config.getLatencyConfiguration().getAgentRegion());
+						log.info("Agent Cloud: {}", config.getLatencyConfiguration().getAgentCloud());
 
+						latencyConfigMap.put(
+								Collections.unmodifiableList(Arrays.asList(
+									config.getLatencyConfiguration().getComponentName(),
+									config.getLatencyConfiguration().getComponentCloud()+"::"+config.getLatencyConfiguration().getComponentRegion()))
+								,config.getLatencyConfiguration().getComponentIP());
+						if(metricsController.getDlmsAgentRegion() == null) {
+							metricsController.setDlmsAgentRegion(config.getLatencyConfiguration().getAgentRegion());
+							metricsController.setDlmsAgentCSP(config.getLatencyConfiguration().getAgentCloud());
+							log.info("agentRegion: {}; agentCSP: {}", metricsController.getDlmsAgentRegion(), metricsController.getDlmsAgentCSP());
+						}
 					}
-				};
-
-				Timer timer = new Timer();
-				timer.schedule(timerTask, DELAY_AFTER_STARTUP, CALL_INTERVAL);
-				log.info("Started timer with delay=" + DELAY_AFTER_STARTUP / 1000 + " sec. and interval="
-						+ CALL_INTERVAL / 1000 + " sec.");
+				}
+			} else {
+				log.info("ConfigurationResponse was null or empty - exiting...");
+				int exitCode = SpringApplication.exit(context, () -> -1);
+				System.exit(exitCode);
 			}
-			log.info("Metrics need not be calculated since it did not have data source");
+
+			log.debug("latencyConfigMap: {}", latencyConfigMap);
+
+			TimerTask timerTask = new TimerTask() {
+				@Override
+				public void run() {
+					log.info("Starting collecting network latencies");
+					metricsController.collectNetworkLatency(latencyConfigMap);
+					log.info("Finished collecting network latencies");
+					metricsController.sendMetrics(null);
+				}
+			};
+
+			Timer timer = new Timer();
+			timer.schedule(timerTask, DELAY_AFTER_STARTUP, CALL_INTERVAL);
+			log.info("Started timer with delay=" + DELAY_AFTER_STARTUP / 1000 + " sec. and interval="
+					+ CALL_INTERVAL / 1000 + " sec.");
 		};
 	}
 
-	private SendToDlmsAgent fetchSendToDlmsAgent(String webServiceUrl) throws InterruptedException {
-		SendToDlmsAgent sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
+	private ConfigurationResponse getConfigurationResponse(String webServiceUrl) {
+		log.debug("Using webServiceUrl: {}", webServiceUrl);
 
-		// to stop program from going to a loop
-		// this needs to be modified to get information from melodic when it is ready
-		int counter = 1;
-		boolean isNull = isNull(sendToDlmsAgent);
-		while (isNull) { // repeat it until it is not null
-			// sleep needs to be changed later on
-			Thread.sleep(20000);
-			counter++;
+		IntervalFunction intervalFn = IntervalFunction.ofExponentialBackoff(800L, 1.5D);
+		RetryConfig retryConfig = RetryConfig.custom()
+				.maxAttempts(6)
+				.retryExceptions(java.lang.Throwable.class)
+				.intervalFunction(intervalFn)
+				.build();
+		Retry retry = Retry.of("call_dlms_ws_for_config", retryConfig);
+		retry.getEventPublisher().onEvent(event -> log.error("Retry mechanism with Interval Function of type Exponential Backoff - EventType: {}; RetryName: {}; NumberOfRetryAttempts: {}; LastThrowable: {}"
+				,event.getEventType().toString()
+				,event.getName()
+				,event.getNumberOfRetryAttempts()
+				,event.getLastThrowable().getMessage()));
 
-			if (counter > 10) {
-				log.error("Did not find the component id. Exiting now ...");
-				break;
+		Supplier<ConfigurationResponse> supplier = Retry.decorateSupplier(retry, () -> {
+			try {
+				return callDLMSWSforConfiguration(webServiceUrl);
+			} catch (URISyntaxException e) {
+				log.error("URI syntax is not correct, error: {}", e.getMessage());
+				return null;
 			}
-			log.debug("Did not find the component id. Waiting ....");
-			// obtain the object again and check
-			sendToDlmsAgent = getSendToDlmsAgent(webServiceUrl);
-			isNull = isNull(sendToDlmsAgent);
-		}
-
-		if (sendToDlmsAgent == null) {
-			throw new DLMSAgentException(String.format("Could not fetch response of %s", webServiceUrl));
-		}
-
-		log.info("Result of {} invocation is: [componentId:{}, metric:{}]", webServiceUrl, sendToDlmsAgent.getComponentId(), sendToDlmsAgent.getMetricName());
-		return sendToDlmsAgent;
-	}
-
-	/**
-	 * Get contents form the web service url
-	 */
-	public SendToDlmsAgent getSendToDlmsAgent(String webServiceUrl) {
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			URI uri = new URI(webServiceUrl);
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-
-			HttpEntity<SendToDlmsAgent> entity = new HttpEntity<>(headers);
-			ResponseEntity<SendToDlmsAgent> response = restTemplate.exchange(uri, HttpMethod.GET, entity,
-					SendToDlmsAgent.class);
-			return response.getBody();
-		} catch (URISyntaxException e) {
-			log.error("Problem getting the contents from dlms web service url");
-		}
-		return null;
-	}
-
-	/**
-	 * Check that both command to mount and compnent id is present
-	 */
-	public boolean isNull(SendToDlmsAgent sendToDlmsAgent) {
-		if (sendToDlmsAgent != null) { // safety check first
-			return (sendToDlmsAgent.getComponentId() == null && (sendToDlmsAgent.getAlluxio()==null || sendToDlmsAgent.getMysql()==null));
-		}
-		return true;
-	}
-
-	/**
-	 * Execute command to fuse mount for alluxio
-	 */
-	public void runCommands(AlluxioParam alluxio) {
-		String cmd = alluxio.getCommand();
-		String[] commands = { "/bin/bash", "-c", cmd };
+		});
 
 		try {
-			Process p = Runtime.getRuntime().exec(commands);
-			log.info("Waiting for execution of {}", cmd);
-			p.waitFor();
+			return supplier.get();
 		} catch (Exception e) {
-			log.error("There was a problem while executing the command from dlms web service api", e);
-		}	
+			log.error("Didn't manage to call DLMS-WS for configuration, error: {}", e.getMessage());
+			return null;
+		}
+	}
+
+	private ConfigurationResponse callDLMSWSforConfiguration(String webServiceUrl) throws URISyntaxException {
+		RestTemplate restTemplate = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofMillis(3000))
+				.build();
+		URI uri = new URI(webServiceUrl);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<ConfigurationResponse> entity = new HttpEntity<>(headers);
+		ResponseEntity<ConfigurationResponse> response = restTemplate.exchange(uri, HttpMethod.GET, entity,
+				ConfigurationResponse.class);
+		return response.getBody();
 	}
 
 }

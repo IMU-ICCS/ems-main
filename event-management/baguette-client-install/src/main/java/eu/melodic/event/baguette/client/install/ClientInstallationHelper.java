@@ -310,12 +310,12 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
                 .appendExec("sudo "+installScriptPath+" \""+serverCertFile+"\" "+baseDownloadUrl+" "+apiKey)
 
         // Launch Baguette Client
-                .appendLog("Launch Baguette Client")
-                .appendExec("sudo service baguette-client start")
+                /*.appendLog("Launch Baguette Client")
+                .appendExec("sudo service baguette-client start")*/
 
         // Write successful installation file
-                .appendLog("Write successful installation file")
-                .appendExec("sudo touch " + checkInstallationFile)
+                /*.appendLog("Write successful installation file")
+                .appendExec("sudo touch " + checkInstallationFile)*/
         ;
 
         // Pretty print installationInstructions JSON

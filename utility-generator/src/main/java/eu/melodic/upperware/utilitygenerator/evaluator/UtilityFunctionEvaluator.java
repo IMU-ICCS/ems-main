@@ -16,20 +16,19 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.MetricsConverter;
 import eu.melodic.upperware.utilitygenerator.dlms.DLMSConverter;
+import eu.melodic.upperware.utilitygenerator.evaluator.template_function_evaluator_utils.TemplateNodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyConverter;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction;
+import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertDeployedSolutionToNodeCandidates;
@@ -45,7 +44,6 @@ public class UtilityFunctionEvaluator {
     private Collection<ConfigurationElement> deployedConfiguration;
     private Collection<VariableDTO> variablesFromConstraintProblem;
     private NodeCandidates nodeCandidates;
-
     private Collection<ArgumentConverter> converters;
 
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
@@ -74,11 +72,64 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
+    @SafeVarargs
+    public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+                                    MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
+                                    Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+        Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
+
+        FromCamelModelExtractor fromCamelModelExtractor = new FromCamelModelExtractor(camelModelFilePath, readFromFile);
+        ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, readFromFile);
+
+        this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
+        log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
+        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
+
+        String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
+        log.info("Formula of the utility function: {}", formula);
+        fromCamelModelExtractor.setUtilityFunctionFormula(formula);
+        NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
+
+        this.converters = createConverters(properties, fromCamelModelExtractor, formula, nodeCandidatesConverter, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+        this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
+
+        fromCamelModelExtractor.endWorkWithCamelModel();
+        constraintProblemExtractor.endWorkWithCPModel();
+    }
+
+    @SafeVarargs
+    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+
+        this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
+        ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
+        this.unmoveableComponents = Collections.emptyList();
+        this.deployedConfiguration = Collections.emptyList();
+        this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        String utilityFormula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
+        log.info("Formula of the utility function: {}", utilityFormula);
+        TemplateNodeCandidatesConverter nodeCandidatesConverter
+                = new TemplateNodeCandidatesConverter(nodeCandidates, this.variablesFromConstraintProblem);
+
+        this.converters = createConverters(utilityFormula, nodeCandidatesConverter);
+        this.function = new UtilityFunction(utilityFormula, new ArrayList<>());
+
+        constraintProblemExtractor.endWorkWithCPModel();
+    }
+
     private Collection<ArgumentConverter> createConverters(UtilityGeneratorProperties properties, FromCamelModelExtractor fromCamelModelExtractor, String formula, NodeCandidatesConverter nodeCandidatesConverter,
                                                            MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         Collection<ArgumentConverter> argConverters = new ArrayList<>();
         argConverters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, this.deployedConfiguration, melodicSecurityProperties, jwtService));
         argConverters.add(new PenaltyConverter(fromCamelModelExtractor, this.deployedConfiguration, penaltyFunctionProperties));
+        argConverters.add(new VariableConverter(this.variablesFromConstraintProblem, formula));
+        argConverters.add(nodeCandidatesConverter);
+        return argConverters;
+    }
+
+    private Collection<ArgumentConverter> createConverters( String formula, TemplateNodeCandidatesConverter nodeCandidatesConverter) {
+        Collection<ArgumentConverter> argConverters = new ArrayList<>();
         argConverters.add(new VariableConverter(this.variablesFromConstraintProblem, formula));
         argConverters.add(nodeCandidatesConverter);
         return argConverters;

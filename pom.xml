@@ -19,7 +19,7 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
@@ -41,16 +41,17 @@
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>penalty-calculator</module>
+        <module>zpp-solver</module>
     </modules>
 
 
     <properties>
-        <melodic.version>3.0.0-SNAPSHOT</melodic.version>
+        <melodic.version>3.1.0-SNAPSHOT</melodic.version>
 
         <!-- version for all paasage components-->
-        <camel.version>3.0.0-SNAPSHOT</camel.version>
+        <camel.version>3.1.0-SNAPSHOT</camel.version>
 
-        <interfaces.version>3.0.0-SNAPSHOT</interfaces.version>
+        <interfaces.version>3.1.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -82,6 +83,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
             <dependency>
                 <groupId>eu.melodic</groupId>
                 <artifactId>interfaces</artifactId>
@@ -115,18 +121,13 @@
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
                 <!--<version>${parent.version}</version>-->
-                <version>3.0.0-SNAPSHOT</version>
+                <version>3.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>eu.melodic.cdo</groupId>
                 <artifactId>client</artifactId>
-                <version>3.0.0-SNAPSHOT</version>
+                <version>3.1.0-SNAPSHOT</version>
                 <classifier>repackaged</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

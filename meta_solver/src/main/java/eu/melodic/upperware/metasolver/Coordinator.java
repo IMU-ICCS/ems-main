@@ -11,6 +11,7 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
+import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequestImpl;
@@ -28,12 +29,10 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -74,15 +73,15 @@ public class Coordinator implements ApplicationContextAware {
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
 
-        log.warn("MetaSolver.Coordinator: selectSolver(): ** NOTE: CP Solver is ALWAYS selected **");
-        log.warn("MetaSolver.Coordinator: selectSolver(): ** NOT IMPLEMENTED **");
-        return ConstraintProblemEnhancementResponse.DesignatedSolverType.CPSOLVER;
+        ConstraintProblemEnhancementResponse.DesignatedSolverType defaultSolver = metaSolverProperties.getDefaultSolver();
+        log.info("MetaSolver.Coordinator: selectSolver(): Solver selected: {}", defaultSolver);
+        return defaultSolver;
     }
 
     /**
      * Update CP model with current metric variable values
      */
-    public void setMetricValuesInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+    public boolean setMetricValuesInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException, NumberFormatException {
         log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}", applicationId, cpModelPath);
 
         // get metric values from metric value registry
@@ -92,9 +91,10 @@ public class Coordinator implements ApplicationContextAware {
 
         // Update CP model with current metric variable values
         CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
-        helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+        boolean succeeded = helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
 
-        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model updated with current MVV's");
+        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model update with current MVV's finished");
+        return succeeded;
     }
 
     /**
@@ -195,7 +195,7 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
 
-    public void requestStartProcessForScaling() throws ConcurrentAccessException {
+    public boolean requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
@@ -203,21 +203,27 @@ public class Coordinator implements ApplicationContextAware {
 
         // Set metric values in CP model
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
-        setMetricValuesInCpModel(appId, cpModelPath);
+        if (!setMetricValuesInCpModel(appId, cpModelPath)) {
+            log.debug("MetaSolver.Coordinator: requestStartProcessForScaling():" +
+                    " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
+            return false;
+        }
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
 
         // Send request to start Deployment Process (reusing existing CP model)
-        DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath);
+        DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath, isSimulation);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
         sendNotification(notification);
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
+        return true;
     }
 
-    private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath) {
+    private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath, boolean isSimulation) {
         DeploymentProcessRequest notification = new DeploymentProcessRequestImpl();
         notification.setApplicationId(appId);
         notification.setUseExistingCP(true);        // For scaling we need to re-use the existing CP model
         notification.setCdoResourcePath(cpModelPath);
+        notification.setIsSimulation(Boolean.toString(isSimulation));
 
         notification.setUsername(melodicSecurityProperties.getUser().getUsername());
         notification.setPassword(melodicSecurityProperties.getUser().getPassword());
@@ -234,7 +240,7 @@ public class Coordinator implements ApplicationContextAware {
         }
         log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Request to ESB: url={}, notification={}", esbUrl, notification.toString());
         ResponseEntity<String> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
-        log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
+        log.info("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
                 response.getStatusCode(), response.getBody());
     }
 
@@ -350,4 +356,48 @@ public class Coordinator implements ApplicationContextAware {
         log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
         return token;
     }
+
+    // --------------------------------------------------------------------------
+    void simulateReconfiguration(List<KeyValuePair> metricValues, String applicationId) throws ConcurrentAccessException {
+        if (!cacheAppId.equals(applicationId)) {
+            log.warn("applications Ids don't match, aborting");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("Wrong application Id: %s", applicationId));
+        } else {
+            MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
+            Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
+            for (KeyValuePair nameValuePair : metricValues) {
+                if (metricNames.contains(nameValuePair.getKey())) {
+                    monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
+                } else {
+                    log.warn("Received invalid metric name: {}", nameValuePair.getKey());
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            String.format("Received invalid metric name: %s", nameValuePair.getKey()));
+                }
+            }
+            log.info("Simulated metrics set");
+
+            log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
+            if(!requestStartProcessForScaling(true)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Received metric value in invalid format");
+            }
+        }
+    }
+
+    List<String> getMetricNames(String applicationId) {
+        List<String> metricNames;
+        if (!cacheAppId.equals(applicationId)) {
+            log.warn("Applications Ids don't match");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    String.format("Wrong application Id: %s", applicationId));
+        } else {
+            MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
+            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
+            if (metricNames.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No metrics defined or net yet received");
+            }
+        }
+        return metricNames;
+    }
+
 }

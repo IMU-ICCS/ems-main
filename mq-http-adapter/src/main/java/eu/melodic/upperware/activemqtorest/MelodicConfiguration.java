@@ -3,11 +3,14 @@ package eu.melodic.upperware.activemqtorest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.Getter;
 
 
 @Configuration
 @Getter
+@JsonSerialize(as=MelodicConfiguration.class)
 public class MelodicConfiguration {
 
 	@Value("${activemq.broker.url}")
@@ -49,4 +52,6 @@ public class MelodicConfiguration {
 	@Value("${mq.topic.instanceinfo.name:_ui_instance_info}")
 	private String mqTopicInstanceInfoName;
 
+	@Value("${mq.recentmetrics.expiry.interval:120}")
+	private long mqRecentMetricsExpiryInterval;
 }
