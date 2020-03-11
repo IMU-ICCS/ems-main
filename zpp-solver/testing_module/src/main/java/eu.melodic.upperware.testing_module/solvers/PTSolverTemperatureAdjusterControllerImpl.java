@@ -30,6 +30,6 @@ public class PTSolverTemperatureAdjusterControllerImpl implements SolverControll
     }
 
     private String solutionToString(Pair<List<VariableValueDTO>, Double> solution, String cpId) {
-        return SolverSolutionToStringConverter.convertToString(solution, SOLVER_ID, cpId, timeLimit, numThreads);
+        return SolverSolutionToStringConverter.convertToString(solution, SOLVER_ID, cpId, timeLimit, numThreads) + "\n";
     }
 }

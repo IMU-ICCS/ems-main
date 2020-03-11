@@ -9,14 +9,13 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jamesframework.core.search.stopcriteria.MaxRuntime;
+import org.jamesframework.core.search.stopcriteria.MaxSteps;
 import org.javatuples.Pair;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 @Slf4j
 public class TemperatureAdjuster {
@@ -28,6 +27,7 @@ public class TemperatureAdjuster {
     private final int MIN_TMP_DEFAULT = 100;
     private final int MAX_TMP_DEFAULT = 100000;
     private final int MIN_TIME_FOR_CHOSEN_TMP = 10;
+    private final int REPETITIONS_PER_TEMP = 10;
     private final List<Integer> maxTmps = Arrays.asList(100, 1000, 10000, 100000, 50000, 5000);
     private final List<Integer> minTmps = Arrays.asList(100, 1000, 10000, 100000, 50000, 5000, 10, 1);
 
@@ -89,40 +89,42 @@ public class TemperatureAdjuster {
         for (int i = 0; i < maxTmps.size(); i+= numThreads) {
             testTemperatures(secondsPerThread, i, Math.min(maxTmps.size(), i + numThreads), maxTmps, true, 0);
         }
-        int maxTmp = getBestTemperature();
+        int maxTmp = getBestTemperature(maxTmps);
         threadsInfo.clear();
         for (int i = 0; i < minTmps.size(); i+= numThreads) {
             testTemperatures(secondsPerThread, i, Math.min(minTmps.size(), i + numThreads), minTmps, false, maxTmp);
         }
 
-        int minTmp = getBestTemperature();
+        int minTmp = getBestTemperature(minTmps);
         return new Pair<> (minTmp, maxTmp);
     }
 
-    private int getBestTemperature() {
-        final TemperatureAdjusterThreadData[] best = {threadsInfo.get(0)};
-        threadsInfo.forEach( info -> {
-            if (info.getSolution().getValue1() > best[0].getSolution().getValue1()) {
-                best[0] = info;
-            }
+    private int getBestTemperature(List<Integer> candidates) {
+        Map<Integer, Double> temperatureToUtility = new HashMap<>();
+        candidates.forEach(temperature -> temperatureToUtility.put(temperature, 0.0));
+        threadsInfo.forEach( info -> temperatureToUtility.put(info.getTemperature(), temperatureToUtility.get(info.getTemperature()) + info.getSolution().getValue1()));
+        return Collections.max(temperatureToUtility.entrySet(), Comparator.comparingDouble(Map.Entry::getValue)).getKey();
+    }
+
+    private Thread constructWorkerThread(int temperature, boolean testOfMaxTemperature, int maxTemperature) {
+        return new Thread( () -> {
+            PTSolver solver = testOfMaxTemperature ?
+                    new PTSolver(temperature, temperature + 1, 1, cp, parallelUtilityProvider)
+                    : new PTSolver(temperature, maxTemperature, 1, cp, parallelUtilityProvider);
+            IntStream.range(0, REPETITIONS_PER_TEMP).forEach((repetition -> {
+                Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxSteps(200));
+                solutions.add(solution);
+                threadsInfo.add(new TemperatureAdjusterThreadData(solution, temperature));
+            }));
         });
-        return best[0].getTemperature();
     }
 
     private void testTemperatures(int secondsPerThread, int leftIndex, int rightIndex, List<Integer> temperatures, boolean testOfMaxTemperature, int maxTemperature) {
         List<Thread> threads = new ArrayList<>();
-        temperatures.subList(leftIndex, rightIndex).forEach(tmp -> {
-            Thread thread = new Thread( () -> {
-                if (maxTemperature != 0 && maxTemperature <= tmp) return;
-                PTSolver solver = testOfMaxTemperature ?
-                        new PTSolver(tmp, tmp + 1, 1, cp, parallelUtilityProvider)
-                        : new PTSolver(tmp, maxTemperature, 1, cp, parallelUtilityProvider);
-                Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(secondsPerThread, TimeUnit.SECONDS));
-                solutions.add(solution);
-                threadsInfo.add(new TemperatureAdjusterThreadData(solution, tmp));
-            });
-            threads.add(thread);
-            thread.start();
+        temperatures.subList(leftIndex, rightIndex).stream().filter(tmp -> (maxTemperature == 0 || maxTemperature > tmp)).forEach(tmp -> {
+            Thread workerThread = constructWorkerThread(tmp, testOfMaxTemperature, maxTemperature);
+            threads.add(workerThread);
+            workerThread.start();
         });
         threads.forEach((thread -> {
             try {
