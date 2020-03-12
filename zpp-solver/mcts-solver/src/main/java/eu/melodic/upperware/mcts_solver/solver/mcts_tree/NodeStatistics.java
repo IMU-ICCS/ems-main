@@ -13,6 +13,7 @@ public abstract class NodeStatistics {
         depth = parentDepth + 1;
     }
 
+    // Updates statistics after finding some path (solution).
     public abstract void update(Solution solution);
 
     public void visit() {

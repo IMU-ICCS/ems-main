@@ -1,4 +1,3 @@
-package utility;
 
 import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utils.test_utils.mockups.*;
@@ -89,7 +88,7 @@ public class Methods {
                     sum += v.getValue().intValue();
                 }
             }
-            return sum;
+            return sum / 16.5;
         });
     }
 
@@ -193,7 +192,7 @@ public class Methods {
                     sum += v.getValue().intValue();
                 }
             }
-            return sum;
+            return sum / 38.5;
         });
     }
 

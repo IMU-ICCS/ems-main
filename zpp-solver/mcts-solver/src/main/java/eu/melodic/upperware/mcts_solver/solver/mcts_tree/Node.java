@@ -31,4 +31,12 @@ public abstract class Node {
     public int childrenSize() {
         return children.size();
     }
+
+    public void visit() {
+        nodeStatistics.visit();
+    }
+
+    public void addChild(Node child) {
+        children.add(child);
+    }
 }

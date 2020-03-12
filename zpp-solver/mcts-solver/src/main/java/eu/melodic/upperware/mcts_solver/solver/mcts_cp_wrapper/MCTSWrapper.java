@@ -2,12 +2,10 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper;
 
 import cp_wrapper.CPWrapper;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Random;
 
-@Slf4j
 @AllArgsConstructor
 public class MCTSWrapper {
     private final static Random random = new Random();
@@ -33,7 +31,7 @@ public class MCTSWrapper {
     }
 
     public int domainSize(int index) {
-        return cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index);
+        return cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index) + 1;
     }
 
     public int getMinDomainValue(int index) {

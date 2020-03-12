@@ -10,10 +10,13 @@ public class NodeStatisticsImpl extends NodeStatistics {
     private static double selectorCoefficient;
     @Setter @Getter
     private static double explorationCoefficient;
+    @Setter
+    private static int maximalSize;
     @Getter
     private double averageFailureDepth;
     @Getter
     private double maximalUtility;
+
 
     public NodeStatisticsImpl(int parentDepth) {
         super(parentDepth);
@@ -30,8 +33,10 @@ public class NodeStatisticsImpl extends NodeStatistics {
             maximalUtility = solutionUtility;
         }
 
-        // TODO high chance statement below is bugged
-        averageFailureDepth = (double) visitCount / (visitCount + 1.0) * averageFailureDepth
-                + 1.0 / (visitCount + 1.0) * (((SolutionImpl) solution).getSize() - depth);
+        double visitCountDouble = visitCount;
+        double failureDepth = ((SolutionImpl) solution).getFailureDepth();
+        double maximalSizeDouble = maximalSize;
+        averageFailureDepth = visitCountDouble / (visitCountDouble + 1.0) * averageFailureDepth
+                + 1.0 / (visitCountDouble + 1.0) * (failureDepth / maximalSizeDouble);
     }
 }

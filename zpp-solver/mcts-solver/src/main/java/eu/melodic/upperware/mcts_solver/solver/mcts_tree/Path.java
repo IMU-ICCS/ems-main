@@ -5,19 +5,16 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+// Represents assignment chosen from a path that begins in a root Node.
 public class Path {
     @Getter
-    List<Node> path;
+    List<Integer> path;
 
     public Path() {
         path = new ArrayList<>();
     }
 
     public void add(Node node) {
-        path.add(node);
-    }
-
-    public Node get(int i) {
-        return path.get(i);
+        path.add(node.getValue());
     }
 }

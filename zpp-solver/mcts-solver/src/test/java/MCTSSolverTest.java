@@ -5,7 +5,6 @@ import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
 import eu.paasage.upperware.metamodel.cp.*;
 import org.junit.Test;
-import utility.Methods;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +23,7 @@ public class MCTSSolverTest {
         MCTSSolver mctsSolver = new MCTSSolver();
         mctsSolver.setExplorationCoefficient(0.5);
         mctsSolver.setSelectorCoeffcient(0.5);
-        mctsSolver.setIterations(1000);
+        mctsSolver.setIterations(150);
 
         mctsSolver.run(new MCTSWrapper(cpWrapper));
 
@@ -50,7 +49,7 @@ public class MCTSSolverTest {
         MCTSSolver mctsSolver = new MCTSSolver();
         mctsSolver.setExplorationCoefficient(0.5);
         mctsSolver.setSelectorCoeffcient(0.5);
-        mctsSolver.setIterations(20000);
+        mctsSolver.setIterations(3000);
 
         mctsSolver.run(new MCTSWrapper(cpWrapper));
 

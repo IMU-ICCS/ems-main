@@ -15,6 +15,9 @@ public class NodeImpl extends Node {
         this.parent = parent;
         children = new ArrayList<>();
         nodeStatistics = new NodeStatisticsImpl(parent == null ? -1 : parent.getNodeStatistics().getDepth());
+        if (parent != null) {
+            parent.addChild(this);
+        }
     }
 
 }

@@ -9,9 +9,11 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 public class MCTSSolver {
     @Setter
     private double selectorCoeffcient;
@@ -40,11 +42,14 @@ public class MCTSSolver {
 
         NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
         NodeStatisticsImpl.setSelectorCoefficient(selectorCoeffcient);
+        NodeStatisticsImpl.setMaximalSize(mctsWrapper.getSize());
 
         Solution initialSolution = new SolutionImpl();
 
         Tree mctsTree = new Tree(root, policy, moveProvider, initialSolution);
 
         solution = (SolutionImpl) mctsTree.run(iterations);
+
+        log.debug("Found solution with utility: " + solution.getUtility());
     }
 }

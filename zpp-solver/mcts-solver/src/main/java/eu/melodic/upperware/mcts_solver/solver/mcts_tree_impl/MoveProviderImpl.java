@@ -28,33 +28,33 @@ public class MoveProviderImpl implements MoveProvider {
     }
 
     private boolean compare(Node left, Node right, Node parent) {
-        if (right == null)
+        if (right == null) {
             return true;
-        if (left == null)
+        }
+        if (left == null) {
             return false;
+        }
 
         NodeStatisticsImpl leftStats = (NodeStatisticsImpl) left.getNodeStatistics();
         NodeStatisticsImpl rightStats = (NodeStatisticsImpl) right.getNodeStatistics();
         NodeStatisticsImpl parentStats = (NodeStatisticsImpl) parent.getNodeStatistics();
 
         // If node hasn't been visited, then choose it.
-        if (leftStats.getVisitCount() == 0)
+        if (leftStats.getVisitCount() == 0) {
             return true;
+        }
 
-        if (rightStats.getVisitCount() == 0)
+        if (rightStats.getVisitCount() == 0) {
             return false;
+        }
 
         double leftEval = getEvaluation(leftStats, parentStats);
+        double rightEval = getEvaluation(rightStats, parentStats);
 
-        double rightEval = getEvaluation(leftStats, parentStats);
-
-        return leftEval <= rightEval;
+        return leftEval >= rightEval;
     }
 
     private void expand(Node toExpand) {
-
-        assert toExpand.getNodeStatistics() != null;
-
         int depth = toExpand.getNodeStatistics().getDepth();
         if (depth >= mctsWrapper.getSize()) {
             return;
@@ -75,26 +75,27 @@ public class MoveProviderImpl implements MoveProvider {
         int depth = 0;
         Path path = new Path();
 
-        path.add(current);
+        current.visit();
 
         // While has all available children.
-        while (current.childrenSize() == mctsWrapper.domainSize(depth) && depth < mctsWrapper.getSize()) {
+        while (depth < mctsWrapper.getSize() && current.childrenSize() == mctsWrapper.domainSize(depth)) {
             List<Node> children = current.getChildren();
             Node bestChild = null;
 
             if (children == null) {
                 break;
             }
-
             for (Node child : children) {
-                if (compare(child, bestChild, current))
+                if (compare(child, bestChild, current)) {
                     bestChild = child;
+                }
             }
-            depth++;
-            path.add(current);
-            current = bestChild;
-        }
 
+            depth++;
+            current = bestChild;
+            current.visit();
+            path.add(current);
+        }
         expand(current);
 
         return new Pair<>(current, path);
