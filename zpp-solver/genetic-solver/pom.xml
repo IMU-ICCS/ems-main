@@ -5,13 +5,15 @@
     <parent>
         <artifactId>zpp-solver</artifactId>
         <groupId>org.ow2.paasage</groupId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>genetic-solver</artifactId>
-    <name>Upperware - Genetic Solver</name>
-    <version>3.0.0-SNAPSHOT</version>
+    <!--<name>Upperware - Genetic Solver</name>-->
+    <!--<version>3.0.0-SNAPSHOT</version>-->
     <properties>
         <!--DOCKER plugin properties-->
         <docker.imageName>geneticsolver</docker.imageName>
@@ -26,7 +28,7 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>cp-parser</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>${melodic.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -36,10 +38,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>exec</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>

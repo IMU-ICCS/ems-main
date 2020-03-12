@@ -8,13 +8,16 @@
 
 package eu.melodic.upperware.metasolver.metricvalue;
 
+import lombok.Getter;
+
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class MetricValueRegistry<T> {
     private HashMap<String, MetricValue<T>> registry = new HashMap<>();
+
+    @Getter
+    private Set<String> possibleMetricNames = new HashSet<>();
 
     public T getMetricValue(String metricName) {
         MetricValue<T> mv = registry.get(metricName);
@@ -39,6 +42,10 @@ public class MetricValueRegistry<T> {
             mvm.put(name, value);
         }
         return mvm;
+    }
+
+    public void addPossibleMetricName(String metricName) {
+        this.possibleMetricNames.add(metricName);
     }
 
     public String toString() {
