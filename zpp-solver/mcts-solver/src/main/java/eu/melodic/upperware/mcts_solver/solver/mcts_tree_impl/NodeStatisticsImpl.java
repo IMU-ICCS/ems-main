@@ -11,7 +11,7 @@ public class NodeStatisticsImpl extends NodeStatistics {
     @Setter @Getter
     private static double explorationCoefficient;
     @Setter
-    private static int maximalSize;
+    private static int maximalDepth;
     @Getter
     private double averageFailureDepth;
     @Getter
@@ -35,8 +35,8 @@ public class NodeStatisticsImpl extends NodeStatistics {
 
         double visitCountDouble = visitCount;
         double failureDepth = ((SolutionImpl) solution).getFailureDepth();
-        double maximalSizeDouble = maximalSize;
+        double maximalDepthDouble = maximalDepth;
         averageFailureDepth = visitCountDouble / (visitCountDouble + 1.0) * averageFailureDepth
-                + 1.0 / (visitCountDouble + 1.0) * (failureDepth / maximalSizeDouble);
+                + 1.0 / (visitCountDouble + 1.0) * (failureDepth / maximalDepthDouble);
     }
 }

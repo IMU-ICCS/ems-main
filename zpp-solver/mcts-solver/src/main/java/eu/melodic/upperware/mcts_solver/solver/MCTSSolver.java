@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 public class MCTSSolver {
     @Setter
-    private double selectorCoeffcient;
+    private double selectorCoefficient;
     @Setter
     private double explorationCoefficient;
     @Getter
@@ -41,8 +41,8 @@ public class MCTSSolver {
         root.linkToTree(null);
 
         NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
-        NodeStatisticsImpl.setSelectorCoefficient(selectorCoeffcient);
-        NodeStatisticsImpl.setMaximalSize(mctsWrapper.getSize());
+        NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
+        NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
 
         Solution initialSolution = new SolutionImpl();
 

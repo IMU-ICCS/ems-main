@@ -1,57 +1,24 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
+import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.IMCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.MoveProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Path;
 import org.javatuples.Pair;
-import java.lang.Math;
 
+import java.util.Comparator;
 import java.util.List;
 
+import static java.util.Collections.max;
+
 public class MoveProviderImpl implements MoveProvider {
-    private MCTSWrapper mctsWrapper;
+    private IMCTSWrapper mctsWrapper;
 
     public MoveProviderImpl(MCTSWrapper mctsWrapper) {
         super();
 
         this.mctsWrapper = mctsWrapper;
-    }
-
-    private double getEvaluation(NodeStatisticsImpl nodeStats, NodeStatisticsImpl parentStats) {
-        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
-        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
-
-        return selectorCoefficient * nodeStats.getAverageFailureDepth() +
-                (1 - selectorCoefficient) * nodeStats.getMaximalUtility() +
-                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) nodeStats.getVisitCount()));
-    }
-
-    private boolean compare(Node left, Node right, Node parent) {
-        if (right == null) {
-            return true;
-        }
-        if (left == null) {
-            return false;
-        }
-
-        NodeStatisticsImpl leftStats = (NodeStatisticsImpl) left.getNodeStatistics();
-        NodeStatisticsImpl rightStats = (NodeStatisticsImpl) right.getNodeStatistics();
-        NodeStatisticsImpl parentStats = (NodeStatisticsImpl) parent.getNodeStatistics();
-
-        // If node hasn't been visited, then choose it.
-        if (leftStats.getVisitCount() == 0) {
-            return true;
-        }
-
-        if (rightStats.getVisitCount() == 0) {
-            return false;
-        }
-
-        double leftEval = getEvaluation(leftStats, parentStats);
-        double rightEval = getEvaluation(rightStats, parentStats);
-
-        return leftEval >= rightEval;
     }
 
     private void expand(Node toExpand) {
@@ -80,19 +47,12 @@ public class MoveProviderImpl implements MoveProvider {
         // While has all available children.
         while (depth < mctsWrapper.getSize() && current.childrenSize() == mctsWrapper.domainSize(depth)) {
             List<Node> children = current.getChildren();
-            Node bestChild = null;
+            Comparator<Node> comparator = new NodeComparator(current);
 
-            if (children == null) {
-                break;
-            }
-            for (Node child : children) {
-                if (compare(child, bestChild, current)) {
-                    bestChild = child;
-                }
-            }
+            // Selecting best child.
+            current = max(children, comparator);
 
             depth++;
-            current = bestChild;
             current.visit();
             path.add(current);
         }

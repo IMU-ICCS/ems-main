@@ -22,7 +22,7 @@ public class MCTSSolverTest {
 
         MCTSSolver mctsSolver = new MCTSSolver();
         mctsSolver.setExplorationCoefficient(0.5);
-        mctsSolver.setSelectorCoeffcient(0.5);
+        mctsSolver.setSelectorCoefficient(0.5);
         mctsSolver.setIterations(150);
 
         mctsSolver.run(new MCTSWrapper(cpWrapper));
@@ -39,7 +39,6 @@ public class MCTSSolverTest {
         assertEquals(domain3.get(assignment.get(0)), 9, 0.01);
     }
 
-    /* Its a fairly easy test aswell and 20s should be enough. */
     @Test
     public void LessSimpleTest() {
         Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareLessSimpleConstraintProblem();
@@ -47,9 +46,9 @@ public class MCTSSolverTest {
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
         MCTSSolver mctsSolver = new MCTSSolver();
-        mctsSolver.setExplorationCoefficient(0.5);
-        mctsSolver.setSelectorCoeffcient(0.5);
-        mctsSolver.setIterations(3000);
+        mctsSolver.setExplorationCoefficient(0.8);
+        mctsSolver.setSelectorCoefficient(0.5);
+        mctsSolver.setIterations(5000);
 
         mctsSolver.run(new MCTSWrapper(cpWrapper));
 

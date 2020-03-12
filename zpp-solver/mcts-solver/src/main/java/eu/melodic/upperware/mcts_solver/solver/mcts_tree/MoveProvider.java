@@ -4,6 +4,6 @@ import org.javatuples.Pair;
 
 public interface MoveProvider {
 
-    /* Method responsible for finding path and expanding tree somehow, in an iteration. */
+    // Method responsible for finding path and expanding tree somehow, in an iteration.
     Pair<Node, Path> searchAndExpand(Node root);
 }

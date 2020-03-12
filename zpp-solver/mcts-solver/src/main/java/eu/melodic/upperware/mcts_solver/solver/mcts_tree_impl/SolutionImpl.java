@@ -1,6 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.IMCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,9 +16,9 @@ public class SolutionImpl implements Solution {
     // Depth at which assigning failed.
     @Getter
     private int failureDepth;
-    // Number of broken constraints.
+    // Feasible if there are no broken constraints.
     @Getter
-    private int brokenConstraints;
+    private boolean feasible;
     // Calculated utility for a feasible solution, 0 for a an unfeasible solution.
     @Getter
     private double utility;
@@ -28,15 +28,15 @@ public class SolutionImpl implements Solution {
         super();
 
         assignment = new ArrayList<>();
-        brokenConstraints = Integer.MAX_VALUE;
+        feasible = false;
         utility = 0;
     }
 
-    public SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
+    public SolutionImpl(int rolloutDepth, List<Integer> assignment, IMCTSWrapper mctsWrapper) {
         this.assignment = assignment;
         utility = mctsWrapper.getUtility(assignment);
-        brokenConstraints = mctsWrapper.countViolatedConstraints(assignment);
-        if (utility == 0.0 || brokenConstraints > 0) {
+        feasible = mctsWrapper.isFeasible(assignment);
+        if (utility == 0.0 || !feasible) {
             failureDepth = rolloutDepth;
         }
         else {
@@ -48,11 +48,11 @@ public class SolutionImpl implements Solution {
     public boolean isBetterThan(Solution other) {
         SolutionImpl otherSolution = (SolutionImpl) other;
 
-        if (brokenConstraints > ((SolutionImpl) other).brokenConstraints) {
-            return false;
-        }
-        else if (brokenConstraints < ((SolutionImpl) other).brokenConstraints) {
+        if (feasible && !((SolutionImpl) other).feasible) {
             return true;
+        }
+        else if (!feasible && ((SolutionImpl) other).feasible) {
+            return false;
         }
 
         return failureDepth > otherSolution.failureDepth ||
