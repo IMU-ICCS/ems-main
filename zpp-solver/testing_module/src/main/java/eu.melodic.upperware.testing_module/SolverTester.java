@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,12 +80,15 @@ public class SolverTester {
         List<Quintet<NodeCandidates, ConstraintProblem, UtilityProvider, String, ParallelUtilityProviderImpl>> CPs = getAllNonRandomCP(requestData);
         CPs.addAll(generateRandomCP(requestData, samplerNodeCandidates, sampler));
 
+        Clock clock = Clock.systemDefaultZone();
+        long startTime = clock.millis();
+
         CPs.forEach(parsedCP -> {
             log.info("Testing solvers on CP "+ parsedCP.getValue3());
             for (int i = 1; i <= requestData.getRepetitions(); i++) {
                 results.addAll(
                         solverControllers.stream().map(solver -> {
-                            if (solver instanceof PTSolverControllerImpl || solver instanceof  PTSolverTemperatureAdjusterControllerImpl) {
+                            if (solver instanceof PTSolverControllerImpl || solver instanceof  PTSolverTemperatureAdjusterControllerImpl || solver instanceof NCSolverControllerImpl) {
                                 return solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue4(), parsedCP.getValue3());
                             } else {
                                 return solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue2(), parsedCP.getValue3());
@@ -93,6 +97,9 @@ public class SolverTester {
                 );
             }
         });
+
+        long endTime = clock.millis();
+        log.info("Cal time: " + (endTime - startTime));
         log.info("Saving results to "+ requestData.getOutputPath());
         results.forEach(result -> {
             try {
@@ -108,11 +115,11 @@ public class SolverTester {
 
     private List<SolverController> prepareControllers(RequestData requestData) {
         List<SolverController> solverControllers = new LinkedList<>();
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
        // Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
-        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).map(PTParameters::getNumThreads).distinct().forEach(numThreads -> solverControllers.add(new PTSolverTemperatureAdjusterControllerImpl(numThreads, timeLimit))));
+        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).map(PTParameters::getNumThreads).distinct().forEach(numThreads -> solverControllers.add(new PTSolverTemperatureAdjusterControllerImpl(numThreads, timeLimit))));
         return solverControllers;
     }
 
