@@ -24,15 +24,15 @@
     {"minTmp":  1000, "maxTmp":  100000, "numThreads":  5}
   ],
   "geneticSolverParameters": [
-    {"populationSize":  100, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10},
-    {"populationSize":  100, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
-    {"populationSize":  100, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
-    {"populationSize":  200, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10},
-    {"populationSize":  200, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
-    {"populationSize":  200, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
-    {"populationSize":  300, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10},
-    {"populationSize":  300, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
-    {"populationSize":  300, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10}
+    {"populationSize":  10, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10},
+    {"populationSize":  10, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
+    {"populationSize":  10, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
+    {"populationSize":  50, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10},
+    {"populationSize":  50, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
+    {"populationSize":  50, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
+    {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.3, "mutationProbability" :  0.1, "comparatorProbability" :  0.1, "guesses" :  10},
+    {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
+    {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10}
   ],
   "repetitions": 4,
   "cpSamplerData": {
