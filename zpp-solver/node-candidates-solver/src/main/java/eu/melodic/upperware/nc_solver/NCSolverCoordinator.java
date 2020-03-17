@@ -78,17 +78,16 @@ public class NCSolverCoordinator {
     private double minTemp = 100;
     private double maxTemp = 10000;
     private int numThreads = 1;
-    private int seconds = 10;
 
 
-    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int seconds) {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
             log.info("Starting NC Solver with " + numThreads + " threads for " + seconds + " seconds");
-            solve(nodeCandidates, cp, utilityGenerator);
+            solve(nodeCandidates, cp, utilityGenerator, seconds);
 
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
 
@@ -98,7 +97,7 @@ public class NCSolverCoordinator {
     }
 
     @Async
-    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid, int seconds) {
         try {
             NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
 
@@ -111,7 +110,7 @@ public class NCSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            solve(nodeCandidates, cp, utilityGenerator);
+            solve(nodeCandidates, cp, utilityGenerator, seconds);
 
             trans.commit();
             trans.close();
@@ -125,7 +124,7 @@ public class NCSolverCoordinator {
         }
     }
 
-    private void solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
+    private void solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, int seconds) {
         NCSolver solver = new NCSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator), nodeCandidates);
         Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
         log.info("Found solution with utility: " + solution.getValue1());

@@ -76,9 +76,8 @@ public class PTSolverCoordinator {
     private double minTemp = 100;
     private double maxTemp = 10000;
     private int numThreads = 10;
-    private int seconds = 10;
 
-    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int seconds) {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
@@ -100,7 +99,7 @@ public class PTSolverCoordinator {
     }
 
     @Async
-    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid, int seconds) {
         try {
             NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
 

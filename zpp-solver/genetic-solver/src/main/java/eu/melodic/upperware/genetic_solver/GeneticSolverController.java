@@ -23,9 +23,10 @@ public class GeneticSolverController {
         String camelModelFilePath = request.getCamelModelFilePath();
         String cpModelPath = request.getCpProblemFilePath();
         String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
+        int timeLimit = request.getTimeLimit();
         log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
 
-        geneticSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
+        geneticSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath, timeLimit);
         log.info("Sleeping...");
     }
 
@@ -40,9 +41,10 @@ public class GeneticSolverController {
         String cdoResourcePath = request.getCdoModelsPath();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
+        int timeLimit = request.getTimeLimit();
         log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
 
-        geneticSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
+        geneticSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, timeLimit);
         log.info("Sleeping...");
     }
 }
