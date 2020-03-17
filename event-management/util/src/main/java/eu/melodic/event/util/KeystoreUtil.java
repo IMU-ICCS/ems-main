@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.event.util;
@@ -476,7 +476,8 @@ public class KeystoreUtil {
             log.debug("    Generating new Key pair and Certificate for: {}", properties.getKeyEntryNameValue());
 
             KeystoreUtil ksUtil = KeystoreUtil
-                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword());
+                    .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .createIfNotExist();
             if (StringUtils.isBlank(properties.getKeyEntryExtSANValue())) {
                 log.debug("    Create/Replace entry (with SAN auto-generate): {}", properties.getKeyEntryNameValue());
                 ksUtil.createOrReplaceKeyAndCertWithSAN(properties.getKeyEntryNameValue(), properties.getKeyEntryDNameValue());
@@ -490,7 +491,8 @@ public class KeystoreUtil {
             ksUtil.exportCertToFile(properties.getKeyEntryNameValue(), properties.getCertificateFile());
 
             KeystoreUtil tsUtil = KeystoreUtil
-                    .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword());
+                    .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword())
+                    .createIfNotExist();
             log.debug("    Importing certificate to trust store: {}", properties.getTruststoreFile());
             tsUtil.importAndReplaceCertFromFile(properties.getKeyEntryNameValue(), properties.getCertificateFile());
 

@@ -42,4 +42,10 @@ public interface CloudiatorApi {
     List<Schedule> getScheduleList();
 
     List<Monitor> getMonitorList();
+
+    List<ByonNode> getByonsList();
+
+    ByonNode createNewByonNode(NewNode newNode);
+
+    void deleteByon(String byonId);
 }

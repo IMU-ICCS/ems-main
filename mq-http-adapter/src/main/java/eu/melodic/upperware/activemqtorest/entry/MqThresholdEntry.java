@@ -4,6 +4,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.influxdb.dto.Point;
 
+import com.google.common.base.Strings;
+
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDataRetainer;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
 import lombok.AllArgsConstructor;
@@ -37,9 +39,9 @@ public class MqThresholdEntry extends MqBaseEntry {
 		String timestamp = normalizeTimestamp(getTimestamp());
 		Point point = Point.measurement("_Thresholds")
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
-				.addField("name", getName())
+				.addField("name", Strings.nullToEmpty(getName()))
 				.addField("threshold", Double.valueOf(getThreshold()))
-				.addField("operator", getOperator())
+				.addField("operator", Strings.nullToEmpty(getOperator()))
 				.build();
 		return point;
 	}

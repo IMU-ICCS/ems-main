@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.upperware.metasolver;
@@ -12,7 +11,6 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
-//import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -167,25 +165,40 @@ public class MetaSolverController {
         return "OK";
     }
 
-    @RequestMapping(value = "/health", method = GET)
-    public void health() {
+    @RequestMapping(value = "/simulateReconfiguration", method = POST)
+    public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
+                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        setAuthenticationToken(jwtToken);
+        String applicationId = request.getApplicationId();
+        log.info("Received request: {}", applicationId);
+
+        // set metrics and request reconfiguration
+        log.info("Setting Simulated metrics and reconfiguration request");
+        coordinator.simulateReconfiguration(request.getMetricValues(), applicationId);
+        log.info("SimulateReconfiguration: Setting Simulated metrics and reconfiguration request finished");
+
+        SimulatedMetricValuesResponseImpl response = new SimulatedMetricValuesResponseImpl();
+        response.setApplicationId(applicationId);
+
+        return response;
     }
 
-    //XXX: DELETE:
-    @RequestMapping(value = "/esbTest", method = POST)
-    public eu.melodic.models.services.metaSolver.DeploymentProcessResponse esbTest(@RequestBody eu.melodic.models.services.metaSolver.DeploymentProcessRequest request) {
-        log.warn(">>>> Call to /esbTest: app-id={}, use-existing-cp={}, cdo-path={}, uuid={}",
-                request.getApplicationId(), request.getUseExistingCP(), request.getCdoResourcePath(), request.getWatermark().getUuid());
+    @GetMapping("/getMetricNames/{applicationId}")
+    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
+                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
 
-        eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl response = new eu.melodic.models.services.metaSolver.DeploymentProcessResponseImpl();
-        eu.melodic.models.commons.NotificationResult notif = new eu.melodic.models.commons.NotificationResultImpl();
-        java.util.Map<String, Object> notifMap = new java.util.HashMap<>();
-        notifMap.put("xxxxxx-test-additional-property-name", "yyyyyyyyy-value");
-        notif.setStatus(eu.melodic.models.commons.NotificationResult.StatusType.SUCCESS);
-        notif.setAdditionalProperties(notifMap);
-        response.setResult(notif);
-        response.setProcessId("zzzzzzzzzzz-the-process-ID");
-        return response;
+        setAuthenticationToken(jwtToken);
+        log.info("Received request for metric names: ");
+        MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
+        metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applicationId));
+
+        return metricsNamesResponse;
+    }
+
+    @RequestMapping(value = "/health", method = GET)
+    public void health() {
     }
 
     @ExceptionHandler

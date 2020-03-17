@@ -17,7 +17,6 @@ import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -43,10 +42,6 @@ public class CdoService {
 
     private CpModelMapper cpModelMapper;
     private GuiBackendProperties guiBackendProperties;
-
-    public String getCdoName(String fileName, String fileExtension) {
-        return StringUtils.removeEnd(fileName, fileExtension);
-    }
 
     public boolean storeFileInCdo(String cdoName, File file) {
 

@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2017 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.event.control;
@@ -66,7 +66,8 @@ public class ControlServiceCoordinator {
     private ControlServiceProperties properties;
     @Autowired
     private BaguetteServer baguette;
-    //@Autowired
+    @Autowired
+    @Getter
     private BrokerCepService brokerCep;
     @Autowired
     private RestTemplate restTemplate;
@@ -94,6 +95,7 @@ public class ControlServiceCoordinator {
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
+        log.info("ControlServiceCoordinator.applicationReady(): IP setting: {}", properties.getIpSetting());
         preloadModels();
     }
 
@@ -356,15 +358,24 @@ public class ControlServiceCoordinator {
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
 
             // Prepare subscription configurations
-            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer() : null;
+            //String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer() : null;
+            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForClients() : null;
+            boolean usesAuthentication = brokerCep.getBrokerCepProperties().isAuthenticationEnabled();
+            String username = usesAuthentication ? brokerCep.getBrokerUsername() : null;
+            String password = usesAuthentication ? brokerCep.getBrokerPassword() : null;
+            String certificate = brokerCep.getBrokerCertificate();
+            log.debug("ControlServiceCoordinator.processNewModel(): Local Broker: uses-authentication={}, username={}, password={}, has-certificate={}",
+                    usesAuthentication, username, passwordUtil.encodePassword(password), StringUtils.isNotBlank(certificate));
+            log.trace("ControlServiceCoordinator.processNewModel(): Local Broker: broker-certificate={}", certificate);
+
             if (StringUtils.isBlank(upperwareBrokerUrl)) {
                 log.warn("ControlServiceCoordinator.processNewModel(): No Broker URL has been specified or Broker-CEP module is deactivated");
             }
             List<Map> subscriptionConfigs = new ArrayList<>();
             for (String t : scalingTopics)
-                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "SCALE"));
+                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "SCALE"));
             for (String t : metricTopics)
-                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, t, "", "MVV"));
+                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "MVV"));
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver subscriptions configuration: {}", subscriptionConfigs);
 
             // Retrieve MVV to Current-Config MVV map
@@ -381,15 +392,19 @@ public class ControlServiceCoordinator {
             com.google.gson.Gson gson = new com.google.gson.Gson();
             String json = gson.toJson(msConfig);
             log.info("ControlServiceCoordinator.processNewModel(): MetaSolver configuration in JSON: {}", json);
-            try {
-                log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
-                //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
-                HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
-                final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
-                String metaSolverResponse = response.getBody();
-                log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+            if (StringUtils.isNotEmpty(metaSolverEndpoint)) {
+                try {
+                    log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}, body={}", metaSolverEndpoint, json);
+                    //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
+                    HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
+                    final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
+                    String metaSolverResponse = response.getBody();
+                    log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, body={}\nEXCEPTION: ", metaSolverEndpoint, json, ex);
+                }
+            } else {
+                log.warn("ControlServiceCoordinator.processNewModel(): MetaSolver endpoint is empty. Skipping Metasolver configuration");
             }
 
         } else {
@@ -507,9 +522,12 @@ public class ControlServiceCoordinator {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected Map<String, String> _prepareSubscriptionConfig(String url, String topic, String clientId, String type) {
+    protected Map<String, String> _prepareSubscriptionConfig(String url, String username, String password, String certificate, String topic, String clientId, String type) {
         Map<String, String> map = new HashMap<>();
         map.put("url", url);
+        map.put("username", username);
+        map.put("password", password);
+        map.put("certificate", certificate);
         map.put("topic", topic);
         map.put("client-id", clientId);
         map.put("type", type);

@@ -6,7 +6,8 @@ import lombok.AllArgsConstructor;
 public enum ServiceName {
     CAMUNDA("Camunda"),
     JWT_SERVER("Authorization service"),
-    ADAPTER("Adapter");
+    ADAPTER("Adapter"),
+    METASOLVER("MetaSolver");
 
     public final String name;
 }

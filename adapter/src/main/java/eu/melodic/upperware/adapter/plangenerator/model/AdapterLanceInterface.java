@@ -10,6 +10,7 @@ import lombok.*;
 public class AdapterLanceInterface extends AdapterTaskInterface {
 
     private String containterType;
+    private AdapterOperatingSystem operatingSystem;
     private String init;
     private String preInstall;
     private String install;

@@ -9,18 +9,11 @@
 
 package eu.melodic.dlms.metric.receiver.metricvalue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.jms.Topic;
-
+import eu.melodic.dlms.db.repository.*;
+import eu.melodic.dlms.metric.receiver.properties.DlmsMetricProperties;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.BeansException;
@@ -28,17 +21,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
-import eu.melodic.dlms.db.repository.ApplicationComponentDataSourceDataRepository;
-import eu.melodic.dlms.db.repository.ApplicationComponentRepository;
-import eu.melodic.dlms.db.repository.CloudProviderRepository;
-import eu.melodic.dlms.db.repository.DataCenterRepository;
-import eu.melodic.dlms.db.repository.DataSourceRepository;
-import eu.melodic.dlms.db.repository.RegionRepository;
-import eu.melodic.dlms.db.repository.TwoDataCentersRepository;
-import eu.melodic.dlms.metric.receiver.properties.DlmsMetricProperties;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import javax.jms.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -53,6 +39,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private ApplicationComponentRepository acRepository;
 	private DataSourceRepository dsRepository;
 	private ApplicationComponentDataSourceDataRepository acDsDataRepository;
+	private MetricValueNetworkLatencyService networkLatencyService;
 
 	private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
 
@@ -69,6 +56,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		this.acRepository = applicationContext.getBean(ApplicationComponentRepository.class);
 		this.dsRepository = applicationContext.getBean(DataSourceRepository.class);
 		this.acDsDataRepository = applicationContext.getBean(ApplicationComponentDataSourceDataRepository.class);
+		this.networkLatencyService = applicationContext.getBean(MetricValueNetworkLatencyService.class);
 	}
 
 	public void subscribe() throws JMSException {
@@ -79,6 +67,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 		}
 		// Subscribe to configured topics
 		log.info("Subscribing to topics: ");
+		String username = properties.getPubsub().getUsername();
+		String password = properties.getPubsub().getPassword();
 		for (DlmsMetricProperties.Pubsub.Topic pst : properties.getPubsub().getTopics()) {
 			// Get topic configuration
 			String url = pst.getUrl();
@@ -100,7 +90,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 			log.info("Topic : {}", pst);
 
 			// Subscribe to topic
-			_do_subscribe(url, topicName, clientId, type);
+			_do_subscribe(url, topicName, clientId, type, username, password);
 		}
 		log.info("Subscribing to topics: ok");
 	}
@@ -115,7 +105,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 //		_do_subscribe(url, topicName, clientId, type);
 //	}
 
-	protected void _do_subscribe(String url, String topicName, String clientId, TopicType type) throws JMSException {
+	private void _do_subscribe(String url, String topicName, String clientId, TopicType type, String mqUsername, String mqPassword) throws JMSException {
 //		try {
 			log.info("*****   SUBSCRIBE:\n  URL      : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}", url,
 					topicName, clientId, type);
@@ -124,8 +114,10 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 			log.info("*****   SUBSCRIBE: connection factory created: url={}", url);
 			ConnectionConf cconf = connectionCache.get(url);
 			if (cconf == null) {
-				ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(url);
+				ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(mqUsername, mqPassword, url);
 				Connection connection = connectionFactory.createConnection();
+				((ActiveMQConnection)connection).addTransportListener(new ConnectionStateMonitor());
+
 				log.info("*****   SUBSCRIBE: connection created");
 				if (!clientId.isEmpty()) {
 					connection.setClientID(clientId);
@@ -181,10 +173,9 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	}
 
 	private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
-		MessageListener listener = new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
+		return new MetricValueListener(topic, type, this.cpRepository, this.dcRepository,
 				this.regionRepository, this.twoDcRepository, this.acRepository, this.dsRepository,
-				this.acDsDataRepository);
-		return listener;
+				this.acDsDataRepository, this.networkLatencyService);
 	}
 
 	public void unsubscribe() {

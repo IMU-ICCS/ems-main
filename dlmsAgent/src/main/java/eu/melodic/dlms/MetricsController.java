@@ -1,20 +1,10 @@
 package eu.melodic.dlms;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.Topic;
-
+import eu.melodic.dlms.data.Metrics;
+import eu.melodic.dlms.exception.NoMetricsException;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
@@ -27,9 +17,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import eu.melodic.dlms.data.Metrics;
-import eu.melodic.dlms.exception.NoMetricsException;
-import lombok.extern.slf4j.Slf4j;
+import javax.jms.*;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Combined collector and store of metrics, controller for the webservice to
@@ -47,7 +47,17 @@ public class MetricsController {
 
 	private final Map<String, Object> mySqlMetrics = new ConcurrentHashMap<>();
 
+	private final Map<String, List<BigDecimal>> latenciesPerRegionMap = new HashMap<>();
+	private final BigDecimal thousand = new BigDecimal(1000);
+
 	private final String jmsUrl;
+	private final String dlmsAgentPublicIp;
+	@Getter
+	@Setter
+	private String dlmsAgentRegion;
+	@Getter
+	@Setter
+	private String dlmsAgentCSP;
 
 	// Store the values to avoid getting cumulative values
 	private Map<String, Long> acDsValueMap = new HashMap<>();
@@ -61,6 +71,7 @@ public class MetricsController {
 		this.metricsProperties = metricsProperties;
 
 		jmsUrl = initializeJmsServerUrl();
+		dlmsAgentPublicIp = System.getProperties().getProperty("ip.public");
 	}
 
 	/**
@@ -120,11 +131,37 @@ public class MetricsController {
 				log.info("MySQL metrics found");
 				extractAndSendMetrics(mySqlMetrics, null, session, appComp);
 			}
+
+			if(!latenciesPerRegionMap.isEmpty()) {
+				log.info("Network Latency metrics found");
+				gatherAndSendNetworkLatencyMetrics(session);
+			}
 		} catch (JMSException e) {
 			log.error("JMS sending failed: {}", e.getMessage(), e);
 		} finally {
 			closeConnection(connection);
 		}
+	}
+
+	private void gatherAndSendNetworkLatencyMetrics(Session session) throws JMSException {
+		final JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
+		jsonObjectBuilder.add("dlmsAgentPublicIp", dlmsAgentPublicIp);
+		jsonObjectBuilder.add("dlmsAgentRegion", dlmsAgentRegion);
+		jsonObjectBuilder.add("dlmsAgentCSP", dlmsAgentCSP);
+		final JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+		latenciesPerRegionMap.forEach((region, latencyList) -> jsonArrayBuilder
+				.add(Json.createObjectBuilder()
+						.add(region, averageLatency(latencyList))));
+		jsonObjectBuilder.add("latencies", jsonArrayBuilder);
+		String msg = jsonObjectBuilder.build().toString();
+		sendMessage("NetworkLatency", msg, session);
+	}
+
+	private BigDecimal averageLatency(List<BigDecimal> bigDecimals) {
+		BigDecimal sum = bigDecimals.stream()
+				.map(Objects::requireNonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		return sum.divide(new BigDecimal(bigDecimals.size()), 2, RoundingMode.UP);
 	}
 
 	/**
@@ -238,6 +275,8 @@ public class MetricsController {
 	}
 
 	private boolean hasAlluxioMetrics() {
+		if(metrics==null)
+			return false;
 		log.info(metrics.toString());
 		return metrics != null
 				&& (!metrics.getGauges().getProperties().isEmpty() || !metrics.getCounters().getProperties().isEmpty());
@@ -279,12 +318,12 @@ public class MetricsController {
 		Topic topic = session.createTopic(metricName);
 		MessageProducer producer = session.createProducer(topic);
 		producer.send(msg);
-		log.info("Send metric: {} with message: {}", metricName, message);
+		log.info("Sent metric: {} with message: {}", metricName, message);
 	}
 
 	private Connection initializeConnection() throws JMSException {
 		log.info("Trying to initialize connection");
-		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(jmsUrl);
+		ConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(metricsProperties.getUsername(), metricsProperties.getPassword(), jmsUrl);
 		Connection connection = activeMQConnectionFactory.createConnection();
 		connection.start();
 		return connection;
@@ -335,6 +374,57 @@ public class MetricsController {
 			return value;
 		}
 		return null;
+	}
+
+	public void collectNetworkLatency(Map<List<String>, String> latencyConfigMap) {
+		latenciesPerRegionMap.clear();
+		latencyConfigMap.forEach((listKey, ip) -> latenciesPerRegionMap.computeIfAbsent(listKey.get(1), mf -> new ArrayList<>()).add(getLatencyFromNmap(ip)));
+		latenciesPerRegionMap.forEach((region, latencyList) -> log.info("Latency: {}: {}", region, latencyList));
+	}
+
+	private BigDecimal getLatencyFromNmap(String ipAddress) {
+		Process p = null;
+		try {
+			log.debug("Attempting to run nmap and collect latency");
+			ProcessBuilder builder = new ProcessBuilder("nmap", "-Pn", "-pT:22,80,8080", ipAddress);
+			builder.redirectErrorStream(true);
+			log.debug("The command is: {}", builder.command().stream().collect(Collectors.joining(" ")));
+			p = builder.start();
+
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(p.getInputStream()));
+
+			Pattern pattern = Pattern.compile("Host is up \\((\\d*\\.\\d*)s latency\\)\\.");
+			log.debug("The latency pattern to look for is: {}", pattern.pattern());
+
+			BigDecimal latencyMs =
+					br.lines()
+							.map(line -> {
+								Matcher matcher = pattern.matcher(line);
+								log.debug("Line: {}", line);
+								log.debug("Does it match?: {}", matcher.matches());
+								if (matcher.matches()) {
+									log.debug("The matched value is: {}", matcher.group(1));
+									return matcher.group(1);
+								}
+								return null;
+							})
+							.filter(Objects::nonNull)
+							.findFirst()
+							.map(match -> new BigDecimal(match).multiply(thousand))
+							.orElse(null);
+			log.debug("Latency converted to milliseconds: {}", (latencyMs == null) ? "something went wrong - conversion didn't happen" : latencyMs);
+
+			p.waitFor();
+			p.destroy();
+			return latencyMs;
+		} catch (Exception e) {
+			log.error("Error occurred while running nmap: {}", e.getMessage());
+			if(p != null) {
+				p.destroy();
+			}
+			return null;
+		}
 	}
 
 }

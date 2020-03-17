@@ -24,7 +24,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
-    
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -44,6 +44,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         }
 
 
+    }
+
+    @Override
+    public void configure(org.springframework.security.config.annotation.web.builders.WebSecurity webSecurity) {
+        webSecurity
+                .ignoring()
+                .antMatchers("/constraintProblemSolutionFromFile");
     }
 
     @Bean

@@ -19,7 +19,7 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>2.5.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
@@ -40,16 +40,17 @@
         <module>dlms</module>
         <module>event-management</module>
         <module>mq-http-adapter</module>
+        <module>penalty-calculator</module>
     </modules>
 
 
     <properties>
-        <melodic.version>2.5.1-SNAPSHOT</melodic.version>
+        <melodic.version>3.0.0-SNAPSHOT</melodic.version>
 
         <!-- version for all paasage components-->
-        <camel.version>2.5.1-SNAPSHOT</camel.version>
+        <camel.version>3.0.0-SNAPSHOT</camel.version>
 
-        <interfaces.version>2.5.1-SNAPSHOT</interfaces.version>
+        <interfaces.version>3.0.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -71,6 +72,7 @@
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository>127.0.0.1:5000/</docker.repository>
+        <!--suppress UnresolvedMavenProperty -->
         <docker.imagePrefix>melodic-${scmBranch}/</docker.imagePrefix>
         <docker.imageName>parent</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
@@ -113,12 +115,12 @@
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
                 <!--<version>${parent.version}</version>-->
-                <version>2.5.1-SNAPSHOT</version>
+                <version>3.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>eu.melodic.cdo</groupId>
                 <artifactId>client</artifactId>
-                <version>2.5.1-SNAPSHOT</version>
+                <version>3.0.0-SNAPSHOT</version>
                 <classifier>repackaged</classifier>
             </dependency>
             <dependency>

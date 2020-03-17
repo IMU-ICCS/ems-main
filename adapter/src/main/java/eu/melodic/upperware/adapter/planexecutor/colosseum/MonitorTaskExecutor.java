@@ -94,7 +94,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
 
     private Interval convertToInterval(AdapterInterval interval) {
         return new Interval()
-                .unit(Interval.UnitEnum.valueOf(interval.getUnit().name()))
+                .unit(TimeUnit.valueOf(interval.getUnit().name()))
                 .period(interval.getPeriod());
     }
 
