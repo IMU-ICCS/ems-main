@@ -20,7 +20,7 @@ public class MCTSSolver {
     @Setter
     private double explorationCoefficient;
     @Getter
-    private SolutionImpl solution;
+    private Solution solution;
     @Setter
     private int iterations;
 
@@ -37,18 +37,16 @@ public class MCTSSolver {
         MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
         Policy policy = new RandomPolicyImpl(mctsWrapper);
 
-        Node root = new NodeImpl(-1);
-        root.linkToTree(null);
+        Node root = new NodeImpl();
+        root.becomeTreeRoot();
 
         NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
         NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
         NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
 
-        Solution initialSolution = new SolutionImpl();
+        Tree mctsTree = new TreeImpl(policy, moveProvider);
 
-        Tree mctsTree = new Tree(root, policy, moveProvider, initialSolution);
-
-        solution = (SolutionImpl) mctsTree.run(iterations);
+        solution = mctsTree.run(iterations);
 
         log.debug("Found solution with utility: " + solution.getUtility());
     }

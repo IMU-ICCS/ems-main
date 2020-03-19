@@ -10,6 +10,15 @@ public class NodeImpl extends Node {
         super(value);
     }
 
+    public NodeImpl() {
+        super(-1); // Dummy value.
+    }
+
+    @Override
+    public void becomeTreeRoot() {
+        linkToTree(null);
+    }
+
     @Override
     public void linkToTree(Node parent) {
         this.parent = parent;

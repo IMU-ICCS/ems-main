@@ -1,6 +1,5 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.IMCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.MoveProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
@@ -13,7 +12,7 @@ import java.util.List;
 import static java.util.Collections.max;
 
 public class MoveProviderImpl implements MoveProvider {
-    private IMCTSWrapper mctsWrapper;
+    private MCTSWrapper mctsWrapper;
 
     public MoveProviderImpl(MCTSWrapper mctsWrapper) {
         super();

@@ -9,46 +9,45 @@ import java.util.Random;
 
 @Slf4j
 @AllArgsConstructor
-public class MCTSWrapper implements IMCTSWrapper{
+public class MCTSWrapper{
     private final static Random random = new Random();
     private CPWrapper cpWrapper;
 
-    @Override
+
+    // Generates random value for variable indexed with index.
     public int generateRandomValue(int index) {
         return random.nextInt(cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index) + 1)
                 + cpWrapper.getMinDomainValue(index);
     }
 
-    @Override
+
+    // Calculates utility for certain variables assignment.
     public double getUtility(List<Integer> assignments) {
         log.debug("Evaluating solution " + assignments.toString());
 
         double utility = cpWrapper.getUtility(assignments);
-        log.debug("Solution is " + (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible") + "utility value:" + utility);
+        log.debug("Solution is " + (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible ") + "utility value:" + utility);
         return utility;
     }
 
-    @Override
+
+    // Returns number of variables.
     public int getSize() {
         return cpWrapper.getVariablesCount();
     }
 
-    @Override
     public int domainSize(int index) {
         return cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index) + 1;
     }
 
-    @Override
     public int getMinDomainValue(int index) {
         return cpWrapper.getMinDomainValue(index);
     }
 
-    @Override
     public int getMaxDomainValue(int index) {
         return cpWrapper.getMaxDomainValue(index);
     }
 
-    @Override
     public boolean isFeasible(List<Integer> assignments) {
         return cpWrapper.checkIfFeasible(assignments);
     }

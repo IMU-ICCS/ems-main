@@ -22,7 +22,7 @@ public class MCTSSolverTest {
 
         MCTSSolver mctsSolver = new MCTSSolver();
         mctsSolver.setExplorationCoefficient(0.5);
-        mctsSolver.setSelectorCoefficient(0.5);
+        mctsSolver.setSelectorCoefficient(0.1);
         mctsSolver.setIterations(150);
 
         mctsSolver.run(new MCTSWrapper(cpWrapper));
@@ -47,7 +47,7 @@ public class MCTSSolverTest {
 
         MCTSSolver mctsSolver = new MCTSSolver();
         mctsSolver.setExplorationCoefficient(0.8);
-        mctsSolver.setSelectorCoefficient(0.5);
+        mctsSolver.setSelectorCoefficient(0.1);
         mctsSolver.setIterations(5000);
 
         mctsSolver.run(new MCTSWrapper(cpWrapper));

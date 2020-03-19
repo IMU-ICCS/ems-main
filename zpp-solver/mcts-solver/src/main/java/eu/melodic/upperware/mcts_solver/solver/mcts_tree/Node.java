@@ -21,6 +21,9 @@ public abstract class Node {
         this.value = value;
     }
 
+    // Called when creating tree.
+    public abstract void becomeTreeRoot();
+
     // Called after creation of a Node in order to add it to a tree.
     public abstract void linkToTree(Node parent);
 

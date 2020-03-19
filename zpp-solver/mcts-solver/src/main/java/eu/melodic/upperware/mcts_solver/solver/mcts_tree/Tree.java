@@ -2,17 +2,15 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
 
 import org.javatuples.Pair;
 
-public class Tree {
-    private Node root;
+public abstract class Tree {
+    protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
-    private Solution bestSolution;
+    protected Solution bestSolution;
 
-    public Tree(Node root, Policy policy, MoveProvider moveProvider, Solution bestSolution) {
-        this.root = root;
+    public Tree(Policy policy, MoveProvider moveProvider) {
         this.policy = policy;
         this.moveProvider = moveProvider;
-        this.bestSolution = bestSolution;
     }
 
     private void backpropagate(Node current, Solution solution) {

@@ -1,6 +1,5 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.IMCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Path;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Policy;
@@ -9,7 +8,7 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import java.util.List;
 
 public class RandomPolicyImpl implements Policy {
-    private IMCTSWrapper mctsWrapper;
+    private MCTSWrapper mctsWrapper;
 
     public RandomPolicyImpl(MCTSWrapper mctsWrapper) {
         this.mctsWrapper = mctsWrapper;
