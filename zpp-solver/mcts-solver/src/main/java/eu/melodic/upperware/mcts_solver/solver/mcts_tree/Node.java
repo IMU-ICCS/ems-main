@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public abstract class Node {
+public abstract class Node implements Comparable<Node>{
     protected Node parent = null;
     protected List<Node> children = new ArrayList<>();
     protected int value;
@@ -34,4 +34,6 @@ public abstract class Node {
     public void addChild(Node child) {
         children.add(child);
     }
+
+    public abstract Node getBestChild();
 }

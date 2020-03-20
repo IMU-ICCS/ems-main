@@ -7,11 +7,6 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Path;
 import lombok.AllArgsConstructor;
 import org.javatuples.Pair;
 
-import java.util.Comparator;
-import java.util.List;
-
-import static java.util.Collections.max;
-
 @AllArgsConstructor
 public class MoveProviderImpl implements MoveProvider {
     private MCTSWrapper mctsWrapper;
@@ -38,11 +33,9 @@ public class MoveProviderImpl implements MoveProvider {
 
         // While has all available children.
         while (depth < mctsWrapper.getSize() && current.childrenSize() == mctsWrapper.domainSize(depth)) {
-            List<Node> children = current.getChildren();
-            Comparator<Node> comparator = new NodeComparator(current);
 
             // Selecting best child.
-            current = max(children, comparator);
+            current = current.getBestChild();
 
             depth++;
             current.visit();

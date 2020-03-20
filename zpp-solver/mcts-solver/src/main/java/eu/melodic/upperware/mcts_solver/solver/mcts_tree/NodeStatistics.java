@@ -19,4 +19,8 @@ public abstract class NodeStatistics {
     public void visit() {
         visitCount++;
     }
+
+    public abstract double getAverageFailureDepth();
+
+    public abstract double getMaximalUtility();
 }
