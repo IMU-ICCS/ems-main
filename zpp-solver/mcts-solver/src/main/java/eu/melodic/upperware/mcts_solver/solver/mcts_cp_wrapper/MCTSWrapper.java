@@ -10,7 +10,7 @@ import java.util.Random;
 @Slf4j
 @AllArgsConstructor
 public class MCTSWrapper{
-    private final static Random random = new Random();
+    private final Random random = new Random();
     private CPWrapper cpWrapper;
 
 

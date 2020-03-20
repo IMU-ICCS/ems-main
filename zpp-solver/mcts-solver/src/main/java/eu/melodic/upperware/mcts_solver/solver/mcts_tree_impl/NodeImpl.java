@@ -2,8 +2,6 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
 
-import java.util.ArrayList;
-
 public class NodeImpl extends Node {
 
     public NodeImpl(int value) {
@@ -12,21 +10,14 @@ public class NodeImpl extends Node {
 
     public NodeImpl() {
         super(-1); // Dummy value.
-    }
-
-    @Override
-    public void becomeTreeRoot() {
-        linkToTree(null);
+        nodeStatistics = new NodeStatisticsImpl(-1);
     }
 
     @Override
     public void linkToTree(Node parent) {
         this.parent = parent;
-        children = new ArrayList<>();
-        nodeStatistics = new NodeStatisticsImpl(parent == null ? -1 : parent.getNodeStatistics().getDepth());
-        if (parent != null) {
-            parent.addChild(this);
-        }
+        nodeStatistics = new NodeStatisticsImpl(parent.getNodeStatistics().getDepth());
+        parent.addChild(this);
     }
 
 }

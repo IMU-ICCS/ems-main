@@ -7,13 +7,7 @@ public class TreeImpl extends Tree {
     public TreeImpl(Policy policy, MoveProvider moveProvider) {
         super(policy, moveProvider);
 
-        Node root = new NodeImpl();
-        root.becomeTreeRoot();
-
-        this.root = root;
-
-        Solution initialSolution = new SolutionImpl();
-
-        this.bestSolution = initialSolution;
+        this.root = new NodeImpl();
+        this.bestSolution = new SolutionImpl();
     }
 }

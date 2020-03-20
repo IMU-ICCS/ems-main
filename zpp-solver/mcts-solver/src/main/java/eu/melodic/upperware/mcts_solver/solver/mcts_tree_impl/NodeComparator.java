@@ -9,15 +9,6 @@ import java.util.Comparator;
 public class NodeComparator implements Comparator<Node> {
     private Node parent;
 
-    private double getEvaluation(NodeStatisticsImpl nodeStats, NodeStatisticsImpl parentStats) {
-        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
-        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
-
-        return selectorCoefficient * nodeStats.getAverageFailureDepth() +
-                (1 - selectorCoefficient) * nodeStats.getMaximalUtility() +
-                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) nodeStats.getVisitCount()));
-    }
-
     @Override
     public int compare(Node left, Node right) {
         NodeStatisticsImpl leftStats = (NodeStatisticsImpl) left.getNodeStatistics();
@@ -33,5 +24,14 @@ public class NodeComparator implements Comparator<Node> {
         }
 
         return Double.compare(getEvaluation(leftStats, parentStats), getEvaluation(rightStats, parentStats));
+    }
+
+    private double getEvaluation(NodeStatisticsImpl nodeStats, NodeStatisticsImpl parentStats) {
+        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
+        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
+
+        return selectorCoefficient * nodeStats.getAverageFailureDepth() +
+                (1 - selectorCoefficient) * nodeStats.getMaximalUtility() +
+                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) nodeStats.getVisitCount()));
     }
 }

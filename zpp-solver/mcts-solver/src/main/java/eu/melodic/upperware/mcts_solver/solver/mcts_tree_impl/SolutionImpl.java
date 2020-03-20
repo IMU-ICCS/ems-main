@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class SolutionImpl extends Solution {
+public class SolutionImpl implements Solution {
     // A feasible solution to constraint problem, or null for a an unfeasible solution.
     private List<Integer> assignment;
     // Depth at which assigning failed.
@@ -38,17 +38,17 @@ public class SolutionImpl extends Solution {
     }
 
     @Override
-    public boolean isBetterThan(Solution other) {
-        SolutionImpl otherSolution = (SolutionImpl) other;
+    public int compareTo(Solution other) {
 
-        if (feasible && !((SolutionImpl) other).feasible) {
-            return true;
+        if (feasible && !other.isFeasible()) {
+            return 1;
         }
-        else if (!feasible && ((SolutionImpl) other).feasible) {
-            return false;
+        else if (!feasible && other.isFeasible()) {
+            return -1;
         }
 
-        return failureDepth > otherSolution.failureDepth ||
-                (failureDepth == otherSolution.failureDepth && utility > otherSolution.utility);
+        return (failureDepth != other.getFailureDepth()) ?
+                Double.compare(failureDepth, other.getFailureDepth()) :
+                Double.compare(utility, other.getUtility());
     }
 }

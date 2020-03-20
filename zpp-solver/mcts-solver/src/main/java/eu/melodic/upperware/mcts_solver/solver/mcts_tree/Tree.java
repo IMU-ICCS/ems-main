@@ -34,7 +34,7 @@ public abstract class Tree {
         Path path = state.getValue1();
         Solution solution = rollout(path);
         backpropagate(leaf, solution);
-        if (solution.isBetterThan(bestSolution)) {
+        if (solution.compareTo(bestSolution) > 0) {
             bestSolution = solution;
         }
     }

@@ -5,22 +5,20 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 public class NodeStatisticsImpl extends NodeStatistics {
     @Setter @Getter
     private static double selectorCoefficient;
     @Setter @Getter
     private static double explorationCoefficient;
-    @Getter
-    private double averageFailureDepth;
-    @Getter
-    private double maximalUtility;
+    @Setter @Getter
+    private static int maximalDepth;
+    private double averageFailureDepth = 0.0;
+    private double maximalUtility = 0.0;
 
 
     public NodeStatisticsImpl(int parentDepth) {
         super(parentDepth);
-
-        averageFailureDepth = 0.0;
-        maximalUtility = 0.0;
     }
 
     @Override
@@ -31,9 +29,9 @@ public class NodeStatisticsImpl extends NodeStatistics {
             maximalUtility = solutionUtility;
         }
 
-        double visitCountDouble = visitCount;
-        double failureDepth = solution.getFailureDepth();
+        double visitCountDouble = visitCount, failureDepth = solution.getFailureDepth(), maximalDepthDouble = maximalDepth;
+
         averageFailureDepth = (visitCountDouble - 1.0) / visitCountDouble * averageFailureDepth
-                + 1.0 / visitCountDouble * (failureDepth - depth);
+                + (failureDepth - depth) / (visitCountDouble * maximalDepthDouble);
     }
 }

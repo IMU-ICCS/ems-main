@@ -27,18 +27,14 @@ public class MCTSSolver {
     public List<VariableValueDTO> run(ConstraintProblem cp, UtilityProvider utility) {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(cp, utility);
-        MCTSWrapper mctsWrapper = new MCTSWrapper(cpWrapper);
 
-        run(mctsWrapper);
+        run(new MCTSWrapper(cpWrapper));
         return cpWrapper.assignmentToVariableValueDTOList(solution.getAssignment());
     }
 
     public void run(MCTSWrapper mctsWrapper) {
         MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
         Policy policy = new RandomPolicyImpl(mctsWrapper);
-
-        Node root = new NodeImpl();
-        root.becomeTreeRoot();
 
         NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
         NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);

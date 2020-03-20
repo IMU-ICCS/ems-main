@@ -5,24 +5,16 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Getter
 public abstract class Node {
-    @Getter
-    protected Node parent;
-    @Getter
-    protected List<Node> children;
-    @Getter
+    protected Node parent = null;
+    protected List<Node> children = new ArrayList<>();
     protected int value;
-    @Getter
     protected NodeStatistics nodeStatistics;
 
     public Node (int value) {
-        children = new ArrayList<>();
         this.value = value;
     }
-
-    // Called when creating tree.
-    public abstract void becomeTreeRoot();
 
     // Called after creation of a Node in order to add it to a tree.
     public abstract void linkToTree(Node parent);
