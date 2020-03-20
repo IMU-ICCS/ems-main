@@ -33,14 +33,13 @@ public class MoveProviderImpl implements MoveProvider {
 
         // While has all available children.
         while (depth < mctsWrapper.getSize() && current.childrenSize() == mctsWrapper.domainSize(depth)) {
-
-            // Selecting best child.
             current = current.getBestChild();
 
             depth++;
             current.visit();
             path.add(current);
         }
+
         return new Pair<>(current, path);
     }
 

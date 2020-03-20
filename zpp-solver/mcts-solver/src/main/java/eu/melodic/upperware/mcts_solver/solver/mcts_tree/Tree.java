@@ -36,6 +36,7 @@ public abstract class Tree {
         backpropagate(leaf, solution);
         if (solution.compareTo(bestSolution) > 0) {
             bestSolution = solution;
+            System.out.println("hahaha");
         }
     }
 

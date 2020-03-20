@@ -30,27 +30,17 @@ public class NodeImpl extends Node {
 
     @Override
     public int compareTo(Node other) {
-        NodeStatistics stats = nodeStatistics;
         NodeStatistics otherStats = other.getNodeStatistics();
-        NodeStatistics parentStats = parent.getNodeStatistics();
 
         // If node hasn't been visited, then choose it.
-        if (stats.getVisitCount() == 0) {
+        if (nodeStatistics.getVisitCount() == 0) {
             return 1;
         }
         if (otherStats.getVisitCount() == 0) {
             return -1;
         }
 
-        return Double.compare(getEvaluation(stats, parentStats), getEvaluation(otherStats, parentStats));
-    }
-
-    private double getEvaluation(NodeStatistics nodeStats, NodeStatistics parentStats) {
-        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
-        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
-
-        return selectorCoefficient * nodeStats.getAverageFailureDepth() +
-                (1 - selectorCoefficient) * nodeStats.getMaximalUtility() +
-                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) nodeStats.getVisitCount()));
+        return Double.compare(nodeStatistics.getEvaluation(parent.getNodeStatistics()),
+                other.getNodeStatistics().getEvaluation(other.getParent().getNodeStatistics()));
     }
 }

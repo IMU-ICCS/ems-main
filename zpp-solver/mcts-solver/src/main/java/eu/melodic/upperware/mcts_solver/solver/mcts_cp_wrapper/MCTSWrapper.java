@@ -26,7 +26,7 @@ public class MCTSWrapper{
         log.debug("Evaluating solution " + assignments.toString());
 
         double utility = cpWrapper.getUtility(assignments);
-        log.debug("Solution is " + (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible ") + "utility value:" + utility);
+        log.debug("Solution is " + (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible") + " utility value:" + utility);
         return utility;
     }
 

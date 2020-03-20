@@ -20,7 +20,5 @@ public abstract class NodeStatistics {
         visitCount++;
     }
 
-    public abstract double getAverageFailureDepth();
-
-    public abstract double getMaximalUtility();
+    public abstract double getEvaluation(NodeStatistics parentStats);
 }

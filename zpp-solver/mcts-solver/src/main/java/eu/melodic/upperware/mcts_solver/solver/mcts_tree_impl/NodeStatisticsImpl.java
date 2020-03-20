@@ -34,4 +34,14 @@ public class NodeStatisticsImpl extends NodeStatistics {
         averageFailureDepth = (visitCountDouble - 1.0) / visitCountDouble * averageFailureDepth
                 + (failureDepth - depth) / (visitCountDouble * maximalDepthDouble);
     }
+
+    @Override
+    public double getEvaluation(NodeStatistics parentStats) {
+        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
+        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
+
+        return selectorCoefficient * averageFailureDepth +
+                (1 - selectorCoefficient) *maximalUtility +
+                explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) getVisitCount()));
+    }
 }

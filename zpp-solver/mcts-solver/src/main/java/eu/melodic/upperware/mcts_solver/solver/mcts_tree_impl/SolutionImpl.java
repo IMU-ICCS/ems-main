@@ -39,7 +39,6 @@ public class SolutionImpl implements Solution {
 
     @Override
     public int compareTo(Solution other) {
-
         if (feasible && !other.isFeasible()) {
             return 1;
         }
