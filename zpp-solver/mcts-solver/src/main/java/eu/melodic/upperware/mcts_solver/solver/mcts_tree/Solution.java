@@ -3,7 +3,6 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
 import java.util.List;
 
 public interface Solution extends Comparable<Solution> {
-
     List<Integer> getAssignment();
     double getUtility();
     int getFailureDepth();

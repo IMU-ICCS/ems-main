@@ -16,7 +16,7 @@ public abstract class NodeStatistics {
     // Updates statistics after finding some path (solution).
     public abstract void update(Solution solution);
 
-    public void visit() {
+    void visit() {
         visitCount++;
     }
 

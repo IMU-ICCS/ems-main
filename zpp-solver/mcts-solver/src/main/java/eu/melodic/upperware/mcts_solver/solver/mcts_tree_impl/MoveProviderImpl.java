@@ -14,13 +14,12 @@ public class MoveProviderImpl implements MoveProvider {
     @Override
     public Pair<Node, Path> searchAndExpand(Node root) {
         Node current = root;
-        Path path;
 
         current.visit();
 
         Pair<Node, Path> traversingResult = traverse(current);
         current = traversingResult.getValue0();
-        path = traversingResult.getValue1();
+        Path path = traversingResult.getValue1();
 
         expand(current);
 
@@ -34,7 +33,6 @@ public class MoveProviderImpl implements MoveProvider {
         // While has all available children.
         while (depth < mctsWrapper.getSize() && current.childrenSize() == mctsWrapper.domainSize(depth)) {
             current = current.getBestChild();
-
             depth++;
             current.visit();
             path.add(current);

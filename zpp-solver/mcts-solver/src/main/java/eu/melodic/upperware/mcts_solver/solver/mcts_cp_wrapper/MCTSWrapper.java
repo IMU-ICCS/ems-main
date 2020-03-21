@@ -13,13 +13,11 @@ public class MCTSWrapper{
     private final Random random = new Random();
     private CPWrapper cpWrapper;
 
-
     // Generates random value for variable indexed with index.
     public int generateRandomValue(int index) {
         return random.nextInt(cpWrapper.getMaxDomainValue(index) - cpWrapper.getMinDomainValue(index) + 1)
                 + cpWrapper.getMinDomainValue(index);
     }
-
 
     // Calculates utility for certain variables assignment.
     public double getUtility(List<Integer> assignments) {
@@ -29,7 +27,6 @@ public class MCTSWrapper{
         log.debug("Solution is " + (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible") + " utility value:" + utility);
         return utility;
     }
-
 
     // Returns number of variables.
     public int getSize() {

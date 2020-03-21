@@ -12,7 +12,7 @@ public class NodeImpl extends Node {
     }
 
     public NodeImpl() {
-        super(-1); // Dummy value.
+        super(-1);
         nodeStatistics = new NodeStatisticsImpl(-1);
     }
 

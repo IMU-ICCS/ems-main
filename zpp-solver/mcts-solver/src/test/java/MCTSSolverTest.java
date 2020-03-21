@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 public class MCTSSolverTest {
 
     @Test
-    public void SimpleTestGeneratedByTomek() {
+    public void SimpleCPTest() {
         Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareSimpleConstraintProblem();
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
@@ -40,7 +40,7 @@ public class MCTSSolverTest {
     }
 
     @Test
-    public void LessSimpleTest() {
+    public void SimpleCPTest2() {
         Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareLessSimpleConstraintProblem();
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());

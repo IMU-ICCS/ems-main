@@ -9,21 +9,12 @@ import java.util.List;
 
 @Getter
 public class SolutionImpl implements Solution {
-    // A feasible solution to constraint problem, or null for a an unfeasible solution.
+    // partial assignmnent of variables
     private List<Integer> assignment;
     // Depth at which assigning failed.
     private int failureDepth;
-    // Feasible if there are no broken constraints.
     private boolean feasible;
-    // Calculated utility for a feasible solution, 0 for a an unfeasible solution.
     private double utility;
-
-    // Creates empty solution.
-    public SolutionImpl() {
-        assignment = new ArrayList<>();
-        feasible = false;
-        utility = 0;
-    }
 
     public SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
         this.assignment = assignment;
@@ -35,6 +26,13 @@ public class SolutionImpl implements Solution {
         else {
             failureDepth = assignment.size();
         }
+    }
+
+    // Creates an empty solution.
+    public SolutionImpl() {
+        assignment = new ArrayList<>();
+        feasible = false;
+        utility = 0;
     }
 
     @Override
