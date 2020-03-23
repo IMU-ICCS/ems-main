@@ -21,10 +21,10 @@ public class MCTSWrapper{
 
     // Calculates utility for certain variables assignment.
     public double getUtility(List<Integer> assignments) {
-        log.debug("Evaluating solution " + assignments.toString());
+        log.debug("Evaluating solution {}.", assignments.toString());
 
         double utility = cpWrapper.getUtility(assignments);
-        log.debug("Solution is " + (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible") + " utility value:" + utility);
+        log.debug("Solution is {}. Utility value: {}.", (cpWrapper.checkIfFeasible(assignments) ? "feasible" : "not feasible"), utility);
         return utility;
     }
 

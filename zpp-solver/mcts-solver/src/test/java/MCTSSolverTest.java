@@ -20,15 +20,8 @@ public class MCTSSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSolver mctsSolver = new MCTSSolver();
-        mctsSolver.setExplorationCoefficient(0.5);
-        mctsSolver.setSelectorCoefficient(0.1);
-        mctsSolver.setIterations(150);
-
-        mctsSolver.run(new MCTSWrapper(cpWrapper));
-
-        List<Integer> assignment = mctsSolver.getSolution().getAssignment();
-
+        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.5, 150, new MCTSWrapper(cpWrapper));
+        List<Integer> assignment = mctsSolver.solve().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
         List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5);
@@ -45,15 +38,8 @@ public class MCTSSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSolver mctsSolver = new MCTSSolver();
-        mctsSolver.setExplorationCoefficient(0.8);
-        mctsSolver.setSelectorCoefficient(0.1);
-        mctsSolver.setIterations(5000);
-
-        mctsSolver.run(new MCTSWrapper(cpWrapper));
-
-        List<Integer> assignment = mctsSolver.getSolution().getAssignment();
-
+        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 5000, new MCTSWrapper(cpWrapper));
+        List<Integer> assignment = mctsSolver.solve().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
         List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5, 7.5, 10.0);

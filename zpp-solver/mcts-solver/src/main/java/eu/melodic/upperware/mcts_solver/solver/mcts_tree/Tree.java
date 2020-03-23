@@ -13,7 +13,9 @@ public abstract class Tree {
         this.moveProvider = moveProvider;
     }
 
-    private void backpropagate(Node current, Solution solution) {
+    private void backpropagate(Node startingNode, Solution solution) {
+        Node current = startingNode;
+
         while (current != null) {
             current.update(solution);
             current = current.getParent();
@@ -28,20 +30,21 @@ public abstract class Tree {
         return moveProvider.searchAndExpand(root);
     }
 
-    private void runIteration() {
+    private Solution runIteration() {
         Pair<Node, Path> state = searchAndExpand();
         Node leaf = state.getValue0();
         Path path = state.getValue1();
         Solution solution = rollout(path);
         backpropagate(leaf, solution);
-        if (solution.compareTo(bestSolution) > 0) {
-            bestSolution = solution;
-        }
+        return solution;
     }
 
     public Solution run(int iterations) {
         for (int i = 0; i < iterations; i++) {
-            runIteration();
+            Solution solution = runIteration();
+            if (solution.compareTo(bestSolution) > 0) {
+                this.bestSolution = solution;
+            }
         }
 
         return bestSolution;

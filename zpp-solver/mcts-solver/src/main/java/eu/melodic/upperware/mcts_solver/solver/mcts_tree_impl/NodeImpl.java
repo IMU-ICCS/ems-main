@@ -13,13 +13,13 @@ public class NodeImpl extends Node {
 
     public NodeImpl() {
         super(-1);
-        nodeStatistics = new NodeStatisticsImpl(-1);
+        this.nodeStatistics = new NodeStatisticsImpl(-1);
     }
 
     @Override
     public void linkToTree(Node parent) {
         this.parent = parent;
-        nodeStatistics = new NodeStatisticsImpl(parent.getNodeStatistics().getDepth());
+        this.nodeStatistics = new NodeStatisticsImpl(parent.getNodeStatistics().getDepth());
         parent.addChild(this);
     }
 

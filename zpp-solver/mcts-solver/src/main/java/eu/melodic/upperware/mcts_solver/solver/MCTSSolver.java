@@ -1,38 +1,28 @@
 package eu.melodic.upperware.mcts_solver.solver;
 
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.*;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl.*;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
-import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 @Slf4j
 public class MCTSSolver {
-    @Setter
     private double selectorCoefficient;
-    @Setter
     private double explorationCoefficient;
-    @Getter
-    private Solution solution;
-    @Setter
     private int iterations;
+    private MCTSWrapper mctsWrapper;
+    private Solution solution;
 
-    public List<VariableValueDTO> run(ConstraintProblem cp, UtilityProvider utility) {
-        CPWrapper cpWrapper = new CPWrapper();
-        cpWrapper.parse(cp, utility);
-
-        run(new MCTSWrapper(cpWrapper));
-        return cpWrapper.assignmentToVariableValueDTOList(solution.getAssignment());
+    // Constructor for test purposes.
+    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
+        this.selectorCoefficient = selectorCoefficient;
+        this.explorationCoefficient = explorationCoefficient;
+        this.iterations = iterations;
+        this.mctsWrapper = mctsWrapper;
     }
 
-    public void run(MCTSWrapper mctsWrapper) {
+    // Solve method for test purposes.
+    public Solution solve() {
         MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
         Policy policy = new RandomPolicyImpl(mctsWrapper);
 
@@ -44,6 +34,8 @@ public class MCTSSolver {
 
         solution = mctsTree.run(iterations);
 
-        log.debug("Found solution with utility: " + solution.getUtility());
+        log.info("Found solution with utility: {}. Values: {}.", solution.getUtility(), solution.getAssignment().toString());
+
+        return solution;
     }
 }

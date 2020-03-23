@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 public class SolutionImpl implements Solution {
-    // partial assignmnent of variables
+    // Partial assignment of variables.
     private List<Integer> assignment;
     // Depth at which assigning failed.
     private int failureDepth;
@@ -18,21 +18,21 @@ public class SolutionImpl implements Solution {
 
     public SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
         this.assignment = assignment;
-        utility = mctsWrapper.getUtility(assignment);
-        feasible = mctsWrapper.isFeasible(assignment);
+        this.utility = mctsWrapper.getUtility(assignment);
+        this.feasible = mctsWrapper.isFeasible(assignment);
         if (utility == 0.0 || !feasible) {
-            failureDepth = rolloutDepth;
+            this.failureDepth = rolloutDepth;
         }
         else {
-            failureDepth = assignment.size();
+            this.failureDepth = assignment.size();
         }
     }
 
     // Creates an empty solution.
     public SolutionImpl() {
-        assignment = new ArrayList<>();
-        feasible = false;
-        utility = 0;
+        this.assignment = new ArrayList<>();
+        this.feasible = false;
+        this.utility = 0;
     }
 
     @Override

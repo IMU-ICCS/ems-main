@@ -7,11 +7,11 @@ import lombok.Setter;
 
 @Getter
 public class NodeStatisticsImpl extends NodeStatistics {
-    @Setter @Getter
+    @Setter
     private static double selectorCoefficient;
-    @Setter @Getter
+    @Setter
     private static double explorationCoefficient;
-    @Setter @Getter
+    @Setter
     private static int maximalDepth;
     private double averageFailureDepth = 0.0;
     private double maximalUtility = 0.0;
@@ -26,22 +26,19 @@ public class NodeStatisticsImpl extends NodeStatistics {
         double solutionUtility = solution.getUtility();
 
         if (solutionUtility > maximalUtility) {
-            maximalUtility = solutionUtility;
+            this.maximalUtility = solutionUtility;
         }
 
         double visitCountDouble = visitCount, failureDepth = solution.getFailureDepth(), maximalDepthDouble = maximalDepth;
 
-        averageFailureDepth = (visitCountDouble - 1.0) / visitCountDouble * averageFailureDepth
+        this.averageFailureDepth = (visitCountDouble - 1.0) / visitCountDouble * averageFailureDepth
                 + (failureDepth - depth) / (visitCountDouble * maximalDepthDouble);
     }
 
     @Override
     public double getEvaluation(NodeStatistics parentStats) {
-        double selectorCoefficient = NodeStatisticsImpl.getSelectorCoefficient();
-        double explorationCoefficient = NodeStatisticsImpl.getExplorationCoefficient();
-
         return selectorCoefficient * averageFailureDepth +
-                (1 - selectorCoefficient) *maximalUtility +
+                (1 - selectorCoefficient) * maximalUtility +
                 explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) getVisitCount()));
     }
 }

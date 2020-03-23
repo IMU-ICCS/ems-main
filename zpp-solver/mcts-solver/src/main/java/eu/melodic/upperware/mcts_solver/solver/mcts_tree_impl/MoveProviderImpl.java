@@ -31,7 +31,7 @@ public class MoveProviderImpl implements MoveProvider {
         Path path = new Path();
 
         // While has all available children.
-        while (depth < mctsWrapper.getSize() && current.childrenSize() == mctsWrapper.domainSize(depth)) {
+        while (depth < this.mctsWrapper.getSize() && current.childrenSize() == this.mctsWrapper.domainSize(depth)) {
             current = current.getBestChild();
             depth++;
             current.visit();
@@ -41,13 +41,14 @@ public class MoveProviderImpl implements MoveProvider {
         return new Pair<>(current, path);
     }
 
+    // Expands node by adding children to it.
     private void expand(Node toExpand) {
         int depth = toExpand.getNodeStatistics().getDepth();
-        if (depth >= mctsWrapper.getSize()) {
+        if (depth >= this.mctsWrapper.getSize()) {
             return;
         }
 
-        for (int i = mctsWrapper.getMinDomainValue(depth); i <= mctsWrapper.getMaxDomainValue(depth); i++) {
+        for (int i = this.mctsWrapper.getMinDomainValue(depth); i <= this.mctsWrapper.getMaxDomainValue(depth); i++) {
             Node newNode = new NodeImpl(i);
             newNode.linkToTree(toExpand);
         }
