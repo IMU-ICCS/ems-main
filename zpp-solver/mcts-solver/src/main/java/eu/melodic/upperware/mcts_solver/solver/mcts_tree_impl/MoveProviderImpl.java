@@ -21,11 +21,17 @@ public class MoveProviderImpl implements MoveProvider {
         current = traversingResult.getValue0();
         Path path = traversingResult.getValue1();
 
-        expand(current);
+        Node expanded = expand(current);
+        if (current != expanded) {
+            current = expanded;
+            current.visit();
+            path.add(current);
+        }
 
         return new Pair<>(current, path);
     }
 
+    // Traverses tree choosing best nodes. Builds path and returns it alongside last visited node.
     private Pair<Node, Path> traverse(Node current) {
         int depth = 0;
         Path path = new Path();
@@ -41,17 +47,21 @@ public class MoveProviderImpl implements MoveProvider {
         return new Pair<>(current, path);
     }
 
-    // Expands node by adding children to it.
-    private void expand(Node toExpand) {
+    /* Expands node by adding children to it.
+       Returns random child of expanded node.
+       If node already had all possible children return it instead.
+       */
+    private Node expand(Node toExpand) {
         int depth = toExpand.getNodeStatistics().getDepth();
         if (depth >= this.mctsWrapper.getSize()) {
-            return;
+            return toExpand;
         }
 
         for (int i = this.mctsWrapper.getMinDomainValue(depth); i <= this.mctsWrapper.getMaxDomainValue(depth); i++) {
             Node newNode = new NodeImpl(i);
             newNode.linkToTree(toExpand);
         }
-    }
 
+        return toExpand.getChildren().get(mctsWrapper.generateRandomValue(depth));
+    }
 }

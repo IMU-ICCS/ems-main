@@ -2,17 +2,27 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.NodeStatistics;
+import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Collections.max;
 
-public class NodeImpl extends Node {
+@Getter
+public class NodeImpl implements Node {
+    private Node parent = null;
+    private List<Node> children = new ArrayList<>();
+    private int value;
+    private NodeStatistics nodeStatistics;
 
-    public NodeImpl(int value) {
-        super(value);
+    public NodeImpl(Integer value) {
+        this.value = value;
     }
 
     public NodeImpl() {
-        super(-1);
+        this.value = -1;
         this.nodeStatistics = new NodeStatisticsImpl(-1);
     }
 
@@ -21,6 +31,27 @@ public class NodeImpl extends Node {
         this.parent = parent;
         this.nodeStatistics = new NodeStatisticsImpl(parent.getNodeStatistics().getDepth());
         parent.addChild(this);
+    }
+
+    @Override
+    public Node update(Solution solution) {
+        nodeStatistics.update(solution);
+        return this;
+    }
+
+    @Override
+    public int childrenSize() {
+        return children.size();
+    }
+
+    @Override
+    public void visit() {
+        nodeStatistics.visit();
+    }
+
+    @Override
+    public void addChild(Node child) {
+        children.add(child);
     }
 
     @Override

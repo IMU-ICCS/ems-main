@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class NodeStatisticsImpl extends NodeStatistics {
+public class NodeStatisticsImpl implements NodeStatistics {
     @Setter
     private static double selectorCoefficient;
     @Setter
@@ -15,10 +15,12 @@ public class NodeStatisticsImpl extends NodeStatistics {
     private static int maximalDepth;
     private double averageFailureDepth = 0.0;
     private double maximalUtility = 0.0;
-
+    private int visitCount;
+    private int depth;
 
     public NodeStatisticsImpl(int parentDepth) {
-        super(parentDepth);
+        this.visitCount = 0;
+        this.depth = parentDepth + 1;
     }
 
     @Override
@@ -33,6 +35,11 @@ public class NodeStatisticsImpl extends NodeStatistics {
 
         this.averageFailureDepth = (visitCountDouble - 1.0) / visitCountDouble * averageFailureDepth
                 + (failureDepth - depth) / (visitCountDouble * maximalDepthDouble);
+    }
+
+    @Override
+    public void visit() {
+        this.visitCount++;
     }
 
     @Override

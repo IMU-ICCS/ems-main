@@ -13,13 +13,16 @@ public abstract class Tree {
         this.moveProvider = moveProvider;
     }
 
-    private void backpropagate(Node startingNode, Solution solution) {
+    // Back propagates calculated solution on path from leaf to root.
+    private Node backPropagate(Node startingNode, Solution solution) {
         Node current = startingNode;
 
         while (current != null) {
             current.update(solution);
             current = current.getParent();
         }
+
+        return root;
     }
 
     private Solution rollout(Path path) {
@@ -35,7 +38,7 @@ public abstract class Tree {
         Node leaf = state.getValue0();
         Path path = state.getValue1();
         Solution solution = rollout(path);
-        backpropagate(leaf, solution);
+        backPropagate(leaf, solution);
         return solution;
     }
 
