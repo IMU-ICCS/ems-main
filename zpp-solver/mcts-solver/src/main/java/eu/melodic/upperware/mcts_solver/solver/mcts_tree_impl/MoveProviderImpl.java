@@ -7,6 +7,8 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Path;
 import lombok.AllArgsConstructor;
 import org.javatuples.Pair;
 
+import java.util.stream.IntStream;
+
 @AllArgsConstructor
 public class MoveProviderImpl implements MoveProvider {
     private MCTSWrapper mctsWrapper;
@@ -37,7 +39,7 @@ public class MoveProviderImpl implements MoveProvider {
         Path path = new Path();
 
         // While has all available children.
-        while (depth < this.mctsWrapper.getSize() && current.childrenSize() == this.mctsWrapper.domainSize(depth)) {
+        while (depth < this.mctsWrapper.getSize() && current.getChildrenSize() == this.mctsWrapper.domainSize(depth)) {
             current = current.getBestChild();
             depth++;
             current.visit();
@@ -56,11 +58,11 @@ public class MoveProviderImpl implements MoveProvider {
         if (depth >= this.mctsWrapper.getSize()) {
             return toExpand;
         }
-
-        for (int i = this.mctsWrapper.getMinDomainValue(depth); i <= this.mctsWrapper.getMaxDomainValue(depth); i++) {
-            Node newNode = new NodeImpl(i);
-            newNode.linkToTree(toExpand);
-        }
+        IntStream.range(mctsWrapper.getMinDomainValue(depth), mctsWrapper.getMaxDomainValue(depth) + 1).
+                forEach(value -> {
+                    Node newNode = new NodeImpl(value);
+                    newNode.linkToTree(toExpand);
+                });
 
         return toExpand.getChildren().get(mctsWrapper.generateRandomValue(depth));
     }

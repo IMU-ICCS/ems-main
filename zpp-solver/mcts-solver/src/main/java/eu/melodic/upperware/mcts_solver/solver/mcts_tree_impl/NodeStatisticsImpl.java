@@ -38,7 +38,7 @@ public class NodeStatisticsImpl implements NodeStatistics {
     }
 
     @Override
-    public void visit() {
+    public void markNewVisit() {
         this.visitCount++;
     }
 

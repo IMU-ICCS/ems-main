@@ -7,6 +7,7 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @AllArgsConstructor
 public class RandomPolicyImpl implements Policy {
@@ -15,11 +16,11 @@ public class RandomPolicyImpl implements Policy {
     @Override
     public Solution finishPath(Path path) {
         List<Integer> assignment = path.getPath();
-        int pathSize = assignment.size(), cpSize = mctsWrapper.getSize();
 
-        for (int i = pathSize; i < cpSize; i++) {
-            assignment.add(mctsWrapper.generateRandomValue(i));
-        }
+        int pathSize = assignment.size();
+
+        IntStream.range(assignment.size(), mctsWrapper.getSize())
+                .forEach(i -> assignment.add(mctsWrapper.generateRandomValue(i)));
 
         return new SolutionImpl(pathSize, assignment, mctsWrapper);
     }

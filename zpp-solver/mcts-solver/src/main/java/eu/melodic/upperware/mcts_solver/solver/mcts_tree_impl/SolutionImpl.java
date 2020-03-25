@@ -16,7 +16,7 @@ public class SolutionImpl implements Solution {
     private boolean feasible;
     private double utility;
 
-    public SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
+    SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
         this.assignment = assignment;
         this.utility = mctsWrapper.getUtility(assignment);
         this.feasible = mctsWrapper.isFeasible(assignment);
@@ -26,13 +26,6 @@ public class SolutionImpl implements Solution {
         else {
             this.failureDepth = assignment.size();
         }
-    }
-
-    // Creates an empty solution.
-    public SolutionImpl() {
-        this.assignment = new ArrayList<>();
-        this.feasible = false;
-        this.utility = 0;
     }
 
     @Override

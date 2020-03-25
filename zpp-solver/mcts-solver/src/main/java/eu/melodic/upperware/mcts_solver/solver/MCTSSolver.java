@@ -11,7 +11,6 @@ public class MCTSSolver {
     private double explorationCoefficient;
     private int iterations;
     private MCTSWrapper mctsWrapper;
-    private Solution solution;
 
     // Constructor for test purposes.
     public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
@@ -32,7 +31,7 @@ public class MCTSSolver {
 
         Tree mctsTree = new TreeImpl(policy, moveProvider);
 
-        solution = mctsTree.run(iterations);
+        Solution solution = mctsTree.run(iterations);
 
         log.info("Found solution with utility: {}. Values: {}.", solution.getUtility(), solution.getAssignment().toString());
 

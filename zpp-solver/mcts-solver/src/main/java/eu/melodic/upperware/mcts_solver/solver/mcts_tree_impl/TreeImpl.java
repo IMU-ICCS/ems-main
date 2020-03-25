@@ -7,6 +7,5 @@ public class TreeImpl extends Tree {
     public TreeImpl(Policy policy, MoveProvider moveProvider) {
         super(policy, moveProvider);
         this.root = new NodeImpl();
-        this.bestSolution = new SolutionImpl();
     }
 }

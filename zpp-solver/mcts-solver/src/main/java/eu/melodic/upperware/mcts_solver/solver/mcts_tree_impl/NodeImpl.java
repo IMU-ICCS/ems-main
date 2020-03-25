@@ -4,6 +4,7 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.NodeStatistics;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.Getter;
+import org.chocosolver.solver.search.strategy.selectors.variables.Random;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +41,13 @@ public class NodeImpl implements Node {
     }
 
     @Override
-    public int childrenSize() {
+    public int getChildrenSize() {
         return children.size();
     }
 
     @Override
     public void visit() {
-        nodeStatistics.visit();
+        nodeStatistics.markNewVisit();
     }
 
     @Override

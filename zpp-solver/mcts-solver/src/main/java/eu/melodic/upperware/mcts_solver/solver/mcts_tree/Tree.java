@@ -2,15 +2,25 @@ package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
 
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static java.util.Collections.max;
+
 public abstract class Tree {
     protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
-    protected Solution bestSolution;
-
     public Tree(Policy policy, MoveProvider moveProvider) {
         this.policy = policy;
         this.moveProvider = moveProvider;
+    }
+
+    public Solution run(int iterations) {
+        return IntStream.range(0, iterations)
+                .mapToObj(i ->runIteration())
+                .max(Solution::compareTo).get();
     }
 
     // Back propagates calculated solution on path from leaf to root.
@@ -40,16 +50,5 @@ public abstract class Tree {
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
         return solution;
-    }
-
-    public Solution run(int iterations) {
-        for (int i = 0; i < iterations; i++) {
-            Solution solution = runIteration();
-            if (solution.compareTo(bestSolution) > 0) {
-                this.bestSolution = solution;
-            }
-        }
-
-        return bestSolution;
     }
 }

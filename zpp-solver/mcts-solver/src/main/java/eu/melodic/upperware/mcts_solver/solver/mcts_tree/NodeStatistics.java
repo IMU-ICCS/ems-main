@@ -4,6 +4,6 @@ public interface NodeStatistics {
     int getVisitCount();
     int getDepth();
     void update(Solution solution); // Updates statistics after finding some path (solution).
-    void visit();
+    void markNewVisit();
     double getEvaluation(NodeStatistics parentStats); // Evaluates node.
 }
