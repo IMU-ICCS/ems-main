@@ -4,7 +4,6 @@ import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.NodeStatistics;
 import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
 import lombok.Getter;
-import org.chocosolver.solver.search.strategy.selectors.variables.Random;
 
 import java.util.ArrayList;
 import java.util.List;
