@@ -1,19 +1,16 @@
 package eu.melodic.upperware.mcts_solver.solver.concurrency_utils;
 
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.Message;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class OneToManyChannel<MessageToWorker, MessageToCoordinator> {
-    private int numberOfWorkers;
     private MessageChannel<MessageToCoordinator> workerToCoordinatorChannel = new MessageChannel<>();
     private List<MessageChannel<MessageToWorker>> coordinatorToWorkerChannel = new ArrayList<>();
 
     public OneToManyChannel(int numberOfWorkers) {
-        this.numberOfWorkers = numberOfWorkers;
-        IntStream.range(0, numberOfWorkers).forEach(worker -> coordinatorToWorkerChannel.add(new MessageChannel<MessageToWorker>()));
+        IntStream.range(0, numberOfWorkers).forEach(worker -> coordinatorToWorkerChannel.add(new MessageChannel<>()));
     }
 
     public void workerSend(MessageToCoordinator message) {

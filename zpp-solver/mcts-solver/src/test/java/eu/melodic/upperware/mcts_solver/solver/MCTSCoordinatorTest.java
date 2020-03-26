@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 class MCTSCoordinatorTest {
         private final int NUM_THREADS = 5;
         @Test
-        public void simpleCPTest() {
+        public void simpleCPTest() throws InterruptedException {
             Map<String, Double> realBestSolution = Map.of(
                     "var1", 5.0,
                     "var2", 2.5,
@@ -41,7 +41,7 @@ class MCTSCoordinatorTest {
         }
 
     @Test
-    public void simpleCPTest2() {
+    public void simpleCPTest2() throws InterruptedException {
 
         Map<String, Double> realBestSolution = Map.of(
                 "var1", 4.0,
