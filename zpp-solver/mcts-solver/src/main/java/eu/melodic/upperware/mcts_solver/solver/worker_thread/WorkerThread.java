@@ -7,11 +7,9 @@ import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.Messag
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.TemperatureMessage;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.UtilityMessage;
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
-import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.xtext.ui.editor.outline.actions.IOutlineContribution;
 import org.javatuples.Pair;
 
 import java.util.List;
@@ -27,6 +25,7 @@ public class WorkerThread {
 
     public void workerRun() {
         boolean end = false;
+        getInitialTemperature();
         while (!end) {
             log.info("Started MCTS worker with pid: {} for {} iterations", pid, iterations);
             sendSolution(pid, mctsSolver.solve());
@@ -36,16 +35,27 @@ public class WorkerThread {
     }
 
     private boolean receiveMessageFromCoordinator() {
+        log.info("MCTS worker {} has finished {} iterations", pid, iterations);
         Message message = messageChannel.workerReceive(pid);
         if (isFinalizationMessage(message)) {
             return true;
         } else if (isTemperatureMessage(message)) {
             mctsSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
-            log.info("MCTS worker {} has finished {} iterations. Setting new temperature to {}", pid, iterations, ((TemperatureMessage) message).getTemperature());
+            log.info("Setting new temperature to {}", ((TemperatureMessage) message).getTemperature());
+            return false;
         } else {
             throw new RuntimeException("Unrecognized message type!");
         }
-        return false;
+    }
+
+    private void getInitialTemperature() {
+        Message message = messageChannel.workerReceive(pid);
+        if (isTemperatureMessage(message)) {
+            mctsSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
+            log.info("Setting new temperature to {}", ((TemperatureMessage) message).getTemperature());
+        } else {
+            throw new RuntimeException("Unrecognized message type!");
+        }
     }
 
     private boolean isTemperatureMessage(Message message) {

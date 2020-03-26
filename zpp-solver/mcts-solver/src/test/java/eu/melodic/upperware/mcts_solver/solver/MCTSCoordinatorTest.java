@@ -3,6 +3,7 @@ package eu.melodic.upperware.mcts_solver.solver;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.javatuples.Pair;
@@ -33,7 +34,14 @@ class MCTSCoordinatorTest {
             }).collect(Collectors.toList());
 
             MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100);
-            Pair<List<VariableValueDTO>, Double> solution  = mctsCoordinator.solve(10, mctsWrappers);
+            Pair<List<VariableValueDTO>, Double> solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
+                private int index = -1;
+                @Override
+                public MCTSWrapper create() {
+                    index++;
+                    return mctsWrappers.get(index);
+                }
+            });
 
             solution.getValue0().forEach(variable -> {
                 assertEquals(java.util.Optional.of(variable.getValue().doubleValue()).orElse(0.0), realBestSolution.get(variable.getName()));
@@ -59,7 +67,14 @@ class MCTSCoordinatorTest {
         }).collect(Collectors.toList());
 
         MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100);
-        Pair<List<VariableValueDTO>, Double> solution  = mctsCoordinator.solve(10, mctsWrappers);
+        Pair<List<VariableValueDTO>, Double> solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
+            private int index = -1;
+            @Override
+            public MCTSWrapper create() {
+                index++;
+                return mctsWrappers.get(index);
+            }
+        });
 
         solution.getValue0().forEach(variable -> {
             assertEquals(java.util.Optional.of(variable.getValue().doubleValue()).orElse(0.0), realBestSolution.get(variable.getName()));
