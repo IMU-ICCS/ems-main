@@ -1,12 +1,18 @@
-package eu.melodic.upperware.mcts_solver.solver;
+package eu.melodic.upperware.mcts_solver.solver.mcts;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree.*;
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl.*;
+import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.*;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.javatuples.Pair;
+
+import java.util.List;
 
 @Slf4j
 public class MCTSSolver {
+    @Setter
     private double selectorCoefficient;
     private double explorationCoefficient;
     private int iterations;
@@ -20,8 +26,14 @@ public class MCTSSolver {
         this.mctsWrapper = mctsWrapper;
     }
 
+
     // Solve method for test purposes.
-    public Solution solve() {
+    public Pair<List<VariableValueDTO>, Double> solve() {
+        Solution solution = search();
+        return new Pair<>(mctsWrapper.assignmentToVariableValueDTOList(solution.getAssignment()), solution.getUtility());
+    }
+
+    public Solution search() {
         MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
         Policy policy = new RandomPolicyImpl(mctsWrapper);
 

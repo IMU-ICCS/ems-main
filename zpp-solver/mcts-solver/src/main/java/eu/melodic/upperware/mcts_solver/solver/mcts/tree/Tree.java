@@ -1,9 +1,7 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
 import org.javatuples.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.IntStream;
 
 import static java.util.Collections.max;

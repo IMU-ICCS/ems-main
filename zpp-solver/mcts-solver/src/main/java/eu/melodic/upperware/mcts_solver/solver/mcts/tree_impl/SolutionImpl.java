@@ -1,10 +1,9 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
+import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

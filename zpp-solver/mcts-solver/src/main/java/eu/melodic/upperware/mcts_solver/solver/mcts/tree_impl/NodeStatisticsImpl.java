@@ -1,7 +1,7 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree.NodeStatistics;
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree.Solution;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.NodeStatistics;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,8 +1,8 @@
 
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
-import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
-import eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
+import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.paasage.upperware.metamodel.cp.*;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class MCTSSolverTest {
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
         MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.5, 150, new MCTSWrapper(cpWrapper));
-        List<Integer> assignment = mctsSolver.solve().getAssignment();
+        List<Integer> assignment = mctsSolver.search().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
         List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5);
@@ -39,7 +39,7 @@ public class MCTSSolverTest {
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
         MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 5000, new MCTSWrapper(cpWrapper));
-        List<Integer> assignment = mctsSolver.solve().getAssignment();
+        List<Integer> assignment = mctsSolver.search().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
         List<Double> domain2 = Arrays.asList(0.5, 1.5, 2.5, 7.5, 10.0);
