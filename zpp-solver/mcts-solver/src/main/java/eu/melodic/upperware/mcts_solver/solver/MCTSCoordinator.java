@@ -9,8 +9,8 @@ import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.Utilit
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
-import sun.jvm.hotspot.runtime.Threads;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class MCTSCoordinator {
     private int numThreads;
     private double minTemperature;
     private double maxTemperature;
     private int iterations;
-    private OneToManyChannel<Message> messageChannel;
+    private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
 
     public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations) {
@@ -70,6 +71,7 @@ public class MCTSCoordinator {
         boolean end = false;
         MCTSSolver mctsSolver = new MCTSSolver(startingTemperature, 10, iterations, mctsWrapper);
         while (!end) {
+            log.info("Started MCTS worker with pid: {} for {} iterations", pid, iterations);
             Pair<List<VariableValueDTO>, Double> solution = mctsSolver.solve();
             solutionBuffer.enqueue(solution);
             messageChannel.workerSend(new UtilityMessage(solution.getValue1(), pid));
@@ -78,15 +80,21 @@ public class MCTSCoordinator {
                 end = true;
             } else if (message instanceof TemperatureMessage) {
                 mctsSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
+                log.info("MCTS worker {} has finished {} iterations. Setting new temperature to {}", pid, iterations, ((TemperatureMessage) message).getTemperature());
             } else {
                 throw new RuntimeException("ASDAS");
             }
         }
+        log.info("MCTS worker " + pid + " has finished");
     }
 
     private void setTemperatures() {
         List<UtilityMessage> results = new ArrayList<>();
-        IntStream.range(0, numThreads).forEach( pid -> results.add((UtilityMessage) messageChannel.coordinatorReceive()));
+        //IntStream.range(0, numThreads).forEach( pid -> results.add((UtilityMessage) messageChannel.coordinatorReceive()));
+        for (int i = 0;i < numThreads; i++) {
+            UtilityMessage message = messageChannel.coordinatorReceive();
+            results.add(message);
+        }
         results.sort(Collections.reverseOrder());
 
         double tempDiff = (maxTemperature - minTemperature) / numThreads;

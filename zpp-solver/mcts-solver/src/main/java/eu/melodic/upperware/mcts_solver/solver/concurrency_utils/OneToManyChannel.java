@@ -6,29 +6,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class OneToManyChannel<M> {
+public class OneToManyChannel<MessageToWorker, MessageToCoordinator> {
     private int numberOfWorkers;
-    private MessageChannel<M> workerToCoordinatorChannel = new MessageChannel<>();
-    private List<MessageChannel<M>> coordinatorToWorkerChannel = new ArrayList<>();
+    private MessageChannel<MessageToCoordinator> workerToCoordinatorChannel = new MessageChannel<>();
+    private List<MessageChannel<MessageToWorker>> coordinatorToWorkerChannel = new ArrayList<>();
 
     public OneToManyChannel(int numberOfWorkers) {
         this.numberOfWorkers = numberOfWorkers;
-        IntStream.range(0, numberOfWorkers).forEach(worker -> coordinatorToWorkerChannel.add(new MessageChannel<M>()));
+        IntStream.range(0, numberOfWorkers).forEach(worker -> coordinatorToWorkerChannel.add(new MessageChannel<MessageToWorker>()));
     }
 
-    public void workerSend(M message) {
+    public void workerSend(MessageToCoordinator message) {
         workerToCoordinatorChannel.send(message);
     }
 
-    public M workerReceive(int pid) {
-        return coordinatorToWorkerChannel.get(pid).receive();
+    public MessageToWorker workerReceive(int pid) {
+        try {
+            return coordinatorToWorkerChannel.get(pid).receive();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public void coordinatorSend(M message, int receiverPid) {
+    public void coordinatorSend(MessageToWorker message, int receiverPid) {
         coordinatorToWorkerChannel.get(receiverPid).send(message);
     }
 
-    public M coordinatorReceive() {
-        return workerToCoordinatorChannel.receive();
+    public MessageToCoordinator coordinatorReceive() {
+        try {
+            return workerToCoordinatorChannel.receive();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

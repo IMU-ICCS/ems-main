@@ -1,3 +1,4 @@
+package eu.melodic.upperware.mcts_solver.solver;
 
 import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utils.test_utils.mockups.*;

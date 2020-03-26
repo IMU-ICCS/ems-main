@@ -1,6 +1,7 @@
 
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.mcts_solver.solver.Methods;
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.paasage.upperware.metamodel.cp.*;

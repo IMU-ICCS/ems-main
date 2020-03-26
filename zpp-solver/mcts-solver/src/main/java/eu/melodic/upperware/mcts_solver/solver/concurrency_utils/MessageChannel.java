@@ -10,7 +10,7 @@ public class MessageChannel<M> {
         queue.add(message);
     }
 
-    public M receive() {
-        return queue.poll();
+    public M receive() throws InterruptedException {
+        return queue.take();
     }
 }
