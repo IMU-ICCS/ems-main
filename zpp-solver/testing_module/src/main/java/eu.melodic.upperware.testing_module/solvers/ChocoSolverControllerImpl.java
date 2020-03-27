@@ -10,6 +10,7 @@ import eu.melodic.upperware.cpsolver.solver.parser.creator.IntConstantCreator;
 import eu.melodic.upperware.cpsolver.solver.parser.creator.IntMetricCreator;
 import eu.melodic.upperware.cpsolver.solver.parser.creator.IntVarCreator;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
+import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
@@ -29,8 +30,8 @@ public class ChocoSolverControllerImpl implements SolverController {
     private int timeLimit;
     private final static String SOLVER_ID = "ChocoSolver";
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityProvider utilityProvider, String cpID) {
-        log.info("Starting " + SOLVER_ID + " on " + cpID);
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpID) {
+        /*log.info("Starting " + SOLVER_ID + " on " + cpID);
         ConstraintProblemParser constraintProblemParser = new CommonConstraintProblemParser(new IntVarCreator(), new IntConstantCreator(), new IntMetricCreator(), null, null, null );
         SolverParsedData solverParsedData = constraintProblemParser.parse(cp);
         List<CpSolution> solutions = solverParsedData.solve(timeLimit);
@@ -44,7 +45,8 @@ public class ChocoSolverControllerImpl implements SolverController {
                 bestSolution = result;
             }
         }
-        return SolverSolutionToStringConverter.convertToString(new Pair<>(bestSolution, maxUtility), SOLVER_ID, cpID, timeLimit);
+        return SolverSolutionToStringConverter.convertToString(new Pair<>(bestSolution, maxUtility), SOLVER_ID, cpID, timeLimit);*/
+        return null ;
     }
 
     private List<VariableValueDTO> convertToVariableValues(CpSolution solution) {

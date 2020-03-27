@@ -12,4 +12,5 @@ public class RequestData {
     private int repetitions;
     private CPSamplerData cpSamplerData;
     private int numberOfRandomCP;
+    private MCTSParameters mctsParameters[];
 }
