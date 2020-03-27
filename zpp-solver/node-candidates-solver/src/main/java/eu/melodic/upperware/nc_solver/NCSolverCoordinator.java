@@ -112,7 +112,7 @@ public class NCSolverCoordinator {
             List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads).mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
 
-            solve(nodeCandidates, cp, utilityGenerators);
+            solve(nodeCandidates, cp, utilityGenerators, seconds);
 
             trans.commit();
             trans.close();

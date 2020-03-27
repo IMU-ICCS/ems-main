@@ -6,6 +6,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
 import eu.melodic.upperware.testing_module.utils.PTParameters;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
+import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -25,9 +26,9 @@ public class NCSolverControllerImpl implements SolverController {
     private final static String SOLVER_ID = "NCSolver";
 
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityProvider utilityProvider, String cpId) {
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpId) {
         log.info("Starting " + SOLVER_ID + " on " + cpId);
-        NCSolver solver = new NCSolver(ptParameters.getMinTmp(), ptParameters.getMaxTmp(), ptParameters.getNumThreads(), cp, utilityProvider, nodeCandidates);
+        NCSolver solver = new NCSolver(ptParameters.getMinTmp(), ptParameters.getMaxTmp(), ptParameters.getNumThreads(), cp, utilityGeneratorMaster.createParallelUtilityProvider(ptParameters.getNumThreads()), nodeCandidates);
         return solutionToString(solver.solve(new MaxRuntime(timeLimit, TimeUnit.SECONDS)), cpId);
     }
 

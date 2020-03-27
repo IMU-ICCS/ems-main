@@ -12,10 +12,7 @@ import eu.melodic.upperware.cp_sampler.constraint_problem_data.ConstraintProblem
 import eu.melodic.upperware.cp_sampler.xmi_writer.XMIWriter;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.testing_module.solvers.*;
-import eu.melodic.upperware.testing_module.utils.CPFilesData;
-import eu.melodic.upperware.testing_module.utils.PTParameters;
-import eu.melodic.upperware.testing_module.utils.RequestData;
-import eu.melodic.upperware.testing_module.utils.TemplateUtilityComponent;
+import eu.melodic.upperware.testing_module.utils.*;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
@@ -77,7 +74,7 @@ public class SolverTester {
         NodeCandidates samplerNodeCandidates = filecacheService.load(requestData.getCpSamplerData().getNodeCandidates());
         Sampler sampler = new Sampler(requestData.getCpSamplerData().getNumberComponents(), requestData.getCpSamplerData().getMinConstraints(), requestData.getCpSamplerData().getMaxConstraints());
 
-        List<Quintet<NodeCandidates, ConstraintProblem, UtilityProvider, String, ParallelUtilityProviderImpl>> CPs = getAllNonRandomCP(requestData);
+        List<Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorMaster, String>> CPs = getAllNonRandomCP(requestData);
         CPs.addAll(generateRandomCP(requestData, samplerNodeCandidates, sampler));
 
         Clock clock = Clock.systemDefaultZone();
@@ -88,11 +85,7 @@ public class SolverTester {
             for (int i = 1; i <= requestData.getRepetitions(); i++) {
                 results.addAll(
                         solverControllers.stream().map(solver -> {
-                            if (usesUtilityConcurrently(solver)) {
-                                return solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue4(), parsedCP.getValue3());
-                            } else {
                                 return solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue2(), parsedCP.getValue3());
-                            }
                         }).collect(Collectors.toList())
                 );
             }
@@ -127,21 +120,18 @@ public class SolverTester {
         return solverControllers;
     }
 
-    private List<Quintet<NodeCandidates, ConstraintProblem, UtilityProvider, String, ParallelUtilityProviderImpl>> getAllNonRandomCP(RequestData requestData) {
+    private List<Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorMaster, String>> getAllNonRandomCP(RequestData requestData) {
         return Arrays.stream(requestData.getConstraintProblems()).map(this::getCP).collect(Collectors.toList());
     }
 
-    private Quintet<NodeCandidates, ConstraintProblem, UtilityProvider, String, ParallelUtilityProviderImpl> getCP(CPFilesData cpFilesData) {
+    private Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorMaster, String> getCP(CPFilesData cpFilesData) {
         NodeCandidates nodeCandidates = filecacheService.load(cpFilesData.getNodeCandidatesFilePath());
         ConstraintProblem cp = getCPFromFile(cpFilesData.getCpProblemFilePath());
-        UtilityProvider utilityGenerator = new UtilityProviderImpl(new UtilityGeneratorApplication(cpFilesData.getCamelModelFilePath(), cpFilesData.getCpProblemFilePath(),
-                true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties));
-        ParallelUtilityProviderImpl parallelUtilityProvider = new ParallelUtilityProviderImpl(IntStream.range(0, MAX_THREADS).mapToObj(index -> new UtilityGeneratorApplication(cpFilesData.getCamelModelFilePath(), cpFilesData.getCpProblemFilePath(),
-                true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList()));
-        return new Quintet<>(nodeCandidates, cp, utilityGenerator, cpFilesData.getId(), parallelUtilityProvider);
+        UtilityGeneratorMaster utilityGeneratorMaster = new UtilityGeneratorMasterImpl(melodicSecurityProperties, penaltyFunctionProperties, utilityGeneratorProperties, jwtService, nodeCandidates, cpFilesData.getCamelModelFilePath(), cpFilesData.getCpProblemFilePath());
+        return new Quartet<>(nodeCandidates, cp, utilityGeneratorMaster, cpFilesData.getId());
     }
 
-    private List<Quintet<NodeCandidates, ConstraintProblem, UtilityProvider, String, ParallelUtilityProviderImpl>> generateRandomCP(RequestData requestData, NodeCandidates nodeCandidates, Sampler sampler) {
+    private List<Quartet<NodeCandidates, ConstraintProblem, UtilityGeneratorMaster, String>> generateRandomCP(RequestData requestData, NodeCandidates nodeCandidates, Sampler sampler) {
         List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityTemplate = (Arrays.stream(requestData.getCpSamplerData().getUtilityFunction()).map(TemplateUtilityComponent::parse).collect(Collectors.toList()));
 
         return IntStream.range(0, requestData.getNumberOfRandomCP()).mapToObj(randomCp -> {
@@ -153,11 +143,8 @@ public class SolverTester {
                 e.printStackTrace();
             }
             ConstraintProblem cp = getCPFromFile(requestData.getCpSamplerData().getCpDirectory() + "sampledCP" + randomCp + ".xmi");
-            UtilityProvider utilityGeneratorApplication = new UtilityProviderImpl(new UtilityGeneratorApplication(requestData.getCpSamplerData().getCpDirectory() + "sampledCP" + randomCp + ".xmi",
-                    sample.getValue1(), utilityTemplate));
-            ParallelUtilityProviderImpl parallelUtilityProvider = new ParallelUtilityProviderImpl(IntStream.range(0, MAX_THREADS).mapToObj(index -> new UtilityGeneratorApplication(requestData.getCpSamplerData().getCpDirectory() + "sampledCP" + randomCp + ".xmi",
-                    sample.getValue1(), utilityTemplate)).collect(Collectors.toList()));
-            return new Quintet<>(sample.getValue1(), cp, utilityGeneratorApplication, "RandomCP" + randomCp, parallelUtilityProvider);
+            UtilityGeneratorMaster utilityGeneratorMaster = new UtilityGeneratorMasterRandomCP(requestData.getCpSamplerData().getCpDirectory() + "sampledCP" + randomCp + ".xmi", sample.getValue1(), utilityTemplate);
+            return new Quartet<>(sample.getValue1(), cp, utilityGeneratorMaster, "RandomCP" + randomCp);
         }).collect(Collectors.toList());
     }
 
