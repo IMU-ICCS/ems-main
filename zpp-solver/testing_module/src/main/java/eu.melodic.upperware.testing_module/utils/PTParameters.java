@@ -10,6 +10,6 @@ public class PTParameters {
 
     @Override
     public String toString() {
-        return minTmp + ";" + maxTmp + ";" +numThreads + "\n";
+        return minTmp + ";" + maxTmp + ";" +numThreads + ";";
     }
 }

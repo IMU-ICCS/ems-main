@@ -2,6 +2,7 @@ package eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper;
 /*
     Thin layer on top of CPWrapper class from CPParser package.
  */
+import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTEvaluation;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import cp_wrapper.CPWrapper;
@@ -13,10 +14,17 @@ import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-@AllArgsConstructor
 @Slf4j
 public class PTCPWrapper {
     private CPWrapper cpWrapper;
+
+    private List<Integer> minVariableValues = new ArrayList<>();
+    private List<Integer> maxVariableValues = new ArrayList<>();
+
+    public PTCPWrapper(CPWrapper cpWrapper) {
+        this.cpWrapper = cpWrapper;
+        setMaxMinDomainValues();
+    }
 
     public Evaluation evaluate(List<Integer> assignments) {
         log.debug("Evaluating solution " + assignments.toString());
@@ -29,6 +37,21 @@ public class PTCPWrapper {
             return new PTEvaluation(0);
         }
     }
+    /*
+            True if increasing current @var variable value by one will not exceed
+            domain range
+         */
+    public boolean canMoveUp(PTSolution ptSolution, int var) {
+        return maxVariableValues.get(var) > ptSolution.getVarAssignments().get(var);
+    }
+    /*
+        True if decreasing current @var variable value by one will not exceed
+        domain range
+     */
+    public boolean canMoveDown(PTSolution ptSolution, int var) {
+        return minVariableValues.get(var) < ptSolution.getVarAssignments().get(var);
+    }
+
     /*
         Returns maximal value of variable @variable
      */
@@ -43,6 +66,14 @@ public class PTCPWrapper {
     public List<VariableValueDTO> solutionToVariableValueDTOList(PTSolution solution) {
         return cpWrapper.assignmentToVariableValueDTOList(solution.getVarAssignments());
     }
+
+    private void setMaxMinDomainValues() {
+        for (int i = 0; i < getVariablesCount(); i++) {
+            minVariableValues.add(getMinValue(i));
+            maxVariableValues.add(getMaxValue(i));
+        }
+    }
+
     /*
         Generates random (uniform) value for variable @variable
      */

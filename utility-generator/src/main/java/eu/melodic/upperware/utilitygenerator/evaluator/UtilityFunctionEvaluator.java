@@ -138,7 +138,7 @@ public class UtilityFunctionEvaluator {
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
         if (newConfiguration.isEmpty()) {
-            log.info("No Node Candidate for the evaluated solution, returning 0");
+            //log.info("No Node Candidate for the evaluated solution, returning 0");
             return 0;
         } else if (!this.deployedConfiguration.isEmpty() && EvaluatingUtils.areUnmoveableComponentsMoved(this.unmoveableComponents, this.deployedConfiguration, newConfiguration)) {
             log.info("Proposed solution moves the unmoveable component, returning 0");

@@ -14,6 +14,6 @@ public class GeneticSolverParameters {
 
     @Override
     public String toString() {
-        return populationSize + ";" + iterations +";" + crossoverProbability + ";" + mutationProbability +";" + mutationProbability +";" + comparatorProbability + ";" + guesses + "\n";
+        return populationSize + ";" + iterations +";" + crossoverProbability + ";" + mutationProbability +";" + mutationProbability +";" + comparatorProbability + ";" + guesses + ";";
     }
 }
