@@ -1,5 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts;
 
+import cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.*;
@@ -18,7 +19,6 @@ public class MCTSSolver {
     private int iterations;
     private MCTSWrapper mctsWrapper;
 
-    // Constructor for test purposes.
     public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
         this.selectorCoefficient = selectorCoefficient;
         this.explorationCoefficient = explorationCoefficient;
@@ -26,11 +26,9 @@ public class MCTSSolver {
         this.mctsWrapper = mctsWrapper;
     }
 
-
-    // Solve method for test purposes.
-    public Pair<List<VariableValueDTO>, Double> solve() {
+    public CpSolution solve() {
         Solution solution = search();
-        return new Pair<>(mctsWrapper.assignmentToVariableValueDTOList(solution.getAssignment()), solution.getUtility());
+        return new CpSolution(mctsWrapper.assignmentToVariableValueDTOList(solution.getAssignment()), solution.getUtility());
     }
 
     public Solution search() {

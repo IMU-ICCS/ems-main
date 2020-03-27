@@ -1,5 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.worker_thread;
 
+import cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.OneToManyChannel;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.SolutionBuffer;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.FinalizationMessage;
@@ -66,8 +67,8 @@ public class WorkerThread {
         return message instanceof FinalizationMessage;
     }
 
-    private void sendSolution(int pid, Pair<List<VariableValueDTO>, Double> solution) {
+    private void sendSolution(int pid, CpSolution solution) {
         solutionBuffer.enqueue(solution);
-        messageChannel.workerSend(new UtilityMessage(solution.getValue1(), pid));
+        messageChannel.workerSend(new UtilityMessage(solution.getUtility(), pid));
     }
 }

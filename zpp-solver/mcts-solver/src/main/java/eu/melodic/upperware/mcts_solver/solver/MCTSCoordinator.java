@@ -1,5 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver;
 
+import cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.OneToManyChannel;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.SolutionBuffer;
 import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.FinalizationMessage;
@@ -9,7 +10,7 @@ import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.Utilit
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
-import eu.melodic.upperware.mcts_solver.solver.utils.MaxRuntime;
+import eu.melodic.upperware.mcts_solver.solver.utils.MaxRuntimeLimit;
 import eu.melodic.upperware.mcts_solver.solver.worker_thread.WorkerThread;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -37,14 +38,16 @@ public class MCTSCoordinator {
         this.messageChannel =  new OneToManyChannel<>(numThreads);
     }
 
-    public Pair<List<VariableValueDTO>, Double> solve(int timeLimit, MCTSWrapperFactory mctsWrapperFactory) throws InterruptedException {
-        List<MCTSWrapper> mctsWrappers = IntStream.range(0, numThreads).mapToObj(thread -> mctsWrapperFactory.create()).collect(Collectors.toList());
-        MaxRuntime maxRuntime = new MaxRuntime(timeLimit);
+    public CpSolution solve(int timeLimit, MCTSWrapperFactory mctsWrapperFactory) throws InterruptedException {
+        List<MCTSWrapper> mctsWrappers = IntStream.range(0, numThreads)
+                .mapToObj(thread -> mctsWrapperFactory.create())
+                .collect(Collectors.toList());
+        MaxRuntimeLimit maxRuntimeLimit = new MaxRuntimeLimit(timeLimit);
         List<Thread> threads = startWorkers(mctsWrappers);
-        maxRuntime.start();
+        maxRuntimeLimit.startCounting();
         sendStartingTemperatures();
-        while (!maxRuntime.limitExceeded()) {
-                setTemperatures(getWorkersUtilities());
+        while (!maxRuntimeLimit.limitExceeded()) {
+            setTemperatures(getWorkersUtilities());
         }
         stopWorkers();
         for (Thread thread : threads) {
@@ -66,20 +69,19 @@ public class MCTSCoordinator {
     }
 
     private void sendStartingTemperatures() {
-        setTemperatures(IntStream.range(0, numThreads).mapToObj(pid -> new UtilityMessage(0.0, pid)).collect(Collectors.toList()));
+        setTemperatures(IntStream.range(0, numThreads).mapToObj(pid -> new UtilityMessage(0.0, pid))
+                .collect(Collectors.toList()));
     }
 
     private List<UtilityMessage> getWorkersUtilities() {
-        return IntStream.range(0, numThreads).mapToObj(pid -> messageChannel.coordinatorReceive()).sorted(Collections.reverseOrder()).collect(Collectors.toList());
+        return IntStream.range(0, numThreads).mapToObj(pid -> messageChannel.coordinatorReceive())
+                .sorted(Collections.reverseOrder())
+                .collect(Collectors.toList());
     }
 
     private void setTemperatures(List<UtilityMessage> results) {
         double tempDiff = (maxTemperature - minTemperature) / numThreads;
-        double temp = minTemperature;
-        for (int i = 0; i < numThreads; i++) {
-            messageChannel.coordinatorSend(new TemperatureMessage(temp), results.get(i).getPid());
-            temp += tempDiff;
-        }
+        IntStream.range(0, numThreads).forEach(thread -> messageChannel.coordinatorSend(new TemperatureMessage(minTemperature + thread*tempDiff), results.get(thread).getPid()));
     }
 
     private void stopWorkers() {

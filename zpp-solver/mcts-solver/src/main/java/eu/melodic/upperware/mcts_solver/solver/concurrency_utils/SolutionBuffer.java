@@ -1,17 +1,14 @@
 package eu.melodic.upperware.mcts_solver.solver.concurrency_utils;
 
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import cp_wrapper.solution.CpSolution;
 import lombok.Getter;
-import org.javatuples.Pair;
-
-import java.util.List;
 
 public class SolutionBuffer {
     @Getter
-    private Pair<List<VariableValueDTO>, Double> bestSolution = null;
+    private CpSolution bestSolution = null;
 
-    public synchronized void enqueue(Pair<List<VariableValueDTO>, Double> solution) {
-        if (bestSolution == null || bestSolution.getValue1() < solution.getValue1()) {
+    public synchronized void enqueue(CpSolution solution) {
+        if (bestSolution == null || bestSolution.getUtility() < solution.getUtility()) {
             bestSolution = solution;
         }
     }
