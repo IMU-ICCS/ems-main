@@ -22,6 +22,7 @@ public class CPParsedData {
     private Collection<Constant> constants;
     private Collection<CpMetric> metrics;
     private Collection<Constraint> constraints;
+    @Getter
     private Collection<CpVariable> variables;
     //private IntVarCreator intVarCreator;
     static final List<BasicTypeEnum> ACCEPTED_INT_TYPES = Arrays.asList(BasicTypeEnum.INTEGER, BasicTypeEnum.LONG);

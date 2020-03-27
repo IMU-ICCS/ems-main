@@ -1,6 +1,6 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_tree_impl;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts_tree.*;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
 
 public class TreeImpl extends Tree {
 

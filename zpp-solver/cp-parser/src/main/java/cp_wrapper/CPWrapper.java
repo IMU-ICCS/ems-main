@@ -8,6 +8,7 @@ import cp_wrapper.utils.numeric_value.*;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import cp_wrapper.utils.VariableNumericType;
+import cp_wrapper.utils.variable_orderer.RandomVariableOrderer;
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
@@ -31,8 +32,11 @@ public class CPWrapper {
         this.variableOrderer = new HeuristicVariableOrderer(cpParsedData.getConstraintGraph());
     }
 
-    public void setVariableOrdering(VariableOrderer vO) {
-        this.variableOrderer = vO;
+    public void parseWithRandomOrder(ConstraintProblem constraintProblem, UtilityProvider utility) {
+        CPParser cpParser = new CPParser();
+        cpParsedData = cpParser.parse(constraintProblem);
+        this.utilityProvider = utility;
+        this.variableOrderer = new RandomVariableOrderer(cpParsedData.getVariables());
     }
 
     public boolean checkIfFeasible(List<Integer> assignment) {

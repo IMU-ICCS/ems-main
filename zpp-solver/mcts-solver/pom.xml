@@ -14,6 +14,7 @@
     <artifactId>mcts-solver</artifactId>
     <name>Upperware - MCTS Solver</name>
     <version>${melodic.version}</version>
+
     <dependencies>
         <dependency>
             <groupId>org.ow2.paasage</groupId>

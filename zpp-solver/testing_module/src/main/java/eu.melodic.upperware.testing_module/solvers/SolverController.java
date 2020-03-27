@@ -5,5 +5,5 @@ import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 
 public interface SolverController {
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpId);
+    String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpId);
 }

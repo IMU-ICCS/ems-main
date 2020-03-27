@@ -1,6 +1,7 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_cp_wrapper;
+package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 
 import cp_wrapper.CPWrapper;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,5 +48,9 @@ public class MCTSWrapper{
 
     public boolean isFeasible(List<Integer> assignments) {
         return cpWrapper.checkIfFeasible(assignments);
+    }
+
+    public List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
+        return cpWrapper.assignmentToVariableValueDTOList(assignments);
     }
 }

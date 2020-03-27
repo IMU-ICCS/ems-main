@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts_tree;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
 public interface NodeStatistics {
     int getVisitCount();
