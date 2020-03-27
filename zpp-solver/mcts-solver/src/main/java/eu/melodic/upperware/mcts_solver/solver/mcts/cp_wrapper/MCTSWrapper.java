@@ -1,10 +1,15 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 
 import cp_wrapper.CPWrapper;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -52,5 +57,21 @@ public class MCTSWrapper{
 
     public List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
         return cpWrapper.assignmentToVariableValueDTOList(assignments);
+    }
+
+    public int getNumberOfComponents() {
+        return (int) cpWrapper.getNumberOfComponents();
+    }
+
+    public int getIndexFromValue(NumericValueInterface value, int variable) {
+        return cpWrapper.getIndexFromValue(value, variable);
+    }
+
+    public int getVariableIndexFromComponentAndType(String componentId, VariableType type) {
+        return cpWrapper.getVariableIndexFromComponentAndType(componentId, type);
+    }
+
+    public Collection<VariableDTO> getVariableDTOCollection() {
+        return cpWrapper.getVariableDTOCollection();
     }
 }

@@ -10,6 +10,7 @@ import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperti
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,6 +21,7 @@ public class UtilityGeneratorMasterImpl implements UtilityGeneratorMaster {
     private PenaltyFunctionProperties penaltyFunctionProperties;
     private UtilityGeneratorProperties utilityGeneratorProperties;
     private JWTService jwtService;
+    @Getter
     NodeCandidates nodeCandidates;
     String camelModelFilePath;
     String cpProblemFilePath;

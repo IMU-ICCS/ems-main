@@ -7,6 +7,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.stream.IntStream;
 @AllArgsConstructor
 public class UtilityGeneratorMasterRandomCP implements UtilityGeneratorMaster {
     private String cpModelFilePath;
+    @Getter
     private NodeCandidates nodeCandidates;
     private List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityTemplate;
 

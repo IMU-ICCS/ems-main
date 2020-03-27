@@ -27,7 +27,7 @@ import static java.util.Objects.isNull;
 public class EvaluatingUtils {
 
 
-    static Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<VariableValueDTO> solution) {
+    public static Collection<ConfigurationElement> convertSolutionToNodeCandidates(Collection<VariableDTO> variables, NodeCandidates nodeCandidates, Collection<VariableValueDTO> solution) {
         log.debug("Converting solution to Node Candidates");
 
         Collection<ConfigurationElement> newConfiguration = new ArrayList<>();
