@@ -17,6 +17,8 @@ public class NodeStatisticsImpl implements NodeStatistics {
     private double maximalUtility = 0.0;
     private int visitCount;
     private int depth;
+    private boolean isExpanded = false;
+    private boolean isTrimmed = false;
 
     public NodeStatisticsImpl(int parentDepth) {
         this.visitCount = 0;
@@ -47,5 +49,15 @@ public class NodeStatisticsImpl implements NodeStatistics {
         return selectorCoefficient * averageFailureDepth +
                 (1 - selectorCoefficient) * maximalUtility +
                 explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) getVisitCount()));
+    }
+
+    @Override
+    public void setExpanded() {
+        isExpanded = true;
+    }
+
+    @Override
+    public void setTrimmed() {
+        isTrimmed = true;
     }
 }

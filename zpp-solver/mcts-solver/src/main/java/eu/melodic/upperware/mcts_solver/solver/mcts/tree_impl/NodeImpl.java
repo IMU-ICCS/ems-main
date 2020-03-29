@@ -40,11 +40,6 @@ public class NodeImpl implements Node {
     }
 
     @Override
-    public int getChildrenSize() {
-        return children.size();
-    }
-
-    @Override
     public void visit() {
         nodeStatistics.markNewVisit();
     }
@@ -57,6 +52,26 @@ public class NodeImpl implements Node {
     @Override
     public Node getBestChild() {
         return max(children);
+    }
+
+    @Override
+    public boolean isExpanded() {
+        return nodeStatistics.isExpanded();
+    }
+
+    @Override
+    public boolean isTrimmed() {
+        return nodeStatistics.isTrimmed();
+    }
+
+    @Override
+    public void setExpanded() {
+        nodeStatistics.setExpanded();
+    }
+
+    @Override
+    public void setTrimmed() {
+        nodeStatistics.setTrimmed();
     }
 
     @Override

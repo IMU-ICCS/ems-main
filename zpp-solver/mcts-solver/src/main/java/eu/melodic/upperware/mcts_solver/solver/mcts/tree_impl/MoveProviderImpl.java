@@ -1,6 +1,7 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.BranchTrimmer;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.MoveProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Path;
@@ -38,8 +39,8 @@ public class MoveProviderImpl implements MoveProvider {
         int depth = 0;
         Path path = new Path();
 
-        // While has all available children.
-        while (depth < this.mctsWrapper.getSize() && current.getChildrenSize() == this.mctsWrapper.domainSize(depth)) {
+        // While has been expanded and is not leaf.
+        while (depth < this.mctsWrapper.getSize() && current.isExpanded()) {
             current = current.getBestChild();
             depth++;
             current.visit();
@@ -63,6 +64,8 @@ public class MoveProviderImpl implements MoveProvider {
                     Node newNode = new NodeImpl(value);
                     newNode.linkToTree(toExpand);
                 });
+
+        toExpand.setExpanded();
 
         return toExpand.getChildren().get(mctsWrapper.generateRandomValue(depth));
     }

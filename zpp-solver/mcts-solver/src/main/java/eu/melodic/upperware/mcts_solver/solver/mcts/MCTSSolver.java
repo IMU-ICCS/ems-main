@@ -32,14 +32,14 @@ public class MCTSSolver {
     }
 
     public Solution search() {
-        MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
-        Policy policy = new RandomPolicyImpl(mctsWrapper);
-
         NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
         NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
         NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
 
-        Tree mctsTree = new TreeImpl(policy, moveProvider);
+        Tree mctsTree = new TreeImpl(
+                new RandomPolicyImpl(mctsWrapper),
+                new MoveProviderImpl(mctsWrapper),
+                new BranchTrimmerImpl(10, 0.5));
 
         Solution solution = mctsTree.run(iterations);
 

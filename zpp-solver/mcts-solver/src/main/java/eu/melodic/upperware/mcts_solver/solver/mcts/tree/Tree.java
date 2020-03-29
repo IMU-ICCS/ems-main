@@ -1,5 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.BranchTrimmerImpl;
 import org.javatuples.Pair;
 
 import java.util.stream.IntStream;
@@ -10,9 +11,12 @@ public abstract class Tree {
     protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
-    public Tree(Policy policy, MoveProvider moveProvider) {
+    private BranchTrimmer branchTrimmer; // Responsible for reducing tree size from time to time.
+
+    public Tree(Policy policy, MoveProvider moveProvider, BranchTrimmer branchTrimmer) {
         this.policy = policy;
         this.moveProvider = moveProvider;
+        this.branchTrimmer = branchTrimmer;
     }
 
     public Solution run(int iterations) {
@@ -27,6 +31,7 @@ public abstract class Tree {
 
         while (current != null) {
             current.update(solution);
+            branchTrimmer.trimNode(current);
             current = current.getParent();
         }
 
@@ -47,6 +52,7 @@ public abstract class Tree {
         Path path = state.getValue1();
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
+
         return solution;
     }
 }
