@@ -97,7 +97,7 @@ public class DomainHandler {
 
     private static boolean isInList(NumericValueInterface value, List<NumericValueUpperware> list) {
         return list.stream()
-                .anyMatch(numericValue -> value.equals(NumericValueFactory.fromNumericValueInterface(numericValue)));
+                .anyMatch(numericValue -> value.representsSameNumber(NumericValueFactory.fromNumericValueInterface(numericValue)));
     }
 
     public static boolean isInDomain(NumericValueInterface value, Domain domain) {

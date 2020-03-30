@@ -56,7 +56,7 @@ public class NodeCandidatesProvider {
     }
 
     private boolean candidateIsInDomainOfVariable(VariableType type, Domain domain, NodeCandidate nodeCandidate) {
-        if (type == VariableType.CARDINALITY) {
+        if (type == VariableType.CARDINALITY || type == VariableType.PROVIDER) {
             return true;
         } else if (isLocationType(type) && nodeCandidate.getLocation() == null || nodeCandidate.getLocation().getGeoLocation() == null) {
             return false;
@@ -82,7 +82,7 @@ public class NodeCandidatesProvider {
             case LONGITUDE:
                 return ((Double) (100*nodeCandidate.getLocation().getGeoLocation().getLongitude())).intValue();
             default:
-                throw new RuntimeException("Unsupported variable type!");
+                throw new RuntimeException("Unsupported variable type" + type +"!");
         }
     }
 }
