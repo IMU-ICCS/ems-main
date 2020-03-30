@@ -46,9 +46,10 @@ public class NodeCandidatesProvider {
     }
 
     private boolean candidateIsInDomain(NodeCandidate nodeCandidate, CPWrapper cpWrapper, Collection<VariableDTO> variables, String componentId) {
-        return variables.stream().filter(variable -> variable.getComponentId().equals(componentId)).map(
+       boolean ret = variables.stream().filter(variable -> variable.getComponentId().equals(componentId)).map(
                 variable -> candidateIsInDomainOfVariable(variable.getType(), cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, variable.getType())), nodeCandidate)
         ).reduce(Boolean::logicalAnd).orElse(true);
+       return ret;
     }
 
     private boolean providerIsInDomain(int provider, Domain domain) {
@@ -58,7 +59,7 @@ public class NodeCandidatesProvider {
     private boolean candidateIsInDomainOfVariable(VariableType type, Domain domain, NodeCandidate nodeCandidate) {
         if (type == VariableType.CARDINALITY || type == VariableType.PROVIDER) {
             return true;
-        } else if (isLocationType(type) && nodeCandidate.getLocation() == null || nodeCandidate.getLocation().getGeoLocation() == null) {
+        } else if (isLocationType(type) && (nodeCandidate.getLocation() == null || nodeCandidate.getLocation().getGeoLocation() == null)) {
             return false;
         } else {
             return DomainHandler.isInDomain( new LongValue(getVariableValue(type, nodeCandidate)),domain);
