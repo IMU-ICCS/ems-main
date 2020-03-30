@@ -31,7 +31,7 @@ public class MCTSSolver {
         this.mctsWrapper = mctsWrapper;
         this.nodeCandidates = nodeCandidates;
         moveProvider = new MoveProviderImpl(mctsWrapper);
-        policy = new CheapestPolicyImpl(mctsWrapper, nodeCandidates);//new RandomPolicyImpl(mctsWrapper);
+        policy = new CheapestPolicyImpl(mctsWrapper);//new RandomPolicyImpl(mctsWrapper);
         updateParameters();
         mctsTree = new TreeImpl(policy, moveProvider);
     }

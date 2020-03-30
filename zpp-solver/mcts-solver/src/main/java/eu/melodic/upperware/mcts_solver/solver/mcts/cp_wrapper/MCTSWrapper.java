@@ -2,6 +2,8 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.mcts_solver.solver.utils.NodeCandidatesProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
@@ -14,10 +16,19 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-@AllArgsConstructor
 public class MCTSWrapper{
     private final Random random = new Random();
     private CPWrapper cpWrapper;
+    private NodeCandidatesProvider nodeCandidatesProvider;
+
+    public MCTSWrapper(CPWrapper cpWrapper, NodeCandidates nodeCandidates) {
+        this.cpWrapper = cpWrapper;
+        this.nodeCandidatesProvider = new NodeCandidatesProvider(nodeCandidates, cpWrapper.getVariableDTOCollection(), cpWrapper);
+    }
+
+    public NodeCandidates getNodeCandidates(String componentId) {
+        return nodeCandidatesProvider.getNodeCandidates(componentId);
+    }
 
     // Generates random value for variable indexed with index.
     public int generateRandomValue(int index) {

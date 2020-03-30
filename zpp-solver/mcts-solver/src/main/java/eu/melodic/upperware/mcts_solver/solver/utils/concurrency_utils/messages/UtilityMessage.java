@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages;
+package eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

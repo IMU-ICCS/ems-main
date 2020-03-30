@@ -2,17 +2,19 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy;
 
 import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import cp_wrapper.utils.numeric_value.implementations.LongValue;
-import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Path;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.SolutionImpl;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolutionToNodeCandidates;
@@ -20,7 +22,6 @@ import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.co
 @AllArgsConstructor
 public class CheapestPolicyImpl implements Policy {
     private MCTSWrapper mctsWrapper;
-    private NodeCandidates nodeCandidates;
 
     @Override
     public Solution finishPath(Path path) {
@@ -49,7 +50,22 @@ public class CheapestPolicyImpl implements Policy {
     }
 
     private Collection<ConfigurationElement> findCheapestConfiguration(List<Integer> assignment) {
-        return convertSolutionToNodeCandidates(mctsWrapper.getVariableDTOCollection(), nodeCandidates, mctsWrapper.assignmentToVariableValueDTOList(assignment));
+        Collection<VariableValueDTO> values = mctsWrapper.assignmentToVariableValueDTOList(assignment);
+        List<ConfigurationElement> cheapestConfiguration = new ArrayList<>();
+        Collection<VariableDTO> variables = mctsWrapper.getVariableDTOCollection();
+        Collection<String> components = variables.stream().map(VariableDTO::getComponentId).distinct().collect(Collectors.toList());
+        for (String componentId : components) {
+            Collection<ConfigurationElement> configuration = convertSolutionToNodeCandidates(
+                    variables.stream().filter(variable -> variable.getComponentId().equals((componentId))).collect(Collectors.toList()),
+                    mctsWrapper.getNodeCandidates(componentId),
+                    values);
+            if (configuration.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                cheapestConfiguration.addAll(configuration);
+            }
+        }
+        return cheapestConfiguration;
     }
 
     private Solution configurationToSolution(Collection<ConfigurationElement> configuration, List<Integer> assignment, int rolloutDepth) {

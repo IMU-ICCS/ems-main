@@ -1,19 +1,15 @@
 package eu.melodic.upperware.mcts_solver.solver.worker_thread;
 
 import cp_wrapper.solution.CpSolution;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.OneToManyChannel;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.SolutionBuffer;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.FinalizationMessage;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.Message;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.TemperatureMessage;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.UtilityMessage;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.SolutionBuffer;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.FinalizationMessage;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.Message;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.TemperatureMessage;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.UtilityMessage;
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.javatuples.Pair;
-
-import java.util.List;
 
 @Slf4j
 @AllArgsConstructor

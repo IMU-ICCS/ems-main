@@ -1,0 +1,88 @@
+package eu.melodic.upperware.mcts_solver.solver.utils;
+
+import cp_wrapper.CPWrapper;
+import cp_wrapper.utils.DomainHandler;
+import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
+import eu.paasage.upperware.metamodel.cp.Domain;
+import eu.paasage.upperware.metamodel.cp.VariableType;
+import io.github.cloudiator.rest.model.NodeCandidate;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+
+public class NodeCandidatesProvider {
+    private Map<String, NodeCandidates> componentToNodeCnaiddates = new HashMap<>();
+
+
+    public NodeCandidatesProvider(NodeCandidates allCandiates, Collection<VariableDTO> variables, CPWrapper cpWrapper) {
+        variables.stream().map(VariableDTO::getComponentId)
+                .distinct()
+                .forEach(componentId -> componentToNodeCnaiddates.put(componentId, getNodeCandidatesForComponent(componentId, cpWrapper, variables, allCandiates)));
+    }
+
+    public NodeCandidates getNodeCandidates(String componentId) {
+        return componentToNodeCnaiddates.get(componentId);
+    }
+
+    private NodeCandidates getNodeCandidatesForComponent(String componentId, CPWrapper cpWrapper, Collection<VariableDTO> variables, NodeCandidates allCandiates) {
+        Map<String, Map<Integer, List<NodeCandidate>>> candidates = new HashMap<String, Map<Integer, List<NodeCandidate>>>() {{
+            put(componentId, new HashMap<>());
+        }};
+        allCandiates.get().get(componentId).forEach((provider, nodes) -> {
+           if (providerIsInDomain(provider, cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, VariableType.PROVIDER))))
+               candidates.get(componentId).put(provider,
+               nodes.stream()
+                       .filter(node -> candidateIsInDomain(node, cpWrapper, variables, componentId))
+                        .collect(Collectors.toList())
+                );
+        });
+        return NodeCandidates.of(candidates);
+    }
+
+    private boolean candidateIsInDomain(NodeCandidate nodeCandidate, CPWrapper cpWrapper, Collection<VariableDTO> variables, String componentId) {
+        return variables.stream().filter(variable -> variable.getComponentId().equals(componentId)).map(
+                variable -> candidateIsInDomainOfVariable(variable.getType(), cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, variable.getType())), nodeCandidate)
+        ).reduce(Boolean::logicalAnd).orElse(true);
+    }
+
+    private boolean providerIsInDomain(int provider, Domain domain) {
+        return DomainHandler.isInDomain(new IntegerValue(provider), domain);
+    }
+
+    private boolean candidateIsInDomainOfVariable(VariableType type, Domain domain, NodeCandidate nodeCandidate) {
+        if (type == VariableType.CARDINALITY) {
+            return true;
+        } else if (isLocationType(type) && nodeCandidate.getLocation() == null || nodeCandidate.getLocation().getGeoLocation() == null) {
+            return false;
+        } else {
+            return DomainHandler.isInDomain( new LongValue(getVariableValue(type, nodeCandidate)),domain);
+        }
+    }
+
+    private boolean isLocationType(VariableType type) {
+        return type == VariableType.LATITUDE || type == VariableType.LONGITUDE;
+    }
+
+    private long getVariableValue(VariableType type, NodeCandidate nodeCandidate) {
+        switch(type) {
+            case CORES:
+                return nodeCandidate.getHardware().getCores();
+            case RAM:
+                return  nodeCandidate.getHardware().getRam();
+            case STORAGE:
+                return nodeCandidate.getHardware().getDisk().intValue();
+            case LATITUDE:
+                return  ((Double) (100*nodeCandidate.getLocation().getGeoLocation().getLatitude())).intValue();
+            case LONGITUDE:
+                return ((Double) (100*nodeCandidate.getLocation().getGeoLocation().getLongitude())).intValue();
+            default:
+                throw new RuntimeException("Unsupported variable type!");
+        }
+    }
+}
