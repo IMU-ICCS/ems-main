@@ -87,6 +87,6 @@ public class CheapestPolicyImpl implements Policy {
         if (ramIndex >= assignmentSize) assignment.put(ramIndex, mctsWrapper.getIndexFromValue(new LongValue(configurationElement.getNodeCandidate().getHardware().getRam()), ramIndex));
         if (diskIndex >= assignmentSize) assignment.put(diskIndex, mctsWrapper.getIndexFromValue(new LongValue(configurationElement.getNodeCandidate().getHardware().getDisk().longValue()), diskIndex));
         if (latitudeIndex >= assignmentSize) assignment.put(latitudeIndex, mctsWrapper.getIndexFromValue(new LongValue((long) (100*configurationElement.getNodeCandidate().getLocation().getGeoLocation().getLatitude())), latitudeIndex));
-        if (longitudeIndex >= assignmentSize) assignment.put(latitudeIndex, mctsWrapper.getIndexFromValue(new LongValue((long) (100*configurationElement.getNodeCandidate().getLocation().getGeoLocation().getLongitude())), longitudeIndex));
+        if (longitudeIndex >= assignmentSize) assignment.put(longitudeIndex, mctsWrapper.getIndexFromValue(new LongValue((long) (100*configurationElement.getNodeCandidate().getLocation().getGeoLocation().getLongitude())), longitudeIndex));
     }
 }

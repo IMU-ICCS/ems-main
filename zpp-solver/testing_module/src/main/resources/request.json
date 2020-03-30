@@ -2,9 +2,9 @@
 "constraintProblems": [
   {
     "id": "FCR",
-    "camelModelFilePath" : "C:/Users/ZPP/Downloads/TrafficDockerMulti.xmi",
-    "cpProblemFilePath" :"C:/Users/ZPP/Downloads/TrafficDockerMulti1576852678509.xmi",
-    "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/TrafficDockerMulti1576852678509"
+    "camelModelFilePath" : "C:/Users/ZPP/Downloads/Genom.xmi",
+  "cpProblemFilePath" :"C:/Users/ZPP/Downloads/Genom-CP.xmi",
+  "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/Genom-NC"
   }
   ],
   "timeLimits": [60],
