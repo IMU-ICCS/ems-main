@@ -19,6 +19,9 @@ public class MCTSSolver {
     private MCTSWrapper mctsWrapper;
     //TODO ndoeCandidates hsoudl pribably belogn to the wrapper
     private NodeCandidates nodeCandidates;
+    private MoveProvider moveProvider;
+    private Policy policy;
+    private Tree mctsTree;
 
 
     public MCTSSolver(NodeCandidates nodeCandidates, double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
@@ -27,6 +30,10 @@ public class MCTSSolver {
         this.iterations = iterations;
         this.mctsWrapper = mctsWrapper;
         this.nodeCandidates = nodeCandidates;
+        moveProvider = new MoveProviderImpl(mctsWrapper);
+        policy = new CheapestPolicyImpl(mctsWrapper, nodeCandidates);//new RandomPolicyImpl(mctsWrapper);
+        updateParameters();
+        mctsTree = new TreeImpl(policy, moveProvider);
     }
 
     public CpSolution solve() {
@@ -35,19 +42,17 @@ public class MCTSSolver {
     }
 
     public Solution search() {
-        MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
-        Policy policy = new CheapestPolicyImpl(mctsWrapper, nodeCandidates);//new RandomPolicyImpl(mctsWrapper);
-
-        NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
-        NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
-        NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
-
-        Tree mctsTree = new TreeImpl(policy, moveProvider);
-
+        updateParameters();;
         Solution solution = mctsTree.run(iterations);
 
         log.info("Found solution with utility: {}. Values: {}.", solution.getUtility(), solution.getAssignment().toString());
 
         return solution;
+    }
+
+    private void updateParameters() {
+        NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
+        NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
+        NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
     }
 }

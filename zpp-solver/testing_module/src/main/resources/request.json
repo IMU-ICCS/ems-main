@@ -7,7 +7,7 @@
     "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/FCRclear-NC"
   }
   ],
-  "timeLimits": [300],
+  "timeLimits": [60],
   "outputPath": "C:/Users/ZPP/Desktop/results.csv",
   "ptSolversParameters": [
     {"minTmp":  100, "maxTmp":  10000, "numThreads":  10},
@@ -37,7 +37,7 @@
     {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
     {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10}
   ],
-  "repetitions": 4,
+  "repetitions": 10,
   "cpSamplerData": {
     "numberComponents": 2,
     "minConstraints" : 2,
