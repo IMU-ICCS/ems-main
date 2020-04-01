@@ -1,27 +1,11 @@
 {
 "constraintProblems": [
-  {
-    "id": "FCR",
-    "camelModelFilePath" : "C:/Users/ZPP/Downloads/Genom.xmi",
-  "cpProblemFilePath" :"C:/Users/ZPP/Downloads/Genom-CP.xmi",
-  "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/Genom-NC"
-  }
+
   ],
   "timeLimits": [60],
   "outputPath": "C:/Users/ZPP/Desktop/results.csv",
   "ptSolversParameters": [
-    {"minTmp":  100, "maxTmp":  10000, "numThreads":  10},
-    {"minTmp":  1, "maxTmp":  10000, "numThreads":  10},
-    {"minTmp":  100, "maxTmp":  100000, "numThreads":  10},
-    {"minTmp":  1, "maxTmp":  1000000, "numThreads":  10},
-    {"minTmp":  100, "maxTmp":  10000, "numThreads":  5},
-    {"minTmp":  1, "maxTmp":  10000, "numThreads":  5},
-    {"minTmp":  100, "maxTmp":  100000, "numThreads":  5},
-    {"minTmp":  1, "maxTmp":  1000000, "numThreads":  5},
-    {"minTmp":  1, "maxTmp":  1000, "numThreads":  10},
-    {"minTmp":  1, "maxTmp":  1000, "numThreads":  5},
-    {"minTmp":  1000, "maxTmp":  100000, "numThreads":  10},
-    {"minTmp":  1000, "maxTmp":  100000, "numThreads":  5}
+    {"minTmp":  0.00001, "maxTmp":  100000, "numThreads":  5}
   ],
   "mctsParameters": [
     {"minTmp":  0.001, "maxTmp":  0.9, "numThreads":  5, "iterations":  100}
@@ -37,11 +21,11 @@
     {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
     {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10}
   ],
-  "repetitions": 10,
+  "repetitions": 2,
   "cpSamplerData": {
-    "numberComponents": 2,
+    "numberComponents": 4,
     "minConstraints" : 2,
-    "maxConstraints": 4,
+    "maxConstraints": 5,
     "utilityFunction": [
       {"name":  "COST", "weight": 0.5 },
       {"name":  "CORES", "weight": 0.5 }
@@ -49,5 +33,5 @@
     "nodeCandidates" : "C:/Users/ZPP/Downloads/TrafficDockerMulti1576852678509",
     "cpDirectory": "C:/Users/ZPP/Desktop/"
   },
-  "numberOfRandomCP" : 0
+  "numberOfRandomCP" : 4
 }

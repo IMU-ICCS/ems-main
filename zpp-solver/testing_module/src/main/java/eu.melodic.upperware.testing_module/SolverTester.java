@@ -113,7 +113,7 @@ public class SolverTester {
     private List<SolverController> prepareControllers(RequestData requestData) {
         List<SolverController> solverControllers = new LinkedList<>();
         //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
         //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
        // Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
        // Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).map(PTParameters::getNumThreads).distinct().forEach(numThreads -> solverControllers.add(new PTSolverTemperatureAdjusterControllerImpl(numThreads, timeLimit))));

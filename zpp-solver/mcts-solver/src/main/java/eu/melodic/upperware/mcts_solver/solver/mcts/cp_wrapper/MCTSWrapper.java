@@ -7,11 +7,14 @@ import eu.melodic.upperware.mcts_solver.solver.utils.NodeCandidatesProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import lombok.AllArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.javatuples.Pair;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Random;
 
