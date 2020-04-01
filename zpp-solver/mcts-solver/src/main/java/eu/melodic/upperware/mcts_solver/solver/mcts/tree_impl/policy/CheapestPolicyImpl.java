@@ -10,14 +10,12 @@ import eu.melodic.upperware.mcts_solver.solver.utils.VariableExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
+import eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertSolutionToNodeCandidates;
-
 
 public class CheapestPolicyImpl implements Policy {
     private MCTSWrapper mctsWrapper;
@@ -48,7 +46,7 @@ public class CheapestPolicyImpl implements Policy {
         }
         Collection<ConfigurationElement> cheapestConfiguration = findCheapestConfiguration(assignment);
         if (cheapestConfiguration.isEmpty()) {
-            return new SolutionImpl(rolloutDepth, mctsWrapper);
+            return new SolutionImpl(rolloutDepth);
         } else {
             return configurationToSolution(cheapestConfiguration, assignment, rolloutDepth);
         }
@@ -84,7 +82,7 @@ public class CheapestPolicyImpl implements Policy {
     }
 
     private Collection<ConfigurationElement> getConfigurationForComponent(String componentId, Collection<VariableValueDTO> values) {
-        return convertSolutionToNodeCandidates(componentToVariables.get(componentId), mctsWrapper.getNodeCandidates(componentId), values);
+        return EvaluatingUtils.convertSolutionToNodeCandidates(componentToVariables.get(componentId), mctsWrapper.getNodeCandidates(componentId), values);
     }
 
     private Collection<VariableDTO> getVariablesForComponent(String componentId) {

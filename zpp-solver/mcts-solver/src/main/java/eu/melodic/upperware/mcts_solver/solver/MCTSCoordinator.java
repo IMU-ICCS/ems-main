@@ -28,15 +28,13 @@ public class MCTSCoordinator {
     private int iterations;
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
-    private NodeCandidates nodeCandidates;
 
-    public MCTSCoordinator(NodeCandidates nodeCandidates, int numThreads, double minTemperature, double maxTemperature, int iterations) {
+    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations) {
         this.numThreads = numThreads;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.iterations = iterations;
         this.messageChannel =  new OneToManyChannel<>(numThreads);
-        this.nodeCandidates = nodeCandidates;
     }
 
     public CpSolution solve(int timeLimit, MCTSWrapperFactory mctsWrapperFactory) throws InterruptedException {
@@ -60,7 +58,7 @@ public class MCTSCoordinator {
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
-                MCTSSolver mctsSolver =  new MCTSSolver(nodeCandidates, minTemperature , 10, iterations, mctsWrappers.get(pid));
+                MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid));
                 WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver);
                 workerThread.workerRun();
             });

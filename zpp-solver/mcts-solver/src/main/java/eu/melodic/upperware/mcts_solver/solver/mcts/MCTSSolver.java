@@ -17,19 +17,16 @@ public class MCTSSolver {
     private double explorationCoefficient;
     private int iterations;
     private MCTSWrapper mctsWrapper;
-    //TODO ndoeCandidates hsoudl pribably belogn to the wrapper
-    private NodeCandidates nodeCandidates;
     private MoveProvider moveProvider;
     private Policy policy;
     private Tree mctsTree;
 
 
-    public MCTSSolver(NodeCandidates nodeCandidates, double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
+    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
         this.selectorCoefficient = selectorCoefficient;
         this.explorationCoefficient = explorationCoefficient;
         this.iterations = iterations;
         this.mctsWrapper = mctsWrapper;
-        this.nodeCandidates = nodeCandidates;
         moveProvider = new MoveProviderImpl(mctsWrapper);
         policy = new CheapestPolicyImpl(mctsWrapper);//new RandomPolicyImpl(mctsWrapper);
         updateParameters();

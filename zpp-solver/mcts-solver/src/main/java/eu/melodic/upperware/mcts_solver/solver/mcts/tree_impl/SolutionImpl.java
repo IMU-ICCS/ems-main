@@ -4,7 +4,6 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,11 +28,16 @@ public class SolutionImpl implements Solution {
         }
     }
 
-    public SolutionImpl(int rolloutDepth,  MCTSWrapper mctsWrapper) {
+    public SolutionImpl(int rolloutDepth) {
         this.assignment = Collections.emptyList();
         this.failureDepth = rolloutDepth;
         this.utility = 0.0;
         this.feasible = false;
+    }
+
+    @Override
+    public boolean isFeasible() {
+        return feasible;
     }
 
     @Override
