@@ -53,7 +53,6 @@ public class SolverTester {
     private CDOClientX clientX = new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));;
     private JWTService jwtService;
     private BufferedWriter writer;
-    private final int MAX_THREADS = 50;
 
     @Autowired
     public SolverTester(MelodicSecurityProperties melodicSecurityProperties, UtilityGeneratorProperties utilityGeneratorProperties, PenaltyFunctionProperties penaltyFunctionProperties) throws FileNotFoundException {
@@ -84,9 +83,7 @@ public class SolverTester {
             log.info("Testing solvers on CP "+ parsedCP.getValue3());
             for (int i = 1; i <= requestData.getRepetitions(); i++) {
                 results.addAll(
-                        solverControllers.stream().map(solver -> {
-                                return solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue2(), parsedCP.getValue3());
-                        }).collect(Collectors.toList())
+                        solverControllers.stream().map(solver -> solver.solve(parsedCP.getValue0(), parsedCP.getValue1(), parsedCP.getValue2(), parsedCP.getValue3())).collect(Collectors.toList())
                 );
             }
         });
@@ -106,17 +103,13 @@ public class SolverTester {
         log.info("Finished testing, outputs have been written to " + requestData.getOutputPath());
     }
 
-    private boolean usesUtilityConcurrently(Object o) {
-        return  o instanceof PTSolverControllerImpl || o instanceof NCSolverControllerImpl || o instanceof PTSolverTemperatureAdjusterControllerImpl;
-    }
-
     private List<SolverController> prepareControllers(RequestData requestData) {
         List<SolverController> solverControllers = new LinkedList<>();
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new PTSolverControllerImpl(parameters, timeLimit))));
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).forEach(parameters -> solverControllers.add(new NCSolverControllerImpl(parameters, timeLimit))));
-        //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
-       // Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
-       // Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).map(PTParameters::getNumThreads).distinct().forEach(numThreads -> solverControllers.add(new PTSolverTemperatureAdjusterControllerImpl(numThreads, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
+        Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).map(PTParameters::getNumThreads).distinct().forEach(numThreads -> solverControllers.add(new PTSolverTemperatureAdjusterControllerImpl(numThreads, timeLimit))));
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getMctsParameters()).forEach((parameters -> solverControllers.add(new MCTSSolverControllerImpl(parameters, timeLimit)))));
         return solverControllers;
     }
