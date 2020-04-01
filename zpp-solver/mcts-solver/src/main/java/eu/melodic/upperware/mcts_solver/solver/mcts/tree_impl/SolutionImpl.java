@@ -18,8 +18,8 @@ public class SolutionImpl implements Solution {
 
     public SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
         this.assignment = assignment;
-        this.utility = mctsWrapper.getUtility(assignment);
         this.feasible = mctsWrapper.isFeasible(assignment);
+        this.utility = feasible ? mctsWrapper.getUtility(assignment) : 0.0;
         if (utility == 0.0 || !feasible) {
             this.failureDepth = rolloutDepth;
         }
@@ -33,11 +33,6 @@ public class SolutionImpl implements Solution {
         this.failureDepth = rolloutDepth;
         this.utility = 0.0;
         this.feasible = false;
-    }
-
-    @Override
-    public boolean isFeasible() {
-        return feasible;
     }
 
     @Override

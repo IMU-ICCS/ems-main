@@ -3,18 +3,18 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 import cp_wrapper.CPWrapper;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.CheapestPolicyImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.RandomPolicyImpl;
 import eu.melodic.upperware.mcts_solver.solver.utils.NodeCandidatesProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
-import org.javatuples.Pair;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +27,11 @@ public class MCTSWrapper{
     public MCTSWrapper(CPWrapper cpWrapper, NodeCandidates nodeCandidates) {
         this.cpWrapper = cpWrapper;
         this.nodeCandidatesProvider = new NodeCandidatesProvider(nodeCandidates, cpWrapper.getVariableDTOCollection(), cpWrapper);
+    }
+
+    public MCTSWrapper(CPWrapper cpWrapper) {
+        this.cpWrapper = cpWrapper;
+        this.nodeCandidatesProvider = null;
     }
 
     public NodeCandidates getNodeCandidates(String componentId) {
@@ -87,5 +92,16 @@ public class MCTSWrapper{
 
     public Collection<VariableDTO> getVariableDTOCollection() {
         return cpWrapper.getVariableDTOCollection();
+    }
+
+    public Policy createPolicy(AvailablePolicies policyType) {
+        switch(policyType) {
+            case RANDOM_POLICY:
+                return new RandomPolicyImpl(this);
+            case CHEAPEST_POLICY:
+                return new CheapestPolicyImpl(this);
+            default:
+                throw new RuntimeException("Unsupported policy type!");
+        }
     }
 }

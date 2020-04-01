@@ -5,6 +5,7 @@ import cp_wrapper.solution.CpSolution;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +21,7 @@ class MCTSCoordinatorTest {
         private final int NUM_THREADS = 5;
         @Test
         public void simpleCPTest() throws InterruptedException {
-          /*  Map<String, Double> realBestSolution = new HashMap<String, Double>() {{
+            Map<String, Double> realBestSolution = new HashMap<String, Double>() {{
                     put("var1", 5.0);
                     put("var2", 2.5);
                     put("var3", 9.0);
@@ -33,7 +34,7 @@ class MCTSCoordinatorTest {
             return new MCTSWrapper(cpWrapper);
             }).collect(Collectors.toList());
 
-            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100);
+            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
             CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
                 private int index = -1;
                 @Override
@@ -45,13 +46,12 @@ class MCTSCoordinatorTest {
 
             solution.getSolution().forEach(variable -> {
                 assertEquals(java.util.Optional.of(variable.getValue().doubleValue()).orElse(0.0), realBestSolution.get(variable.getName()));
-            });*/
+            });
         }
 
     @Test
     public void simpleCPTest2() throws InterruptedException {
-
-        /*Map<String, Double> realBestSolution = new HashMap<String, Double>() {{
+        Map<String, Double> realBestSolution = new HashMap<String, Double>() {{
                 put("var1", 4.0);
                 put("var2", 10.0);
                 put("var3", 9.0);
@@ -66,7 +66,7 @@ class MCTSCoordinatorTest {
             return new MCTSWrapper(cpWrapper);
         }).collect(Collectors.toList());
 
-        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100);
+        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
         CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
             private int index = -1;
             @Override
@@ -78,6 +78,6 @@ class MCTSCoordinatorTest {
 
         solution.getSolution().forEach(variable -> {
             assertEquals(java.util.Optional.of(variable.getValue().doubleValue()).orElse(0.0), realBestSolution.get(variable.getName()));
-        });*/
+        });
     }
 }

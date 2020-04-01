@@ -42,12 +42,7 @@ public class DomainHandler {
         if (values.size() <= valueIndex) {
             throw new RuntimeException();
         }
-        try {
-            return NumericValueFactory.fromNumericValueInterface(values.get(valueIndex));
-        } catch (Exception e) {
-            System.out.println("asd");
-        }
-        return null;
+        return NumericValueFactory.fromNumericValueInterface(values.get(valueIndex));
     }
 
     public static int getMaxDomainValue(Domain domain) {
