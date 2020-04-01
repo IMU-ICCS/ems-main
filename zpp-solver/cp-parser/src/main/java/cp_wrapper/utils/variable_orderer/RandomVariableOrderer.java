@@ -28,7 +28,9 @@ public class RandomVariableOrderer implements VariableOrderer {
 
     @Override
     public int getIndexFromComponentType(String componentId, VariableType type) {
-        if (!typeToIndex.containsKey(new Pair<>(componentId, type))) return -1;
+        if (!typeToIndex.containsKey(new Pair<>(componentId, type))) {
+            return -1;
+        }
         return typeToIndex.get(new Pair<>(componentId, type));
     }
 
@@ -38,12 +40,14 @@ public class RandomVariableOrderer implements VariableOrderer {
     }
 
     private Collection<CpVariable> extractCardinalityAndProvider(Collection<CpVariable> variables) {
-        return variables.stream().filter(variable -> variable.getVariableType() == VariableType.PROVIDER || variable.getVariableType() == VariableType.CARDINALITY)
-                    .collect(Collectors.toList());
+        return variables.stream()
+                .filter(variable -> variable.getVariableType() == VariableType.PROVIDER || variable.getVariableType() == VariableType.CARDINALITY)
+                .collect(Collectors.toList());
     }
 
     private Collection<CpVariable> deleteCardinalityAndProvider(Collection<CpVariable> variables) {
-        return variables.stream().filter(variable -> variable.getVariableType() != VariableType.PROVIDER && variable.getVariableType() != VariableType.CARDINALITY)
+        return variables.stream()
+                .filter(variable -> variable.getVariableType() != VariableType.PROVIDER && variable.getVariableType() != VariableType.CARDINALITY)
                 .collect(Collectors.toList());
     }
 

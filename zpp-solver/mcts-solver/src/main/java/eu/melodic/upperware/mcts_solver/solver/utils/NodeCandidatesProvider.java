@@ -17,38 +17,35 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class NodeCandidatesProvider {
-    private Map<String, NodeCandidates> componentToNodeCnaiddates = new HashMap<>();
+    private Map<String, NodeCandidates> componentToNodeCandidates = new HashMap<>();
 
-
-    public NodeCandidatesProvider(NodeCandidates allCandiates, Collection<VariableDTO> variables, CPWrapper cpWrapper) {
+    public NodeCandidatesProvider(NodeCandidates allCandidates, Collection<VariableDTO> variables, CPWrapper cpWrapper) {
         variables.stream().map(VariableDTO::getComponentId)
                 .distinct()
-                .forEach(componentId -> componentToNodeCnaiddates.put(componentId, getNodeCandidatesForComponent(componentId, cpWrapper, variables, allCandiates)));
+                .forEach(componentId -> componentToNodeCandidates.put(componentId, getNodeCandidatesForComponent(componentId, cpWrapper, variables, allCandidates)));
     }
 
     public NodeCandidates getNodeCandidates(String componentId) {
-        return componentToNodeCnaiddates.get(componentId);
+        return componentToNodeCandidates.get(componentId);
     }
 
-    private NodeCandidates getNodeCandidatesForComponent(String componentId, CPWrapper cpWrapper, Collection<VariableDTO> variables, NodeCandidates allCandiates) {
+    private NodeCandidates getNodeCandidatesForComponent(String componentId, CPWrapper cpWrapper, Collection<VariableDTO> variables, NodeCandidates allCandidates) {
         Map<String, Map<Integer, List<NodeCandidate>>> candidates = new HashMap<String, Map<Integer, List<NodeCandidate>>>() {{
             put(componentId, new HashMap<>());
         }};
-        allCandiates.get().get(componentId).forEach((provider, nodes) -> {
-           if (providerIsInDomain(provider, cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, VariableType.PROVIDER))))
-               candidates.get(componentId).put(provider,
-               nodes.stream()
-                       .filter(node -> candidateIsInDomain(node, cpWrapper, variables, componentId))
-                        .collect(Collectors.toList())
-                );
+        allCandidates.get().get(componentId).forEach((provider, nodes) -> {
+           if (providerIsInDomain(provider, cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, VariableType.PROVIDER)))) {
+               candidates.get(componentId)
+                       .put(provider, nodes.stream().filter(node -> candidateIsInDomain(node, cpWrapper, variables, componentId)).collect(Collectors.toList()));
+           }
         });
         return NodeCandidates.of(candidates);
     }
 
     private boolean candidateIsInDomain(NodeCandidate nodeCandidate, CPWrapper cpWrapper, Collection<VariableDTO> variables, String componentId) {
-       return variables.stream().filter(variable -> variable.getComponentId().equals(componentId)).map(
-                variable -> candidateIsInDomainOfVariable(variable.getType(), cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, variable.getType())), nodeCandidate)
-        ).reduce(Boolean::logicalAnd).orElse(true);
+       return variables.stream().filter(variable -> variable.getComponentId().equals(componentId))
+               .map(variable -> candidateIsInDomainOfVariable(variable.getType(), cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, variable.getType())), nodeCandidate))
+               .reduce(Boolean::logicalAnd).orElse(true);
     }
 
     private boolean providerIsInDomain(int provider, Domain domain) {

@@ -1,5 +1,4 @@
-package eu.melodic.upperware.mcts_solver.solver.utils;
-
+package cp_wrapper.utils;
 
 public class MaxRuntimeLimit {
     private final long NANO_TO_MILLISECONDS = 1000000;
