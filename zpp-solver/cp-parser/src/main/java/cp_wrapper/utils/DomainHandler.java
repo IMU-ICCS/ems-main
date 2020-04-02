@@ -16,6 +16,8 @@ import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class DomainHandler {
     public static boolean isRangeDomain(Domain domain){
@@ -90,7 +92,7 @@ public class DomainHandler {
 
     private static boolean isInList(NumericValueInterface value, List<NumericValueUpperware> list) {
         return list.stream()
-                .anyMatch(numericValue -> value.equals(NumericValueFactory.fromNumericValueInterface(numericValue)));
+                .anyMatch(numericValue -> value.representsSameNumber(NumericValueFactory.fromNumericValueInterface(numericValue)));
     }
 
     public static boolean isInDomain(NumericValueInterface value, Domain domain) {
@@ -106,5 +108,18 @@ public class DomainHandler {
                return isInList(value, ((NumericListDomain) domain).getValues());
         }
         throw new RuntimeException("Unsupported domain type");
+    }
+
+    public static int getValueIndex(NumericValueInterface value, Domain domain) {
+        if (isNumericListDomain(domain)) {
+            List<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
+            return IntStream.range(0, values.size())
+                    .filter(index -> value.representsSameNumber(NumericValueFactory.fromNumericValueInterface(values.get(index))))
+                    .findFirst()
+                    .orElse(-1);
+        } else if (isRangeDomain(domain) && value.isInteger()) {
+            return (value.getIntValue() - (int) ExpressionEvaluator.getValueOfNumericInterface(((RangeDomain) domain).getFrom()));
+        }
+        throw new RuntimeException("Can't match value to domain!");
     }
 }

@@ -1,18 +1,37 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 
 import cp_wrapper.CPWrapper;
+import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.CheapestPolicyImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.RandomPolicyImpl;
+import eu.melodic.upperware.mcts_solver.solver.utils.NodeCandidatesProvider;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
-import lombok.AllArgsConstructor;
+import eu.paasage.upperware.metamodel.cp.VariableType;
+
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
 @Slf4j
-@AllArgsConstructor
 public class MCTSWrapper{
     private final Random random = new Random();
     private CPWrapper cpWrapper;
+    private NodeCandidatesProvider nodeCandidatesProvider;
+
+    public MCTSWrapper(CPWrapper cpWrapper, NodeCandidates nodeCandidates) {
+        this.cpWrapper = cpWrapper;
+        this.nodeCandidatesProvider = nodeCandidates == null ? null : new NodeCandidatesProvider(nodeCandidates, cpWrapper.getVariableDTOCollection(), cpWrapper);
+    }
+
+    public NodeCandidates getNodeCandidates(String componentId) {
+        return nodeCandidatesProvider.getNodeCandidates(componentId);
+    }
 
     // Generates random value for variable indexed with index.
     public int generateRandomValue(int index) {
@@ -52,5 +71,37 @@ public class MCTSWrapper{
 
     public List<VariableValueDTO> assignmentToVariableValueDTOList(List<Integer> assignments) {
         return cpWrapper.assignmentToVariableValueDTOList(assignments);
+    }
+
+    public int getNumberOfComponents() {
+        return (int) cpWrapper.getNumberOfComponents();
+    }
+
+    public int getIndexFromValue(NumericValueInterface value, int variable) {
+        return cpWrapper.getIndexFromValue(value, variable);
+    }
+
+    public boolean variableExistsInCP(String componentId, VariableType type) {
+        return cpWrapper.getVariableDTOCollection()
+                .stream().anyMatch(variable -> componentId.equals(variable.getComponentId()) && type == variable.getType());
+    }
+
+    public int getVariableIndexFromComponentAndType(String componentId, VariableType type) {
+        return cpWrapper.getVariableIndexFromComponentAndType(componentId, type);
+    }
+
+    public Collection<VariableDTO> getVariableDTOCollection() {
+        return cpWrapper.getVariableDTOCollection();
+    }
+
+    public Policy createPolicy(AvailablePolicies policyType) {
+        switch(policyType) {
+            case RANDOM_POLICY:
+                return new RandomPolicyImpl(this);
+            case CHEAPEST_POLICY:
+                return new CheapestPolicyImpl(this);
+            default:
+                throw new RuntimeException("Unsupported policy type!");
+        }
     }
 }

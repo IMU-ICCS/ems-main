@@ -21,7 +21,17 @@ public class LongValue implements NumericValueInterface {
     }
 
     @Override
+    public boolean representsSameNumber(NumericValueInterface value) {
+        if (value instanceof IntegerValue) {
+            return value.getIntValue() == this.value;
+        } else {
+            return equals(value);
+        }
+    }
+
+    @Override
     public double getDoubleValue() {
         return value;
     }
+
 }

@@ -18,6 +18,15 @@ public class IntegerValue implements NumericValueInterface {
         return true;
     }
 
+    @Override
+    public boolean representsSameNumber(NumericValueInterface value) {
+        if (value instanceof LongValue) {
+            return value.getIntValue() == this.value;
+        } else {
+            return equals(value);
+        }
+    }
+
 
     @Override
     public double getDoubleValue() {

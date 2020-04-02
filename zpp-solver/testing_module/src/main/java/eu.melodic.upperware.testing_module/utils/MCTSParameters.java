@@ -11,6 +11,6 @@ public class MCTSParameters {
 
     @Override
     public String toString() {
-        return minTmp + ";" + maxTmp + ";" +numThreads + ";" + iterations + "\n";
+        return minTmp + ";" + maxTmp + ";" +numThreads + ";" + iterations + ";";
     }
 }

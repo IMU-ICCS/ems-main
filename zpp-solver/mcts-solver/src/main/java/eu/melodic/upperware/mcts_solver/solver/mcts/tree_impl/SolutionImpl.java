@@ -4,6 +4,7 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -15,16 +16,23 @@ public class SolutionImpl implements Solution {
     private boolean feasible;
     private double utility;
 
-    SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
+    public SolutionImpl(int rolloutDepth, List<Integer> assignment, MCTSWrapper mctsWrapper) {
         this.assignment = assignment;
-        this.utility = mctsWrapper.getUtility(assignment);
         this.feasible = mctsWrapper.isFeasible(assignment);
+        this.utility = feasible ? mctsWrapper.getUtility(assignment) : 0.0;
         if (utility == 0.0 || !feasible) {
             this.failureDepth = rolloutDepth;
         }
         else {
             this.failureDepth = assignment.size();
         }
+    }
+
+    public SolutionImpl(int rolloutDepth) {
+        this.assignment = Collections.emptyList();
+        this.failureDepth = rolloutDepth;
+        this.utility = 0.0;
+        this.feasible = false;
     }
 
     @Override

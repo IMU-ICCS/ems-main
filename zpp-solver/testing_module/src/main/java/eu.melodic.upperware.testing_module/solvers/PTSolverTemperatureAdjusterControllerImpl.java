@@ -4,6 +4,7 @@ import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
+import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.AllArgsConstructor;
@@ -22,9 +23,9 @@ public class PTSolverTemperatureAdjusterControllerImpl implements SolverControll
     private final static String SOLVER_ID = "PTSolverTemperatureAdjustment";
 
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityProvider utilityProvider, String cpId) {
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpId) {
         log.info("Starting " + SOLVER_ID + " on " + cpId);
-        PTSolver solver = new PTSolver(1, 10, numThreads, cp, utilityProvider);
+        PTSolver solver = new PTSolver(1, 10, numThreads, cp, utilityGeneratorMaster.createParallelUtilityProvider(numThreads));
         try {
             solver.adjustTemperature(10);
         } catch (InterruptedException e) {

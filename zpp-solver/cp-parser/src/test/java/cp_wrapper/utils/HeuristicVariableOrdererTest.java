@@ -41,7 +41,7 @@ class HeuristicVariableOrdererTest {
     @Test
     public void expandingGraphTest(){
             ConstraintGraph graph = createExpandingGraph();
-            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph);
+            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
             for (int i = 0; i < variables.size(); i++) {
                 assertTrue( orderer.getNameFromIndex(i).equals(variables.get(i)));
             }
@@ -52,7 +52,7 @@ class HeuristicVariableOrdererTest {
         ConstraintGraph graph = sameNumberOfConstraintsGraph();
         // Here the ordering is not deterministic but we can at least check if
         // all the variables are indexed
-        HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph);
+        HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
         Set<String> vars = new HashSet<>();
         for (int i = 0; i < variables.size(); i++) {
             vars.add(orderer.getNameFromIndex(i));
@@ -67,7 +67,7 @@ class HeuristicVariableOrdererTest {
         constraints.add(new ConstraintMockup(variables.subList(1,3)));
         constraints.add(new ConstraintMockup(variables.subList(2,3)));
         ConstraintGraph graph = new ConstraintGraph(constraints, variables.subList(0,3));
-        HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph);
+        HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
 
         assertTrue(orderer.getNameFromIndex(0).equals(variables.get(2)));
         assertTrue(orderer.getNameFromIndex(1).equals(variables.get(1)));

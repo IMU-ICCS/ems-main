@@ -1,15 +1,15 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts;
 
 import cp_wrapper.solution.CpSolution;
+import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.*;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.CheapestPolicyImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.RandomPolicyImpl;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.javatuples.Pair;
-
-import java.util.List;
 
 @Slf4j
 public class MCTSSolver {
@@ -18,12 +18,20 @@ public class MCTSSolver {
     private double explorationCoefficient;
     private int iterations;
     private MCTSWrapper mctsWrapper;
+    private MoveProvider moveProvider;
+    private Policy policy;
+    private Tree mctsTree;
 
-    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper) {
+
+    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
         this.selectorCoefficient = selectorCoefficient;
         this.explorationCoefficient = explorationCoefficient;
         this.iterations = iterations;
         this.mctsWrapper = mctsWrapper;
+        moveProvider = new MoveProviderImpl(mctsWrapper);
+        this.policy = mctsWrapper.createPolicy(policy);
+        updateParameters();
+        mctsTree = new TreeImpl(this.policy, moveProvider);
     }
 
     public CpSolution solve() {
@@ -32,19 +40,17 @@ public class MCTSSolver {
     }
 
     public Solution search() {
-        MoveProvider moveProvider = new MoveProviderImpl(mctsWrapper);
-        Policy policy = new RandomPolicyImpl(mctsWrapper);
-
-        NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
-        NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
-        NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
-
-        Tree mctsTree = new TreeImpl(policy, moveProvider);
-
+        updateParameters();
         Solution solution = mctsTree.run(iterations);
 
         log.info("Found solution with utility: {}. Values: {}.", solution.getUtility(), solution.getAssignment().toString());
 
         return solution;
+    }
+
+    private void updateParameters() {
+        NodeStatisticsImpl.setExplorationCoefficient(explorationCoefficient);
+        NodeStatisticsImpl.setSelectorCoefficient(selectorCoefficient);
+        NodeStatisticsImpl.setMaximalDepth(mctsWrapper.getSize());
     }
 }

@@ -1,20 +1,20 @@
 package eu.melodic.upperware.mcts_solver.solver;
 
 import cp_wrapper.solution.CpSolution;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.OneToManyChannel;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.SolutionBuffer;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.FinalizationMessage;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.Message;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.TemperatureMessage;
-import eu.melodic.upperware.mcts_solver.solver.concurrency_utils.messages.UtilityMessage;
+import cp_wrapper.utils.MaxRuntimeLimit;
+import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.SolutionBuffer;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.FinalizationMessage;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.Message;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.TemperatureMessage;
+import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.UtilityMessage;
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
-import eu.melodic.upperware.mcts_solver.solver.utils.MaxRuntimeLimit;
 import eu.melodic.upperware.mcts_solver.solver.worker_thread.WorkerThread;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.javatuples.Pair;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,13 +29,15 @@ public class MCTSCoordinator {
     private int iterations;
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
+    private AvailablePolicies policyType;
 
-    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations) {
+    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType) {
         this.numThreads = numThreads;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.iterations = iterations;
         this.messageChannel =  new OneToManyChannel<>(numThreads);
+        this.policyType = policyType;
     }
 
     public CpSolution solve(int timeLimit, MCTSWrapperFactory mctsWrapperFactory) throws InterruptedException {
@@ -59,7 +61,7 @@ public class MCTSCoordinator {
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
-                MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid));
+                MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid), policyType);
                 WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver);
                 workerThread.workerRun();
             });

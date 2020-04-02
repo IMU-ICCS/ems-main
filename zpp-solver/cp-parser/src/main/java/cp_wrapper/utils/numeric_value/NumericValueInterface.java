@@ -7,6 +7,8 @@ public interface NumericValueInterface {
     @Override
     boolean equals(Object object);
 
+    boolean representsSameNumber(NumericValueInterface value);
+
     @Override
     int hashCode();
 }
