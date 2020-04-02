@@ -78,16 +78,15 @@ public class PTSolverCoordinator {
     private double minTemp = 100;
     private double maxTemp = 10000;
     private int numThreads = 10;
-    private int seconds = 10;
 
-    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int seconds) {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, numThreads).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
-            solve(cp, utilityGenerator);
+            solve(cp, utilityGenerator, seconds);
 
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
         } catch (Exception e) {
@@ -96,7 +95,7 @@ public class PTSolverCoordinator {
     }
 
     @Async
-    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid, int seconds) {
         try {
             NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
 
@@ -109,7 +108,7 @@ public class PTSolverCoordinator {
             List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads).mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
 
-            solve(cp, utilityGenerators);
+            solve(cp, utilityGenerators, seconds);
 
             trans.commit();
             trans.close();
@@ -123,7 +122,7 @@ public class PTSolverCoordinator {
         }
     }
 
-    private void solve(ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators) {
+    private void solve(ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators, int seconds) {
         PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new ParallelUtilityProviderImpl(utilityGenerators));
         Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
         log.info("Found solution with utility: " + solution.getValue1());

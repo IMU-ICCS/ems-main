@@ -74,16 +74,15 @@ public class GeneticSolverCoordinator {
 
     private SolutionResultNotifier solutionResultNotifier;
     private int populationSize = 100;
-    private int timeLimit = 10;
 
-    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int timeLimit) {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            Boolean solutionFeasible = solve(cp, utilityGenerator);
+            boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
             if (!solutionFeasible) {
                 log.info("Solution is not feasible!");
                 return;
@@ -95,7 +94,7 @@ public class GeneticSolverCoordinator {
     }
 
     @Async
-    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid, int timeLimit) {
         try {
             NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
 
@@ -108,7 +107,7 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            Boolean solutionFeasible = solve(cp, utilityGenerator);
+            Boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
 
             if (!solutionFeasible) {
                 log.info("Problem is infeasible");
@@ -128,7 +127,7 @@ public class GeneticSolverCoordinator {
         }
     }
 
-    private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
+    private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, int timeLimit) {
         GeneticSolverRunner runner = new GeneticSolverRunner();
         runner.setPopulationSize(populationSize);
         runner.setTimeLimitSeconds(timeLimit);
