@@ -1,5 +1,6 @@
 package eu.melodic.upperware.pt_solver.pt_solver;
 
+import cp_wrapper.utils.runtime_limits.TimeRuntimeLimit;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTNeighbourhood;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTObjective;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTRandomGenerator;
@@ -13,18 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
 import org.jamesframework.core.search.algo.ParallelTempering;
-import org.jamesframework.core.search.stopcriteria.MaxRuntime;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 import org.javatuples.Pair;
 
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -36,6 +33,7 @@ public class PTSolver {
     private int numReplicas;
     private ParallelTempering<PTSolution> parallelTemperingSolver;
     private final double MAX_TEMPERATURE_DEFAULT = 10.0;
+    private final double MIN_TEMPERATURE_DEFAULT = 0.000001;
 
     public PTSolver(double minTemp, double maxTemp, int numReplicas, ConstraintProblem cp, UtilityProvider utility) {
         this.minTemp = minTemp;
@@ -77,12 +75,8 @@ public class PTSolver {
     private double estimateMeanUtility(int timeLimit) throws InterruptedException {
         Queue<Double> globalSampleQueue = new ConcurrentLinkedQueue<>();
         List<Thread> threads = new ArrayList<>();
-        IntStream.range(0, numReplicas).forEach(
-                threadNumber -> {
-                    Thread thread = new Thread(() -> globalSampleQueue.add(sampleUtilities(timeLimit)));
-                    threads.add(thread);
-                    thread.start();
-                });
+        IntStream.range(0, numReplicas).forEach(threadNumber -> threads.add(new Thread(() -> globalSampleQueue.add(sampleUtilities(timeLimit)))));
+        threads.forEach(Thread::start);
         for (Thread thread : threads) {
             thread.join();
         }
@@ -91,21 +85,21 @@ public class PTSolver {
 
     private double sampleUtilities(int timeLimit) {
         List<Double> values = new ArrayList<>();
-        Clock clock = Clock.systemDefaultZone();
-        long startTime = clock.millis();
-        long endTime;
+        TimeRuntimeLimit runtimeLimit = new TimeRuntimeLimit(timeLimit);
         PTRandomGenerator randomGenerator = new PTRandomGenerator();
         PTObjective objective = new PTObjective();
         Random random = new Random();
-        do {
-            values.add(objective.evaluate(randomGenerator.create(random ,ptcpWrapper), ptcpWrapper).getValue());
-            endTime = clock.millis();
-        } while (endTime - startTime < 1000*timeLimit);
+        runtimeLimit.startCounting();
+        while (!runtimeLimit.limitExceeded()) {
+            values.add(objective.evaluate(randomGenerator.create(random, ptcpWrapper), ptcpWrapper).getValue());
+        }
         return values.stream().mapToDouble(d->d).average().orElse(0.0);
     }
 
     private double getMinTemperature(double meanUtility) {
-        if (meanUtility == 0) return 0.0000001;
+        if (meanUtility == 0) {
+            return MIN_TEMPERATURE_DEFAULT;
+        }
         double tmp = 1/meanUtility * Math.log(1 - Math.pow(0.9, 1/ (double) ptcpWrapper.getVariablesCount()));
         return -1/tmp;
     }
