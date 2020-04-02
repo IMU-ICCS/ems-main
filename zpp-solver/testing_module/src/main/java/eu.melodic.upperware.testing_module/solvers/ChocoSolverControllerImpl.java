@@ -1,5 +1,6 @@
 package eu.melodic.upperware.testing_module.solvers;
 
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.cpsolver.solver.CpSolution;
 import eu.melodic.upperware.cpsolver.solver.parser.CommonConstraintProblemParser;
@@ -28,7 +29,7 @@ public class ChocoSolverControllerImpl implements SolverController {
     private int timeLimit;
     private final static String SOLVER_ID = "ChocoSolver";
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpID) {
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityProvider utilityProvider, String cpID) {
         log.info("Starting " + SOLVER_ID + " on " + cpID);
         ConstraintProblemParser constraintProblemParser = new CommonConstraintProblemParser(new IntVarCreator(), new IntConstantCreator(), new IntMetricCreator(), null, null, null );
         SolverParsedData solverParsedData = constraintProblemParser.parse(cp);
@@ -37,7 +38,7 @@ public class ChocoSolverControllerImpl implements SolverController {
         List<VariableValueDTO> bestSolution = Collections.emptyList();
         for (CpSolution solution : solutions) {
             List<VariableValueDTO> result = convertToVariableValues(solution);
-            double utility = utilityGenerator.evaluate(result);
+            double utility = utilityProvider.evaluate(result);
             if (utility > maxUtility) {
                 maxUtility = utility;
                 bestSolution = result;
@@ -47,7 +48,6 @@ public class ChocoSolverControllerImpl implements SolverController {
     }
 
     private List<VariableValueDTO> convertToVariableValues(CpSolution solution) {
-
         List<VariableValueDTO> intPart = solution.getIntVars()
                 .values()
                 .stream()
