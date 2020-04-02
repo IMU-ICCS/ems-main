@@ -35,7 +35,8 @@ public class ComponentVariableOrderer implements VariableOrderer {
 
     @Override
     public int getIndexFromComponentType(String component, VariableType type) {
-        throw new RuntimeException("Not implemented!");
+       int componentIndex = getComponentIndex(component);
+       return VARIABLES_PER_COMPONENT*componentIndex + VariableTypeOrderer.mapTypeToIndex(type);
     }
 
     /*

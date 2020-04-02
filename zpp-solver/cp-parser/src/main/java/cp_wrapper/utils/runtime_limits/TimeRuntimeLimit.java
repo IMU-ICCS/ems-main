@@ -1,12 +1,12 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.runtime_limits;
 
-public class MaxRuntimeLimit {
+public class TimeRuntimeLimit {
     private final long NANO_TO_MILLISECONDS = 1000000;
     private final long MILLISECONDS_TO_SECONDS = 1000;
     private int timeLimit;
     private long startTime;
 
-    public MaxRuntimeLimit(int timeLimit) {
+    public TimeRuntimeLimit(int timeLimit) {
         this.timeLimit = timeLimit;
     }
 

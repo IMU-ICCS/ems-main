@@ -22,12 +22,18 @@ public class CheapestPolicyImpl implements Policy {
     private Collection<String> components;
     private Collection<VariableDTO> variables;
     private Map<String, Collection<VariableDTO>> componentToVariables = new HashMap<>();
-    private final List<VariableType> variableTypes = Arrays.asList(
+
+    private final List<VariableType> notRequiredVariableTypes = Arrays.asList(
             VariableType.CORES,
             VariableType.STORAGE,
             VariableType.RAM,
             VariableType.LATITUDE,
             VariableType.LONGITUDE
+    );
+
+    private final List<VariableType> requiredVariableTypes = Arrays.asList(
+            VariableType.CARDINALITY,
+            VariableType.PROVIDER
     );
 
     public CheapestPolicyImpl(MCTSWrapper mctsWrapper) {
@@ -40,15 +46,17 @@ public class CheapestPolicyImpl implements Policy {
     @Override
     public Solution finishPath(Path path) {
         List<Integer> assignment = path.getPath();
-        int rolloutDepth = assignment.size();
+        final int rolloutDepth = assignment.size();
         if (!hasAllRequiredVariables(assignment)) {
             assignment = generatePathForCardinalityAndProvider(assignment);
         }
+        final int assignmentDepth = assignment.size();
+        assignment = fillAssignmentWithTrivialValues(assignment);
         Collection<ConfigurationElement> cheapestConfiguration = findCheapestConfiguration(assignment);
         if (cheapestConfiguration.isEmpty()) {
             return new SolutionImpl(rolloutDepth);
         } else {
-            return configurationToSolution(cheapestConfiguration, assignment, rolloutDepth);
+            return configurationToSolution(cheapestConfiguration, assignment, rolloutDepth, assignmentDepth);
         }
     }
 
@@ -59,11 +67,11 @@ public class CheapestPolicyImpl implements Policy {
     }
 
     private int getCountOfRequiredVariables() {
-        return 2*mctsWrapper.getNumberOfComponents();
+        return requiredVariableTypes.size() * mctsWrapper.getNumberOfComponents();
     }
 
     private boolean hasAllRequiredVariables(List<Integer> assignment) {
-        return assignment.size() >= 2*mctsWrapper.getNumberOfComponents();
+        return assignment.size() >= getCountOfRequiredVariables();
     }
 
     private Collection<ConfigurationElement> findCheapestConfiguration(List<Integer> assignment) {
@@ -81,29 +89,43 @@ public class CheapestPolicyImpl implements Policy {
         return cheapestConfiguration;
     }
 
+    private List<Integer> fillAssignmentWithTrivialValues(List<Integer> assignment) {
+        IntStream.range(assignment.size(), mctsWrapper.getSize())
+                .forEach(index -> assignment.add(0));
+        return assignment;
+    }
+
     private Collection<ConfigurationElement> getConfigurationForComponent(String componentId, Collection<VariableValueDTO> values) {
         return EvaluatingUtils.convertSolutionToNodeCandidates(componentToVariables.get(componentId), mctsWrapper.getNodeCandidates(componentId), values);
     }
 
     private Collection<VariableDTO> getVariablesForComponent(String componentId) {
-        return variables.stream().filter(variable -> variable.getComponentId().equals((componentId))).collect(Collectors.toList());
+        return variables.stream()
+                .filter(variable -> variable.getComponentId()
+                        .equals((componentId)))
+                .collect(Collectors.toList());
     }
 
-    private Solution configurationToSolution(Collection<ConfigurationElement> configuration, List<Integer> assignment, int rolloutDepth) {
-        Map<Integer, Integer> indexToValue = new HashMap<>();
-        IntStream.range(0, assignment.size()).forEach(index->indexToValue.put(index, assignment.get(index)));
-        configuration.forEach(element -> addConfigurationToAssignment(indexToValue, element, assignment.size()));
-        List<Integer> fullAssignment = Arrays.asList(new Integer[indexToValue.keySet().size()]);
-        indexToValue.forEach(fullAssignment::set);
-        return new SolutionImpl(rolloutDepth, fullAssignment, mctsWrapper);
+    private Solution configurationToSolution(Collection<ConfigurationElement> configuration, List<Integer> assignment, int rolloutDepth, final int assignmentDepth) {
+        configuration
+                .forEach(element -> addConfigurationToAssignment(assignment, element, assignmentDepth));
+
+        return new SolutionImpl(rolloutDepth, assignment, mctsWrapper);
     }
 
-    private void addConfigurationToAssignment(Map<Integer, Integer> assignment, ConfigurationElement configurationElement, int assignmentSize) {
-       variableTypes.forEach(variableType -> addVariableToAssignment(assignment, configurationElement, assignmentSize, variableType));
+    private void addConfigurationToAssignment(List<Integer> assignment, ConfigurationElement configurationElement, final int assignmentDepth) {
+       notRequiredVariableTypes.forEach(variableType -> addVariableToAssignment(assignment, configurationElement, assignmentDepth, variableType));
     }
 
-    private void addVariableToAssignment(Map<Integer, Integer> assignment, ConfigurationElement configurationElement, int assignmentSize, VariableType type) {
-        int variableIndex = mctsWrapper.getVariableIndexFromComponentAndType(configurationElement.getId(), type);
-        if (variableIndex >= assignmentSize) assignment.put(variableIndex, mctsWrapper.getIndexFromValue(new LongValue(VariableExtractor.getVariableValue(type, configurationElement)), variableIndex));
+    private void addVariableToAssignment(List<Integer> assignment, ConfigurationElement configurationElement, final int assignmentDepth, VariableType type) {
+        if (mctsWrapper.variableExistsInCP(configurationElement.getId(), type)) {
+            int variableIndex = mctsWrapper.getVariableIndexFromComponentAndType(configurationElement.getId(), type);
+            if (variableIndex >= assignmentDepth) {
+                assignment.add(
+                        variableIndex,
+                        mctsWrapper.getIndexFromValue(new LongValue(VariableExtractor.getVariableValue(type, configurationElement)), variableIndex)
+                );
+            }
+        }
     }
 }

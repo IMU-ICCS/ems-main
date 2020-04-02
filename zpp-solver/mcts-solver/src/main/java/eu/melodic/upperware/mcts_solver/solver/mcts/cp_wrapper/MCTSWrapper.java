@@ -26,12 +26,7 @@ public class MCTSWrapper{
 
     public MCTSWrapper(CPWrapper cpWrapper, NodeCandidates nodeCandidates) {
         this.cpWrapper = cpWrapper;
-        this.nodeCandidatesProvider = new NodeCandidatesProvider(nodeCandidates, cpWrapper.getVariableDTOCollection(), cpWrapper);
-    }
-
-    public MCTSWrapper(CPWrapper cpWrapper) {
-        this.cpWrapper = cpWrapper;
-        this.nodeCandidatesProvider = null;
+        this.nodeCandidatesProvider = nodeCandidates == null ? null : new NodeCandidatesProvider(nodeCandidates, cpWrapper.getVariableDTOCollection(), cpWrapper);
     }
 
     public NodeCandidates getNodeCandidates(String componentId) {
@@ -84,6 +79,11 @@ public class MCTSWrapper{
 
     public int getIndexFromValue(NumericValueInterface value, int variable) {
         return cpWrapper.getIndexFromValue(value, variable);
+    }
+
+    public boolean variableExistsInCP(String componentId, VariableType type) {
+        return cpWrapper.getVariableDTOCollection()
+                .stream().anyMatch(variable -> componentId.equals(variable.getComponentId()) && type == variable.getType());
     }
 
     public int getVariableIndexFromComponentAndType(String componentId, VariableType type) {

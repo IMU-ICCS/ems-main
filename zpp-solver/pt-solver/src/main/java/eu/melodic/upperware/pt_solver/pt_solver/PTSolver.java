@@ -1,6 +1,6 @@
 package eu.melodic.upperware.pt_solver.pt_solver;
 
-import cp_wrapper.utils.MaxRuntimeLimit;
+import cp_wrapper.utils.runtime_limits.TimeRuntimeLimit;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTNeighbourhood;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTObjective;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTRandomGenerator;
@@ -85,12 +85,12 @@ public class PTSolver {
 
     private double sampleUtilities(int timeLimit) {
         List<Double> values = new ArrayList<>();
-        MaxRuntimeLimit maxRuntimeLimit = new MaxRuntimeLimit(timeLimit);
+        TimeRuntimeLimit runtimeLimit = new TimeRuntimeLimit(timeLimit);
         PTRandomGenerator randomGenerator = new PTRandomGenerator();
         PTObjective objective = new PTObjective();
         Random random = new Random();
-        maxRuntimeLimit.startCounting();
-        while (!maxRuntimeLimit.limitExceeded()) {
+        runtimeLimit.startCounting();
+        while (!runtimeLimit.limitExceeded()) {
             values.add(objective.evaluate(randomGenerator.create(random, ptcpWrapper), ptcpWrapper).getValue());
         }
         return values.stream().mapToDouble(d->d).average().orElse(0.0);

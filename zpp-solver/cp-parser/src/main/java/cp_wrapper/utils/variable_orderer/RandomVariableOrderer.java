@@ -28,9 +28,6 @@ public class RandomVariableOrderer implements VariableOrderer {
 
     @Override
     public int getIndexFromComponentType(String componentId, VariableType type) {
-        if (!typeToIndex.containsKey(new Pair<>(componentId, type))) {
-            return -1;
-        }
         return typeToIndex.get(new Pair<>(componentId, type));
     }
 

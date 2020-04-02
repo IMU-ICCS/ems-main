@@ -31,7 +31,7 @@ class MCTSCoordinatorTest {
             Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareSimpleConstraintProblem();
             CPWrapper cpWrapper = new CPWrapper();
             cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
-            return new MCTSWrapper(cpWrapper);
+            return new MCTSWrapper(cpWrapper, null);
             }).collect(Collectors.toList());
 
             MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
@@ -63,7 +63,7 @@ class MCTSCoordinatorTest {
             Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareLessSimpleConstraintProblem();
             CPWrapper cpWrapper = new CPWrapper();
             cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
-            return new MCTSWrapper(cpWrapper);
+            return new MCTSWrapper(cpWrapper, null);
         }).collect(Collectors.toList());
 
         MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
