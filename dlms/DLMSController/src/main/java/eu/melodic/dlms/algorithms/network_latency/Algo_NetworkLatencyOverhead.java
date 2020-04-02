@@ -105,7 +105,11 @@ public class Algo_NetworkLatencyOverhead {
                     ,effectiveMaxLatencyMillis);
 
             if(Objects.nonNull(effectiveMinLatencyMillis) && Objects.nonNull(effectiveMaxLatencyMillis)) {
-                utility = (totalLatency - (latencyCount * effectiveMinLatencyMillis.doubleValue())) / (latencyCount * (effectiveMaxLatencyMillis.doubleValue() - effectiveMinLatencyMillis.doubleValue()));
+                if (effectiveMinLatencyMillis.equals(effectiveMaxLatencyMillis)) { //only one value
+                    utility = 1;
+                } else {
+                    utility = (totalLatency - (latencyCount * effectiveMinLatencyMillis.doubleValue())) / (latencyCount * (effectiveMaxLatencyMillis.doubleValue() - effectiveMinLatencyMillis.doubleValue()));
+                }
             } else {
                 log.debug("Null reference found, effectiveMinLatencyMillis: {}, effectiveMaxLatencyMillis: {}", effectiveMinLatencyMillis, effectiveMaxLatencyMillis);
             }
