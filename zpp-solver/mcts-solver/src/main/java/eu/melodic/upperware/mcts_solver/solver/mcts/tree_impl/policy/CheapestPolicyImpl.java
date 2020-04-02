@@ -114,7 +114,10 @@ public class CheapestPolicyImpl implements Policy {
     }
 
     private void addConfigurationToAssignment(List<Integer> assignment, ConfigurationElement configurationElement, final int assignmentDepth) {
-       notRequiredVariableTypes.forEach(variableType -> addVariableToAssignment(assignment, configurationElement, assignmentDepth, variableType));
+       notRequiredVariableTypes
+               .forEach(variableType ->
+                       addVariableToAssignment(assignment, configurationElement, assignmentDepth, variableType)
+               );
     }
 
     private void addVariableToAssignment(List<Integer> assignment, ConfigurationElement configurationElement, final int assignmentDepth, VariableType type) {

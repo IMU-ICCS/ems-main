@@ -113,10 +113,10 @@ public class DomainHandler {
     public static int getValueIndex(NumericValueInterface value, Domain domain) {
         if (isNumericListDomain(domain)) {
             List<NumericValueUpperware> values = ((NumericListDomain) domain).getValues();
-            int returnV = IntStream.range(0, values.size()).filter(index -> value.representsSameNumber(NumericValueFactory.fromNumericValueInterface(values.get(index))))
-                        .findFirst().orElse(-1);
-            List<NumericValueInterface> asd = values.stream().map(NumericValueFactory::fromNumericValueInterface).collect(Collectors.toList());
-            return returnV;
+            return IntStream.range(0, values.size())
+                    .filter(index -> value.representsSameNumber(NumericValueFactory.fromNumericValueInterface(values.get(index))))
+                    .findFirst()
+                    .orElse(-1);
         } else if (isRangeDomain(domain) && value.isInteger()) {
             return (value.getIntValue() - (int) ExpressionEvaluator.getValueOfNumericInterface(((RangeDomain) domain).getFrom()));
         }
