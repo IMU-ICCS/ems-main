@@ -21,7 +21,7 @@ public class MCTSSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.5, 150, new MCTSWrapper(cpWrapper));
+        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.5, 150, 100, new MCTSWrapper(cpWrapper));
         List<Integer> assignment = mctsSolver.search().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
@@ -39,7 +39,7 @@ public class MCTSSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 500, new MCTSWrapper(cpWrapper));
+        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 500, 100, new MCTSWrapper(cpWrapper));
         List<Integer> assignment = mctsSolver.search().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
@@ -68,7 +68,7 @@ public class MCTSSolverTest {
         int passed = 0, total = 0;
 
         for (int i = 0; i < 1000; i++) {
-            MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 5000, new MCTSWrapper(cpWrapper));
+            MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 5000, 1, new MCTSWrapper(cpWrapper));
             List<Integer> assignment = mctsSolver.search().getAssignment();
 
             List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);

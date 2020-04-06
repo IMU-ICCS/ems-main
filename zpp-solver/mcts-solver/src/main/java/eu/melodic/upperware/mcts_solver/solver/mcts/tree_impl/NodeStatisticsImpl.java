@@ -57,6 +57,11 @@ public class NodeStatisticsImpl implements NodeStatistics {
     }
 
     @Override
+    public void setDeExpanded() {
+        isExpanded = false;
+    }
+
+    @Override
     public void setTrimmed() {
         isTrimmed = true;
     }

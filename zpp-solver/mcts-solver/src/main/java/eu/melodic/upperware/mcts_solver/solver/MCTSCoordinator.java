@@ -27,14 +27,16 @@ public class MCTSCoordinator {
     private double minTemperature;
     private double maxTemperature;
     private int iterations;
+    private int nodeCountLimit;
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
 
-    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations) {
+    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations, int nodeCountLimit) {
         this.numThreads = numThreads;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.iterations = iterations;
+        this.nodeCountLimit = nodeCountLimit;
         this.messageChannel =  new OneToManyChannel<>(numThreads);
     }
 
@@ -59,7 +61,7 @@ public class MCTSCoordinator {
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
-                MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid));
+                MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, nodeCountLimit, mctsWrappers.get(pid));
                 WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver);
                 workerThread.workerRun();
             });

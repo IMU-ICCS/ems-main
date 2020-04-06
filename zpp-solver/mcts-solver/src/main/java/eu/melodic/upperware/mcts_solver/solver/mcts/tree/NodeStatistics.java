@@ -9,5 +9,6 @@ public interface NodeStatistics {
     boolean isExpanded();
     boolean isTrimmed();
     void setExpanded();
+    void setDeExpanded();
     void setTrimmed();
 }

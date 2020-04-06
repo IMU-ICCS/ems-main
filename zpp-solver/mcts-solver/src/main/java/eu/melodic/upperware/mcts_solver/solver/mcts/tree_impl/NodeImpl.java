@@ -3,7 +3,9 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.NodeStatistics;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,11 @@ public class NodeImpl implements Node {
     private List<Node> children = new ArrayList<>();
     private int value;
     private NodeStatistics nodeStatistics;
+    private boolean isInFifo = false;
+    @Setter
+    private Node next = null;
+    @Setter
+    private Node previous = null;
 
     public NodeImpl(Integer value) {
         this.value = value;
@@ -47,6 +54,7 @@ public class NodeImpl implements Node {
     @Override
     public void addChild(Node child) {
         children.add(child);
+
     }
 
     @Override
@@ -70,6 +78,11 @@ public class NodeImpl implements Node {
     }
 
     @Override
+    public void setDeExpanded() {
+        nodeStatistics.setDeExpanded();
+    }
+
+    @Override
     public void setTrimmed() {
         nodeStatistics.setTrimmed();
     }
@@ -89,4 +102,27 @@ public class NodeImpl implements Node {
         return Double.compare(nodeStatistics.getEvaluation(parent.getNodeStatistics()),
                 other.getNodeStatistics().getEvaluation(other.getParent().getNodeStatistics()));
     }
+
+    @Override
+    public void addToFifo(Node previous) {
+        this.isInFifo = true;
+        this.previous = previous;
+        this.next = null;
+    }
+
+    @Override
+    public void removeFromFifo() {
+        this.isInFifo = false;
+        this.next = null;
+        this.previous = null;
+    }
+
+    @Override
+    public String toString() {
+        String toRet = super.toString();
+        toRet += "depth : " + nodeStatistics.getDepth() + " ";
+        toRet += "visitCount : " + nodeStatistics.getVisitCount() + " ";
+        return toRet;
+    }
+
 }
