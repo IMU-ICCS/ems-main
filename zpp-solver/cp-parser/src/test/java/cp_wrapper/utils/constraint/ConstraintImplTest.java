@@ -1,4 +1,4 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.constraint;
 
 import cp_wrapper.utils.constraint.Constraint;
 import cp_wrapper.utils.constraint.ConstraintImpl;
@@ -40,7 +40,6 @@ class ConstraintImplTest {
 
     @Test
     public void shouldThrowWrongVariables(){
-        Map<String, Double> emptyVars = new HashMap<>();
         Constraint constraint = new ConstraintImpl(ComparatorEnum.DIFFERENT, variables.get(0), variables.get(1));
         Map<String, NumericValueInterface> vars = new HashMap<>();
         vars.put(names[1], new DoubleValue(0.00123));

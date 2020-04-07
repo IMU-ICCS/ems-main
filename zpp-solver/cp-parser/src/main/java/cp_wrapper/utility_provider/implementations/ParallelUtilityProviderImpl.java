@@ -1,5 +1,6 @@
-package cp_wrapper.utility_provider;
+package cp_wrapper.utility_provider.implementations;
 
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 

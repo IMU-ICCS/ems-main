@@ -1,4 +1,4 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.constraint_graph;
 /*
     This class implements constraint graph.
     A constraint graph is created from a set of

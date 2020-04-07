@@ -1,6 +1,6 @@
 package cp_wrapper.utils.constraint;
 
-import cp_wrapper.utils.ExpressionEvaluator;
+import cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.paasage.upperware.metamodel.cp.*;
 
