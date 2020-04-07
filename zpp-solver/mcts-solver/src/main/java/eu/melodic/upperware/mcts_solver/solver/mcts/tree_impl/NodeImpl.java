@@ -64,18 +64,13 @@ public class NodeImpl implements Node {
     }
 
     @Override
-    public boolean isTrimmed() {
-        return nodeStatistics.isTrimmed();
-    }
-
-    @Override
     public void setExpanded() {
         nodeStatistics.setExpanded();
     }
 
     @Override
     public void setUnexpanded() {
-        nodeStatistics.setDeExpanded();
+        nodeStatistics.setUnexpanded();
     }
 
     @Override

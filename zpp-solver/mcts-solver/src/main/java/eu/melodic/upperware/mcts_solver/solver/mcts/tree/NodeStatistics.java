@@ -7,8 +7,6 @@ public interface NodeStatistics {
     void markNewVisit();
     double getEvaluation(NodeStatistics parentStats); // Evaluates node.
     boolean isExpanded();
-    boolean isTrimmed();
     void setExpanded();
-    void setDeExpanded();
-    void setTrimmed();
+    void setUnexpanded();
 }

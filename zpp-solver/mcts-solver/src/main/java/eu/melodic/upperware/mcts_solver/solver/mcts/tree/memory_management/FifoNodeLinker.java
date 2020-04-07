@@ -7,7 +7,9 @@ public interface FifoNodeLinker {
     boolean isInFifo();
     void addToFifo(Node next);
     void removeFromFifo();
+    // Returns neighbour node towards back of queue. Null if there are no next nodes.
     Node getNext();
+    // Returns neighbour node towards front of queue. Null if there are no previous nodes.
     Node getPrevious();
     void setNext(Node node);
     void setPrevious(Node node);

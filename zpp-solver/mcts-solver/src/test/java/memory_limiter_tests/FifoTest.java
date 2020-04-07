@@ -6,6 +6,10 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management.FifoImpl;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import static org.junit.Assert.*;
 
 public class FifoTest {
@@ -104,5 +108,29 @@ public class FifoTest {
         assertFalse(fifo.empty());
         assertEquals(fifo.popFront(), node2);
 
+    }
+
+    @Test
+    public void randomTest() {
+        List<Node> nodes = new ArrayList<>();
+        int NODE_NUMBER = 1000, TEST_SIZE = 1000000;
+        for (int i = 0; i < NODE_NUMBER; i++) {
+            nodes.add(new NodeImpl(i));
+        }
+        List<Node> pseudo_queue = new ArrayList<>();
+
+        Fifo fifo = new FifoImpl();
+        Random random = new Random();
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            int which = random.nextInt(NODE_NUMBER);
+            fifo.pushBack(nodes.get(which));
+            pseudo_queue.remove(nodes.get(which));
+            pseudo_queue.add(nodes.get(which));
+        }
+
+        for (int i = 0; i < NODE_NUMBER; i++) {
+            assertSame(fifo.popFront(), pseudo_queue.get(i));
+        }
     }
 }

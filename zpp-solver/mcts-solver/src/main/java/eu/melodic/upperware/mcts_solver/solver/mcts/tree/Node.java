@@ -15,7 +15,6 @@ public interface Node extends Comparable<Node> {
     void addChild(Node child);
     Node getBestChild();
     boolean isExpanded();
-    boolean isTrimmed();
     void setExpanded();
     void setUnexpanded();
 
