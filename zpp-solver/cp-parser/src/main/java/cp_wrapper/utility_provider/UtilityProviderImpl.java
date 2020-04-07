@@ -9,7 +9,7 @@ import java.util.List;
 public class UtilityProviderImpl implements UtilityProvider{
     private UtilityGeneratorApplication utility;
     @Override
-    synchronized public double evaluate(List<VariableValueDTO> result) {
+    public double evaluate(List<VariableValueDTO> result) {
         return utility.evaluate(result);
     }
 }

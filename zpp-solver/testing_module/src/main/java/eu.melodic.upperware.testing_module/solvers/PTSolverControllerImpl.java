@@ -1,10 +1,13 @@
 package eu.melodic.upperware.testing_module.solvers;
 
+import cp_wrapper.utility_provider.ParallelUtilityProviderImpl;
+import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.testing_module.utils.PTParameters;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
+import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -24,9 +27,9 @@ public class PTSolverControllerImpl implements SolverController {
     private final static String SOLVER_ID = "PTSolver";
 
     @Override
-    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, String cpID) {
+    public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpID) {
         log.info("Starting " + SOLVER_ID + " on " + cpID);
-        PTSolver solver = new PTSolver(ptParameters.getMinTmp(), ptParameters.getMaxTmp(), ptParameters.getNumThreads(), cp, new UtilityProviderImpl(utilityGenerator));
+        PTSolver solver = new PTSolver(ptParameters.getMinTmp(), ptParameters.getMaxTmp(), ptParameters.getNumThreads(), cp, utilityGeneratorMaster.createParallelUtilityProvider(ptParameters.getNumThreads()));
         return solutionToString(solver.solve(new MaxRuntime(timeLimit, TimeUnit.SECONDS)), cpID);
     }
 

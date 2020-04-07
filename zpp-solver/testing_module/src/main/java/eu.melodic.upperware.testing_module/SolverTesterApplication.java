@@ -14,6 +14,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties({UtilityGeneratorProperties.class, MelodicSecurityProperties.class, CacheProperties.class, PenaltyFunctionProperties.class})
 public class SolverTesterApplication implements CommandLineRunner {
     @Autowired
+    private
     SolverTester solverTester;
     public static void main(String[] args) {
         SpringApplication.run(SolverTesterApplication.class, args).close();

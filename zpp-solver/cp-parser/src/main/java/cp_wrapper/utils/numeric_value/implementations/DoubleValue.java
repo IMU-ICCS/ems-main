@@ -26,4 +26,9 @@ public class DoubleValue implements NumericValueInterface {
     public boolean isInteger() {
         return false;
     }
+
+    @Override
+    public boolean representsSameNumber(NumericValueInterface value) {
+        return equals(value);
+    }
 }

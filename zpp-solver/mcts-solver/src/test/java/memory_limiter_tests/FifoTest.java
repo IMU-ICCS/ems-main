@@ -113,7 +113,7 @@ public class FifoTest {
     @Test
     public void randomTest() {
         List<Node> nodes = new ArrayList<>();
-        int NODE_NUMBER = 1000, TEST_SIZE = 1000000;
+        int NODE_NUMBER = 100, TEST_SIZE = 1000000;
         for (int i = 0; i < NODE_NUMBER; i++) {
             nodes.add(new NodeImpl(i));
         }

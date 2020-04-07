@@ -2,6 +2,7 @@ package eu.melodic.upperware.nc_solver.nc_solver.variable_orderer;
 
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.Getter;
 
 import java.util.*;
@@ -30,6 +31,12 @@ public class ComponentVariableOrderer implements VariableOrderer {
     @Override
     public String getNameFromIndex(int var) {
         return indexToVariableName.get(var);
+    }
+
+    @Override
+    public int getIndexFromComponentType(String component, VariableType type) {
+       int componentIndex = getComponentIndex(component);
+       return VARIABLES_PER_COMPONENT*componentIndex + VariableTypeOrderer.mapTypeToIndex(type);
     }
 
     /*

@@ -12,8 +12,9 @@ public class SolverSolutionToStringConverter {
         stringBuilder.append(cpId).append(";");
         stringBuilder.append(timeLimit).append(";");
         stringBuilder.append(solution.getValue1()).append(";");
-        solution.getValue0().forEach(variable -> stringBuilder.append(variable.toString() + ";"));
         stringBuilder.append(solverParameters.toString());
+        solution.getValue0().forEach(variable -> stringBuilder.append(variable.toString() + ";"));
+        stringBuilder.append("\n");
         return stringBuilder.toString();
     }
 

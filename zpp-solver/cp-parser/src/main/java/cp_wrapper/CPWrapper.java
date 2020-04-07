@@ -10,33 +10,45 @@ import cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import cp_wrapper.utils.VariableNumericType;
 import cp_wrapper.utils.variable_orderer.RandomVariableOrderer;
 import cp_wrapper.utils.variable_orderer.VariableOrderer;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.paasage.upperware.metamodel.cp.*;
+import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class CPWrapper {
     private VariableOrderer variableOrderer;
     private CPParsedData cpParsedData;
     private UtilityProvider utilityProvider;
+    @Getter
+    private Collection<VariableDTO> variableDTOCollection;
+    @Getter
+    private long numberOfComponents;
 
     public void parse(ConstraintProblem constraintProblem, UtilityProvider utility) {
         CPParser cpParser = new CPParser();
         cpParsedData = cpParser.parse(constraintProblem);
         this.utilityProvider = utility;
-        this.variableOrderer = new HeuristicVariableOrderer(cpParsedData.getConstraintGraph());
+        this.variableOrderer = new HeuristicVariableOrderer(cpParsedData.getConstraintGraph(), cpParsedData.getVariables());
+        this.numberOfComponents = cpParsedData.getVariables().stream().map(CpVariable::getComponentId).distinct().count();
+        this.variableDTOCollection = cpParsedData.getVariables().stream()
+                .map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+                .collect(Collectors.toList());
     }
 
     public void parseWithRandomOrder(ConstraintProblem constraintProblem, UtilityProvider utility) {
         CPParser cpParser = new CPParser();
         cpParsedData = cpParser.parse(constraintProblem);
         this.utilityProvider = utility;
+        this.numberOfComponents = cpParsedData.getVariables().stream().map(CpVariable::getComponentId).distinct().count();
         this.variableOrderer = new RandomVariableOrderer(cpParsedData.getVariables());
+        this.variableDTOCollection = cpParsedData.getVariables().stream()
+                .map(variable -> new VariableDTO(variable.getId(), variable.getComponentId(), variable.getVariableType()))
+                .collect(Collectors.toList());
     }
 
     public boolean checkIfFeasible(List<Integer> assignment) {
@@ -45,6 +57,14 @@ public class CPWrapper {
 
     public Domain getVariableDomain(int variableIndex) {
         return cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(variableIndex));
+    }
+
+    public int getIndexFromValue(NumericValueInterface value, int variable) {
+        return DomainHandler.getValueIndex(value, getVariableDomain(variable));
+    }
+
+    public int getVariableIndexFromComponentAndType(String componentId, VariableType type) {
+        return this.variableOrderer.getIndexFromComponentType(componentId, type);
     }
 
     private NumericValueInterface getVariableValueFromDomainIndex(int varIndex, int value) {

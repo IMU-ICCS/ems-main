@@ -5,6 +5,7 @@ import cp_wrapper.solution.CpSolution;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.junit.jupiter.api.Test;
 
@@ -30,10 +31,11 @@ class MCTSCoordinatorTest {
             Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareSimpleConstraintProblem();
             CPWrapper cpWrapper = new CPWrapper();
             cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
-            return new MCTSWrapper(cpWrapper);
+            return new MCTSWrapper(cpWrapper, null);
             }).collect(Collectors.toList());
 
-            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, 100000);
+            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, 100000, AvailablePolicies.RANDOM_POLICY);
+
             CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
                 private int index = -1;
                 @Override
@@ -50,7 +52,6 @@ class MCTSCoordinatorTest {
 
     @Test
     public void simpleCPTest2() throws InterruptedException {
-
         Map<String, Double> realBestSolution = new HashMap<String, Double>() {{
                 put("var1", 4.0);
                 put("var2", 10.0);
@@ -63,10 +64,11 @@ class MCTSCoordinatorTest {
             Map<ConstraintProblem, UtilityProvider> problem = Methods.prepareLessSimpleConstraintProblem();
             CPWrapper cpWrapper = new CPWrapper();
             cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
-            return new MCTSWrapper(cpWrapper);
+            return new MCTSWrapper(cpWrapper, null);
         }).collect(Collectors.toList());
 
-        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, 100000);
+        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, 100000, AvailablePolicies.RANDOM_POLICY);
+
         CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
             private int index = -1;
             @Override

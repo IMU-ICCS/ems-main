@@ -1,4 +1,4 @@
-package eu.melodic.upperware.mcts_solver.solver.concurrency_utils;
+package eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils;
 
 
 import java.util.ArrayList;
