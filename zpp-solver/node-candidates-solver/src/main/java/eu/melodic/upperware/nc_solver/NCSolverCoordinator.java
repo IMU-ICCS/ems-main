@@ -37,7 +37,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static eu.passage.upperware.commons.model.tools.CPModelTool.*;
+import static eu.passage.upperware.commons.model.tools.CPModelTool.createSolution;
+
 
 @Slf4j
 @Service
