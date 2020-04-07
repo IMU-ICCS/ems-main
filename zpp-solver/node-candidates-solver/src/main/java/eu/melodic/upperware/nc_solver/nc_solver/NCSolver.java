@@ -112,10 +112,10 @@ public class NCSolver {
     }
 
     public void adjustTemperature(int timeLimit) throws InterruptedException {
-        maxTemp = MAX_TEMPERATURE_DEFAULT;
+        this.maxTemp = MAX_TEMPERATURE_DEFAULT;
         double meanUtility = estimateMeanUtility(timeLimit);
         log.info("Estimated mean utility is equal to: " + meanUtility);
-        minTemp = getMinTemperature(meanUtility);
+        this.minTemp = getMinTemperature(meanUtility);
         log.info("Setting minimal temperature to: " + minTemp);
     }
 
@@ -140,7 +140,7 @@ public class NCSolver {
         while (!runtimeLimit.limitExceeded()) {
             values.add(objective.evaluate(randomGenerator.create(random, ncWrapper), ncWrapper).getValue());
         }
-        return values.stream().mapToDouble(d->d).average().orElse(0.0);
+        return values.stream().mapToDouble(value -> value).average().orElse(0.0);
     }
 
     private double getMinTemperature(double meanUtility) {
