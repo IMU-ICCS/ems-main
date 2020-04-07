@@ -47,6 +47,20 @@ public abstract class Tree {
         Path path = state.getValue1();
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
+        if (solution.isEmpty()) {
+            removeSubtreeWithNoSolutions((leaf));
+        }
         return solution;
+    }
+
+    private void removeSubtreeWithNoSolutions(Node subtreeRoot) {
+        removeNode(subtreeRoot);
+    }
+
+    private void removeNode(Node node) {
+        node.getParent().removeChild(node);
+        if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
+            removeNode(node.getParent());
+        }
     }
 }
