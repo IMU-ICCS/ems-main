@@ -1,5 +1,7 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.FifoNodeLinker;
+
 import java.util.List;
 
 public interface Node extends Comparable<Node> {
@@ -15,15 +17,8 @@ public interface Node extends Comparable<Node> {
     boolean isExpanded();
     boolean isTrimmed();
     void setExpanded();
-    void setDeExpanded();
-    void setTrimmed();
+    void setUnexpanded();
 
     // Fifo functionality.
-    boolean isInFifo();
-    void addToFifo(Node next);
-    void removeFromFifo();
-    Node getNext();
-    Node getPrevious();
-    void setNext(Node node);
-    void setPrevious(Node node);
+    FifoNodeLinker getFifoNodeLinker();
 }

@@ -80,13 +80,13 @@ public class FifoTest {
         fifo.pushBack(node2);
         fifo.pushBack(node1);
 
-        assertSame(node3.getNext(), node2);
-        assertSame(node2.getNext(), node1);
-        assertSame(node1.getNext(), null);
+        assertSame(node3.getFifoNodeLinker().getNext(), node2);
+        assertSame(node2.getFifoNodeLinker().getNext(), node1);
+        assertSame(node1.getFifoNodeLinker().getNext(), null);
 
-        assertSame(node3.getPrevious(), null);
-        assertSame(node2.getPrevious(), node3);
-        assertSame(node1.getPrevious(), node2);
+        assertSame(node3.getFifoNodeLinker().getPrevious(), null);
+        assertSame(node2.getFifoNodeLinker().getPrevious(), node3);
+        assertSame(node1.getFifoNodeLinker().getPrevious(), node2);
 
         assertFalse(fifo.empty());
         assertEquals(fifo.popFront(), node3);
@@ -95,6 +95,14 @@ public class FifoTest {
         assertFalse(fifo.empty());
         assertEquals(fifo.popFront(), node1);
         assertTrue(fifo.empty());
+
+        fifo.pushBack(node1);
+        fifo.pushBack(node2);
+        fifo.pushBack(node3);
+        fifo.pushBack(node1);
+
+        assertFalse(fifo.empty());
+        assertEquals(fifo.popFront(), node2);
 
     }
 }

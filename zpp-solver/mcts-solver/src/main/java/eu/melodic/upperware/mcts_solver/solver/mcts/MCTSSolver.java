@@ -40,7 +40,6 @@ public class MCTSSolver {
         Tree mctsTree = new TreeImpl(
                 new RandomPolicyImpl(mctsWrapper),
                 new MoveProviderImpl(mctsWrapper),
-                new BranchTrimmerImpl(10, 0.5),
                 new MemoryLimiterImpl(nodeCountLimit));
 
         Solution solution = mctsTree.run(iterations);

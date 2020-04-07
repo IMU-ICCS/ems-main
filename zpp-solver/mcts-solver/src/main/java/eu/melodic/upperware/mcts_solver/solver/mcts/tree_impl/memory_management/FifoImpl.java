@@ -2,13 +2,12 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.Fifo;
-import lombok.Getter;
 
 public class FifoImpl implements Fifo {
-    @Getter
     private Node front = null;
     private Node back = null;
 
+    // Removes front element of queue and returns it. Does nothing if queue is empty and returns null.
     @Override
     public Node popFront() {
         if (front == null) {
@@ -16,80 +15,56 @@ public class FifoImpl implements Fifo {
         }
 
         Node toReturn = front;
-        front = front.getNext();
-        toReturn.removeFromFifo();
+        front = front.getFifoNodeLinker().getNext();
+        toReturn.getFifoNodeLinker().removeFromFifo();
 
         if (front == null) {
             back = null;
+        } else {
+            front.getFifoNodeLinker().setPrevious(null);
         }
 
         return toReturn;
     }
 
+    /*
+     Moves node to the back of queue.
+     If node was already in queue then its previous occurrence is forgotten and it's added as a new element.
+     */
     @Override
     public void pushBack(Node node) {
-        if (node.isInFifo()) {
-            Node previous = node.getPrevious();
-            Node next = node.getNext();
+        if (node.getFifoNodeLinker().isInFifo()) {
+            Node previous = node.getFifoNodeLinker().getPrevious();
+            Node next = node.getFifoNodeLinker().getNext();
 
             if (previous != null) {
-                previous.setNext(next);
+                previous.getFifoNodeLinker().setNext(next);
             } else { // Current node was front.
                 this.front = next;
             }
 
             if (next != null) {
-                next.setPrevious(previous);
+                next.getFifoNodeLinker().setPrevious(previous);
             } else { // Current node was back.
                 this.back = previous;
             }
 
-            node.removeFromFifo();
+            node.getFifoNodeLinker().removeFromFifo();
         }
 
         // Current node is not in fifo.
-
         if (this.empty()) { // If fifo is empty.
             this.front = this.back = node;
-            node.addToFifo(null);
+            node.getFifoNodeLinker().addToFifo(null);
         } else {
-            back.setNext(node);
-            node.addToFifo(back);
+            back.getFifoNodeLinker().setNext(node);
+            node.getFifoNodeLinker().addToFifo(back);
             this.back = node;
         }
-
     }
 
     @Override
     public boolean empty() {
         return front == null;
-    }
-
-    public void printFifo() {
-        Node beg = front;
-
-
-        System.out.println(beg == null ? "null" : beg.toString());
-        assert ((front != null) == (back != null));
-        while (beg != back) {
-            beg = beg.getNext();
-
-            if (beg == null) {
-                continue;
-            }
-            assert(beg != null);
-            System.out.println(beg.toString());
-        }
-    }
-
-    @Override
-    public int size() {
-        Node beg = front;
-        int size = front != null ? 1 : 0;
-        while (beg != back && beg != null) {
-            beg = beg.getNext();
-            size++;
-        }
-        return size;
     }
 }

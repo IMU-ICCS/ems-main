@@ -3,9 +3,9 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.NodeStatistics;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.FifoNodeLinker;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management.FifoNodeLinkerImpl;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +16,9 @@ import static java.util.Collections.max;
 public class NodeImpl implements Node {
     private Node parent = null;
     private List<Node> children = new ArrayList<>();
+    private FifoNodeLinker fifoNodeLinker = new FifoNodeLinkerImpl();
     private int value;
     private NodeStatistics nodeStatistics;
-    private boolean isInFifo = false;
-    @Setter
-    private Node next = null;
-    @Setter
-    private Node previous = null;
 
     public NodeImpl(Integer value) {
         this.value = value;
@@ -78,13 +74,8 @@ public class NodeImpl implements Node {
     }
 
     @Override
-    public void setDeExpanded() {
+    public void setUnexpanded() {
         nodeStatistics.setDeExpanded();
-    }
-
-    @Override
-    public void setTrimmed() {
-        nodeStatistics.setTrimmed();
     }
 
     @Override
@@ -102,27 +93,4 @@ public class NodeImpl implements Node {
         return Double.compare(nodeStatistics.getEvaluation(parent.getNodeStatistics()),
                 other.getNodeStatistics().getEvaluation(other.getParent().getNodeStatistics()));
     }
-
-    @Override
-    public void addToFifo(Node previous) {
-        this.isInFifo = true;
-        this.previous = previous;
-        this.next = null;
-    }
-
-    @Override
-    public void removeFromFifo() {
-        this.isInFifo = false;
-        this.next = null;
-        this.previous = null;
-    }
-
-    @Override
-    public String toString() {
-        String toRet = super.toString();
-        toRet += "depth : " + nodeStatistics.getDepth() + " ";
-        toRet += "visitCount : " + nodeStatistics.getVisitCount() + " ";
-        return toRet;
-    }
-
 }
