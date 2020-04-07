@@ -12,11 +12,13 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils;
 import eu.paasage.upperware.metamodel.cp.VariableType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class CheapestPolicyImpl implements Policy {
     private MCTSWrapper mctsWrapper;
     private Collection<String> components;
