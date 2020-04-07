@@ -60,6 +60,11 @@ public class CheapestPolicyImpl implements Policy {
         }
     }
 
+    @Override
+    public int minDepthSubtreeRemoval() {
+        return getCountOfRequiredVariables();
+    }
+
     private List<Integer> generatePathForCardinalityAndProvider(List<Integer> assignment) {
         IntStream.range(assignment.size(), getCountOfRequiredVariables())
                 .forEach(i -> assignment.add(mctsWrapper.generateRandomValue(i)));
@@ -124,7 +129,7 @@ public class CheapestPolicyImpl implements Policy {
         if (mctsWrapper.variableExistsInCP(configurationElement.getId(), type)) {
             int variableIndex = mctsWrapper.getVariableIndexFromComponentAndType(configurationElement.getId(), type);
             if (variableIndex >= assignmentDepth) {
-                assignment.add(
+                assignment.set(
                         variableIndex,
                         mctsWrapper.getIndexFromValue(new LongValue(VariableExtractor.getVariableValue(type, configurationElement)), variableIndex)
                 );
