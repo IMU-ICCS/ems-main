@@ -73,9 +73,6 @@ public class CPParsedData {
     }
 
     public Domain getVariableDomain(String variable) {
-        if (nameToVariable.get(variable) == null) {
-            System.out.println("sdad");
-        }
         return nameToVariable.get(variable).getDomain();
     }
 
