@@ -111,12 +111,19 @@ public class NCWrapper implements DomainProvider {
         for (int i = 0; i <components.size(); i++) {
             for (CpVariable var : cp.getCpVariables()) {
                 if (var.getComponentId().equals(components.get(i))) {
-                    componentTypeToName.put(new Pair(i, var.getVariableType()), var.getId());
+                    componentTypeToName.put(new Pair<>(i, var.getVariableType()), var.getId());
                 }
             }
         }
     }
 
+    public long getVariableCount() {
+        return componentTypeToName.keySet().stream()
+                .filter( component -> {
+                    VariableType type = component.getValue1();
+                    return type == VariableType.CORES || type == VariableType.PROVIDER || type == VariableType.CARDINALITY || type == VariableType.LATITUDE;
+                }).count();
+    }
     /*
         Generates random solution to the constraint problem.
         Used to sample starting point for parallel tempering.
