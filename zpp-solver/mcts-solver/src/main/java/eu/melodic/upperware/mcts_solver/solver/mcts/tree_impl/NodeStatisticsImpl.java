@@ -13,7 +13,9 @@ public class NodeStatisticsImpl implements NodeStatistics {
     private static double explorationCoefficient;
     @Setter
     private static int maximalDepth;
+    @Getter
     private double averageFailureDepth = 0.0;
+    @Getter
     private double maximalUtility = 0.0;
     private int visitCount;
     private int depth;

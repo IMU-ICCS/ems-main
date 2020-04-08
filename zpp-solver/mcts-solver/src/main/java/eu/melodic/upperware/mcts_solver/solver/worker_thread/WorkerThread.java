@@ -19,6 +19,7 @@ public class WorkerThread {
     private SolutionBuffer solutionBuffer;
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private MCTSSolver mctsSolver;
+    private final boolean SAVE_TREE;
 
     public void workerRun() {
         boolean end = false;
@@ -29,6 +30,9 @@ public class WorkerThread {
             end = receiveMessageFromCoordinator();
         }
         log.info("MCTS worker " + pid + " has finished");
+        if (SAVE_TREE) {
+            saveResults();
+        }
     }
 
     private boolean receiveMessageFromCoordinator() {
@@ -66,5 +70,10 @@ public class WorkerThread {
     private void sendSolution(int pid, CpSolution solution) {
         solutionBuffer.enqueue(solution);
         messageChannel.workerSend(new UtilityMessage(solution.getUtility(), pid));
+    }
+
+    private void saveResults() {
+        log.info("Worker {} saves the tree...", pid);
+
     }
 }
