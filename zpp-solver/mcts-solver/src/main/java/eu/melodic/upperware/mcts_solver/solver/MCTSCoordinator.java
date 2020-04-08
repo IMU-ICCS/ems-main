@@ -1,8 +1,7 @@
 package eu.melodic.upperware.mcts_solver.solver;
 
 import cp_wrapper.solution.CpSolution;
-import cp_wrapper.utils.MaxRuntimeLimit;
-import eu.melodic.cache.NodeCandidates;
+import cp_wrapper.utils.runtime_limits.RuntimeLimit;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.SolutionBuffer;
@@ -44,11 +43,11 @@ public class MCTSCoordinator {
         List<MCTSWrapper> mctsWrappers = IntStream.range(0, numThreads)
                 .mapToObj(thread -> mctsWrapperFactory.create())
                 .collect(Collectors.toList());
-        MaxRuntimeLimit maxRuntimeLimit = new MaxRuntimeLimit(timeLimit);
+        RuntimeLimit runtimeLimit = new RuntimeLimit(timeLimit);
         List<Thread> threads = startWorkers(mctsWrappers);
-        maxRuntimeLimit.startCounting();
+        runtimeLimit.startCounting();
         sendStartingTemperatures();
-        while (!maxRuntimeLimit.limitExceeded()) {
+        while (!runtimeLimit.limitExceeded()) {
             setTemperatures(getWorkersUtilities());
         }
         stopWorkers();

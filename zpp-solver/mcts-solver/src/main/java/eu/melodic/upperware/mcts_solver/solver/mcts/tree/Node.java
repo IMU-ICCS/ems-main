@@ -13,4 +13,5 @@ public interface Node extends Comparable<Node> {
     void visit(); // Visits node and registers it in node statistics.
     void addChild(Node child);
     Node getBestChild();
+    void removeChild(Node child);
 }

@@ -7,4 +7,5 @@ public interface Solution extends Comparable<Solution> {
     double getUtility();
     int getFailureDepth();
     boolean isFeasible();
+    boolean isEmpty();
 }
