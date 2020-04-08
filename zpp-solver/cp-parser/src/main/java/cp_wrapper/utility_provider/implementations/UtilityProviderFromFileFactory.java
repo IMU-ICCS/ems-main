@@ -1,5 +1,7 @@
-package cp_wrapper.utility_provider;
+package cp_wrapper.utility_provider.implementations;
 
+import cp_wrapper.utility_provider.UtilityProvider;
+import cp_wrapper.utility_provider.UtilityProviderFactory;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;

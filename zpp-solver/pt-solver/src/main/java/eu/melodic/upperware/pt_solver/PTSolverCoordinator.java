@@ -1,8 +1,7 @@
 package eu.melodic.upperware.pt_solver;
 
-import cp_wrapper.utility_provider.ParallelUtilityProviderImpl;
-import cp_wrapper.utility_provider.UtilityProviderImpl;
-import cp_wrapper.utils.CpVariableCreator;
+import cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
+import cp_wrapper.utils.cp_variable.CpVariableCreator;
 import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;

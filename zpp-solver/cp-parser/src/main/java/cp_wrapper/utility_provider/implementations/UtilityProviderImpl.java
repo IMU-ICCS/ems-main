@@ -1,12 +1,13 @@
-package cp_wrapper.utility_provider;
+package cp_wrapper.utility_provider.implementations;
 
+import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
 @AllArgsConstructor
-public class UtilityProviderImpl implements UtilityProvider{
+public class UtilityProviderImpl implements UtilityProvider {
     private UtilityGeneratorApplication utility;
     @Override
     public double evaluate(List<VariableValueDTO> result) {

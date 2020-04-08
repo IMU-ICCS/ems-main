@@ -1,8 +1,8 @@
 package eu.melodic.upperware.testing_module.utils;
 
-import cp_wrapper.utility_provider.ParallelUtilityProviderImpl;
+import cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
 import cp_wrapper.utility_provider.UtilityProvider;
-import cp_wrapper.utility_provider.UtilityProviderImpl;
+import cp_wrapper.utility_provider.implementations.UtilityProviderImpl;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
