@@ -1,5 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
+import lombok.Getter;
 import org.javatuples.Pair;
 
 import java.util.stream.IntStream;
@@ -7,6 +8,7 @@ import java.util.stream.IntStream;
 import static java.util.Collections.max;
 
 public abstract class Tree {
+    @Getter
     protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.

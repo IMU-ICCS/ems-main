@@ -147,4 +147,8 @@ public class CPWrapper {
     public int getVariablesCount() {
         return cpParsedData.getVariableNames().size();
     }
+
+    public String getNameFromIndex(int index) {
+        return this.variableOrderer.getNameFromIndex(index);
+    }
 }

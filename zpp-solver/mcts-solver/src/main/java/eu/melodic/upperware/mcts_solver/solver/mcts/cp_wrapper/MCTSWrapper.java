@@ -104,4 +104,8 @@ public class MCTSWrapper{
                 throw new RuntimeException("Unsupported policy type!");
         }
     }
+
+    public String getNameFromIndex(int index) {
+        return cpWrapper.getNameFromIndex(index);
+    }
 }
