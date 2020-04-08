@@ -59,7 +59,7 @@ public abstract class Tree {
 
     private void removeSubtreeWithNoSolutions(Node subtreeRoot) {
         log.debug("Removing subtree at depth {}", subtreeRoot.getNodeStatistics().getDepth());
-        removeNode(subtreeRoot);
+        //removeNode(subtreeRoot);
     }
 
     private void removeNode(Node node) {
