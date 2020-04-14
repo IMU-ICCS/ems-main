@@ -25,4 +25,9 @@ public class RandomPolicyImpl implements Policy {
 
         return new SolutionImpl(pathSize, assignment, mctsWrapper);
     }
+
+    @Override
+    public int minDepthSubtreeRemoval() {
+        return 0;
+    }
 }

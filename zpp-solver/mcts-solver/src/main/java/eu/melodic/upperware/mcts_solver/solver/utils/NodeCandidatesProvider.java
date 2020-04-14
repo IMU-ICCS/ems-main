@@ -1,7 +1,7 @@
 package eu.melodic.upperware.mcts_solver.solver.utils;
 
 import cp_wrapper.CPWrapper;
-import cp_wrapper.utils.DomainHandler;
+import cp_wrapper.utils.domain_handler.DomainHandler;
 import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.cache.NodeCandidates;

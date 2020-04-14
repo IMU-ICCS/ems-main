@@ -1,4 +1,4 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.cp_variable;
 
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;

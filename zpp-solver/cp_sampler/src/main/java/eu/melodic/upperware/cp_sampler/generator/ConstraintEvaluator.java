@@ -1,6 +1,6 @@
 package eu.melodic.upperware.cp_sampler.generator;
 
-import cp_wrapper.utils.ExpressionEvaluator;
+import cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.numeric_value.implementations.LongValue;
@@ -13,7 +13,6 @@ import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_el
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.VariableTypeOrderer;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;
-import eu.paasage.upperware.metamodel.cp.OperatorEnum;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import org.javatuples.Pair;
 
@@ -21,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static cp_wrapper.utils.ExpressionEvaluator.evaluateComparator;
+import static cp_wrapper.utils.expression_evaluator.ExpressionEvaluator.evaluateComparator;
 
 /*
     Each constraint is of a form Expression operator constant;

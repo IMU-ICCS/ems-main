@@ -60,6 +60,11 @@ public class NodeImpl implements Node {
     }
 
     @Override
+    public void removeChild(Node child) {
+        this.children.remove(child);
+    }
+
+    @Override
     public int compareTo(Node other) {
         NodeStatistics otherStats = other.getNodeStatistics();
 

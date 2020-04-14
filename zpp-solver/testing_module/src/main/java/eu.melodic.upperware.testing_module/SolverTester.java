@@ -1,9 +1,6 @@
 package eu.melodic.upperware.testing_module;
 
 import com.google.gson.Gson;
-import cp_wrapper.utility_provider.ParallelUtilityProviderImpl;
-import cp_wrapper.utility_provider.UtilityProvider;
-import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
@@ -13,7 +10,6 @@ import eu.melodic.upperware.cp_sampler.xmi_writer.XMIWriter;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.testing_module.solvers.*;
 import eu.melodic.upperware.testing_module.utils.*;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
@@ -25,10 +21,8 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tools.ant.taskdefs.Parallel;
 import org.javatuples.Pair;
 import org.javatuples.Quartet;
-import org.javatuples.Quintet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -110,6 +104,7 @@ public class SolverTester {
         //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getGeneticSolverParameters()).forEach(parameters -> solverControllers.add(new GeneticSolverControllerImpl(parameters, timeLimit))));
         //Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> solverControllers.add(new ChocoSolverControllerImpl(timeLimit)));
        // Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getPtSolversParameters()).map(PTParameters::getNumThreads).distinct().forEach(numThreads -> solverControllers.add(new PTSolverTemperatureAdjusterControllerImpl(numThreads, timeLimit))));
+
         Arrays.stream(requestData.getTimeLimits()).forEach(timeLimit -> Arrays.stream(requestData.getMctsParameters()).forEach((parameters -> solverControllers.add(new MCTSSolverControllerImpl(parameters, timeLimit)))));
         return solverControllers;
     }

@@ -27,7 +27,11 @@ public class MCTSSolverControllerImpl implements SolverController {
     @Override
     public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpId) {
         MCTSWrapperFactory mctsWrapperFactory = new MCTSWrapperFactoryImpl(utilityGeneratorMaster, cp, nodeCandidates);
+<<<<<<< HEAD
         MCTSCoordinator mctsCoordinator = new MCTSCoordinator(mctsParameters.getNumThreads(), mctsParameters.getMinTmp(), mctsParameters.getMaxTmp(), mctsParameters.getIterations(), AvailablePolicies.CHEAPEST_POLICY, true);
+=======
+        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(mctsParameters.getNumThreads(), mctsParameters.getMinTmp(), mctsParameters.getMaxTmp(), mctsParameters.getIterations(), AvailablePolicies.CHEAPEST_POLICY);
+>>>>>>> 13149d0a960d081fa8979a8a7463524406490f36
         try {
             return solutionToString(mctsCoordinator.solve(timeLimit, mctsWrapperFactory), cpId);
         } catch (InterruptedException e) {

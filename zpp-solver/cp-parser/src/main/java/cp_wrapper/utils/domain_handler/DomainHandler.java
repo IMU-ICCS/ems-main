@@ -1,14 +1,14 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.domain_handler;
 /*
     All variable domains are abstracted as finite sequences of subsequent
     natural numbers - this class is responsible for turning those "domain indices"
     into corresponding values. Currently only RangeDomain and NumericListDomain
     domains are supported.
  */
+import cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
 import cp_wrapper.utils.numeric_value.NumericValueFactory;
 import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.NumericListDomain;
 import eu.paasage.upperware.metamodel.cp.RangeDomain;
@@ -16,7 +16,6 @@ import eu.paasage.upperware.metamodel.types.IntegerValueUpperware;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DomainHandler {

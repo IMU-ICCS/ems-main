@@ -55,14 +55,16 @@ public class TreePrinter {
 
     private static void saveTreeStructure(Node node, BufferedWriter writer) throws IOException {
         writer.write(getOutgoingEdges(node));
-        List<Node> children =  node.getChildren().stream()
+        node.getChildren().stream()
                 .sorted(Comparator.reverseOrder())
-                .collect(Collectors.toList())
-                .subList(0, Math.min(MAX_CHILDREN, node.getChildrenSize()));
-
-        for (Node child : children) {
-            saveTreeStructure(child, writer);
-        }
+                .limit(MAX_CHILDREN)
+                .forEach(child -> {
+                    try {
+                        saveTreeStructure(child, writer);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 
     private static String getOutgoingEdges(Node root) {
@@ -71,9 +73,7 @@ public class TreePrinter {
         }
         List<String> edges = root.getChildren().stream()
                 .sorted(Comparator.reverseOrder())
-                .collect(Collectors.toList())
-                .subList(0, Math.min(MAX_CHILDREN, root.getChildrenSize()))
-                .stream()
+                .limit(MAX_CHILDREN)
                 .map(child -> edgeHash(root, child))
                 .collect(Collectors.toList());
         return  String.join("", edges);
