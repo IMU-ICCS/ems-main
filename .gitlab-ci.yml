@@ -26,9 +26,17 @@ variables:
   PENALTY_CALCULATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f penalty-calculator/pom.xml"
   JWT_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f jwt-server/pom.xml"
   UTILITY_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f utility-generator/pom.xml"
+
+  ZPP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f zpp-solver/pom.xml"
+
   ADAPTER_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f adapter/pom.xml"
   CP_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp_generator/pom.xml"
+
   CP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp-solver/pom.xml"
+  GEN_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/genetic-solver/pom.xml"
+  NC_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/node-candidates-solver/pom.xml"
+  PT_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/pt-solver/pom.xml"
+
   DLMS_AGENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f dlmsAgent/pom.xml"
 
   EMS_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/pom.xml"
@@ -143,6 +151,15 @@ build:utility-generator:
   artifacts:
     paths: 
     - $CI_PROJECT_DIR/utility-generator/target
+
+build:zpp-solver:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths: 
+    - $CI_PROJECT_DIR/zpp-solver/target
 
 build:dlms-agent:
   stage: build
@@ -345,6 +362,16 @@ deploy:utility-generator:
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
+deploy:zpp-solver:
+  stage: deploy
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies: 
+    - build:zpp-solver
+  script:
+    - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
+
 deploy:adapter:
   stage: deploy
   image: $DOCKER_DIND_IMAGE
@@ -484,6 +511,17 @@ deploy:ems-server:
     - docker tag $LOCAL_REPO/melodic/ems-server $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
+deploy:gen-solver:
+  stage: deploy
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script: 
+    - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ $CI_REGISTRY_IMAGE/genetic-solver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/genetic-solver:$CI_COMMIT_BRANCH
+
 deploy:metasolver:
   stage: deploy
   image: $DOCKER_DIND_IMAGE
@@ -505,6 +543,28 @@ deploy:mq-adapter:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/mq-http-adapter $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
+
+deploy:nc-solver:
+  stage: deploy
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script: 
+    - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ $CI_REGISTRY_IMAGE/node-candidates-solver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/node-candidates-solver:$CI_COMMIT_BRANCH
+
+deploy:pt-solver:
+  stage: deploy
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script: 
+    - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ $CI_REGISTRY_IMAGE/pt-solver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/pt-solver:$CI_COMMIT_BRANCH
 
 deploy:gui-backend:
   stage: deploy
