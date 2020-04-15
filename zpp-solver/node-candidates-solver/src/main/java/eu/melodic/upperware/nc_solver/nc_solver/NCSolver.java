@@ -1,6 +1,6 @@
 package eu.melodic.upperware.nc_solver.nc_solver;
 
-import cp_wrapper.utils.runtime_limits.TimeRuntimeLimit;
+import cp_wrapper.utils.runtime_limits.RuntimeLimit;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.*;
 import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.cache.NodeCandidates;
@@ -132,7 +132,7 @@ public class NCSolver {
 
     private double sampleUtilities(int timeLimit) {
         List<Double> values = new ArrayList<>();
-        TimeRuntimeLimit runtimeLimit = new TimeRuntimeLimit(timeLimit);
+        RuntimeLimit runtimeLimit = new RuntimeLimit(timeLimit);
         PTRandomGenerator randomGenerator = new PTRandomGenerator();
         PTObjective objective = new PTObjective();
         Random random = new Random();
