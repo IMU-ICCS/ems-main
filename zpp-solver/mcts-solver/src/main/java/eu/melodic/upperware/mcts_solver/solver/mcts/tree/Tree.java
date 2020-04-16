@@ -1,28 +1,29 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.MemoryLimiter;
+import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
 
 import java.util.stream.IntStream;
 
+@Slf4j
 public abstract class Tree {
     protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
     private MemoryLimiter memoryLimiter; // Responsible for prevention of memory overflow by limiting tree size.
-    private BranchTrimmer branchTrimmer;
+    private final int minDepthSubtreeRemoval;
 
-    public Tree(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter, BranchTrimmer branchTrimmer) {
+    public Tree(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter) {
         this.policy = policy;
         this.moveProvider = moveProvider;
         this.memoryLimiter = memoryLimiter;
-        this.branchTrimmer = branchTrimmer;
+        this.minDepthSubtreeRemoval = policy.minDepthSubtreeRemoval();
     }
 
     public Solution run(int iterations) {
         Solution solution = IntStream.range(0, iterations)
-                .mapToObj(i ->runIteration())
+                .mapToObj(i -> runIteration())
                 .max(Solution::compareTo).get();
         return solution;
     }
@@ -55,33 +56,48 @@ public abstract class Tree {
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
 
-        branchTrimmer.trimNodesInPath(leaf);
-
         memoryLimiter.updateRecentlyAccessedNodes(leaf);
         while (memoryLimiter.shouldPruneTree()) {
             pruneSubTree(memoryLimiter.whichNodeToPrune());
         }
 
-        System.out.println("Tree size is " + countTreeSize(root));
-
+        if (solution.isEmpty() && leaf.getNodeStatistics().getDepth() > minDepthSubtreeRemoval) {
+            removeSubtreeWithNoSolutions((leaf));
+        }
         return solution;
     }
 
     // Prunes subtree completely. SubRoot's children should be all leaves.
     private void pruneSubTree(Node subRoot) {
-        if (subRoot.getParent() == null) { // If is a root then do nothing.
+        if (subRoot == root) { // If is a root then do nothing.
             return;
         }
-        memoryLimiter.decreaseCount(subRoot.getChildren().size());
-        subRoot.getChildren().clear();
-        subRoot.setUnexpanded();
+        removeNode(subRoot);
     }
 
-    private int countTreeSize(Node current) {
-        int sum = 0;
+    private void removeSubtreeWithNoSolutions(Node subtreeRoot) {
+        log.debug("Removing subtree at depth {}", subtreeRoot.getNodeStatistics().getDepth());
+        removeNode(subtreeRoot);
+    }
 
-        for (Node child : current.getChildren()) {
-            sum += countTreeSize(child);
+    private void removeNode(Node node) {
+        memoryLimiter.decreaseCount(treeSize(node));
+        node.getParent().removeChild(node);
+
+        if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
+            removeNode(node.getParent());
+        }
+        // There's a corner case in which root can lose its all children.
+        // If node limit is > ~10000 this should never happen.
+        else if (node.getParent() == root && root.getChildrenSize() == 0) {
+            root.setUnexpanded();
+        }
+    }
+
+    private int treeSize(Node node) {
+        int sum = 0;
+        for (Node child : node.getChildren()) {
+            sum += treeSize(child);
         }
         return sum + 1;
     }

@@ -6,6 +6,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.mcts_solver.solver.MCTSCoordinator;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactoryImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.testing_module.utils.MCTSParameters;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
 import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
@@ -26,7 +27,7 @@ public class MCTSSolverControllerImpl implements SolverController {
     @Override
     public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpId) {
         MCTSWrapperFactory mctsWrapperFactory = new MCTSWrapperFactoryImpl(utilityGeneratorMaster, cp, nodeCandidates);
-        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(mctsParameters.getNumThreads(), mctsParameters.getMinTmp(), mctsParameters.getMaxTmp(), mctsParameters.getIterations());
+        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(mctsParameters.getNumThreads(), mctsParameters.getMinTmp(), mctsParameters.getMaxTmp(), mctsParameters.getIterations(), AvailablePolicies.CHEAPEST_POLICY);
         try {
             return solutionToString(mctsCoordinator.solve(timeLimit, mctsWrapperFactory), cpId);
         } catch (InterruptedException e) {

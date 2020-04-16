@@ -1,9 +1,9 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.Fifo;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.NodeQueue;
 
-public class FifoImpl implements Fifo {
+public class NodeQueueImpl implements NodeQueue {
     private Node front = null;
     private Node back = null;
 
@@ -15,13 +15,13 @@ public class FifoImpl implements Fifo {
         }
 
         Node toReturn = front;
-        front = front.getFifoNodeLinker().getNext();
-        toReturn.getFifoNodeLinker().removeFromFifo();
+        front = front.getQueueLinker().getNext();
+        toReturn.getQueueLinker().removeFromFifo();
 
         if (front == null) {
             back = null;
         } else {
-            front.getFifoNodeLinker().setPrevious(null);
+            front.getQueueLinker().setPrevious(null);
         }
 
         return toReturn;
@@ -33,32 +33,32 @@ public class FifoImpl implements Fifo {
      */
     @Override
     public void pushBack(Node node) {
-        if (node.getFifoNodeLinker().isInFifo()) {
-            Node previous = node.getFifoNodeLinker().getPrevious();
-            Node next = node.getFifoNodeLinker().getNext();
+        if (node.getQueueLinker().isInFifo()) {
+            Node previous = node.getQueueLinker().getPrevious();
+            Node next = node.getQueueLinker().getNext();
 
             if (previous != null) {
-                previous.getFifoNodeLinker().setNext(next);
+                previous.getQueueLinker().setNext(next);
             } else { // Current node was front.
                 this.front = next;
             }
 
             if (next != null) {
-                next.getFifoNodeLinker().setPrevious(previous);
+                next.getQueueLinker().setPrevious(previous);
             } else { // Current node was back.
                 this.back = previous;
             }
 
-            node.getFifoNodeLinker().removeFromFifo();
+            node.getQueueLinker().removeFromFifo();
         }
 
         // Current node is not in fifo.
         if (this.empty()) { // If fifo is empty.
             this.front = this.back = node;
-            node.getFifoNodeLinker().addToFifo(null);
+            node.getQueueLinker().addToFifo(null);
         } else {
-            back.getFifoNodeLinker().setNext(node);
-            node.getFifoNodeLinker().addToFifo(back);
+            back.getQueueLinker().setNext(node);
+            node.getQueueLinker().addToFifo(back);
             this.back = node;
         }
     }

@@ -1,14 +1,10 @@
 package eu.melodic.upperware.testing_module.solvers;
 
-import cp_wrapper.utility_provider.ParallelUtilityProviderImpl;
-import cp_wrapper.utility_provider.UtilityProvider;
-import cp_wrapper.utility_provider.UtilityProviderImpl;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.testing_module.utils.PTParameters;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
 import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.AllArgsConstructor;

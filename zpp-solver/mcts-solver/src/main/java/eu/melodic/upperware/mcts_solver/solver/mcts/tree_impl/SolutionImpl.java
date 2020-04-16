@@ -20,7 +20,7 @@ public class SolutionImpl implements Solution {
         this.assignment = assignment;
         this.feasible = mctsWrapper.isFeasible(assignment);
         this.utility = feasible ? mctsWrapper.getUtility(assignment) : 0.0;
-        if (utility == 0.0 || !feasible) {
+        if (utility == 0.0) {
             this.failureDepth = rolloutDepth;
         }
         else {
@@ -47,5 +47,10 @@ public class SolutionImpl implements Solution {
         return (failureDepth != other.getFailureDepth()) ?
                 Double.compare(failureDepth, other.getFailureDepth()) :
                 Double.compare(utility, other.getUtility());
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return assignment.isEmpty();
     }
 }

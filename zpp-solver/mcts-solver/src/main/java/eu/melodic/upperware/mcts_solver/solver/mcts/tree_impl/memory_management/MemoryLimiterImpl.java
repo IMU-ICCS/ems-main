@@ -1,14 +1,14 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.Fifo;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.NodeQueue;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.MemoryLimiter;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeImpl;
 
 public class MemoryLimiterImpl implements MemoryLimiter {
     private int limit;
     private int count;
-    private Fifo accessFifo = new FifoImpl();
+    private NodeQueue accessNodeQueue = new NodeQueueImpl();
 
     public MemoryLimiterImpl(int limit) {
         this.limit = limit;
@@ -16,12 +16,12 @@ public class MemoryLimiterImpl implements MemoryLimiter {
 
     @Override
     public boolean shouldPruneTree() {
-        return count > limit && !accessFifo.empty();
+        return count > limit && !accessNodeQueue.empty();
     }
 
     @Override
     public Node whichNodeToPrune() {
-        return accessFifo.popFront();
+        return accessNodeQueue.popFront();
     }
 
     @Override
@@ -48,6 +48,6 @@ public class MemoryLimiterImpl implements MemoryLimiter {
     }
 
     private void updateRecentlyAccessedNode(Node node) {
-        accessFifo.pushBack(node);
+        accessNodeQueue.pushBack(node);
     }
 }

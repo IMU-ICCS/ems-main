@@ -34,7 +34,7 @@ class MCTSCoordinatorTest {
             return new MCTSWrapper(cpWrapper, null);
             }).collect(Collectors.toList());
 
-            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, 100000, AvailablePolicies.RANDOM_POLICY);
+            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
 
             CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
                 private int index = -1;
@@ -67,7 +67,7 @@ class MCTSCoordinatorTest {
             return new MCTSWrapper(cpWrapper, null);
         }).collect(Collectors.toList());
 
-        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, 100000, AvailablePolicies.RANDOM_POLICY);
+        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
 
         CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
             private int index = -1;

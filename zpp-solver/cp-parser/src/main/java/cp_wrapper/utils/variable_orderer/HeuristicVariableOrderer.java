@@ -1,6 +1,6 @@
 package cp_wrapper.utils.variable_orderer;
 
-import cp_wrapper.utils.ConstraintGraph;
+import cp_wrapper.utils.constraint_graph.ConstraintGraph;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import org.javatuples.Pair;

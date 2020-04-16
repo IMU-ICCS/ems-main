@@ -9,8 +9,4 @@ public interface NodeStatistics {
     boolean isExpanded();
     void setExpanded();
     void setUnexpanded();
-
-    // Branch trimmer info.
-    boolean isTrimmed();
-    void setTrimmed();
 }

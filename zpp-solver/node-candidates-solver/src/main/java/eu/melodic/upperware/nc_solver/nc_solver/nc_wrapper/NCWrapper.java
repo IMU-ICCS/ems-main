@@ -5,8 +5,8 @@ import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
 import cp_wrapper.utility_provider.UtilityProvider;
 import cp_wrapper.parser.CPParsedData;
 import cp_wrapper.parser.CPParser;
-import cp_wrapper.utils.DomainHandler;
-import cp_wrapper.utils.VariableNumericType;
+import cp_wrapper.utils.domain_handler.DomainHandler;
+import cp_wrapper.utils.cp_variable.VariableNumericType;
 import cp_wrapper.utils.numeric_value.*;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
@@ -111,12 +111,19 @@ public class NCWrapper implements DomainProvider {
         for (int i = 0; i <components.size(); i++) {
             for (CpVariable var : cp.getCpVariables()) {
                 if (var.getComponentId().equals(components.get(i))) {
-                    componentTypeToName.put(new Pair(i, var.getVariableType()), var.getId());
+                    componentTypeToName.put(new Pair<>(i, var.getVariableType()), var.getId());
                 }
             }
         }
     }
 
+    public long getVariableCount() {
+        return componentTypeToName.keySet().stream()
+                .filter( component -> {
+                    VariableType type = component.getValue1();
+                    return type == VariableType.CORES || type == VariableType.PROVIDER || type == VariableType.CARDINALITY || type == VariableType.LATITUDE;
+                }).count();
+    }
     /*
         Generates random solution to the constraint problem.
         Used to sample starting point for parallel tempering.

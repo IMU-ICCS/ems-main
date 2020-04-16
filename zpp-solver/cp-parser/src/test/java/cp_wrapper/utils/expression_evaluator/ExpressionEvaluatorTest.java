@@ -1,5 +1,6 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.expression_evaluator;
 
+import cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
 import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import cp_wrapper.utils.test_utils.mockups.*;

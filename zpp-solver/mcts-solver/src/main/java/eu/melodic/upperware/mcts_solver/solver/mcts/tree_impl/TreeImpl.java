@@ -5,8 +5,8 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.Memor
 
 public class TreeImpl extends Tree {
 
-    public TreeImpl(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter, BranchTrimmer branchTrimmer) {
-        super(policy, moveProvider, memoryLimiter, branchTrimmer);
+    public TreeImpl(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter) {
+        super(policy, moveProvider, memoryLimiter);
         this.root = new NodeImpl();
     }
 }

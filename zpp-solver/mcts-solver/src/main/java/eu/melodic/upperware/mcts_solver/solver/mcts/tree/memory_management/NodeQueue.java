@@ -2,7 +2,7 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 
-public interface Fifo {
+public interface NodeQueue {
     // Removes front element of queue and returns it. Does nothing if queue is empty and returns null.
     Node popFront();
     /*

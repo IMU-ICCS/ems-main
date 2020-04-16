@@ -12,11 +12,13 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils;
 import eu.paasage.upperware.metamodel.cp.VariableType;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class CheapestPolicyImpl implements Policy {
     private MCTSWrapper mctsWrapper;
     private Collection<String> components;
@@ -52,12 +54,17 @@ public class CheapestPolicyImpl implements Policy {
         }
         final int assignmentDepth = assignment.size();
         assignment = fillAssignmentWithTrivialValues(assignment);
-        Collection<ConfigurationElement> cheapestConfiguration = findCheapestConfiguration(assignment);
+        Collection<ConfigurationElement> cheapestConfiguration = findCheapestConfiguration(assignment, assignmentDepth);
         if (cheapestConfiguration.isEmpty()) {
             return new SolutionImpl(rolloutDepth);
         } else {
             return configurationToSolution(cheapestConfiguration, assignment, rolloutDepth, assignmentDepth);
         }
+    }
+
+    @Override
+    public int minDepthSubtreeRemoval() {
+        return getCountOfRequiredVariables();
     }
 
     private List<Integer> generatePathForCardinalityAndProvider(List<Integer> assignment) {
@@ -74,8 +81,8 @@ public class CheapestPolicyImpl implements Policy {
         return assignment.size() >= getCountOfRequiredVariables();
     }
 
-    private Collection<ConfigurationElement> findCheapestConfiguration(List<Integer> assignment) {
-        Collection<VariableValueDTO> values = mctsWrapper.assignmentToVariableValueDTOList(assignment);
+    private Collection<ConfigurationElement> findCheapestConfiguration(List<Integer> assignment, int assignmentDepth) {
+        Collection<VariableValueDTO> values = mctsWrapper.assignmentToVariableValueDTOList(assignment.subList(0, assignmentDepth));
         List<ConfigurationElement> cheapestConfiguration = new ArrayList<>();
 
         for (String componentId : components) {
@@ -124,7 +131,7 @@ public class CheapestPolicyImpl implements Policy {
         if (mctsWrapper.variableExistsInCP(configurationElement.getId(), type)) {
             int variableIndex = mctsWrapper.getVariableIndexFromComponentAndType(configurationElement.getId(), type);
             if (variableIndex >= assignmentDepth) {
-                assignment.add(
+                assignment.set(
                         variableIndex,
                         mctsWrapper.getIndexFromValue(new LongValue(VariableExtractor.getVariableValue(type, configurationElement)), variableIndex)
                 );

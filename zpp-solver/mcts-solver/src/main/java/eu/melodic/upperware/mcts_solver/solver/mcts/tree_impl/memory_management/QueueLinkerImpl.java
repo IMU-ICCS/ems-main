@@ -1,12 +1,12 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.FifoNodeLinker;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.QueueLinker;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class FifoNodeLinkerImpl implements FifoNodeLinker {
+public class QueueLinkerImpl implements QueueLinker {
     private boolean isInFifo = false;
     @Setter
     private Node next = null; // Next is a node in back direction.

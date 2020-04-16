@@ -20,24 +20,23 @@ public class MCTSSolver {
     private double selectorCoefficient;
     private double explorationCoefficient;
     private int iterations;
+    private int nodeCountLimit = 3000000;
     private MCTSWrapper mctsWrapper;
     private MoveProvider moveProvider;
     private Policy policy;
     private MemoryLimiter memoryLimiter;
-    private BranchTrimmer branchTrimmer;
     private Tree mctsTree;
 
-    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, int nodeCountLimit, int visitCountThreshold, double scale, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
+    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
         this.selectorCoefficient = selectorCoefficient;
         this.explorationCoefficient = explorationCoefficient;
         this.iterations = iterations;
         this.mctsWrapper = mctsWrapper;
         this.memoryLimiter = new MemoryLimiterImpl(nodeCountLimit);
-        this.branchTrimmer = new BranchTrimmerImpl(visitCountThreshold, scale, memoryLimiter);
         moveProvider = new MoveProviderImpl(mctsWrapper, memoryLimiter);
         this.policy = mctsWrapper.createPolicy(policy);
         updateParameters();
-        mctsTree = new TreeImpl(this.policy, moveProvider, memoryLimiter, branchTrimmer);
+        mctsTree = new TreeImpl(this.policy, moveProvider, memoryLimiter);
     }
 
     public CpSolution solve() {

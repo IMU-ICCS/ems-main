@@ -1,6 +1,7 @@
-package cp_wrapper.utils;
+package cp_wrapper.utils.constraint_graph;
 
 import cp_wrapper.utils.constraint.Constraint;
+import cp_wrapper.utils.constraint_graph.ConstraintGraph;
 import cp_wrapper.utils.test_utils.mockups.ConstraintMockup;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

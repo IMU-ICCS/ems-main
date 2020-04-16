@@ -3,8 +3,8 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.NodeStatistics;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.FifoNodeLinker;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management.FifoNodeLinkerImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.QueueLinker;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management.QueueLinkerImpl;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import static java.util.Collections.max;
 public class NodeImpl implements Node {
     private Node parent = null;
     private List<Node> children = new ArrayList<>();
-    private FifoNodeLinker fifoNodeLinker = new FifoNodeLinkerImpl();
+    private QueueLinker queueLinker = new QueueLinkerImpl();
     private int value;
     private NodeStatistics nodeStatistics;
 
@@ -48,9 +48,13 @@ public class NodeImpl implements Node {
     }
 
     @Override
+    public int getChildrenSize() {
+        return children.size();
+    }
+
+    @Override
     public void addChild(Node child) {
         children.add(child);
-
     }
 
     @Override
@@ -73,14 +77,8 @@ public class NodeImpl implements Node {
         nodeStatistics.setUnexpanded();
     }
 
-    @Override
-    public boolean isTrimmed() {
-        return nodeStatistics.isTrimmed();
-    }
-
-    @Override
-    public void setTrimmed() {
-        nodeStatistics.setTrimmed();
+    public void removeChild(Node child) {
+        this.children.remove(child);
     }
 
     @Override
