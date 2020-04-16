@@ -74,6 +74,16 @@ public class NodeImpl implements Node {
     }
 
     @Override
+    public boolean isTrimmed() {
+        return nodeStatistics.isTrimmed();
+    }
+
+    @Override
+    public void setTrimmed() {
+        nodeStatistics.setTrimmed();
+    }
+
+    @Override
     public int compareTo(Node other) {
         NodeStatistics otherStats = other.getNodeStatistics();
 

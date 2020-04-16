@@ -1,6 +1,7 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.MemoryLimiter;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.util.stream.IntStream;
@@ -10,11 +11,13 @@ public abstract class Tree {
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
     private MemoryLimiter memoryLimiter; // Responsible for prevention of memory overflow by limiting tree size.
+    private BranchTrimmer branchTrimmer;
 
-    public Tree(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter) {
+    public Tree(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter, BranchTrimmer branchTrimmer) {
         this.policy = policy;
         this.moveProvider = moveProvider;
         this.memoryLimiter = memoryLimiter;
+        this.branchTrimmer = branchTrimmer;
     }
 
     public Solution run(int iterations) {
@@ -40,21 +43,46 @@ public abstract class Tree {
         return policy.finishPath(path);
     }
 
-    private Triplet<Node, Integer, Path> searchAndExpand() {
+    private Pair<Node, Path> searchAndExpand() {
         return moveProvider.searchAndExpand(root);
     }
 
     private Solution runIteration() {
-        Triplet<Node, Integer, Path> state = searchAndExpand();
+        Pair<Node, Path> state = searchAndExpand();
         Node leaf = state.getValue0();
-        int numberOfAddedNodes = state.getValue1();
-        Path path = state.getValue2();
+        Path path = state.getValue1();
 
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
-        memoryLimiter.updateRecentlyAccessedNodes(leaf, numberOfAddedNodes);
-        memoryLimiter.prune();
+
+        branchTrimmer.trimNodesInPath(leaf);
+
+        memoryLimiter.updateRecentlyAccessedNodes(leaf);
+        while (memoryLimiter.shouldPruneTree()) {
+            pruneSubTree(memoryLimiter.whichNodeToPrune());
+        }
+
+        System.out.println("Tree size is " + countTreeSize(root));
 
         return solution;
+    }
+
+    // Prunes subtree completely. SubRoot's children should be all leaves.
+    private void pruneSubTree(Node subRoot) {
+        if (subRoot.getParent() == null) { // If is a root then do nothing.
+            return;
+        }
+        memoryLimiter.decreaseCount(subRoot.getChildren().size());
+        subRoot.getChildren().clear();
+        subRoot.setUnexpanded();
+    }
+
+    private int countTreeSize(Node current) {
+        int sum = 0;
+
+        for (Node child : current.getChildren()) {
+            sum += countTreeSize(child);
+        }
+        return sum + 1;
     }
 }

@@ -18,6 +18,7 @@ public class NodeStatisticsImpl implements NodeStatistics {
     private int visitCount;
     private int depth;
     private boolean isExpanded = false; // True if nodes has been expanded and has children.
+    private boolean isTrimmed = false;
 
     public NodeStatisticsImpl(int parentDepth) {
         this.visitCount = 0;
@@ -52,11 +53,16 @@ public class NodeStatisticsImpl implements NodeStatistics {
 
     @Override
     public void setExpanded() {
-        isExpanded = true;
+        this.isExpanded = true;
     }
 
     @Override
     public void setUnexpanded() {
-        isExpanded = false;
+        this.isExpanded = false;
+    }
+
+    @Override
+    public void setTrimmed() {
+        this.isTrimmed = true;
     }
 }

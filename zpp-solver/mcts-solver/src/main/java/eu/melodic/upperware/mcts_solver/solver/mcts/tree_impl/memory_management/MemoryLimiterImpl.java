@@ -3,6 +3,7 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.Fifo;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.MemoryLimiter;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeImpl;
 
 public class MemoryLimiterImpl implements MemoryLimiter {
     private int limit;
@@ -14,16 +15,18 @@ public class MemoryLimiterImpl implements MemoryLimiter {
     }
 
     @Override
-    public void prune() {
-        while (count > limit && !accessFifo.empty()) {
-            pruneLeastVisited();
-        }
+    public boolean shouldPruneTree() {
+        return count > limit && !accessFifo.empty();
     }
 
     @Override
-    public void updateRecentlyAccessedNodes(Node startingNode, int numberOfAddedNodes) {
+    public Node whichNodeToPrune() {
+        return accessFifo.popFront();
+    }
+
+    @Override
+    public void updateRecentlyAccessedNodes(Node startingNode) {
         Node current = startingNode;
-        this.count += numberOfAddedNodes;
 
         while (current != null) {
             if (current.isExpanded() && current.getParent() != null) { // If current is not leaf or root.
@@ -33,26 +36,18 @@ public class MemoryLimiterImpl implements MemoryLimiter {
         }
     }
 
+    @Override
+    public void decreaseCount(int count) {
+        this.count -= count;
+    }
+
+    @Override
+    public Node createNode(int value) {
+        count++;
+        return new NodeImpl(value);
+    }
+
     private void updateRecentlyAccessedNode(Node node) {
         accessFifo.pushBack(node);
-    }
-
-    private Node pruneLeastVisited() {
-        Node toPrune = accessFifo.popFront();
-
-        pruneSubTree(toPrune);
-        return toPrune;
-    }
-
-    // SubRoot's children should be all leaves.
-    private void pruneSubTree(Node subRoot) {
-        if (subRoot.getParent() == null) { // If is a root then do nothing.
-            return;
-        }
-
-        count -= subRoot.getChildren().size();
-        subRoot.getChildren().clear();
-
-        subRoot.setUnexpanded();
     }
 }

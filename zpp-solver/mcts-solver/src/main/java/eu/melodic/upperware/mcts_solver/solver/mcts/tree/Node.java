@@ -20,4 +20,8 @@ public interface Node extends Comparable<Node> {
 
     // Fifo functionality.
     FifoNodeLinker getFifoNodeLinker();
+
+    // Branch trimmer info.
+    boolean isTrimmed();
+    void setTrimmed();
 }
