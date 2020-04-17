@@ -7,7 +7,7 @@
     "nodeCandidatesFilePath" : "C:/Users/ZPP/Downloads/FCRclear-NC"
   }
   ],
-  "timeLimits": [1000],
+  "timeLimits": [60],
   "outputPath": "C:/Users/ZPP/Desktop/results.csv",
   "ptSolversParameters": [
     {"minTmp":  0.00001, "maxTmp":  100000, "numThreads":  5}

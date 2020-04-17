@@ -75,8 +75,8 @@ public class MCTSSolverCoordinator {
     private JWTService jwtService;
 
     private SolutionResultNotifier solutionResultNotifier;
-    private final double MIN_TMP = 100;
-    private final double MAX_TMP = 10000;
+    private final double MIN_TMP = 0.001;
+    private final double MAX_TMP = 0.9;
     private final int NUM_THREADS = 5;
     private final int ITERATIONS = 100;
     private final MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, MIN_TMP, MAX_TMP, ITERATIONS, AvailablePolicies.CHEAPEST_POLICY);
