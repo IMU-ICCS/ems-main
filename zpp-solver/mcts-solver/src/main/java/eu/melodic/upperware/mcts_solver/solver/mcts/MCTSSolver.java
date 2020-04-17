@@ -1,7 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts;
 
 import cp_wrapper.solution.CpSolution;
-import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.MemoryLimiter;
@@ -9,8 +8,6 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.*;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management.MemoryLimiterImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.CheapestPolicyImpl;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.RandomPolicyImpl;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,7 +17,7 @@ public class MCTSSolver {
     private double selectorCoefficient;
     private double explorationCoefficient;
     private int iterations;
-    private int nodeCountLimit = 3000000;
+    private final static int nodeCountLimit = 2000000;
     private MCTSWrapper mctsWrapper;
     private MoveProvider moveProvider;
     private Policy policy;

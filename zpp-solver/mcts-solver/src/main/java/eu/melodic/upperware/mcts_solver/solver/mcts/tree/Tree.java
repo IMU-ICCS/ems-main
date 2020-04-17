@@ -72,33 +72,27 @@ public abstract class Tree {
         if (subRoot == root) { // If is a root then do nothing.
             return;
         }
-        removeNode(subRoot);
+        memoryLimiter.decreaseCount(subRoot.getChildrenSize());
+        subRoot.getChildren().clear();
+        removeLeaf(subRoot);
     }
 
     private void removeSubtreeWithNoSolutions(Node subtreeRoot) {
         log.debug("Removing subtree at depth {}", subtreeRoot.getNodeStatistics().getDepth());
-        removeNode(subtreeRoot);
+        removeLeaf(subtreeRoot);
     }
 
-    private void removeNode(Node node) {
-        memoryLimiter.decreaseCount(treeSize(node));
+    private void removeLeaf(Node node) {
+        memoryLimiter.decreaseCount(1);
         node.getParent().removeChild(node);
 
         if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
-            removeNode(node.getParent());
+            removeLeaf(node.getParent());
         }
         // There's a corner case in which root can lose its all children.
         // If node limit is > ~10000 this should never happen.
         else if (node.getParent() == root && root.getChildrenSize() == 0) {
             root.setUnexpanded();
         }
-    }
-
-    private int treeSize(Node node) {
-        int sum = 0;
-        for (Node child : node.getChildren()) {
-            sum += treeSize(child);
-        }
-        return sum + 1;
     }
 }
