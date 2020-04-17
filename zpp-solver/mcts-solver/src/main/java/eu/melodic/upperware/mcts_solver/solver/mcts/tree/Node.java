@@ -1,7 +1,5 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.QueueLinker;
-
 import java.util.List;
 
 public interface Node extends Comparable<Node> {
@@ -19,7 +17,4 @@ public interface Node extends Comparable<Node> {
     void setExpanded();
     void setUnexpanded();
     void removeChild(Node child);
-
-    // Fifo functionality.
-    QueueLinker getQueueLinker();
 }

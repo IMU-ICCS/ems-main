@@ -3,8 +3,6 @@ package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.NodeStatistics;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.QueueLinker;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management.QueueLinkerImpl;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -12,13 +10,16 @@ import java.util.List;
 
 import static java.util.Collections.max;
 
-@Getter
 public class NodeImpl implements Node {
+    @Getter
     private Node parent = null;
+    @Getter
     private List<Node> children = new ArrayList<>();
-    private QueueLinker queueLinker = new QueueLinkerImpl();
+    @Getter
     private int value;
+    @Getter
     private NodeStatistics nodeStatistics;
+    private QueueLinker queueLinker = new QueueLinker();
 
     public NodeImpl(Integer value) {
         this.value = value;
@@ -95,5 +96,10 @@ public class NodeImpl implements Node {
 
         return Double.compare(nodeStatistics.getEvaluation(parent.getNodeStatistics()),
                 other.getNodeStatistics().getEvaluation(other.getParent().getNodeStatistics()));
+    }
+
+    // Fifo functionality.
+    protected QueueLinker getQueueLinker() {
+        return queueLinker;
     }
 }

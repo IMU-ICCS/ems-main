@@ -1,6 +1,4 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management;
-
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
 public interface MemoryLimiter {
     // Tells tree whether it should cut branch.

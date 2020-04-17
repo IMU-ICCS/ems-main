@@ -1,14 +1,12 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.MemoryLimiter;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.MoveProvider;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Path;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.MemoryLimiter;
 import lombok.AllArgsConstructor;
 import org.javatuples.Pair;
-import org.javatuples.Triplet;
-import org.javatuples.Tuple;
 
 import java.util.stream.IntStream;
 

@@ -1,21 +1,20 @@
-package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.memory_management;
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.NodeQueue;
 
-public class NodeQueueImpl implements NodeQueue {
-    private Node front = null;
-    private Node back = null;
+public class Queue {
+    private NodeImpl front = null;
+    private NodeImpl back = null;
 
     // Removes front element of queue and returns it. Does nothing if queue is empty and returns null.
-    @Override
     public Node popFront() {
         if (front == null) {
             return null;
         }
 
-        Node toReturn = front;
-        front = front.getQueueLinker().getNext();
+        NodeImpl toReturn = front;
+
+        front = (NodeImpl) front.getQueueLinker().getNext();
         toReturn.getQueueLinker().removeFromFifo();
 
         if (front == null) {
@@ -31,11 +30,11 @@ public class NodeQueueImpl implements NodeQueue {
      Moves node to the back of queue.
      If node was already in queue then its previous occurrence is forgotten and it's added as a new element.
      */
-    @Override
-    public void pushBack(Node node) {
-        if (node.getQueueLinker().isInFifo()) {
-            Node previous = node.getQueueLinker().getPrevious();
-            Node next = node.getQueueLinker().getNext();
+    public void pushBack(Node newNode) {
+        NodeImpl node = (NodeImpl) newNode;
+        if (node.getQueueLinker().isInQueue()) {
+            NodeImpl previous = (NodeImpl) node.getQueueLinker().getPrevious();
+            NodeImpl next = (NodeImpl) node.getQueueLinker().getNext();
 
             if (previous != null) {
                 previous.getQueueLinker().setNext(next);
@@ -63,7 +62,6 @@ public class NodeQueueImpl implements NodeQueue {
         }
     }
 
-    @Override
     public boolean empty() {
         return front == null;
     }
