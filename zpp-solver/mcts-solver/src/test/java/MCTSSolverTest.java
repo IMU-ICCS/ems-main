@@ -43,7 +43,7 @@ public class MCTSSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 5000000, new MCTSWrapper(cpWrapper, null), AvailablePolicies.RANDOM_POLICY);
+        MCTSSolver mctsSolver = new MCTSSolver(0.1, 0.8, 5000, new MCTSWrapper(cpWrapper, null), AvailablePolicies.RANDOM_POLICY);
 
         List<Integer> assignment = mctsSolver.search().getAssignment();
 
