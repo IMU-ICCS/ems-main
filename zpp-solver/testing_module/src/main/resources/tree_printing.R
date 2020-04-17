@@ -4,7 +4,7 @@ library(DiagrammeR)
 library(igraph)
 library(networkD3)
 
-PATH <- "C:/Users/ZPP/Desktop/tylkonachwile/upperware/zpp-solver/testing_module/src/main/resources/"
+PATH <- "C:/Users/ZPP/Desktop/upperware/zpp-solver/testing_module/src/main/resources/"
 
 nodes <- read.table(paste(PATH, "nodes1", sep=""), col.names =c("hash", "value", "visits", "failure_depth", "max_utility", "var_name"), sep=";")
 edges <- read.table(paste(PATH, "tree1", sep=""), col.names =c("hash", "child_hash"), sep=";")
@@ -49,7 +49,7 @@ plot(root)
 
 
 
-#druga wersja 
+#Second version -- very computationally expensive for larger trees
 
 
 getNodeLabel <- function(hash) {

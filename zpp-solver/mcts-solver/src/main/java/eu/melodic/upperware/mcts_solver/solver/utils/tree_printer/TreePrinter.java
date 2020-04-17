@@ -9,11 +9,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class TreePrinter {
     private static final int MAX_DEPTH = 10;
     private static final int MAX_CHILDREN = 2;
+    /*
+        If set to true chooses tree's subtree which is more or less symmetric - takes top MAX_CHILDREN children of root
+        and proceeds recursively.
+        If set to false, the tree is prunned to MAX_DEPTH and top MAX_CHILDREN_AT_MAX_DEPTH leaves are chosen. The subtree
+        is built bottom.
+     */
     private static final boolean SPREAD_MODE = false;
     private static final int MAX_CHILDREN_AT_MAX_DEPTH = 15;
     public static void saveTreeDataToFile(Node root, String treeFilePath, String nodesFilePath, MCTSWrapper mctsWrapper) throws IOException {
