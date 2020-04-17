@@ -1,8 +1,9 @@
-package eu.melodic.upperware.mcts_solver.solver;
+package eu.melodic.upperware.mcts_solver;
 
 import cp_wrapper.CPWrapper;
 import cp_wrapper.solution.CpSolution;
 import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-class MCTSCoordinatorTest {
+class MCTSSolverTest {
         private final int NUM_THREADS = 5;
         @Test
         public void simpleCPTest() throws InterruptedException {
@@ -34,8 +35,8 @@ class MCTSCoordinatorTest {
             return new MCTSWrapper(cpWrapper, null);
             }).collect(Collectors.toList());
 
-            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
-            CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
+            MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
+            CpSolution solution  = mctsSolver.solve(10, new MCTSWrapperFactory() {
                 private int index = -1;
                 @Override
                 public MCTSWrapper create() {
@@ -66,8 +67,8 @@ class MCTSCoordinatorTest {
             return new MCTSWrapper(cpWrapper, null);
         }).collect(Collectors.toList());
 
-        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
-        CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
+        MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
+        CpSolution solution  = mctsSolver.solve(10, new MCTSWrapperFactory() {
             private int index = -1;
             @Override
             public MCTSWrapper create() {

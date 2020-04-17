@@ -1,22 +1,17 @@
 package eu.melodic.upperware.testing_module.solvers;
 
 import cp_wrapper.solution.CpSolution;
-import cp_wrapper.utility_provider.UtilityProviderFactory;
 import eu.melodic.cache.NodeCandidates;
-import eu.melodic.upperware.mcts_solver.solver.MCTSCoordinator;
+import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactoryImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.testing_module.utils.MCTSParameters;
 import eu.melodic.upperware.testing_module.utils.SolverSolutionToStringConverter;
 import eu.melodic.upperware.testing_module.utils.UtilityGeneratorMaster;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
-import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.AllArgsConstructor;
 import org.javatuples.Pair;
-
-import java.util.List;
 
 @AllArgsConstructor
 public class MCTSSolverControllerImpl implements SolverController {
@@ -27,9 +22,9 @@ public class MCTSSolverControllerImpl implements SolverController {
     @Override
     public String solve(NodeCandidates nodeCandidates, ConstraintProblem cp, UtilityGeneratorMaster utilityGeneratorMaster, String cpId) {
         MCTSWrapperFactory mctsWrapperFactory = new MCTSWrapperFactoryImpl(utilityGeneratorMaster, cp, nodeCandidates);
-        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(mctsParameters.getNumThreads(), mctsParameters.getMinTmp(), mctsParameters.getMaxTmp(), mctsParameters.getIterations(), AvailablePolicies.CHEAPEST_POLICY);
+        MCTSSolver mctsSolver = new MCTSSolver(mctsParameters.getNumThreads(), mctsParameters.getMinTmp(), mctsParameters.getMaxTmp(), mctsParameters.getIterations(), AvailablePolicies.CHEAPEST_POLICY);
         try {
-            return solutionToString(mctsCoordinator.solve(timeLimit, mctsWrapperFactory), cpId);
+            return solutionToString(mctsSolver.solve(timeLimit, mctsWrapperFactory), cpId);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -1,13 +1,13 @@
 package eu.melodic.upperware.mcts_solver.solver.worker_thread;
 
 import cp_wrapper.solution.CpSolution;
+import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSingleTreeSolver;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.SolutionBuffer;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.FinalizationMessage;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.Message;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.TemperatureMessage;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.UtilityMessage;
-import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,14 +18,14 @@ public class WorkerThread {
     private int iterations;
     private SolutionBuffer solutionBuffer;
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
-    private MCTSSolver mctsSolver;
+    private MCTSSingleTreeSolver mctsSingleTreeSolver;
 
     public void workerRun() {
         boolean end = false;
         getInitialTemperature();
         while (!end) {
             log.info("Started MCTS worker with pid: {} for {} iterations", pid, iterations);
-            sendSolution(pid, mctsSolver.solve());
+            sendSolution(pid, mctsSingleTreeSolver.solve());
             end = receiveMessageFromCoordinator();
         }
         log.info("MCTS worker " + pid + " has finished");
@@ -37,7 +37,7 @@ public class WorkerThread {
         if (isFinalizationMessage(message)) {
             return true;
         } else if (isTemperatureMessage(message)) {
-            mctsSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
+            mctsSingleTreeSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
             log.info("Setting new temperature to {}", ((TemperatureMessage) message).getTemperature());
             return false;
         } else {
@@ -48,7 +48,7 @@ public class WorkerThread {
     private void getInitialTemperature() {
         Message message = messageChannel.workerReceive(pid);
         if (isTemperatureMessage(message)) {
-            mctsSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
+            mctsSingleTreeSolver.setSelectorCoefficient(((TemperatureMessage) message).getTemperature());
             log.info("Setting new temperature to {}", ((TemperatureMessage) message).getTemperature());
         } else {
             throw new RuntimeException("Unrecognized message type!");

@@ -9,7 +9,7 @@ import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.Message;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.TemperatureMessage;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.UtilityMessage;
-import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSolver;
+import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSingleTreeSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.mcts_solver.solver.worker_thread.WorkerThread;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
-public class MCTSCoordinator {
+public class MCTSSolver {
     private int numThreads;
     private double minTemperature;
     private double maxTemperature;
@@ -30,7 +30,7 @@ public class MCTSCoordinator {
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
     private AvailablePolicies policyType;
 
-    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType) {
+    public MCTSSolver(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType) {
         this.numThreads = numThreads;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
@@ -60,8 +60,8 @@ public class MCTSCoordinator {
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
-                MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid), policyType);
-                WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver);
+                MCTSSingleTreeSolver mctsSingleTreeSolver =  new MCTSSingleTreeSolver(minTemperature , 10, iterations, mctsWrappers.get(pid), policyType);
+                WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSingleTreeSolver);
                 workerThread.workerRun();
             });
             thread.start();
