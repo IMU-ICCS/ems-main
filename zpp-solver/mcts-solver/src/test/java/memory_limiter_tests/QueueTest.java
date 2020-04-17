@@ -1,7 +1,6 @@
 package memory_limiter_tests;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.memory_management.Queue;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.Queue;
 import org.junit.Test;
