@@ -8,6 +8,8 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.MoveProviderImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.TreeImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
+
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,10 +20,12 @@ public class MCTSSolver {
     private double explorationCoefficient;
     private int iterations;
     private final static int nodeCountLimit = 2000000;
+    @Getter
     private MCTSWrapper mctsWrapper;
     private MoveProvider moveProvider;
     private Policy policy;
     private MemoryLimiter memoryLimiter;
+    @Getter
     private Tree mctsTree;
 
     public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper, AvailablePolicies policy) {

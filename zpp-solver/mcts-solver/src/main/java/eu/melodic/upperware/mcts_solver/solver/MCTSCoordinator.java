@@ -30,15 +30,17 @@ public class MCTSCoordinator {
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
     private AvailablePolicies policyType;
+    private final boolean SAVE_TREE;
 
 
-    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType) {
+    public MCTSCoordinator(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType, boolean saveTree) {
         this.numThreads = numThreads;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.iterations = iterations;
         this.messageChannel =  new OneToManyChannel<>(numThreads);
         this.policyType = policyType;
+        this.SAVE_TREE = saveTree;
     }
 
     public CpSolution solve(int timeLimit, MCTSWrapperFactory mctsWrapperFactory) throws InterruptedException {
@@ -65,8 +67,7 @@ public class MCTSCoordinator {
             Thread thread = new Thread( () -> {
 
                 MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid), policyType);
-
-                WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver);
+                WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver, SAVE_TREE);
                 workerThread.workerRun();
             });
             thread.start();

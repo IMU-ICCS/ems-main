@@ -94,8 +94,13 @@ public class NodeImpl implements Node {
             return -1;
         }
 
-        return Double.compare(nodeStatistics.getEvaluation(parent.getNodeStatistics()),
+        int compare = Double.compare(nodeStatistics.getEvaluation(parent.getNodeStatistics()),
                 other.getNodeStatistics().getEvaluation(other.getParent().getNodeStatistics()));
+        if (compare != 0) {
+            return compare;
+        } else {
+            return -Integer.compare(value, other.getValue());
+        }
     }
 
     // Fifo functionality.

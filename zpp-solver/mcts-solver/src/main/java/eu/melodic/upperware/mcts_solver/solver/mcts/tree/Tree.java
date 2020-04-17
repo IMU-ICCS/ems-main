@@ -1,12 +1,15 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
 
 import java.util.stream.IntStream;
 
+
 @Slf4j
 public abstract class Tree {
+    @Getter
     protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
