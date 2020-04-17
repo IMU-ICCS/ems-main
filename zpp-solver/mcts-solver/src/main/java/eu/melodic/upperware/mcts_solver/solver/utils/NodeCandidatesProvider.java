@@ -58,7 +58,7 @@ public class NodeCandidatesProvider {
         } else if (isLocationType(type) && (nodeCandidate.getLocation() == null || nodeCandidate.getLocation().getGeoLocation() == null)) {
             return false;
         } else {
-            return DomainHandler.isInDomain( new LongValue(VariableExtractor.getVariableValue(type, nodeCandidate)),domain);
+            return DomainHandler.isInDomain(new LongValue(VariableExtractor.getVariableValue(type, nodeCandidate)),domain);
         }
     }
 
