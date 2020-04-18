@@ -79,7 +79,7 @@ public class MCTSSolverCoordinator {
     private final double MAX_TMP = 0.9;
     private final int NUM_THREADS = 5;
     private final int ITERATIONS = 100;
-    private final MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, MIN_TMP, MAX_TMP, ITERATIONS, AvailablePolicies.CHEAPEST_POLICY);
+    private final MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, MIN_TMP, MAX_TMP, ITERATIONS, AvailablePolicies.CHEAPEST_POLICY, false);
 
     public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int seconds) {
         try {
