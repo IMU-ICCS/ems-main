@@ -35,8 +35,8 @@ class MCTSSolverTest {
             return new MCTSWrapper(cpWrapper, null);
             }).collect(Collectors.toList());
 
-            MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
-            CpSolution solution  = mctsSolver.solve(10, new MCTSWrapperFactory() {
+            MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY, false);
+            CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
                 private int index = -1;
                 @Override
                 public MCTSWrapper create() {
@@ -67,8 +67,13 @@ class MCTSSolverTest {
             return new MCTSWrapper(cpWrapper, null);
         }).collect(Collectors.toList());
 
+<<<<<<< HEAD:zpp-solver/mcts-solver/src/test/java/eu/melodic/upperware/mcts_solver/MCTSSolverTest.java
         MCTSSolver mctsSolver = new MCTSSolver(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY);
         CpSolution solution  = mctsSolver.solve(10, new MCTSWrapperFactory() {
+=======
+        MCTSCoordinator mctsCoordinator = new MCTSCoordinator(NUM_THREADS, 0.001, 0.9, 100, AvailablePolicies.RANDOM_POLICY, false);
+        CpSolution solution  = mctsCoordinator.solve(10, new MCTSWrapperFactory() {
+>>>>>>> 8a9b065b6cdee2d97c0d8a8f726c607fd172ae35:zpp-solver/mcts-solver/src/test/java/eu/melodic/upperware/mcts_solver/solver/MCTSCoordinatorTest.java
             private int index = -1;
             @Override
             public MCTSWrapper create() {

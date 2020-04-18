@@ -54,7 +54,7 @@ public class CheapestPolicyImpl implements Policy {
         }
         final int assignmentDepth = assignment.size();
         assignment = fillAssignmentWithTrivialValues(assignment);
-        Collection<ConfigurationElement> cheapestConfiguration = findCheapestConfiguration(assignment);
+        Collection<ConfigurationElement> cheapestConfiguration = findCheapestConfiguration(assignment, assignmentDepth);
         if (cheapestConfiguration.isEmpty()) {
             return new SolutionImpl(rolloutDepth);
         } else {
@@ -81,8 +81,8 @@ public class CheapestPolicyImpl implements Policy {
         return assignment.size() >= getCountOfRequiredVariables();
     }
 
-    private Collection<ConfigurationElement> findCheapestConfiguration(List<Integer> assignment) {
-        Collection<VariableValueDTO> values = mctsWrapper.assignmentToVariableValueDTOList(assignment);
+    private Collection<ConfigurationElement> findCheapestConfiguration(List<Integer> assignment, int assignmentDepth) {
+        Collection<VariableValueDTO> values = mctsWrapper.assignmentToVariableValueDTOList(assignment.subList(0, assignmentDepth));
         List<ConfigurationElement> cheapestConfiguration = new ArrayList<>();
 
         for (String componentId : components) {

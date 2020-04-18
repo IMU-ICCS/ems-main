@@ -124,6 +124,15 @@ public class CPWrapper {
         return cpParsedData.getVariableNames().size();
     }
 
+
+    public String getNameFromIndex(int index) {
+        return this.variableOrderer.getNameFromIndex(index);
+    }
+
+    public int getValueFromIndex(int value, int variableIndex) {
+        return  getVariableValueFromDomainIndex(variableIndex, value).getIntValue();
+    }
+
     private NumericValueInterface getVariableValueFromDomainIndex(int varIndex, int value) {
         Domain domain = cpParsedData.getVariableDomain(variableOrderer.getNameFromIndex(varIndex));
         if (DomainHandler.isRangeDomain(domain)) {

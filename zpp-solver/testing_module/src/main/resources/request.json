@@ -26,7 +26,7 @@
     {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.2, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10},
     {"populationSize":  70, "iterations" : 100, "crossoverProbability" :  0.5, "mutatorProbability" :  0.5, "mutationProbability" :  0.3, "comparatorProbability" :  0.2, "guesses" :  10}
   ],
-  "repetitions": 2,
+  "repetitions": 1,
   "cpSamplerData": {
     "numberComponents": 4,
     "minConstraints" : 2,

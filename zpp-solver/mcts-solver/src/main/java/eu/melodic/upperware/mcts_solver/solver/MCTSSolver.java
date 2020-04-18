@@ -1,6 +1,7 @@
 package eu.melodic.upperware.mcts_solver.solver;
 
 import cp_wrapper.solution.CpSolution;
+
 import cp_wrapper.utils.runtime_limits.RuntimeLimit;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
@@ -29,20 +30,23 @@ public class MCTSSolver {
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
     private AvailablePolicies policyType;
+    private final boolean SAVE_TREE;
 
-    public MCTSSolver(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType) {
+    public MCTSSolver(int numThreads, double minTemperature, double maxTemperature, int iterations, AvailablePolicies policyType, boolean saveTree) {
         this.numThreads = numThreads;
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.iterations = iterations;
         this.messageChannel =  new OneToManyChannel<>(numThreads);
         this.policyType = policyType;
+        this.SAVE_TREE = saveTree;
     }
 
     public CpSolution solve(int timeLimit, MCTSWrapperFactory mctsWrapperFactory) throws InterruptedException {
         List<MCTSWrapper> mctsWrappers = IntStream.range(0, numThreads)
                 .mapToObj(thread -> mctsWrapperFactory.create())
                 .collect(Collectors.toList());
+
         RuntimeLimit runtimeLimit = new RuntimeLimit(timeLimit);
         List<Thread> threads = startWorkers(mctsWrappers);
         runtimeLimit.startCounting();
@@ -61,7 +65,7 @@ public class MCTSSolver {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
                 MCTSSingleTreeSolver mctsSingleTreeSolver =  new MCTSSingleTreeSolver(minTemperature , 10, iterations, mctsWrappers.get(pid), policyType);
-                WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSingleTreeSolver);
+                WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSingleTreeSolver, SAVE_TREE);
                 workerThread.workerRun();
             });
             thread.start();
