@@ -20,6 +20,7 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import io.github.cloudiator.rest.model.Runtime;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -130,6 +131,8 @@ public class MCTSSolverCoordinator {
 
         if (solution.getUtility() > 0.0) {
             saveBestSolutionInCDO(cp, solution.getUtility(), solution.getSolution());
+        } else {
+            throw new RuntimeException("Solution is infeasible!");
         }
     }
 
