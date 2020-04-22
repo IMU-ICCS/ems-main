@@ -1,19 +1,21 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts;
 
 import cp_wrapper.solution.CpSolution;
-import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.*;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.MoveProvider;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Tree;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.MoveProviderImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.TreeImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.CheapestPolicyImpl;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.RandomPolicyImpl;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MCTSSolver {
+public class MCTSSingleTreeSolver {
     @Setter
     private double selectorCoefficient;
     private double explorationCoefficient;
@@ -26,7 +28,7 @@ public class MCTSSolver {
     private Tree mctsTree;
 
 
-    public MCTSSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
+    public MCTSSingleTreeSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
         this.selectorCoefficient = selectorCoefficient;
         this.explorationCoefficient = explorationCoefficient;
         this.iterations = iterations;
