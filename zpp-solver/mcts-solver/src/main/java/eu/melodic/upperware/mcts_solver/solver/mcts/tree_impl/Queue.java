@@ -14,13 +14,11 @@ public class Queue {
 
         NodeImpl toReturn = front;
 
-        front = front.getQueueLinker().getNext();
+        this.front = front.getQueueLinker().getNext();
         toReturn.getQueueLinker().removeFromQueue();
 
         if (front == null) {
             back = null;
-        } else {
-            front.getQueueLinker().setPrevious(null);
         }
 
         return toReturn;
@@ -52,8 +50,8 @@ public class Queue {
             this.front = this.back = node;
             node.getQueueLinker().addToQueue(node,null);
         } else {
-            this.back = node;
             node.getQueueLinker().addToQueue(node, back);
+            this.back = node;
         }
     }
 

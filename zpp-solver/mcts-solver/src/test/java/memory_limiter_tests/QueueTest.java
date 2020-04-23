@@ -17,7 +17,7 @@ public class QueueTest {
     private NodeImpl node3 = new NodeImpl(3);
 
     @Test
-    public void FifoTest() {
+    public void QueueTest() {
         Queue queue = new Queue();
 
         assertTrue(queue.empty());
