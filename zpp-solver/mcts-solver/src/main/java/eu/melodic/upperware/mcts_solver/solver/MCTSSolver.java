@@ -27,7 +27,7 @@ public class MCTSSolver {
     private double minTemperature;
     private double maxTemperature;
     private int iterations;
-    private final static int nodeCountLimit = 2000000;
+    private final static int NODE_COUNT_LIMIT = 2000000;
     private OneToManyChannel<Message, UtilityMessage> messageChannel;
     private SolutionBuffer solutionBuffer = new SolutionBuffer();
     private AvailablePolicies policyType;
@@ -65,7 +65,7 @@ public class MCTSSolver {
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
-                MCTSSingleTreeSolver mctsSingleTreeSolver =  new MCTSSingleTreeSolver(minTemperature , 10, iterations, nodeCountLimit / numThreads, mctsWrappers.get(pid), policyType);
+                MCTSSingleTreeSolver mctsSingleTreeSolver =  new MCTSSingleTreeSolver(minTemperature , 10, iterations, NODE_COUNT_LIMIT / numThreads, mctsWrappers.get(pid), policyType);
                 WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSingleTreeSolver, SAVE_TREE);
                 workerThread.workerRun();
             });

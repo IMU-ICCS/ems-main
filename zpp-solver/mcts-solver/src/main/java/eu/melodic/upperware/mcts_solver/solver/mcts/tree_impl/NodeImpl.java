@@ -12,8 +12,8 @@ import static java.util.Collections.max;
 
 public class NodeImpl implements Node {
     @Getter
-                private Node parent = null;
-                @Getter
+    private Node parent = null;
+    @Getter
     private List<Node> children = new ArrayList<>();
     @Getter
     private int value;

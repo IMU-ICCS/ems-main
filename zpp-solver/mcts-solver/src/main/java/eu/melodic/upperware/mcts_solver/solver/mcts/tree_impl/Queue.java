@@ -13,13 +13,7 @@ public class Queue {
         }
 
         NodeImpl toReturn = front;
-
-        this.front = front.getQueueLinker().getNext();
-        toReturn.getQueueLinker().removeFromQueue();
-
-        if (front == null) {
-            back = null;
-        }
+        removeNodeFromQueue(front);
 
         return toReturn;
     }
@@ -31,18 +25,7 @@ public class Queue {
     public void pushBack(Node newNode) {
         NodeImpl node = (NodeImpl) newNode;
         if (node.getQueueLinker().isInQueue()) { // If is in queue then remove it from queue for now.
-            NodeImpl previous = node.getQueueLinker().getPrevious();
-            NodeImpl next = node.getQueueLinker().getNext();
-
-            if (front == node) {
-                this.front = next;
-            }
-
-            if (back == node) {
-                this.back = previous;
-            }
-
-            node.getQueueLinker().removeFromQueue();
+            removeNodeFromQueue(node);
         }
 
         // Current node is not in queue.
@@ -57,5 +40,20 @@ public class Queue {
 
     public boolean empty() {
         return front == null;
+    }
+
+    private void removeNodeFromQueue(NodeImpl node) {
+        NodeImpl previous = node.getQueueLinker().getPrevious();
+        NodeImpl next = node.getQueueLinker().getNext();
+
+        if (front == node) {
+            this.front = next;
+        }
+
+        if (back == node) {
+            this.back = previous;
+        }
+
+        node.getQueueLinker().removeFromQueue();
     }
 }
