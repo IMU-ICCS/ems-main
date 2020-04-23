@@ -55,7 +55,7 @@ public abstract class Tree {
 
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
-        
+
         if (solution.isEmpty() && leaf.getNodeStatistics().getDepth() > minDepthSubtreeRemoval) {
             removeSubtreeWithNoSolutions((leaf));
         }
