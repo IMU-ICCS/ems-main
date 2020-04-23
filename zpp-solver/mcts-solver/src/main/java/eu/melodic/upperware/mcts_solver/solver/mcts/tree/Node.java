@@ -17,4 +17,5 @@ public interface Node extends Comparable<Node> {
     void setExpanded();
     void setUnexpanded();
     void removeChild(Node child);
+    void removeChildren();
 }

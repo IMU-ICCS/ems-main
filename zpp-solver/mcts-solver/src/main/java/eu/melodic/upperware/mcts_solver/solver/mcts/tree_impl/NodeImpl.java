@@ -12,8 +12,8 @@ import static java.util.Collections.max;
 
 public class NodeImpl implements Node {
     @Getter
-    private Node parent = null;
-    @Getter
+                private Node parent = null;
+                @Getter
     private List<Node> children = new ArrayList<>();
     @Getter
     private int value;
@@ -80,6 +80,11 @@ public class NodeImpl implements Node {
 
     public void removeChild(Node child) {
         this.children.remove(child);
+    }
+
+    @Override
+    public void removeChildren() {
+        children.clear();
     }
 
     @Override

@@ -6,7 +6,6 @@ import org.javatuples.Pair;
 
 import java.util.stream.IntStream;
 
-
 @Slf4j
 public abstract class Tree {
     @Getter
@@ -24,10 +23,9 @@ public abstract class Tree {
     }
 
     public Solution run(int iterations) {
-        Solution solution = IntStream.range(0, iterations)
+        return IntStream.range(0, iterations)
                 .mapToObj(i -> runIteration())
                 .max(Solution::compareTo).get();
-        return solution;
     }
 
     // Back propagates calculated solution on path from leaf to root.
@@ -58,14 +56,16 @@ public abstract class Tree {
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
 
-        memoryLimiter.updateRecentlyAccessedNodes(leaf);
-        while (memoryLimiter.shouldPruneTree()) {
-            pruneSubTree(memoryLimiter.whichNodeToPrune());
-        }
 
         if (solution.isEmpty() && leaf.getNodeStatistics().getDepth() > minDepthSubtreeRemoval) {
             removeSubtreeWithNoSolutions((leaf));
         }
+
+        memoryLimiter.updateRecentlyAccessedNodes(leaf);
+        while (memoryLimiter.shouldPruneTree()) {
+            pruneSubTree(memoryLimiter.popNodeToPrune());
+        }
+
         return solution;
     }
 
@@ -75,7 +75,7 @@ public abstract class Tree {
             return;
         }
         memoryLimiter.decreaseCount(subRoot.getChildrenSize());
-        subRoot.getChildren().clear();
+        subRoot.removeChildren();
         removeLeaf(subRoot);
     }
 

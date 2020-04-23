@@ -5,7 +5,7 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 
 public class MemoryLimiterImpl implements MemoryLimiter {
     private int limit;
-    private int count;
+    private int count = 0;
     private Queue accessQueue = new Queue();
 
     public MemoryLimiterImpl(int limit) {
@@ -16,7 +16,7 @@ public class MemoryLimiterImpl implements MemoryLimiter {
         return count > limit && !accessQueue.empty();
     }
 
-    public Node whichNodeToPrune() {
+    public Node popNodeToPrune() {
         return accessQueue.popFront();
     }
 

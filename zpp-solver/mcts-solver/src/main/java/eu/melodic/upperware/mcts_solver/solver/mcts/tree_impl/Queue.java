@@ -14,8 +14,8 @@ public class Queue {
 
         NodeImpl toReturn = front;
 
-        front = (NodeImpl) front.getQueueLinker().getNext();
-        toReturn.getQueueLinker().removeFromFifo();
+        front = front.getQueueLinker().getNext();
+        toReturn.getQueueLinker().removeFromQueue();
 
         if (front == null) {
             back = null;
@@ -32,33 +32,28 @@ public class Queue {
      */
     public void pushBack(Node newNode) {
         NodeImpl node = (NodeImpl) newNode;
-        if (node.getQueueLinker().isInQueue()) {
-            NodeImpl previous = (NodeImpl) node.getQueueLinker().getPrevious();
-            NodeImpl next = (NodeImpl) node.getQueueLinker().getNext();
+        if (node.getQueueLinker().isInQueue()) { // If is in queue then remove it from queue for now.
+            NodeImpl previous = node.getQueueLinker().getPrevious();
+            NodeImpl next = node.getQueueLinker().getNext();
 
-            if (previous != null) {
-                previous.getQueueLinker().setNext(next);
-            } else { // Current node was front.
+            if (front == node) {
                 this.front = next;
             }
 
-            if (next != null) {
-                next.getQueueLinker().setPrevious(previous);
-            } else { // Current node was back.
+            if (back == node) {
                 this.back = previous;
             }
 
-            node.getQueueLinker().removeFromFifo();
+            node.getQueueLinker().removeFromQueue();
         }
 
-        // Current node is not in fifo.
-        if (this.empty()) { // If fifo is empty.
+        // Current node is not in queue.
+        if (this.empty()) { // If queue is empty.
             this.front = this.back = node;
-            node.getQueueLinker().addToFifo(null);
+            node.getQueueLinker().addToQueue(node,null);
         } else {
-            back.getQueueLinker().setNext(node);
-            node.getQueueLinker().addToFifo(back);
             this.back = node;
+            node.getQueueLinker().addToQueue(node, back);
         }
     }
 

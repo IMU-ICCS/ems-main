@@ -65,7 +65,6 @@ public class MCTSCoordinator {
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
             Thread thread = new Thread( () -> {
-
                 MCTSSolver mctsSolver =  new MCTSSolver(minTemperature , 10, iterations, mctsWrappers.get(pid), policyType);
                 WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSolver, SAVE_TREE);
                 workerThread.workerRun();
