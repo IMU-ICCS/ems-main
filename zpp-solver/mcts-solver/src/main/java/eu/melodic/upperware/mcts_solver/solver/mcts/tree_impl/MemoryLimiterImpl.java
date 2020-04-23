@@ -12,14 +12,17 @@ public class MemoryLimiterImpl implements MemoryLimiter {
         this.limit = limit;
     }
 
+    @Override
     public boolean shouldPruneTree() {
         return count > limit && !accessQueue.empty();
     }
 
+    @Override
     public Node popNodeToPrune() {
         return accessQueue.popFront();
     }
 
+    @Override
     public void updateRecentlyAccessedNodes(Node startingNode) {
         Node current = startingNode;
 
@@ -31,13 +34,20 @@ public class MemoryLimiterImpl implements MemoryLimiter {
         }
     }
 
+    @Override
     public void decreaseCount(int count) {
         this.count -= count;
     }
 
+    @Override
     public Node createNode(int value) {
         count++;
         return new NodeImpl(value);
+    }
+
+    @Override
+    public void removeNodeFromQueue(Node node) {
+        accessQueue.removeNodeFromQueue((NodeImpl) node);
     }
 
     private void updateRecentlyAccessedNode(Node node) {

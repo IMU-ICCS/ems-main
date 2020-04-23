@@ -11,4 +11,6 @@ public interface MemoryLimiter {
     void decreaseCount(int count);
     // Creates node with certain value.
     Node createNode(int value);
+    // Removes node from queue, does nothing if it's not in queue.
+    void removeNodeFromQueue(Node node);
 }

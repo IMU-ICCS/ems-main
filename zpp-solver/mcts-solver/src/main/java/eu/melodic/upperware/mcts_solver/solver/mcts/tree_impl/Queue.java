@@ -42,7 +42,7 @@ public class Queue {
         return front == null;
     }
 
-    private void removeNodeFromQueue(NodeImpl node) {
+    public void removeNodeFromQueue(NodeImpl node) {
         NodeImpl previous = node.getQueueLinker().getPrevious();
         NodeImpl next = node.getQueueLinker().getNext();
 

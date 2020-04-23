@@ -89,6 +89,7 @@ public abstract class Tree {
         node.getParent().removeChild(node);
 
         if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
+            memoryLimiter.removeNodeFromQueue(node.getParent());
             removeLeaf(node.getParent());
         }
         // There's a corner case in which root can lose its all children.
