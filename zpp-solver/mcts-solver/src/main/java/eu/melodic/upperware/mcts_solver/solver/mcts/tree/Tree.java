@@ -55,15 +55,14 @@ public abstract class Tree {
 
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
-
-
+        
         if (solution.isEmpty() && leaf.getNodeStatistics().getDepth() > minDepthSubtreeRemoval) {
             removeSubtreeWithNoSolutions((leaf));
         }
 
         memoryLimiter.updateRecentlyAccessedNodes(leaf);
         while (memoryLimiter.shouldPruneTree()) {
-            pruneSubTree(memoryLimiter.popNodeToPrune());
+            pruneSubTree(memoryLimiter.whichNodeToPrune());
         }
 
         return solution;
@@ -74,6 +73,8 @@ public abstract class Tree {
         if (subRoot == root) { // If is a root then do nothing.
             return;
         }
+        memoryLimiter.removeNodeFromQueue(subRoot);
+
         memoryLimiter.decreaseCount(subRoot.getChildrenSize());
         subRoot.removeChildren();
         removeLeaf(subRoot);
@@ -89,7 +90,7 @@ public abstract class Tree {
         node.getParent().removeChild(node);
 
         if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
-            memoryLimiter.removeNodeFromQueue(node.getParent());
+            memoryLimiter.removeNodeFromQueue(node.getParent()); // Parent is becoming a leaf and we should remove it from queue.
             removeLeaf(node.getParent());
         }
         // There's a corner case in which root can lose its all children.

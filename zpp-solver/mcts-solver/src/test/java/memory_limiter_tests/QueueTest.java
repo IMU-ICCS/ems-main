@@ -21,22 +21,23 @@ public class QueueTest {
         Queue queue = new Queue();
 
         assertTrue(queue.empty());
-        assertNull(queue.popFront());
-
 
         queue.pushBack(node1);
 
         assertFalse(queue.empty());
-        assertNotNull(queue.popFront());
+        assertNotNull(queue.getFront());
+        queue.removeNodeFromQueue(queue.getFront());
 
 
         queue.pushBack(node1);
         queue.pushBack(node2);
 
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node1);
+        assertEquals(queue.getFront(), node1);
+        queue.removeNodeFromQueue(queue.getFront());
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node2);
+        assertEquals(queue.getFront(), node2);
+        queue.removeNodeFromQueue(queue.getFront());
         assertTrue(queue.empty());
 
 
@@ -45,9 +46,11 @@ public class QueueTest {
         queue.pushBack(node1);
 
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node2);
+        assertEquals(queue.getFront(), node2);
+        queue.removeNodeFromQueue(queue.getFront());
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node1);
+        assertEquals(queue.getFront(), node1);
+        queue.removeNodeFromQueue(queue.getFront());
         assertTrue(queue.empty());
 
 
@@ -55,7 +58,8 @@ public class QueueTest {
         queue.pushBack(node1);
 
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node1);
+        assertEquals(queue.getFront(), node1);
+        queue.removeNodeFromQueue(queue.getFront());
         assertTrue(queue.empty());
 
 
@@ -69,11 +73,14 @@ public class QueueTest {
         queue.pushBack(node3);
 
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node1);
+        assertEquals(queue.getFront(), node1);
+        queue.removeNodeFromQueue(queue.getFront());
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node2);
+        assertEquals(queue.getFront(), node2);
+        queue.removeNodeFromQueue(queue.getFront());
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node3);
+        assertEquals(queue.getFront(), node3);
+        queue.removeNodeFromQueue(queue.getFront());
         assertTrue(queue.empty());
 
 
@@ -84,11 +91,14 @@ public class QueueTest {
         queue.pushBack(node1);
 
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node3);
+        assertEquals(queue.getFront(), node3);
+        queue.removeNodeFromQueue(queue.getFront());
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node2);
+        assertEquals(queue.getFront(), node2);
+        queue.removeNodeFromQueue(queue.getFront());
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node1);
+        assertEquals(queue.getFront(), node1);
+        queue.removeNodeFromQueue(queue.getFront());
         assertTrue(queue.empty());
 
         queue.pushBack(node1);
@@ -97,8 +107,8 @@ public class QueueTest {
         queue.pushBack(node1);
 
         assertFalse(queue.empty());
-        assertEquals(queue.popFront(), node2);
-
+        assertEquals(queue.getFront(), node2);
+        queue.removeNodeFromQueue(queue.getFront());
     }
 
     @Test
@@ -121,7 +131,8 @@ public class QueueTest {
         }
 
         for (int i = 0; i < NODE_NUMBER; i++) {
-            assertSame(queue.popFront(), pseudo_queue.get(i));
+            assertSame(queue.getFront(), pseudo_queue.get(i));
+            queue.removeNodeFromQueue(queue.getFront());
         }
     }
 }

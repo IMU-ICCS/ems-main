@@ -1,22 +1,12 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
 
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
+import lombok.Getter;
 
 public class Queue {
+    @Getter
     private NodeImpl front = null;
     private NodeImpl back = null;
-
-    // Removes front element of queue and returns it. Does nothing if queue is empty and returns null.
-    public Node popFront() {
-        if (front == null) {
-            return null;
-        }
-
-        NodeImpl toReturn = front;
-        removeNodeFromQueue(front);
-
-        return toReturn;
-    }
 
     /*
      Moves node to the back of queue.

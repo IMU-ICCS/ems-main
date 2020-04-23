@@ -18,8 +18,8 @@ public class MemoryLimiterImpl implements MemoryLimiter {
     }
 
     @Override
-    public Node popNodeToPrune() {
-        return accessQueue.popFront();
+    public Node whichNodeToPrune() {
+        return accessQueue.getFront();
     }
 
     @Override
