@@ -108,7 +108,7 @@ public class NodeImpl implements Node {
         }
     }
 
-    // Fifo functionality.
+    // Queue linker that is responsible for add, deleting and moving node in queue.
     protected QueueLinker getQueueLinker() {
         return queueLinker;
     }
