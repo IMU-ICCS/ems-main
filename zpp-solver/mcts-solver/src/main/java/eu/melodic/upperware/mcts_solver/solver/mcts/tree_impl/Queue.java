@@ -19,7 +19,7 @@ public class Queue {
         }
 
         // Current node is not in queue.
-        if (this.empty()) { // If queue is empty.
+        if (this.empty()) {
             this.front = this.back = node;
             node.getQueueLinker().addToQueue(node,null);
         } else {
@@ -33,15 +33,12 @@ public class Queue {
     }
 
     public void removeNodeFromQueue(NodeImpl node) {
-        NodeImpl previous = node.getQueueLinker().getPrevious();
-        NodeImpl next = node.getQueueLinker().getNext();
-
         if (front == node) {
-            this.front = next;
+            this.front = node.getQueueLinker().getNext();
         }
 
         if (back == node) {
-            this.back = previous;
+            this.back = node.getQueueLinker().getPrevious();
         }
 
         node.getQueueLinker().removeFromQueue();

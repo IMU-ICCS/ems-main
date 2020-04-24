@@ -28,7 +28,7 @@ public class MemoryLimiterImpl implements MemoryLimiter {
 
         while (current != null) {
             if (current.isExpanded() && current.getParent() != null) { // If current is not leaf or root.
-               updateRecentlyAccessedNode(current);
+                accessQueue.pushBack(current);
             }
             current = current.getParent();
         }
@@ -40,17 +40,12 @@ public class MemoryLimiterImpl implements MemoryLimiter {
         NodeImpl newNode = new NodeImpl(value);
         newNode.linkToTree(parent);
         accessQueue.pushBack(newNode);
-        return new NodeImpl(value);
+        return newNode;
     }
 
     @Override
     public void removeNodeFromQueue(Node node) {
         count--;
         accessQueue.removeNodeFromQueue((NodeImpl) node);
-    }
-
-    // Adds newly created or visited node to queue.
-    private void updateRecentlyAccessedNode(Node node) {
-        accessQueue.pushBack(node);
     }
 }

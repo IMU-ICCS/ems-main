@@ -55,12 +55,12 @@ public abstract class Tree {
 
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
+        memoryLimiter.updateRecentlyAccessedNodes(leaf);
 
         if (solution.isEmpty() && leaf.getNodeStatistics().getDepth() > minDepthSubtreeRemoval) {
             removeSubtreeWithNoSolutions((leaf));
         }
 
-        memoryLimiter.updateRecentlyAccessedNodes(leaf);
         while (memoryLimiter.shouldPruneTree()) {
             removeLeaf(memoryLimiter.whichNodeToPrune());
         }
@@ -78,19 +78,15 @@ public abstract class Tree {
 
         // Shouldn't happen if node limit is not very small.
         if (node == root) {
+            root.setUnexpanded();
             return;
         }
 
         node.getParent().removeChild(node);
         memoryLimiter.removeNodeFromQueue(node);
 
-        if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
+        if (node.getParent().getChildrenSize() == 0) {
             removeLeaf(node.getParent());
-        }
-        // There's a corner case in which root can lose its all children.
-        // If node limit is > ~10000 this should never happen.
-        if (node.getParent() == root && root.getChildrenSize() == 0) {
-            root.setUnexpanded();
         }
     }
 }
