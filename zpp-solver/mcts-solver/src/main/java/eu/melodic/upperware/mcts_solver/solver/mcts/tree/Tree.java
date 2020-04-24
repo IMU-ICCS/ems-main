@@ -81,8 +81,6 @@ public abstract class Tree {
             return;
         }
 
-        assert(node.getParent() != null);
-
         node.getParent().removeChild(node);
         memoryLimiter.removeNodeFromQueue(node);
 
