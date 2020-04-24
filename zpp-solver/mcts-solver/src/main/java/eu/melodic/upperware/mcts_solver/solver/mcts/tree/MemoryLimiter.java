@@ -7,10 +7,8 @@ public interface MemoryLimiter {
     Node whichNodeToPrune();
     // Marks nodes as recently accessed. Goes from bottom to root of tree.
     void updateRecentlyAccessedNodes(Node startingNode);
-    // Tells memory limiter that count nodes have been removed.
-    void decreaseCount(int count);
     // Creates node with certain value.
-    Node createNode(int value);
+    Node createNode(Node parent, int value);
     // Removes node from queue, does nothing if it's not in queue.
     void removeNodeFromQueue(Node node);
 }

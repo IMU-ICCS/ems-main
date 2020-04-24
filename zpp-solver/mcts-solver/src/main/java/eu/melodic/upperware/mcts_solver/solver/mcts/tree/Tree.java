@@ -62,22 +62,10 @@ public abstract class Tree {
 
         memoryLimiter.updateRecentlyAccessedNodes(leaf);
         while (memoryLimiter.shouldPruneTree()) {
-            pruneSubTree(memoryLimiter.whichNodeToPrune());
+            removeLeaf(memoryLimiter.whichNodeToPrune());
         }
 
         return solution;
-    }
-
-    // Prunes subtree completely. SubRoot's children should be all leaves.
-    private void pruneSubTree(Node subRoot) {
-        if (subRoot == root) { // If is a root then do nothing.
-            return;
-        }
-        memoryLimiter.removeNodeFromQueue(subRoot);
-
-        memoryLimiter.decreaseCount(subRoot.getChildrenSize());
-        subRoot.removeChildren();
-        removeLeaf(subRoot);
     }
 
     private void removeSubtreeWithNoSolutions(Node subtreeRoot) {
@@ -86,16 +74,24 @@ public abstract class Tree {
     }
 
     private void removeLeaf(Node node) {
-        memoryLimiter.decreaseCount(1);
+        assert(node.getChildrenSize() == 0);
+
+        // Shouldn't happen if node limit is not very small.
+        if (node == root) {
+            return;
+        }
+
+        assert(node.getParent() != null);
+
         node.getParent().removeChild(node);
+        memoryLimiter.removeNodeFromQueue(node);
 
         if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
-            memoryLimiter.removeNodeFromQueue(node.getParent()); // Parent is becoming a leaf and we should remove it from queue.
             removeLeaf(node.getParent());
         }
         // There's a corner case in which root can lose its all children.
         // If node limit is > ~10000 this should never happen.
-        else if (node.getParent() == root && root.getChildrenSize() == 0) {
+        if (node.getParent() == root && root.getChildrenSize() == 0) {
             root.setUnexpanded();
         }
     }

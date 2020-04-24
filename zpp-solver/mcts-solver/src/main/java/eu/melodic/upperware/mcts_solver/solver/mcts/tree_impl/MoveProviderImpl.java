@@ -64,8 +64,7 @@ public class MoveProviderImpl implements MoveProvider {
         }
         IntStream.range(mctsWrapper.getMinDomainValue(depth), mctsWrapper.getMaxDomainValue(depth) + 1).
                 forEach(value -> {
-                    Node newNode = memoryLimiter.createNode(value);
-                    newNode.linkToTree(toExpand);
+                    Node newNode = memoryLimiter.createNode(toExpand, value);
                 });
 
         toExpand.setExpanded();

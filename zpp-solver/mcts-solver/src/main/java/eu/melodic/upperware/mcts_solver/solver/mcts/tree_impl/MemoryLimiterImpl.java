@@ -35,21 +35,21 @@ public class MemoryLimiterImpl implements MemoryLimiter {
     }
 
     @Override
-    public void decreaseCount(int count) {
-        this.count -= count;
-    }
-
-    @Override
-    public Node createNode(int value) {
+    public Node createNode(Node parent, int value) {
         count++;
+        NodeImpl newNode = new NodeImpl(value);
+        newNode.linkToTree(parent);
+        updateRecentlyAccessedNode(newNode);
         return new NodeImpl(value);
     }
 
     @Override
     public void removeNodeFromQueue(Node node) {
+        count--;
         accessQueue.removeNodeFromQueue((NodeImpl) node);
     }
 
+    // Adds newly created or visited node to queue.
     private void updateRecentlyAccessedNode(Node node) {
         accessQueue.pushBack(node);
     }
