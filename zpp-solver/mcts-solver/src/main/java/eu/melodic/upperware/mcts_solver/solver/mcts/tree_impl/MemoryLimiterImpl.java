@@ -39,7 +39,7 @@ public class MemoryLimiterImpl implements MemoryLimiter {
         count++;
         NodeImpl newNode = new NodeImpl(value);
         newNode.linkToTree(parent);
-        updateRecentlyAccessedNode(newNode);
+        accessQueue.pushBack(newNode);
         return new NodeImpl(value);
     }
 
