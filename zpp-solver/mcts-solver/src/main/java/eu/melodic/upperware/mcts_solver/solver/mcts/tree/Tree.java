@@ -6,23 +6,25 @@ import org.javatuples.Pair;
 
 import java.util.stream.IntStream;
 
-
 @Slf4j
 public abstract class Tree {
     @Getter
     protected Node root;
     private Policy policy;
     private MoveProvider moveProvider; // MoveProvider is responsible for both tree search and expansion.
+    private MemoryLimiter memoryLimiter; // Responsible for prevention of memory overflow by limiting tree size.
     private final int minDepthSubtreeRemoval;
-    public Tree(Policy policy, MoveProvider moveProvider) {
+
+    public Tree(Policy policy, MoveProvider moveProvider, MemoryLimiter memoryLimiter) {
         this.policy = policy;
         this.moveProvider = moveProvider;
+        this.memoryLimiter = memoryLimiter;
         this.minDepthSubtreeRemoval = policy.minDepthSubtreeRemoval();
     }
 
     public Solution run(int iterations) {
         return IntStream.range(0, iterations)
-                .mapToObj(i ->runIteration())
+                .mapToObj(i -> runIteration())
                 .max(Solution::compareTo).get();
     }
 
@@ -50,23 +52,41 @@ public abstract class Tree {
         Pair<Node, Path> state = searchAndExpand();
         Node leaf = state.getValue0();
         Path path = state.getValue1();
+
         Solution solution = rollout(path);
         backPropagate(leaf, solution);
+        memoryLimiter.updateRecentlyAccessedNodes(leaf);
+
         if (solution.isEmpty() && leaf.getNodeStatistics().getDepth() > minDepthSubtreeRemoval) {
             removeSubtreeWithNoSolutions((leaf));
         }
+
+        while (memoryLimiter.shouldPruneTree()) {
+            removeLeaf(memoryLimiter.whichNodeToPrune());
+        }
+
         return solution;
     }
 
     private void removeSubtreeWithNoSolutions(Node subtreeRoot) {
         log.debug("Removing subtree at depth {}", subtreeRoot.getNodeStatistics().getDepth());
-        removeNode(subtreeRoot);
+        removeLeaf(subtreeRoot);
     }
 
-    private void removeNode(Node node) {
+    private void removeLeaf(Node node) {
+        assert(node.getChildrenSize() == 0);
+
+        // Shouldn't happen if node limit is not very small.
+        if (node == root) {
+            root.setUnexpanded();
+            return;
+        }
+
         node.getParent().removeChild(node);
-        if (node.getParent() != root && node.getParent().getChildrenSize() == 0) {
-            removeNode(node.getParent());
+        memoryLimiter.removeNodeFromQueue(node);
+
+        if (node.getParent().getChildrenSize() == 0) {
+            removeLeaf(node.getParent());
         }
     }
 }

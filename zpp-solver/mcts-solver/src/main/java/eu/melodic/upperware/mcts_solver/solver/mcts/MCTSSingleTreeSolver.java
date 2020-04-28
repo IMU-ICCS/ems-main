@@ -2,10 +2,8 @@ package eu.melodic.upperware.mcts_solver.solver.mcts;
 
 import cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.MoveProvider;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Solution;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Tree;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.MemoryLimiterImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.MoveProviderImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.TreeImpl;
@@ -24,19 +22,21 @@ public class MCTSSingleTreeSolver {
     private MCTSWrapper mctsWrapper;
     private MoveProvider moveProvider;
     private Policy policy;
+    private MemoryLimiter memoryLimiter;
     @Getter
     private Tree mctsTree;
 
 
-    public MCTSSingleTreeSolver(double selectorCoefficient, double explorationCoefficient, int iterations, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
+    public MCTSSingleTreeSolver(double selectorCoefficient, double explorationCoefficient, int iterations, int nodeCountLimit, MCTSWrapper mctsWrapper, AvailablePolicies policy) {
         this.selectorCoefficient = selectorCoefficient;
         this.explorationCoefficient = explorationCoefficient;
         this.iterations = iterations;
         this.mctsWrapper = mctsWrapper;
-        moveProvider = new MoveProviderImpl(mctsWrapper);
+        this.memoryLimiter = new MemoryLimiterImpl(nodeCountLimit);
+        moveProvider = new MoveProviderImpl(mctsWrapper, memoryLimiter);
         this.policy = mctsWrapper.createPolicy(policy);
         updateParameters();
-        mctsTree = new TreeImpl(this.policy, moveProvider);
+        mctsTree = new TreeImpl(this.policy, moveProvider, memoryLimiter);
     }
 
     public CpSolution solve() {

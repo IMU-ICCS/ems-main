@@ -17,6 +17,7 @@ public class NodeStatisticsImpl implements NodeStatistics {
     private double maximalUtility = 0.0;
     private int visitCount;
     private int depth;
+    private boolean isExpanded = false; // True if nodes has been expanded and has children.
 
     public NodeStatisticsImpl(int parentDepth) {
         this.visitCount = 0;
@@ -47,5 +48,15 @@ public class NodeStatisticsImpl implements NodeStatistics {
         return selectorCoefficient * averageFailureDepth +
                 (1 - selectorCoefficient) * maximalUtility +
                 explorationCoefficient * Math.sqrt(Math.log((double) parentStats.getVisitCount() / (double) getVisitCount()));
+    }
+
+    @Override
+    public void setExpanded() {
+        this.isExpanded = true;
+    }
+
+    @Override
+    public void setUnexpanded() {
+        this.isExpanded = false;
     }
 }

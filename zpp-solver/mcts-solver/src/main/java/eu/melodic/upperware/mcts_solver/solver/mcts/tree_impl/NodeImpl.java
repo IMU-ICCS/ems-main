@@ -10,12 +10,16 @@ import java.util.List;
 
 import static java.util.Collections.max;
 
-@Getter
 public class NodeImpl implements Node {
+    @Getter
     private Node parent = null;
+    @Getter
     private List<Node> children = new ArrayList<>();
+    @Getter
     private int value;
+    @Getter
     private NodeStatistics nodeStatistics;
+    private QueueLinker queueLinker = new QueueLinker();
 
     public NodeImpl(Integer value) {
         this.value = value;
@@ -40,13 +44,13 @@ public class NodeImpl implements Node {
     }
 
     @Override
-    public int getChildrenSize() {
-        return children.size();
+    public void visit() {
+        nodeStatistics.markNewVisit();
     }
 
     @Override
-    public void visit() {
-        nodeStatistics.markNewVisit();
+    public int getChildrenSize() {
+        return children.size();
     }
 
     @Override
@@ -60,8 +64,27 @@ public class NodeImpl implements Node {
     }
 
     @Override
+    public boolean isExpanded() {
+        return nodeStatistics.isExpanded();
+    }
+
+    @Override
+    public void setExpanded() {
+        nodeStatistics.setExpanded();
+    }
+
+    @Override
+    public void setUnexpanded() {
+        nodeStatistics.setUnexpanded();
+    }
+
     public void removeChild(Node child) {
         this.children.remove(child);
+    }
+
+    @Override
+    public void removeChildren() {
+        children.clear();
     }
 
     @Override
@@ -83,5 +106,10 @@ public class NodeImpl implements Node {
         } else {
             return -Integer.compare(value, other.getValue());
         }
+    }
+
+    // Queue linker that is responsible for add, deleting and moving node in queue.
+    protected QueueLinker getQueueLinker() {
+        return queueLinker;
     }
 }

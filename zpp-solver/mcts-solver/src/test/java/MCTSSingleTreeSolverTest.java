@@ -22,7 +22,7 @@ public class MCTSSingleTreeSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSingleTreeSolver mctsSingleTreeSolver = new MCTSSingleTreeSolver(0.1, 0.5, 150, new MCTSWrapper(cpWrapper, null), AvailablePolicies.RANDOM_POLICY);
+        MCTSSingleTreeSolver mctsSingleTreeSolver = new MCTSSingleTreeSolver(0.1, 0.5, 150, 200000, new MCTSWrapper(cpWrapper, null), AvailablePolicies.RANDOM_POLICY);
         List<Integer> assignment = mctsSingleTreeSolver.search().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0,2.0,3.0,4.0,5.0);
@@ -40,7 +40,7 @@ public class MCTSSingleTreeSolverTest {
         CPWrapper cpWrapper = new CPWrapper();
         cpWrapper.parse(problem.keySet().iterator().next(), problem.values().iterator().next());
 
-        MCTSSingleTreeSolver mctsSingleTreeSolver = new MCTSSingleTreeSolver(0.1, 0.8, 5000, new MCTSWrapper(cpWrapper, null), AvailablePolicies.RANDOM_POLICY);
+        MCTSSingleTreeSolver mctsSingleTreeSolver = new MCTSSingleTreeSolver(0.1, 0.8, 5000, 200000, new MCTSWrapper(cpWrapper, null), AvailablePolicies.RANDOM_POLICY);
         List<Integer> assignment = mctsSingleTreeSolver.search().getAssignment();
 
         List<Double> domain1 = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0);
