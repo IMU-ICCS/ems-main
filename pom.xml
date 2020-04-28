@@ -74,7 +74,8 @@
         <docker.push>false</docker.push>
         <docker.repository>127.0.0.1:5000/</docker.repository>
         <!--suppress UnresolvedMavenProperty -->
-        <docker.imagePrefix>melodic-${scmBranch}/</docker.imagePrefix>
+        <docker.imageTag>${scmBranch}</docker.imageTag>
+        <docker.imagePrefix>melodic/melodic-upperware/</docker.imagePrefix>
         <docker.imageName>parent</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
         <docker.spotify-plugin.version>0.4.10</docker.spotify-plugin.version>
@@ -229,8 +230,9 @@
                     <version>${docker.spotify-plugin.version}</version>
                     <configuration>
                         <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.repository}${docker.imagePrefix}${docker.imageName}</imageName>
+                        <imageName>${docker.repository}${docker.imagePrefix}${docker.imageName}:${docker.imageTag}</imageName>
                         <pushImage>${docker.push}</pushImage>
+                        <serverId>ow2.melodic</serverId>
                         <resources>
                             <resource>
                                 <targetPath>/</targetPath>
@@ -385,7 +387,7 @@
         <profile>
             <id>docker-remote</id>
             <properties>
-                <docker.repository>88.99.85.63:5000/</docker.repository>
+                <docker.repository>gitlab.ow2.org:4567/</docker.repository>
                 <docker.push>true</docker.push>
             </properties>
         </profile>
