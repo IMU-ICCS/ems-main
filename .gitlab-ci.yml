@@ -241,6 +241,10 @@ build:ems-translator:
 
 deploy:melodic-upperware:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -251,6 +255,10 @@ deploy:melodic-upperware:
 
 deploy:upperware-metamodel:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -261,6 +269,10 @@ deploy:upperware-metamodel:
 
 deploy:jwt-commons:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -271,6 +283,10 @@ deploy:jwt-commons:
 
 deploy:melodic-commons:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -281,6 +297,10 @@ deploy:melodic-commons:
 
 deploy:melodic-cache:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -291,6 +311,10 @@ deploy:melodic-cache:
 
 deploy:dlms:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -301,6 +325,10 @@ deploy:dlms:
 
 deploy:dlms-utility:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -311,6 +339,10 @@ deploy:dlms-utility:
 
 deploy:dlms-controller:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -322,6 +354,10 @@ deploy:dlms-controller:
 
 deploy:dlms-webservice:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -333,6 +369,10 @@ deploy:dlms-webservice:
 
 deploy:penalty-calculator:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -343,6 +383,10 @@ deploy:penalty-calculator:
 
 deploy:jwt-server:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -354,6 +398,10 @@ deploy:jwt-server:
 
 deploy:utility-generator:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -364,6 +412,10 @@ deploy:utility-generator:
 
 deploy:zpp-solver:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -374,6 +426,10 @@ deploy:zpp-solver:
 
 deploy:adapter:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -385,6 +441,10 @@ deploy:adapter:
 
 deploy:cp-generator:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -396,6 +456,10 @@ deploy:cp-generator:
 
 deploy:cp-solver:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -407,6 +471,10 @@ deploy:cp-solver:
 
 deploy:dlms-agent:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: "python:latest"
   before_script:
     - pip install awscli
@@ -422,6 +490,10 @@ deploy:dlms-agent:
 
 deploy:ems:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -432,6 +504,10 @@ deploy:ems:
 
 deploy:ems-util:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -442,6 +518,10 @@ deploy:ems-util:
 
 deploy:ems-broker-client:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -452,6 +532,10 @@ deploy:ems-broker-client:
 
 deploy:ems-broker-cep:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -462,6 +546,10 @@ deploy:ems-broker-cep:
 
 deploy:ems-baguette-client:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -472,6 +560,10 @@ deploy:ems-baguette-client:
 
 deploy:ems-baguette-server:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -482,6 +574,10 @@ deploy:ems-baguette-server:
 
 deploy:ems-baguette-client-install:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -492,6 +588,10 @@ deploy:ems-baguette-client-install:
 
 deploy:ems-translator:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -502,6 +602,10 @@ deploy:ems-translator:
 
 deploy:ems-server:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -513,6 +617,10 @@ deploy:ems-server:
 
 deploy:gen-solver:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -524,6 +632,10 @@ deploy:gen-solver:
 
 deploy:metasolver:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -535,6 +647,10 @@ deploy:metasolver:
 
 deploy:mq-adapter:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -546,6 +662,10 @@ deploy:mq-adapter:
 
 deploy:nc-solver:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -557,6 +677,10 @@ deploy:nc-solver:
 
 deploy:pt-solver:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -568,6 +692,10 @@ deploy:pt-solver:
 
 deploy:gui-backend:
   stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
