@@ -1,4 +1,5 @@
 import eu.melodic.cache.NodeCandidates;
+
 import eu.melodic.cache.impl.FilecacheService;
 import eu.melodic.upperware.cp_sampler.Sampler;
 import eu.melodic.upperware.cp_sampler.constraint_problem_data.ConstraintProblemData;
@@ -17,7 +18,7 @@ class SamplerTest {
 
     @Test
     void sample() throws IOException {
-        Sampler sampler = new Sampler();
+        Sampler sampler = new Sampler(2,5, 2);
         FilecacheService filecacheService = new FilecacheService();
         NodeCandidates nodeCandidates = filecacheService.load(pathToNCModel);
         Pair<ConstraintProblemData, NodeCandidates> cpNodes = sampler.sample(nodeCandidates);

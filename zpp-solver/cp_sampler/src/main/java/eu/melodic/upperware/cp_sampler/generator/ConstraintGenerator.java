@@ -30,16 +30,18 @@ public class ConstraintGenerator {
     private Random random = new Random();
     private ConstraintEvaluator constraintEvaluator;
     private VariableGenerator variableGenerator;
+    private int componentsCount;
 
-    public ConstraintGenerator(ConstraintEvaluator constraintEvaluator, VariableGenerator variableGenerator) {
+    public ConstraintGenerator(ConstraintEvaluator constraintEvaluator, VariableGenerator variableGenerator, int componentsCount) {
         this.variableGenerator = variableGenerator;
         this.constraintEvaluator = constraintEvaluator;
+        this.componentsCount = componentsCount;
     }
 
     public Constraint generateConstraint() {
         Pair<Expression, ExpressionSampleType> exp = sampleExpression();
         ComparatorEnum comparator = sampleComparator(exp.getValue1());
-        Expression constant = constraintEvaluator.getConstant(exp.getValue0());
+        Expression constant = constraintEvaluator.getConstant(exp.getValue0(), comparator);
         return new Constraint(exp.getValue0(), constant, comparator);
     }
 
@@ -105,7 +107,7 @@ public class ConstraintGenerator {
     }
     private Pair<Expression, ExpressionSampleType>  sampleExpression() {
         int expressionsCount = random.nextInt(Priors.MAX_EXPRESSIONS_PER_CONSTRAINT) + 1;
-        if (random.nextDouble() <= Priors.LONG_EXPRESSION_PROB) {
+        if (random.nextDouble() <= Priors.LONG_EXPRESSION_PROB && componentsCount > 1) {
             return sampleLongExpression();
         }
         Expression expression = sampleSimpleExpression();

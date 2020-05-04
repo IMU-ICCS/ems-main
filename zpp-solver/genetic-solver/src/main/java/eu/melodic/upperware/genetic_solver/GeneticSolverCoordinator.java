@@ -1,7 +1,7 @@
 package eu.melodic.upperware.genetic_solver;
 
-import cp_wrapper.utility_provider.UtilityProviderImpl;
-import cp_wrapper.utils.CpVariableCreator;
+import cp_wrapper.utility_provider.implementations.UtilityProviderImpl;
+import cp_wrapper.utils.cp_variable.CpVariableCreator;
 import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
@@ -19,7 +19,6 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
@@ -30,7 +29,6 @@ import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static eu.passage.upperware.commons.model.tools.CPModelTool.createSolution;
@@ -74,16 +72,15 @@ public class GeneticSolverCoordinator {
 
     private SolutionResultNotifier solutionResultNotifier;
     private int populationSize = 100;
-    private int timeLimit = 10;
 
-    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int timeLimit) {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
                     true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            Boolean solutionFeasible = solve(cp, utilityGenerator);
+            boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
             if (!solutionFeasible) {
                 log.info("Solution is not feasible!");
                 return;
@@ -95,7 +92,7 @@ public class GeneticSolverCoordinator {
     }
 
     @Async
-    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid, int timeLimit) {
         try {
             NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
 
@@ -108,7 +105,7 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            Boolean solutionFeasible = solve(cp, utilityGenerator);
+            Boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
 
             if (!solutionFeasible) {
                 log.info("Problem is infeasible");
@@ -128,7 +125,7 @@ public class GeneticSolverCoordinator {
         }
     }
 
-    private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator) {
+    private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, int timeLimit) {
         GeneticSolverRunner runner = new GeneticSolverRunner();
         runner.setPopulationSize(populationSize);
         runner.setTimeLimitSeconds(timeLimit);

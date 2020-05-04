@@ -51,7 +51,7 @@ public class XMIWriter {
 
     private String getConstantString(Double constant, String id) {
         return "<constants id=\" "  + id + "\">\n" +
-                "<value xsi:type=\"types:FloatValueUpperware\" value=\"" + constant.toString() +"\"/>\n" +
+                "<value xsi:type=\"types:LongValueUpperware\" value=\"" + Math.round(constant) +"\"/>\n" +
                 "</constants>";
     }
 

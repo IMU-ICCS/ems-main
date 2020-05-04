@@ -19,6 +19,7 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -33,18 +34,16 @@ public class UtilityGeneratorApplication {
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, penaltyFunctionProperties, jwtService);
     }
 
-    @SafeVarargs
     public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                        MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
-                                       Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+                                       List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         log.info("Creating template Utility Generator");
         checkWeightsOfUtilityComponents(utilityComponents);
         utilityFunctionEvaluator =                 new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
                 melodicSecurityProperties, penaltyFunctionProperties, jwtService, utilityComponents);
     }
 
-    @SafeVarargs
-    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+    public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         log.info("Creating template Utility Generator");
         checkWeightsOfUtilityComponents(utilityComponents);
         utilityFunctionEvaluator = new UtilityFunctionEvaluator( cpModelFilePath,  nodeCandidates, utilityComponents);
@@ -54,10 +53,9 @@ public class UtilityGeneratorApplication {
         return this.utilityFunctionEvaluator.evaluate(solution);
     }
 
-    @SafeVarargs
-    private final void checkWeightsOfUtilityComponents(Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
-        if (Stream.of(utilityComponents).map(Map.Entry::getValue).reduce(0.0, Double::sum) > 1.0
-                || Stream.of(utilityComponents).map(Map.Entry::getValue).anyMatch(weight -> weight < 0)) {
+    private final void checkWeightsOfUtilityComponents(List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
+        if (utilityComponents.stream().map(Map.Entry::getValue).reduce(0.0, Double::sum) > 1.0
+                || utilityComponents.stream().map(Map.Entry::getValue).anyMatch(weight -> weight < 0)) {
             throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");
         }
     }

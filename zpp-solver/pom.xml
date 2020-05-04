@@ -15,6 +15,8 @@
         <module>mcts-solver</module>
         <module>pt-solver</module>
         <module>node-candidates-solver</module>
+        <module>cp_sampler</module>
+        <module>testing_module</module>
     </modules>
     <artifactId>zpp-solver</artifactId>
     <dependencies>
@@ -27,6 +29,8 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>utility-generator</artifactId>
+            <version>${melodic.version}</version>
+            <scope>compile</scope>
             <version>${melodic.version}</version>
             <exclusions>
                     <exclusion>

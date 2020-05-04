@@ -4,8 +4,8 @@ package cp_wrapper.parser;
  */
 
 import cp_wrapper.utils.constraint.Constraint;
-import cp_wrapper.utils.ConstraintGraph;
-import cp_wrapper.utils.VariableNumericType;
+import cp_wrapper.utils.constraint_graph.ConstraintGraph;
+import cp_wrapper.utils.cp_variable.VariableNumericType;
 import cp_wrapper.utils.numeric_value.NumericValueInterface;
 
 //import eu.melodic.upperware.cpsolver.solver.parser.creator.*;
@@ -22,8 +22,8 @@ public class CPParsedData {
     private Collection<Constant> constants;
     private Collection<CpMetric> metrics;
     private Collection<Constraint> constraints;
+    @Getter
     private Collection<CpVariable> variables;
-    //private IntVarCreator intVarCreator;
     static final List<BasicTypeEnum> ACCEPTED_INT_TYPES = Arrays.asList(BasicTypeEnum.INTEGER, BasicTypeEnum.LONG);
     @Getter
     private ConstraintGraph constraintGraph;
@@ -31,12 +31,6 @@ public class CPParsedData {
 
     public Collection<String> getVariableNames() {
         return nameToVariable.keySet();
-    }
-
-    protected void init() {
-        //intVarCreator = new IntVarCreator();
-        initializeConstraintGraph();
-        initializeNameToVariable();
     }
 
     public boolean checkIfFeasible(Map<String, NumericValueInterface> variables) {
@@ -48,15 +42,6 @@ public class CPParsedData {
         return true;
     }
 
-    BasicTypeEnum getDomainType(Domain domain) {
-        if (domain instanceof RangeDomain) {
-            return ((RangeDomain) domain).getType();
-        } else if (domain instanceof NumericListDomain) {
-            return ((NumericListDomain) domain).getType();
-        }
-        throw new RuntimeException(format("Unsupported Domain type %s, only RangeDomain and NumericListDomain are supported",
-                domain.getClass().getSimpleName()));
-    }
     public int countViolatedConstraints(Map<String, NumericValueInterface> variables) {
         return constraints.stream()
                 .map(c -> c.evaluate(variables) ?  0 : 1)
@@ -67,34 +52,21 @@ public class CPParsedData {
         return constraintGraph.getVariableHeuristicEvaluation(variable, variables);
     }
 
-    public void updateMetrics(Collection<CpMetric> metrics) {
-        //TODO
-    }
-
     public Domain getVariableDomain(String variable) {
         return nameToVariable.get(variable).getDomain();
     }
 
     public VariableNumericType getVariableType(String name) {
-        if (nameToVariable.get(name) instanceof CpVariable && ACCEPTED_INT_TYPES.contains(getDomainType((nameToVariable.get(name)).getDomain()))) {
+        if (ACCEPTED_INT_TYPES.contains(getDomainType((nameToVariable.get(name)).getDomain()))) {
             return VariableNumericType.INT;
         } else {
             return VariableNumericType.DOUBLE;
         }
     }
-    private void initializeNameToVariable() {
-        nameToVariable = new HashMap<String, CpVariable>();
-        for (CpVariable var : variables) {
-            nameToVariable.put(var.getId(), var);
-        }
-    }
 
-    private void initializeConstraintGraph() {
-        List<String> variableNames =
-                variables.stream()
-                        .map(CPElement::getId)
-                        .collect(Collectors.toList());
-        constraintGraph = new ConstraintGraph(constraints, variableNames);
+    void init() {
+        initializeConstraintGraph();
+        initializeNameToVariable();
     }
 
     void postConstants(Collection<Constant> constants) {
@@ -108,5 +80,30 @@ public class CPParsedData {
     }
     void postVariables(Collection<CpVariable> variables) {
         this.variables = variables;
+    }
+
+    private BasicTypeEnum getDomainType(Domain domain) {
+        if (domain instanceof RangeDomain) {
+            return ((RangeDomain) domain).getType();
+        } else if (domain instanceof NumericListDomain) {
+            return ((NumericListDomain) domain).getType();
+        }
+        throw new RuntimeException(format("Unsupported Domain type %s, only RangeDomain and NumericListDomain are supported",
+                domain.getClass().getSimpleName()));
+    }
+
+    private void initializeNameToVariable() {
+        nameToVariable = new HashMap<>();
+        for (CpVariable var : variables) {
+            nameToVariable.put(var.getId(), var);
+        }
+    }
+
+    private void initializeConstraintGraph() {
+        List<String> variableNames =
+                variables.stream()
+                        .map(CPElement::getId)
+                        .collect(Collectors.toList());
+        constraintGraph = new ConstraintGraph(constraints, variableNames);
     }
 }

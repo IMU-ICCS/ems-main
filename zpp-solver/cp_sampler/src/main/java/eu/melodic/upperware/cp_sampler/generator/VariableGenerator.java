@@ -65,7 +65,7 @@ public class VariableGenerator {
         List<Integer> availableVars = IntStream.range(0, NamesProvider.VARIABLES_PER_COMPONENT).boxed().collect(Collectors.toList());
         int variable = availableVars.get(random.nextInt(availableVars.size()));
         return IntStream.range(0, componentsCount).mapToObj(
-                component -> new VariableExpression(NamesProvider.getVariableName(component*NamesProvider.VARIABLES_PER_COMPONENT + variable))
+                component -> new VariableExpression(NamesProvider.getVariableName(component* NamesProvider.VARIABLES_PER_COMPONENT + variable))
         ).collect(Collectors.toList());
     }
 

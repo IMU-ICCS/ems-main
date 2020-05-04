@@ -14,8 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class PTSolution extends Solution {
-    public static List<Integer> minVariableValues;
-    public static List<Integer> maxVariableValues;
     /*
         Value at index i corresponds to i'th variable's value
      */
@@ -27,20 +25,6 @@ public class PTSolution extends Solution {
     public PTSolution(List<Integer> varAssignments) {
         this.varAssignments = varAssignments;
         utility = new PTEvaluation(0.0);
-    }
-    /*
-        True if increasing current @var variable value by one will not exceed
-        domain range
-     */
-    public boolean canMoveUp(int var) {
-        return PTSolution.maxVariableValues.get(var) > varAssignments.get(var);
-    }
-    /*
-        True if decreasing current @var variable value by one will not exceed
-        domain range
-     */
-    public boolean canMoveDown(int var) {
-        return PTSolution.minVariableValues.get(var) < varAssignments.get(var);
     }
 
     @Override

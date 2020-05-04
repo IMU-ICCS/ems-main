@@ -1,0 +1,46 @@
+package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl;
+
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
+import lombok.Getter;
+
+public class Queue {
+    @Getter
+    private NodeImpl front = null;
+    private NodeImpl back = null;
+
+    /*
+     Moves node to the back of queue.
+     If node was already in queue then its previous occurrence is forgotten and it's added as a new element.
+     */
+    public void pushBack(Node newNode) {
+        NodeImpl node = (NodeImpl) newNode;
+        if (node.getQueueLinker().isInQueue()) { // If is in queue then remove it from queue for now.
+            removeNodeFromQueue(node);
+        }
+
+        // Current node is not in queue.
+        if (this.empty()) {
+            this.front = this.back = node;
+            node.getQueueLinker().addToQueue(node,null);
+        } else {
+            node.getQueueLinker().addToQueue(node, back);
+            this.back = node;
+        }
+    }
+
+    public boolean empty() {
+        return front == null;
+    }
+
+    public void removeNodeFromQueue(NodeImpl node) {
+        if (front == node) {
+            this.front = node.getQueueLinker().getNext();
+        }
+
+        if (back == node) {
+            this.back = node.getQueueLinker().getPrevious();
+        }
+
+        node.getQueueLinker().removeFromQueue();
+    }
+}
