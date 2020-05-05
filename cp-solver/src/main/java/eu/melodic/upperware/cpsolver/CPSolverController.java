@@ -30,7 +30,6 @@ public class CPSolverController {
 
     @RequestMapping(value = "/constraintProblemSolution", method = POST)
     public void applySolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
-        log.info("LEDDDDSRERR");
         String applicationId = request.getApplicationId();
         String cdoResourcePath = request.getCdoModelsPath();
         String notificationUri = request.getNotificationURI();
@@ -44,7 +43,6 @@ public class CPSolverController {
 
     @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
     public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
-        log.info("LESRERR");
         String camelModelFilePath = request.getCamelModelFilePath();
         String cpModelPath = request.getCpProblemFilePath();
         String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();

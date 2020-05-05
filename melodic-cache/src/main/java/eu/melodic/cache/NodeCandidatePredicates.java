@@ -84,9 +84,6 @@ public final class NodeCandidatePredicates {
                 Double latitude = null;
                 Location tempLocation = nodeCandidate.getLocation();
                 do {
-                    if (tempLocation == null) {
-                        System.out.println("O NIE");
-                    }
                     final GeoLocation geoLocation = tempLocation.getGeoLocation();
                     if (geoLocation != null) {
                         latitude = geoLocation.getLatitude();

@@ -15,7 +15,6 @@
         <module>mcts-solver</module>
         <module>pt-solver</module>
         <module>node-candidates-solver</module>
-        <!--<module>cp_sampler</module>-->
     </modules>
     <artifactId>zpp-solver</artifactId>
     <dependencies>
@@ -23,7 +22,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.3.1</version>
-            <!--<scope>test</scope>-->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>eu.melodic</groupId>
