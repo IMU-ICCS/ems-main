@@ -1,11 +1,12 @@
 package eu.melodic.upperware.genetic_solver;
 
-import cp_wrapper.utility_provider.implementations.UtilityProviderImpl;
-import cp_wrapper.utils.cp_variable.CpVariableCreator;
-import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.UtilityProviderImpl;
+import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
+import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
+import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
@@ -25,7 +26,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
 
 import java.util.List;
 import java.util.Optional;

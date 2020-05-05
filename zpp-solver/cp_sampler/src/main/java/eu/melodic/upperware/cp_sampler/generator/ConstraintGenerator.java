@@ -1,6 +1,6 @@
 package eu.melodic.upperware.cp_sampler.generator;
 
-import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import eu.melodic.upperware.cp_sampler.expressions.*;
 import eu.melodic.upperware.cp_sampler.utils.priors.Priors;
 import eu.paasage.upperware.metamodel.cp.ComparatorEnum;

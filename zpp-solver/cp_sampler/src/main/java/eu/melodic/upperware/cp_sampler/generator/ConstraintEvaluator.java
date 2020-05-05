@@ -1,9 +1,9 @@
 package eu.melodic.upperware.cp_sampler.generator;
 
-import cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
-import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.upperware.cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.upperware.cp_sampler.expressions.ComposedExpression;
 import eu.melodic.upperware.cp_sampler.expressions.ConstantExpression;
 import eu.melodic.upperware.cp_sampler.expressions.Expression;
@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static cp_wrapper.utils.expression_evaluator.ExpressionEvaluator.evaluateComparator;
+import static eu.melodic.upperware.cp_wrapper.utils.expression_evaluator.ExpressionEvaluator.evaluateComparator;
 
 /*
     Each constraint is of a form Expression operator constant;

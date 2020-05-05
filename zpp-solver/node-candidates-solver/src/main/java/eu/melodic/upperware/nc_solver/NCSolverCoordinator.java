@@ -1,12 +1,12 @@
 package eu.melodic.upperware.nc_solver;
 
 
-import cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
-import cp_wrapper.utils.cp_variable.CpVariableCreator;
-import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
+import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
+import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
@@ -14,11 +14,10 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.metamodel.types.*;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import eu.passage.upperware.commons.model.tools.CPModelTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;

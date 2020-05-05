@@ -2,12 +2,11 @@ package eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper;
 /*
     Thin layer on top of CPWrapper class from CPParser package.
  */
-import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
+
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTEvaluation;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
-import cp_wrapper.CPWrapper;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 

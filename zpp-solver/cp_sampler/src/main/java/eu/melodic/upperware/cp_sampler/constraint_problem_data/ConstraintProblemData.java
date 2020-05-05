@@ -1,6 +1,6 @@
 package eu.melodic.upperware.cp_sampler.constraint_problem_data;
 
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.melodic.upperware.cp_sampler.expressions.Constraint;
 import eu.melodic.upperware.cp_sampler.expressions.VariableExpression;
 import lombok.Getter;

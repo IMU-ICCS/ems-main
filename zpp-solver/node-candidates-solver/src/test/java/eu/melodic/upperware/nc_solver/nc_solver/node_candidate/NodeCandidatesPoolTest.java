@@ -1,9 +1,9 @@
 package eu.melodic.upperware.nc_solver.nc_solver.node_candidate;
 
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTMover;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.melodic.upperware.nc_solver.nc_solver.nc_wrapper.DomainProvider;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NodeCandidatesPoolTest {
 

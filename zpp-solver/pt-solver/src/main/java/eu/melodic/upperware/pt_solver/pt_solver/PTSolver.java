@@ -1,13 +1,13 @@
 package eu.melodic.upperware.pt_solver.pt_solver;
 
-import cp_wrapper.utils.runtime_limits.RuntimeLimit;
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.utils.runtime_limits.RuntimeLimit;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTNeighbourhood;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTObjective;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTRandomGenerator;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
 import eu.melodic.upperware.pt_solver.pt_solver.ptcp_wrapper.PTCPWrapper;
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.extern.slf4j.Slf4j;

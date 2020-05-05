@@ -1,6 +1,6 @@
 package eu.melodic.upperware.cp_sampler.xmi_writer;
 
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.melodic.upperware.cp_sampler.constraint_problem_data.ConstraintProblemData;
 import eu.melodic.upperware.cp_sampler.expressions.*;
 import eu.melodic.upperware.cp_sampler.utils.NamesProvider;

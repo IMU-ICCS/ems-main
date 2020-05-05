@@ -7,6 +7,7 @@ import eu.melodic.upperware.cp_sampler.generator.ConstraintGenerator;
 import eu.melodic.upperware.cp_sampler.generator.VariableGenerator;
 import eu.melodic.upperware.cp_sampler.node_candidates.NodeCandidatesPool;
 import eu.melodic.upperware.cp_sampler.utils.NamesProvider;
+import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import org.javatuples.Pair;
 

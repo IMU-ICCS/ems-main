@@ -33,15 +33,16 @@ package eu.melodic.upperware.nc_solver.nc_solver.node_candidate;
     neighbours is to be conducted.
     Analogous masks are kept for GeographicCoordinates.
  */
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.IntegerValue;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTMover;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
-import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.melodic.upperware.nc_solver.nc_solver.nc_wrapper.DomainProvider;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.ComponentVariableOrderer;
 import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.VariableTypeOrderer;
+import eu.paasage.upperware.metamodel.cp.VariableType;
 
 import java.util.*;
 import java.util.stream.IntStream;

@@ -1,9 +1,9 @@
 package utility.merge_sort_utility;
 
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
-import cp_wrapper.CPWrapper;
-import io.jenetics.util.ISeq;
 import eu.melodic.upperware.genetic_solver.jenetics_implementation.GeneImpl;
+import io.jenetics.util.ISeq;
 
 import java.util.List;
 

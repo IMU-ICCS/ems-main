@@ -1,14 +1,14 @@
 package eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element;
 
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.VariableValueKeeperInterface;
+import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.ComponentVariableOrderer;
+import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.VariableTypeOrderer;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.VariableValueKeeperInterface;
 import org.javatuples.Pair;
-import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.ComponentVariableOrderer;
-import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.VariableTypeOrderer;
 
 import java.util.Arrays;
 import java.util.List;

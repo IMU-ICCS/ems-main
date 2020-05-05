@@ -1,8 +1,9 @@
 package eu.melodic.upperware.cp_sampler.generator;
 
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
+
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.upperware.cp_sampler.expressions.Expression;
 import eu.melodic.upperware.cp_sampler.expressions.VariableExpression;
 import eu.melodic.upperware.cp_sampler.node_candidates.NodeCandidatesPool;

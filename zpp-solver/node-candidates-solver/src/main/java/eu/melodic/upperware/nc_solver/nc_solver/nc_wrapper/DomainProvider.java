@@ -1,6 +1,6 @@
 package eu.melodic.upperware.nc_solver.nc_solver.nc_wrapper;
 
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
 
 public interface DomainProvider {
     NumericValueInterface getMaxValue(int variable);

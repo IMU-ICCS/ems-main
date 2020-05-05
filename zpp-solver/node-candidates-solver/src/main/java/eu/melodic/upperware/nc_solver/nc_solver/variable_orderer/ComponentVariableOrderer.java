@@ -1,11 +1,14 @@
 package eu.melodic.upperware.nc_solver.nc_solver.variable_orderer;
 
-import cp_wrapper.utils.variable_orderer.VariableOrderer;
+import eu.melodic.upperware.cp_wrapper.utils.variable_orderer.VariableOrderer;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.Getter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
     Components are ordered non-deterministically.
