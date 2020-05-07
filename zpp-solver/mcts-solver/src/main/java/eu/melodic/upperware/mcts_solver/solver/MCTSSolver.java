@@ -1,8 +1,10 @@
 package eu.melodic.upperware.mcts_solver.solver;
 
-import cp_wrapper.solution.CpSolution;
-
-import cp_wrapper.utils.runtime_limits.RuntimeLimit;
+import eu.melodic.upperware.cp_wrapper.solution.CpSolution;
+import eu.melodic.upperware.cp_wrapper.utils.runtime_limits.RuntimeLimit;
+import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSingleTreeSolver;
+import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
+import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.SolutionBuffer;
@@ -10,9 +12,6 @@ import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.Message;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.TemperatureMessage;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.messages.UtilityMessage;
-import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSingleTreeSolver;
-import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
-import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactory;
 import eu.melodic.upperware.mcts_solver.solver.worker_thread.WorkerThread;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +37,7 @@ public class MCTSSolver {
         this.minTemperature = minTemperature;
         this.maxTemperature = maxTemperature;
         this.iterations = iterations;
-        this.messageChannel =  new OneToManyChannel<>(numThreads);
+        this.messageChannel = new OneToManyChannel<>(numThreads);
         this.policyType = policyType;
         this.SAVE_TREE = saveTree;
     }
@@ -64,8 +63,8 @@ public class MCTSSolver {
 
     private List<Thread> startWorkers(List<MCTSWrapper> mctsWrappers) {
         return IntStream.range(0, numThreads).mapToObj(pid -> {
-            Thread thread = new Thread( () -> {
-                MCTSSingleTreeSolver mctsSingleTreeSolver =  new MCTSSingleTreeSolver(minTemperature , 10, iterations, NODE_COUNT_LIMIT / numThreads, mctsWrappers.get(pid), policyType);
+            Thread thread = new Thread(() -> {
+                MCTSSingleTreeSolver mctsSingleTreeSolver = new MCTSSingleTreeSolver(minTemperature, 10, iterations, NODE_COUNT_LIMIT / numThreads, mctsWrappers.get(pid), policyType);
                 WorkerThread workerThread = new WorkerThread(pid, iterations, solutionBuffer, messageChannel, mctsSingleTreeSolver, SAVE_TREE);
                 workerThread.workerRun();
             });
@@ -87,7 +86,7 @@ public class MCTSSolver {
 
     private void setTemperatures(List<UtilityMessage> results) {
         double tempDiff = (maxTemperature - minTemperature) / numThreads;
-        IntStream.range(0, numThreads).forEach(thread -> messageChannel.coordinatorSend(new TemperatureMessage(minTemperature + thread*tempDiff), results.get(thread).getPid()));
+        IntStream.range(0, numThreads).forEach(thread -> messageChannel.coordinatorSend(new TemperatureMessage(minTemperature + thread * tempDiff), results.get(thread).getPid()));
     }
 
     private void stopWorkers() {

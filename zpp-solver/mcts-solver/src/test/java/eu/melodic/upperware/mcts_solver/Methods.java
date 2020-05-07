@@ -1,7 +1,7 @@
 package eu.melodic.upperware.mcts_solver;
 
-import cp_wrapper.utility_provider.UtilityProvider;
-import cp_wrapper.utils.test_utils.mockups.*;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.utils.test_utils.mockups.*;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
@@ -33,41 +33,50 @@ public class Methods {
 
         List<String> variables = Arrays.asList("var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8");
         EList<CpVariable> vars = new BasicEList<>();
-        for (int i= 0; i < 3; i++) vars.add(new CpVariableImplMockup(variables.get(i), VariableType.CARDINALITY));
-        RangeDomainImpMockup dom1  = new RangeDomainImpMockup();
-        RangeDomainImpMockup dom3  = new RangeDomainImpMockup();
-        dom1.setFrom(1);dom3.setFrom(0);dom1.setTo(5);dom3.setTo(9);
+        for (int i = 0; i < 3; i++)
+            vars.add(new CpVariableImplMockup(variables.get(i), VariableType.CARDINALITY));
+        RangeDomainImpMockup dom1 = new RangeDomainImpMockup();
+        RangeDomainImpMockup dom3 = new RangeDomainImpMockup();
+        dom1.setFrom(1);
+        dom3.setFrom(0);
+        dom1.setTo(5);
+        dom3.setTo(9);
         dom3.setType(BasicTypeEnum.INTEGER);
         dom1.setType(BasicTypeEnum.INTEGER);
         NumericListDomainImplMockup dom2 = new NumericListDomainImplMockup();
         dom2.setValues(Arrays.asList(0.5, 1.5, 2.5));
         dom2.setType(BasicTypeEnum.DOUBLE);
-        List<Domain> domains = Arrays.asList(new Domain[] {dom1, dom2, dom3});
-        for (int i = 0; i <3 ; i++ ){
+        List<Domain> domains = Arrays.asList(new Domain[]{dom1, dom2, dom3});
+        for (int i = 0; i < 3; i++) {
             vars.get(i).setDomain(domains.get(i));
         }
 
         Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(3));
 
         EList<NumericExpression> exprs = new BasicEList<>();
-        exprs.add(vars.get(0)); exprs.add(vars.get(1));
+        exprs.add(vars.get(0));
+        exprs.add(vars.get(1));
         NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
         ComparisonExpressionMockup constraint1 = new ComparisonExpressionMockup();
-        constraint1.setExp1(vars.get(0));constraint1.setExp2(vars.get(2));
+        constraint1.setExp1(vars.get(0));
+        constraint1.setExp2(vars.get(2));
         constraint1.setComparator(ComparatorEnum.LESS_THAN);
 
         ComparisonExpressionMockup constraint3 = new ComparisonExpressionMockup();
-        constraint3.setExp1(times);constraint3.setExp2(vars.get(2));
+        constraint3.setExp1(times);
+        constraint3.setExp2(vars.get(2));
         constraint3.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
 
         exprs.add(vars.get(2));
         ComparisonExpressionMockup constraint2 = new ComparisonExpressionMockup();
         times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
-        constraint2.setExp1(times);constraint2.setExp2(c);
+        constraint2.setExp1(times);
+        constraint2.setExp2(c);
         constraint2.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
 
         ComparisonExpressionMockup constraint4 = new ComparisonExpressionMockup();
-        constraint4.setExp1(vars.get(2));constraint4.setExp2(vars.get(2));
+        constraint4.setExp1(vars.get(2));
+        constraint4.setExp2(vars.get(2));
         constraint4.setComparator(ComparatorEnum.EQUAL_TO);
 
         EList<Constant> consts = new BasicEList<>();
@@ -79,7 +88,7 @@ public class Methods {
         EList<ComparisonExpression> constraints = new BasicEList<>();
         constraints.addAll(Arrays.asList(constraint1, constraint2, constraint3, constraint4));
 
-        ConstraintProblem cp = new ConstraintProblemMockup(consts,null, varsE, constraints );
+        ConstraintProblem cp = new ConstraintProblemMockup(consts, null, varsE, constraints);
         return Collections.singletonMap(cp, result -> {
             double sum = 0;
             for (VariableValueDTO v : result) {
@@ -116,13 +125,17 @@ public class Methods {
 
         List<String> variables = Arrays.asList("var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8", "var9", "var10", "var11", "var12");
         EList<CpVariable> vars = new BasicEList<>();
-        for (int i= 0; i < 5; i++) vars.add(new CpVariableImplMockup(variables.get(i), VariableType.CARDINALITY));
-        RangeDomainImpMockup dom1  = new RangeDomainImpMockup();
-        RangeDomainImpMockup dom3  = new RangeDomainImpMockup();
-        RangeDomainImpMockup dom4  = new RangeDomainImpMockup();
-        dom1.setFrom(1); dom1.setTo(10);
-        dom3.setFrom(0); dom3.setTo(9);
-        dom4.setFrom(1); dom4.setTo(3);
+        for (int i = 0; i < 5; i++)
+            vars.add(new CpVariableImplMockup(variables.get(i), VariableType.CARDINALITY));
+        RangeDomainImpMockup dom1 = new RangeDomainImpMockup();
+        RangeDomainImpMockup dom3 = new RangeDomainImpMockup();
+        RangeDomainImpMockup dom4 = new RangeDomainImpMockup();
+        dom1.setFrom(1);
+        dom1.setTo(10);
+        dom3.setFrom(0);
+        dom3.setTo(9);
+        dom4.setFrom(1);
+        dom4.setTo(3);
         dom1.setType(BasicTypeEnum.INTEGER);
         dom3.setType(BasicTypeEnum.INTEGER);
         dom4.setType(BasicTypeEnum.INTEGER);
@@ -132,8 +145,8 @@ public class Methods {
         dom5.setValues(Arrays.asList(0.5, 7.5, 12.5));
         dom2.setType(BasicTypeEnum.DOUBLE);
         dom5.setType(BasicTypeEnum.DOUBLE);
-        List<Domain> domains = Arrays.asList(new Domain[] {dom1, dom2, dom3, dom4, dom5});
-        for (int i = 0; i < 5 ; i++ ){
+        List<Domain> domains = Arrays.asList(new Domain[]{dom1, dom2, dom3, dom4, dom5});
+        for (int i = 0; i < 5; i++) {
             vars.get(i).setDomain(domains.get(i));
         }
 
@@ -141,31 +154,38 @@ public class Methods {
         Constant c2 = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(6));
 
         EList<NumericExpression> exprs = new BasicEList<>();
-        exprs.add(vars.get(0)); exprs.add(vars.get(1));
+        exprs.add(vars.get(0));
+        exprs.add(vars.get(1));
         NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
         ComparisonExpressionMockup constraint1 = new ComparisonExpressionMockup();
-        constraint1.setExp1(vars.get(0));constraint1.setExp2(vars.get(2));
+        constraint1.setExp1(vars.get(0));
+        constraint1.setExp2(vars.get(2));
         constraint1.setComparator(ComparatorEnum.LESS_THAN);
 
         ComparisonExpressionMockup constraint3 = new ComparisonExpressionMockup();
-        constraint3.setExp1(times);constraint3.setExp2(vars.get(2));
+        constraint3.setExp1(times);
+        constraint3.setExp2(vars.get(2));
         constraint3.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
 
         exprs.add(vars.get(2));
         ComparisonExpressionMockup constraint2 = new ComparisonExpressionMockup();
         times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
-        constraint2.setExp1(times);constraint2.setExp2(c);
+        constraint2.setExp1(times);
+        constraint2.setExp2(c);
         constraint2.setComparator(ComparatorEnum.GREATER_OR_EQUAL_TO);
 
         ComparisonExpressionMockup constraint4 = new ComparisonExpressionMockup();
-        constraint4.setExp1(vars.get(2));constraint4.setExp2(vars.get(2));
+        constraint4.setExp1(vars.get(2));
+        constraint4.setExp2(vars.get(2));
         constraint4.setComparator(ComparatorEnum.EQUAL_TO);
 
 
         EList<NumericExpression> exprs2 = new BasicEList<>();
         EList<NumericExpression> exprs3 = new BasicEList<>();
-        exprs2.add(vars.get(0)); exprs2.add(vars.get(4));
-        exprs3.add(vars.get(1)); exprs3.add(c2);
+        exprs2.add(vars.get(0));
+        exprs2.add(vars.get(4));
+        exprs3.add(vars.get(1));
+        exprs3.add(c2);
         ComparisonExpressionMockup constraint5 = new ComparisonExpressionMockup();
         times = new ComposedExpressionImplMockup(exprs2, OperatorEnum.TIMES);
 
@@ -183,7 +203,7 @@ public class Methods {
         EList<ComparisonExpression> constraints = new BasicEList<>();
         constraints.addAll(Arrays.asList(constraint1, constraint2, constraint3, constraint4, constraint5));
 
-        ConstraintProblem cp = new ConstraintProblemMockup(consts,null, varsE, constraints );
+        ConstraintProblem cp = new ConstraintProblemMockup(consts, null, varsE, constraints);
         return Collections.singletonMap(cp, result -> {
             double sum = 0;
             for (VariableValueDTO v : result) {

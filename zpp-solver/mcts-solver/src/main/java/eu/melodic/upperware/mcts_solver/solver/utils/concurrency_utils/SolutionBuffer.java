@@ -1,6 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils;
 
-import cp_wrapper.solution.CpSolution;
+import eu.melodic.upperware.cp_wrapper.solution.CpSolution;
 import lombok.Getter;
 
 public class SolutionBuffer {

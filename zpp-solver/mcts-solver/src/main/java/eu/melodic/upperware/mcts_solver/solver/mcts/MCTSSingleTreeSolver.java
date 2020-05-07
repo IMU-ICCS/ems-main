@@ -1,6 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts;
 
-import cp_wrapper.solution.CpSolution;
+import eu.melodic.upperware.cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.*;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.MemoryLimiterImpl;

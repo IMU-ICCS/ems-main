@@ -1,17 +1,17 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
+
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.CheapestPolicyImpl;
-import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.RandomPolicyImpl;
 import eu.melodic.upperware.mcts_solver.solver.utils.NodeCandidatesProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class MCTSWrapper{
+public class MCTSWrapper {
     private final Random random = new Random();
     private CPWrapper cpWrapper;
     private NodeCandidatesProvider nodeCandidatesProvider;
@@ -95,7 +95,7 @@ public class MCTSWrapper{
     }
 
     public Policy createPolicy(AvailablePolicies policyType) {
-        switch(policyType) {
+        switch (policyType) {
             case RANDOM_POLICY:
                 return new RandomPolicyImpl(this);
             case CHEAPEST_POLICY:

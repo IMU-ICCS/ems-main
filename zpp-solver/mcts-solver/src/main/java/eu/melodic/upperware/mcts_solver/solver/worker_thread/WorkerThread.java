@@ -1,6 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.worker_thread;
 
-import cp_wrapper.solution.CpSolution;
+import eu.melodic.upperware.cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSingleTreeSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.utils.concurrency_utils.OneToManyChannel;
@@ -87,7 +87,6 @@ public class WorkerThread {
             e.printStackTrace();
         }
     }
-
 
 
 }

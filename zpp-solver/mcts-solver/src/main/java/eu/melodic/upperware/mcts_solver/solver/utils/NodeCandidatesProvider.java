@@ -1,19 +1,20 @@
 package eu.melodic.upperware.mcts_solver.solver.utils;
 
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utils.domain_handler.DomainHandler;
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
+
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utils.domain_handler.DomainHandler;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import io.github.cloudiator.rest.model.NodeCandidate;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class NodeCandidatesProvider {
@@ -34,18 +35,18 @@ public class NodeCandidatesProvider {
             put(componentId, new HashMap<>());
         }};
         allCandidates.get().get(componentId).forEach((provider, nodes) -> {
-           if (providerIsInDomain(provider, cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, VariableType.PROVIDER)))) {
-               candidates.get(componentId)
-                       .put(provider, nodes.stream().filter(node -> candidateIsInDomain(node, cpWrapper, variables, componentId)).collect(Collectors.toList()));
-           }
+            if (providerIsInDomain(provider, cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, VariableType.PROVIDER)))) {
+                candidates.get(componentId)
+                        .put(provider, nodes.stream().filter(node -> candidateIsInDomain(node, cpWrapper, variables, componentId)).collect(Collectors.toList()));
+            }
         });
         return NodeCandidates.of(candidates);
     }
 
     private boolean candidateIsInDomain(NodeCandidate nodeCandidate, CPWrapper cpWrapper, Collection<VariableDTO> variables, String componentId) {
-       return variables.stream().filter(variable -> variable.getComponentId().equals(componentId))
-               .map(variable -> candidateIsInDomainOfVariable(variable.getType(), cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, variable.getType())), nodeCandidate))
-               .reduce(Boolean::logicalAnd).orElse(true);
+        return variables.stream().filter(variable -> variable.getComponentId().equals(componentId))
+                .map(variable -> candidateIsInDomainOfVariable(variable.getType(), cpWrapper.getVariableDomain(cpWrapper.getVariableIndexFromComponentAndType(componentId, variable.getType())), nodeCandidate))
+                .reduce(Boolean::logicalAnd).orElse(true);
     }
 
     private boolean providerIsInDomain(int provider, Domain domain) {
@@ -58,7 +59,7 @@ public class NodeCandidatesProvider {
         } else if (isLocationType(type) && (nodeCandidate.getLocation() == null || nodeCandidate.getLocation().getGeoLocation() == null)) {
             return false;
         } else {
-            return DomainHandler.isInDomain(new LongValue(VariableExtractor.getVariableValue(type, nodeCandidate)),domain);
+            return DomainHandler.isInDomain(new LongValue(VariableExtractor.getVariableValue(type, nodeCandidate)), domain);
         }
     }
 

@@ -1,6 +1,6 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy;
 
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Path;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Policy;

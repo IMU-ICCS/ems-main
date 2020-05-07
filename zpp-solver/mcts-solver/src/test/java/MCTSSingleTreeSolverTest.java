@@ -1,11 +1,10 @@
-
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.mcts_solver.Methods;
 import eu.melodic.upperware.mcts_solver.solver.mcts.MCTSSingleTreeSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
-import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.junit.Test;
 
 import java.util.Arrays;

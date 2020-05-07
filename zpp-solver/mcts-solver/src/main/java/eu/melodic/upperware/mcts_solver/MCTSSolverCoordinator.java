@@ -1,16 +1,17 @@
 package eu.melodic.upperware.mcts_solver;
 
-import cp_wrapper.utility_provider.implementations.UtilityProviderFromCDOFactory;
-import cp_wrapper.utils.cp_variable.CpVariableCreator;
-import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
+
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.upperware.cp_wrapper.solution.CpSolution;
+import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.UtilityProviderFromCDOFactory;
+import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
+import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactoryImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
-import cp_wrapper.solution.CpSolution;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
@@ -20,7 +21,6 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import io.github.cloudiator.rest.model.Runtime;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;

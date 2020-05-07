@@ -1,8 +1,8 @@
 package eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper;
 
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utility_provider.UtilityProviderFactory;
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProviderFactory;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.AllArgsConstructor;
 
