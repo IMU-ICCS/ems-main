@@ -18,7 +18,7 @@ public class ExpressionEvaluator {
         For instance if precision is set to 0.01,
         1 and 1.005 are considered equal.
      */
-    public static final double PRECISION = 0.1;
+    private static final double PRECISION = 0.1;
 
     public static double getValueOfNumericInterface(NumericValueUpperware value) {
         if (value instanceof IntegerValueUpperware) {
@@ -70,7 +70,7 @@ public class ExpressionEvaluator {
         return evaluateComparator(comparator, leftExpValue, rightExpValue);
     }
 
-    public static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
+    private static boolean evaluateComparator(ComparatorEnum comparator, double argLeft, double argRight) {
         switch (comparator) {
             case GREATER_THAN:
                 return argLeft > argRight;

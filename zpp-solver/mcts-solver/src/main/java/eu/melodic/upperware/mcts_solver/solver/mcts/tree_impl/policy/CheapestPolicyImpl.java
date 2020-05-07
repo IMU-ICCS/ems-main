@@ -41,7 +41,10 @@ public class CheapestPolicyImpl implements Policy {
     public CheapestPolicyImpl(MCTSWrapper mctsWrapper) {
         this.mctsWrapper = mctsWrapper;
         this.variables =  mctsWrapper.getVariableDTOCollection();
-        this.components = variables.stream().map(VariableDTO::getComponentId).distinct().collect(Collectors.toList());
+        this.components = variables.stream()
+                .map(VariableDTO::getComponentId)
+                .distinct()
+                .collect(Collectors.toList());
         components.forEach(component -> componentToVariables.put(component, getVariablesForComponent(component)));
     }
 

@@ -25,7 +25,8 @@ public abstract class Tree {
     public Solution run(int iterations) {
         return IntStream.range(0, iterations)
                 .mapToObj(i -> runIteration())
-                .max(Solution::compareTo).get();
+                .max(Solution::compareTo)
+                .orElseThrow(() -> new IllegalStateException("There was an error during comparing solutions"));
     }
 
     // Back propagates calculated solution on path from leaf to root.

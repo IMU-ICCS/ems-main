@@ -105,7 +105,7 @@ public class GeneticSolverCoordinator {
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties);
 
-            Boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
+            boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
 
             if (!solutionFeasible) {
                 log.info("Problem is infeasible");

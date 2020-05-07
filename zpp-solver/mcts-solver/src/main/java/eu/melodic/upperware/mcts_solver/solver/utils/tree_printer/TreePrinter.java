@@ -3,6 +3,7 @@ package eu.melodic.upperware.mcts_solver.solver.utils.tree_printer;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapper;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree.Node;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.NodeStatisticsImpl;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -77,14 +78,14 @@ public class TreePrinter {
 
     private static String getOutgoingEdges(Node root) {
         if (root.getNodeStatistics().getDepth() >= MAX_DEPTH) {
-            return "";
+            return StringUtils.EMPTY;
         }
         List<String> edges = root.getChildren().stream()
                 .sorted(getNodeComparator().reversed())
                 .limit(MAX_CHILDREN)
                 .map(child -> edgeHash(root, child))
                 .collect(Collectors.toList());
-        return  String.join("", edges);
+        return String.join(StringUtils.EMPTY, edges);
     }
 
     private static String edgeHash(Node parent,  Node child) {
@@ -94,7 +95,10 @@ public class TreePrinter {
 
     private static void saveTreeStructureGreedy(Node root, String treeFilePath) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(treeFilePath));
-        List<Node> atMaxDepth  = getNodesAtDepth(Math.min(MAX_DEPTH, getMaxTreeDepth(root)), root).stream().sorted(getNodeComparator().reversed()).limit(MAX_CHILDREN_AT_MAX_DEPTH).collect(Collectors.toList());
+        List<Node> atMaxDepth  = getNodesAtDepth(Math.min(MAX_DEPTH, getMaxTreeDepth(root)), root).stream()
+                .sorted(getNodeComparator().reversed())
+                .limit(MAX_CHILDREN_AT_MAX_DEPTH)
+                .collect(Collectors.toList());
         saveTreeStructureGreedy(atMaxDepth, writer);
         writer.close();
     }
@@ -103,10 +107,16 @@ public class TreePrinter {
         boolean reachedRoot = false;
         HashSet<Node> alreadySaved = new HashSet<>();
         while (!reachedRoot) {
-            String edges = atMaxDepth.stream().map(child -> edgeHash(child.getParent(), child)).collect(Collectors.joining(""));
+            String edges = atMaxDepth.stream()
+                    .map(child -> edgeHash(child.getParent(), child))
+                    .collect(Collectors.joining(""));
             alreadySaved.addAll(atMaxDepth);
             writer.write(edges);
-            atMaxDepth = atMaxDepth.stream().map(Node::getParent).distinct().filter(node -> node.getParent()!= null && !alreadySaved.contains(node)).collect(Collectors.toList());
+            atMaxDepth = atMaxDepth.stream()
+                    .map(Node::getParent)
+                    .distinct()
+                    .filter(node -> node.getParent()!= null && !alreadySaved.contains(node))
+                    .collect(Collectors.toList());
             if (atMaxDepth.size() == 0 || atMaxDepth.get(0).getParent() == null) {
                 reachedRoot = true;
             }
@@ -117,12 +127,18 @@ public class TreePrinter {
         List<Node> atDepth = Arrays.asList(root);
         int maxDepth = depth;
         while (depth != 0) {
-            atDepth = atDepth.stream().map(Node::getChildren).flatMap(Collection::stream).collect(Collectors.toList());
+            atDepth = atDepth.stream()
+                    .map(Node::getChildren)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
             depth--;
         }
         /** add leaves at smaller depths **/
         if (maxDepth > 2) {
-            atDepth.addAll(getNodesAtDepth(maxDepth-1, root).stream().filter(node->node.getChildrenSize() == 0).collect(Collectors.toList()));
+            atDepth.addAll(getNodesAtDepth(maxDepth-1, root)
+                    .stream()
+                    .filter(node->node.getChildrenSize() == 0)
+                    .collect(Collectors.toList()));
         }
         return atDepth;
     }
@@ -131,7 +147,10 @@ public class TreePrinter {
         int depth = 0;
         List<Node> atDepth = Arrays.asList(root);
         while (!atDepth.isEmpty()) {
-            atDepth = atDepth.stream().map(Node::getChildren).flatMap(Collection::stream).collect(Collectors.toList());
+            atDepth = atDepth.stream()
+                    .map(Node::getChildren)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
             depth++;
         }
         return depth-1;
@@ -153,7 +172,7 @@ public class TreePrinter {
 
     private static String getNodeValue(Node node, MCTSWrapper mctsWrapper) {
         if (node.getNodeStatistics().getDepth() == 0) {
-            return "";
+            return StringUtils.EMPTY;
         } else {
             return  ((Integer) mctsWrapper.getValueFromIndex(node.getValue(), node.getNodeStatistics().getDepth() - 1)).toString();
         }

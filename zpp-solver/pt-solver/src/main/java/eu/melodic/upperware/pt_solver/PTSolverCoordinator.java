@@ -105,8 +105,10 @@ public class PTSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads).mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
-                    melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
+            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
+                    .mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
+                            melodicSecurityProperties, jwtService, penaltyFunctionProperties))
+                    .collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds);
 
@@ -125,7 +127,7 @@ public class PTSolverCoordinator {
     private void solve(ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators, int seconds) {
         PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new ParallelUtilityProviderImpl(utilityGenerators));
         Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
-        log.info("Found solution with utility: " + solution.getValue1());
+        log.info("Found solution with utility: {}", solution.getValue1());
 
         if (solution.getValue1() > 0.0) {
             saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());

@@ -16,9 +16,9 @@ public class UtilityProviderFromFileFactory implements UtilityProviderFactory {
     private PenaltyFunctionProperties penaltyFunctionProperties;
     private UtilityGeneratorProperties utilityGeneratorProperties;
     private JWTService jwtService;
-    NodeCandidates nodeCandidates;
-    String camelModelFilePath;
-    String cpProblemFilePath;
+    private NodeCandidates nodeCandidates;
+    private String camelModelFilePath;
+    private String cpProblemFilePath;
 
     @Override
     public UtilityProvider create() {

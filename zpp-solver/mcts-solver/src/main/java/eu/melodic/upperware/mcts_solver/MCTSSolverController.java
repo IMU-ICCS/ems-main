@@ -24,7 +24,7 @@ public class MCTSSolverController {
         String cpModelPath = request.getCpProblemFilePath();
         String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
         int seconds = request.getTimeLimit();
-        log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
+        log.info("Received constraintProblemSolutionFromFile request: {} \n{}\n", camelModelFilePath, cpModelPath);
 
         MCTSSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath, seconds);
         log.info("Sleeping...");
@@ -42,8 +42,7 @@ public class MCTSSolverController {
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
         int seconds = request.getTimeLimit();
-        log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
-
+        log.info("Received request: {}, {}, {}, {}", applicationId, cdoResourcePath,  notificationUri, requestUuid);
         MCTSSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, seconds);
         log.info("Sleeping...");
     }

@@ -54,11 +54,11 @@ public class PTCPWrapper {
     /*
         Returns maximal value of variable @variable
      */
-    public int getMaxValue(int variable) {
+    private int getMaxValue(int variable) {
         return cpWrapper.getMaxDomainValue(variable);
     }
 
-    public int getMinValue(int variable) {
+    private int getMinValue(int variable) {
         return cpWrapper.getMinDomainValue(variable);
     }
 
