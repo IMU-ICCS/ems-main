@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
-//import eu.melodic.upperware.cpsolver.solver.parser.creator.*;
 
 public class CPParsedData {
     private Collection<Constant> constants;

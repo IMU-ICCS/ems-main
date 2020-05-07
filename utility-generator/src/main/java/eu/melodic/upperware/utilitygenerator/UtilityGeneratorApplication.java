@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @Slf4j
 public class UtilityGeneratorApplication {
@@ -29,31 +28,31 @@ public class UtilityGeneratorApplication {
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
     public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
-                                       MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
+            MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         log.info("Creating of the Utility Generator");
         utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, penaltyFunctionProperties, jwtService);
     }
 
     public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
-                                       MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
-                                       List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
+            MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties,
+            List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         log.info("Creating template Utility Generator");
         checkWeightsOfUtilityComponents(utilityComponents);
-        utilityFunctionEvaluator =                 new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
                 melodicSecurityProperties, penaltyFunctionProperties, jwtService, utilityComponents);
     }
 
     public UtilityGeneratorApplication(String cpModelFilePath, NodeCandidates nodeCandidates, List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         log.info("Creating template Utility Generator");
         checkWeightsOfUtilityComponents(utilityComponents);
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator( cpModelFilePath,  nodeCandidates, utilityComponents);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(cpModelFilePath, nodeCandidates, utilityComponents);
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
         return this.utilityFunctionEvaluator.evaluate(solution);
     }
 
-    private final void checkWeightsOfUtilityComponents(List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
+    private void checkWeightsOfUtilityComponents(List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         if (utilityComponents.stream().map(Map.Entry::getValue).reduce(0.0, Double::sum) > 1.0
                 || utilityComponents.stream().map(Map.Entry::getValue).anyMatch(weight -> weight < 0)) {
             throw new RuntimeException("Sum of weights must be smaller or equal to 1 and non-negative!");

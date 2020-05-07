@@ -43,11 +43,11 @@ class HeuristicVariableOrdererTest {
 
     @Test
     public void expandingGraphTest(){
-            ConstraintGraph graph = createExpandingGraph();
-            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
-            for (int i = 0; i < variables.size(); i++) {
-                assertTrue( orderer.getNameFromIndex(i).equals(variables.get(i)));
-            }
+        ConstraintGraph graph = createExpandingGraph();
+        HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+        for (int i = 0; i < variables.size(); i++) {
+            assertTrue( orderer.getNameFromIndex(i).equals(variables.get(i)));
+        }
     }
 
     @Test

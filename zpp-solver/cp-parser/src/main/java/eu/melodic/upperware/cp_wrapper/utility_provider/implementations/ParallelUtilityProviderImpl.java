@@ -15,7 +15,10 @@ public class ParallelUtilityProviderImpl implements UtilityProvider {
 
     public ParallelUtilityProviderImpl(List<UtilityGeneratorApplication> utility) {
         this.utility = utility;
-        occupied = utility.stream().map(util -> false).collect(Collectors.toList());
+        occupied = utility
+                .stream()
+                .map(util -> false)
+                .collect(Collectors.toList());
     }
 
     @Override

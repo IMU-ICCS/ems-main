@@ -1,23 +1,26 @@
 package eu.melodic.upperware.cp_wrapper;
 
 
+import eu.melodic.upperware.cp_wrapper.utils.constraint.Constraint;
+import eu.melodic.upperware.cp_wrapper.utils.constraint_graph.ConstraintGraph;
 import eu.melodic.upperware.cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
 import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
 import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.DoubleValue;
 import eu.melodic.upperware.cp_wrapper.utils.test_utils.mockups.*;
+import eu.melodic.upperware.cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
 import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.testng.AssertJUnit.*;
 
 
 class ExpressionEvaluatorTest {
@@ -118,5 +121,71 @@ class ExpressionEvaluatorTest {
         vars.put(names[1],new DoubleValue( vals[3]));
         vars.put(names[2], new DoubleValue(vals[4]));
         assertEquals(ExpressionEvaluator.evaluateExpression(composed, vars) , realValue);
+    }
+
+    static class HeuristicVariableOrdererTest {
+        private static List<String> variables;
+
+        @BeforeAll
+        static void setUp() {
+            variables = Arrays.asList("var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8");
+        }
+
+        private static ConstraintGraph createExpandingGraph() {
+            Collection<Constraint> constraints = new ArrayList<>();
+            int varsSize = variables.size();
+            for(int i = 0; i < varsSize; i++) {
+                constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+            }
+            return new ConstraintGraph(constraints, variables);
+        }
+
+        private static ConstraintGraph sameNumberOfConstraintsGraph() {
+            Collection<Constraint> constraints = new ArrayList<>();
+            int varsSize = variables.size();
+            for(int i = 0; i < varsSize; i++) {
+                constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+                for (int j = i + 1; j < varsSize; j++) {
+                    constraints.add(new ConstraintMockup(variables.subList(j, j+1)));
+                }
+            }
+            return new ConstraintGraph(constraints, variables);
+        }
+
+        @Test
+        public void expandingGraphTest(){
+                ConstraintGraph graph = createExpandingGraph();
+                HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+                for (int i = 0; i < variables.size(); i++) {
+                    Assertions.assertTrue( orderer.getNameFromIndex(i).equals(variables.get(i)));
+                }
+        }
+
+        @Test
+        public void sameNumberOfConstraintsTest() {
+            ConstraintGraph graph = sameNumberOfConstraintsGraph();
+            // Here the ordering is not deterministic but we can at least check if
+            // all the variables are indexed
+            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+            Set<String> vars = new HashSet<>();
+            for (int i = 0; i < variables.size(); i++) {
+                vars.add(orderer.getNameFromIndex(i));
+            }
+            Assertions.assertEquals(vars.size(), variables.size());
+        }
+
+        @Test
+        public void simpleGraphTest() {
+            Collection<Constraint> constraints = new ArrayList<>();
+            constraints.add(new ConstraintMockup(variables.subList(0,1)));
+            constraints.add(new ConstraintMockup(variables.subList(1,3)));
+            constraints.add(new ConstraintMockup(variables.subList(2,3)));
+            ConstraintGraph graph = new ConstraintGraph(constraints, variables.subList(0,3));
+            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+
+            Assertions.assertTrue(orderer.getNameFromIndex(0).equals(variables.get(2)));
+            Assertions.assertTrue(orderer.getNameFromIndex(1).equals(variables.get(1)));
+            Assertions.assertTrue(orderer.getNameFromIndex(2).equals(variables.get(0)));
+        }
     }
 }

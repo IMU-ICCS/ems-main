@@ -92,7 +92,7 @@ public class ExpressionEvaluator {
         return expression instanceof ComposedExpression;
     }
 
-    static double evaluateExpression(Expression exp, Map<String, NumericValueInterface> variables) {
+    public static double evaluateExpression(Expression exp, Map<String, NumericValueInterface> variables) {
         if (isConstant(exp)) {
             return getValueOfNumericInterface(((Constant) exp).getValue());
         } else if (isCpMetric(exp)) {
