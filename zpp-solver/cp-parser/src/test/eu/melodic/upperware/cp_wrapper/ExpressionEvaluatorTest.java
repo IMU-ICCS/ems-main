@@ -1,0 +1,191 @@
+package eu.melodic.upperware.cp_wrapper;
+
+
+import eu.melodic.upperware.cp_wrapper.utils.constraint.Constraint;
+import eu.melodic.upperware.cp_wrapper.utils.constraint_graph.ConstraintGraph;
+import eu.melodic.upperware.cp_wrapper.utils.expression_evaluator.ExpressionEvaluator;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import eu.melodic.upperware.cp_wrapper.utils.test_utils.mockups.*;
+import eu.melodic.upperware.cp_wrapper.utils.variable_orderer.HeuristicVariableOrderer;
+import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
+import eu.paasage.upperware.metamodel.types.NumericValueUpperware;
+import org.eclipse.emf.common.util.BasicEList;
+import org.eclipse.emf.common.util.EList;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.*;
+
+import static org.testng.AssertJUnit.*;
+
+
+class ExpressionEvaluatorTest {
+
+    @BeforeEach
+    void setUp() {
+    }
+
+    @Test
+    public void divideByZeroTest() {
+        List<Double> args = new ArrayList<>();
+        args.add(1.0);
+        args.add(0.0);
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            ExpressionEvaluator.evaluateOnOperator(OperatorEnum.DIV, args);
+        });
+    }
+
+    @Test
+    public void operatorEvaluationTest() {
+        double a = Math.random();
+        double b = Math.random();
+        List<Double> args = new ArrayList<>();
+        args.add(a);
+        args.add(b);
+        OperatorEnum[] operators = new OperatorEnum[]{OperatorEnum.PLUS, OperatorEnum.MINUS, OperatorEnum.TIMES,
+                                                            OperatorEnum.DIV, OperatorEnum.EQ};
+        Double[] results = new Double[]{a+b, a-b, a*b, a/b, a==b ? 1.0 : 0.0};
+        for (int i = 0; i < results.length; i++) {
+            double res = ExpressionEvaluator.evaluateOnOperator(operators[i], args);
+            Assertions.assertTrue(Math.abs(res - results[i]) <= ExpressionEvaluator.PRECISION);
+        }
+    }
+
+    @Test
+    public void numericalPrecisionTest() {
+        double eps = 0.01*ExpressionEvaluator.PRECISION;
+        double a = Math.random();
+        double b = Math.random();
+        assertTrue(ExpressionEvaluator.evaluateComparator(ComparatorEnum.EQUAL_TO,a,a+eps));
+
+        assertFalse(ExpressionEvaluator.evaluateComparator(ComparatorEnum.GREATER_THAN, a , a +eps));
+
+        assertTrue(ExpressionEvaluator.evaluateComparator(ComparatorEnum.GREATER_OR_EQUAL_TO, a , a +eps));
+    }
+
+    @Test
+    public void basicExpressionEvaluationTest() {
+        double a = Math.random();
+        NumericValueUpperware val = new NumericValueUpperwareImplMockup(a);
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, val);
+        assertEquals(ExpressionEvaluator.evaluateExpression(c, new HashMap<String, NumericValueInterface>()), a);
+
+        CpMetric m = new CpMetricImplMockup(BasicTypeEnum.DOUBLE, val);
+        assertEquals(ExpressionEvaluator.evaluateExpression(m, new HashMap<String, NumericValueInterface>()), a);
+    }
+
+    @Test
+    public void variableEvaluationTest() {
+        double a = Math.random();
+        String name = "Variable11";
+        CpVariable var = new CpVariableImplMockup(name, VariableType.CPU);
+        Map<String, NumericValueInterface> vars = new HashMap<>();
+        vars.put(name, new DoubleValue(a));
+        assertEquals(ExpressionEvaluator.evaluateExpression(var, vars) , a);
+    }
+
+    @Test
+    public void composedExpressionEvaluationTest() {
+        //((a + b) * c - d) / e;
+        double[] vals = new double[] {Math.random(), Math.random(), Math.random(), Math.random(), Math.random()};
+        if (vals[4] == 0.0) vals[4] = 2.3;
+
+        double realValue = (((vals[0] + vals[2]) * vals[1]) - vals[3])/vals[4];
+
+        String[] names = new String[]{"Variable", "qwerty", "wewrfdvdfbfdvd"};
+        Constant c = new ConstantImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(vals[0]));
+        CpMetric m = new CpMetricImplMockup(BasicTypeEnum.DOUBLE, new NumericValueUpperwareImplMockup(vals[1]));
+        CpVariable var1 = new CpVariableImplMockup(names[0], VariableType.CORES);
+        CpVariable var2 = new CpVariableImplMockup(names[1], VariableType.CORES);
+        CpVariable var3 = new CpVariableImplMockup(names[2], VariableType.CORES);
+
+        EList<NumericExpression> exprs = new BasicEList<>();
+        exprs.add(c); exprs.add(var1);
+        NumericExpression sum = new ComposedExpressionImplMockup(exprs, OperatorEnum.PLUS);
+        exprs = new BasicEList<>();
+        exprs.add(sum); exprs.add(m);
+        NumericExpression times = new ComposedExpressionImplMockup(exprs, OperatorEnum.TIMES);
+        exprs = new BasicEList<>();
+        exprs.add(times); exprs.add(var2);
+        NumericExpression minus = new ComposedExpressionImplMockup(exprs, OperatorEnum.MINUS);
+        exprs = new BasicEList<>();
+        exprs.add(minus); exprs.add(var3);
+        NumericExpression composed = new ComposedExpressionImplMockup(exprs, OperatorEnum.DIV);
+
+        Map<String, NumericValueInterface> vars = new HashMap<>();
+        vars.put(names[0], new DoubleValue(vals[2]));
+        vars.put(names[1],new DoubleValue( vals[3]));
+        vars.put(names[2], new DoubleValue(vals[4]));
+        assertEquals(ExpressionEvaluator.evaluateExpression(composed, vars) , realValue);
+    }
+
+    static class HeuristicVariableOrdererTest {
+        private static List<String> variables;
+
+        @BeforeAll
+        static void setUp() {
+            variables = Arrays.asList("var1", "var2", "var3", "var4", "var5", "var6", "var7", "var8");
+        }
+
+        private static ConstraintGraph createExpandingGraph() {
+            Collection<Constraint> constraints = new ArrayList<>();
+            int varsSize = variables.size();
+            for(int i = 0; i < varsSize; i++) {
+                constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+            }
+            return new ConstraintGraph(constraints, variables);
+        }
+
+        private static ConstraintGraph sameNumberOfConstraintsGraph() {
+            Collection<Constraint> constraints = new ArrayList<>();
+            int varsSize = variables.size();
+            for(int i = 0; i < varsSize; i++) {
+                constraints.add(new ConstraintMockup(variables.subList(0,i+1)));
+                for (int j = i + 1; j < varsSize; j++) {
+                    constraints.add(new ConstraintMockup(variables.subList(j, j+1)));
+                }
+            }
+            return new ConstraintGraph(constraints, variables);
+        }
+
+        @Test
+        public void expandingGraphTest(){
+                ConstraintGraph graph = createExpandingGraph();
+                HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+                for (int i = 0; i < variables.size(); i++) {
+                    Assertions.assertTrue( orderer.getNameFromIndex(i).equals(variables.get(i)));
+                }
+        }
+
+        @Test
+        public void sameNumberOfConstraintsTest() {
+            ConstraintGraph graph = sameNumberOfConstraintsGraph();
+            // Here the ordering is not deterministic but we can at least check if
+            // all the variables are indexed
+            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+            Set<String> vars = new HashSet<>();
+            for (int i = 0; i < variables.size(); i++) {
+                vars.add(orderer.getNameFromIndex(i));
+            }
+            Assertions.assertEquals(vars.size(), variables.size());
+        }
+
+        @Test
+        public void simpleGraphTest() {
+            Collection<Constraint> constraints = new ArrayList<>();
+            constraints.add(new ConstraintMockup(variables.subList(0,1)));
+            constraints.add(new ConstraintMockup(variables.subList(1,3)));
+            constraints.add(new ConstraintMockup(variables.subList(2,3)));
+            ConstraintGraph graph = new ConstraintGraph(constraints, variables.subList(0,3));
+            HeuristicVariableOrderer orderer = new HeuristicVariableOrderer(graph, Collections.emptyList());
+
+            Assertions.assertTrue(orderer.getNameFromIndex(0).equals(variables.get(2)));
+            Assertions.assertTrue(orderer.getNameFromIndex(1).equals(variables.get(1)));
+            Assertions.assertTrue(orderer.getNameFromIndex(2).equals(variables.get(0)));
+        }
+    }
+}

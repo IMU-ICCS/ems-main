@@ -1,6 +1,6 @@
 package eu.melodic.upperware.nc_solver.nc_solver.node_candidate;
 
-import cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
 import org.javatuples.Pair;
 
 import java.util.List;

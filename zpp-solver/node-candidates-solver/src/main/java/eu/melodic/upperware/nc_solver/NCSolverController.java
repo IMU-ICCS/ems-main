@@ -23,9 +23,10 @@ public class NCSolverController {
         String camelModelFilePath = request.getCamelModelFilePath();
         String cpModelPath = request.getCpProblemFilePath();
         String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
-        log.info("Received constraintProblemSolutionFromFile request: \n" + camelModelFilePath + " \n" + cpModelPath);
+        int seconds = request.getTimeLimit();
+        log.info("Received constraintProblemSolutionFromFile request: {} \n{}\n", camelModelFilePath, cpModelPath);
 
-        ncSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath);
+        ncSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath, seconds);
         log.info("Sleeping...");
     }
 
@@ -35,9 +36,9 @@ public class NCSolverController {
         String cdoResourcePath = request.getCdoModelsPath();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
-        log.info("Received request: " + applicationId + " " + cdoResourcePath + " " + notificationUri + " " + requestUuid);
-
-        ncSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid);
+        int seconds = request.getTimeLimit();
+        log.info("Received request: {}, {}, {}, {}, time limit: {}", applicationId ,cdoResourcePath ,notificationUri, requestUuid, seconds);
+        ncSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, seconds);
         log.info("Sleeping...");
     }
 }

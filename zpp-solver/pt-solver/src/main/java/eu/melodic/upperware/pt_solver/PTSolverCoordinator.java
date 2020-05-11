@@ -1,11 +1,11 @@
 package eu.melodic.upperware.pt_solver;
 
-import cp_wrapper.utility_provider.UtilityProviderImpl;
-import cp_wrapper.utils.CpVariableCreator;
-import cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
+import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
+import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
+import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
@@ -13,7 +13,8 @@ import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
+import eu.paasage.upperware.metamodel.cp.CpVariableValue;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static eu.passage.upperware.commons.model.tools.CPModelTool.*;
+import static eu.passage.upperware.commons.model.tools.CPModelTool.createSolution;
 
 @Slf4j
 @Service
@@ -76,22 +78,15 @@ public class PTSolverCoordinator {
     private double minTemp = 100;
     private double maxTemp = 10000;
     private int numThreads = 10;
-    private int seconds = 10;
 
-    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath) {
+    public void generateCPSolutionFromFile(String applicationId, String cpModelFilePath, String nodeCandidatesFilePath, int seconds) {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+            List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, numThreads).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
+                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
-            PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
-            Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
-            log.info("Found solution with utility: " + solution.getValue1());
-
-            if (solution.getValue1() > 0.0) {
-                saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
-            }
+            solve(cp, utilityGenerator, seconds);
 
             clientX.saveModel(cp, applicationId.split("\\.", 0)[0] + "-solution.xmi");
         } catch (Exception e) {
@@ -100,7 +95,7 @@ public class PTSolverCoordinator {
     }
 
     @Async
-    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid) {
+    public void generateCPSolution(String applicationId, String cpResourcePath, String notificationUri, String requestUuid, int seconds) {
         try {
             NodeCandidates nodeCandidates = memcacheService.load(createCacheKey(cpResourcePath));
 
@@ -110,16 +105,12 @@ public class PTSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
-                    melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
+                    .mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
+                            melodicSecurityProperties, jwtService, penaltyFunctionProperties))
+                    .collect(Collectors.toList());
 
-            PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new UtilityProviderImpl(utilityGenerator));
-            Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
-            log.info("Found solution with utility: " + solution.getValue1());
-
-            if (solution.getValue1() > 0.0) {
-                saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
-            }
+            solve(cp, utilityGenerators, seconds);
 
             trans.commit();
             trans.close();
@@ -130,6 +121,16 @@ public class PTSolverCoordinator {
         } catch (Exception e) {
             log.error("CPSolver returned exception.", e);
             solutionResultNotifier.notifySolutionNotApplied(applicationId, notificationUri, requestUuid);
+        }
+    }
+
+    private void solve(ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators, int seconds) {
+        PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new ParallelUtilityProviderImpl(utilityGenerators));
+        Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
+        log.info("Found solution with utility: {}", solution.getValue1());
+
+        if (solution.getValue1() > 0.0) {
+            saveBestSolutionInCDO(cp, solution.getValue1(), solution.getValue0());
         }
     }
 

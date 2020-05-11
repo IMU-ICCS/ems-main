@@ -1,7 +1,7 @@
-import cp_wrapper.utils.test_utils.mockups.*;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.utils.test_utils.mockups.*;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.pt_solver.pt_solver.components.PTSolution;
-import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PTSolverTest {
 
