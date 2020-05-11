@@ -1,29 +1,29 @@
 package eu.melodic.upperware.nc_solver.nc_solver.nc_wrapper;
 
+import eu.melodic.upperware.cp_wrapper.parser.CPParsedData;
+import eu.melodic.upperware.cp_wrapper.parser.CPParser;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.utils.cp_variable.VariableNumericType;
+import eu.melodic.upperware.cp_wrapper.utils.domain_handler.DomainHandler;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.NumericValueInterface;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.DoubleValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.IntegerValue;
+import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongValue;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTEvaluation;
 import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
-import cp_wrapper.utility_provider.UtilityProvider;
-import cp_wrapper.parser.CPParsedData;
-import cp_wrapper.parser.CPParser;
-import cp_wrapper.utils.DomainHandler;
-import cp_wrapper.utils.VariableNumericType;
-import cp_wrapper.utils.numeric_value.*;
-import cp_wrapper.utils.numeric_value.implementations.DoubleValue;
-import cp_wrapper.utils.numeric_value.implementations.IntegerValue;
-import cp_wrapper.utils.numeric_value.implementations.LongValue;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.NodeCandidatesPool;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.NodeCandidateElementInterface;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
+import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.ComponentVariableOrderer;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpVariable;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.GeographicCoordinate;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.NodeCandidatesPool;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.IntegerNodeCandidateElementImpl;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.NodeCandidateElementInterface;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import org.jamesframework.core.problems.objectives.evaluations.Evaluation;
 import org.javatuples.Pair;
-import eu.melodic.upperware.nc_solver.nc_solver.variable_orderer.ComponentVariableOrderer;
 
 import java.util.*;
 /*
@@ -111,12 +111,19 @@ public class NCWrapper implements DomainProvider {
         for (int i = 0; i <components.size(); i++) {
             for (CpVariable var : cp.getCpVariables()) {
                 if (var.getComponentId().equals(components.get(i))) {
-                    componentTypeToName.put(new Pair(i, var.getVariableType()), var.getId());
+                    componentTypeToName.put(new Pair<>(i, var.getVariableType()), var.getId());
                 }
             }
         }
     }
 
+    public long getVariableCount() {
+        return componentTypeToName.keySet().stream()
+                .filter( component -> {
+                    VariableType type = component.getValue1();
+                    return type == VariableType.CORES || type == VariableType.PROVIDER || type == VariableType.CARDINALITY || type == VariableType.LATITUDE;
+                }).count();
+    }
     /*
         Generates random solution to the constraint problem.
         Used to sample starting point for parallel tempering.

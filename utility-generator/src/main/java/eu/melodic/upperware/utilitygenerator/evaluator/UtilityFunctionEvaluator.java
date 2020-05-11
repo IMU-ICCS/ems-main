@@ -72,10 +72,9 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    @SafeVarargs
     public UtilityFunctionEvaluator(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
                                     MelodicSecurityProperties melodicSecurityProperties, PenaltyFunctionProperties penaltyFunctionProperties, JWTService jwtService,
-                                    Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+                                    List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         Objects.requireNonNull(properties.getUtilityGenerator().getDlmsControllerUrl(), "Utility Generator properties with DLMS Controller URL does not exist");
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
 
@@ -99,8 +98,7 @@ public class UtilityFunctionEvaluator {
         constraintProblemExtractor.endWorkWithCPModel();
     }
 
-    @SafeVarargs
-    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, Map.Entry<TemplateProvider.AvailableTemplates, Double>... utilityComponents) {
+    public UtilityFunctionEvaluator(String cpModelFilePath, NodeCandidates nodeCandidates, List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
 
         this.nodeCandidates = Objects.requireNonNull(nodeCandidates, "List of Node Candidates is null");
         ConstraintProblemExtractor constraintProblemExtractor = new ConstraintProblemExtractor(cpModelFilePath, true);
@@ -140,7 +138,7 @@ public class UtilityFunctionEvaluator {
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
         if (newConfiguration.isEmpty()) {
-            log.info("No Node Candidate for the evaluated solution, returning 0");
+            log.debug("No Node Candidate for the evaluated solution, returning 0");
             return 0;
         } else if (!this.deployedConfiguration.isEmpty() && EvaluatingUtils.areUnmoveableComponentsMoved(this.unmoveableComponents, this.deployedConfiguration, newConfiguration)) {
             log.info("Proposed solution moves the unmoveable component, returning 0");

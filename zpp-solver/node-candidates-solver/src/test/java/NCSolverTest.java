@@ -1,7 +1,9 @@
-import cp_wrapper.utils.test_utils.mockups.*;
-import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
-import cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.cache.NodeCandidates;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.utils.test_utils.mockups.*;
+import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
+import eu.melodic.upperware.nc_solver.nc_solver.cp_components.PTSolution;
+import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.BasicTypeEnum;
@@ -9,8 +11,6 @@ import io.github.cloudiator.rest.model.GeoLocation;
 import io.github.cloudiator.rest.model.Hardware;
 import io.github.cloudiator.rest.model.Location;
 import io.github.cloudiator.rest.model.NodeCandidate;
-import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
-import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.jamesframework.core.search.stopcriteria.MaxRuntime;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NCSolverTest {
     private static Map<ConstraintProblem, UtilityProvider> prepareSimpleOneComponentConstraintProblem() {

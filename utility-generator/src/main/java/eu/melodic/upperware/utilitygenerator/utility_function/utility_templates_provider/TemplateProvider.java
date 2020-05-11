@@ -5,9 +5,9 @@ import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
-import  java.util.Map;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.BasicTemplatesProvider.*;
 
@@ -23,18 +23,19 @@ public class TemplateProvider {
         CORES_MIN_MAX,
         DISK_MIN_MAX,
         RAM_MIN_MAX
-    };
+    }
 
-    @SafeVarargs
+    ;
+
     public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem,
-                                     Map.Entry<AvailableTemplates, Double>... utilityComponents) {
-                return getSum( Stream.of(utilityComponents).map( (template) ->
-                                multiply( template.getValue().toString(), getTemplate(variablesFromConstraintProblem, template.getKey()))
-                ).collect(Collectors.toList()));
+            List<Map.Entry<AvailableTemplates, Double>> utilityComponents) {
+        return getSum(utilityComponents.stream().map((template) ->
+                multiply(template.getValue().toString(), getTemplate(variablesFromConstraintProblem, template.getKey()))
+        ).collect(Collectors.toList()));
     }
 
     private static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem, AvailableTemplates type) {
-        switch (type){
+        switch (type) {
             case COST:
                 return getOnlyCostUtility(variablesFromConstraintProblem);
             case CORES:

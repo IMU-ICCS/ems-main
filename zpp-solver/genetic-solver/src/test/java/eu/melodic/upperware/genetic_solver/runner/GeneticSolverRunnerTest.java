@@ -1,9 +1,9 @@
 package eu.melodic.upperware.genetic_solver.runner;
 
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.CPGeneticWrapper;
-import eu.paasage.upperware.metamodel.cp.*;
+import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import org.junit.Test;
 import utility.Methods;
 

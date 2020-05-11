@@ -1,9 +1,10 @@
 package eu.melodic.upperware.genetic_solver.runner;
 
+import eu.melodic.upperware.cp_wrapper.CPWrapper;
+import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.ACPGeneticWrapper;
 import eu.melodic.upperware.genetic_solver.cp_genetic_wrapper.CPGeneticWrapper;
-import cp_wrapper.CPWrapper;
-import cp_wrapper.utility_provider.UtilityProvider;
+import eu.melodic.upperware.genetic_solver.jenetics_implementation.*;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import io.jenetics.*;
@@ -11,7 +12,6 @@ import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.Limits;
 import io.jenetics.util.Factory;
-import eu.melodic.upperware.genetic_solver.jenetics_implementation.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
