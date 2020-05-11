@@ -36,6 +36,7 @@ variables:
   GEN_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/genetic-solver/pom.xml"
   NC_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/node-candidates-solver/pom.xml"
   PT_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/pt-solver/pom.xml"
+  MCTS_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/mcts-solver/pom.xml"
 
   DLMS_AGENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f dlmsAgent/pom.xml"
 
@@ -689,6 +690,21 @@ deploy:pt-solver:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ptsolver $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
+
+deploy:mcts-solver:
+  stage: deploy
+  only: 
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script: 
+    - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/mctssolver $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
 
 deploy:gui-backend:
   stage: deploy
