@@ -153,6 +153,15 @@ build:utility-generator:
     paths: 
     - $CI_PROJECT_DIR/utility-generator/target
 
+build:cp-solver:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $CP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths: 
+    - $CI_PROJECT_DIR/cp-solver/target
+
 build:zpp-solver:
   stage: build
   image: $MAVEN_IMAGE
@@ -613,7 +622,7 @@ deploy:ems-server:
   script: 
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/ems-server:unknown $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
+    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
 deploy:gen-solver:
@@ -625,6 +634,8 @@ deploy:gen-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-solver
   script: 
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -670,6 +681,8 @@ deploy:nc-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-solver
   script: 
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -685,6 +698,8 @@ deploy:pt-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-solver
   script: 
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -700,6 +715,8 @@ deploy:mcts-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-solver
   script: 
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
