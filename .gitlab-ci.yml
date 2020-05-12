@@ -160,7 +160,7 @@ build:cp-solver:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
     paths: 
-    - $CI_PROJECT_DIR/cp-solver/target
+    - $CI_PROJECT_DIR/cp-solver/target/cp-solver.jar
 
 build:zpp-solver:
   stage: build
