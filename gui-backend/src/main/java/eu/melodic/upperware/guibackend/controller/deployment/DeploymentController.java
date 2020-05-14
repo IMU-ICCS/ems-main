@@ -73,6 +73,7 @@ public class DeploymentController {
     @ResponseStatus(HttpStatus.CREATED)
     public List<String> saveSecureVariables(@RequestBody List<SecureVariable> secureVariablesRequest) {
         log.info("POST request for save secure variables");
+        secureStoreService.validateSecureVariables(secureVariablesRequest);
         return secureStoreService.saveSecureVariables(secureVariablesRequest);
     }
 }

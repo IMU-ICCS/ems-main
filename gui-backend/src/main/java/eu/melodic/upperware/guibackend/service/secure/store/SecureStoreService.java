@@ -3,6 +3,7 @@ package eu.melodic.upperware.guibackend.service.secure.store;
 import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
 import eu.melodic.upperware.guibackend.exception.SecureVariableNotFoundException;
+import eu.melodic.upperware.guibackend.exception.ValidationException;
 import eu.melodic.upperware.guibackend.model.byon.LoginCredential;
 import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
 import lombok.AllArgsConstructor;
@@ -42,6 +43,18 @@ public class SecureStoreService {
             log.info("Found secure variables: {}", matcher.group(1));
         }
         return secureVariablesKeys;
+    }
+
+    // This method checks correctness of secure variable names,
+    // chars: '/' and '\' are not allowed as key of variable for Cloudiator secure store.
+    public void validateSecureVariables(List<SecureVariable> secureVariablesRequest) {
+        String invalidVariables = secureVariablesRequest.stream()
+                .filter(secureVariable -> secureVariable.getName().contains("/") || secureVariable.getName().contains("\\"))
+                .map(SecureVariable::getName)
+                .collect(Collectors.joining(", "));
+        if (!invalidVariables.isEmpty()) {
+            throw new ValidationException(String.format("Variables: [ %s ] contain not allowed chars: '\\' or '/'", invalidVariables));
+        }
     }
 
     public List<String> saveSecureVariables(List<SecureVariable> secureVariablesRequest) {
@@ -86,7 +99,9 @@ public class SecureStoreService {
     }
 
     public Pair<String, String> createKeyLabelForSecret(CloudDefinition cloudDefinition) {
-        String keyForSecret = cloudDefinition.getApi().getProviderName() + "-" + cloudDefinition.getCredential().getUser() + SECURE_VARIABLE_SECURE_SUFIX;
+        String keyForSecret = cloudDefinition.getApi().getProviderName() + "-"
+                + cloudDefinition.getId()
+                + SECURE_VARIABLE_SECURE_SUFIX;
         return Pair.of(keyForSecret, SECURE_VARIABLE_PREFIX + keyForSecret + SECURE_VARIABLE_SUFFIX);
     }
 
