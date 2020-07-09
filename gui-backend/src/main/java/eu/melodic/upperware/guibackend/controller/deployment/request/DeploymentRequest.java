@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.deployment.request;
 
-import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
+import eu.passage.upperware.commons.model.provider.CloudDefinition;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

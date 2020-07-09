@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.communication.mule.deployment;
 
-import eu.melodic.upperware.guibackend.model.provider.CloudType;
+import eu.passage.upperware.commons.model.provider.CloudType;
 import lombok.Builder;
 import lombok.Getter;
 

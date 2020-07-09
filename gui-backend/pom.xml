@@ -61,13 +61,6 @@
             <version>8.0.13</version>
         </dependency>
 
-        <!--todo - remove after storing data in DB-->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.21</version>
-        </dependency>
-
         <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>

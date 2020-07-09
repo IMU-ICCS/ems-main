@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.service.byon;
 
-import eu.melodic.upperware.guibackend.model.byon.ByonDefinition;
+import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import io.github.cloudiator.rest.model.IpAddress;
 import io.github.cloudiator.rest.model.NewNode;
 import io.github.cloudiator.rest.model.NodeProperties;
@@ -20,7 +20,7 @@ public class ByonMapper {
         return newNode;
     }
 
-    private NodeProperties mapGuiNodePropertiesToCloudiatorNodeProperties(eu.melodic.upperware.guibackend.model.byon.NodeProperties guiNodeProperties) {
+    private NodeProperties mapGuiNodePropertiesToCloudiatorNodeProperties(eu.passage.upperware.commons.model.byon.NodeProperties guiNodeProperties) {
         NodeProperties resultNodeProperties = new NodeProperties();
         resultNodeProperties.setProviderId(guiNodeProperties.getProviderId());
         resultNodeProperties.setNumberOfCores(guiNodeProperties.getNumberOfCores());
@@ -31,7 +31,7 @@ public class ByonMapper {
         return resultNodeProperties;
     }
 
-    private List<IpAddress> mapGuiIpAddressesToCloudiatorIpAddresses(List<eu.melodic.upperware.guibackend.model.byon.IpAddress> ipAddresses) {
+    private List<IpAddress> mapGuiIpAddressesToCloudiatorIpAddresses(List<eu.passage.upperware.commons.model.byon.IpAddress> ipAddresses) {
         return ipAddresses.stream()
                 .map(ipAddress -> (IpAddress) ipAddress)
                 .collect(Collectors.toList());

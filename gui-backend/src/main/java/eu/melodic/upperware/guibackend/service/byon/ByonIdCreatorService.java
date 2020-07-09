@@ -1,7 +1,7 @@
 package eu.melodic.upperware.guibackend.service.byon;
 
-import eu.melodic.upperware.guibackend.model.byon.ByonDefinition;
-import eu.melodic.upperware.guibackend.model.byon.IpAddress;
+import eu.passage.upperware.commons.model.byon.ByonDefinition;
+import eu.passage.upperware.commons.model.byon.IpAddress;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
