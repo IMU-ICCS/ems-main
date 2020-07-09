@@ -1,7 +1,7 @@
 package eu.melodic.upperware.guibackend.exception.controller;
 
 import eu.melodic.upperware.guibackend.exception.CamundaErrorVariableException;
-import eu.melodic.upperware.guibackend.exception.SecureVariableNotFoundException;
+import eu.passage.upperware.commons.exception.SecureVariableNotFoundException;
 import eu.melodic.upperware.guibackend.exception.response.CamundaVariableErrorResponse;
 import eu.melodic.upperware.guibackend.exception.response.MissingSecureVariableErrorResponse;
 import org.springframework.http.HttpStatus;

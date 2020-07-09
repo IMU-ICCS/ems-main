@@ -1,8 +1,8 @@
 package eu.melodic.upperware.guibackend.controller.provider;
 
-import eu.melodic.upperware.guibackend.model.provider.CloudDefinition;
-import eu.melodic.upperware.guibackend.model.provider.ProviderEnums;
-import eu.melodic.upperware.guibackend.service.provider.ProviderService;
+import eu.passage.upperware.commons.model.provider.CloudDefinition;
+import eu.passage.upperware.commons.model.provider.ProviderEnums;
+import eu.passage.upperware.commons.service.provider.ProviderService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

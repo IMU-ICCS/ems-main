@@ -1,12 +1,12 @@
 package eu.melodic.upperware.guibackend.service.byon;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
+import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.exception.ByonDefinitionNotFoundException;
-import eu.melodic.upperware.guibackend.model.byon.ByonDefinition;
-import eu.melodic.upperware.guibackend.model.byon.ByonEnums;
-import eu.melodic.upperware.guibackend.model.byon.LoginCredential;
-import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
-import eu.melodic.upperware.guibackend.service.yaml.YamlDataService;
+import eu.passage.upperware.commons.model.byon.ByonDefinition;
+import eu.passage.upperware.commons.model.byon.ByonEnums;
+import eu.passage.upperware.commons.model.byon.LoginCredential;
+import eu.passage.upperware.commons.service.store.SecureStoreService;
+import eu.passage.upperware.commons.service.yaml.YamlDataService;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

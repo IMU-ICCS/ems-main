@@ -1,8 +1,8 @@
 package eu.melodic.upperware.guibackend.controller.byon;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
-import eu.melodic.upperware.guibackend.model.byon.ByonDefinition;
-import eu.melodic.upperware.guibackend.model.byon.ByonEnums;
+import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
+import eu.passage.upperware.commons.model.byon.ByonDefinition;
+import eu.passage.upperware.commons.model.byon.ByonEnums;
 import eu.melodic.upperware.guibackend.service.byon.ByonService;
 import io.github.cloudiator.rest.model.ByonNode;
 import lombok.AllArgsConstructor;
