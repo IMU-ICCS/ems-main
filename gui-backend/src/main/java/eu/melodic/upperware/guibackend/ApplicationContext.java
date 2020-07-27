@@ -77,6 +77,14 @@ public class ApplicationContext {
     }
 
     @Bean
+    public QueueInspector queueInspector(
+        QueueApi queueApi,
+        CloudiatorProperties cloudiatorProperties
+    ) {
+        return new QueueInspector(queueApi, cloudiatorProperties);
+    }
+
+    @Bean
     public CloudiatorApi cloudiatorApi(
         CloudApi cloudApi,
         SecurityApi securityApi,

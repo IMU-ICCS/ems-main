@@ -1,7 +1,10 @@
 package eu.functionizer.functionizertestingtool.service.test;
 
 import eu.functionizer.functionizertestingtool.model.*;
-import org.junit.ComparisonFailure;
+import eu.passage.upperware.commons.model.testing.FunctionTestResult;
+import eu.passage.upperware.commons.model.testing.FunctionizerTestResult;
+import eu.passage.upperware.commons.model.testing.TestCaseResult;
+import eu.passage.upperware.commons.model.testing.TestResultEnum;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.reporting.ReportEntry;
@@ -194,18 +197,12 @@ public class FunctionizerReportData {
                     testCaseResult.setResult(TestResultEnum.IGNORED);
                 }
                 testCaseResult.setEvent(reportEntry.get(ReportEntryKey.EVENT));
-                testCaseResult.setExpectedOutput(reportEntry.get(ReportEntryKey.EXPECTED_OUTPUT));
-                testCaseResult.setActualOutput(reportEntry.get(ReportEntryKey.EXPECTED_OUTPUT));
+                testCaseResult.setExpectedValue(reportEntry.get(ReportEntryKey.EXPECTED_VALUE));
+                testCaseResult.setCondition(reportEntry.get(ReportEntryKey.CONDITION));
+                testCaseResult.setActualOutput(reportEntry.get(ReportEntryKey.ACTUAL_OUTPUT));
 
                 result.getThrowable().ifPresent(error -> {
                     testCaseResult.setMessage(error.getMessage());
-                    if (error instanceof ComparisonFailure) {
-                        ComparisonFailure comparisonFailure = (ComparisonFailure) error;
-                        testCaseResult.setExpectedOutput(comparisonFailure.getExpected());
-                        testCaseResult.setActualOutput(comparisonFailure.getActual());
-                    } else {
-                        testCaseResult.setActualOutput(null);
-                    }
                 });
                 functionTestResult.addTestCaseResult(testCaseResult);
             }

@@ -3,6 +3,7 @@ package eu.melodic.upperware.guibackend.communication.testingtool;
 import eu.melodic.upperware.guibackend.communication.commons.RestCommunicationService;
 import eu.melodic.upperware.guibackend.communication.commons.ServiceName;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
+import eu.passage.upperware.commons.model.testing.FunctionizerTestResult;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -22,13 +23,13 @@ public class FunctionizerTestingToolClientApi extends RestCommunicationService i
     }
 
     @Override
-    public Object runTests(String token) {
+    public FunctionizerTestResult runTests(String token) {
         String requestUrl = guiBackendProperties.getFunctionizerTestingTool().getUrl() + "/test";
-        ParameterizedTypeReference<Object> responseType =
-            new ParameterizedTypeReference<Object>() {
+        ParameterizedTypeReference<FunctionizerTestResult> responseType =
+            new ParameterizedTypeReference<FunctionizerTestResult>() {
             };
         HttpEntity<Void> request = createEmptyHttpEntityWithAuthorizationHeader(token);
-        ResponseEntity<Object> response = getResponse(
+        ResponseEntity<FunctionizerTestResult> response = getResponse(
             requestUrl,
             responseType,
             request,

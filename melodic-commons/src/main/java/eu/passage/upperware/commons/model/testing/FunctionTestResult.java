@@ -1,12 +1,14 @@
-package eu.functionizer.functionizertestingtool.model;
+package eu.passage.upperware.commons.model.testing;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Data
+@NoArgsConstructor
 public class FunctionTestResult {
     private String functionName;
     private double duration;

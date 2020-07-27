@@ -22,13 +22,15 @@ public class TestPreparationService {
     static String createTestCaseDisplayName(
         String functionName,
         String input,
-        String expectedOutput
+        String condition,
+        String expected
     ) {
         return String.format(
-            "Function %s invoked with %s should return %s",
+            "Output of %s invoked with %s %s %s",
             functionName,
             input,
-            expectedOutput
+            condition,
+            expected
         );
     }
 
@@ -56,11 +58,13 @@ public class TestPreparationService {
             String testCaseDisplayName = createTestCaseDisplayName(
                 configuration.getFunctionName(),
                 testCase.getEvent(),
-                testCase.getExpectedOutput()
+                testCase.getCondition().name(),
+                testCase.getExpectedValue()
             );
             Map<String, String> reportEntry = createReportEntry(testCaseDisplayName);
             reportEntry.put(ReportEntryKey.EVENT, testCase.getEvent());
-            reportEntry.put(ReportEntryKey.EXPECTED_OUTPUT, testCase.getExpectedOutput());
+            reportEntry.put(ReportEntryKey.CONDITION, testCase.getCondition().name());
+            reportEntry.put(ReportEntryKey.EXPECTED_VALUE, testCase.getExpectedValue());
             reportEntry.put(ReportEntryKey.IGNORED, "true");
             testReporter.publishEntry(reportEntry);
             functionNode.add(dynamicTest(testCaseDisplayName, () -> fail("Test case ignored")));

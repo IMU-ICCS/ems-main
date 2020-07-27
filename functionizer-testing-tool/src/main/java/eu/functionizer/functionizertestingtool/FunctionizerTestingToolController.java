@@ -1,7 +1,7 @@
 package eu.functionizer.functionizertestingtool;
 
 
-import eu.functionizer.functionizertestingtool.model.FunctionizerTestResult;
+import eu.passage.upperware.commons.model.testing.FunctionizerTestResult;
 import eu.functionizer.functionizertestingtool.service.TestRunner;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class FunctionizerTestingToolController {
 
-    private TestRunner testRunner;
+    private final TestRunner testRunner;
 
     @RequestMapping("/")
     @ResponseStatus(HttpStatus.OK)

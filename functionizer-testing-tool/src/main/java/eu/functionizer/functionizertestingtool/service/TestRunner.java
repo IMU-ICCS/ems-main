@@ -1,6 +1,6 @@
 package eu.functionizer.functionizertestingtool.service;
 
-import eu.functionizer.functionizertestingtool.model.FunctionizerTestResult;
+import eu.passage.upperware.commons.model.testing.FunctionizerTestResult;
 import eu.functionizer.functionizertestingtool.service.test.FunctionizerReportData;
 import eu.functionizer.functionizertestingtool.service.test.FunctionizerTestListener;
 import eu.functionizer.functionizertestingtool.service.test.ServerlessFunctionTestFactory;

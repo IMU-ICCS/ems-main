@@ -1,13 +1,12 @@
 package eu.melodic.upperware.guibackend.service.testing;
 
-import eu.melodic.upperware.guibackend.controller.testing.response.UploadTestConfigResponse;
+import eu.melodic.upperware.guibackend.controller.testing.response.TestConfigurationResponse;
 import eu.passage.upperware.commons.MelodicConstants;
 import eu.passage.upperware.commons.model.testing.FunctionTestConfiguration;
 import eu.passage.upperware.commons.model.testing.TestConfiguration;
 import eu.passage.upperware.commons.service.testing.TestConfigurationValidationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.net4j.connector.ConnectorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,12 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.constructor.ConstructorException;
 
-import java.io.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.IOException;
 
 import static eu.passage.upperware.commons.service.testing.TestConfigurationValidationService.checkFunctionNamesUniqueness;
 import static eu.passage.upperware.commons.service.testing.TestConfigurationValidationService.checkTestCasesUniqueness;
@@ -29,7 +33,7 @@ import static eu.passage.upperware.commons.service.testing.TestConfigurationVali
 public class TestingService {
     private final static String CONFIG_FILE_PATH = MelodicConstants.TEST_CONFIG_FILE_DIR + "/tests.yml";
 
-    public String uploadTestConfig(MultipartFile uploadFileRequest) {
+    public TestConfigurationResponse uploadTestConfig(MultipartFile uploadFileRequest) {
         try {
             if (uploadFileRequest.getOriginalFilename() == null) {
                 throw new ResponseStatusException(
@@ -42,15 +46,17 @@ public class TestingService {
             if (!newFile.exists()) {
                 newFile.getParentFile().mkdirs();
             }
-            validate(uploadFileRequest.getInputStream());
+            TestConfiguration configuration = loadAndValidateTestConfiguration(
+                uploadFileRequest.getInputStream()
+            );
 
             uploadFileRequest.transferTo(newFile);
             log.info(
-                "File {} will be stored under path: {}",
+                "File {} successfully stored under path: {}",
                 uploadFileRequest.getResource().getFilename(),
                 CONFIG_FILE_PATH
             );
-            return CONFIG_FILE_PATH;
+            return createTestConfigResponse(configuration);
 
         } catch (IOException | IllegalStateException e) {
             log.error("Error by uploading test configuration file:", e);
@@ -59,25 +65,62 @@ public class TestingService {
                 String.format("Problem by uploading your %s file. Please try again.",
                     uploadFileRequest.getResource().getFilename()
                 ));
-        } catch (ConnectorException e) {
-            log.error("Error by uploading test configuration file:", e);
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                String.format("Problem by uploading your %s file. CDO repository not working. Please try again.",
-                    uploadFileRequest.getResource().getFilename()
-                ));
         }
     }
 
-    public UploadTestConfigResponse createUploadTestConfigResponse(String fileName) {
-        return new  UploadTestConfigResponse(fileName);
+    public TestConfigurationResponse getTestConfiguration() {
+        File configFile = new File(CONFIG_FILE_PATH);
+        InputStream ymlFileInputStream;
+        try {
+            ymlFileInputStream = new FileInputStream(configFile);
+        } catch (FileNotFoundException e) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Test configuration file not found on server."
+            );
+        }
+        TestConfiguration testConfiguration = loadTestConfiguration(ymlFileInputStream);
+        return createTestConfigResponse(testConfiguration);
     }
 
-    private void validate(InputStream ymlFileInputStream) throws ResponseStatusException {
+    public void removeTestConfigFile() {
+        File configFile = new File(CONFIG_FILE_PATH);
+        if (!configFile.exists()) {
+            log.info("No file to delete. Ending");
+            return;
+        }
+        if (configFile.delete()) {
+            log.info("Successfully removed file {}", configFile.getName());
+        } else {
+            log.error("Error while deleting test configuration file.");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                String.format("Could not remove file %s.", configFile.getName())
+            );
+        }
+    }
+
+    private TestConfigurationResponse createTestConfigResponse(TestConfiguration configuration) {
+        return new TestConfigurationResponse(CONFIG_FILE_PATH, configuration);
+    }
+
+    private TestConfiguration loadTestConfiguration(InputStream ymlFileInputStream) {
         Yaml yaml = new Yaml(new Constructor(TestConfiguration.class));
+        try {
+            return yaml.load(ymlFileInputStream);
+        } catch (ConstructorException e) {
+            String errorMessage = "The file has a bad structure and could not be parsed.";
+            log.error(errorMessage);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
+        }
+    }
+
+    private TestConfiguration loadAndValidateTestConfiguration(
+        InputStream ymlFileInputStream
+    ) throws ResponseStatusException {
         TestConfiguration configuration;
         try {
-            configuration = yaml.load(ymlFileInputStream);
+            configuration = loadTestConfiguration(ymlFileInputStream);
             log.info("Checking uniqueness of function names");
             checkFunctionNamesUniqueness(configuration.getTests());
 
@@ -89,7 +132,7 @@ public class TestingService {
                 );
             }
         } catch (ConstructorException e) {
-            String errorMessage = "The file has a bad format and could not be parsed.";
+            String errorMessage = "The file has a bad structure and could not be parsed.";
             log.error(errorMessage);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
         } catch (
@@ -98,5 +141,6 @@ public class TestingService {
         ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
+        return configuration;
     }
 }

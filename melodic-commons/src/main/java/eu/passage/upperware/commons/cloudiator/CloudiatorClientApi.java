@@ -7,9 +7,7 @@ import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.NotFoundException;
@@ -17,8 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@AllArgsConstructor
 public class CloudiatorClientApi implements CloudiatorApi {
 
     private CloudApi cloudApi;

@@ -6,6 +6,7 @@ import lombok.Data;
 public class TestCase {
     private String functionName;
     private String event;
-    private String expectedOutput;
+    private Condition condition;
+    private String expectedValue;
     private String region;
 }
