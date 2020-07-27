@@ -9,6 +9,7 @@ import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import eu.functionizer.functionizertestingtool.model.ReportEntryKey;
 import eu.functionizer.functionizertestingtool.service.test.Stage;
+import eu.passage.upperware.commons.model.testing.Condition;
 import eu.passage.upperware.commons.model.testing.FunctionTestConfiguration;
 import eu.passage.upperware.commons.model.testing.TestCase;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
@@ -87,39 +88,45 @@ public class AWSLambdaService extends TestPreparationService {
         TestCase testCase
     ) {
         log.debug(
-            "Creating test case: event={}, expected output={}",
+            "Creating test case: event={}, condition={}, expected value={}",
             testCase.getEvent(),
-            testCase.getExpectedOutput()
+            testCase.getCondition().name(),
+            testCase.getExpectedValue()
         );
 
         String displayName = createTestCaseDisplayName(
             functionName,
             testCase.getEvent(),
-            testCase.getExpectedOutput()
+            testCase.getCondition().name(),
+            testCase.getExpectedValue()
         );
-
-        Map<String, String> reportEntry = createReportEntry(displayName);
-        reportEntry.put(ReportEntryKey.EVENT, testCase.getEvent());
-        reportEntry.put(ReportEntryKey.EXPECTED_OUTPUT, testCase.getExpectedOutput());
-        testReporter.publishEntry(reportEntry);
 
         return dynamicTest(
             displayName,
             () -> executeAWSLambdaTestCase(
+                displayName,
                 awsLambdaClient,
                 awsLambdaFunctionName,
                 testCase.getEvent(),
-                testCase.getExpectedOutput()
+                testCase.getCondition(),
+                testCase.getExpectedValue()
             )
         );
     }
 
     public static void executeAWSLambdaTestCase(
+        String displayName,
         AWSLambda awsLambda,
         String functionName,
         String event,
-        String expectedOutput
+        Condition condition,
+        String expectedValue
     ) {
+        Map<String, String> reportEntry = createReportEntry(displayName);
+        reportEntry.put(ReportEntryKey.EVENT, event);
+        reportEntry.put(ReportEntryKey.CONDITION, condition.name());
+        reportEntry.put(ReportEntryKey.EXPECTED_VALUE, expectedValue);
+
         InvokeRequest invokeRequest = new InvokeRequest()
             .withFunctionName(functionName)
             .withPayload(event);
@@ -128,8 +135,11 @@ public class AWSLambdaService extends TestPreparationService {
             InvokeResult result = awsLambda.invoke(invokeRequest);
             String resultString = new String(result.getPayload().array(), StandardCharsets.UTF_8);
             if (Arrays.asList(200, 202, 204).contains(result.getStatusCode())) {
-                assertEquals(expectedOutput, resultString);
+                reportEntry.put(ReportEntryKey.ACTUAL_OUTPUT, resultString);
+                testReporter.publishEntry(reportEntry);
+                assertTrue(condition.getMethod().apply(resultString, expectedValue));
             } else {
+                testReporter.publishEntry(reportEntry);
                 fail(String.format(
                     "Received status code %s. Reason: %s",
                     result.getStatusCode(),
@@ -137,6 +147,7 @@ public class AWSLambdaService extends TestPreparationService {
                 ));
             }
         } catch (Exception e) {
+            testReporter.publishEntry(reportEntry);
             fail(String.format(
                 "An exception while fetching response from AWS Lambda Client occurred. Cause: %s",
                 e.getMessage()

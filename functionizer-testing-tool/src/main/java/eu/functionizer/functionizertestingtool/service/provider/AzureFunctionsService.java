@@ -5,15 +5,13 @@ import com.microsoft.azure.credentials.ApplicationTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.appservice.FunctionApp;
 import eu.functionizer.functionizertestingtool.model.ReportEntryKey;
-import eu.functionizer.functionizertestingtool.service.test.ServerlessFunctionTestFactory;
 import eu.functionizer.functionizertestingtool.service.test.Stage;
+import eu.passage.upperware.commons.model.testing.Condition;
 import eu.passage.upperware.commons.model.testing.FunctionTestConfiguration;
 import eu.passage.upperware.commons.model.testing.TestCase;
-import io.github.cloudiator.rest.model.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestReporter;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
@@ -134,8 +132,7 @@ public class AzureFunctionsService extends TestPreparationService {
                 configuration.getFunctionName(),
                 azureFunctionEndpoint,
                 functionKey,
-                testCase,
-                testReporter
+                testCase
             ))
             .collect(Collectors.toList());
 
@@ -146,51 +143,57 @@ public class AzureFunctionsService extends TestPreparationService {
         String functionName,
         String azureFunctionEndpoint,
         String functionKey,
-        TestCase testCase,
-        TestReporter testReporter
+        TestCase testCase
     ) {
         log.debug(
-            "Creating test case: event={}, expected output={}",
+            "Creating test case: event={}, condition={} expected value={}",
             testCase.getEvent(),
-            testCase.getExpectedOutput()
+            testCase.getCondition().name(),
+            testCase.getExpectedValue()
         );
         String displayName = createTestCaseDisplayName(
             functionName,
             testCase.getEvent(),
-            testCase.getExpectedOutput()
+            testCase.getCondition().name(),
+            testCase.getExpectedValue()
         );
-
-        Map<String, String> reportEntry = createReportEntry(displayName);
-        reportEntry.put(ReportEntryKey.EVENT, testCase.getEvent());
-        reportEntry.put(ReportEntryKey.EXPECTED_OUTPUT, testCase.getExpectedOutput());
-        testReporter.publishEntry(reportEntry);
 
         return dynamicTest(
             displayName,
             () -> executeAzureTestCase(
+                displayName,
                 azureFunctionEndpoint,
                 functionKey,
                 testCase.getEvent(),
-                testCase.getExpectedOutput()
+                testCase.getCondition(),
+                testCase.getExpectedValue()
             )
         );
     }
 
     private static void executeAzureTestCase(
+        String displayName,
         String endpoint,
         String functionKey,
         String event,
-        String expectedOutput
+        Condition condition,
+        String expectedValue
     ) {
-        Stage stage = Stage.TEST_EXECUTION;
+        Map<String, String> reportEntry = createReportEntry(displayName);
+        reportEntry.put(ReportEntryKey.EVENT, event);
+        reportEntry.put(ReportEntryKey.CONDITION, condition.name());
+        reportEntry.put(ReportEntryKey.EXPECTED_VALUE, expectedValue);
         try {
             String response = AzureFunctionsService.invokeFunction(
                 endpoint,
                 functionKey,
                 event
             );
-            assertEquals(expectedOutput, response);
+            reportEntry.put(ReportEntryKey.ACTUAL_OUTPUT, response);
+            testReporter.publishEntry(reportEntry);
+            assertTrue(condition.getMethod().apply(response, expectedValue));
         } catch (Exception e) {
+            testReporter.publishEntry(reportEntry);
             fail(String.format(
                 "An exception while fetching response from AWS Lambda Client occurred. Cause: %s",
                 e.getMessage()

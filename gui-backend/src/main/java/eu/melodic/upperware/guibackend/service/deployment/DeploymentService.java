@@ -91,6 +91,8 @@ public class DeploymentService {
         } catch (IllegalStateException e) {
             log.error("Error by uploading xmi file:", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. CDO repository is in pending state. Please try again.", uploadXmiRequest.getResource().getFilename()));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

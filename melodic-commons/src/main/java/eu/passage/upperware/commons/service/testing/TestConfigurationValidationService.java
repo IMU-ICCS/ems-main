@@ -1,10 +1,11 @@
 package eu.passage.upperware.commons.service.testing;
 
+import eu.passage.upperware.commons.model.testing.Condition;
 import eu.passage.upperware.commons.model.testing.FunctionTestConfiguration;
 import eu.passage.upperware.commons.model.testing.TestCase;
 import eu.passage.upperware.commons.model.testing.TestConfiguration;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,19 +36,27 @@ public class TestConfigurationValidationService {
     public static class NotUniqueTestCaseException extends Exception {
         String functionName;
         String event;
-        String expectedOutput;
+        Condition condition;
+        String expected;
         String message;
 
-        NotUniqueTestCaseException(String functionName, String event, String expectedOutput) {
+        NotUniqueTestCaseException(
+            String functionName,
+            String event,
+            Condition condition,
+            String expected
+        ) {
             this.functionName = functionName;
             this.event = event;
-            this.expectedOutput = expectedOutput;
+            this.condition = condition;
+            this.expected = expected;
             this.message = String.format(
-                "The pair of event = '%s' and expected output = '%s'" +
+                "The triplet of event = '%s', condition = %s, expected value = '%s'" +
                     " appears in more than one test case of function '%s'." +
-                    " Please adjust the test cases to be unique",
+                    " Please adjust the test cases to be unique.",
                 this.event,
-                this.expectedOutput,
+                this.condition,
+                this.expected,
                 this.functionName
             );
         }
@@ -89,23 +98,25 @@ public class TestConfigurationValidationService {
     public static void checkTestCasesUniqueness(
         List<TestCase> testCases, String functionName
     ) throws NotUniqueTestCaseException {
-        List<Pair<String, String>> eventsExpectedOutputs = testCases
+        List<Triple<String, Condition, String>> testCaseTriplets = testCases
             .stream()
-            .map(testCase -> Pair.of(testCase.getEvent(), testCase.getExpectedOutput()))
+            .map(testCase -> Triple.of(testCase.getEvent(), testCase.getCondition(), testCase.getExpectedValue()))
             .collect(Collectors.toList());
-        Set<Pair<String, String>> uniquePairs = new HashSet<>();
-        for (Pair<String, String> eventExpectedOutput : eventsExpectedOutputs) {
-            if (!uniquePairs.add(eventExpectedOutput)) {
+        Set<Triple<String, Condition, String>> uniqueTriplets = new HashSet<>();
+        for (Triple<String, Condition, String> testCaseTriplet : testCaseTriplets) {
+            if (!uniqueTriplets.add(testCaseTriplet)) {
                 log.error(
-                    "Function '{}' has more than one test case with event '{}' and expected output '{}'",
+                    "Function '{}' has more than one test case with the event-predicate-expected triplet: ('{}', {}, '{}').",
                     functionName,
-                    eventExpectedOutput.getKey(),
-                    eventExpectedOutput.getValue()
+                    testCaseTriplet.getLeft(),
+                    testCaseTriplet.getMiddle(),
+                    testCaseTriplet.getRight()
                 );
                 throw new NotUniqueTestCaseException(
                     functionName,
-                    eventExpectedOutput.getKey(),
-                    eventExpectedOutput.getValue()
+                    testCaseTriplet.getLeft(),
+                    testCaseTriplet.getMiddle(),
+                    testCaseTriplet.getRight()
                 );
             }
         }

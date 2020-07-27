@@ -1,4 +1,4 @@
-package eu.functionizer.functionizertestingtool.model;
+package eu.passage.upperware.commons.model.testing;
 
 import org.junit.platform.engine.TestExecutionResult;
 

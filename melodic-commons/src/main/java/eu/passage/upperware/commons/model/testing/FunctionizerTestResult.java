@@ -1,4 +1,4 @@
-package eu.functionizer.functionizertestingtool.model;
+package eu.passage.upperware.commons.model.testing;
 
 import lombok.Data;
 

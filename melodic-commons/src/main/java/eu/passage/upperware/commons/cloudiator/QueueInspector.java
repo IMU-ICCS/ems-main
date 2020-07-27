@@ -1,20 +1,16 @@
 package eu.passage.upperware.commons.cloudiator;
 
-import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.api.QueueApi;
 import io.github.cloudiator.rest.model.Queue;
 import io.github.cloudiator.rest.model.QueueStatus;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
-@Service
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@AllArgsConstructor
 public class QueueInspector {
 
     private QueueApi queueApi;

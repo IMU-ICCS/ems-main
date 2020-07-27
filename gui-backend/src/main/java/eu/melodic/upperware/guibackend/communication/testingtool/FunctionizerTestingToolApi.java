@@ -1,5 +1,7 @@
 package eu.melodic.upperware.guibackend.communication.testingtool;
 
+import eu.passage.upperware.commons.model.testing.FunctionizerTestResult;
+
 public interface FunctionizerTestingToolApi {
-    Object runTests(String token);
+    FunctionizerTestResult runTests(String token);
 }
