@@ -185,6 +185,11 @@
                             <include>run.sh</include>
                         </resource>
                         <resource>
+                            <targetPath>/bin</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>run111111111.sh</include>
+                        </resource>
+                        <resource>
                             <targetPath>/config</targetPath>
                             <directory>${project.basedir}/../config-files</directory>
                         </resource>
