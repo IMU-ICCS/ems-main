@@ -199,6 +199,41 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
             </plugin>
+
+            <!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/target/baguette-client-vm.tgz</sourceFile>
+                                    <destinationFile>target/baguette-client.tgz</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/target/baguette-client-vm.tgz.md5</sourceFile>
+                                    <destinationFile>target/baguette-client.tgz.md5</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/bin/install.sh</sourceFile>
+                                    <destinationFile>target/install.sh</destinationFile>
+                                </fileSet>
+                            </fileSets>
+                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+                            <overWrite>true</overWrite>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
