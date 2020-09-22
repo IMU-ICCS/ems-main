@@ -192,21 +192,6 @@
                             <targetPath>/resources</targetPath>
                             <directory>${project.basedir}/../config-files/resources</directory>
                         </resource>
-                        <resource>
-                            <targetPath>/resources</targetPath>
-                            <directory>${project.basedir}/../config-files/resources</directory>
-                            <include>install.sh</include>
-                        </resource>
-                        <resource>
-                            <targetPath>/resources</targetPath>
-                            <directory>${project.basedir}/../config-files/resources</directory>
-                            <include>baguette-client.tgz</include>
-                        </resource>
-                        <resource>
-                            <targetPath>/resources</targetPath>
-                            <directory>${project.basedir}/../config-files/resources</directory>
-                            <include>baguette-client.tgz.md5</include>
-                        </resource>
                     </resources>
                 </configuration>
             </plugin>
