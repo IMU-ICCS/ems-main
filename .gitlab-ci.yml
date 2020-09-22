@@ -255,6 +255,15 @@ build:ems-translator:
     paths: 
     - $CI_PROJECT_DIR/event-management/translator/target
 
+build:ems-server:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_SERVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/control-service/target
+
 deploy:melodic-upperware:
   stage: deploy
   only: 
