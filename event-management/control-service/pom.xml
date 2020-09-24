@@ -261,6 +261,9 @@
                         <resource>
                             <targetPath>/config</targetPath>
                             <directory>${project.basedir}/../config-files</directory>
+                            <excludes>
+                                <exclude>resources/**/*</exclude>
+                            </excludes>
                         </resource>
                         <!--<resource>
                             <targetPath>/resources</targetPath>
