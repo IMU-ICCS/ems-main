@@ -23,7 +23,6 @@ ADD config ./config
 ADD resources ./resources
 
 RUN mkdir logs
-RUN bash -c 'touch jars/*.jar'
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
 ENTRYPOINT ["./bin/run.sh"]
