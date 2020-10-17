@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -26,15 +27,23 @@ public class NodeRegistry {
     private Map<String,Map<String,Object>> registry = new HashMap<>();
 
     public synchronized void addNode(Map<String,Object> nodeInfo) {
-        String ipAddress = nodeInfo.get("ip").toString();
+        String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
         registry.put(ipAddress, new HashMap<>(nodeInfo));
         log.debug("NodeRegistry.addNode(): Added info for node at address: {}\nNode info: {}", ipAddress, nodeInfo);
     }
 
     public synchronized void removeNode(Map<String,Object> nodeInfo) {
-        String ipAddress = nodeInfo.get("ip").toString();
+        String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
         registry.remove(ipAddress);
         log.debug("NodeRegistry.removeNode(): Removed info for node at address: {}", ipAddress);
+    }
+
+    private String getIpAddressFromNodeInfo(Map<String,Object> nodeInfo) {
+        Object value = nodeInfo.get("ip-address");
+        if (value==null || StringUtils.isBlank(value.toString())) value = nodeInfo.get("address");
+        if (value==null || StringUtils.isBlank(value.toString())) value = nodeInfo.get("ip");
+        if (value==null || StringUtils.isBlank(value.toString())) return null;
+        return value.toString();
     }
 
     public synchronized void clearNodes() {

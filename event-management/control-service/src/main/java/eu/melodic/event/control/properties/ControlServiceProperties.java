@@ -42,8 +42,14 @@ public class ControlServiceProperties {
         }
     }
 
+    public enum ExecutionWare {
+        CLOUDIATOR, PROACTIVE
+    }
+
     @Value("${IP_SETTING:}")
     private IpSetting ipSetting;
+    @Value("${EXECUTIONWARE:CLOUDIATOR}")
+    private ExecutionWare executionware;
 
     @Value("${control.upperware-grouping}")
     private String upperwareGrouping;

@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -43,6 +44,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ControlServiceController {
 
+    @Autowired
+    private ControlServiceProperties properties;
     @Autowired
     private ControlServiceCoordinator coordinator;
 
@@ -274,11 +277,10 @@ public class ControlServiceController {
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
         // Extract node information from json
-        Type type = new TypeToken<Map<String, String>>(){}.getType();
+        Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
-        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
         String nodeId = (String) nodeMap.get("id");
-        String nodeOs = (String) nodeMap.get("operatingSystem");
+        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         // Register node to Baguette server
         BaguetteServer baguette = coordinator.getBaguetteServer();
@@ -296,7 +298,25 @@ public class ControlServiceController {
                         : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
+        // Continue processing according to ExecutionWare type
+        String response = null;
+        if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
+            response = baguetteRegisterNodeForCloudiator(nodeMap, baseUrl, clientId, baguette, ipSetting);
+        } else
+        if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.PROACTIVE) {
+            response = baguetteRegisterNodeForProactive(nodeMap, baseUrl, clientId, baguette, ipSetting);
+        } else {
+            throw new RuntimeException("BUG: MUST HAVE NEVER REACHED THIS POINT");
+        }
+
+        log.info("ControlServiceController.baguetteRegisterNode(): node: {}, json:\n{}", nodeId, response);
+        return response;
+    }
+
+    public String baguetteRegisterNodeForCloudiator(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         // Prepare Baguette Client installation instructions for node
+        String nodeId = (String) nodeMap.get("id");
+        String nodeOs = (String) nodeMap.get("operatingSystem");
         OrchestrationHelper.InstallationInstructions installationInstructions =
                 ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
         if (installationInstructions==null) {
@@ -311,6 +331,49 @@ public class ControlServiceController {
 
         log.info("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
         return json;
+    }
+
+    public String baguetteRegisterNodeForProactive(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws Exception {
+        log.info("ControlServiceController.baguetteRegisterNodeForProactive(): +++++++++TODO+++++++\n{}", nodeMap);
+
+        // Extract registration information
+        String nodeId = (String) nodeMap.get("id");
+        String nodeOs = (String) nodeMap.get("operatingSystem");
+        String nodeAddress = (String) nodeMap.get("address");
+        String nodeType = (String) nodeMap.get("type");
+        String nodeName = (String) nodeMap.get("name");
+        String nodeProvider = (String) nodeMap.get("provider");
+
+        Map<String,Object> nodeSsh = (Map<String,Object>) nodeMap.get("ssh");
+        if (nodeSsh!=null) {
+            int port = (int) Double.parseDouble(Objects.toString(nodeSsh.get("port"), "22"));
+            log.info("ControlServiceController.baguetteRegisterNodeForProactive(): port={}", port);
+            String username = (String) nodeSsh.get("username");
+            String password = (String) nodeSsh.get("password");
+            String privateKey = (String) nodeSsh.get("key");
+            String fingerprint = (String) nodeSsh.get("fingerprint");
+
+            /*SshClientInstallationTask installationTask = SshClientInstallationTask.builder()
+                    .id(clientId)
+                    .name(nodeName)
+                    .os(nodeOs)
+                    .ssh(SshConfig.builder()
+                            .host(nodeAddress)
+                            .port(port)
+                            .username(username)
+                            .password(password)
+                            .privateKey(privateKey)
+                            .fingerprint(fingerprint)
+                            .build())
+                    .type(nodeType)
+                    .provider(nodeProvider)
+                    .build();
+            EmsClientSshInstaller.instance().addTask(installationTask);*/
+
+            return "OK";
+        }
+
+        return "ERROR: NO SSH INFORMATION";
     }
 
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST})
