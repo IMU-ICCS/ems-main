@@ -11,8 +11,7 @@ package eu.melodic.event.control;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
-import eu.melodic.event.baguette.client.install.OrchestrationHelper;
+import eu.melodic.event.baguette.client.install.*;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.NetUtil;
@@ -309,7 +308,7 @@ public class ControlServiceController {
             throw new RuntimeException("BUG: MUST HAVE NEVER REACHED THIS POINT");
         }
 
-        log.info("ControlServiceController.baguetteRegisterNode(): node: {}, json:\n{}", nodeId, response);
+        log.info("ControlServiceController.baguetteRegisterNode(): node: {}, json: {}", nodeId, response);
         return response;
     }
 
@@ -334,7 +333,7 @@ public class ControlServiceController {
     }
 
     public String baguetteRegisterNodeForProactive(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws Exception {
-        log.info("ControlServiceController.baguetteRegisterNodeForProactive(): +++++++++TODO+++++++\n{}", nodeMap);
+        log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
 
         // Extract registration information
         String nodeId = (String) nodeMap.get("id");
@@ -347,16 +346,17 @@ public class ControlServiceController {
         Map<String,Object> nodeSsh = (Map<String,Object>) nodeMap.get("ssh");
         if (nodeSsh!=null) {
             int port = (int) Double.parseDouble(Objects.toString(nodeSsh.get("port"), "22"));
-            log.info("ControlServiceController.baguetteRegisterNodeForProactive(): port={}", port);
             String username = (String) nodeSsh.get("username");
             String password = (String) nodeSsh.get("password");
             String privateKey = (String) nodeSsh.get("key");
             String fingerprint = (String) nodeSsh.get("fingerprint");
 
-            /*SshClientInstallationTask installationTask = SshClientInstallationTask.builder()
+            ClientInstallationTask installationTask = ClientInstallationTask.builder()
                     .id(clientId)
+                    //.id(nodeId)
                     .name(nodeName)
                     .os(nodeOs)
+                    .address(nodeAddress)
                     .ssh(SshConfig.builder()
                             .host(nodeAddress)
                             .port(port)
@@ -368,7 +368,8 @@ public class ControlServiceController {
                     .type(nodeType)
                     .provider(nodeProvider)
                     .build();
-            EmsClientSshInstaller.instance().addTask(installationTask);*/
+            log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
+            ClientInstaller.instance().addTask(installationTask);
 
             return "OK";
         }
