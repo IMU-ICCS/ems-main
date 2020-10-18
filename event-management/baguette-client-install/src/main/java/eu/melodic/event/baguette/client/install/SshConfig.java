@@ -20,10 +20,10 @@ import lombok.ToString;
 @Builder
 @ToString(exclude = {"password", "privateKey"})
 public class SshConfig {
-    private final String host;
-    private final int port;
-    private final String username;
-    private final String password;
-    private final String privateKey;
-    private final String fingerprint;
+    private String host;
+    private int port = 22;
+    private String username;
+    private String password;
+    private String privateKey;
+    private String fingerprint;
 }

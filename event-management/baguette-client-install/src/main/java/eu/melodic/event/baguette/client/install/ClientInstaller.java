@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Client installer
@@ -29,6 +30,7 @@ public class ClientInstaller implements InitializingBean, Runnable {
     private BlockingQueue<ClientInstallationTask> taskQueue = new LinkedBlockingQueue<>();
     private Thread thread;
     private boolean running;
+    private AtomicLong taskCounter = new AtomicLong();
 
     @Override
     public void afterPropertiesSet() {
@@ -61,10 +63,34 @@ public class ClientInstaller implements InitializingBean, Runnable {
             log.info("ClientInstaller: Starting task execution thread");
             while (running) {
                 ClientInstallationTask task = taskQueue.take();
-                log.warn(">>>>> WILL EXECUTE TASK: {}", task);
+                long taskCnt = taskCounter.getAndIncrement();
+                log.info("ClientInstaller: Executing Client installation task #{}: {}", taskCnt, task);
+                long startTm = System.currentTimeMillis();
+                boolean result = executeTask(task, taskCnt);
+                long endTm = System.currentTimeMillis();
+                log.info("ClientInstaller: Client installation task #{}: success={}, duration={}ms",
+                        taskCnt, result, endTm-startTm);
             }
         } catch (InterruptedException ex) {
             log.warn("ClientInstaller: Stopping task execution thread");
         }
+    }
+
+    private boolean executeTask(ClientInstallationTask task, long taskCounter) {
+        if ("VM".equalsIgnoreCase(task.getType())) {
+            return executeVmTask(task, taskCounter);
+        } else {
+            log.error("ClientInstaller: UNSUPPORTED TASK TYPE: {}", task.getType());
+        }
+        return false;
+    }
+
+    private boolean executeVmTask(ClientInstallationTask task, long taskCounter) {
+        return SshClientInstaller.builder()
+                .task(task)
+                .taskCounter(taskCounter)
+                .maxRetries(5)
+                .build()
+                .execute();
     }
 }
