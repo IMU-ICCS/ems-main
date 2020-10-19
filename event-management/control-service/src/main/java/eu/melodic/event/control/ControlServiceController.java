@@ -351,6 +351,10 @@ public class ControlServiceController {
             String privateKey = (String) nodeSsh.get("key");
             String fingerprint = (String) nodeSsh.get("fingerprint");
 
+            //XXX: IMPROVE THIS: Move to a better place than Controller
+            OrchestrationHelper.InstallationInstructions installationInstructions = ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+
+            // Create Installation Task
             ClientInstallationTask installationTask = ClientInstallationTask.builder()
                     .id(clientId)
                     //.id(nodeId)
@@ -367,6 +371,7 @@ public class ControlServiceController {
                             .build())
                     .type(nodeType)
                     .provider(nodeProvider)
+                    .installationInstructions(installationInstructions)
                     .build();
             log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
             ClientInstaller.instance().addTask(installationTask);

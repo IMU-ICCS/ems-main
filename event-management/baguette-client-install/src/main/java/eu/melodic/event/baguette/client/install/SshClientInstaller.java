@@ -27,7 +27,10 @@ import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
-import java.io.*;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -40,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  * SSH client installer
  */
 @Slf4j
-public class SshClientInstaller {
+public class SshClientInstaller implements ClientInstallerPlugin {
     private ClientInstallationTask task;
     private long taskCounter;
     private int maxRetries;
@@ -51,6 +54,8 @@ public class SshClientInstaller {
     private SshClient sshClient;
     //private SimpleClient simpleClient;
     private ClientSession session;
+    private ChannelShell shellChannel;
+    private OutputStream shellPipedIn;
 
     @Builder
     public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval) {
@@ -62,6 +67,7 @@ public class SshClientInstaller {
         this.heartbeatInterval = heartbeatInterval>0 ? heartbeatInterval : 10000;
     }
 
+    @Override
     public boolean execute() {
         int retries = 0;
         while (retries<=maxRetries) {
@@ -77,7 +83,9 @@ public class SshClientInstaller {
     private boolean executeTask(int retries) {
         try {
             sshConnect(task);
-            executeSteps();
+            sshOpenShell();
+            executeInstructions();
+            sshCloseShell();
             sshDisconnect();
             return true;
         } catch (Exception ex) {
@@ -197,39 +205,13 @@ public class SshClientInstaller {
         }
     }
 
-    private boolean executeSteps() throws IOException {
-        String command = "touch /tmp/ems.txt";
-        log.info("SshClientInstaller: Sending command: {}", command);
-
-        // Using EXEC channel
-        /*ChannelExec channel = session.createExecChannel(command);
-        channel.setOut(new NoCloseOutputStream(System.out));
-        channel.setErr(new NoCloseOutputStream(System.err));
-        try {
-            channel.open().verify(connectTimeout);
-            channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                    TimeUnit.SECONDS.toMillis(5));
-        } finally {
-            channel.close();
-        }*/
-
-        // Using SHELL channel
-        ChannelShell channel = session.createShellChannel();
-        channel.setOut(new NoCloseOutputStream(System.out));
-        channel.setErr(new NoCloseOutputStream(System.err));
-        try {
-            channel.open().verify(connectTimeout);
-            try (OutputStream pipedIn = channel.getInvertedIn()) {
-                if (!command.endsWith("\n"))
-                    command += "\n";
-                pipedIn.write(command.getBytes());
-                pipedIn.flush();
-            }
-            channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                    TimeUnit.SECONDS.toMillis(5));
-        } finally {
-            channel.close();
-        }
+    private boolean sshOpenShell() throws IOException {
+        shellChannel = session.createShellChannel();
+        shellChannel.setOut(new NoCloseOutputStream(System.out));
+        shellChannel.setErr(new NoCloseOutputStream(System.err));
+        shellChannel.open().verify(connectTimeout);
+        shellPipedIn = shellChannel.getInvertedIn();
+        return true;
             /*this.channel = session.createChannel(ClientChannel.CHANNEL_SHELL);
             PipedInputStream pIn = new PipedInputStream();
             PipedOutputStream pOut = new PipedOutputStream();
@@ -243,7 +225,72 @@ public class SshClientInstaller {
             //channel.setErr(new NoCloseOutputStream(new PipedOutputStream(pErr)));
 
             channel.open();*/
+    }
 
+    private boolean sshCloseShell() throws IOException {
+        shellChannel.close();
+        shellChannel = null;
+        shellPipedIn = null;
+        return true;
+    }
+
+    private boolean sshShellExec(@NotNull String command) throws IOException {
+        // Send command to remote side
+        if (!command.endsWith("\n"))
+            command += "\n";
+        log.info("SshClientInstaller: Sending command: {}", command);
+        shellPipedIn.write(command.getBytes());
+        shellPipedIn.flush();
+
+        // Search remote side output for expected patterns
+        //XXX: TODO: Search remote side output for expected patterns
+
+        shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
+                TimeUnit.SECONDS.toMillis(5));
+        return true;
+    }
+
+    private boolean sshExecCmd(String command) throws IOException {
+
+        // Using EXEC channel
+        ChannelExec channel = session.createExecChannel(command);
+        channel.setOut(new NoCloseOutputStream(System.out));
+        channel.setErr(new NoCloseOutputStream(System.err));
+        try {
+            channel.open().verify(connectTimeout);
+
+            //XXX: TODO: Search remote side output for expected patterns
+
+            channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
+                    TimeUnit.SECONDS.toMillis(5));
+        } finally {
+            channel.close();
+        }
+
+        return true;
+    }
+
+    private boolean executeInstructions() throws IOException {
+
+        for (OrchestrationHelper.Instruction ins : task.getInstallationInstructions().getInstructions()) {
+            switch (ins.getTaskType()) {
+                case LOG:
+                    log.info("SshClientInstaller: LOG: {}", ins.getCommand());
+                    break;
+                case CMD:
+                    boolean cmdResult = sshShellExec(ins.getCommand());
+                    if (!cmdResult) return false;
+                    break;
+                case FILE:
+                    log.warn("SshClientInstaller: Instruction FILE not implemented: {}", ins);
+                    break;
+                case CHECK:
+                    log.warn("SshClientInstaller: Instruction CHECK not implemented: {}", ins);
+                    break;
+                default:
+                    log.error("sshClientInstaller: Unknown instruction type. Ignoring it: {}", ins);
+            }
+        }
         return true;
     }
 }

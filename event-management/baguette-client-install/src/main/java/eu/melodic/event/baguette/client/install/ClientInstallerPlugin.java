@@ -9,21 +9,6 @@
 
 package eu.melodic.event.baguette.client.install;
 
-import lombok.Builder;
-import lombok.Data;
-
-/**
- * Client installation task
- */
-@Data
-@Builder
-public class ClientInstallationTask {
-    private final String id;
-    private final String name;
-    private final String os;
-    private final String address;
-    private final String type;
-    private final String provider;
-    private final SshConfig ssh;
-    private final OrchestrationHelper.InstallationInstructions installationInstructions;
+public interface ClientInstallerPlugin {
+    boolean execute();
 }
