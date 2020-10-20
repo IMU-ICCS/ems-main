@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.*;
 import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHelper;
+import eu.melodic.event.baguette.client.install.helper.VmInstallationHelper;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.control.properties.ControlServiceProperties;
@@ -281,7 +282,7 @@ public class ControlServiceController {
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
         String nodeId = (String) nodeMap.get("id");
-        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
+        log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         // Register node to Baguette server
         BaguetteServer baguette = coordinator.getBaguetteServer();
@@ -310,7 +311,8 @@ public class ControlServiceController {
             throw new RuntimeException("BUG: MUST HAVE NEVER REACHED THIS POINT");
         }
 
-        log.info("ControlServiceController.baguetteRegisterNode(): node: {}, json: {}", nodeId, response);
+        log.info("ControlServiceController.baguetteRegisterNode(): node-id: {}", nodeId);
+        log.debug("ControlServiceController.baguetteRegisterNode(): node: {}, json: {}", nodeId, response);
         return response;
     }
 
@@ -330,12 +332,12 @@ public class ControlServiceController {
         Gson gson = new Gson();
         String json = gson.toJson(installationInstructions, InstallationInstructions.class);
 
-        log.info("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
+        log.trace("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
         return json;
     }
 
     public String baguetteRegisterNodeForProactive(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws Exception {
-        log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
+        //log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
 
         // Extract registration information
         String nodeId = (String) nodeMap.get("id");
@@ -354,7 +356,7 @@ public class ControlServiceController {
             String fingerprint = (String) nodeSsh.get("fingerprint");
 
             //XXX: IMPROVE THIS: Move to a better place than Controller
-            InstallationInstructions installationInstructions = CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+            InstallationInstructions installationInstructions = VmInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
 
             // Create Installation Task
             ClientInstallationTask installationTask = ClientInstallationTask.builder()
