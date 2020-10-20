@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install;
 
+import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,5 +26,5 @@ public class ClientInstallationTask {
     private final String type;
     private final String provider;
     private final SshConfig ssh;
-    private final OrchestrationHelper.InstallationInstructions installationInstructions;
+    private final InstallationInstructions installationInstructions;
 }

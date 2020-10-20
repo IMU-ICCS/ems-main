@@ -12,6 +12,7 @@ package eu.melodic.event.control;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.*;
+import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.NetUtil;
@@ -316,7 +317,7 @@ public class ControlServiceController {
         // Prepare Baguette Client installation instructions for node
         String nodeId = (String) nodeMap.get("id");
         String nodeOs = (String) nodeMap.get("operatingSystem");
-        OrchestrationHelper.InstallationInstructions installationInstructions =
+        InstallationInstructions installationInstructions =
                 ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
@@ -326,7 +327,7 @@ public class ControlServiceController {
 
         // Convert 'installationInstructions' into json string
         Gson gson = new Gson();
-        String json = gson.toJson(installationInstructions, OrchestrationHelper.InstallationInstructions.class);
+        String json = gson.toJson(installationInstructions, InstallationInstructions.class);
 
         log.info("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
         return json;
@@ -352,7 +353,7 @@ public class ControlServiceController {
             String fingerprint = (String) nodeSsh.get("fingerprint");
 
             //XXX: IMPROVE THIS: Move to a better place than Controller
-            OrchestrationHelper.InstallationInstructions installationInstructions = ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+            InstallationInstructions installationInstructions = ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
 
             // Create Installation Task
             ClientInstallationTask installationTask = ClientInstallationTask.builder()
@@ -460,18 +461,6 @@ public class ControlServiceController {
         log.debug("ControlServiceController.emsTopology(): END");
         return "{}";
     }
-
-    /*@RequestMapping(value = "/test", method = {GET, POST},
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public OrchestrationHelper.InstallationInstructions test(@RequestBody String jsonStr) {
-        log.info(">>>>>>>>>>>>>>>>>>  {}", jsonStr);
-        OrchestrationHelper.InstallationInstructions installationInstructions =
-                new OrchestrationHelper.InstallationInstructions();
-        installationInstructions.appendExec("Exec OK");
-        installationInstructions.appendLog("Log OK");
-        return installationInstructions;
-    }*/
 
     // ------------------------------------------------------------------------------------------------------------
 

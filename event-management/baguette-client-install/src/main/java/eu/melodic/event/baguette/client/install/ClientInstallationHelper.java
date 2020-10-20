@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client.install;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.KeystoreUtil;
@@ -191,12 +192,12 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         }
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+    public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
         log.debug("ClientInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
-        OrchestrationHelper.InstallationInstructions installationInstructions = null;
+        InstallationInstructions installationInstructions = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
             installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette, ipSetting);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
@@ -206,12 +207,12 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         return installationInstructions;
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
+    public InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
         log.warn("ClientInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         return null;
     }
 
-    public OrchestrationHelper.InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+    public InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         log.debug("ClientInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
         // Get parameters
@@ -247,7 +248,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         valueMap.put("IP_SETTING", ipSetting);
 
         // Set the target operating system
-        OrchestrationHelper.InstallationInstructions installationInstructions = new OrchestrationHelper.InstallationInstructions();
+        InstallationInstructions installationInstructions = new InstallationInstructions();
         installationInstructions.setOs("LINUX");
 
         // Check whether EMS Client is already installed
@@ -331,8 +332,8 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         return installationInstructions;
     }
 
-    private OrchestrationHelper.InstallationInstructions _appendCopyInstructions(
-            OrchestrationHelper.InstallationInstructions installationInstructions,
+    private InstallationInstructions _appendCopyInstructions(
+            InstallationInstructions installationInstructions,
             Path p,
             Path startDir,
             String copyToClientDir,
@@ -351,8 +352,8 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         return _appendCopyInstructions(installationInstructions, targetFile, tmpFile, contents, clientTmpDir);
     }
 
-    private OrchestrationHelper.InstallationInstructions _appendCopyInstructions(
-            OrchestrationHelper.InstallationInstructions installationInstructions,
+    private InstallationInstructions _appendCopyInstructions(
+            InstallationInstructions installationInstructions,
             String targetFile,
             String tmpFile,
             String contents,
