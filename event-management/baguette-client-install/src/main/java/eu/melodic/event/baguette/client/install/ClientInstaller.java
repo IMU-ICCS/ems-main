@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.install;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.BlockingQueue;
@@ -26,6 +27,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @NoArgsConstructor
 public class ClientInstaller implements InitializingBean, Runnable {
     private static ClientInstaller singleton;
+
+    @Autowired
+    private ClientInstallationProperties properties;
 
     private BlockingQueue<ClientInstallationTask> taskQueue = new LinkedBlockingQueue<>();
     private Thread thread;
@@ -89,7 +93,12 @@ public class ClientInstaller implements InitializingBean, Runnable {
         return SshClientInstaller.builder()
                 .task(task)
                 .taskCounter(taskCounter)
-                .maxRetries(5)
+                .maxRetries(properties.getMaxRetries())
+                .authenticationTimeout(properties.getAuthenticateTimeout())
+                .connectTimeout(properties.getConnectTimeout())
+                .heartbeatInterval(properties.getHeartbeatInterval())
+                .simulateConnection(properties.isSimulateConnection())
+                .simulateExecution(properties.isSimulateExecution())
                 .build()
                 .execute();
     }
