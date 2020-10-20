@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install;
 
+import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,9 +20,11 @@ import org.apache.sshd.client.channel.ChannelShell;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
+import org.apache.sshd.client.scp.ScpClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
+import org.apache.sshd.common.scp.ScpTimestamp;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -31,12 +34,13 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.file.attribute.PosixFilePermission;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,10 +50,13 @@ import java.util.concurrent.TimeUnit;
 public class SshClientInstaller implements ClientInstallerPlugin {
     private ClientInstallationTask task;
     private long taskCounter;
+
     private int maxRetries;
-    private long connectTimeout = 60000;
-    private long authenticationTimeout = 60000;
-    private long heartbeatInterval = 10000;
+    private long connectTimeout;
+    private long authenticationTimeout;
+    private long heartbeatInterval;
+    private boolean simulateConnection;
+    private boolean simulateExecution;
 
     private SshClient sshClient;
     //private SimpleClient simpleClient;
@@ -58,13 +65,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private OutputStream shellPipedIn;
 
     @Builder
-    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval) {
+    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution) {
         this.task= task;
         this.taskCounter = taskCounter;
+
         this.maxRetries = maxRetries>0 ? maxRetries : 5;
         this.connectTimeout = connectTimeout>0 ? connectTimeout : 60000;
         this.authenticationTimeout = authenticationTimeout>0 ? authenticationTimeout : 60000;
         this.heartbeatInterval = heartbeatInterval>0 ? heartbeatInterval : 10000;
+        this.simulateConnection = simulateConnection;
+        this.simulateExecution = simulateExecution;
     }
 
     @Override
@@ -94,10 +104,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean sshConnect(ClientInstallationTask task) throws Exception {
-        // Get connection information
         SshConfig config = task.getSsh();
         String host = config.getHost();
         int port = config.getPort();
+
+        if (simulateConnection) {
+            log.info("SshClientInstaller: Simulate connection to remote host: task #{}: host: {}:{}", taskCounter, host, port);
+            return true;
+        }
+
+        // Get connection information
         String privateKey = config.getPrivateKey();
         String fingerprint = config.getFingerprint();
         String username = config.getUsername();
@@ -184,15 +200,20 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean sshDisconnect() throws Exception {
+        SshConfig config = task.getSsh();
+        String host = config.getHost();
+        int port = config.getPort();
+        if (simulateConnection) {
+            log.info("SshClientInstaller: Simulate disconnect from remote host: task #{}: host: {}:{}", taskCounter, host, port);
+            return true;
+        }
+
         try {
             //channel.close(false).await();
             session.close(false);
             //simpleClient.close();
             sshClient.stop();
 
-            SshConfig config = task.getSsh();
-            String host = config.getHost();
-            int port = config.getPort();
             log.info("SshClientInstaller: Disonnected from remote host: task #{}: host: {}:{}", taskCounter, host, port);
             return true;
         } catch (Exception ex) {
@@ -206,11 +227,17 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean sshOpenShell() throws IOException {
+        if (simulateConnection) {
+            log.info("SshClientInstaller: Simulate open shell channel: task #{}", taskCounter);
+            return true;
+        }
+
         shellChannel = session.createShellChannel();
         shellChannel.setOut(new NoCloseOutputStream(System.out));
         shellChannel.setErr(new NoCloseOutputStream(System.err));
         shellChannel.open().verify(connectTimeout);
         shellPipedIn = shellChannel.getInvertedIn();
+        log.info("SshClientInstaller: Opened shell channel: task #{}", taskCounter);
         return true;
             /*this.channel = session.createChannel(ClientChannel.CHANNEL_SHELL);
             PipedInputStream pIn = new PipedInputStream();
@@ -228,13 +255,24 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean sshCloseShell() throws IOException {
+        if (simulateConnection) {
+            log.info("SshClientInstaller: Simulate close shell channel: task #{}", taskCounter);
+            return true;
+        }
+
         shellChannel.close();
         shellChannel = null;
         shellPipedIn = null;
+        log.info("SshClientInstaller: Closed shell channel: task #{}", taskCounter);
         return true;
     }
 
     private boolean sshShellExec(@NotNull String command) throws IOException {
+        if (simulateConnection || simulateExecution) {
+            log.info("SshClientInstaller: Simulate command execution: task #{}: command: {}", taskCounter, command);
+            return true;
+        }
+
         // Send command to remote side
         if (!command.endsWith("\n"))
             command += "\n";
@@ -251,6 +289,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean sshExecCmd(String command) throws IOException {
+        if (simulateConnection || simulateExecution) {
+            log.info("SshClientInstaller: Simulate shell command execution: task #{}: command: {}", taskCounter, command);
+            return true;
+        }
 
         // Using EXEC channel
         ChannelExec channel = session.createExecChannel(command);
@@ -270,9 +312,74 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
+    private boolean sshFileDownload(String remoteFilePath, String localFilePath) throws IOException {
+        if (simulateConnection || simulateExecution) {
+            log.info("SshClientInstaller: Simulate file download: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
+            return true;
+        }
+
+        try {
+            log.info("SshClientInstaller: Downloading file: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
+            ScpClient scpClient = session.createScpClient();
+            scpClient.download(remoteFilePath, localFilePath, ScpClient.Option.PreserveAttributes);
+            log.info("SshClientInstaller: File download completed: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
+        } catch (Exception ex) {
+            log.error("SshClientInstaller: File download failed: task #{}: remote: {} -> local: {} Exception: ", taskCounter, remoteFilePath, localFilePath, ex);
+            throw ex;
+        }
+
+        return true;
+    }
+
+    private boolean sshFileUpload(String localFilePath, String remoteFilePath) throws IOException {
+        if (simulateConnection || simulateExecution) {
+            log.info("SshClientInstaller: Simulate file upload: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
+            return true;
+        }
+
+        try {
+            log.info("SshClientInstaller: Uploading file: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
+            ScpClient scpClient = session.createScpClient();
+            scpClient.upload(localFilePath, remoteFilePath, ScpClient.Option.PreserveAttributes);
+            log.info("SshClientInstaller: File upload completed: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
+        } catch (Exception ex) {
+            log.error("SshClientInstaller: File upload failed: task #{}: local: {} -> remote: {} Exception: ", taskCounter, localFilePath, remoteFilePath, ex);
+            throw ex;
+        }
+
+        return true;
+    }
+
+    private boolean sshFileWrite(String content, String remoteFilePath, boolean isExecutable) throws IOException {
+        if (simulateConnection || simulateExecution) {
+            log.info("SshClientInstaller: Simulate file upload: task #{}: remote: {}, content: {}", taskCounter, remoteFilePath, content);
+            return true;
+        }
+
+        try {
+            long timestamp = System.currentTimeMillis();
+            Collection<PosixFilePermission> permissions = isExecutable
+                    ? Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE)
+                    : Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
+            log.info("SshClientInstaller: Uploading file: task #{}: remote: {}, perm={}, content: {}", taskCounter, remoteFilePath, permissions, content);
+            ScpClient scpClient = session.createScpClient();
+            scpClient.upload(content.getBytes(), remoteFilePath, permissions, new ScpTimestamp(timestamp, timestamp));
+            log.info("SshClientInstaller: File upload completed: task #{}: remote: {}, content: {}", taskCounter, remoteFilePath, content);
+        } catch (Exception ex) {
+            log.error("SshClientInstaller: File upload failed: task #{}: remote: {}, Exception: ", taskCounter, remoteFilePath, ex);
+            throw ex;
+        }
+
+        return true;
+    }
+
     private boolean executeInstructions() throws IOException {
 
-        for (OrchestrationHelper.Instruction ins : task.getInstallationInstructions().getInstructions()) {
+        int numOfInstructions = task.getInstallationInstructions().getInstructions().size();
+        int cnt = 0;
+        for (Instruction ins : task.getInstallationInstructions().getInstructions()) {
+            cnt++;
+            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}", taskCounter, cnt, numOfInstructions);
             switch (ins.getTaskType()) {
                 case LOG:
                     log.info("SshClientInstaller: LOG: {}", ins.getCommand());
@@ -282,7 +389,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     if (!cmdResult) return false;
                     break;
                 case FILE:
-                    log.warn("SshClientInstaller: Instruction FILE not implemented: {}", ins);
+                    sshFileWrite(ins.getContents(), ins.getFileName(), ins.isExecutable());
+                    break;
+                case COPY:
+                    sshFileUpload(ins.getLocalFileName(), ins.getFileName());
                     break;
                 case CHECK:
                     log.warn("SshClientInstaller: Instruction CHECK not implemented: {}", ins);
