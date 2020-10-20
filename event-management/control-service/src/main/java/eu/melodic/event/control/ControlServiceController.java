@@ -12,6 +12,7 @@ package eu.melodic.event.control;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.*;
+import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHelper;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.control.properties.ControlServiceProperties;
@@ -318,7 +319,7 @@ public class ControlServiceController {
         String nodeId = (String) nodeMap.get("id");
         String nodeOs = (String) nodeMap.get("operatingSystem");
         InstallationInstructions installationInstructions =
-                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;
@@ -353,7 +354,7 @@ public class ControlServiceController {
             String fingerprint = (String) nodeSsh.get("fingerprint");
 
             //XXX: IMPROVE THIS: Move to a better place than Controller
-            InstallationInstructions installationInstructions = ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+            InstallationInstructions installationInstructions = CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
 
             // Create Installation Task
             ClientInstallationTask installationTask = ClientInstallationTask.builder()

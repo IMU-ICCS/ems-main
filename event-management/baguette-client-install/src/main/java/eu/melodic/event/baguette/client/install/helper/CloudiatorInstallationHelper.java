@@ -7,10 +7,11 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.install;
+package eu.melodic.event.baguette.client.install.helper;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
@@ -43,8 +44,8 @@ import java.util.stream.Stream;
  */
 @Slf4j
 @Service
-public class ClientInstallationHelper implements InitializingBean, ApplicationListener<WebServerInitializedEvent> {
-    private static ClientInstallationHelper instance = null;
+public class CloudiatorInstallationHelper implements InitializingBean, ApplicationListener<WebServerInitializedEvent> {
+    private static CloudiatorInstallationHelper instance = null;
     private static List<String> LINUX_OS_FAMILIES;
     private static List<String> WINDOWS_OS_FAMILIES;
 
@@ -55,25 +56,25 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
     private boolean isServerSecure;
     private String serverCert;
 
-    private ClientInstallationHelper() {
-        ClientInstallationHelper.instance = this;
+    private CloudiatorInstallationHelper() {
+        CloudiatorInstallationHelper.instance = this;
     }
 
-    public synchronized static ClientInstallationHelper getInstance() {
-        if (instance == null) instance = new ClientInstallationHelper();
+    public synchronized static CloudiatorInstallationHelper getInstance() {
+        if (instance == null) instance = new CloudiatorInstallationHelper();
         return instance;
     }
 
     @Override
     public void afterPropertiesSet() {
-        log.info("ClientInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
+        log.info("CloudiatorInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
         LINUX_OS_FAMILIES = properties.getOsFamilies().get("LINUX");
         WINDOWS_OS_FAMILIES = properties.getOsFamilies().get("WINDOWS");
     }
 
     @Override
     public void onApplicationEvent(WebServerInitializedEvent event) {
-        log.debug("ClientInstallationHelper.onApplicationEvent(): event={}", event);
+        log.debug("CloudiatorInstallationHelper.onApplicationEvent(): event={}", event);
         TomcatWebServer tomcat = (TomcatWebServer) event.getSource();
 
         try {
@@ -87,11 +88,11 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
     private void initServerCertificateFile(TomcatWebServer tomcat) throws Exception {
         //this.isServerSecure = "https".equalsIgnoreCase(tomcat.getTomcat().getConnector().getScheme());
         this.isServerSecure = tomcat.getTomcat().getConnector().getSecure();
-        log.debug("ClientInstallationHelper.initServerCertificate(): Embedded Tomcat is secure: {}", isServerSecure);
+        log.debug("CloudiatorInstallationHelper.initServerCertificate(): Embedded Tomcat is secure: {}", isServerSecure);
 
         if (isServerSecure) {
             SSLHostConfig[] sslHostConfigArr = tomcat.getTomcat().getConnector().findSslHostConfigs();
-            log.debug("ClientInstallationHelper.initServerCertificate(): Tomcat SSL host config array: length={}",
+            log.debug("CloudiatorInstallationHelper.initServerCertificate(): Tomcat SSL host config array: length={}",
                     sslHostConfigArr.length);
             if (sslHostConfigArr.length!=1)
                 throw new RuntimeException("Embedded Tomcat has zero or more than one SSL host configurations: "+sslHostConfigArr.length);
@@ -104,16 +105,16 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
             if (StringUtils.startsWith(keystoreFile, "file:"))
                 keystoreFile = StringUtils.substringAfter(keystoreFile, "file:");
-            log.debug("ClientInstallationHelper.initServerCertificate(): Tomcat SSL host config: keystore={}, type={}, key-alias={}",
+            log.debug("CloudiatorInstallationHelper.initServerCertificate(): Tomcat SSL host config: keystore={}, type={}, key-alias={}",
                     keystoreFile, keystoreType, keyAlias);
 
             String certFileName = properties.getServerCertFileAtServer();
             if (StringUtils.isNotEmpty(certFileName)) {
-                log.debug("ClientInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
+                log.debug("CloudiatorInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
                 KeystoreUtil
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
                         .exportCertToFile(keyAlias, certFileName);
-                log.debug("ClientInstallationHelper.initServerCertificate(): Server certificate exported");
+                log.debug("CloudiatorInstallationHelper.initServerCertificate(): Server certificate exported");
 
                 File certFile = new File(certFileName);
                 if (! certFile.exists())
@@ -129,7 +130,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
             if (StringUtils.isNotEmpty(properties.getServerCertFileAtServer())) {
                 File certFile = new File(properties.getServerCertFileAtServer());
                 if (certFile.exists()) {
-                    log.debug("ClientInstallationHelper.initServerCertificate(): Removing previous server certificate file");
+                    log.debug("CloudiatorInstallationHelper.initServerCertificate(): Removing previous server certificate file");
                     if (!certFile.delete())
                         throw new RuntimeException("Could not remove previous server certificate file: " + certFile);
                 }
@@ -139,50 +140,50 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
     private void initBaguetteClientConfigArchive() throws IOException {
         if (StringUtils.isEmpty(properties.getArchiveSourceDir()) || StringUtils.isEmpty(properties.getArchiveFile())) {
-            log.debug("ClientInstallationHelper: No baguette client configuration archiving has been configured");
+            log.debug("CloudiatorInstallationHelper: No baguette client configuration archiving has been configured");
             return;
         }
-        log.info("ClientInstallationHelper: Building baguette client configuration archive...");
+        log.info("CloudiatorInstallationHelper: Building baguette client configuration archive...");
 
         // Get archiving settings
         String configDirName = properties.getArchiveSourceDir();
         File configDir = new File(configDirName);
-        log.debug("ClientInstallationHelper: Baguette client configuration directory: {}", configDir);
+        log.debug("CloudiatorInstallationHelper: Baguette client configuration directory: {}", configDir);
         if (!configDir.exists())
             throw new FileNotFoundException("Baguette client configuration directory not found: " + configDirName);
 
         String archiveName = properties.getArchiveFile();
         String archiveDirName = properties.getArchiveDir();
         File archiveDir = new File(archiveDirName);
-        log.debug("ClientInstallationHelper: Baguette client configuration archive: {}/{}", archiveDirName, archiveName);
+        log.debug("CloudiatorInstallationHelper: Baguette client configuration archive: {}/{}", archiveDirName, archiveName);
         if (!archiveDir.exists())
             throw new FileNotFoundException("Baguette client configuration archive directory not found: " + archiveDirName);
 
         // Remove previous baguette client configuration archive
         File archiveFile = new File(archiveDirName, archiveName);
         if (archiveFile.exists()) {
-            log.debug("ClientInstallationHelper: Removing previous archive...");
+            log.debug("CloudiatorInstallationHelper: Removing previous archive...");
             if (!archiveFile.delete())
-                throw new RuntimeException("ClientInstallationHelper: Failed removing previous archive: " + archiveName);
+                throw new RuntimeException("CloudiatorInstallationHelper: Failed removing previous archive: " + archiveName);
         }
 
         // Create baguette client configuration archive
         Archiver archiver = ArchiverFactory.createArchiver(archiveFile);
         String tempFileName = "archive_" + System.currentTimeMillis();
-        log.debug("ClientInstallationHelper: Temp. archive name: {}", tempFileName);
+        log.debug("CloudiatorInstallationHelper: Temp. archive name: {}", tempFileName);
         archiveFile = archiver.create(tempFileName, archiveDir, configDir);
-        log.debug("ClientInstallationHelper: Archive generated: {}", archiveFile);
+        log.debug("CloudiatorInstallationHelper: Archive generated: {}", archiveFile);
         if (!archiveFile.getName().equals(archiveName)) {
-            log.debug("ClientInstallationHelper: Renaming archive to: {}", archiveName);
+            log.debug("CloudiatorInstallationHelper: Renaming archive to: {}", archiveName);
             if (!archiveFile.renameTo(archiveFile = new File(archiveDir, archiveName)))
-                throw new RuntimeException("ClientInstallationHelper: Failed renaming generated archive to: " + archiveName);
+                throw new RuntimeException("CloudiatorInstallationHelper: Failed renaming generated archive to: " + archiveName);
         }
-        log.info("ClientInstallationHelper: Baguette client configuration archive: {}", archiveFile);
+        log.info("CloudiatorInstallationHelper: Baguette client configuration archive: {}", archiveFile);
 
         // Base64 encode archive and cache in memory
         byte[] archiveBytes = Files.readAllBytes(archiveFile.toPath());
         this.archiveBase64 = Base64.getEncoder().encodeToString(archiveBytes);
-        log.debug("ClientInstallationHelper: Archive Base64 encoded: {}", archiveBase64);
+        log.debug("CloudiatorInstallationHelper: Archive Base64 encoded: {}", archiveBase64);
     }
 
     private String getResourceAsString(String resourcePath) throws IOException {
@@ -194,7 +195,7 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
 
     public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
-        log.debug("ClientInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
+        log.debug("CloudiatorInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
         InstallationInstructions installationInstructions = null;
@@ -203,17 +204,17 @@ public class ClientInstallationHelper implements InitializingBean, ApplicationLi
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
             installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette, ipSetting);
         else
-            log.warn("ClientInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
+            log.warn("CloudiatorInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
         return installationInstructions;
     }
 
     public InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
-        log.warn("ClientInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
+        log.warn("CloudiatorInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         return null;
     }
 
     public InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
-        log.debug("ClientInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
+        log.debug("CloudiatorInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
         // Get parameters
         log.debug("prepareInstallationInstructionsForLinux(): properties: {}", properties);
