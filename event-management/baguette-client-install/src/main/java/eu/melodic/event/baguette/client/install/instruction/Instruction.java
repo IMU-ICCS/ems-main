@@ -16,6 +16,7 @@ public class Instruction {
     private INSTRUCTION_TYPE taskType;
     private String command;
     private String fileName;
+    private String localFileName;
     private String contents;
     private boolean executable;
     private int exitCode;
