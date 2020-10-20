@@ -34,22 +34,27 @@ public class InstallationInstructions {
     }
 
     public InstallationInstructions appendLog(String message) {
-        instructions.add(new Instruction(INSTRUCTION_TYPE.LOG, message));
+        instructions.add(Instruction.createLog(message));
         return this;
     }
 
     public InstallationInstructions appendExec(String command) {
-        instructions.add(new Instruction(INSTRUCTION_TYPE.CMD, command));
+        instructions.add(Instruction.createShellCommand(command));
         return this;
     }
 
     public InstallationInstructions appendWriteFile(String file, String contents, boolean executable) {
-        instructions.add(new Instruction(file, contents, executable));
+        instructions.add(Instruction.createWriteFile(file, contents, executable));
+        return this;
+    }
+
+    public InstallationInstructions appendUploadFile(String localFile, String remoteFile) {
+        instructions.add(Instruction.createUploadFile(localFile, remoteFile));
         return this;
     }
 
     public InstallationInstructions appendCheck(String command, int exitCode, boolean match, String message) {
-        instructions.add(new Instruction(command, exitCode, match, message));
+        instructions.add(Instruction.createCheck(command, exitCode, match, message));
         return this;
     }
 }

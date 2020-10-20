@@ -9,9 +9,13 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
+import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 @Data
+@Builder
 public class Instruction {
     private INSTRUCTION_TYPE taskType;
     private String command;
@@ -22,23 +26,44 @@ public class Instruction {
     private int exitCode;
     private boolean match;
 
-    public Instruction(INSTRUCTION_TYPE type, String cmd) {
-        taskType = type;
-        command = cmd;
+    public static Instruction createLog(@NotNull String message) {
+        return Instruction.builder()
+                .taskType(INSTRUCTION_TYPE.LOG)
+                .command(message)
+                .build();
     }
 
-    public Instruction(String file, String contents, boolean executable) {
-        taskType = INSTRUCTION_TYPE.FILE;
-        fileName = file;
-        this.contents = contents;
-        this.executable = executable;
+    public static Instruction createShellCommand(@NotNull String command) {
+        return Instruction.builder()
+                .taskType(INSTRUCTION_TYPE.CMD)
+                .command(command)
+                .build();
     }
 
-    public Instruction(String command, int exitCode, boolean match, String message) {
-        taskType = INSTRUCTION_TYPE.CHECK;
-        this.command = command;
-        this.exitCode = exitCode;
-        this.match = match;
-        this.contents = message;
+    public static Instruction createWriteFile(@NotNull String file, String contents, boolean executable) {
+        return Instruction.builder()
+                .taskType(INSTRUCTION_TYPE.FILE)
+                .fileName(file)
+                .contents(contents==null ? "" : contents)
+                .executable(executable)
+                .build();
+    }
+
+    public static Instruction createUploadFile(@NotNull String localFile, @NotNull String remoteFile) {
+        return Instruction.builder()
+                .taskType(INSTRUCTION_TYPE.COPY)
+                .fileName(remoteFile)
+                .localFileName(localFile)
+                .build();
+   }
+
+    public static Instruction createCheck(@NotNull String command, @NotNull int exitCode, boolean match, String message) {
+        return Instruction.builder()
+                .taskType(INSTRUCTION_TYPE.CHECK)
+                .command(command)
+                .exitCode(exitCode)
+                .match(match)
+                .contents(message)
+                .build();
     }
 }
