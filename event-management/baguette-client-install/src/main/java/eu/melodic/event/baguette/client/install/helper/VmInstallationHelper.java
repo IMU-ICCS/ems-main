@@ -110,6 +110,24 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             installationInstructions.appendExec("sudo touch " + touchList);
         }
 
+        // Copy files from server to Baguette Client
+        /*if (StringUtils.isNotEmpty(copyFromServerDir) && StringUtils.isNotEmpty(copyToClientDir)) {
+            Path startDir = Paths.get(copyFromServerDir).toAbsolutePath();
+            try (Stream<Path> stream = Files.walk(startDir, Integer.MAX_VALUE)) {
+                List<Path> paths = stream
+                        .filter(Files::isRegularFile)
+                        .map(Path::toAbsolutePath)
+                        .sorted()
+                        .collect(Collectors.toList());
+                for (Path p : paths) {
+                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
+                }
+            }
+        }*/
+
+        installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz", "/opt/baguette-client/baguette-client.tgz");
+        installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz.md5", "/opt/baguette-client/baguette-client.tgz");
+
         return installationInstructions;
     }
 
