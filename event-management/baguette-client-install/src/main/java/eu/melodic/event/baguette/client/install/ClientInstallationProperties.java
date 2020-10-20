@@ -49,4 +49,14 @@ public class ClientInstallationProperties {
     private String copyFilesToClientDir;        // location in VM where server files will be copied into
 
     private String clientTmpDir;                // location of temp. directory in VM (typically /tmp)
+
+    // ----------------------------------------------------
+
+    private boolean simulateConnection;
+    private boolean simulateExecution;
+
+    private int maxRetries = 5;
+    private long connectTimeout = 10000;
+    private long authenticateTimeout = 60000;
+    private long heartbeatInterval = 60000;
 }
