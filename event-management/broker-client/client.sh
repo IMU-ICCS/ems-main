@@ -8,14 +8,10 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-if [ ! -d "target/dependency" ]; then
-  mvn dependency:copy-dependencies
-fi
-
 MELODIC_CONFIG_DIR=.
 
 JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12 
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 
-java $JAVA_OPTS -classpath "target/classes:target/dependency/*" eu.melodic.event.brokerclient.BrokerClientApp $*
+java $JAVA_OPTS -jar target/broker-client.jar $*

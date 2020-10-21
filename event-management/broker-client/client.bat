@@ -8,8 +8,6 @@
 :: https://www.mozilla.org/en-US/MPL/2.0/
 ::
 
-if not exist target\dependency cmd /C "mvn dependency:copy-dependencies"
-
 set MELODIC_CONFIG_DIR=.
 
 setlocal
@@ -19,6 +17,6 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 
 rem -Djavax.net.debug=all
 rem -Djavax.net.debug=ssl,handshake,record
 
-java %JAVA_OPTS% -classpath "target\classes;target\dependency\*" eu.melodic.event.brokerclient.BrokerClientApp %*
+java %JAVA_OPTS% -cp . -jar target\broker-client.jar %*
 
 endlocal
