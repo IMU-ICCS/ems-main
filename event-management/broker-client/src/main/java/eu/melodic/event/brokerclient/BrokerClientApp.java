@@ -119,11 +119,11 @@ public class BrokerClientApp {
         if ("generator".equalsIgnoreCase(command)) {
             String url = args[aa++];
             String topic = args[aa++];
-            long interval = Long.parseLong(args[3]);
-            long howmany = Long.parseLong(args[4]);
-            double lowerValue = Double.parseDouble(args[5]);
-            double upperValue = Double.parseDouble(args[6]);
-            int level = Integer.parseInt(args[7]);
+            long interval = Long.parseLong(args[aa++]);
+            long howmany = Long.parseLong(args[aa++]);
+            double lowerValue = Double.parseDouble(args[aa++]);
+            double upperValue = Double.parseDouble(args[aa++]);
+            int level = Integer.parseInt(args[aa++]);
 
             BrokerClient client = BrokerClient.newClient(username, password);
             EventGenerator generator = new EventGenerator();
