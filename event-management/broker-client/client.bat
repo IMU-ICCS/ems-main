@@ -17,6 +17,6 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 
 rem -Djavax.net.debug=all
 rem -Djavax.net.debug=ssl,handshake,record
 
-java %JAVA_OPTS% -cp . -jar target\broker-client.jar %*
+java %JAVA_OPTS% -cp . -jar target\broker-client-jar-with-dependencies.jar %*
 
 endlocal
