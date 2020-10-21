@@ -441,9 +441,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 return false;
             }
 
-            shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                    TimeUnit.SECONDS.toMillis(5));
-            log.error("sshClientInstaller: Continuing with next command...");
+            log.debug("sshClientInstaller: Continuing with next command...");
         }
         return true;
     }
