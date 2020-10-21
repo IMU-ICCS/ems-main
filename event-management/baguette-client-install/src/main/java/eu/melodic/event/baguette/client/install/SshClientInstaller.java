@@ -15,9 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
-import org.apache.sshd.client.channel.ChannelExec;
-import org.apache.sshd.client.channel.ChannelShell;
-import org.apache.sshd.client.channel.ClientChannelEvent;
+import org.apache.sshd.client.channel.*;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.scp.ScpClient;
@@ -107,7 +105,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             if (retries>0) log.warn("SshClientInstaller: Retry {}/{} executing task #{}", retries, maxRetries, taskCounter);
             try {
                 sshConnect();
-                sshOpenShell();
+                //sshOpenShell();
                 success = true;
             } catch (Exception ex) {
                 success = false;
@@ -128,7 +126,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            sshCloseShell();
+            //sshCloseShell();
             sshDisconnect();
             if (success) log.info("SshClientInstaller: Task completed successfully #{}", taskCounter);
             else log.info("SshClientInstaller: Error occurred while executing task #{}", taskCounter);
@@ -262,22 +260,34 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
     }
 
-    private boolean sshOpenShell() throws IOException {
-        if (simulateConnection) {
-            log.info("SshClientInstaller: Simulate open shell channel: task #{}", taskCounter);
-            return true;
-        }
+    private void initStreamLogger() throws IOException {
+        if (streamLogger!=null) return;
 
         String addr = session.getConnectAddress().toString().replace("/","").replace(":", "-");
         //log.debug("SshClientInstaller: addr: {}", addr);
         String logFile = "logs/"+addr+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt";
         log.info("SshClientInstaller: Session will be recorded in file: {}", logFile);
         this.streamLogger = new StreamLogger(logFile);
+    }
+
+    private void setChannelStreams(ChannelSession channel) throws IOException {
+        initStreamLogger();
+        channel.setIn(new NoCloseInputStream( streamLogger.getIn() ));
+        channel.setOut(new NoCloseOutputStream( streamLogger.getOut() ));
+        channel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));
+    }
+
+    private boolean sshOpenShell() throws IOException {
+        if (simulateConnection) {
+            log.info("SshClientInstaller: Simulate open shell channel: task #{}", taskCounter);
+            return true;
+        }
 
         shellChannel = session.createShellChannel();
-        shellChannel.setIn(new NoCloseInputStream( streamLogger.getIn() ));
+        /*shellChannel.setIn(new NoCloseInputStream( streamLogger.getIn() ));
         shellChannel.setOut(new NoCloseOutputStream( streamLogger.getOut() ));
-        shellChannel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));
+        shellChannel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));*/
+        setChannelStreams(shellChannel);
         shellChannel.open().verify(connectTimeout);
         //shellPipedIn = shellChannel.getInvertedIn();
         log.info("SshClientInstaller: Opened shell channel: task #{}", taskCounter);
@@ -333,8 +343,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         // Using EXEC channel
         ChannelExec channel = session.createExecChannel(command);
-        channel.setOut(new NoCloseOutputStream(System.out));
-        channel.setErr(new NoCloseOutputStream(System.err));
+        setChannelStreams(channel);
+        streamLogger.getInvertedIn().write(command.getBytes());
         try {
             channel.open().verify(connectTimeout);
 
@@ -422,7 +432,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     log.info("SshClientInstaller: LOG: {}", ins.getCommand());
                     break;
                 case CMD:
-                    result = sshShellExec(ins.getCommand());
+                    log.info("SshClientInstaller: EXEC: {}", ins.getCommand());
+                    //result = sshShellExec(ins.getCommand());
+                    result = sshExecCmd(ins.getCommand());
                     break;
                 case FILE:
                     result = sshFileWrite(ins.getContents(), ins.getFileName(), ins.isExecutable());
