@@ -25,6 +25,7 @@ import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.common.scp.ScpTimestamp;
+import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -32,7 +33,6 @@ import org.bouncycastle.util.io.pem.PemReader;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.*;
@@ -40,7 +40,11 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,21 +52,23 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class SshClientInstaller implements ClientInstallerPlugin {
-    private ClientInstallationTask task;
-    private long taskCounter;
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS");
 
-    private int maxRetries;
-    private long connectTimeout;
-    private long authenticationTimeout;
-    private long heartbeatInterval;
-    private boolean simulateConnection;
-    private boolean simulateExecution;
+    private final ClientInstallationTask task;
+    private final long taskCounter;
+
+    private final int maxRetries;
+    private final long connectTimeout;
+    private final long authenticationTimeout;
+    private final long heartbeatInterval;
+    private final boolean simulateConnection;
+    private final boolean simulateExecution;
 
     private SshClient sshClient;
     //private SimpleClient simpleClient;
     private ClientSession session;
     private ChannelShell shellChannel;
-    private OutputStream shellPipedIn;
+    private StreamLogger streamLogger;
 
     @Builder
     public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution) {
@@ -78,7 +84,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     @Override
-    public boolean execute() {
+    /*public boolean execute() {
         int retries = 0;
         while (retries<=maxRetries) {
             if (retries>0) log.warn("SshClientInstaller: Retry {}/{} executing task #{}", retries, maxRetries, taskCounter);
@@ -88,22 +94,52 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
         log.error("SshClientInstaller: Giving up executing task #{} after {} retries", taskCounter, maxRetries);
         return false;
+    }*/
+
+    public boolean execute() {
+        return executeTask();
     }
 
-    private boolean executeTask(int retries) {
+    private boolean executeTask(/*int retries*/) {
+        boolean success = false;
+        int retries = 0;
+        while (!success && retries<=maxRetries) {
+            if (retries>0) log.warn("SshClientInstaller: Retry {}/{} executing task #{}", retries, maxRetries, taskCounter);
+            try {
+                sshConnect();
+                sshOpenShell();
+                success = true;
+            } catch (Exception ex) {
+                success = false;
+                log.error("SshClientInstaller: Failed executing task #{}, Exception: ", taskCounter, ex);
+                retries++;
+            }
+        }
+        if (!success) {
+            log.error("SshClientInstaller: Giving up executing task #{} after {} retries", taskCounter, maxRetries);
+            return false;
+        }
+
         try {
-            sshConnect(task);
-            sshOpenShell();
-            executeInstructions();
+            success = executeInstructions();
+        } catch (Exception ex) {
+            log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
+            success = false;
+        }
+
+        try {
             sshCloseShell();
             sshDisconnect();
-            return true;
+            if (success) log.info("SshClientInstaller: Task completed successfully #{}", taskCounter);
+            else log.info("SshClientInstaller: Error occurred while executing task #{}", taskCounter);
+            return success;
         } catch (Exception ex) {
+            log.error("SshClientInstaller: Exception while disconnecting. Task #{}, Exception: ", taskCounter, ex);
             return false;
         }
     }
 
-    private boolean sshConnect(ClientInstallationTask task) throws Exception {
+    private boolean sshConnect() throws Exception {
         SshConfig config = task.getSsh();
         String host = config.getHost();
         int port = config.getPort();
@@ -125,9 +161,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         sshClient.setKeyPairProvider(KeyPairProvider.EMPTY_KEYPAIR_PROVIDER);
         sshClient.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
 
-//        this.simpleClient = SshClient.wrapAsSimpleClient(sshClient);
-//        simpleClient.setConnectTimeout(connectTimeout);
-//        simpleClient.setAuthenticationTimeout(authenticationTimeout);
+        //this.simpleClient = SshClient.wrapAsSimpleClient(sshClient);
+        //simpleClient.setConnectTimeout(connectTimeout);
+        //simpleClient.setAuthenticationTimeout(authenticationTimeout);
 
         PropertyResolverUtils.updateProperty(sshClient, ClientFactoryManager.HEARTBEAT_INTERVAL, heartbeatInterval);
         PropertyResolverUtils.updateProperty(sshClient, ClientFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
@@ -232,26 +268,25 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
+        String addr = session.getConnectAddress().toString().replace("/","").replace(":", "-");
+        //log.debug("SshClientInstaller: addr: {}", addr);
+        String logFile = "logs/"+addr+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt";
+        log.info("SshClientInstaller: Session will be recorded in file: {}", logFile);
+        this.streamLogger = new StreamLogger(logFile);
+
         shellChannel = session.createShellChannel();
-        shellChannel.setOut(new NoCloseOutputStream(System.out));
-        shellChannel.setErr(new NoCloseOutputStream(System.err));
+        shellChannel.setIn(new NoCloseInputStream( streamLogger.getIn() ));
+        shellChannel.setOut(new NoCloseOutputStream( streamLogger.getOut() ));
+        shellChannel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));
         shellChannel.open().verify(connectTimeout);
-        shellPipedIn = shellChannel.getInvertedIn();
+        //shellPipedIn = shellChannel.getInvertedIn();
         log.info("SshClientInstaller: Opened shell channel: task #{}", taskCounter);
+
+        shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
+                TimeUnit.SECONDS.toMillis(5));
+        log.info("SshClientInstaller: Shell channel ready: task #{}", taskCounter);
+
         return true;
-            /*this.channel = session.createChannel(ClientChannel.CHANNEL_SHELL);
-            PipedInputStream pIn = new PipedInputStream();
-            PipedOutputStream pOut = new PipedOutputStream();
-            PipedOutputStream pErr = new PipedOutputStream();
-            this.sshIn = new BufferedInputStream(pIn);
-            this.sshOut = new PrintStream(pOut, true);
-            this.sshErr = new PrintStream(pErr, true);
-
-            channel.setIn(new NoCloseInputStream(new PipedInputStream(pOut)));
-            channel.setOut(new NoCloseOutputStream(new PipedOutputStream(pIn)));
-            //channel.setErr(new NoCloseOutputStream(new PipedOutputStream(pErr)));
-
-            channel.open();*/
     }
 
     private boolean sshCloseShell() throws IOException {
@@ -262,7 +297,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         shellChannel.close();
         shellChannel = null;
-        shellPipedIn = null;
+        //shellPipedIn = null;
+        streamLogger.close();
+        streamLogger = null;
         log.info("SshClientInstaller: Closed shell channel: task #{}", taskCounter);
         return true;
     }
@@ -277,8 +314,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         if (!command.endsWith("\n"))
             command += "\n";
         log.info("SshClientInstaller: Sending command: {}", command);
-        shellPipedIn.write(command.getBytes());
-        shellPipedIn.flush();
+        streamLogger.getInvertedIn().write(command.getBytes());
+        streamLogger.getInvertedIn().flush();
 
         // Search remote side output for expected patterns
         //XXX: TODO: Search remote side output for expected patterns
@@ -374,25 +411,24 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean executeInstructions() throws IOException {
-
         int numOfInstructions = task.getInstallationInstructions().getInstructions().size();
         int cnt = 0;
         for (Instruction ins : task.getInstallationInstructions().getInstructions()) {
             cnt++;
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}", taskCounter, cnt, numOfInstructions);
+            boolean result = true;
             switch (ins.getTaskType()) {
                 case LOG:
                     log.info("SshClientInstaller: LOG: {}", ins.getCommand());
                     break;
                 case CMD:
-                    boolean cmdResult = sshShellExec(ins.getCommand());
-                    if (!cmdResult) return false;
+                    result = sshShellExec(ins.getCommand());
                     break;
                 case FILE:
-                    sshFileWrite(ins.getContents(), ins.getFileName(), ins.isExecutable());
+                    result = sshFileWrite(ins.getContents(), ins.getFileName(), ins.isExecutable());
                     break;
                 case COPY:
-                    sshFileUpload(ins.getLocalFileName(), ins.getFileName());
+                    result = sshFileUpload(ins.getLocalFileName(), ins.getFileName());
                     break;
                 case CHECK:
                     log.warn("SshClientInstaller: Instruction CHECK not implemented: {}", ins);
@@ -400,6 +436,14 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 default:
                     log.error("sshClientInstaller: Unknown instruction type. Ignoring it: {}", ins);
             }
+            if (!result) {
+                log.error("sshClientInstaller: Last instruction failed. Will not process remaining instructions");
+                return false;
+            }
+
+            shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
+                    TimeUnit.SECONDS.toMillis(5));
+            log.error("sshClientInstaller: Continuing with next command...");
         }
         return true;
     }

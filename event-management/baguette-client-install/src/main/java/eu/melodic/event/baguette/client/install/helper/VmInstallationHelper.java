@@ -96,6 +96,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 .appendCheck("[[ -f "+checkInstallationFile+" ]] && exit 99", 0, true, "NOTE: Baguette Client is already installed")
                 .appendExec("Baguette Client is NOT installed")*/
 
+        installationInstructions.appendExec("ls -l /opt ");
+
         // Create Baguette Client installation directories
         String dirList = String.join(" ", properties.getMkdirs());
         if (StringUtils.isNotEmpty(dirList)) {
