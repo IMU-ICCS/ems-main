@@ -1,0 +1,78 @@
+{
+  "os": "LINUX",
+  "instructions": [
+    {
+      "description": "LIST BEFORE",
+      "taskType": "CMD",
+      "command": "ls -l /opt ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Upload EMS client installation package",
+      "taskType": "COPY",
+      "fileName": "/tmp/baguette-client.tgz",
+      "localFileName": "config-files/resources/baguette-client.tgz",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Upload installation package MD5 checksum",
+      "taskType": "COPY",
+      "fileName": "/tmp/baguette-client.tgz.md5",
+      "localFileName": "config-files/resources/baguette-client.tgz.md5",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Extract installation package to target folder",
+      "taskType": "CMD",
+      "command": "sudo tar zxvf /tmp/baguette-client.tgz -C /opt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Change files and folders ownership",
+      "taskType": "CMD",
+      "command": "sudo chown -R ubuntu:ubuntu /opt/baguette-client",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "LIST AFTER",
+      "taskType": "CMD",
+      "command": "ls -l /opt ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "LIST AFTER 2",
+      "taskType": "CMD",
+      "command": "ls -l /opt/baguette-client/ ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Touch files",
+      "taskType": "CMD",
+      "command": "touch /opt/baguette-client/logs/output.txt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "taskType": "CMD",
+      "command": "echo LALA ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    }
+  ]
+}

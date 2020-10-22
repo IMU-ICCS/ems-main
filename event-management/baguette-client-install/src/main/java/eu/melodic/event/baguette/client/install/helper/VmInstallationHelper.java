@@ -29,9 +29,12 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +48,9 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 public class VmInstallationHelper extends AbstractInstallationHelper {
+    @Autowired
+    private ResourceLoader resourceLoader;
+
     @Override
     public InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
         log.warn("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
@@ -87,16 +93,39 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         if (StringUtils.isEmpty(ipSetting)) throw new IllegalArgumentException("IP_SETTING must have a value");
         valueMap.put("IP_SETTING", ipSetting);
 
+        try {
+            // Read installation instructions from JSON file
+            String jsonFile = properties.getInstructions().get("LINUX");
+            log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", jsonFile);
+            byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
+            String json = new String(bdata, StandardCharsets.UTF_8);
+            log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", json);
+
+            // Process placeholders
+
+            // Create InstallationInstructions object from JSON
+            InstallationInstructions installationInstructions =
+                    new Gson().fromJson(json, InstallationInstructions.class);
+            log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
+
+            return installationInstructions;
+        } catch (Exception ex) {
+            log.error("VmInstallationHelper.prepareInstallationInstructionsForLinux: Exception while reading Installation instructions for LINUX: ", ex);
+            throw ex;
+        }
+
         // Set the target operating system
+/*
         InstallationInstructions installationInstructions = new InstallationInstructions();
         installationInstructions.setOs("LINUX");
+*/
 
         // Check whether EMS Client is already installed
                 /*.appendLog("Checking if Baguette Client is already installed")
                 .appendCheck("[[ -f "+checkInstallationFile+" ]] && exit 99", 0, true, "NOTE: Baguette Client is already installed")
                 .appendExec("Baguette Client is NOT installed")*/
 
-        installationInstructions.appendExec("ls -l /opt ");
+        /*installationInstructions.appendExec("ls -l /opt ");
 
         // Create Baguette Client installation directories
         String dirList = String.join(" ", properties.getMkdirs());
@@ -107,35 +136,29 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         installationInstructions.appendExec("ls -l /opt ");
 
+        // Change ownership of installation directories
+        if (StringUtils.isNotEmpty(dirList)) {
+            installationInstructions.appendLog("Change ownership of installation directories");
+            installationInstructions.appendExec("sudo chown -R ubuntu:ubuntu /opt/baguette-client");
+        }
+
+        installationInstructions.appendExec("ls -l /opt ");
+
         // Create files using touch
         String touchList = String.join(" ", properties.getTouchFiles());
         if (StringUtils.isNotEmpty(touchList)) {
             installationInstructions.appendLog("Touch files");
-            installationInstructions.appendExec("sudo touch " + touchList);
+            installationInstructions.appendExec("touch " + touchList);
         }
 
         installationInstructions.appendExec("ls -l /opt/baguette-client ");
         installationInstructions.appendExec("echo LALA ");
 
-        // Copy files from server to Baguette Client
-        /*if (StringUtils.isNotEmpty(copyFromServerDir) && StringUtils.isNotEmpty(copyToClientDir)) {
-            Path startDir = Paths.get(copyFromServerDir).toAbsolutePath();
-            try (Stream<Path> stream = Files.walk(startDir, Integer.MAX_VALUE)) {
-                List<Path> paths = stream
-                        .filter(Files::isRegularFile)
-                        .map(Path::toAbsolutePath)
-                        .sorted()
-                        .collect(Collectors.toList());
-                for (Path p : paths) {
-                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
-                }
-            }
-        }*/
-
         installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz", "/opt/baguette-client/baguette-client.tgz");
-        installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz.md5", "/opt/baguette-client/baguette-client.tgz");
+        installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz.md5", "/opt/baguette-client/baguette-client.tgz.md5");
 
         return installationInstructions;
+*/
     }
 
 /*

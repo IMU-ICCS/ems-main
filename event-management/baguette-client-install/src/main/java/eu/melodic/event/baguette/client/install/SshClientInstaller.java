@@ -15,7 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
-import org.apache.sshd.client.channel.*;
+import org.apache.sshd.client.channel.ChannelExec;
+import org.apache.sshd.client.channel.ChannelSession;
+import org.apache.sshd.client.channel.ChannelShell;
+import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.scp.ScpClient;
@@ -29,7 +32,6 @@ import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.attribute.PosixFilePermission;
@@ -281,16 +283,13 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         channel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));
     }
 
-    private boolean sshOpenShell() throws IOException {
+    /*private boolean sshOpenShell() throws IOException {
         if (simulateConnection) {
             log.info("SshClientInstaller: Simulate open shell channel: task #{}", taskCounter);
             return true;
         }
 
         shellChannel = session.createShellChannel();
-        /*shellChannel.setIn(new NoCloseInputStream( streamLogger.getIn() ));
-        shellChannel.setOut(new NoCloseOutputStream( streamLogger.getOut() ));
-        shellChannel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));*/
         setChannelStreams(shellChannel);
         shellChannel.open().verify(connectTimeout);
         //shellPipedIn = shellChannel.getInvertedIn();
@@ -332,12 +331,12 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         streamLogger.getInvertedIn().flush();
 
         // Search remote side output for expected patterns
-        //XXX: TODO: Search remote side output for expected patterns
+        // Not implemented
 
         shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
                 TimeUnit.SECONDS.toMillis(5));
         return true;
-    }
+    }*/
 
     private boolean sshExecCmd(String command) throws IOException {
         if (simulateConnection || simulateExecution) {
@@ -349,7 +348,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         ChannelExec channel = session.createExecChannel(command);
         setChannelStreams(channel);
         //streamLogger.getInvertedIn().write(command.getBytes());
-        streamLogger.logMessage(command+"\n");
+        streamLogger.logMessage(String.format("EXEC: %s\n", command));
         try {
             channel.open().verify(connectTimeout);
 
@@ -370,6 +369,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
+        streamLogger.logMessage(String.format("DOWNLOAD: SCP: %s -> %s\n", remoteFilePath, localFilePath));
         try {
             log.info("SshClientInstaller: Downloading file: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
             ScpClient scpClient = session.createScpClient();
@@ -389,6 +389,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
+        streamLogger.logMessage(String.format("UPLOAD: SCP: %s -> %s\n", localFilePath, remoteFilePath));
         try {
             log.info("SshClientInstaller: Uploading file: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
             ScpClient scpClient = session.createScpClient();
@@ -408,6 +409,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             return true;
         }
 
+        streamLogger.logMessage(String.format("WRITE FILE: SCP: %s, content-length=%d \n", remoteFilePath, content.length()));
         try {
             long timestamp = System.currentTimeMillis();
             Collection<PosixFilePermission> permissions = isExecutable
@@ -430,21 +432,24 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         int cnt = 0;
         for (Instruction ins : task.getInstallationInstructions().getInstructions()) {
             cnt++;
-            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}", taskCounter, cnt, numOfInstructions);
+            log.debug("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
+            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
             boolean result = true;
             switch (ins.getTaskType()) {
                 case LOG:
-                    log.info("SshClientInstaller: LOG: {}", ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.getCommand());
                     break;
                 case CMD:
-                    log.info("SshClientInstaller: EXEC: {}", ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.getCommand());
                     //result = sshShellExec(ins.getCommand());
                     result = sshExecCmd(ins.getCommand());
                     break;
                 case FILE:
+                    log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
                     result = sshFileWrite(ins.getContents(), ins.getFileName(), ins.isExecutable());
                     break;
                 case COPY:
+                    log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
                     result = sshFileUpload(ins.getLocalFileName(), ins.getFileName());
                     break;
                 case CHECK:

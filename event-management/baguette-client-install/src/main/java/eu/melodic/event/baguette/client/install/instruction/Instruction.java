@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class Instruction {
     private INSTRUCTION_TYPE taskType;
+    private String description;
     private String command;
     private String fileName;
     private String localFileName;
