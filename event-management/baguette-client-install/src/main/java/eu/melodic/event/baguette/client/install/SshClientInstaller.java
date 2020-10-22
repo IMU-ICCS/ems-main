@@ -408,7 +408,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
     private boolean sshFileWrite(String content, String remoteFilePath, boolean isExecutable) throws IOException {
         if (simulateConnection || simulateExecution) {
-            log.info("SshClientInstaller: Simulate file upload: task #{}: remote: {}, content: {}", taskCounter, remoteFilePath, content);
+            log.info("SshClientInstaller: Simulate file upload: task #{}: remote: {}, content-length={}", taskCounter, remoteFilePath, content.length());
             return true;
         }
 
@@ -418,10 +418,12 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             Collection<PosixFilePermission> permissions = isExecutable
                     ? Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE)
                     : Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
-            log.info("SshClientInstaller: Uploading file: task #{}: remote: {}, perm={}, content: {}", taskCounter, remoteFilePath, permissions, content);
+            log.info("SshClientInstaller: Uploading file: task #{}: remote: {}, perm={}, content-length={}", taskCounter, remoteFilePath, permissions, content.length());
+            log.trace("SshClientInstaller: Uploading file: task #{}: remote: {}, perm={}, content:\n{}", taskCounter, remoteFilePath, permissions, content);
             ScpClient scpClient = session.createScpClient();
             scpClient.upload(content.getBytes(), remoteFilePath, permissions, new ScpTimestamp(timestamp, timestamp));
-            log.info("SshClientInstaller: File upload completed: task #{}: remote: {}, content: {}", taskCounter, remoteFilePath, content);
+            log.info("SshClientInstaller: File upload completed: task #{}: remote: {}, content-length={}", taskCounter, remoteFilePath, content.length());
+            log.trace("SshClientInstaller: File upload completed: task #{}: remote: {}, content:\n{}", taskCounter, remoteFilePath, content);
         } catch (Exception ex) {
             log.error("SshClientInstaller: File upload failed: task #{}: remote: {}, Exception: ", taskCounter, remoteFilePath, ex);
             throw ex;
@@ -511,7 +513,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         String contents = new String(Files.readAllBytes(sourcePath));
         log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, targetFile, contents.length());
         contents = StringSubstitutor.replace(contents, valueMap);
-        log.debug("SshClientInstaller: Task #{}: FILE: {}, final-content={}", taskCounter, targetFile, contents);
+        log.trace("SshClientInstaller: Task #{}: FILE: {}, final-content:\n{}", taskCounter, targetFile, contents);
 
         String description = String.format("Copy file from server to temp to client: %s -> %s", sourcePath.toString(), targetFile);
 

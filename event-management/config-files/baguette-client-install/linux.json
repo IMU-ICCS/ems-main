@@ -68,10 +68,18 @@
       "match": false
     },
     {
+      "description": "Create conf directory",
+      "taskType": "CMD",
+      "command": "mkdir /opt/baguette-client/conf/",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
       "description": "Copy-and-process configuration to target",
       "taskType": "FILE",
       "localFileName": "${MELODIC_CONFIG_DIR}/baguette-client/",
-      "fileName": "${baguette.client.install.baseDir}/",
+      "fileName": "/opt/baguette-client",
       "executable": false,
       "exitCode": 0,
       "match": false

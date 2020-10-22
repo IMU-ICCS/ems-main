@@ -26,9 +26,11 @@ import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,9 @@ import java.util.stream.Stream;
 public class VmInstallationHelper extends AbstractInstallationHelper {
     @Autowired
     private ResourceLoader resourceLoader;
+
+    @Autowired
+    private Environment environment;
 
     @Override
     public InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
@@ -94,6 +99,12 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         if (StringUtils.isEmpty(ipSetting)) throw new IllegalArgumentException("IP_SETTING must have a value");
         valueMap.put("IP_SETTING", ipSetting);
 
+        valueMap.put("BASE_URL", baseUrl);
+        valueMap.put("DOWNLOAD_URL", baseDownloadUrl);
+        valueMap.put("API_KEY", apiKey);
+        valueMap.put("SERVER_CERT_FILE", serverCertFile);
+        valueMap.put("REMOTE_TMP_DIR", clientTmpDir);
+
         try {
             // Read installation instructions from JSON file
             String jsonFile = properties.getInstructions().get("LINUX");
@@ -104,7 +115,10 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
             // Process placeholders
             json = StringSubstitutor.replace(json, valueMap);
-            log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
+            json = environment.resolvePlaceholders(json);
+            //json = environment.resolveRequiredPlaceholders(json);
+            json = json.replace('\\', '/');
+            log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
 
             // Create InstallationInstructions object from JSON
             InstallationInstructions installationInstructions =
