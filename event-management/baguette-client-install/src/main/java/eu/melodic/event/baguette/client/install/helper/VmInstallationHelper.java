@@ -105,12 +105,17 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             installationInstructions.appendExec("sudo mkdir -p " + dirList);
         }
 
+        installationInstructions.appendExec("ls -l /opt ");
+
         // Create files using touch
         String touchList = String.join(" ", properties.getTouchFiles());
         if (StringUtils.isNotEmpty(touchList)) {
             installationInstructions.appendLog("Touch files");
             installationInstructions.appendExec("sudo touch " + touchList);
         }
+
+        installationInstructions.appendExec("ls -l /opt/baguette-client ");
+        installationInstructions.appendExec("echo LALA ");
 
         // Copy files from server to Baguette Client
         /*if (StringUtils.isNotEmpty(copyFromServerDir) && StringUtils.isNotEmpty(copyToClientDir)) {

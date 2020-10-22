@@ -183,6 +183,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             }
             session.auth().verify(authenticationTimeout);
 
+            initStreamLogger();
+
             log.info("SshClientInstaller: Connected to remote host: task #{}: host: {}:{}", taskCounter, host, port);
             return true;
 
@@ -243,6 +245,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
+            streamLogger.close();
+
             //channel.close(false).await();
             session.close(false);
             //simpleClient.close();
@@ -344,7 +348,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         // Using EXEC channel
         ChannelExec channel = session.createExecChannel(command);
         setChannelStreams(channel);
-        streamLogger.getInvertedIn().write(command.getBytes());
+        //streamLogger.getInvertedIn().write(command.getBytes());
+        streamLogger.logMessage(command+"\n");
         try {
             channel.open().verify(connectTimeout);
 

@@ -11,6 +11,8 @@ package eu.melodic.event.baguette.client.install;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.sshd.common.util.io.NoCloseInputStream;
+import org.apache.sshd.common.util.io.NoCloseOutputStream;
 
 import java.io.*;
 
@@ -23,6 +25,12 @@ public class StreamLogger {
     private final PipedOutputStream pos;
     private final PipedInputStream pis;
     private final MonitorOutputStream mos;
+
+    private final NoCloseOutputStream ncInvertedIn;
+    private final NoCloseInputStream ncIn;
+    private final NoCloseOutputStream ncOut;
+    private final NoCloseOutputStream ncErr;
+
     private String lastLine;
     private long lastLineTime;
 
@@ -31,27 +39,34 @@ public class StreamLogger {
         this.pos = new PipedOutputStream();
         this.pis = new PipedInputStream(pos);
         this.mos = new MonitorOutputStream(this);
+
+        this.ncIn = new NoCloseInputStream(new LoggerInputStream(pis, " IN< ", System.out, fos));
+        this.ncInvertedIn = new NoCloseOutputStream(pos);
+        this.ncOut = new NoCloseOutputStream(new LoggerOutputStream("OUT", System.out, mos, fos));
+        this.ncErr = new NoCloseOutputStream(new LoggerOutputStream("ERR", System.err, fos));
     }
 
-    public InputStream getIn() {
-        return new LoggerInputStream(pis, " IN< ", System.out, fos);
-    }
+    public InputStream getIn() { return ncIn; }
 
     public OutputStream getInvertedIn() {
-        return pos;
+        return ncInvertedIn;
     }
 
     public OutputStream getOut() {
-        return new LoggerOutputStream("OUT", System.out, mos, fos);
+        return ncOut;
     }
 
     public OutputStream getErr() {
-        return new LoggerOutputStream("ERR", System.err, fos);
+        return ncErr;
     }
 
     public void close() throws IOException {
         fos.close();
         pos.close();
+    }
+
+    public void logMessage(String message) throws IOException {
+        fos.write(message.getBytes());
     }
 
     private void newLine(String line, long timestamp) {
