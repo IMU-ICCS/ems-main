@@ -68,6 +68,15 @@
       "match": false
     },
     {
+      "description": "Copy-and-process configuration to target",
+      "taskType": "FILE",
+      "localFileName": "${MELODIC_CONFIG_DIR}/baguette-client/",
+      "fileName": "${baguette.client.install.baseDir}/",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
       "taskType": "CMD",
       "command": "echo LALA ",
       "executable": false,

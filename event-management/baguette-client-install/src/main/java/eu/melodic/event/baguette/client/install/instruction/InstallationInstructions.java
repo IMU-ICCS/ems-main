@@ -11,22 +11,23 @@ package eu.melodic.event.baguette.client.install.instruction;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Data
 public class InstallationInstructions {
     private String os;
+    private Map<String,String> valueMap = new HashMap<>();
     private List<Instruction> instructions = new ArrayList<>();
 
-    public List<Instruction> getInstructions() {
-        return Collections.unmodifiableList(instructions);
+    public Map<String,String> getValueMap() {
+        return Collections.unmodifiableMap(valueMap);
+    }
+    public void setValueMap(Map<String,String> valueMap) {
+        this.valueMap = new HashMap<>(valueMap);
     }
 
-    public void setInstructions(List<Instruction> ni) {
-        instructions = new ArrayList<>(ni);
-    }
+    public List<Instruction> getInstructions() { return Collections.unmodifiableList(instructions); }
+    public void setInstructions(List<Instruction> ni) { instructions = new ArrayList<>(ni); }
 
     public InstallationInstructions appendInstruction(Instruction i) {
         instructions.add(i);

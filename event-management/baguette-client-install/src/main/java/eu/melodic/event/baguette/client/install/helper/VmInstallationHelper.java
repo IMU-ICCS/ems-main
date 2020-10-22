@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.KeystoreUtil;
@@ -102,10 +103,13 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", json);
 
             // Process placeholders
+            json = StringSubstitutor.replace(json, valueMap);
+            log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
 
             // Create InstallationInstructions object from JSON
             InstallationInstructions installationInstructions =
                     new Gson().fromJson(json, InstallationInstructions.class);
+            installationInstructions.setValueMap(valueMap);
             log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
 
             return installationInstructions;
@@ -113,19 +117,18 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             log.error("VmInstallationHelper.prepareInstallationInstructionsForLinux: Exception while reading Installation instructions for LINUX: ", ex);
             throw ex;
         }
+    }
 
-        // Set the target operating system
 /*
+    public InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+        // Set the target operating system
         InstallationInstructions installationInstructions = new InstallationInstructions();
         installationInstructions.setOs("LINUX");
-*/
 
         // Check whether EMS Client is already installed
-                /*.appendLog("Checking if Baguette Client is already installed")
+                .appendLog("Checking if Baguette Client is already installed")
                 .appendCheck("[[ -f "+checkInstallationFile+" ]] && exit 99", 0, true, "NOTE: Baguette Client is already installed")
-                .appendExec("Baguette Client is NOT installed")*/
-
-        /*installationInstructions.appendExec("ls -l /opt ");
+                .appendExec("Baguette Client is NOT installed")
 
         // Create Baguette Client installation directories
         String dirList = String.join(" ", properties.getMkdirs());
@@ -134,15 +137,11 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             installationInstructions.appendExec("sudo mkdir -p " + dirList);
         }
 
-        installationInstructions.appendExec("ls -l /opt ");
-
         // Change ownership of installation directories
         if (StringUtils.isNotEmpty(dirList)) {
             installationInstructions.appendLog("Change ownership of installation directories");
             installationInstructions.appendExec("sudo chown -R ubuntu:ubuntu /opt/baguette-client");
         }
-
-        installationInstructions.appendExec("ls -l /opt ");
 
         // Create files using touch
         String touchList = String.join(" ", properties.getTouchFiles());
@@ -151,18 +150,6 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             installationInstructions.appendExec("touch " + touchList);
         }
 
-        installationInstructions.appendExec("ls -l /opt/baguette-client ");
-        installationInstructions.appendExec("echo LALA ");
-
-        installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz", "/opt/baguette-client/baguette-client.tgz");
-        installationInstructions.appendUploadFile("config-files/resources/baguette-client.tgz.md5", "/opt/baguette-client/baguette-client.tgz.md5");
-
-        return installationInstructions;
-*/
-    }
-
-/*
-    public InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
         // Clear EMS server certificate (PEM) file, if not secure
         if (!isServerSecure) {
             serverCertFile = "";
@@ -198,9 +185,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 .appendExec("sudo chmod u+rwx,og-rwx " + installScriptPath)
 
         // Store Baguette Client configuration archive
-                */
-/*.appendLog("Store baguette client configuration archive (in base64 encoding)")
-                .appendWriteFile(clientConfArchive, archiveBase64, false)*//*
+                .appendLog("Store baguette client configuration archive (in base64 encoding)")
+                .appendWriteFile(clientConfArchive, archiveBase64, false)
 
 
         // Run Baguette Client installation script
@@ -208,15 +194,13 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 .appendExec("sudo "+installScriptPath+" \""+serverCertFile+"\" "+baseDownloadUrl+" "+apiKey)
 
         // Launch Baguette Client
-                */
-/*.appendLog("Launch Baguette Client")
-                .appendExec("sudo service baguette-client start")*//*
+                .appendLog("Launch Baguette Client")
+                .appendExec("sudo service baguette-client start")
 
 
         // Write successful installation file
-                */
-/*.appendLog("Write successful installation file")
-                .appendExec("sudo touch " + checkInstallationFile)*//*
+                .appendLog("Write successful installation file")
+                .appendExec("sudo touch " + checkInstallationFile)
 
         ;
 
@@ -233,4 +217,33 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         return installationInstructions;
     }
 */
+
+    private InstallationInstructions _appendCopyInstructions(
+            InstallationInstructions installationInstructions,
+            Path path,
+            Path localBaseDir,
+            String remoteTargetDir,
+            Map<String,String> valueMap
+    ) throws IOException
+    {
+        String targetFile = StringUtils.substringAfter(path.toUri().toString(), localBaseDir.toUri().toString());
+        if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
+        targetFile = remoteTargetDir + targetFile;
+        String contents = new String(Files.readAllBytes(path));
+        contents = StringSubstitutor.replace(contents, valueMap);
+        String description = String.format("Copy file from server to temp to client: %s -> %s", path.toString(), targetFile);
+        return _appendCopyInstructions(installationInstructions, targetFile, description, contents);
+    }
+
+    private InstallationInstructions _appendCopyInstructions(
+            InstallationInstructions installationInstructions,
+            String targetFile,
+            String description,
+            String contents)
+    {
+        installationInstructions
+                .appendInstruction(Instruction.createWriteFile(targetFile, contents, false).description(description))
+                .appendExec("sudo chmod u+rw,og-rwx " + targetFile);
+        return installationInstructions;
+    }
 }

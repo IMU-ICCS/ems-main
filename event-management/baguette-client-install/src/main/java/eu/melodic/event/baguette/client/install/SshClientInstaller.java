@@ -13,6 +13,7 @@ import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
@@ -34,6 +35,9 @@ import org.bouncycastle.util.io.pem.PemReader;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -41,11 +45,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * SSH client installer
@@ -428,6 +431,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean executeInstructions() throws IOException {
+        Map<String, String> valueMap = task.getInstallationInstructions().getValueMap();
         int numOfInstructions = task.getInstallationInstructions().getInstructions().size();
         int cnt = 0;
         for (Instruction ins : task.getInstallationInstructions().getInstructions()) {
@@ -445,8 +449,20 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     result = sshExecCmd(ins.getCommand());
                     break;
                 case FILE:
-                    log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
-                    result = sshFileWrite(ins.getContents(), ins.getFileName(), ins.isExecutable());
+                    //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
+                    if (Paths.get(ins.getLocalFileName()).toFile().isDirectory()) {
+                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS DIR: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
+                        result = copyDir(ins.getLocalFileName(), ins.getFileName(), valueMap);
+                    } else
+                    if (Paths.get(ins.getLocalFileName()).toFile().isFile()) {
+                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS FILE: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
+                        Path sourceFile = Paths.get(ins.getLocalFileName());
+                        Path sourceBaseDir = Paths.get(ins.getLocalFileName()).getParent();
+                        result = copyFile(sourceFile, sourceBaseDir, ins.getFileName(), valueMap, ins.isExecutable());
+                    } else {
+                        log.error("SshClientInstaller: Task #{}: FILE: ERROR: Local file is not directory or normal file: {}", taskCounter, ins.getLocalFileName());
+                        result = false;
+                    }
                     break;
                 case COPY:
                     log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
@@ -466,5 +482,39 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             log.debug("sshClientInstaller: Continuing with next command...");
         }
         return true;
+    }
+
+    private boolean copyDir(String sourceDir, String targetDir, Map<String,String> valueMap) throws IOException {
+        // Copy files from EMS server to Baguette Client
+        if (StringUtils.isNotEmpty(sourceDir) && StringUtils.isNotEmpty(targetDir)) {
+            Path baseDir = Paths.get(sourceDir).toAbsolutePath();
+            try (Stream<Path> stream = Files.walk(baseDir, Integer.MAX_VALUE)) {
+                List<Path> paths = stream
+                        .filter(Files::isRegularFile)
+                        .map(Path::toAbsolutePath)
+                        .sorted()
+                        .collect(Collectors.toList());
+                for (Path p : paths) {
+                    if (!copyFile(p, baseDir, targetDir, valueMap, false))
+                        return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean copyFile(Path sourcePath, Path sourceBaseDir, String targetDir, Map<String,String> valueMap, boolean isExecutable) throws IOException {
+        String targetFile = StringUtils.substringAfter(sourcePath.toUri().toString(), sourceBaseDir.toUri().toString());
+        if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
+        targetFile = targetDir + targetFile;
+
+        String contents = new String(Files.readAllBytes(sourcePath));
+        log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, targetFile, contents.length());
+        contents = StringSubstitutor.replace(contents, valueMap);
+        log.debug("SshClientInstaller: Task #{}: FILE: {}, final-content={}", taskCounter, targetFile, contents);
+
+        String description = String.format("Copy file from server to temp to client: %s -> %s", sourcePath.toString(), targetFile);
+
+        return sshFileWrite(contents, targetFile, isExecutable);
     }
 }

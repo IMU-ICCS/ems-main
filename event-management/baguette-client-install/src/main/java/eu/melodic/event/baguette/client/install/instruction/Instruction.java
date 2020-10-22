@@ -27,6 +27,18 @@ public class Instruction {
     private int exitCode;
     private boolean match;
 
+    // Fluent API
+    public Instruction taskType(INSTRUCTION_TYPE taskType) { this.taskType = taskType; return this; }
+    public Instruction description(String description) { this.description = description; return this; }
+    public Instruction command(String command) { this.command = command; return this; }
+    public Instruction fileName(String fileName) { this.fileName = fileName; return this; }
+    public Instruction localFileName(String localFileName) { this.localFileName = localFileName; return this; }
+    public Instruction contents(String contents) { this.contents = contents; return this; }
+    public Instruction executable(boolean executable) { this.executable = executable; return this; }
+    public Instruction exitCode(int exitCode) { this.exitCode = exitCode; return this; }
+    public Instruction match(boolean match) { this.match = match; return this; }
+
+    // Creators API
     public static Instruction createLog(@NotNull String message) {
         return Instruction.builder()
                 .taskType(INSTRUCTION_TYPE.LOG)
