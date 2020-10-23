@@ -341,13 +341,14 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }*/
 
-    private boolean sshExecCmd(String command) throws IOException {
+    private Integer sshExecCmd(String command) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate shell command execution: task #{}: command: {}", taskCounter, command);
-            return true;
+            return null;
         }
 
         // Using EXEC channel
+        Integer exitStatus = null;
         ChannelExec channel = session.createExecChannel(command);
         setChannelStreams(channel);
         //streamLogger.getInvertedIn().write(command.getBytes());
@@ -359,11 +360,12 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
             channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
                     TimeUnit.SECONDS.toMillis(5));
+            exitStatus = channel.getExitStatus();
         } finally {
             channel.close();
         }
 
-        return true;
+        return exitStatus;
     }
 
     private boolean sshFileDownload(String remoteFilePath, String localFilePath) throws IOException {
@@ -436,6 +438,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         Map<String, String> valueMap = task.getInstallationInstructions().getValueMap();
         int numOfInstructions = task.getInstallationInstructions().getInstructions().size();
         int cnt = 0;
+        int insCount = task.getInstallationInstructions().getInstructions().size();
         for (Instruction ins : task.getInstallationInstructions().getInstructions()) {
             cnt++;
             log.debug("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
@@ -448,7 +451,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 case CMD:
                     log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.getCommand());
                     //result = sshShellExec(ins.getCommand());
-                    result = sshExecCmd(ins.getCommand());
+                    result = (sshExecCmd(ins.getCommand())!=null);
+                    //result = (sshExecCmd(ins.getCommand())==0);
                     break;
                 case FILE:
                     //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
@@ -471,7 +475,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     result = sshFileUpload(ins.getLocalFileName(), ins.getFileName());
                     break;
                 case CHECK:
-                    log.warn("SshClientInstaller: Instruction CHECK not implemented: {}", ins);
+                    log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.getCommand());
+                    int exitStatus = sshExecCmd(ins.getCommand());
+                    log.debug("SshClientInstaller: Task #{}: CHECK: Result: match={}, match-status={}, exec-status={}",
+                            taskCounter, ins.isMatch(), ins.getExitCode(), exitStatus);
+                    if (ins.isMatch() && exitStatus==ins.getExitCode()
+                        || !ins.isMatch() && exitStatus!=ins.getExitCode())
+                    {
+                        log.info("SshClientInstaller: Task #{}: CHECK: MATCH: Will not process more instructions", taskCounter);
+                        return true;
+                    }
                     break;
                 default:
                     log.error("sshClientInstaller: Unknown instruction type. Ignoring it: {}", ins);
@@ -481,7 +494,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 return false;
             }
 
-            log.debug("sshClientInstaller: Continuing with next command...");
+            if (cnt<insCount)
+                log.debug("sshClientInstaller: Continuing with next command...");
+            else
+                log.debug("sshClientInstaller: No more instructions");
         }
         return true;
     }

@@ -2,21 +2,29 @@
   "os": "LINUX",
   "instructions": [
     {
-      "description": "Log installation start",
-      "taskType": "LOG",
-      "command": "Starting EMS client installation at Node ${}...",
+      "description": "Check if EMS client is already installed at Node",
+      "taskType": "CHECK",
+      "command": "[[ -f /opt/baguette-client/conf/ok.txt ]] && exit 99",
       "executable": false,
-      "exitCode": 0,
-      "match": false
+      "exitCode": 99,
+      "match": true
     },
-    /*{
-      "description": "LIST BEFORE",
+    {
+      "description": "-- LIST /opt BEFORE --",
       "taskType": "CMD",
       "command": "ls -l /opt ",
       "executable": false,
       "exitCode": 0,
       "match": false
-    },*/
+    },
+    {
+      "description": "Log installation start",
+      "taskType": "LOG",
+      "command": "Starting EMS client installation at Node",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
     {
       "description": "Upload EMS client installation package",
       "taskType": "COPY",
@@ -36,6 +44,14 @@
       "match": false
     },
     {
+      "description": "Check MD5 checksum of installation package",
+      "taskType": "CHECK",
+      "command": "[[ `cat /tmp/baguette-client.tgz.md5` != `md5sum /tmp/baguette-client.tgz | cut -d ' ' -f 1 ` ]] && exit 99",
+      "executable": false,
+      "exitCode": 99,
+      "match": true
+    },
+    {
       "description": "Extract installation package to target folder",
       "taskType": "CMD",
       "command": "sudo tar zxvf /tmp/baguette-client.tgz -C /opt",
@@ -47,22 +63,6 @@
       "description": "Change files and folders ownership",
       "taskType": "CMD",
       "command": "sudo chown -R ubuntu:ubuntu /opt/baguette-client",
-      "executable": false,
-      "exitCode": 0,
-      "match": false
-    },
-    {
-      "description": "LIST AFTER",
-      "taskType": "CMD",
-      "command": "ls -l /opt ",
-      "executable": false,
-      "exitCode": 0,
-      "match": false
-    },
-    {
-      "description": "LIST AFTER 2",
-      "taskType": "CMD",
-      "command": "ls -l /opt/baguette-client/ ",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -104,6 +104,30 @@
       "description": "Write success file",
       "taskType": "CMD",
       "command": "echo SUCCESS >> /opt/baguette-client/conf/ok.txt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "-- LIST /opt AFTER --",
+      "taskType": "CMD",
+      "command": "ls -l /opt ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "-- LIST baguette-client FILES --",
+      "taskType": "CMD",
+      "command": "ls -lR /opt/baguette-client ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Log installation end",
+      "taskType": "LOG",
+      "command": "EMS client installation completed at Node",
       "executable": false,
       "exitCode": 0,
       "match": false
