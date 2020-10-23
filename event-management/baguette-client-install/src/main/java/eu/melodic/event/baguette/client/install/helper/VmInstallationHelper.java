@@ -10,40 +10,29 @@
 package eu.melodic.event.baguette.client.install.helper;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
+import eu.melodic.event.baguette.client.install.ClientInstallationTask;
+import eu.melodic.event.baguette.client.install.SshConfig;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
-import eu.melodic.event.util.KeystoreUtil;
-import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
-import org.apache.tomcat.util.net.SSLHostConfig;
-import org.rauschig.jarchivelib.Archiver;
-import org.rauschig.jarchivelib.ArchiverFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.context.WebServerInitializedEvent;
-import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
-import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Baguette Client installation helper
@@ -58,13 +47,80 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
     private Environment environment;
 
     @Override
-    public InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) {
-        log.warn("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
-        return null;
+    public ClientInstallationTask createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+        String baseUrl = contextMap.get("BASE_URL");
+        String clientId = contextMap.get("CLIENT_ID");
+        String ipSetting = contextMap.get("IP_SETTING");
+
+        // Extract node identification and type information
+        String nodeId = (String) nodeMap.get("id");
+        String nodeOs = (String) nodeMap.get("operatingSystem");
+        String nodeAddress = (String) nodeMap.get("address");
+        String nodeType = (String) nodeMap.get("type");
+        String nodeName = (String) nodeMap.get("name");
+        String nodeProvider = (String) nodeMap.get("provider");
+
+        if (StringUtils.isBlank(nodeType)) nodeType = "VM";
+
+        if (StringUtils.isBlank(nodeOs)) throw new IllegalArgumentException("Missing OS information for Node");
+        if (StringUtils.isBlank(nodeAddress)) throw new IllegalArgumentException("Missing Address for Node");
+
+        // Extract node SSH information
+        Object sshObj = nodeMap.get("ssh");
+        if (sshObj==null) throw new IllegalArgumentException("Missing SSH info for Node");
+        if (!(sshObj instanceof Map)) throw new IllegalArgumentException("SSH info for Node is *not* a Map");
+
+        Map<String,Object> nodeSsh = (Map<String,Object>) nodeMap.get("ssh");
+        int port = (int) Double.parseDouble(Objects.toString(nodeSsh.get("port"), "22"));
+        String username = (String) nodeSsh.get("username");
+        String password = (String) nodeSsh.get("password");
+        String privateKey = (String) nodeSsh.get("key");
+        String fingerprint = (String) nodeSsh.get("fingerprint");
+
+        if (port<1) port = 22;
+
+        if (StringUtils.isBlank(username)) throw new IllegalArgumentException("Missing username for SSH");
+        if ((password == null || password.isEmpty()) && StringUtils.isBlank(privateKey))
+            throw new IllegalArgumentException("Missing SSH password or private key for Node");
+
+        // Get EMS client installation instructions for VM node
+        InstallationInstructions installationInstructions =
+                prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
+
+        // Create Installation Task for VM node
+        ClientInstallationTask installationTask = ClientInstallationTask.builder()
+                .id(clientId)
+                //.id(nodeId)
+                .name(nodeName)
+                .os(nodeOs)
+                .address(nodeAddress)
+                .ssh(SshConfig.builder()
+                        .host(nodeAddress)
+                        .port(port)
+                        .username(username)
+                        .password(password)
+                        .privateKey(privateKey)
+                        .fingerprint(fingerprint)
+                        .build())
+                .type(nodeType)
+                .provider(nodeProvider)
+                .installationInstructions(installationInstructions)
+                .build();
+
+        return installationTask;
     }
 
     @Override
-    public InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+    public InstallationInstructions prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
+        log.warn("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
+        throw new IllegalArgumentException("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
+    }
+
+    @Override
+    public InstallationInstructions prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+        String baseUrl = contextMap.get("BASE_URL");
+        String clientId = contextMap.get("CLIENT_ID");
+        String ipSetting = contextMap.get("IP_SETTING");
         log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
         // Get parameters
@@ -84,8 +140,15 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         String clientTmpDir = StringUtils.firstNonBlank(properties.getClientTmpDir(), "/tmp");
 
+        // Initialize values map with nodeMap (from request)
+        Map<String,String> valueMap = new HashMap<>(nodeMap.entrySet().stream()
+                .filter(e -> e.getValue() instanceof String)
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> (String)e.getValue())));
+        valueMap.putAll( ((Map<String,Object>)nodeMap.get("ssh")).entrySet().stream()
+                .filter(e -> e.getValue() instanceof String)
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> (String)e.getValue())));
+
         // Load client config. template and prepare configuration
-        Map<String,String> valueMap = new HashMap<>();
         valueMap.put("BAGUETTE_CLIENT_ID", clientId);
         valueMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
         valueMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());
@@ -99,6 +162,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         if (StringUtils.isEmpty(ipSetting)) throw new IllegalArgumentException("IP_SETTING must have a value");
         valueMap.put("IP_SETTING", ipSetting);
 
+        // Misc. installation property values
         valueMap.put("BASE_URL", baseUrl);
         valueMap.put("DOWNLOAD_URL", baseDownloadUrl);
         valueMap.put("API_KEY", apiKey);

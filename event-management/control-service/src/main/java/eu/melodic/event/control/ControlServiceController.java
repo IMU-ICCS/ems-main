@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.*;
 import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHelper;
-import eu.melodic.event.baguette.client.install.helper.VmInstallationHelper;
+import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.control.properties.ControlServiceProperties;
@@ -300,15 +300,18 @@ public class ControlServiceController {
                         : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
+        // Create context map
+        Map<String,String> contextMap = new HashMap<>();
+        contextMap.put("BASE_URL", baseUrl);
+        contextMap.put("CLIENT_ID", clientId);
+        contextMap.put("IP_SETTING", ipSetting);
+
         // Continue processing according to ExecutionWare type
-        String response = null;
+        String response;
         if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
-            response = baguetteRegisterNodeForCloudiator(nodeMap, baseUrl, clientId, baguette, ipSetting);
-        } else
-        if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.PROACTIVE) {
-            response = baguetteRegisterNodeForProactive(nodeMap, baseUrl, clientId, baguette, ipSetting);
+            response = getClientInstallationInstructionsFromCloudiator(nodeMap, contextMap, baguette);
         } else {
-            throw new RuntimeException("BUG: MUST HAVE NEVER REACHED THIS POINT");
+            response = createClientInstallationTask(nodeMap, contextMap, baguette);
         }
 
         log.info("ControlServiceController.baguetteRegisterNode(): node-id: {}", nodeId);
@@ -316,12 +319,13 @@ public class ControlServiceController {
         return response;
     }
 
-    public String baguetteRegisterNodeForCloudiator(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+    // Retained for backward compatibility with Cloudiator
+    public String getClientInstallationInstructionsFromCloudiator(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         // Prepare Baguette Client installation instructions for node
         String nodeId = (String) nodeMap.get("id");
         String nodeOs = (String) nodeMap.get("operatingSystem");
         InstallationInstructions installationInstructions =
-                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;
@@ -336,54 +340,16 @@ public class ControlServiceController {
         return json;
     }
 
-    public String baguetteRegisterNodeForProactive(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws Exception {
+    public String createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception {
         //log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
 
-        // Extract registration information
-        String nodeId = (String) nodeMap.get("id");
-        String nodeOs = (String) nodeMap.get("operatingSystem");
-        String nodeAddress = (String) nodeMap.get("address");
-        String nodeType = (String) nodeMap.get("type");
-        String nodeName = (String) nodeMap.get("name");
-        String nodeProvider = (String) nodeMap.get("provider");
+        ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
+                .createInstallationHelper(nodeMap)
+                .createClientInstallationTask(nodeMap, contextMap, baguette);
+        ClientInstaller.instance().addTask(installationTask);
+        log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 
-        Map<String,Object> nodeSsh = (Map<String,Object>) nodeMap.get("ssh");
-        if (nodeSsh!=null) {
-            int port = (int) Double.parseDouble(Objects.toString(nodeSsh.get("port"), "22"));
-            String username = (String) nodeSsh.get("username");
-            String password = (String) nodeSsh.get("password");
-            String privateKey = (String) nodeSsh.get("key");
-            String fingerprint = (String) nodeSsh.get("fingerprint");
-
-            //XXX: IMPROVE THIS: Move to a better place than Controller
-            InstallationInstructions installationInstructions = VmInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
-
-            // Create Installation Task
-            ClientInstallationTask installationTask = ClientInstallationTask.builder()
-                    .id(clientId)
-                    //.id(nodeId)
-                    .name(nodeName)
-                    .os(nodeOs)
-                    .address(nodeAddress)
-                    .ssh(SshConfig.builder()
-                            .host(nodeAddress)
-                            .port(port)
-                            .username(username)
-                            .password(password)
-                            .privateKey(privateKey)
-                            .fingerprint(fingerprint)
-                            .build())
-                    .type(nodeType)
-                    .provider(nodeProvider)
-                    .installationInstructions(installationInstructions)
-                    .build();
-            log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
-            ClientInstaller.instance().addTask(installationTask);
-
-            return "OK";
-        }
-
-        return "ERROR: NO SSH INFORMATION";
+        return "OK";
     }
 
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST})

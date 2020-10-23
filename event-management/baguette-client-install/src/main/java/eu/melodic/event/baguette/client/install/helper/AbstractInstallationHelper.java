@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public abstract class AbstractInstallationHelper implements InitializingBean, ApplicationListener<WebServerInitializedEvent>, InstallationInstructionsGenerator {
+public abstract class AbstractInstallationHelper implements InitializingBean, ApplicationListener<WebServerInitializedEvent>, InstallationHelper {
     protected static AbstractInstallationHelper instance = null;
     protected static List<String> LINUX_OS_FAMILIES;
     protected static List<String> WINDOWS_OS_FAMILIES;
@@ -184,24 +184,24 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
     }
 
-    public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+    public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+
+        String baseUrl = contextMap.get("BASE_URL");
+        String clientId = contextMap.get("CLIENT_ID");
+        String ipSetting = contextMap.get("IP_SETTING");
         log.debug("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
         InstallationInstructions installationInstructions = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructions = prepareInstallationInstructionsForLinux(baseUrl, clientId, baguette, ipSetting);
+            installationInstructions = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructions = prepareInstallationInstructionsForWin(baseUrl, clientId, baguette, ipSetting);
+            installationInstructions = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
         else
             log.warn("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
         return installationInstructions;
     }
-
-    public abstract InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting);
-
-    public abstract InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException;
 
     protected InstallationInstructions _appendCopyInstructions(
             InstallationInstructions installationInstructions,

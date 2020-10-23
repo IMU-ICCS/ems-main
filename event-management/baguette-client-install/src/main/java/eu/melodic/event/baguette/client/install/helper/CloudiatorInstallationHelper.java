@@ -193,8 +193,12 @@ public class CloudiatorInstallationHelper implements InitializingBean, Applicati
         }
     }
 
-    public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
+    public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+
+        String baseUrl = contextMap.get("BASE_URL");
+        String clientId = contextMap.get("CLIENT_ID");
+        String ipSetting = contextMap.get("IP_SETTING");
         log.debug("CloudiatorInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");

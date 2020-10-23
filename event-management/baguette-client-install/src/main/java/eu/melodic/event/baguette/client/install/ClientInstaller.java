@@ -15,6 +15,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -44,7 +45,7 @@ public class ClientInstaller implements InitializingBean, Runnable {
 
     public static ClientInstaller instance() { return singleton; }
 
-    public void addTask(ClientInstallationTask task) {
+    public void addTask(@NotNull ClientInstallationTask task) {
         taskQueue.add(task);
     }
 

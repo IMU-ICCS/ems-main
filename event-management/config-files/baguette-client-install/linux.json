@@ -2,13 +2,21 @@
   "os": "LINUX",
   "instructions": [
     {
+      "description": "Log installation start",
+      "taskType": "LOG",
+      "command": "Starting EMS client installation at Node ${}...",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    /*{
       "description": "LIST BEFORE",
       "taskType": "CMD",
       "command": "ls -l /opt ",
       "executable": false,
       "exitCode": 0,
       "match": false
-    },
+    },*/
     {
       "description": "Upload EMS client installation package",
       "taskType": "COPY",
@@ -85,8 +93,17 @@
       "match": false
     },
     {
+      "description": "Clean installation package from /tmp",
       "taskType": "CMD",
-      "command": "echo LALA ",
+      "command": "rm -f /tmp/baguette-client.tgz*",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Write success file",
+      "taskType": "CMD",
+      "command": "echo SUCCESS >> /opt/baguette-client/conf/ok.txt",
       "executable": false,
       "exitCode": 0,
       "match": false

@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install.helper;
 
+import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.NetUtil;
@@ -17,11 +18,14 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-public interface InstallationInstructionsGenerator {
-    InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException;
-    InstallationInstructions prepareInstallationInstructionsForWin(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting);
-    InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException;
+public interface InstallationHelper {
+    InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
+    InstallationInstructions prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette);
+    InstallationInstructions prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
 
+    ClientInstallationTask createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception;
+
+    //XXX: TODO: Move to AbstractInstallationHelper when CloudiatorInstallationHelper is fixed to extend AbstractInstallationHelper
     default String _prepareUrl(String urlTemplate, String baseUrl) {
         return urlTemplate
                 .replace("%{BASE_URL}%", baseUrl)
