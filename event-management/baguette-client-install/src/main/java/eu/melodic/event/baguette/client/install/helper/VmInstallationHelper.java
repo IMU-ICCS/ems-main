@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.client.install.helper;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.SshConfig;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
@@ -26,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -143,10 +146,10 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         // Initialize values map with nodeMap (from request)
         Map<String,String> valueMap = new HashMap<>(nodeMap.entrySet().stream()
                 .filter(e -> e.getValue() instanceof String)
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> (String)e.getValue())));
+                .collect(Collectors.toMap(e -> "NODE_"+e.getKey().toUpperCase(), e -> (String)e.getValue())));
         valueMap.putAll( ((Map<String,Object>)nodeMap.get("ssh")).entrySet().stream()
                 .filter(e -> e.getValue() instanceof String)
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> (String)e.getValue())));
+                .collect(Collectors.toMap(e -> "NODE_SSH_"+e.getKey().toUpperCase(), e -> (String)e.getValue())));
 
         // Load client config. template and prepare configuration
         valueMap.put("BAGUETTE_CLIENT_ID", clientId);
@@ -168,6 +171,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         valueMap.put("API_KEY", apiKey);
         valueMap.put("SERVER_CERT_FILE", serverCertFile);
         valueMap.put("REMOTE_TMP_DIR", clientTmpDir);
+        log.info("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
 
         try {
             // Read installation instructions from JSON file
@@ -175,7 +179,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", jsonFile);
             byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
             String json = new String(bdata, StandardCharsets.UTF_8);
-            log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", json);
+            log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Template installation instructions for LINUX: json:\n{}", json);
 
             // Process placeholders
             json = StringSubstitutor.replace(json, valueMap);
@@ -189,6 +193,16 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                     new Gson().fromJson(json, InstallationInstructions.class);
             installationInstructions.setValueMap(valueMap);
             log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
+
+            // Pretty print installationInstructions JSON
+            if (log.isDebugEnabled()) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                StringWriter sw = new StringWriter();
+                try (PrintWriter writer = new PrintWriter(sw)) {
+                    gson.toJson(installationInstructions, writer);
+                }
+                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
+            }
 
             return installationInstructions;
         } catch (Exception ex) {

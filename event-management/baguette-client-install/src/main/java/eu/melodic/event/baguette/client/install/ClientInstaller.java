@@ -100,6 +100,7 @@ public class ClientInstaller implements InitializingBean, Runnable {
                 .heartbeatInterval(properties.getHeartbeatInterval())
                 .simulateConnection(properties.isSimulateConnection())
                 .simulateExecution(properties.isSimulateExecution())
+                .commandExecutionTimeout(properties.getCommandExecutionTimeout())
                 .build()
                 .execute();
     }

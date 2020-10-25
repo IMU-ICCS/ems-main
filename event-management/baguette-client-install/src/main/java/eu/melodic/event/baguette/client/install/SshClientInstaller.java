@@ -66,15 +66,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private final long heartbeatInterval;
     private final boolean simulateConnection;
     private final boolean simulateExecution;
+    private final long commandExecutionTimeout;
 
     private SshClient sshClient;
     //private SimpleClient simpleClient;
     private ClientSession session;
-    private ChannelShell shellChannel;
+    //private ChannelShell shellChannel;
     private StreamLogger streamLogger;
 
     @Builder
-    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution) {
+    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution, long commandExecutionTimeout) {
         this.task= task;
         this.taskCounter = taskCounter;
 
@@ -84,6 +85,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         this.heartbeatInterval = heartbeatInterval>0 ? heartbeatInterval : 10000;
         this.simulateConnection = simulateConnection;
         this.simulateExecution = simulateExecution;
+        this.commandExecutionTimeout = commandExecutionTimeout;
     }
 
     @Override
@@ -337,11 +339,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         // Not implemented
 
         shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                TimeUnit.SECONDS.toMillis(5));
+                commandExecutionTimeout);
+                //TimeUnit.SECONDS.toMillis(5));
         return true;
     }*/
 
     private Integer sshExecCmd(String command) throws IOException {
+        return sshExecCmd(command, commandExecutionTimeout);
+    }
+
+    private Integer sshExecCmd(String command, long executionTimeout) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate shell command execution: task #{}: command: {}", taskCounter, command);
             return null;
@@ -359,7 +366,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             //XXX: TODO: Search remote side output for expected patterns
 
             channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                    TimeUnit.SECONDS.toMillis(5));
+                    executionTimeout>0 ? executionTimeout : commandExecutionTimeout);
+                    //TimeUnit.SECONDS.toMillis(50));
             exitStatus = channel.getExitStatus();
         } finally {
             channel.close();
@@ -443,6 +451,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             cnt++;
             log.debug("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
+            Integer exitStatus;
             boolean result = true;
             switch (ins.getTaskType()) {
                 case LOG:
@@ -450,9 +459,34 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     break;
                 case CMD:
                     log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.getCommand());
-                    //result = sshShellExec(ins.getCommand());
-                    result = (sshExecCmd(ins.getCommand())!=null);
-                    //result = (sshExecCmd(ins.getCommand())==0);
+                    int retries = 0;
+                    int maxRetries = ins.getRetries();
+                    while (true) {
+                        try {
+                            //result = sshShellExec(ins.getCommand());
+                            exitStatus = sshExecCmd(ins.getCommand(), ins.getExecutionTimeout());
+                            result = (exitStatus!=null);
+                            //result = (exitStatus==0);
+                            log.info("SshClientInstaller: Task #{}: EXEC: exit-status={}", taskCounter, exitStatus);
+                            if (result) break;
+                        } catch (Exception ex) {
+                            if (retries+1>=maxRetries)
+                                throw ex;
+                            else
+                                log.error("SshClientInstaller: Task #{}: EXEC: Last command raised exception: ", taskCounter, ex);
+                        }
+
+                        retries++;
+                        if (retries<=maxRetries) {
+                            log.info("SshClientInstaller: Task #{}: Retry {}/{} for instruction {}/{}: {}",
+                                    taskCounter, retries, maxRetries, cnt, numOfInstructions, ins.getDescription());
+                        } else {
+                            if (maxRetries>0)
+                                log.error("sshClientInstaller: Task #{}: Last instruction failed {} times. Giving up", taskCounter, maxRetries);
+                            result = false;
+                            break;
+                        }
+                    }
                     break;
                 case FILE:
                     //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
@@ -476,7 +510,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     break;
                 case CHECK:
                     log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.getCommand());
-                    int exitStatus = sshExecCmd(ins.getCommand());
+                    exitStatus = sshExecCmd(ins.getCommand());
                     log.debug("SshClientInstaller: Task #{}: CHECK: Result: match={}, match-status={}, exec-status={}",
                             taskCounter, ins.isMatch(), ins.getExitCode(), exitStatus);
                     if (ins.isMatch() && exitStatus==ins.getExitCode()

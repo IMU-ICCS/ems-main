@@ -57,12 +57,13 @@
       "command": "sudo tar zxvf /tmp/baguette-client.tgz -C /opt",
       "executable": false,
       "exitCode": 0,
-      "match": false
+      "match": false,
+      "command-execution-timeout": 120000
     },
     {
       "description": "Change files and folders ownership",
       "taskType": "CMD",
-      "command": "sudo chown -R ubuntu:ubuntu /opt/baguette-client",
+      "command": "sudo chown -R ${NODE_SSH_USERNAME}:${NODE_SSH_USERNAME} /opt/baguette-client",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -131,6 +132,15 @@
       "executable": false,
       "exitCode": 0,
       "match": false
+    },
+    {
+      "description": "Launch EMS client",
+      "taskType": "CMD",
+      "command": "/opt/baguette-client/bin/run.sh",
+      "executable": false,
+      "exitCode": 0,
+      "match": false,
+      "retries": 5
     }
   ]
 }

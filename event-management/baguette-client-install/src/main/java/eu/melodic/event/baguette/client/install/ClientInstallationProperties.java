@@ -59,6 +59,7 @@ public class ClientInstallationProperties {
     private long connectTimeout = 10000;
     private long authenticateTimeout = 60000;
     private long heartbeatInterval = 60000;
+    private long commandExecutionTimeout = 60000;
 
     private final Map<String, String> instructions = new HashMap<>();
 }

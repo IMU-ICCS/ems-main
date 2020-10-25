@@ -26,6 +26,8 @@ public class Instruction {
     private boolean executable;
     private int exitCode;
     private boolean match;
+    private long executionTimeout;
+    private int retries;
 
     // Fluent API
     public Instruction taskType(INSTRUCTION_TYPE taskType) { this.taskType = taskType; return this; }
@@ -37,6 +39,8 @@ public class Instruction {
     public Instruction executable(boolean executable) { this.executable = executable; return this; }
     public Instruction exitCode(int exitCode) { this.exitCode = exitCode; return this; }
     public Instruction match(boolean match) { this.match = match; return this; }
+    public Instruction executionTimeout(long executionTimeout) { this.executionTimeout = executionTimeout; return this; }
+    public Instruction retries(int retries) { this.retries = retries; return this; }
 
     // Creators API
     public static Instruction createLog(@NotNull String message) {
