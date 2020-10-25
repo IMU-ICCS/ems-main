@@ -35,15 +35,19 @@ public class StreamLogger {
     private long lastLineTime;
 
     public StreamLogger(String logFile) throws IOException {
+        this(logFile, "");
+    }
+
+    public StreamLogger(String logFile, String prefix) throws IOException {
         this.fos = new FileOutputStream(logFile);
         this.pos = new PipedOutputStream();
         this.pis = new PipedInputStream(pos);
         this.mos = new MonitorOutputStream(this);
 
-        this.ncIn = new NoCloseInputStream(new LoggerInputStream(pis, " IN< ", System.out, fos));
+        this.ncIn = new NoCloseInputStream(new LoggerInputStream(pis, prefix+"  IN", System.out, fos));
         this.ncInvertedIn = new NoCloseOutputStream(pos);
-        this.ncOut = new NoCloseOutputStream(new LoggerOutputStream("OUT", System.out, mos, fos));
-        this.ncErr = new NoCloseOutputStream(new LoggerOutputStream("ERR", System.err, fos));
+        this.ncOut = new NoCloseOutputStream(new LoggerOutputStream(prefix+" OUT", System.out, mos, fos));
+        this.ncErr = new NoCloseOutputStream(new LoggerOutputStream(prefix+" ERR", System.err, fos));
     }
 
     public InputStream getIn() { return ncIn; }
@@ -81,7 +85,7 @@ public class StreamLogger {
 
         public LoggerInputStream(InputStream in, String prefix, OutputStream...streams) {
             this.in = in;
-            this.prefix = (prefix+"> ").getBytes();
+            this.prefix = (prefix+"< ").getBytes();
             this.streams = streams;
         }
 

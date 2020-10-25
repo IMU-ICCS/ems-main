@@ -278,7 +278,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         //log.debug("SshClientInstaller: addr: {}", addr);
         String logFile = "logs/"+addr+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt";
         log.info("SshClientInstaller: Session will be recorded in file: {}", logFile);
-        this.streamLogger = new StreamLogger(logFile);
+        this.streamLogger = new StreamLogger(logFile, "  Task #"+taskCounter);
     }
 
     private void setChannelStreams(ChannelSession channel) throws IOException {
@@ -455,7 +455,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             boolean result = true;
             switch (ins.getTaskType()) {
                 case LOG:
-                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.getMessage());
                     break;
                 case CMD:
                     log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.getCommand());
@@ -516,6 +516,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     if (ins.isMatch() && exitStatus==ins.getExitCode()
                         || !ins.isMatch() && exitStatus!=ins.getExitCode())
                     {
+                        log.info("SshClientInstaller: Task #{}: CHECK: MATCH: {}", taskCounter, ins.getMessage());
                         log.info("SshClientInstaller: Task #{}: CHECK: MATCH: Will not process more instructions", taskCounter);
                         return true;
                     }

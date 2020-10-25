@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 public class Instruction {
     private INSTRUCTION_TYPE taskType;
     private String description;
+    private String message;
     private String command;
     private String fileName;
     private String localFileName;
@@ -32,6 +33,7 @@ public class Instruction {
     // Fluent API
     public Instruction taskType(INSTRUCTION_TYPE taskType) { this.taskType = taskType; return this; }
     public Instruction description(String description) { this.description = description; return this; }
+    public Instruction message(String message) { this.message = message; return this; }
     public Instruction command(String command) { this.command = command; return this; }
     public Instruction fileName(String fileName) { this.fileName = fileName; return this; }
     public Instruction localFileName(String localFileName) { this.localFileName = localFileName; return this; }

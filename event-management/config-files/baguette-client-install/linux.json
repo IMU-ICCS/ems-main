@@ -2,12 +2,22 @@
   "os": "LINUX",
   "instructions": [
     {
+      "description": "Check if 'java' is installed at Node",
+      "taskType": "CHECK",
+      "command": "java -version",
+      "executable": false,
+      "exitCode": 0,
+      "match": false,
+      "message": "Java is not installed at Node"
+    },
+    {
       "description": "Check if EMS client is already installed at Node",
       "taskType": "CHECK",
       "command": "[[ -f /opt/baguette-client/conf/ok.txt ]] && exit 99",
       "executable": false,
       "exitCode": 99,
-      "match": true
+      "match": true,
+      "message": "EMS client is already installed at Node"
     },
     {
       "description": "-- LIST /opt BEFORE --",
@@ -20,10 +30,7 @@
     {
       "description": "Log installation start",
       "taskType": "LOG",
-      "command": "Starting EMS client installation at Node",
-      "executable": false,
-      "exitCode": 0,
-      "match": false
+      "message": "Starting EMS client installation at Node"
     },
     {
       "description": "Upload EMS client installation package",
@@ -128,10 +135,7 @@
     {
       "description": "Log installation end",
       "taskType": "LOG",
-      "command": "EMS client installation completed at Node",
-      "executable": false,
-      "exitCode": 0,
-      "match": false
+      "message": "EMS client installation completed at Node"
     },
     {
       "description": "Launch EMS client",
