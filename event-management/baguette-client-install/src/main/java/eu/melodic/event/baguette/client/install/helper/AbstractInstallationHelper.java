@@ -184,7 +184,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
     }
 
-    public InstallationInstructions prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public List<InstallationInstructions> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
 
         String baseUrl = contextMap.get("BASE_URL");
@@ -193,14 +193,14 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         log.debug("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
-        InstallationInstructions installationInstructions = null;
+        List<InstallationInstructions> installationInstructionsList = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructions = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
+            installationInstructionsList = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructions = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
+            installationInstructionsList = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
         else
             log.warn("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
-        return installationInstructions;
+        return installationInstructionsList;
     }
 
     protected InstallationInstructions _appendCopyInstructions(

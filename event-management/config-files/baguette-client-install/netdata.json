@@ -1,0 +1,17 @@
+{
+  "os": "",
+  "description": "Netdata installation instruction set at VM node",
+  "instructions": [
+    {
+      "description": "Log Netdata installation start",
+      "taskType": "LOG",
+      "message": "Starting Netdata installation at Node"
+    },
+    {
+      "description": "Download and run Netdata kickstart.sh",
+      "taskType": "CMD",
+      "command": "bash <(curl -Ss https://my-netdata.io/kickstart.sh) --dont-wait --no-updates --disable-telemetry",
+      "commandExecutionTimeout": 600000
+    }
+  ]
+}

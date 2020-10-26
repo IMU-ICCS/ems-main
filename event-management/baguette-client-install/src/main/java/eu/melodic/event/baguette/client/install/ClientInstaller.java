@@ -94,13 +94,14 @@ public class ClientInstaller implements InitializingBean, Runnable {
         return SshClientInstaller.builder()
                 .task(task)
                 .taskCounter(taskCounter)
-                .maxRetries(properties.getMaxRetries())
+                /*.maxRetries(properties.getMaxRetries())
                 .authenticationTimeout(properties.getAuthenticateTimeout())
                 .connectTimeout(properties.getConnectTimeout())
                 .heartbeatInterval(properties.getHeartbeatInterval())
                 .simulateConnection(properties.isSimulateConnection())
                 .simulateExecution(properties.isSimulateExecution())
-                .commandExecutionTimeout(properties.getCommandExecutionTimeout())
+                .commandExecutionTimeout(properties.getCommandExecutionTimeout())*/
+                .properties(properties)
                 .build()
                 .execute();
     }

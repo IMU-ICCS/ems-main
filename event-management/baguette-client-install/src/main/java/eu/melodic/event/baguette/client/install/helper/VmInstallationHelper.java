@@ -32,9 +32,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +85,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             throw new IllegalArgumentException("Missing SSH password or private key for Node");
 
         // Get EMS client installation instructions for VM node
-        InstallationInstructions installationInstructions =
+        List<InstallationInstructions> installationInstructionsList =
                 prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
 
         // Create Installation Task for VM node
@@ -107,20 +105,20 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                         .build())
                 .type(nodeType)
                 .provider(nodeProvider)
-                .installationInstructions(installationInstructions)
+                .installationInstructions(installationInstructionsList)
                 .build();
 
         return installationTask;
     }
 
     @Override
-    public InstallationInstructions prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
+    public List<InstallationInstructions> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
         log.warn("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         throw new IllegalArgumentException("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
     }
 
     @Override
-    public InstallationInstructions prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public List<InstallationInstructions> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         String baseUrl = contextMap.get("BASE_URL");
         String clientId = contextMap.get("CLIENT_ID");
         String ipSetting = contextMap.get("IP_SETTING");
@@ -193,38 +191,45 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             }
         }*/
 
+        List<InstallationInstructions> installationInstructionsList = new ArrayList<>();
+
         try {
             // Read installation instructions from JSON file
-            String jsonFile = properties.getInstructions().get("LINUX");
-            log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", jsonFile);
-            byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
-            String json = new String(bdata, StandardCharsets.UTF_8);
-            log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Template installation instructions for LINUX: json:\n{}", json);
+            List<String> jsonFiles = properties.getInstructions().get("LINUX");
+            for (String jsonFile : jsonFiles) {
+                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", jsonFile);
+                byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
+                String json = new String(bdata, StandardCharsets.UTF_8);
+                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Template installation instructions for LINUX: json:\n{}", json);
 
-            // Process placeholders
-            json = StringSubstitutor.replace(json, valueMap);
-            json = environment.resolvePlaceholders(json);
-            //json = environment.resolveRequiredPlaceholders(json);
-            json = json.replace('\\', '/');
-            log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
+                // Process placeholders
+                json = StringSubstitutor.replace(json, valueMap);
+                json = environment.resolvePlaceholders(json);
+                //json = environment.resolveRequiredPlaceholders(json);
+                json = json.replace('\\', '/');
+                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
 
-            // Create InstallationInstructions object from JSON
-            InstallationInstructions installationInstructions =
-                    new Gson().fromJson(json, InstallationInstructions.class);
-            installationInstructions.setValueMap(valueMap);
-            log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
+                // Create InstallationInstructions object from JSON
+                InstallationInstructions installationInstructions =
+                        new Gson().fromJson(json, InstallationInstructions.class);
+                installationInstructions.setValueMap(valueMap);
+                installationInstructions.setFileName(jsonFile);
+                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
 
-            // Pretty print installationInstructions JSON
-            if (log.isDebugEnabled()) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                StringWriter sw = new StringWriter();
-                try (PrintWriter writer = new PrintWriter(sw)) {
-                    gson.toJson(installationInstructions, writer);
+                // Pretty print installationInstructions JSON
+                if (log.isDebugEnabled()) {
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    StringWriter sw = new StringWriter();
+                    try (PrintWriter writer = new PrintWriter(sw)) {
+                        gson.toJson(installationInstructions, writer);
+                    }
+                    log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
                 }
-                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
+
+                installationInstructionsList.add(installationInstructions);
             }
 
-            return installationInstructions;
+            return installationInstructionsList;
         } catch (Exception ex) {
             log.error("VmInstallationHelper.prepareInstallationInstructionsForLinux: Exception while reading Installation instructions for LINUX: ", ex);
             throw ex;

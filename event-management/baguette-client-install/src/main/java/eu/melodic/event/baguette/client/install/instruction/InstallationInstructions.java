@@ -16,6 +16,8 @@ import java.util.*;
 @Data
 public class InstallationInstructions {
     private String os;
+    private String description;
+    private String fileName;
     private Map<String,String> valueMap = new HashMap<>();
     private List<Instruction> instructions = new ArrayList<>();
 

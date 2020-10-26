@@ -1,5 +1,6 @@
 {
   "os": "LINUX",
+  "description": "EMS client installation instruction set at VM node",
   "instructions": [
     {
       "description": "Check if 'java' is installed at Node",
@@ -28,7 +29,7 @@
       "match": false
     },
     {
-      "description": "Log installation start",
+      "description": "Log EMS client installation start",
       "taskType": "LOG",
       "message": "Starting EMS client installation at Node"
     },

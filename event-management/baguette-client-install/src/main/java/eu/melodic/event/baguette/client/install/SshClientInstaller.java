@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install;
 
+import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ChannelSession;
-import org.apache.sshd.client.channel.ChannelShell;
 import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
@@ -46,7 +46,6 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,6 +66,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private final boolean simulateConnection;
     private final boolean simulateExecution;
     private final long commandExecutionTimeout;
+    private final boolean continueOnFail;
 
     private SshClient sshClient;
     //private SimpleClient simpleClient;
@@ -74,8 +74,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     //private ChannelShell shellChannel;
     private StreamLogger streamLogger;
 
-    @Builder
-    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution, long commandExecutionTimeout) {
+    /*@Builder
+    public SshClientInstaller(ClientInstallationTask task, long taskCounter, int maxRetries, long connectTimeout, long authenticationTimeout, long heartbeatInterval, boolean simulateConnection, boolean simulateExecution, long commandExecutionTimeout, boolean continueOnFail) {
         this.task= task;
         this.taskCounter = taskCounter;
 
@@ -86,24 +86,26 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         this.simulateConnection = simulateConnection;
         this.simulateExecution = simulateExecution;
         this.commandExecutionTimeout = commandExecutionTimeout;
+        this.continueOnFail = continueOnFail;
+    }*/
+
+    @Builder
+    public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties) {
+        this.task= task;
+        this.taskCounter = taskCounter;
+
+        this.maxRetries = properties.getMaxRetries()>0 ? properties.getMaxRetries() : 5;
+        this.connectTimeout = properties.getConnectTimeout()>0 ? properties.getConnectTimeout() : 60000;
+        this.authenticationTimeout = properties.getAuthenticateTimeout()>0 ? properties.getAuthenticateTimeout() : 60000;
+        this.heartbeatInterval = properties.getHeartbeatInterval()>0 ? properties.getHeartbeatInterval() : 10000;
+        this.simulateConnection = properties.isSimulateConnection();
+        this.simulateExecution = properties.isSimulateExecution();
+        this.commandExecutionTimeout = properties.getCommandExecutionTimeout()>0 ? properties.getCommandExecutionTimeout() : 120000;
+        this.continueOnFail = properties.isContinueOnFail();
     }
 
     @Override
-    /*public boolean execute() {
-        int retries = 0;
-        while (retries<=maxRetries) {
-            if (retries>0) log.warn("SshClientInstaller: Retry {}/{} executing task #{}", retries, maxRetries, taskCounter);
-            if (executeTask(retries)) return true;
-            log.warn("SshClientInstaller: Failed executing task #{}", taskCounter);
-            retries++;
-        }
-        log.error("SshClientInstaller: Giving up executing task #{} after {} retries", taskCounter, maxRetries);
-        return false;
-    }*/
-
-    public boolean execute() {
-        return executeTask();
-    }
+    public boolean execute() { return executeTask(); }
 
     private boolean executeTask(/*int retries*/) {
         boolean success = false;
@@ -126,7 +128,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            success = executeInstructions();
+            success = executeInstructionsList();
+            log.info("-------------------------------------------------------------------------");
         } catch (Exception ex) {
             log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
             success = false;
@@ -442,12 +445,37 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructions() throws IOException {
-        Map<String, String> valueMap = task.getInstallationInstructions().getValueMap();
-        int numOfInstructions = task.getInstallationInstructions().getInstructions().size();
+    private boolean executeInstructionsList() throws IOException {
+        List<InstallationInstructions> installationInstructionsList = task.getInstallationInstructions();
+        int cntSuccess = 0;
+        int cntFail = 0;
+        for (InstallationInstructions installationInstructions : installationInstructionsList) {
+            log.info("----------------------------------------------------------------------");
+            log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, installationInstructions.getDescription());
+            streamLogger.logMessage(
+                    String.format("----------------------------------------------------------------------\nExecuting instruction set: %s\n",
+                    installationInstructions.getDescription()));
+            boolean result = executeInstructions(installationInstructions);
+            if (!result) {
+                log.error("SshClientInstaller: Task #{}: Installation Instructions failed: {}", taskCounter, installationInstructions.getDescription());
+                cntFail++;
+                if (!continueOnFail)
+                    return false;
+            } else {
+                log.info("SshClientInstaller: Task #{}: Installation Instructions succeeded: {}", taskCounter, installationInstructions.getDescription());
+                cntSuccess++;
+            }
+        }
+        log.info("SshClientInstaller: Task #{}: Instruction sets: successful={}, failed={}", taskCounter, cntSuccess, cntFail);
+        return true;
+    }
+
+    private boolean executeInstructions(InstallationInstructions installationInstructions) throws IOException {
+        Map<String, String> valueMap = installationInstructions.getValueMap();
+        int numOfInstructions = installationInstructions.getInstructions().size();
         int cnt = 0;
-        int insCount = task.getInstallationInstructions().getInstructions().size();
-        for (Instruction ins : task.getInstallationInstructions().getInstructions()) {
+        int insCount = installationInstructions.getInstructions().size();
+        for (Instruction ins : installationInstructions.getInstructions()) {
             cnt++;
             log.debug("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
