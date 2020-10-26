@@ -173,6 +173,26 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         valueMap.put("REMOTE_TMP_DIR", clientTmpDir);
         log.info("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
 
+/*        // Clear EMS server certificate (PEM) file, if not secure
+        if (!isServerSecure) {
+            serverCertFile = "";
+        }
+
+        // Copy files from server to Baguette Client
+        if (StringUtils.isNotEmpty(copyFromServerDir) && StringUtils.isNotEmpty(copyToClientDir)) {
+            Path startDir = Paths.get(copyFromServerDir).toAbsolutePath();
+            try (Stream<Path> stream = Files.walk(startDir, Integer.MAX_VALUE)) {
+                List<Path> paths = stream
+                        .filter(Files::isRegularFile)
+                        .map(Path::toAbsolutePath)
+                        .sorted()
+                        .collect(Collectors.toList());
+                for (Path p : paths) {
+                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
+                }
+            }
+        }*/
+
         try {
             // Read installation instructions from JSON file
             String jsonFile = properties.getInstructions().get("LINUX");
@@ -210,105 +230,6 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             throw ex;
         }
     }
-
-/*
-    public InstallationInstructions prepareInstallationInstructionsForLinux(String baseUrl, String clientId, BaguetteServer baguette, String ipSetting) throws IOException {
-        // Set the target operating system
-        InstallationInstructions installationInstructions = new InstallationInstructions();
-        installationInstructions.setOs("LINUX");
-
-        // Check whether EMS Client is already installed
-                .appendLog("Checking if Baguette Client is already installed")
-                .appendCheck("[[ -f "+checkInstallationFile+" ]] && exit 99", 0, true, "NOTE: Baguette Client is already installed")
-                .appendExec("Baguette Client is NOT installed")
-
-        // Create Baguette Client installation directories
-        String dirList = String.join(" ", properties.getMkdirs());
-        if (StringUtils.isNotEmpty(dirList)) {
-            installationInstructions.appendLog("Create Baguette Client installation directories");
-            installationInstructions.appendExec("sudo mkdir -p " + dirList);
-        }
-
-        // Change ownership of installation directories
-        if (StringUtils.isNotEmpty(dirList)) {
-            installationInstructions.appendLog("Change ownership of installation directories");
-            installationInstructions.appendExec("sudo chown -R ubuntu:ubuntu /opt/baguette-client");
-        }
-
-        // Create files using touch
-        String touchList = String.join(" ", properties.getTouchFiles());
-        if (StringUtils.isNotEmpty(touchList)) {
-            installationInstructions.appendLog("Touch files");
-            installationInstructions.appendExec("touch " + touchList);
-        }
-
-        // Clear EMS server certificate (PEM) file, if not secure
-        if (!isServerSecure) {
-            serverCertFile = "";
-        }
-
-        // Copy files from server to Baguette Client
-        if (StringUtils.isNotEmpty(copyFromServerDir) && StringUtils.isNotEmpty(copyToClientDir)) {
-            Path startDir = Paths.get(copyFromServerDir).toAbsolutePath();
-            try (Stream<Path> stream = Files.walk(startDir, Integer.MAX_VALUE)) {
-                List<Path> paths = stream
-                        .filter(Files::isRegularFile)
-                        .map(Path::toAbsolutePath)
-                        .sorted()
-                        .collect(Collectors.toList());
-                for (Path p : paths) {
-                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
-                }
-            }
-        }
-
-        // Download Baguette Client installation script
-        installationInstructions
-                .appendLog("Download Baguette Client installation script")
-                //.appendExec("sudo wget --no-check-certificate " + installScriptUrl + " -O " + installScriptPath)
-                .appendExec(
-                        isServerSecure
-                                ? "sudo wget --ca-certificate="+serverCertFile+" " + installScriptUrl + " -O " + installScriptPath
-                                : "sudo wget " + installScriptUrl + " -O " + installScriptPath
-                )
-
-        // Make Baguette Client installation script executable
-                .appendLog("Make Baguette Client installation script executable")
-                .appendExec("sudo chmod u+rwx,og-rwx " + installScriptPath)
-
-        // Store Baguette Client configuration archive
-                .appendLog("Store baguette client configuration archive (in base64 encoding)")
-                .appendWriteFile(clientConfArchive, archiveBase64, false)
-
-
-        // Run Baguette Client installation script
-                .appendLog("Run Baguette Client installation script")
-                .appendExec("sudo "+installScriptPath+" \""+serverCertFile+"\" "+baseDownloadUrl+" "+apiKey)
-
-        // Launch Baguette Client
-                .appendLog("Launch Baguette Client")
-                .appendExec("sudo service baguette-client start")
-
-
-        // Write successful installation file
-                .appendLog("Write successful installation file")
-                .appendExec("sudo touch " + checkInstallationFile)
-
-        ;
-
-        // Pretty print installationInstructions JSON
-        if (log.isDebugEnabled()) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            StringWriter sw = new StringWriter();
-            try (PrintWriter writer = new PrintWriter(sw)) {
-                gson.toJson(installationInstructions, writer);
-            }
-            log.debug("prepareInstallationInstructionsForLinux(): installationInstructions:\n{}", sw.toString());
-        }
-
-        return installationInstructions;
-    }
-*/
 
     private InstallationInstructions _appendCopyInstructions(
             InstallationInstructions installationInstructions,
