@@ -20,11 +20,6 @@
     <name>Upperware - EMS - Utilities</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>melodic-commons</artifactId>
-        </dependency>
-
         <!-- Spring-Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

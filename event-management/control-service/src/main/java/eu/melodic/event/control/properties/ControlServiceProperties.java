@@ -93,7 +93,7 @@ public class ControlServiceProperties {
     @Value("${static.resource.context:/**}")
     private String staticResourceContext;
 
-    @Value("${control.password-encoder}")
+    @Value("${password-encoder-class}")
     private String passwordEncoderClass;
 
     // control.ssl.** settings

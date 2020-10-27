@@ -9,8 +9,8 @@
 
 package eu.melodic.event.util;
 
-import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
-import eu.passage.upperware.commons.passwords.PasswordEncoder;
+import eu.melodic.event.util.password.IdentityPasswordEncoder;
+import eu.melodic.event.util.password.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 @Service
 @Slf4j
 public class PasswordUtil implements InitializingBean {
-    @Value("${control.password-encoder}")
+    @Value("${password-encoder-class}")
     private String passwordEncoderClassName;
     private PasswordEncoder passwordEncoder;
 

@@ -9,13 +9,12 @@
 
 package eu.melodic.event.util;
 
-import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
-import eu.passage.upperware.commons.passwords.PasswordEncoder;
+import eu.melodic.event.util.password.IdentityPasswordEncoder;
+import eu.melodic.event.util.password.PasswordEncoder;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
