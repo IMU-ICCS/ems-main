@@ -68,6 +68,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private final long commandExecutionTimeout;
     private final boolean continueOnFail;
 
+    private final ClientInstallationProperties properties;
+
     private SshClient sshClient;
     //private SimpleClient simpleClient;
     private ClientSession session;
@@ -102,6 +104,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         this.simulateExecution = properties.isSimulateExecution();
         this.commandExecutionTimeout = properties.getCommandExecutionTimeout()>0 ? properties.getCommandExecutionTimeout() : 120000;
         this.continueOnFail = properties.isContinueOnFail();
+
+        this.properties = properties;
     }
 
     @Override
@@ -129,7 +133,6 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         try {
             success = executeInstructionsList();
-            log.info("-------------------------------------------------------------------------");
         } catch (Exception ex) {
             log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
             success = false;
@@ -277,10 +280,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private void initStreamLogger() throws IOException {
         if (streamLogger!=null) return;
 
-        String addr = session.getConnectAddress().toString().replace("/","").replace(":", "-");
-        //log.debug("SshClientInstaller: addr: {}", addr);
-        String logFile = "logs/"+addr+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt";
-        log.info("SshClientInstaller: Session will be recorded in file: {}", logFile);
+        String address = session.getConnectAddress().toString().replace("/","").replace(":", "-");
+        //log.trace("SshClientInstaller: address: {}", address);
+        String logFile = properties.getSessionRecordingDir()+"/"+address+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt";
+        log.info("SshClientInstaller: Task #{}: Session will be recorded in file: {}", taskCounter, logFile);
         this.streamLogger = new StreamLogger(logFile, "  Task #"+taskCounter);
     }
 
@@ -466,7 +469,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 cntSuccess++;
             }
         }
-        log.info("SshClientInstaller: Task #{}: Instruction sets: successful={}, failed={}", taskCounter, cntSuccess, cntFail);
+        log.info("-------------------------------------------------------------------------");
+        log.info("SshClientInstaller: Task #{}: Instruction sets processed: successful={}, failed={}", taskCounter, cntSuccess, cntFail);
         return true;
     }
 
@@ -477,7 +481,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         int insCount = installationInstructions.getInstructions().size();
         for (Instruction ins : installationInstructions.getInstructions()) {
             cnt++;
-            log.debug("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
+            log.trace("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
             Integer exitStatus;
             boolean result = true;
@@ -558,9 +562,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             }
 
             if (cnt<insCount)
-                log.debug("sshClientInstaller: Continuing with next command...");
+                log.trace("sshClientInstaller: Continuing with next command...");
             else
-                log.debug("sshClientInstaller: No more instructions");
+                log.trace("sshClientInstaller: No more instructions");
         }
         return true;
     }

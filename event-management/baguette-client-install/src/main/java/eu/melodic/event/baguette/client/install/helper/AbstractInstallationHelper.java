@@ -190,7 +190,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         String baseUrl = contextMap.get("BASE_URL");
         String clientId = contextMap.get("CLIENT_ID");
         String ipSetting = contextMap.get("IP_SETTING");
-        log.debug("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
+        log.trace("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
         List<InstallationInstructions> installationInstructionsList = null;

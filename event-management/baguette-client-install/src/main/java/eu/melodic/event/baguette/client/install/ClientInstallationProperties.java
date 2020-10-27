@@ -63,4 +63,5 @@ public class ClientInstallationProperties {
 
     private final Map<String, List<String>> instructions = new HashMap<>();
     private final boolean continueOnFail = false;
+    private final String sessionRecordingDir = "logs";
 }

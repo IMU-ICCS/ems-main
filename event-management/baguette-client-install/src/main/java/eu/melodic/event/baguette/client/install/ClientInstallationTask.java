@@ -22,6 +22,7 @@ import java.util.List;
 @Builder
 public class ClientInstallationTask {
     private final String id;
+    private final String nodeId;
     private final String name;
     private final String os;
     private final String address;

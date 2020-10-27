@@ -69,12 +69,13 @@ public class ClientInstaller implements InitializingBean, Runnable {
             while (running) {
                 ClientInstallationTask task = taskQueue.take();
                 long taskCnt = taskCounter.getAndIncrement();
-                log.info("ClientInstaller: Executing Client installation task #{}: {}", taskCnt, task);
+                log.info("ClientInstaller: Executing Client installation Task #{}: task-id={}, node-id={}, name={}, type={}, address={}",
+                        taskCnt, task.getId(), task.getNodeId(), task.getName(), task.getType(), task.getAddress());
                 long startTm = System.currentTimeMillis();
                 boolean result = executeTask(task, taskCnt);
                 long endTm = System.currentTimeMillis();
-                log.info("ClientInstaller: Client installation task #{}: success={}, duration={}ms",
-                        taskCnt, result, endTm-startTm);
+                log.info("ClientInstaller: Client installation Task #{}: result={}, duration={}ms",
+                        taskCnt, result?"SUCCESS":"FAILED", endTm-startTm);
             }
         } catch (InterruptedException ex) {
             log.warn("ClientInstaller: Stopping task execution thread");

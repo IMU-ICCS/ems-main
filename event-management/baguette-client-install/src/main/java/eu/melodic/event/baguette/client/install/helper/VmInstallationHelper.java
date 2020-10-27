@@ -91,7 +91,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         // Create Installation Task for VM node
         ClientInstallationTask installationTask = ClientInstallationTask.builder()
                 .id(clientId)
-                //.id(nodeId)
+                .nodeId(nodeId)
                 .name(nodeName)
                 .os(nodeOs)
                 .address(nodeAddress)
@@ -125,7 +125,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
         // Get parameters
-        log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux(): properties: {}", properties);
+        log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux(): properties: {}", properties);
         String checkInstallationFile = properties.getCheckInstalledFile();
 
         String baseDownloadUrl = _prepareUrl(properties.getDownloadUrl(), baseUrl);
@@ -169,7 +169,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         valueMap.put("API_KEY", apiKey);
         valueMap.put("SERVER_CERT_FILE", serverCertFile);
         valueMap.put("REMOTE_TMP_DIR", clientTmpDir);
-        log.info("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
+        log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
 
 /*        // Clear EMS server certificate (PEM) file, if not secure
         if (!isServerSecure) {
@@ -207,23 +207,23 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 json = environment.resolvePlaceholders(json);
                 //json = environment.resolveRequiredPlaceholders(json);
                 json = json.replace('\\', '/');
-                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
+                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
 
                 // Create InstallationInstructions object from JSON
                 InstallationInstructions installationInstructions =
                         new Gson().fromJson(json, InstallationInstructions.class);
                 installationInstructions.setValueMap(valueMap);
                 installationInstructions.setFileName(jsonFile);
-                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
+                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
 
                 // Pretty print installationInstructions JSON
-                if (log.isDebugEnabled()) {
+                if (log.isTraceEnabled()) {
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     StringWriter sw = new StringWriter();
                     try (PrintWriter writer = new PrintWriter(sw)) {
                         gson.toJson(installationInstructions, writer);
                     }
-                    log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
+                    log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
                 }
 
                 installationInstructionsList.add(installationInstructions);
