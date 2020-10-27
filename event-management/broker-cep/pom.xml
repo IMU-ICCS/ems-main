@@ -20,18 +20,6 @@
     <name>Upperware - EMS - Broker+CEP Service</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>melodic-commons</artifactId>
-            <version>${melodic.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-web</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <!-- EMS dependencies -->
         <dependency>
             <groupId>eu.melodic.event</groupId>

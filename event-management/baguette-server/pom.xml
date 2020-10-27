@@ -72,13 +72,19 @@
 			<version>3.0</version>
 		</dependency>
 
-		<!-- Apache Common text -->
+		<!-- Apache Commons text (for StringSubstitutor) -->
 		<dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.6</version>
-            <scope>compile</scope>
-        </dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
+		</dependency>
+
+		<!-- Apache Commons Collections (for MapUtils) -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
 	</dependencies>
 	
 	<repositories>
