@@ -57,7 +57,7 @@ public class BaguetteClient {
                 log.trace("BaguetteClient: Calling SSHC stop()");
                 client.stop();
             } catch (Exception ex) {
-                log.error("BaguetteClient: EXCEPTION: {}", ex);
+                log.error("BaguetteClient: EXCEPTION: ", ex);
             }
             if (!retry) break;
             log.trace("BaguetteClient: Restarting client...");

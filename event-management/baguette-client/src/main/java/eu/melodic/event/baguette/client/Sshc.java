@@ -86,7 +86,7 @@ public class Sshc {
                 try {
                     Thread.sleep(retryPeriod);
                 } catch (InterruptedException ex) {
-                    log.debug("Sleep: {}", ex);
+                    log.debug("Sleep: ", ex);
                 }
             }
         } else {
@@ -141,7 +141,7 @@ public class Sshc {
                             return keyStr.equalsIgnoreCase(serverPubKey);
 
                         } catch (Exception ex) {
-                            log.error("verifyServerKey(): serverKey: EXCEPTION: {}", ex);
+                            log.error("verifyServerKey(): serverKey: EXCEPTION: ", ex);
                             return false;
                         }
                     }

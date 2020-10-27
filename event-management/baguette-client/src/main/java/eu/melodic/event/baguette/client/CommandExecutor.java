@@ -359,10 +359,10 @@ public class CommandExecutor {
     }
 
     protected void sendEvent(String connectionStr, String destination, double metricValue) {
-        Map<String, Object> event = new HashMap<String, Object>();
-        event.put("metricValue", new Double(metricValue));
-        event.put("level", new Integer(1));
-        event.put("timestamp", new Long(System.currentTimeMillis()));
+        Map<String, Object> event = new HashMap<>();
+        event.put("metricValue", metricValue);
+        event.put("level", 1);
+        event.put("timestamp", System.currentTimeMillis());
         //MetricEvent event = new MetricEvent(metricValue, 1, System.currentTimeMillis());
         try {
             log.info("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
