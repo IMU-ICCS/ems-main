@@ -207,6 +207,8 @@ public class Sshc {
     }
 
     public void run() throws IOException {
+        if (!started) return;
+
         // Start communication protocol with Server
         // Execution waits here until connection is closed
         log.trace("run(): Calling communicateWithServer()...");

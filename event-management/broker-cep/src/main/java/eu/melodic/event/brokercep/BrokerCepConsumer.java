@@ -38,8 +38,6 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     @Autowired
     private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
     @Autowired
-    private ActiveMQConnectionFactory connectionFactory;
-    @Autowired
     private CepService cepService;
 
     private Connection connection;
@@ -67,13 +65,13 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             }
 
             // If an alternative Broker URL is provided for consumer, it will be use
-            ActiveMQConnectionFactory connectionFactory = this.connectionFactory;
+            ConnectionFactory connectionFactory;
             if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
                 log.debug("BrokerCepConsumer.initialize(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
-                connectionFactory = this.connectionFactory.copy();
-                connectionFactory.setBrokerURL(properties.getBrokerUrlForConsumer());
+                connectionFactory = brokerConfig.getConnectionFactoryFor(properties.getBrokerUrlForConsumer());
             } else {
                 log.debug("BrokerCepConsumer.initialize(): Default broker URL will be used for Broker-CEP consumer instance: {}", brokerConfig.getBrokerUrl());
+                connectionFactory = brokerConfig.getConnectionFactoryFor(null);
             }
 
             // Initialize connection
@@ -120,6 +118,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.addTopic(): EXCEPTION: ", ex);
         }
+    }
+
+    public boolean containsDestination(String name) {
+        return addedDestinations.contains(name);
     }
 
     @Override

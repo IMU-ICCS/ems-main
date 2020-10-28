@@ -21,6 +21,7 @@ import org.apache.activemq.broker.SslBrokerService;
 import org.apache.activemq.broker.inteceptor.MessageInterceptor;
 import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.activemq.security.AuthenticationUser;
 import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.usage.MemoryUsage;
@@ -37,16 +38,14 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.jms.ConnectionFactory;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
@@ -85,6 +84,8 @@ public class BrokerConfig implements InitializingBean {
     private String brokerUrl2;
     @Value("${brokercep.broker-url-3}")
     private String brokerUrl3;
+
+    private HashMap<String, ConnectionFactory> connectionFactoryCache = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -414,10 +415,15 @@ public class BrokerConfig implements InitializingBean {
      * Creates a new connection factory
      */
     @Bean
-    public ActiveMQConnectionFactory connectionFactory() {
+    public ConnectionFactory connectionFactory() {
+        return connectionFactory(null);
+    }
+
+    public ConnectionFactory connectionFactory(String brokerUrl) {
+        if (brokerUrl==null) brokerUrl = properties.getBrokerUrlForClients();
+
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
-        String brokerUrl = properties.getBrokerUrlForClients();
         if (brokerUrl.startsWith("ssl")) {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
@@ -449,7 +455,17 @@ public class BrokerConfig implements InitializingBean {
         connectionFactory.setTrustAllPackages(true);
         connectionFactory.setWatchTopicAdvisories(true);
 
-        return connectionFactory;
+        // Make pooled connection factory
+        PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory(connectionFactory);
+        pooledConnectionFactory.setMaxConnections(64);
+        log.trace("BrokerConfig: New connection factory created: {}", pooledConnectionFactory);
+
+        return pooledConnectionFactory;
+    }
+
+    public ConnectionFactory getConnectionFactoryFor(String connectionString) {
+        return connectionFactoryCache
+                .computeIfAbsent(connectionString, url -> connectionFactory(url));
     }
 
     /**

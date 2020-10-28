@@ -12,7 +12,6 @@ package eu.melodic.event.brokercep.broker;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -32,7 +31,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 	@Autowired
 	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
 	@Autowired
-	private ActiveMQConnectionFactory connectionFactory;
+	private ConnectionFactory connectionFactory;
 	@Autowired
 	private BrokerCepService brokerCerService;
 	@Autowired

@@ -22,7 +22,6 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.BrokerView;
 import org.apache.commons.lang3.StringUtils;
@@ -46,8 +45,8 @@ import java.util.*;
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;
+    @Getter
     private BrokerService brokerService;
-    private ActiveMQConnectionFactory connectionFactory;
     private PasswordUtil passwordUtil;
 
     //private BrokerAdvisoryWatcher advisoryMessageWatcher;
@@ -192,6 +191,10 @@ public class BrokerCepService {
         cepService.addFunctionDefinition(definition);
     }
 
+    public boolean destinationExists(String destination) {
+        return brokerCepBridge.containsDestination(destination);
+    }
+
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
             return;
@@ -246,8 +249,7 @@ public class BrokerCepService {
     private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
         if (connectionString == null) connectionString = properties.getBrokerUrlForConsumer();
-        ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
-        connectionFactory.setBrokerURL(connectionString);
+        ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryFor(connectionString);
 
         // Create a Connection
         log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}",

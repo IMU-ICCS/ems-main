@@ -9,12 +9,16 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -41,6 +45,13 @@ public class BaguetteClient {
         log.debug("BaguetteClient: Starting the local Broker-CEP service...");
         ApplicationContext appCtx = SpringApplication.run(BaguetteClient.class, args);
         log.debug("BaguetteClient: Starting the local Broker-CEP service... ok");
+
+        // Start measurement collectors
+        log.debug("BaguetteClient: Starting collectors...");
+        List<Collector> collectorList = new ArrayList<>();
+        Collector collector;
+        try { if ((collector=appCtx.getBean(NetdataCollector.class)) != null) { collector.start(); collectorList.add(collector); } } catch (NoSuchBeanDefinitionException e) { }
+        log.debug("BaguetteClient: Starting collectors...ok");
 
         // Run SSH client
         boolean retry = true;

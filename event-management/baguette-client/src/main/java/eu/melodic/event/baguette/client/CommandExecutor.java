@@ -348,7 +348,7 @@ public class CommandExecutor {
         }
     }
 
-    protected void sendLocalEvent(String destination, double metricValue) {
+    public void sendLocalEvent(String destination, double metricValue) {
         if (activeGrouping != null) {
             String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
             log.info("sendLocalEvent(): local-broker-url={}", brokerUrl);
@@ -358,12 +358,23 @@ public class CommandExecutor {
         }
     }
 
-    protected void sendEvent(String connectionStr, String destination, double metricValue) {
+    public void sendEvent(String connectionStr, String destination, double metricValue) {
         Map<String, Object> event = new HashMap<>();
         event.put("metricValue", metricValue);
         event.put("level", 1);
         event.put("timestamp", System.currentTimeMillis());
-        //MetricEvent event = new MetricEvent(metricValue, 1, System.currentTimeMillis());
+        sendEvent(connectionStr, destination, event);
+    }
+
+    public boolean sendEvent(String connectionStr, String destination, Map event, boolean createDestination) {
+        if (createDestination || brokerCepService.destinationExists(destination)) {
+            sendEvent(connectionStr, destination, event);
+            return true;
+        }
+        return false;
+    }
+
+    public void sendEvent(String connectionStr, String destination, Map event) {
         try {
             log.info("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
             brokerCepService.publishEvent(connectionStr, destination, event);
