@@ -258,7 +258,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            streamLogger.close();
+            if (streamLogger!=null)
+                streamLogger.close();
 
             //channel.close(false).await();
             session.close(false);
@@ -306,8 +307,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         //shellPipedIn = shellChannel.getInvertedIn();
         log.info("SshClientInstaller: Opened shell channel: task #{}", taskCounter);
 
-        shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                TimeUnit.SECONDS.toMillis(5));
+        shellChannel.waitFor(
+                EnumSet.of(ClientChannelEvent.CLOSED),
+                authenticationTimeout);
+                //TimeUnit.SECONDS.toMillis(5));
         log.info("SshClientInstaller: Shell channel ready: task #{}", taskCounter);
 
         return true;
@@ -328,7 +331,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean sshShellExec(@NotNull String command) throws IOException {
+    private boolean sshShellExec(@NotNull String command, long executionTimeout) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate command execution: task #{}: command: {}", taskCounter, command);
             return true;
@@ -344,8 +347,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         // Search remote side output for expected patterns
         // Not implemented
 
-        shellChannel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                commandExecutionTimeout);
+        shellChannel.waitFor(
+                EnumSet.of(ClientChannelEvent.CLOSED),
+                executionTimeout>0 ? executionTimeout : commandExecutionTimeout);
                 //TimeUnit.SECONDS.toMillis(5));
         return true;
     }*/
@@ -371,10 +375,18 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
             //XXX: TODO: Search remote side output for expected patterns
 
-            channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED),
-                    executionTimeout>0 ? executionTimeout : commandExecutionTimeout);
+            // Wait until channel closes from server side (i.e. command completed) or timeout occurs
+            log.trace("SshClientInstaller: task #{}: CMD: instruction execution-timeout: {}", taskCounter, executionTimeout);
+            log.trace("SshClientInstaller: task #{}: CMD: default command-execution-timeout: {}", taskCounter, commandExecutionTimeout);
+            long execTimeout = executionTimeout != 0 ? executionTimeout : commandExecutionTimeout;
+            log.debug("SshClientInstaller: task #{}: CMD: effective instruction execution-timeout: {}", taskCounter, execTimeout);
+            Set<ClientChannelEvent> eventSet = channel.waitFor(
+                    EnumSet.of(ClientChannelEvent.CLOSED),
+                    execTimeout);
                     //TimeUnit.SECONDS.toMillis(50));
+            log.debug("SshClientInstaller: task #{}: CMD: Exit event set: {}", taskCounter, eventSet);
             exitStatus = channel.getExitStatus();
+            log.debug("SshClientInstaller: task #{}: CMD: Exit status: {}", taskCounter, exitStatus);
         } finally {
             channel.close();
         }
@@ -495,7 +507,6 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     int maxRetries = ins.getRetries();
                     while (true) {
                         try {
-                            //result = sshShellExec(ins.getCommand());
                             exitStatus = sshExecCmd(ins.getCommand(), ins.getExecutionTimeout());
                             result = (exitStatus!=null);
                             //result = (exitStatus==0);
@@ -520,6 +531,34 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                         }
                     }
                     break;
+                /*case SHELL:
+                    log.info("SshClientInstaller: Task #{}: SHELL: {}", taskCounter, ins.getCommand());
+                    retries = 0;
+                    maxRetries = ins.getRetries();
+                    while (true) {
+                        try {
+                            result = sshShellExec(ins.getCommand(), ins.getExecutionTimeout());
+                            log.info("SshClientInstaller: Task #{}: SHELL: exit-status={}", taskCounter, result);
+                            if (result) break;
+                        } catch (Exception ex) {
+                            if (retries+1>=maxRetries)
+                                throw ex;
+                            else
+                                log.error("SshClientInstaller: Task #{}: SHELL: Last command raised exception: ", taskCounter, ex);
+                        }
+
+                        retries++;
+                        if (retries<=maxRetries) {
+                            log.info("SshClientInstaller: Task #{}: Retry {}/{} for instruction {}/{}: {}",
+                                    taskCounter, retries, maxRetries, cnt, numOfInstructions, ins.getDescription());
+                        } else {
+                            if (maxRetries>0)
+                                log.error("sshClientInstaller: Task #{}: Last instruction failed {} times. Giving up", taskCounter, maxRetries);
+                            result = false;
+                            break;
+                        }
+                    }
+                    break;*/
                 case FILE:
                     //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
                     if (Paths.get(ins.getLocalFileName()).toFile().isDirectory()) {

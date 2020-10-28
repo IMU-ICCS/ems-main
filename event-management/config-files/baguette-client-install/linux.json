@@ -66,7 +66,7 @@
       "executable": false,
       "exitCode": 0,
       "match": false,
-      "command-execution-timeout": 120000
+      "executionTimeout": 120000
     },
     {
       "description": "Change files and folders ownership",
