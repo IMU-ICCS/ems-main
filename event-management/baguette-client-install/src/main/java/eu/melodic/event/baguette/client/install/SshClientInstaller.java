@@ -376,17 +376,17 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             //XXX: TODO: Search remote side output for expected patterns
 
             // Wait until channel closes from server side (i.e. command completed) or timeout occurs
-            log.trace("SshClientInstaller: task #{}: CMD: instruction execution-timeout: {}", taskCounter, executionTimeout);
-            log.trace("SshClientInstaller: task #{}: CMD: default command-execution-timeout: {}", taskCounter, commandExecutionTimeout);
+            log.trace("SshClientInstaller: task #{}: EXEC: instruction execution-timeout: {}", taskCounter, executionTimeout);
+            log.trace("SshClientInstaller: task #{}: EXEC: default command-execution-timeout: {}", taskCounter, commandExecutionTimeout);
             long execTimeout = executionTimeout != 0 ? executionTimeout : commandExecutionTimeout;
-            log.debug("SshClientInstaller: task #{}: CMD: effective instruction execution-timeout: {}", taskCounter, execTimeout);
+            log.debug("SshClientInstaller: task #{}: EXEC: effective instruction execution-timeout: {}", taskCounter, execTimeout);
             Set<ClientChannelEvent> eventSet = channel.waitFor(
                     EnumSet.of(ClientChannelEvent.CLOSED),
                     execTimeout);
                     //TimeUnit.SECONDS.toMillis(50));
-            log.debug("SshClientInstaller: task #{}: CMD: Exit event set: {}", taskCounter, eventSet);
+            log.debug("SshClientInstaller: task #{}: EXEC: Exit event set: {}", taskCounter, eventSet);
             exitStatus = channel.getExitStatus();
-            log.debug("SshClientInstaller: task #{}: CMD: Exit status: {}", taskCounter, exitStatus);
+            log.debug("SshClientInstaller: task #{}: EXEC: Exit status: {}", taskCounter, exitStatus);
         } finally {
             channel.close();
         }
