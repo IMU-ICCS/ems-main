@@ -21,10 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.jms.JMSException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Collects measurements from Netdata server
@@ -40,10 +40,23 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
     private boolean started;
     private Thread runner;
     private boolean running;
+    private List<String> allowedTopics;
+    private Map<String, String> topicMap;
 
     @Override
     public void afterPropertiesSet() {
         log.debug("Collectors::Netdata: properties: {}", properties);
+        this.allowedTopics = properties.getAllowedTopics()==null
+                ? null
+                : properties.getAllowedTopics().stream()
+                .map(s -> s.split(":")[0])
+                .collect(Collectors.toList());
+        this.topicMap = properties.getAllowedTopics()==null
+                ? null
+                : properties.getAllowedTopics().stream()
+                .map(s -> s.split(":", 2))
+                .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
+
     }
 
     public synchronized void start() {
@@ -120,26 +133,38 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         if (response.getStatusCode()==HttpStatus.OK) {
             Map dataMap = response.getBody();
             boolean createTopic = properties.isCreateTopic();
-            List<String> allowedTopics = properties.getAllowedTopics();
             int countSuccess = 0;
             int countErrors = 0;
+            log.trace("Collectors::Netdata: ...keys: {}", dataMap.keySet());
             for (Object key : dataMap.keySet()) {
+                log.trace("Collectors::Netdata: ...Loop-1: key={}", key);
                 if (key==null) continue;
                 Map keyData = (Map)dataMap.get(key);
+                log.trace("Collectors::Netdata: ...Loop-1: key-data={}", keyData);
                 long timestamp = Long.parseLong( keyData.get("last_updated").toString() );
                 Map dimensionsMap = (Map)keyData.get("dimensions");
 
+                log.trace("Collectors::Netdata: ...Loop-1: ...dimensions-keys: {}", dimensionsMap.keySet());
                 for (Object dimKey : dimensionsMap.keySet()) {
+                    log.trace("Collectors::Netdata: ...Loop-1: ...dimensions-key: {}", dimKey);
                     if (dimKey==null) continue;
                     String metricName = ("netdata."+key.toString()+"."+dimKey.toString()).replace(".", "__");
+                    log.trace("Collectors::Netdata: ...Loop-1: ...metric-name: {}", metricName);
                     Map dimData = (Map)dimensionsMap.get(dimKey);
                     Object valObj = dimData.get("value");
+                    log.trace("Collectors::Netdata: ...Loop-1: ...metric-value: {}", valObj);
                     if (valObj!=null) {
                         double metricValue = Double.parseDouble(valObj.toString());
                         log.trace("Collectors::Netdata:           {} = {}", metricName, metricValue);
                         try {
                             boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
+                            if (topicMap!=null) {
+                                String targetTopic = topicMap.get(metricName);
+                                if (targetTopic!=null && !targetTopic.isEmpty())
+                                    metricName = targetTopic;
+                            }
                             EventMap event = new EventMap(metricValue, 1, timestamp);
+                            log.debug("Collectors::Netdata:     {}: {}", metricName, metricValue);
                             if (commandExecutor.sendEvent(null, metricName, event, createDestination))
                                 countSuccess++;
                         } catch (Exception e) {
