@@ -43,7 +43,7 @@ public class ClusterManagerProperties {
 	public static class NodeProperties {
 		private String id;
 		private Address address;
-		private Properties properties;
+		private Properties properties = new Properties();
 
 		public NodeProperties(String address) {
 			this.address = Address.from(address);

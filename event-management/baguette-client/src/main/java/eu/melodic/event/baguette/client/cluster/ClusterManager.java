@@ -180,7 +180,8 @@ public class ClusterManager extends AbstractLogBase {
 		// Leave cluster
 		log_info("CLM: Leaving cluster...");
 		long startTm = System.currentTimeMillis();
-		atomix.stop().join();
+		if (atomix.isRunning())
+			atomix.stop().join();
 		long endTm = System.currentTimeMillis();
 		log_debug("CLM: Left cluster in {}ms", endTm-startTm);
 		atomix = null;
@@ -229,22 +230,28 @@ public class ClusterManager extends AbstractLogBase {
 	}
 
 	private NodeDiscoveryProvider buildNodeDiscoveryProvider(List<String> addresses, boolean skipFirst) {
-		return buildNodeDiscoveryProviderFromProperties(addresses.stream()
-				.map(ClusterManager::getAddressFromString)
-				.map(address -> new ClusterManagerProperties.NodeProperties(null, address, null))
-				.collect(Collectors.toList()), skipFirst);
+		return buildNodeDiscoveryProviderFromProperties(
+				addresses!=null
+						? addresses.stream()
+								.map(ClusterManager::getAddressFromString)
+								.map(address -> new ClusterManagerProperties.NodeProperties(null, address, null))
+								.collect(Collectors.toList())
+						: null,
+				skipFirst);
 	}
 
 	private NodeDiscoveryProvider buildNodeDiscoveryProviderFromProperties(List<ClusterManagerProperties.NodeProperties> nodePropertiesList, boolean skipFirst) {
 		List<Node> nodes = new ArrayList<>();
-		boolean first = skipFirst;
-		for (ClusterManagerProperties.NodeProperties nodeProperties : nodePropertiesList) {
-			if (first) {
-				first = false;
-				continue;
+		if (nodePropertiesList!=null) {
+			boolean first = skipFirst;
+			for (ClusterManagerProperties.NodeProperties nodeProperties : nodePropertiesList) {
+				if (first) {
+					first = false;
+					continue;
+				}
+				Node node = createNode(nodeProperties);
+				nodes.add(node);
 			}
-			Node node = createNode(nodeProperties);
-			nodes.add(node);
 		}
 		log_info("CLM: Building Atomix: Other members: {}", nodes);
 		return BootstrapDiscoveryProvider.builder()

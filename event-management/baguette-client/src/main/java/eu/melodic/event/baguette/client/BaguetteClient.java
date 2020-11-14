@@ -15,6 +15,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class BaguetteClient {
         //XXX:TODO: Use SpringBoot to load baguette client properties
         Properties config = loadConfig("./conf/baguette-client.properties");
         String idFile = null;
-        if (args.length > 0 && !args[0].trim().isEmpty()) {
+        if (args.length > 0 && !"-i".equalsIgnoreCase(args[0]) && !args[0].trim().isEmpty()) {
             config.putAll(loadConfig(args[0]));
             idFile = args[0];
         }
@@ -46,14 +47,53 @@ public class BaguetteClient {
         ApplicationContext appCtx = SpringApplication.run(BaguetteClient.class, args);
         log.debug("BaguetteClient: Starting the local Broker-CEP service... ok");
 
-        // Start measurement collectors
-        log.debug("BaguetteClient: Starting collectors...");
+        // Start measurement collectors (but not in interactive mode)
         List<Collector> collectorList = new ArrayList<>();
-        Collector collector;
-        try { if ((collector=appCtx.getBean(NetdataCollector.class)) != null) { collector.start(); collectorList.add(collector); } } catch (NoSuchBeanDefinitionException e) { }
-        log.debug("BaguetteClient: Starting collectors...ok");
+        if (!useInteractive(args)) {
+            log.debug("BaguetteClient: Starting collectors...");
+            Collector collector;
+            try { if ((collector=appCtx.getBean(NetdataCollector.class)) != null) { collector.start(); collectorList.add(collector); } } catch (NoSuchBeanDefinitionException e) { }
+            log.debug("BaguetteClient: Starting collectors...ok");
+        }
 
-        // Run SSH client
+        if (useInteractive(args)) {
+            // Run CLI
+            runCli(appCtx, config, idFile);
+        } else {
+            // Run SSH client
+            runSshClient(appCtx, config, idFile);
+        }
+        log.trace("BaguetteClient: Exiting");
+
+        // Stop collectors
+        if (!useInteractive(args)) {
+            if (collectorList.size()>0) {
+                log.debug("BaguetteClient: Stopping collectors...");
+                Collector collector = collectorList.get(0);
+                try { collector.stop(); } catch (NoSuchBeanDefinitionException e) { }
+                log.debug("BaguetteClient: Stopping collectors...ok");
+            }
+        }
+
+        // Stop Broker-CEP service
+        ((ConfigurableApplicationContext) appCtx).close();
+
+        log.info("Bye");
+        /*Thread.getAllStackTraces().keySet().stream()
+                .forEach(s -> log.info("---> {}.{}: {} aliver={}, daemon={}, interrupted={}", s.getThreadGroup().getName(), s.getName(), s.getState(),
+                        s.isAlive(), s.isDaemon(), s.isInterrupted()));*/
+        //System.exit(0);
+    }
+
+    protected static boolean useInteractive(String[] args) {
+        for (int i=0; i<args.length; i++) {
+            if ("-i".equalsIgnoreCase(args[i]))
+                return true;
+        }
+        return false;
+    }
+
+    protected static void runSshClient(ApplicationContext appCtx, Properties config, String idFile) {
         boolean retry = true;
         while (true) {
             try {
@@ -73,7 +113,12 @@ public class BaguetteClient {
             if (!retry) break;
             log.trace("BaguetteClient: Restarting client...");
         }
-        log.trace("BaguetteClient: Exiting");
+    }
+
+    protected static void runCli(ApplicationContext appCtx, Properties config, String idFile) throws IOException {
+        BaguetteClientCLI cli = appCtx.getBean(BaguetteClientCLI.class);
+        cli.setConfigAndId(config, idFile);
+        cli.run();
     }
 
     protected static Properties loadConfig(String configFile) throws IOException {

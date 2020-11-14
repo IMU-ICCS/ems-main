@@ -237,7 +237,7 @@ public class Sshc {
             line = line.trim();
             log.info(line);
             try {
-                boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), reader, out, err);
+                boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), in, out, err);
                 if (exit) break;
             } catch (Exception ex) {
                 log.error("{}", ex);

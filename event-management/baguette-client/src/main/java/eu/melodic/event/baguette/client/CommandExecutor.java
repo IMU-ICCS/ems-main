@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
@@ -18,6 +19,7 @@ import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.KeystoreUtil;
+import io.atomix.cluster.Member;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -35,8 +37,8 @@ import java.util.function.Consumer;
 /**
  * Command Executor
  */
-@Service
 @Slf4j
+@Service
 public class CommandExecutor {
     private final static String DEFAULT_ID_FILE = "cached-id.properties";
 
@@ -57,19 +59,22 @@ public class CommandExecutor {
     private Grouping activeGrouping;
 
     private Map<String, EventGenerator> eventGenerators = new HashMap<>();
+    @Autowired
+    private ClusterManagerProperties clusterManagerProperties;
+    private ClusterManager clusterManager;
 
-    public void setConfigAndId(Properties config, String idFile) throws IOException {
+    public void setConfigAndId(Properties config, String idFile) {
         log.trace("CommandExecutor: brokerCepService: {}", brokerCepService);
         this.config = config;
         this.idFile = idFile;
         this.clientId = config.getProperty("client.id", "");
     }
 
-    boolean executeCommand(String line, BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
+    boolean executeCommand(String line, InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
         return execCmd(line.split("[ \t]+"), in, out, err);
     }
 
-    boolean execCmd(String args[], BufferedReader in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
+    boolean execCmd(String args[], InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
         if (args == null || args.length == 0) return false;
         String cmd = args[0].toUpperCase();
         args[0] = "";
@@ -77,9 +82,11 @@ public class CommandExecutor {
         if ("EXIT".equals(cmd)) {
             boolean canExit = false;
             try { canExit = Boolean.parseBoolean(config.getProperty("exit-command.allowed", "false")); } catch (Exception e) {}
-            if (canExit)
+            if (canExit) {
+                if (clusterManager != null && clusterManager.isInitialized())
+                    clusterManager.leaveCluster();
                 return true;    // Signal 'Sshc' to quit
-            else {
+            } else {
                 final String mesg = "Exit is not allowed. Ignoring EXIT command";
                 log.warn(mesg);
                 out.println(mesg);
@@ -152,6 +159,26 @@ public class CommandExecutor {
             if (generator != null) {
                 generator.stop();
             }
+        } else if ("CLUSTER-INIT".equals(cmd)) {
+            if (clusterManagerProperties==null)
+                clusterManagerProperties = new ClusterManagerProperties();
+            log.debug("Cluster properties:  {}", clusterManagerProperties);
+            clusterManager = new ClusterManager();
+            clusterManager.initialize(clusterManagerProperties);
+            //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
+            clusterManager.setCallback(new ClusterNodeCallback());
+        } else if ("CLUSTER-JOIN".equals(cmd)) {
+            clusterManager.joinCluster();
+        } else if ("CLUSTER-LEAVE".equals(cmd)) {
+            clusterManager.leaveCluster();
+        } else if ("CLUSTER-SHELL".equals(cmd)) {
+            ClusterCLI cli = clusterManager.getCli();
+            cli.setIn(in);
+            cli.setOut(out);
+            cli.setErr(out);
+            log.info("Cluster CLI starts");
+            cli.run();
+            log.info("Cluster CLI ended");
         } else {
             args[0] = cmd;
             log.warn("UNKNOWN COMMAND: " + String.join(" ", args));
@@ -515,6 +542,28 @@ public class CommandExecutor {
                 log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, payload={}, exception: ",
                         name, forwardToGroupings, eventMap, ex);
             }
+        }
+    }
+
+    protected static class ClusterNodeCallback implements BrokerUtil.NodeCallback {
+        @Override
+        public void initialize() {
+            log.warn(">>>>>>>  TODO: BROKER: INITIALIZE");
+        }
+
+        @Override
+        public void stepDown() {
+            log.warn(">>>>>>>  TODO: BROKER: STEP DOWN");
+        }
+
+        @Override
+        public void backOff() {
+            log.warn(">>>>>>>  TODO: BROKER: BACK OFF");
+        }
+
+        @Override
+        public String getConfiguration(Member local) {
+            return null;
         }
     }
 }

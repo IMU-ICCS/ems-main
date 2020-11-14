@@ -79,4 +79,22 @@ public abstract class AbstractLogBase {
             if (outEnabled) err.println(MessageFormatter.arrayFormat(formatter, null, ex).getMessage());
         }
     }
+
+    protected void out_print(String formatter, Object...args) { stream_print(out, false, formatter, args); }
+    protected void out_println(String formatter, Object...args) { stream_print(out, true, formatter, args); }
+    protected void out_println() { stream_print(out, true, "", null); }
+    protected void err_print(String formatter, Object...args) { stream_print(err, false, formatter, args); }
+    protected void err_println(String formatter, Object...args) { stream_print(err, true, formatter, args); }
+    protected void err_println() { stream_print(err, true, "", null); }
+
+    protected void stream_print(PrintStream stream, boolean nl, String formatter, Object...args) {
+        if (outEnabled) {
+            String message = MessageFormatter.arrayFormat(formatter, args).getMessage();
+            if (nl)
+                stream.println(message);
+            else
+                stream.print(message);
+            stream.flush();
+        }
+    }
 }
