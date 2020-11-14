@@ -1,0 +1,82 @@
+/*
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
+ */
+
+package eu.melodic.event.baguette.client.cluster;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.helpers.MessageFormatter;
+
+import java.io.*;
+
+@Slf4j
+@Data
+public abstract class AbstractLogBase {
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private BufferedReader rIn = new BufferedReader(new InputStreamReader(System.in));
+    private InputStream in = System.in;
+    private PrintStream out = System.out;
+    private PrintStream err = System.err;
+    private boolean logEnabled = false;
+    private boolean outEnabled = true;
+
+    public void setIn(InputStream in) { this.in = in; this.rIn = new BufferedReader(new InputStreamReader(in)); }
+
+    protected String readLine(String prompt) throws IOException {
+        out.print(prompt);
+        out.flush();
+        return rIn.readLine();
+    }
+
+    protected void log_trace(String formatter, Object...args) {
+        if (log.isTraceEnabled()) {
+            if (logEnabled) log.trace(formatter, args);
+            if (outEnabled) out.println(MessageFormatter.arrayFormat(formatter, args).getMessage());
+        }
+    }
+
+    protected void log_debug(String formatter, Object...args) {
+        if (log.isDebugEnabled()) {
+            if (logEnabled) log.debug(formatter, args);
+            if (outEnabled) out.println(MessageFormatter.arrayFormat(formatter, args).getMessage());
+        }
+    }
+
+    protected void log_info(String formatter, Object...args) {
+        if (log.isInfoEnabled()) {
+            if (logEnabled) log.info(formatter, args);
+            if (outEnabled) out.println(MessageFormatter.arrayFormat(formatter, args).getMessage());
+        }
+    }
+
+    protected void log_warn(String formatter, Object...args) {
+        if (log.isWarnEnabled()) {
+            if (logEnabled) log.warn(formatter, args);
+            if (outEnabled) out.println(MessageFormatter.arrayFormat(formatter, args).getMessage());
+        }
+    }
+
+    protected void log_error(String formatter) {
+        if (log.isErrorEnabled()) {
+            if (logEnabled) log.error(formatter);
+            if (outEnabled) err.println(MessageFormatter.arrayFormat(formatter, null, null).getMessage());
+        }
+    }
+
+    protected void log_error(String formatter, Exception ex) {
+        if (log.isErrorEnabled()) {
+            if (logEnabled) log.error(formatter, ex);
+            if (outEnabled) err.println(MessageFormatter.arrayFormat(formatter, null, ex).getMessage());
+        }
+    }
+}

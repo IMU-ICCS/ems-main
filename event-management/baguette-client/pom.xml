@@ -19,6 +19,10 @@
 	<artifactId>baguette-client</artifactId>
 	<name>Upperware - EMS - Baguette Client</name>
 
+	<properties>
+		<atomix.version>3.1.8</atomix.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>eu.melodic.event</groupId>
@@ -69,6 +73,34 @@
 			<artifactId>checksum-maven-plugin</artifactId>
 			<version>1.8</version>
 		</dependency>
+
+		<!-- Atomix dependencies -->
+		<dependency>
+			<groupId>io.atomix</groupId>
+			<artifactId>atomix</artifactId>
+			<version>${atomix.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.atomix</groupId>
+			<artifactId>atomix-raft</artifactId>
+			<version>${atomix.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.atomix</groupId>
+			<artifactId>atomix-primary-backup</artifactId>
+			<version>${atomix.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.atomix</groupId>
+			<artifactId>atomix-gossip</artifactId>
+			<version>${atomix.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.atomix</groupId>
+			<artifactId>atomix-storage</artifactId>
+			<version>${atomix.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
