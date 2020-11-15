@@ -52,13 +52,14 @@ public class CommandExecutor {
 
     private InputStream in;
     private PrintStream out;
-    //private PrintStream err;
+    private PrintStream err;
     private String clientId;
 
     private Map<String, Grouping> groupings = new HashMap<>();
     private Grouping activeGrouping;
 
     private Map<String, EventGenerator> eventGenerators = new HashMap<>();
+
     @Autowired
     private ClusterManagerProperties clusterManagerProperties;
     private ClusterManager clusterManager;
@@ -175,7 +176,7 @@ public class CommandExecutor {
             ClusterCLI cli = clusterManager.getCli();
             cli.setIn(in);
             cli.setOut(out);
-            cli.setErr(out);
+            cli.setErr(err);
             log.info("Cluster CLI starts");
             cli.run();
             log.info("Cluster CLI ended");
@@ -415,7 +416,7 @@ public class CommandExecutor {
         // Check new id value
         if (StringUtils.isEmpty(id)) {
             log.error("SET-ID: ERROR: Invalid id: {}", id);
-            out.println("ERROR Invalid id: " + id);
+            err.println("ERROR Invalid id: " + id);
             return;
         }
         clientId = id;
@@ -436,14 +437,14 @@ public class CommandExecutor {
 
         // Store new contents into 'id file'
         try {
-            try (OutputStream out = new FileOutputStream(idFile)) {
-                p.store(out, "# Saved on " + new java.util.Date());
+            try (OutputStream os = new FileOutputStream(idFile)) {
+                p.store(os, "# Saved on " + new java.util.Date());
             }
             log.info("ID SET to: {}", id);
             out.println("ID SET");
         } catch (Exception ex) {
             log.error("SET-ID: EXCEPTION: ", ex);
-            out.println("ERROR While storing id to file: " + ex);
+            err.println("ERROR While storing id to file: " + ex);
         }
     }
 

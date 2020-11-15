@@ -212,7 +212,7 @@ public class Sshc {
         // Start communication protocol with Server
         // Execution waits here until connection is closed
         log.trace("run(): Calling communicateWithServer()...");
-        communicateWithServer(in, out, null);
+        communicateWithServer(in, out, out);
     }
 
     protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
@@ -225,12 +225,12 @@ public class Sshc {
                 .replace("\n","$$");
         String clientAddress = config.getProperty("debug.fake-ip-address", "");
         int clientPort = -1;
-        out.println(String.format("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s",
+        out.printf("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s%n",
                 clientId.replace(" ", "~~"),
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
                 clientAddress,
                 clientPort,
-                certOneLine));
+                certOneLine);
         out.flush();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -240,13 +240,13 @@ public class Sshc {
                 boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), in, out, err);
                 if (exit) break;
             } catch (Exception ex) {
-                log.error("{}", ex);
+                log.error("", ex);
                 // Report exception back to server
-                out.println(ex);
-                ex.printStackTrace(out);
-                out.flush();
+                err.println(ex);
+                ex.printStackTrace(err);
+                err.flush();
             }
         }
-        out.println(String.format("-BYE FROM CLIENT: %s", clientId));
+        out.printf("-BYE FROM CLIENT: %s%n", clientId);
     }
 }

@@ -347,7 +347,7 @@ public class ClusterManager extends AbstractLogBase {
 				.withMembershipProvider(bootstrapDiscoveryProvider);
 
 		// Configure TLS for messaging
-		log_info("CLM: Building Atomix: TLS={}", properties.getTls());
+		log_info("CLM: Building Atomix: TLS enabled={}", properties.getTls().isEnabled());
 		atomixBuilder
 				.withTlsEnabled(properties.getTls().isEnabled())
 				.withKeyStore(properties.getTls().getKeystore())
