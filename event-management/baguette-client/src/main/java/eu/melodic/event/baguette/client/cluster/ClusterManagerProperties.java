@@ -12,8 +12,10 @@ package eu.melodic.event.baguette.client.cluster;
 import io.atomix.utils.net.Address;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
 import java.util.Properties;
@@ -21,6 +23,7 @@ import java.util.Properties;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "cluster")
+@PropertySource("file:${MELODIC_CONFIG_DIR}/cluster.properties")
 public class ClusterManagerProperties {
 	private String clusterId = "local-cluster";
 	private NodeProperties localNode = new NodeProperties("localhost:1234");
@@ -55,6 +58,7 @@ public class ClusterManagerProperties {
 	}
 
 	@Data
+	@ToString(exclude = {"keystorePassword", "truststorePassword"})
 	public static class TlsProperties {
 		private boolean enabled;
 		private String keystore;
