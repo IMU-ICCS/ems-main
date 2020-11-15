@@ -11,11 +11,11 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.util.Properties;
 
 /**
  * Baguette Client Command-Line Interface
@@ -23,7 +23,7 @@ import java.util.Properties;
 @Slf4j
 @Service
 public class BaguetteClientCLI {
-    private Properties config;
+    private BaguetteClientProperties config;
     private String clientId;
     private String prompt = "CLI> ";
 
@@ -32,12 +32,14 @@ public class BaguetteClientCLI {
     @Autowired
     BrokerCepService brokerCepService;
 
-    public void setConfigAndId(Properties config, String idFile) {
+    public void setConfiguration(BaguetteClientProperties config) {
         this.config = config;
-        this.clientId = config.getProperty("client.id", "");
-        config.setProperty("exit-command.allowed", "true");
+        this.clientId = config.getClientId();
+        if (StringUtils.isNotBlank(clientId))
+            prompt = clientId.trim()+"> ";
+        config.setExitCommandAllowed(true);
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
-        this.commandExecutor.setConfigAndId(config, idFile);
+        this.commandExecutor.setConfiguration(config);
     }
 
     public void run() throws IOException {
@@ -46,34 +48,17 @@ public class BaguetteClientCLI {
 
     public void run(InputStream in, PrintStream out, PrintStream err) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        /*String certOneLine = Optional
-                .ofNullable(brokerCepService.getBrokerCertificate())
-                .orElse("")
-                .replace(" ","~~")
-                .replace("\r\n","##")
-                .replace("\n","$$");
-        String clientAddress = config.getProperty("debug.fake-ip-address", "");
-        int clientPort = -1;
-        out.println(String.format("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s",
-                clientId.replace(" ", "~~"),
-                brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
-                clientAddress,
-                clientPort,
-                certOneLine));
-        out.flush();*/
-
         out.print(prompt);
         out.flush();
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            log.info(line);
+            //log.info(line);
             try {
                 boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), in, out, err);
                 if (exit) break;
             } catch (Exception ex) {
-                log.error("", ex);
-                // Report exception back to server
+                //log.error("", ex);
                 out.println(ex);
                 ex.printStackTrace(out);
                 out.flush();
@@ -81,6 +66,5 @@ public class BaguetteClientCLI {
             out.print(prompt);
             out.flush();
         }
-        /*out.println(String.format("-BYE FROM CLIENT: %s", clientId));*/
     }
 }

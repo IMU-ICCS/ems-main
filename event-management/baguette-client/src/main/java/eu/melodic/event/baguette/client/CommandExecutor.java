@@ -47,7 +47,7 @@ public class CommandExecutor {
     @Autowired
     private BrokerClientProperties brokerClientProperties;
 
-    private Properties config;
+    private BaguetteClientProperties config;
     private String idFile;
 
     private InputStream in;
@@ -64,11 +64,11 @@ public class CommandExecutor {
     private ClusterManagerProperties clusterManagerProperties;
     private ClusterManager clusterManager;
 
-    public void setConfigAndId(Properties config, String idFile) {
+    public void setConfiguration(BaguetteClientProperties config) {
         log.trace("CommandExecutor: brokerCepService: {}", brokerCepService);
         this.config = config;
-        this.idFile = idFile;
-        this.clientId = config.getProperty("client.id", "");
+        this.idFile = DEFAULT_ID_FILE;
+        this.clientId = config.getClientId();
     }
 
     boolean executeCommand(String line, InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
@@ -82,7 +82,7 @@ public class CommandExecutor {
 
         if ("EXIT".equals(cmd)) {
             boolean canExit = false;
-            try { canExit = Boolean.parseBoolean(config.getProperty("exit-command.allowed", "false")); } catch (Exception e) {}
+            try { canExit = config.isExitCommandAllowed(); } catch (Exception ignored) {}
             if (canExit) {
                 if (clusterManager != null && clusterManager.isInitialized())
                     clusterManager.leaveCluster();
@@ -415,8 +415,8 @@ public class CommandExecutor {
     protected synchronized void setClientId(String id) {
         // Check new id value
         if (StringUtils.isEmpty(id)) {
-            log.error("SET-ID: ERROR: Invalid id: {}", id);
-            err.println("ERROR Invalid id: " + id);
+            log.error("SET-ID: ERROR: Empty id: {}", id);
+            err.println("ERROR Empty id: " + id);
             return;
         }
         clientId = id;

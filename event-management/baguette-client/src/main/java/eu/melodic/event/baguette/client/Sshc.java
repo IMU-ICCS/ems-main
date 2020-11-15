@@ -33,7 +33,6 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.Properties;
 
 //import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 //import org.apache.sshd.client.keyverifier.RequiredServerKeyVerifier;
@@ -45,8 +44,7 @@ import java.util.Properties;
 @Service
 @Slf4j
 public class Sshc {
-    private Properties config;
-    private String idFile;
+    private BaguetteClientProperties config;
     private SshClient client;
     private SimpleClient simple;
     private ClientSession session;
@@ -62,18 +60,17 @@ public class Sshc {
     //private PrintStream err;
     private String clientId;
 
-    public void setConfigAndId(Properties config, String idFile) throws IOException {
+    public void setConfiguration(BaguetteClientProperties config) throws IOException {
         this.config = config;
-        this.idFile = idFile;
-        this.clientId = config.getProperty("client.id", "");
+        this.clientId = config.getClientId();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
-        this.commandExecutor.setConfigAndId(config, idFile);
+        this.commandExecutor.setConfiguration(config);
     }
 
     public synchronized void start(boolean retry) throws IOException {
         if (retry) {
             log.trace("Starting client in retry mode");
-            long retryPeriod = Long.parseLong(config.getProperty("retry.period", "60000"));
+            long retryPeriod = config.getRetryPeriod();
             while (!started) {
                 log.debug("(Re-)trying to start client....");
                 try {
@@ -99,13 +96,13 @@ public class Sshc {
         if (started) return;
         log.info("Connecting to server...");
 
-        String host = config.getProperty("host");
-        int port = Integer.parseInt(config.getProperty("port", "22"));
-        String serverPubKey = config.getProperty("pubkey");
-        String serverFingerprint = config.getProperty("fingerprint");
-        String username = config.getProperty("username");
-        String password = config.getProperty("password");
-        long authTimeout = Long.parseLong(config.getProperty("auth.timeout", "60000"));
+        String host = config.getServerAddress();
+        int port = config.getServerPort();
+        String serverPubKey = config.getServerPubkey();
+        String serverFingerprint = config.getServerFingerprint();
+        String username = config.getServerUsername();
+        String password = config.getServerPassword();
+        long authTimeout = config.getAuthTimeout();
 
         // Starting client and connecting to server
         this.client = SshClient.setUpDefaultClient();
@@ -223,7 +220,7 @@ public class Sshc {
                 .replace(" ","~~")
                 .replace("\r\n","##")
                 .replace("\n","$$");
-        String clientAddress = config.getProperty("debug.fake-ip-address", "");
+        String clientAddress = config.getDebugFakeIpAddress();
         int clientPort = -1;
         out.printf("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s%n",
                 clientId.replace(" ", "~~"),
