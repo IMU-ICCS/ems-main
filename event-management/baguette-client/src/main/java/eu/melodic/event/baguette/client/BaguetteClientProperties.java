@@ -15,6 +15,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.List;
+
 @Data
 @Configuration
 @ConfigurationProperties
@@ -27,6 +29,8 @@ public class BaguetteClientProperties {
 
 	private boolean exitCommandAllowed = false;
 	private int killDelay = 5;
+
+	private List<Class<Collector>> collectorClasses;
 
 	private String clientId;
 	private String debugFakeIpAddress;

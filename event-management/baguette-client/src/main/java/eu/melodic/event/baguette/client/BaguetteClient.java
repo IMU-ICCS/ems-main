@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +39,7 @@ public class BaguetteClient implements ApplicationRunner {
     private final ClusterManagerProperties clusterManagerProperties;
     private final ConfigurableApplicationContext applicationContext;
 
-    private final static Class<Collector>[] collectorClasses = new Class[] { NetdataCollector.class };
-    private List<Collector> collectorList = new ArrayList<>();
+    private List<Collector> collectorsList = new ArrayList<>();
 
     private static int killDelay;
 
@@ -106,16 +106,18 @@ public class BaguetteClient implements ApplicationRunner {
     }
 
     protected void startCollectors() {
-        if (!collectorList.isEmpty())
+        if (!collectorsList.isEmpty())
             throw new IllegalArgumentException("Collectors have already been started");
 
         log.debug("BaguetteClient: Starting collectors...");
-        for (Class<Collector> collectorClass : collectorClasses) {
+        if (baguetteClientProperties.getCollectorClasses()==null)
+            baguetteClientProperties.setCollectorClasses(Collections.singletonList(NetdataCollector.class));
+        for (Class<Collector> collectorClass : baguetteClientProperties.getCollectorClasses()) {
             try {
                 log.debug("BaguetteClient: Starting collector: {}...", collectorClass.getName());
                 Collector collector = applicationContext.getBean(collectorClass);
                 collector.start();
-                collectorList.add(collector);
+                collectorsList.add(collector);
                 log.debug("BaguetteClient: Starting collector: {}...ok", collectorClass.getName());
             } catch (NoSuchBeanDefinitionException e) {
                 log.error("BaguetteClient: Exception while starting collector: {}: ", collectorClass.getName(), e);
@@ -126,7 +128,7 @@ public class BaguetteClient implements ApplicationRunner {
 
     protected void stopCollectors() {
         log.debug("BaguetteClient: Stopping collectors...");
-        for (Collector collector : collectorList) {
+        for (Collector collector : collectorsList) {
             try {
                 log.debug("BaguetteClient: Stopping collector: {}...", collector.getClass().getName());
                 collector.stop();
@@ -135,7 +137,7 @@ public class BaguetteClient implements ApplicationRunner {
                 log.error("BaguetteClient: Exception while stopping collector: {}: ", collector.getClass().getName(), e);
             }
         }
-        collectorList.clear();
+        collectorsList.clear();
     }
 
     protected void runSshClient(ApplicationContext appCtx) {
