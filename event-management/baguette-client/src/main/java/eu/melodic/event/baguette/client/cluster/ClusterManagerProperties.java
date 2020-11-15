@@ -23,7 +23,6 @@ import java.util.Properties;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "cluster")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/cluster.properties")
 public class ClusterManagerProperties {
 	private String clusterId = "local-cluster";
 	private NodeProperties localNode = new NodeProperties("localhost:1234");

@@ -181,6 +181,10 @@ public class CommandExecutor {
             log.info("Cluster CLI starts");
             cli.run();
             log.info("Cluster CLI ended");
+
+        } else if ("SHOW-CONFIG".equals(cmd)) {
+            log.info("BaguetteClient: configuration:\n{}", config);
+            log.info("Cluster: configuration:\n{}", clusterManagerProperties);
         } else {
             args[0] = cmd;
             log.warn("UNKNOWN COMMAND: " + String.join(" ", args));
@@ -426,12 +430,9 @@ public class CommandExecutor {
         if (idFile == null)
             idFile = DEFAULT_ID_FILE;
         Properties p = new Properties();
-        try {
-            try (InputStream in = new FileInputStream(idFile)) {
-                p.load(in);
-            }
-        } catch (Exception ex) {
-        }
+        try (InputStream in = new FileInputStream(idFile)) {
+            p.load(in);
+        } catch (Exception ignored) { }
 
         // Update 'id file' contents in-memory
         p.setProperty("client.id", id);
