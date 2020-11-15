@@ -49,7 +49,6 @@ STARTUP_SCRIPT=$BIN_DIRECTORY/baguette-client
 SERVICE_NAME=baguette-client
 CLIENT_CONF_FILE=$CONF_DIRECTORY/baguette-client.properties
 CLIENT_ID_FILE=$CONF_DIRECTORY/id.txt
-#CREDENTIALS_FILE=$CONF_DIRECTORY/baguette-server.credentials
 
 # Check if already installed
 if [ -f /opt/baguette-client/conf/ok.txt ]; then
@@ -171,7 +170,6 @@ fi
 # Add Id, Credentials and Client configuration files
 echo "Add Id, Credentials and Client configuration files"
 date -Iseconds
-#touch $CLIENT_ID_FILE $CREDENTIALS_FILE $CLIENT_CONF_FILE
 touch $CLIENT_ID_FILE $CLIENT_CONF_FILE
 if [ $? != 0 ]; then
   echo "Failed to 'touch' configuration files ($?)"
@@ -181,9 +179,7 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-#chmod u=rw,og-rwx $CLIENT_ID_FILE $CREDENTIALS_FILE $CLIENT_CONF_FILE
 chmod u=rw,og-rwx $CLIENT_ID_FILE $CLIENT_CONF_FILE
-#touch $CLIENT_ID_FILE $CREDENTIALS_FILE
 if [ $? != 0 ]; then
   echo "Failed to change permissions of configuration files ($?)"
   echo "Aborting installation..."
