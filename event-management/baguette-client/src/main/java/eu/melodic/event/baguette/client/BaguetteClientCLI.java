@@ -53,13 +53,10 @@ public class BaguetteClientCLI {
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            //log.info(line);
             try {
                 boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), in, out, err);
                 if (exit) break;
             } catch (Exception ex) {
-                //log.error("", ex);
-                out.println(ex);
                 ex.printStackTrace(out);
                 out.flush();
             }

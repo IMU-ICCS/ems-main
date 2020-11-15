@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,10 +35,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BaguetteClient implements ApplicationRunner {
     private final BaguetteClientProperties baguetteClientProperties;
+    private final ClusterManagerProperties clusterManagerProperties;
     private final ConfigurableApplicationContext applicationContext;
 
     private final static Class<Collector>[] collectorClasses = new Class[] { NetdataCollector.class };
     private List<Collector> collectorList = new ArrayList<>();
+
+    private static int killDelay;
 
     public static void main(String[] args) {
         SpringApplication.run(BaguetteClient.class, args);
@@ -48,7 +52,12 @@ public class BaguetteClient implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws IOException {
         log.debug("BaguetteClient: Starting");
+
+        // Process command line arguments
+        processCommandLineArgs(args);
+        killDelay = baguetteClientProperties.getKillDelay();
         log.debug("BaguetteClient: configuration: {}", baguetteClientProperties);
+        log.debug("Cluster: configuration: {}", clusterManagerProperties);
 
         boolean interactiveMode = args.containsOption("i");
 
@@ -77,6 +86,23 @@ public class BaguetteClient implements ApplicationRunner {
         applicationContext.close();
 
         log.info("BaguetteClient: Bye");
+    }
+
+    private void processCommandLineArgs(ApplicationArguments args) {
+        // Get cluster node addresses and properties
+        List<String> addresses = args.getNonOptionArgs();
+        if (addresses!=null && addresses.size()>0) {
+            clusterManagerProperties.getLocalNode().setAddress(addresses.get(0));
+            if (addresses.size()>1) {
+                clusterManagerProperties.setMemberAddresses(addresses.subList(1, addresses.size()));
+            }
+        }
+
+        // Enable/Disable TLS
+        if (args.containsOption("tls"))
+            clusterManagerProperties.getTls().setEnabled(true);
+        if (args.containsOption("notls"))
+            clusterManagerProperties.getTls().setEnabled(false);
     }
 
     protected void startCollectors() {
@@ -163,16 +189,19 @@ public class BaguetteClient implements ApplicationRunner {
                         s.isAlive(), s.isDaemon(), s.isInterrupted()));
 
         // Start killer thread
-        new Thread(() -> {
-            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-            int delay = 5;
-            log.warn("Waiting JVM to exit for {} more seconds", delay);
-            try { Thread.sleep(delay*1000); } catch (InterruptedException ignored) {}
-            log.warn("Forcing JVM to exit");
-            System.exit(0);
-        }) {{
-            setDaemon(true);
-            start();
-        }};
+        if (killDelay>0) {
+            new Thread(() -> {
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) { }
+                log.warn("Waiting JVM to exit for {} more seconds", killDelay);
+                try { Thread.sleep(killDelay * 1000); } catch (InterruptedException ignored) { }
+                log.warn("Forcing JVM to exit");
+                System.exit(0);
+            }) {{
+                setDaemon(true);
+                start();
+            }};
+        } else {
+            log.debug("Killer thread disabled");
+        }
     }
 }

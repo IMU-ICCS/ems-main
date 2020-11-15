@@ -24,7 +24,9 @@ public class BaguetteClientProperties {
 	private long authTimeout = 60000;
 	private long execTimeout = 120000;
 	private long retryPeriod = 60000;
+
 	private boolean exitCommandAllowed = false;
+	private int killDelay = 5;
 
 	private String clientId;
 	private String debugFakeIpAddress;

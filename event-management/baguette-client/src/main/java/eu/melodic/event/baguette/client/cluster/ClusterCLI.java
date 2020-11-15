@@ -27,6 +27,16 @@ public class ClusterCLI extends AbstractLogBase {
 
 	@Getter @Setter
 	private String prompt = " -> ";
+	@Getter @Setter
+	private boolean promptUpdate;
+
+	public void updatePrompt() {
+		if (promptUpdate) {
+			setPrompt((clusterManager != null && clusterManager.isRunning())
+					? "[" + clusterManager.getLocalMember().id().id() + "] => "
+					: " => ");
+		}
+	}
 
 	public void run() {
 		run(false, false, false, true);
@@ -35,8 +45,11 @@ public class ClusterCLI extends AbstractLogBase {
 	public void run(boolean joinOnStart, boolean leaveOnExit, boolean autoElect, boolean allowExit) {
 		if (joinOnStart && !clusterManager.isInitialized()) {
 			clusterManager.initialize();
+		}
+		if (joinOnStart && !clusterManager.isRunning()) {
 			clusterManager.joinCluster(autoElect);
 		}
+		updatePrompt();
 
 		// Start doing work...
 		while (true) {
@@ -118,9 +131,11 @@ public class ClusterCLI extends AbstractLogBase {
 					// Join/start cluster
 					clusterManager.initialize();
 					clusterManager.joinCluster();
+					updatePrompt();
 
 				} else if ("leave".equalsIgnoreCase(cmd[0])) {
 					clusterManager.leaveCluster();
+					updatePrompt();
 
 				} else if ("message".equalsIgnoreCase(cmd[0])) {
 					ClusterCommunicationService communicationService = clusterManager.getAtomix().getCommunicationService();
@@ -201,7 +216,7 @@ public class ClusterCLI extends AbstractLogBase {
 			}
 		}
 
-		if (leaveOnExit && clusterManager.isInitialized())
+		if (leaveOnExit && clusterManager.isRunning())
 			clusterManager.leaveCluster();
 	}
 }

@@ -84,7 +84,7 @@ public class CommandExecutor {
             boolean canExit = false;
             try { canExit = config.isExitCommandAllowed(); } catch (Exception ignored) {}
             if (canExit) {
-                if (clusterManager != null && clusterManager.isInitialized())
+                if (clusterManager != null && clusterManager.isRunning())
                     clusterManager.leaveCluster();
                 return true;    // Signal 'Sshc' to quit
             } else {
@@ -177,6 +177,7 @@ public class CommandExecutor {
             cli.setIn(in);
             cli.setOut(out);
             cli.setErr(err);
+            cli.setPromptUpdate(true);
             log.info("Cluster CLI starts");
             cli.run();
             log.info("Cluster CLI ended");

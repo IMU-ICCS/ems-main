@@ -93,6 +93,10 @@ public class ClusterManager extends AbstractLogBase {
 		return atomix!=null;
 	}
 
+	public boolean isRunning() {
+		return (atomix!=null && atomix.isRunning());
+	}
+
 	public void initialize() {
 		initialize(properties, callback);
 	}
@@ -138,6 +142,10 @@ public class ClusterManager extends AbstractLogBase {
 	}
 
 	public void joinCluster(boolean startElection) {
+		// Initialize cluster if needed
+		if (atomix==null)
+			initialize();
+
 		// Start/Join cluster
 		log_info("CLM: Joining cluster...");
 		long startTm = System.currentTimeMillis();
