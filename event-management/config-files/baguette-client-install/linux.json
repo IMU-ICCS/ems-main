@@ -71,7 +71,7 @@
     {
       "description": "Change files and folders ownership",
       "taskType": "CMD",
-      "command": "sudo chown -R ${NODE_SSH_USERNAME}:${NODE_SSH_USERNAME} /opt/baguette-client",
+      "command": "sudo chown -R ${NODE_SSH_USERNAME} /opt/baguette-client",
       "executable": false,
       "exitCode": 0,
       "match": false
