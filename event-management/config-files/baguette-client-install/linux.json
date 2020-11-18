@@ -146,6 +146,15 @@
       "exitCode": 0,
       "match": false,
       "retries": 5
+    },
+    {
+      "description": "Launch Netdata",
+      "taskType": "CMD",
+      "command": "sudo /usr/sbin/netdata",
+      "executable": false,
+      "exitCode": 0,
+      "match": false,
+      "retries": 5
     }
   ]
 }
