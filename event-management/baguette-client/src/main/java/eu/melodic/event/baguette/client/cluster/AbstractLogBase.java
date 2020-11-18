@@ -27,7 +27,7 @@ public abstract class AbstractLogBase {
     private InputStream in = System.in;
     private PrintStream out = System.out;
     private PrintStream err = System.err;
-    private boolean logEnabled = false;
+    private boolean logEnabled = true;
     private boolean outEnabled = true;
 
     public void setIn(InputStream in) { this.in = in; this.rIn = new BufferedReader(new InputStreamReader(in)); }
