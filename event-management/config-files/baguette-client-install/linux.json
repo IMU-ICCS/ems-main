@@ -137,24 +137,6 @@
       "description": "Log installation end",
       "taskType": "LOG",
       "message": "EMS client installation completed at Node"
-    },
-    {
-      "description": "Launch EMS client",
-      "taskType": "CMD",
-      "command": "/opt/baguette-client/bin/run.sh",
-      "executable": false,
-      "exitCode": 0,
-      "match": false,
-      "retries": 5
-    },
-    {
-      "description": "Launch Netdata",
-      "taskType": "CMD",
-      "command": "sudo /usr/sbin/netdata",
-      "executable": false,
-      "exitCode": 0,
-      "match": false,
-      "retries": 5
     }
   ]
 }
