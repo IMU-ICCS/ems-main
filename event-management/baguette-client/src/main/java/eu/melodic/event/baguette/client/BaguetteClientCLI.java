@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.baguette.client.cluster.ClusterManager;
 import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,7 @@ public class BaguetteClientCLI {
         this.config = config;
         this.clientId = config.getClientId();
         if (StringUtils.isNotBlank(clientId))
-            prompt = clientId.trim()+"> ";
+            prompt = "CLI-"+ ClusterManager.getLocalHostName()+" > ";
         config.setExitCommandAllowed(true);
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
         this.commandExecutor.setConfiguration(config);

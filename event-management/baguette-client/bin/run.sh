@@ -15,6 +15,7 @@ cd ${BASEDIR}
 MELODIC_CONFIG_DIR=${BASEDIR}/conf
 PAASAGE_CONFIG_DIR=${BASEDIR}/conf
 LOG_FILE=${BASEDIR}/logs/output.txt
+TEE_FILE=${BASEDIR}/logs/tee.txt
 JASYPT_PASSWORD=melodic
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD
 
@@ -51,9 +52,14 @@ echo "Starting baguette client..." &>> ${LOG_FILE}
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}" &>> ${LOG_FILE}
 echo "LOG_FILE=${LOG_FILE}" &>> ${LOG_FILE}
 
-java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &>> ${LOG_FILE} &
-PID=`jps | grep BaguetteClient | cut -d " " -f 1`
-PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
-echo "Baguette client PID: $PID"
+if [ "$1" == "--i" ]; then
+  echo "Baguette client running in Interactive mode"
+  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* 2>&1 | tee ${TEE_FILE}
+else
+  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &>> ${LOG_FILE} &
+  PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+  PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
+  echo "Baguette client PID: $PID"
+fi
 
 cd $PREVWORKDIR

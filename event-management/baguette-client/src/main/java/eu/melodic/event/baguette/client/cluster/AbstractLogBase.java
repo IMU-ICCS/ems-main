@@ -21,6 +21,8 @@ import java.io.*;
 @Slf4j
 @Data
 public abstract class AbstractLogBase {
+    protected final static Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private BufferedReader rIn = new BufferedReader(new InputStreamReader(System.in));
@@ -69,14 +71,19 @@ public abstract class AbstractLogBase {
     protected void log_error(String formatter) {
         if (log.isErrorEnabled()) {
             if (logEnabled) log.error(formatter);
-            if (outEnabled) err.println(MessageFormatter.arrayFormat(formatter, new Object[0], null).getMessage());
+            if (outEnabled) err.println(MessageFormatter.arrayFormat(
+                    formatter, EMPTY_OBJECT_ARRAY, null).getMessage());
         }
     }
 
     protected void log_error(String formatter, Exception ex) {
         if (log.isErrorEnabled()) {
             if (logEnabled) log.error(formatter, ex);
-            if (outEnabled) err.println(MessageFormatter.arrayFormat(formatter, new Object[0], ex).getMessage());
+            if (outEnabled) {
+                err.print(MessageFormatter.arrayFormat(
+                        formatter, EMPTY_OBJECT_ARRAY, ex).getMessage());
+                ex.printStackTrace(err);
+            }
         }
     }
 

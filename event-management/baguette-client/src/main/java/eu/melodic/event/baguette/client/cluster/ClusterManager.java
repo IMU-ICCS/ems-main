@@ -23,6 +23,8 @@ import io.atomix.utils.net.Address;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -51,8 +53,11 @@ public class ClusterManager extends AbstractLogBase {
 	// ------------------------------------------------------------------------
 
 	public synchronized ClusterCLI getCli() {
-		if (cli==null)
+		if (cli==null) {
 			cli = new ClusterCLI(this);
+			cli.setLogEnabled(isLogEnabled());
+			cli.setOutEnabled(isOutEnabled());
+		}
 		return cli;
 	}
 
@@ -108,6 +113,10 @@ public class ClusterManager extends AbstractLogBase {
 	public void initialize(ClusterManagerProperties p, BrokerUtil.NodeCallback callback) {
 		assert (p!=null);
 
+		// Set logging and output flags
+		setLogEnabled(p.isLogEnabled());
+		setOutEnabled(p.isOutEnabled());
+
 		// Store properties
 		this.properties = p;
 		this.callback = callback;
@@ -124,9 +133,19 @@ public class ClusterManager extends AbstractLogBase {
 
 		// Get local address and port
 		localAddress = properties.getLocalNode().getAddress();
-		boolean hasLocalAddress = localAddress!=null;
-		if (!hasLocalAddress)
+		log_debug("CLM: resolving local-address (1): {}", localAddress);
+		boolean hasLocalAddress = false;
+		if (localAddress==null) {
 			localAddress = getLocalAddressFromMembersList(properties.getMemberAddresses());
+			log_debug("CLM: resolving local-address (2): {}", localAddress);
+			hasLocalAddress = (localAddress!=null);
+		}
+		if (localAddress==null) {
+			//localAddress = Address.from(getLocalHostName() + ":1234");
+			localAddress = Address.from(getLocalHostAddress() + ":1234");
+			log_debug("CLM: resolving local-address (3): {}", localAddress);
+		}
+		log_info("CLM: Local address to be used when building Atomix: {}", localAddress);
 
 		// Initialize Membership provider
 		bootstrapDiscoveryProvider = buildNodeDiscoveryProvider(
@@ -135,6 +154,8 @@ public class ClusterManager extends AbstractLogBase {
 		// Create Atomix and Join/start cluster
 		atomix = buildAtomix(properties, localAddress, bootstrapDiscoveryProvider);
 		brokerUtil = new BrokerUtil(this, callback);
+		brokerUtil.setLogEnabled(isLogEnabled());
+		brokerUtil.setOutEnabled(isOutEnabled());
 	}
 
 	public void joinCluster() {
@@ -198,8 +219,36 @@ public class ClusterManager extends AbstractLogBase {
 
 	// ------------------------------------------------------------------------
 
-	private String createMemberName(int port) { return NODE_NAME_PREFIX+port; }
-	private String createMemberName(String address) { return NODE_NAME_PREFIX+address; }
+	public static String getLocalHostName() {
+		String hostname = null;
+		try {
+			hostname = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			//log_error("Exception while getting Node hostname: ", e);
+		}
+		if (StringUtils.isBlank(hostname))
+			hostname = getLocalHostAddress();
+		return hostname;
+	}
+
+	public static String getLocalHostAddress() {
+		String address = null;
+		try {
+			address = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			//log_error("Exception while getting Node local address: ", e);
+		}
+		if (StringUtils.isBlank(address))
+			address = UUID.randomUUID().toString();
+		return address;
+	}
+
+	// ------------------------------------------------------------------------
+
+	private String createMemberName(int port) { return createMemberName(":"+port); }
+	private String createMemberName(String address) {
+		return NODE_NAME_PREFIX+getLocalHostName()+"_"+address.replace(":", "_");
+	}
 
 	private Node createNode(String address, String port) { return createNode(address, Integer.parseInt(port)); }
 	private Node createNode(String address, int port) { return createNode(address+":"+port); }
@@ -220,6 +269,8 @@ public class ClusterManager extends AbstractLogBase {
 	}
 
 	private Address getLocalAddressFromMembersList(List<String> addresses) {
+		if (addresses==null || addresses.size()==0)
+			return null;
 		return getAddressFromString(addresses.get(0));
 	}
 

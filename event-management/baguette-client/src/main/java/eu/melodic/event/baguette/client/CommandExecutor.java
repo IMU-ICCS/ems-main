@@ -30,9 +30,6 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Consumer;
 
-//import eu.melodic.event.brokercep.event.MetricEvent;
-//import java.util.concurrent.Executors;
-
 
 /**
  * Command Executor
@@ -163,6 +160,16 @@ public class CommandExecutor {
         } else if ("CLUSTER-INIT".equals(cmd)) {
             if (clusterManagerProperties==null)
                 clusterManagerProperties = new ClusterManagerProperties();
+            if (clusterManagerProperties.getTls().isUseConfigOfBroker()) {
+                clusterManagerProperties.getTls().setKeystore(
+                        brokerCepService.getBrokerCepProperties().getSsl().getKeystoreFile());
+                clusterManagerProperties.getTls().setKeystorePassword(
+                        brokerCepService.getBrokerCepProperties().getSsl().getKeystorePassword());
+                clusterManagerProperties.getTls().setTruststore(
+                        brokerCepService.getBrokerCepProperties().getSsl().getTruststoreFile());
+                clusterManagerProperties.getTls().setTruststorePassword(
+                        brokerCepService.getBrokerCepProperties().getSsl().getTruststorePassword());
+            }
             log.debug("Cluster properties:  {}", clusterManagerProperties);
             clusterManager = new ClusterManager();
             clusterManager.initialize(clusterManagerProperties);
@@ -181,6 +188,43 @@ public class CommandExecutor {
             log.info("Cluster CLI starts");
             cli.run();
             log.info("Cluster CLI ended");
+
+        } else if ("GET-LOCAL-NODE-CERTIFICATE".equals(cmd)) {
+            String nlChar = (args.length > 1) ? args[1].trim() : null;
+            try {
+                log.info("Retrieving this node certificate from keystore:");
+                String cert = brokerCepService.getBrokerCertificate();
+                if (cert!=null && StringUtils.isNotBlank(nlChar))
+                    cert = cert.replace("\r\n", nlChar).replace("\n", nlChar);
+                log.info("{}", cert);
+            } catch (Exception e) {
+                log.error("Exception while retrieving local node certificate: ", e);
+            }
+
+        } else if ("ADD-TRUSTED-NODE".equals(cmd)) {
+            if (args.length < 4) return false;
+            String nodeAlias = args[1];
+            String nlChar = args[2];
+            String nodeCert = String.join(" ",
+                    Arrays.asList(args).subList(3, args.length)).replace(nlChar, "\n");
+            try {
+                log.info("Adding/Updating trusted node certificate in truststore: {}\nCertificate: {}", nodeAlias, nodeCert);
+                brokerCepService.addOrReplaceCertificateInTruststore(nodeAlias, nodeCert);
+                log.info("Truststore updated: {}", nodeAlias);
+            } catch (Exception e) {
+                log.error("Exception while updating truststore: ", e);
+            }
+
+        } else if ("DEL-TRUSTED-NODE".equals(cmd)) {
+            if (args.length < 2) return false;
+            String nodeAlias = args[1];
+            try {
+                log.info("Deleting trusted node certificate from truststore: {}", nodeAlias);
+                brokerCepService.deleteCertificateFromTruststore(nodeAlias);
+                log.info("Truststore updated: {}", nodeAlias);
+            } catch (Exception e) {
+                log.error("Exception while updating truststore: ", e);
+            }
 
         } else if ("SHOW-CONFIG".equals(cmd)) {
             log.info("BaguetteClient: configuration:\n{}", config);
