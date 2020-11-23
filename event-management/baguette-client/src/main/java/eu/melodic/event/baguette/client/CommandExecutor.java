@@ -161,6 +161,10 @@ public class CommandExecutor {
                 generator.stop();
             }
         } else if ("CLUSTER-INIT".equals(cmd)) {
+            if (clusterManager!=null && clusterManager.isRunning()) {
+                log.error("Cluster is running. Leave cluster first");
+                return false;
+            }
             if (clusterManagerProperties==null)
                 clusterManagerProperties = new ClusterManagerProperties();
             if (clusterManagerProperties.getTls().isUseConfigOfBroker()) {
@@ -179,10 +183,30 @@ public class CommandExecutor {
             //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
             clusterManager.setCallback(new ClusterNodeCallback());
         } else if ("CLUSTER-JOIN".equals(cmd)) {
+            if (clusterManager==null) {
+                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                return false;
+            }
+            if (clusterManager.isRunning()) {
+                log.error("Cluster is running. Leave cluster first");
+                return false;
+            }
             clusterManager.joinCluster();
         } else if ("CLUSTER-LEAVE".equals(cmd)) {
+            if (clusterManager==null) {
+                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                return false;
+            }
+            if (! clusterManager.isRunning()) {
+                log.error("Cluster is not running. Join cluster first");
+                return false;
+            }
             clusterManager.leaveCluster();
         } else if ("CLUSTER-SHELL".equals(cmd)) {
+            if (clusterManager==null) {
+                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                return false;
+            }
             ClusterCLI cli = clusterManager.getCli();
             cli.setIn(in);
             cli.setOut(out);
@@ -192,7 +216,14 @@ public class CommandExecutor {
             cli.run();
             log.info("Cluster CLI ended");
         } else if ("CLUSTER-EXEC".equals(cmd)) {
-            if (args.length < 2) return false;
+            if (args.length < 2) {
+                log.error("No cluster command specified");
+                return false;
+            }
+            if (clusterManager==null) {
+                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                return false;
+            }
             ClusterCLI cli = clusterManager.getCli();
             cli.setIn(in);
             cli.setOut(out);
