@@ -9,7 +9,10 @@
 
 package eu.melodic.event.baguette.client;
 
-import eu.melodic.event.baguette.client.cluster.*;
+import eu.melodic.event.baguette.client.cluster.BrokerUtil;
+import eu.melodic.event.baguette.client.cluster.ClusterCLI;
+import eu.melodic.event.baguette.client.cluster.ClusterManager;
+import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
@@ -188,6 +191,20 @@ public class CommandExecutor {
             log.info("Cluster CLI starts");
             cli.run();
             log.info("Cluster CLI ended");
+        } else if ("CLUSTER-EXEC".equals(cmd)) {
+            if (args.length < 2) return false;
+            ClusterCLI cli = clusterManager.getCli();
+            cli.setIn(in);
+            cli.setOut(out);
+            cli.setErr(err);
+            String[] args1 = Arrays.stream(args, 1, args.length).toArray(String[]::new);
+            String cmd1 = String.join(" ", args1);
+            try {
+                log.info("Cluster executes command: {}", cmd1);
+                cli.executeCommand(cmd1, args1);
+			} catch (Exception ex) {
+				log.error("Cluster: Exception caught while executing command: {}\nException ", cmd1, ex);
+            }
 
         } else if ("GET-LOCAL-NODE-CERTIFICATE".equals(cmd)) {
             String nlChar = (args.length > 1) ? args[1].trim() : null;
@@ -231,7 +248,9 @@ public class CommandExecutor {
             log.info("Cluster: configuration:\n{}", clusterManagerProperties);
         } else {
             args[0] = cmd;
-            log.warn("UNKNOWN COMMAND: " + String.join(" ", args));
+            String line = String.join(" ", args);
+            if (StringUtils.isNotBlank(line))
+                log.warn("UNKNOWN COMMAND: {}", line);
         }
         return false;
     }
