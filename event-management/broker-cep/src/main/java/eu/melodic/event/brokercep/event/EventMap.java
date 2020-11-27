@@ -45,6 +45,20 @@ public class EventMap extends HashMap<String, Object> implements Serializable {
         put("timestamp", timestamp);
     }
 
+    public static EventMap parseEventMap(String s) {
+        if (s==null) return null;
+        s = s.trim();
+        if (s.isEmpty()) return null;
+        if (s.startsWith("{") && s.endsWith("}")) s = s.substring(1, s.length()-1).trim();
+        String[] pairs = s.split(",");
+        EventMap eventMap = new EventMap();
+        for (String pair : pairs) {
+            String[] kv = pair.split("[:=]", 2);
+            eventMap.put(kv[0], kv[1]);
+        }
+        return eventMap;
+    }
+
     public static String[] getPropertyNames() {
         return new String[]{"metricValue", "level", "timestamp"};
     }

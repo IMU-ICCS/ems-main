@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -68,6 +69,8 @@ public class BrokerConfig implements InitializingBean {
     private BrokerCepProperties properties;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
     private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
@@ -356,11 +359,16 @@ public class BrokerConfig implements InitializingBean {
                     String interceptorClassName = part[1];
                     try {
                         Class<MessageInterceptor> interceptorClass = (Class<MessageInterceptor>) Class.forName(interceptorClassName);
-                        MessageInterceptor interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class).newInstance(registry);
+                        MessageInterceptor interceptor = null;
+                        try {
+                            interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class, ApplicationContext.class).newInstance(registry, applicationContext);
+                        } catch (NoSuchMethodException e) {
+                            interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class).newInstance(registry);
+                        }
                         registry.addMessageInterceptorForTopic(destinationPattern, interceptor);
                         log.info("BrokerConfig: Message interceptor registered: {}", bi);
                     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        log.error("BrokerConfig: Error while registering message interceptor: {}. Exception: {}", bi, e);
+                        log.error("BrokerConfig: Error while registering message interceptor: {}. Exception: ", bi, e);
                     }
                 });
 

@@ -79,6 +79,8 @@ public class BrokerCepProperties {
 
     @Value("${message-interceptors:}#{T(java.util.Collections).emptyList()}")
     private List<String> messageInterceptors;
+    @Value("${message-forward-destinations:}#{T(java.util.Collections).emptyList()}")
+    private List<ForwardDestinationConfig> messageForwardDestinations;
 
     @Value("${enable-advisory-watcher:true}")
     private boolean enableAdvisoryWatcher;
@@ -87,4 +89,11 @@ public class BrokerCepProperties {
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
+
+    @Data
+    public static class ForwardDestinationConfig {
+        private String connectionString;
+        private String username;
+        private String password;
+    }
 }
