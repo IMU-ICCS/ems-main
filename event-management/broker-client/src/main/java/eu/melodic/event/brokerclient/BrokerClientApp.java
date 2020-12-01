@@ -60,16 +60,17 @@ public class BrokerClientApp {
             client.receiveEvents(url, topic, new MessageListener() {
                 public void onMessage(Message message) {
                     try {
+                        String destinationName = getDestinationName(message);
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMessage = (ObjectMessage) message;
                             Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - Received object message: {}", obj);
+                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
                         } else if (message instanceof TextMessage) {
                             TextMessage textMessage = (TextMessage) message;
                             String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - Received text message: {}", text);
+                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
                         } else {
-                            log.info("BrokerClientApp:  - Received message: {}", message);
+                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
                         }
                     } catch (JMSException je) {
                         log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
@@ -87,16 +88,17 @@ public class BrokerClientApp {
             client.subscribe(url, topic, listener = new MessageListener() {
                 public void onMessage(Message message) {
                     try {
+                        String destinationName = getDestinationName(message);
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMessage = (ObjectMessage) message;
                             Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - Received object message: {}", obj);
+                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
                         } else if (message instanceof TextMessage) {
                             TextMessage textMessage = (TextMessage) message;
                             String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - Received text message: {}", text);
+                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
                         } else {
-                            log.info("BrokerClientApp:  - Received message: {}", message);
+                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
                         }
                     } catch (JMSException je) {
                         log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
@@ -142,6 +144,17 @@ public class BrokerClientApp {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage();
         }
+    }
+
+    private static String getDestinationName(Message message) throws JMSException {
+        Destination d = message.getJMSDestination();
+        if (d instanceof Topic) {
+            return ((Topic)d).getTopicName();
+        } else
+        if (d instanceof Queue) {
+            return ((Queue)d).getQueueName();
+        } else
+            throw new IllegalArgumentException("Argument is not a JMS destination: "+d);
     }
 
     protected static void usage() {
