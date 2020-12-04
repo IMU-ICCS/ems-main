@@ -270,14 +270,14 @@
                             <directory>${project.basedir}/../config-files/resources</directory>
                         </resource>-->
                         <resource>
-                            <targetPath>/resources</targetPath>
+                            <targetPath>/config/resources</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>baguette-client.tgz</include>
                             <include>baguette-client.tgz.md5</include>
-                            <include>install.sh</include>
+                            <!--<include>install.sh</include>-->
                         </resource>
                         <resource>
-                            <targetPath>/resources</targetPath>
+                            <targetPath>/config/resources</targetPath>
                             <directory>${project.basedir}/src/main/resources/public</directory>
                             <include>*</include>
                         </resource>

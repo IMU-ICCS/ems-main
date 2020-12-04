@@ -20,7 +20,7 @@ RUN /bin/sh -c "apk add --no-cache bash"
 ADD bin ./bin
 ADD jars ./jars
 ADD config ./config
-ADD resources ./resources
+#ADD resources ./resources
 
 RUN mkdir logs
 RUN bash -c 'chmod +rx ./bin/*.sh'
