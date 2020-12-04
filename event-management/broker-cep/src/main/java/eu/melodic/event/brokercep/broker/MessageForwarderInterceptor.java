@@ -90,38 +90,8 @@ public class MessageForwarderInterceptor implements MessageInterceptor {
                     Message m = messageQueue.take();
                     log.debug("MessageQueueProcessor: Message taken from queue: {}", m);
 
-                    if (brokerCepService==null) {
-                        try {
-                            this.brokerCepService = applicationContext.getBean(BrokerCepService.class);
-                            if (brokerCepService==null) {
-                                log.error("MessageQueueProcessor: Null BrokerCepService instance returned");
-                                //keepRunning = false;
-                                continue;
-                            }
-                        } catch (Exception e) {
-                            log.error("MessageQueueProcessor: Exception while getting BrokerCepService instance: ", e);
-                            //keepRunning = false;
-                            continue;
-                        }
-                    }
-                    if (forwardDestinations==null) {
-                        try {
-                            BrokerCepProperties bcp = applicationContext.getBean(BrokerCepProperties.class);
-                            if (bcp==null) {
-                                log.error("MessageQueueProcessor: Null BrokerCepProperties instance returned");
-                                //keepRunning = false;
-                                continue;
-                            }
-                            forwardDestinations = bcp.getMessageForwardDestinations();
-                            log.info("MessageQueueProcessor: Forward destinations initialized: {}", forwardDestinations);
-                        } catch (Exception e) {
-                            log.error("MessageQueueProcessor: Exception while getting BrokerCepProperties instance: ", e);
-                            //keepRunning = false;
-                            continue;
-                        }
-                    }
-                    if (forwardDestinations.size()==0) {
-                        log.error("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
+                    if (! isMessageForwardPossible(m)) {
+                        //keepRunning = false;
                         continue;
                     }
 
@@ -152,20 +122,62 @@ public class MessageForwarderInterceptor implements MessageInterceptor {
             log.warn("MessageQueueProcessor: Stopped processing message queue");
         }
 
+        private boolean isMessageForwardPossible(Message m) {
+            if (brokerCepService==null) {
+                try {
+                    this.brokerCepService = applicationContext.getBean(BrokerCepService.class);
+                    if (brokerCepService==null) {
+                        log.error("MessageQueueProcessor: Null BrokerCepService instance returned");
+                        return false;
+                    }
+                } catch (Exception e) {
+                    log.error("MessageQueueProcessor: Exception while getting BrokerCepService instance: ", e);
+                    return false;
+                }
+            }
+            if (forwardDestinations==null) {
+                try {
+                    BrokerCepProperties bcp = applicationContext.getBean(BrokerCepProperties.class);
+                    if (bcp==null) {
+                        log.error("MessageQueueProcessor: Null BrokerCepProperties instance returned");
+                        return false;
+                    }
+                    forwardDestinations = bcp.getMessageForwardDestinations();
+                    log.info("MessageQueueProcessor: Forward destinations initialized: {}", forwardDestinations);
+                } catch (Exception e) {
+                    log.error("MessageQueueProcessor: Exception while getting BrokerCepProperties instance: ", e);
+                    return false;
+                }
+            }
+            if (forwardDestinations.size()==0) {
+                log.error("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
+                return false;
+            }
+            return true;
+        }
+
         private EventMap messageToEvent(Message message) {
             try {
                 log.trace("BrokerCepConsumer.onMessage(): {}", message);
+                Map<String, Object> eventProperties = message.getProperties();
+                log.trace("BrokerCepConsumer.messageToEvent(): event-properties: {}", eventProperties);
                 if (message instanceof ActiveMQObjectMessage) {
                     ActiveMQObjectMessage mesg = (ActiveMQObjectMessage) message;
 
                     if (mesg.getObject() instanceof Map) {
-                        return new EventMap((Map<String, Object>) mesg.getObject());
+                        EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
+                        if (eventProperties!=null) eventMap.putAll(eventProperties);
+                        log.trace("BrokerCepConsumer.messageToEvent(): event-map: {}", eventMap);
+                        return eventMap;
                     }
                 } else if (message instanceof ActiveMQTextMessage) {
                     ActiveMQTextMessage mesg = (ActiveMQTextMessage) message;
 
                     // Send message to Esper
-                    return EventMap.parseEventMap(mesg.getText());
+                    EventMap eventMap = EventMap.parseEventMap(mesg.getText());
+                    if (eventProperties!=null) eventMap.putAll(eventProperties);
+                    log.trace("BrokerCepConsumer.messageToEvent(): event-map: {}", eventMap);
+                    return eventMap;
                 } else {
                     log.warn("BrokerCepConsumer.onMessage(): Message ignored: type={}", message.getClass().getName());
                 }
