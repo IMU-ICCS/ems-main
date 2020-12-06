@@ -62,7 +62,7 @@
     {
       "description": "Extract installation package to target folder",
       "taskType": "CMD",
-      "command": "sudo tar zxvf /tmp/baguette-client.tgz -C /opt",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S tar zxvf /tmp/baguette-client.tgz -C /opt",
       "executable": false,
       "exitCode": 0,
       "match": false,
@@ -71,7 +71,7 @@
     {
       "description": "Change files and folders ownership",
       "taskType": "CMD",
-      "command": "sudo chown -R ${NODE_SSH_USERNAME} /opt/baguette-client",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S chown -R ${NODE_SSH_USERNAME} /opt/baguette-client",
       "executable": false,
       "exitCode": 0,
       "match": false
