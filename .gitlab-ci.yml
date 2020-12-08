@@ -317,91 +317,91 @@ deploy:melodic-commons:
   script:
     - $DOCKER_CLI $MELODIC_COMMONS_CLI deploy
 
-deploy:melodic-cache:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:melodic-cache
-  script:
-    - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
-
-deploy:dlms:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:dlms
-  script:
-    - $DOCKER_CLI $DLMS_CLI deploy
-
-deploy:dlms-utility:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:dlms-utility
-  script:
-    - $DOCKER_CLI $DLMS_UTILITY_CLI deploy
-
-deploy:dlms-controller:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  script: 
-    - $DOCKER_CLI $DLMS_CONTROLLER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/dlms-controller:unknown $CI_REGISTRY_IMAGE/dlms-controller:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/dlms-controller:$CI_COMMIT_BRANCH
-
-deploy:dlms-webservice:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  script: 
-    - $DOCKER_CLI $DLMS_WEB_SERVICE_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/dlms-webservice:unknown $CI_REGISTRY_IMAGE/dlms-webservice:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/dlms-webservice:$CI_COMMIT_BRANCH
-
-deploy:penalty-calculator:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:penalty-calculator
-  script:
-    - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
+#deploy:melodic-cache:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build:melodic-cache
+#  script:
+#    - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
+#
+#deploy:dlms:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build:dlms
+#  script:
+#    - $DOCKER_CLI $DLMS_CLI deploy
+#
+#deploy:dlms-utility:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build:dlms-utility
+#  script:
+#    - $DOCKER_CLI $DLMS_UTILITY_CLI deploy
+#
+#deploy:dlms-controller:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  script:
+#    - $DOCKER_CLI $DLMS_CONTROLLER_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/dlms-controller:unknown $CI_REGISTRY_IMAGE/dlms-controller:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/dlms-controller:$CI_COMMIT_BRANCH
+#
+#deploy:dlms-webservice:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  script:
+#    - $DOCKER_CLI $DLMS_WEB_SERVICE_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/dlms-webservice:unknown $CI_REGISTRY_IMAGE/dlms-webservice:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/dlms-webservice:$CI_COMMIT_BRANCH
+#
+#deploy:penalty-calculator:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build:penalty-calculator
+#  script:
+#    - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
 
 deploy:jwt-server:
   stage: deploy
