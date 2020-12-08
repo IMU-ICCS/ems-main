@@ -111,77 +111,77 @@ build:melodic-commons:
     paths: 
     - $CI_PROJECT_DIR/melodic-commons/target
 
-build:melodic-cache:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $MELODIC_CACHE_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/melodic-cache/target
-
-build:dlms:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlms/target
-
-build:dlms-utility:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_UTILITY_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlms/DLMSUtility/target
-
-build:penalty-calculator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/penalty-calculator/target
-
-build:utility-generator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/utility-generator/target
-
-build:cp-solver:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $CP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/cp-solver/target
-
-build:zpp-solver:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/zpp-solver/target
-
-build:dlms-agent:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_AGENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlmsAgent/target
+#build:melodic-cache:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $MELODIC_CACHE_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/melodic-cache/target
+#
+#build:dlms:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $DLMS_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/dlms/target
+#
+#build:dlms-utility:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $DLMS_UTILITY_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+#
+#build:penalty-calculator:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/penalty-calculator/target
+#
+#build:utility-generator:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/utility-generator/target
+#
+#build:cp-solver:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $CP_SOLVER_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/cp-solver/target
+#
+#build:zpp-solver:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/zpp-solver/target
+#
+#build:dlms-agent:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $DLMS_AGENT_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/dlmsAgent/target
 
 build:ems:
   stage: build
@@ -512,10 +512,8 @@ deploy:dlms-agent:
 
 deploy:ems:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -526,10 +524,8 @@ deploy:ems:
 
 deploy:ems-util:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -540,10 +536,8 @@ deploy:ems-util:
 
 deploy:ems-broker-client:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -554,10 +548,8 @@ deploy:ems-broker-client:
 
 deploy:ems-broker-cep:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -568,10 +560,8 @@ deploy:ems-broker-cep:
 
 deploy:ems-baguette-client:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -582,10 +572,8 @@ deploy:ems-baguette-client:
 
 deploy:ems-baguette-server:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -596,10 +584,8 @@ deploy:ems-baguette-server:
 
 deploy:ems-baguette-client-install:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -610,10 +596,8 @@ deploy:ems-baguette-client-install:
 
 deploy:ems-translator:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -624,10 +608,8 @@ deploy:ems-translator:
 
 deploy:ems-server:
   stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
+  only:
+    - rc3.1--checking-ems
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
