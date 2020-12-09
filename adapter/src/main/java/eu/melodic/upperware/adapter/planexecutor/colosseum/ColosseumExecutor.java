@@ -39,7 +39,7 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
   private ThreadPoolTaskExecutor executor;
 
   @Override
-  public void executePlan(Plan plan) {
+  public void executePlan(Plan plan, String applicationId) {
     DirectedGraph<Task, DefaultEdge> graph = plan.getTaskGraph();
 
     DirectedNeighborIndex<Task, DefaultEdge> neighbors = new DirectedNeighborIndex(graph);
@@ -50,7 +50,10 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
       Task task = it.next();
       Set<Task> dependentTasks = neighbors.predecessorsOf(task);
       Set<Future> dependentFeatures = getDependentFeatures(taskToFutureMap, dependentTasks);
-      Future future = submitTask(task, dependentFeatures);
+      Future future = submitTask(task, dependentFeatures, applicationId);
+      log.info("ProActive Dev [executePlan]: Task task= {}", task);
+      log.info("ProActive Dev [executePlan]: Set<Task> dependentTasks= {}", dependentTasks);
+      log.info("ProActive Dev [executePlan]: Set<Future> dependentFeatures= {}", dependentFeatures);
       taskToFutureMap.put(task, future);
     }
 
@@ -67,12 +70,12 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
     return predecessors.stream().map(taskToFeatureMap::get).collect(Collectors.toSet());
   }
 
-  private Future submitTask(Task task, Set<Future> predecessors) {
-    return executor.submit(createTaskExecutor(task, predecessors));
+  private Future submitTask(Task task, Set<Future> predecessors, String applicationId) {
+    return executor.submit(createTaskExecutor(task, predecessors, applicationId));
   }
 
-  private RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors) {
-    return factory.createTaskExecutor(task, predecessors);
+  private RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors, String applicationId) {
+    return factory.createTaskExecutor(task, predecessors, applicationId);
   }
 
   @Override

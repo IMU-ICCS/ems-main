@@ -3,11 +3,13 @@ package eu.melodic.upperware.adapter.plangenerator.model;
 import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.function.BiPredicate;
 
 @Getter
 @Builder
+@ToString(callSuper = true)
 public class AdapterRequirement implements Data {
 
     public static final BiPredicate<AdapterRequirement, AdapterRequirement> NODE_BI_PREDICATE = (newReq, oldReq) ->

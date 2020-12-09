@@ -34,6 +34,11 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterScal
         Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.OUT);
         try {
             Queue queue = api.triggerScale(scale);
+            // TODO: LSZ
+            // here we can trigger scale out (adding node) to task/component (e.g. Component_App). We have new node name, new node will be
+            // the same as the original one (based on the same node candidate). Probably monitor created for original node will have to be created for
+            // new node as well. Scale out is one node at a time.
+
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. Node has been added to existing process", queue.getId());
 
@@ -60,6 +65,9 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterScal
         Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.IN);
         try {
             Queue queue = api.triggerScale(scale);
+            // TODO: LSZ
+            // here we can trigger scale in (deleting nodes) from task/component (e.g. Component_App). We have a list of nodes names to delete.
+
             Queue watch = watch(queue.getId());
             log.info("Response from queue {} successfully reached. Process has been removed from existing Process.", queue.getId());
 

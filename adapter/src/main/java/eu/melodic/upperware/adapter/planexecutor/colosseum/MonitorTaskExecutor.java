@@ -22,17 +22,22 @@ import static java.lang.String.format;
 @Slf4j
 public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMonitor> {
 
+    private final String applicationId;
+
     MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
                                ColosseumApi api, ColosseumContext context,
-                               Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+                               Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId) {
 
         super(task, predecessors, api, context, checkFinishTaskToFuture);
+        this.applicationId = applicationId;
     }
 
     @Override
     public void create(AdapterMonitor taskBody) {
 
-        String nodeId = context.getNode(taskBody.getNodeName())
+        log.info("ProActive Dev [MonitorTaskExecutor]: applicationId: {}\nAdapterMonitor taskBody= {}", applicationId, taskBody);
+
+        /*String nodeId = context.getNode(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
                 .getId();
 
@@ -48,10 +53,14 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
         try {
             Monitor addedMonitor = api.addMonitor(monitor);
             context.addMonitor(addedMonitor);
+            // TODO: LSZ
+            // here we can create a monitor for task/component (e.g. Component_App) that collects metrics and uses Push (app specific)
+            // or Pull (e.g. SystemCpuUsage classic metric) Sensor to do this. We know node name here, so we can use it.
+            // Every sensor type sends to ems client (localhost), we have jms broker configuration.
         } catch (ApiException e) {
             log.error("Could not add Monitor. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during adding Monitor", e);
-        }
+        }*/
     }
 
     private Monitor convertToMonitor(AdapterMonitor taskBody, String nodeId) {

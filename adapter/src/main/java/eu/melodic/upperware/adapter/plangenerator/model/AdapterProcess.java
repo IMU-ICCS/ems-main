@@ -1,9 +1,6 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.function.BiPredicate;
 
@@ -11,6 +8,7 @@ import java.util.function.BiPredicate;
 @Setter
 @Builder
 @EqualsAndHashCode
+@ToString(callSuper = true)
 public class AdapterProcess implements Data {
 
     public static final BiPredicate<AdapterProcess, AdapterProcess> PROCESS_BI_PREDICATE = (newReq, oldReq) ->

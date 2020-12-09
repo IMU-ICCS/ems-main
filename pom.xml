@@ -67,15 +67,18 @@
 
         <!-- Versions for common plugins -->
         <source-plugin.version>2.4</source-plugin.version>
-        <maven-compiler.version>3.2</maven-compiler.version>
+        <maven-compiler.version>3.8.1</maven-compiler.version>
         <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
+
+        <lombok.version>1.18.16</lombok.version>
 
         <!--DOCKER plugin properties-->
         <docker.push>false</docker.push>
         <docker.repository>127.0.0.1:5000/</docker.repository>
         <!--suppress UnresolvedMavenProperty -->
-        <docker.imageTag>${scmBranch}</docker.imageTag>
+        <!--<docker.imageTag>${scmBranch}</docker.imageTag>-->
+        <docker.imageTag>lszdev</docker.imageTag>
         <docker.imagePrefix>melodic/melodic-upperware/</docker.imagePrefix>
         <docker.imageName>parent</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
@@ -251,6 +254,13 @@
                             </goals>
                         </execution>
                     </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.activation</groupId>
+                            <artifactId>activation</artifactId>
+                            <version>1.1</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <!--plugins for getting scmBranch value lowercase to use in docker images -->
                 <plugin>

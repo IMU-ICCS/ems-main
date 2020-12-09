@@ -115,7 +115,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>1.6</version>
+      <version>1.9</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -193,6 +193,17 @@
       <artifactId>java-rest</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.activeeon</groupId>
+      <artifactId>morphemic-preprocessor</artifactId>
+      <version>1.2-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-text</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
@@ -216,7 +227,7 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>1.5</version>
+        <version>1.10.0</version>
         <executions>
           <execution>
             <goals>

@@ -1,5 +1,6 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
+import com.google.common.base.Objects;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
@@ -12,6 +13,9 @@ import io.github.cloudiator.rest.model.Node;
 import io.github.cloudiator.rest.model.NodeRequest;
 import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -23,9 +27,12 @@ import static java.lang.String.format;
 @Slf4j
 public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
 
+    private final String applicationId;
+
     NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+                     ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId) {
         super(task, predecessors, api, context, checkFinishTaskToFuture);
+        this.applicationId = applicationId;
     }
 
     @Override
@@ -33,11 +40,28 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
         try {
             log.info("Creating Node with NodeCandidateId: {}, groupName: {}", taskBody.getNodeCandidate().getId(), taskBody.getNodeName());
 
-            Queue queue = api.addNode(new NodeRequest()
+            /*Queue queue = api.addNode(new NodeRequest()
                     .groupName(taskBody.getNodeName())
-                    .nodeCandidate(taskBody.getNodeCandidate()));
+                    .nodeCandidate(taskBody.getNodeCandidate()));*/
 
-            Queue watch = watch(queue.getId(), id -> {
+            // TODO: LSZ
+            // here we can create a node for task/component (e.g. Component_App) based on a node candidate and assign it a name
+            log.info("ProActive Dev [NodeTaskExecutor]: AdapterRequirement taskBody= {}", taskBody);
+
+            JSONArray nodesJSONArray = new JSONArray();
+            JSONObject nodeJSON = new JSONObject();
+            nodeJSON.put("taskName", taskBody.getTaskName());
+            nodeJSON.put("nodeName", taskBody.getNodeName());
+            JSONObject nodeCandidateInformationJSON = new JSONObject();
+            nodeCandidateInformationJSON.put("cloudID", checkEmptiness(taskBody.getNodeCandidate().getCloud().getId(), "cloudID"));
+            nodeCandidateInformationJSON.put("locationName", checkEmptiness(taskBody.getNodeCandidate().getLocation().getProviderId(), "locationName"));
+            nodeCandidateInformationJSON.put("imageProviderId", checkEmptiness(taskBody.getNodeCandidate().getImage().getProviderId(), "imageProviderId"));
+            nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
+            nodeJSON.put("nodeCandidateInformation", nodeCandidateInformationJSON);
+            nodesJSONArray.put(nodeJSON);
+            log.info("ProActive Dev [NodeTaskExecutor]: JSONObject nodesJSONArray= {}", nodesJSONArray);
+
+            /*Queue watch = watch(queue.getId(), id -> {
                 String nodeId = getId(id);
                 try {
                     return !Node.StateEnum.PENDING.equals(api.getNode(nodeId)
@@ -46,8 +70,8 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                 } catch (ApiException e) {
                     throw new AdapterException("Could not getNode for " + nodeId, e);
                 }
-            });
-            String nodeId = getId(watch.getLocation());
+            });*/
+            /*String nodeId = getId(watch.getLocation());
             Node node = api.getNode(nodeId)
                     .orElseThrow(() -> new AdapterException(format("Could not get Node with id %s", nodeId)));
 
@@ -58,9 +82,13 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             } else {
                 log.info("Response from queue {} successfully reached. But Node {} is in state {}", queue.getId(), nodeId, node.getState());
                 throw new AdapterException(format("Node %s is in %s state", nodeId, node.getState()));
-            }
-        } catch (ApiException e) {
+            }*/
+        } /*catch (ApiException e) {
             log.error("Could not add Node. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            throw new AdapterException("Problem during adding Node", e);
+        }*/
+        catch (RuntimeException e) {
+            log.error("Could not add Node. Error: {}", e.getMessage());
             throw new AdapterException("Problem during adding Node", e);
         }
     }
@@ -85,5 +113,13 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             throw new AdapterException("Problem during removing Node", e);
         }
 
+    }
+
+    private String checkEmptiness(String text, String type) throws AdapterException {
+        if (StringUtils.isNotEmpty(text))
+            return text;
+        else {
+            throw new AdapterException(String.format("Value of type: %s cannot be empty [part of application id: %s]", type, applicationId));
+        }
     }
 }

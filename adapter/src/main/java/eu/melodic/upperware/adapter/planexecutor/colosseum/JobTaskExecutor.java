@@ -1,14 +1,16 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
+import com.google.common.base.MoreObjects;
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
-import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,9 +23,12 @@ import static java.lang.String.format;
 @Slf4j
 public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
 
+    private final String applicationId;
+
     JobTaskExecutor(JobTask task, Collection<Future> predecessors, ColosseumApi api,
-                    ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+                    ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId) {
         super(task, predecessors, api, context, checkFinishTaskToFuture);
+        this.applicationId = applicationId;
     }
 
     @Override
@@ -34,11 +39,36 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
         }
 
         try {
-            JobNew jobNew = convertToJobNew(taskBody);
+            /*JobNew jobNew = convertToJobNew(taskBody);
             Job job = api.addJob(jobNew);
-            context.addJob(job);
-        } catch (ApiException e) {
+            context.addJob(job);*/
+            // TODO: LSZ
+            // here we can create workflow/job skeleton with all defined tasks (e.g. Component_App) with their communication ports and installation recipe
+            // and connection between tasks/components (by portRequired and portProvided matching)
+            log.info("ProActive Dev [JobTaskExecutor]: AdapterJob taskBody= {}", taskBody);
+            JSONObject jobJSON = new JSONObject();
+            JSONObject jobInformationJSON = new JSONObject();
+            jobInformationJSON.put("id", this.applicationId);
+            jobInformationJSON.put("name", taskBody.getJobName());
+            jobJSON.put("jobInformation", jobInformationJSON);
+
+            JSONArray tasksJSONArray = new JSONArray();
+            taskBody.getTasks()
+                    .forEach(adapterTask -> addTask(tasksJSONArray, adapterTask));
+            jobJSON.put("tasks", tasksJSONArray);
+
+            JSONArray communicationsJSONArray = new JSONArray();
+            taskBody.getCommunications()
+                    .forEach(adapterCommunication -> addCommunication(communicationsJSONArray, adapterCommunication));
+            jobJSON.put("communications", communicationsJSONArray);
+
+            log.info("ProActive Dev [JobTaskExecutor]: JSONObject jobJSON= {}", jobJSON);
+        } /*catch (ApiException e) {
             log.error("Could not add Job. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
+            throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);
+        }*/
+        catch (RuntimeException e) {
+            log.error("Could not add Job. Error: {}", e.getMessage());
             throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);
         }
     }
@@ -180,4 +210,90 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                 .type(trigger.getType());
     }
 
+    private void addTask(JSONArray tasksJSONArray, AdapterTask adapterTask) {
+        JSONObject taskJSON = new JSONObject();
+        taskJSON.put("name", adapterTask.getName());
+        taskJSON.put("installation", getInstallationInstructionsJSON(adapterTask));
+
+        JSONArray portsJSONArray = new JSONArray();
+        adapterTask.getPorts()
+                .forEach(adapterPort -> addPort(portsJSONArray, adapterPort));
+        taskJSON.put("ports", portsJSONArray);
+
+        tasksJSONArray.put(taskJSON);
+    }
+
+    private JSONObject getInstallationInstructionsJSON(AdapterTask adapterTask) {
+        return adapterTask.getInterfaces()
+        .stream()
+        .findFirst()
+        .map(this::addInstallationInstructions)
+        .orElseThrow(() -> new AdapterException(format("No installation instructions for task: %s [part of application id: %s]", adapterTask.getName(), applicationId)));
+    }
+
+    private void addCommunication(JSONArray communicationsJSONArray, AdapterCommunication adapterCommunication) {
+        JSONObject communicationJSON = new JSONObject();
+        communicationJSON.put("portRequired", adapterCommunication.getPortRequired());
+        communicationJSON.put("portProvided", adapterCommunication.getPortProvided());
+        communicationsJSONArray.put(communicationJSON);
+    }
+
+    private JSONObject addInstallationInstructions(AdapterTaskInterface adapterTaskInterface) {
+        JSONObject installationInstructionsJSON = new JSONObject();
+
+        if (adapterTaskInterface instanceof AdapterLanceInterface) {
+            JSONObject operatingSystemJSON = new JSONObject();
+            installationInstructionsJSON.put("type", "commands");
+            operatingSystemJSON.put("operatingSystemFamily", ((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem().getOperatingSystemFamily());
+            operatingSystemJSON.put("operatingSystemVersion", ((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem().getOperatingSystemVersion());
+            installationInstructionsJSON.put("operatingSystem", operatingSystemJSON);
+            installationInstructionsJSON.put("preInstall", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getPreInstall(), JSONObject.NULL));
+            installationInstructionsJSON.put("install", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getInstall(), JSONObject.NULL));
+            installationInstructionsJSON.put("postInstall", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getPostInstall(), JSONObject.NULL));
+            installationInstructionsJSON.put("start", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getStart(), JSONObject.NULL));
+            installationInstructionsJSON.put("startDetection", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getStartDetection(), JSONObject.NULL));
+            installationInstructionsJSON.put("stop", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getStop(), JSONObject.NULL));
+            installationInstructionsJSON.put("update", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getUpdate(), JSONObject.NULL));
+        } else if (adapterTaskInterface instanceof AdapterSparkInterface) {
+            installationInstructionsJSON.put("type", "spark");
+            installationInstructionsJSON.put("file", ((AdapterSparkInterface) adapterTaskInterface).getFile());
+            installationInstructionsJSON.put("className", (((AdapterSparkInterface) adapterTaskInterface).getClassName()));
+            installationInstructionsJSON.put("arguments", (((AdapterSparkInterface) adapterTaskInterface).getArguments()));
+            installationInstructionsJSON.put("sparkArguments", (((AdapterSparkInterface) adapterTaskInterface).getSparkArguments()));
+            installationInstructionsJSON.put("sparkConfiguration", (((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration()));
+        } else if (adapterTaskInterface instanceof AdapterDockerInterface) {
+            installationInstructionsJSON.put("type", "docker");
+            installationInstructionsJSON.put("dockerImage", ((AdapterDockerInterface) adapterTaskInterface).getDockerImage());
+            installationInstructionsJSON.put("environment", ((AdapterDockerInterface) adapterTaskInterface).getEnvironment());
+        } else if (adapterTaskInterface instanceof AdapterFaasInterface) {
+            installationInstructionsJSON.put("type", "faas");
+            installationInstructionsJSON.put("functionName", ((AdapterFaasInterface) adapterTaskInterface).getFunctionName());
+            installationInstructionsJSON.put("sourceCodeUrl", ((AdapterFaasInterface) adapterTaskInterface).getSourceCodeUrl());
+            installationInstructionsJSON.put("handler", ((AdapterFaasInterface) adapterTaskInterface).getHandler());
+            installationInstructionsJSON.put("triggers", ((AdapterFaasInterface) adapterTaskInterface).getTriggers());
+            installationInstructionsJSON.put("timeout", ((AdapterFaasInterface) adapterTaskInterface).getTimeout());
+            installationInstructionsJSON.put("functionEnvironment", ((AdapterFaasInterface) adapterTaskInterface).getFunctionEnvironment());
+        } else {
+            throw new AdapterException(format("Unknown TaskInterface type: %s", adapterTaskInterface.getClass().getSimpleName()));
+        }
+        return installationInstructionsJSON;
+    }
+
+    private void addPort(JSONArray portsJSONArray, AdapterPort adapterPort) {
+        JSONObject portJSON = new JSONObject();
+
+        if (adapterPort instanceof AdapterPortProvided) {
+            portJSON.put("type", adapterPort.getType());
+            portJSON.put("name", adapterPort.getName());
+            portJSON.put("port", ((AdapterPortProvided) adapterPort).getPort());
+        } else if (adapterPort instanceof AdapterPortRequired) {
+            portJSON.put("type", adapterPort.getType());
+            portJSON.put("name", adapterPort.getName());
+            portJSON.put("isMandatory", ((AdapterPortRequired) adapterPort).getIsMandatory());
+        } else {
+            throw new AdapterException(format("Unknown Port type: %s", adapterPort.getClass().getSimpleName()));
+        }
+
+        portsJSONArray.put(portJSON);
+    }
 }

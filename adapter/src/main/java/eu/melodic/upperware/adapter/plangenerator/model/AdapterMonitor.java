@@ -2,6 +2,7 @@ package eu.melodic.upperware.adapter.plangenerator.model;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.function.BiPredicate;
 
 @Getter
 @Builder
+@ToString(callSuper = true)
 public class AdapterMonitor implements Data {
 
     public static final BiPredicate<AdapterMonitor, AdapterMonitor> MONITOR_BI_PREDICATE = (newReq, oldReq) ->
