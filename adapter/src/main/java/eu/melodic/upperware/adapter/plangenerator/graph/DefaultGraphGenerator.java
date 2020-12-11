@@ -131,7 +131,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         }
 
         //Job -> Schedule
-        AdapterSchedule newAdapterSchedule = newComparableModel.getAdapterSchedule();
+        /*AdapterSchedule newAdapterSchedule = newComparableModel.getAdapterSchedule();
         AdapterSchedule oldAdapterSchedule = oldComparableModel.getAdapterSchedule();
 
         ScheduleTask scheduleTask = null;
@@ -139,7 +139,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
             scheduleTask = createTask(graph, newAdapterSchedule, ScheduleTask.SCHEDULE_TASK_CREATE);
             addEdge(graph, jobTask, scheduleTask, jobTaskOpt::isPresent);
         }
-        Optional<ScheduleTask> scheduleTaskOpt = Optional.ofNullable(scheduleTask);
+        Optional<ScheduleTask> scheduleTaskOpt = Optional.ofNullable(scheduleTask);*/
 
 
         for (String taskName : adapterProcessDiff.keySet()) {
@@ -153,7 +153,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                     log.info("First instance has already be created");
                     //create TRIGGER_SCALE
                     final ScaleTask scaleTaskToCreate = createTask(graph, createScaleTask(toCreate), ScaleTask.SCALE_TASK_CREATE);
-                    addEdge(graph, scheduleTask, scaleTaskToCreate, scheduleTaskOpt::isPresent);
+                    //addEdge(graph, scheduleTask, scaleTaskToCreate, scheduleTaskOpt::isPresent);
                     addEdge(graph, nodeTasksToCreate, scaleTaskToCreate, NODE_TO_SCALE_BI_PREDICATE);
                     addEdge(graph, scaleTaskToCreate, monitorTasksToCreate, SCALE_TO_MONITOR_BI_PREDICATE);
                 } else {
@@ -164,7 +164,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                             .skip(1)
                             .collect(toList());
 
-                    ProcessTask processTask = createTask(graph, toCreateFirst, ProcessTask.PROCESS_TASK_CREATE);
+                    /*ProcessTask processTask = createTask(graph, toCreateFirst, ProcessTask.PROCESS_TASK_CREATE);
                     addEdge(graph, scheduleTask, processTask, scheduleTaskOpt::isPresent);
                     addEdge(graph, processTask, monitorTasksToCreate, PROCESS_TO_MONITOR_BI_PREDICATE);
 
@@ -172,14 +172,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                             .stream()
                             .filter(nodeTask -> nodeTask.getData().getNodeName().equalsIgnoreCase(toCreateFirst.getNodeName()))
                             .findFirst()
-                            .ifPresent(nodeTask -> addEdge(graph, nodeTask, processTask, () -> true));
+                            .ifPresent(nodeTask -> addEdge(graph, nodeTask, processTask, () -> true));*/
 
                     //crete TRIGGER_SCALE
                     if (CollectionUtils.isNotEmpty(toCreateWithoutFirst)) {
                         log.info("...and {} scaleTasks", toCreateWithoutFirst.size());
                         ScaleTask scaleTask = createTask(graph, createScaleTask(toCreateWithoutFirst), ScaleTask.SCALE_TASK_CREATE);
 
-                        addEdge(graph, processTask, scaleTask, () -> true);
+                        //addEdge(graph, processTask, scaleTask, () -> true);
 
                         List<NodeTask> remainedNodes = nodeTasksToCreate
                                 .stream()
@@ -197,18 +197,18 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         //Monitors, Process -> Wait
         //connect monitors to last tasks
-        List<Task> tasksToCreateWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, CREATE);
+        /*List<Task> tasksToCreateWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, CREATE);
         addWaitEdge(graph, () -> createTask(graph, new AdapterWaitData(), WaitTask.WAIT_TASK_CREATE), tasksToCreateWithoutOutgoingEdges, () -> CollectionUtils.isNotEmpty(tasksToCreateWithoutOutgoingEdges));
 
         //Wait -> Monitors (D)
         List<WaitTask> lastCreateTasks = getTasksWithoutOutgoingEdges(graph, CREATE, WaitTask.class);
-        WaitTask lastCreateTask = CollectionUtils.isNotEmpty(lastCreateTasks) ? lastCreateTasks.get(0) : null;
+        WaitTask lastCreateTask = CollectionUtils.isNotEmpty(lastCreateTasks) ? lastCreateTasks.get(0) : null;*/
 
         List<MonitorTask> monitorTasksToDelete = Collections.emptyList();
         if (adapterProperties.getEms().isEnabled()) {
             List<AdapterMonitor> monitorsToDelete = monitorDiffCalculator.getToDelete(adapterMonitorDiff);
             monitorTasksToDelete = createTasks(graph, monitorsToDelete, MonitorTask.MONITOR_TASK_DELETE);
-            addEdge(graph, lastCreateTask, monitorTasksToDelete, () -> lastCreateTask != null);
+            //addEdge(graph, lastCreateTask, monitorTasksToDelete, () -> lastCreateTask != null);
         }
 
         for (String taskName : adapterProcessDiff.keySet()) {
@@ -233,10 +233,10 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
                             .collect(toList());
                     log.info("DELETE Working with {} -> hasExistingProcesses: {}, {} ScaleTasks, and 1 ProcessTask will be deleted", taskName, hasExistingProcesses, toDeleteWithoutFirst.size());
 
-                    ProcessTask processTaskToDelete = createTask(graph, toDeleteFirst, ProcessTask.PROCESS_TASK_DELETE);
+                    //ProcessTask processTaskToDelete = createTask(graph, toDeleteFirst, ProcessTask.PROCESS_TASK_DELETE);
                     if (CollectionUtils.isNotEmpty(toDeleteWithoutFirst)) {
                         final ScaleTask scaleTaskToDelete = createTask(graph, createScaleTask(toDeleteWithoutFirst), ScaleTask.SCALE_TASK_DELETE);
-                        addEdge(graph, scaleTaskToDelete, processTaskToDelete);
+                        //addEdge(graph, scaleTaskToDelete, processTaskToDelete);
                     }
                 }
             }
@@ -246,7 +246,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         List<ProcessTask> processTasksToDelete = getTasksWithoutOutgoingEdges(graph, DELETE, ProcessTask.class);
 
         //Here
-        addEdge(graph, monitorTasksToDelete, processTasksToDelete, DefaultGraphGenerator.MONITOR_TO_PROCESS_BI_PREDICATE);
+        //addEdge(graph, monitorTasksToDelete, processTasksToDelete, DefaultGraphGenerator.MONITOR_TO_PROCESS_BI_PREDICATE);
 
         //Process (D) -> Nodes(D)
         List<AdapterRequirement> filteredNodesToDelete = requirementDiffCalculator.getToDelete(adapterRequirementDiff).stream()
@@ -256,14 +256,14 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
         List<NodeTask> nodeTasksToDelete = createTasks(graph, filteredNodesToDelete, NodeTask.NODE_TASK_DELETE);
 
-        addEdge(graph, processTasksToDelete, nodeTasksToDelete, PROCESS_TO_NODE_BI_PREDICATE);
-        addEdge(graph, lastCreateTask, processTasksToDelete, () -> lastCreateTask != null);
+        //addEdge(graph, processTasksToDelete, nodeTasksToDelete, PROCESS_TO_NODE_BI_PREDICATE);
+        //addEdge(graph, lastCreateTask, processTasksToDelete, () -> lastCreateTask != null);
 
         List<ScaleTask> scaleTasksToDelete = getTasksWithoutOutgoingEdges(graph, DELETE, ScaleTask.class);
 
         addEdge(graph, monitorTasksToDelete, scaleTasksToDelete, DefaultGraphGenerator.MONITOR_TO_SCALE_BI_PREDICATE);
 
-        addEdge(graph, lastCreateTask, scaleTasksToDelete, () -> lastCreateTask != null);
+        //addEdge(graph, lastCreateTask, scaleTasksToDelete, () -> lastCreateTask != null);
 
         List<Task> tasksToDeleteWithoutOutgoingEdges = getTasksWithoutOutgoingEdges(graph, DELETE);
 

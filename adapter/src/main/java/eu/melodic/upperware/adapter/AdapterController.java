@@ -39,12 +39,10 @@ public class AdapterController {
 
     @PostMapping(value = "/applicationDeployment", consumes = APPLICATION_JSON_VALUE)
     public void applicationDeployment(@RequestBody ApplicationDeploymentRequestImpl request,
-                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization,
-                                      @RequestHeader HttpHeaders headers) {
+                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         validator.validate(request);
-        headers.forEach((key,value) -> {
-            log.info("ProActive Dev [applicationDeployment] Header Name: {}, Header Value: {}", key, value);
-                });
+
+        log.info("ProActive Dev [applicationDeployment] Header authorization: {}", authorization);
         String resourceName = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
