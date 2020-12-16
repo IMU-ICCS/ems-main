@@ -2,7 +2,7 @@ package eu.melodic.cache;
 
 import com.google.gson.Gson;
 import eu.melodic.cache.exception.CacheException;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static io.github.cloudiator.rest.model.NodeCandidate.NodeCandidateTypeEnum.*;
+import static org.activeeon.morphemic.model.NodeCandidate.NodeCandidateTypeEnum.*;
 
 /**
  * Created by pszkup on 04.01.18.

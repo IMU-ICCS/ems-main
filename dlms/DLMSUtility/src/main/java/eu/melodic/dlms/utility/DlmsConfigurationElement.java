@@ -1,6 +1,6 @@
 package eu.melodic.dlms.utility;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
