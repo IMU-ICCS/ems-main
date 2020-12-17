@@ -6,7 +6,7 @@ public class ProtectionUtils {
 
     public static final StandardPBEStringEncryptor textEncryptor = new StandardPBEStringEncryptor();
 
-    public static final String PASSWORD = "PhemicMor20.";
+    public static final String PASSWORD = "1MORPH#0#"; // TODO supply this password in different way, e.g. env var
 
     private static boolean isSet = false;
 
@@ -28,5 +28,4 @@ public class ProtectionUtils {
         }
         return textEncryptor.encrypt(plainText);
     }
-
 }

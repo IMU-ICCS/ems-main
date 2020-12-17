@@ -11,6 +11,7 @@ package eu.melodic.upperware.adapter.properties;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +42,10 @@ public class AdapterProperties {
   @Valid
   @NotNull
   private CloudiatorV2 cloudiatorV2;
+
+  @Valid
+  @NotNull
+  private ProActive paRest;
 
   @Getter
   @Setter
@@ -81,5 +86,17 @@ public class AdapterProperties {
     private int httpReadTimeout = 30000;
 
     private int delayBetweenQueueCheck = 1000;
+  }
+
+  @Getter
+  @Setter
+  @ToString
+  public static class ProActive {
+    @NotNull
+    private String url;
+    @NotNull
+    private String login;
+    @NotNull
+    private String password;
   }
 }

@@ -120,6 +120,8 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
         List<AdapterRequirement> nodesToCreate = requirementDiffCalculator.getToCreate(adapterRequirementDiff);
         List<NodeTask> nodeTasksToCreate = createTasks(graph, nodesToCreate, NodeTask.NODE_TASK_CREATE);
 
+        addEdge(graph, jobTask, nodeTasksToCreate, jobTaskOpt::isPresent);
+
 //        //Process -> Monitors
         List<MonitorTask> monitorTasksToCreate = new ArrayList<>();
         if (adapterProperties.getEms().isEnabled()) {
@@ -128,6 +130,7 @@ public class DefaultGraphGenerator extends AbstractDefaultGraphGenerator<Compara
 
             List<AdapterMonitor> monitorsToCreate = monitorDiffCalculator.getToCreate(adapterMonitorDiff);
             monitorTasksToCreate = createTasks(graph, monitorsToCreate, MonitorTask.MONITOR_TASK_CREATE);
+            addEdge(graph, jobTask, monitorTasksToCreate, jobTaskOpt::isPresent);
         }
 
         //Job -> Schedule

@@ -122,7 +122,9 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
     @Override
     public void delete(AdapterMonitor taskBody) {
 
-        String nodeId = context.getNode(taskBody.getNodeName())
+        log.info("ProActive Dev [MonitorTaskExecutor]: delete - applicationId: {}\nAdapterMonitor taskBody= {}", applicationId, taskBody);
+
+        /*String nodeId = context.getNode(taskBody.getNodeName())
                 .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
                 .getId();
 
@@ -142,7 +144,7 @@ public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMo
             log.error("Could not delete Monitor with metricName {}. Error code: {}, Response body: {}, ResponseHeaders: {}",
                     taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during deleting Monitor", e);
-        }
+        }*/
     }
 
     private MonitoringTarget createMonitoringTarget(String nodeId) {

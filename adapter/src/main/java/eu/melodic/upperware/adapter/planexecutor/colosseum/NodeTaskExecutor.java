@@ -17,7 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.inject.Singleton;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -59,7 +62,7 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
             nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
             nodeJSON.put("nodeCandidateInformation", nodeCandidateInformationJSON);
             nodesJSONArray.put(nodeJSON);
-            log.info("ProActive Dev [NodeTaskExecutor]: JSONObject nodesJSONArray= {}", nodesJSONArray);
+            log.info("ProActive Dev [NodeTaskExecutor]: just before addNodes - JSONArray nodesJSONArray= {}", nodesJSONArray);
 
             /*Queue watch = watch(queue.getId(), id -> {
                 String nodeId = getId(id);
@@ -95,10 +98,13 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
 
     @Override
     public void delete(AdapterRequirement taskBody) {
-        Optional<Node> nodeOptional = context.getNode(taskBody.getNodeName());
+        //Optional<Node> nodeOptional = context.getNode(taskBody.getNodeName());
 
         try {
-            if (nodeOptional.isPresent()) {
+            log.info("ProActive Dev [NodeTaskExecutor]: delete AdapterRequirement taskBody= {}", taskBody);
+            List<String> nodeNames = Collections.singletonList(taskBody.getNodeName());
+            log.info("ProActive Dev [NodeTaskExecutor]: delete [part of application id: {}] List<String> nodeNames= {}", applicationId, nodeNames);
+            /*if (nodeOptional.isPresent()) {
                 String nodeId = nodeOptional.get().getId();
                 Queue queue = api.deleteNode(nodeId);
 
@@ -107,12 +113,15 @@ public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequi
                 context.deleteNode(nodeId);
             } else {
                 log.warn("Could not find node group with nodeName {} Nothing will be deleted.", taskBody.getNodeName());
-            }
-        } catch (ApiException e) {
+            }*/
+        } /*catch (ApiException e) {
             log.error("Could not remove Node. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException("Problem during removing Node", e);
+        }*/
+        catch (RuntimeException e) {
+            log.error("Could not remove Node. Error: {}", e.getMessage());
+            throw new AdapterException("Problem during removing Node", e);
         }
-
     }
 
     private String checkEmptiness(String text, String type) throws AdapterException {

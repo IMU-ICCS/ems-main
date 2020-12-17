@@ -13,6 +13,7 @@ import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.tasks.*;
+import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
@@ -34,17 +35,19 @@ import static java.lang.String.format;
 public class ColosseumExecutorFactory implements InitializingBean {
 
   public ColosseumExecutorFactory(ColosseumApi api, @Qualifier(INNER_THREAD_POOL_TASK_EXECUTOR_NAME) ThreadPoolTaskExecutor executor,
-                                  AdapterProperties adapterProperties, ColosseumContext context) {
+                                  AdapterProperties adapterProperties, ColosseumContext context, ProactiveClientService proactiveClientService) {
     this.api = api;
     this.executor = executor;
     this.adapterProperties = adapterProperties;
     this.context = context;
+    this.proactiveClientService = proactiveClientService;
   }
 
   private ColosseumApi api;
   private ThreadPoolTaskExecutor executor;
   private AdapterProperties adapterProperties;
   private ColosseumContext context;
+  private ProactiveClientService proactiveClientService;
 
   private final Function<CheckFinishTask, Callable<Queue>> checkFinishTaskToCallableFunction =
           task -> new CheckFinishTaskExecutor(task, api, adapterProperties.getCloudiatorV2().getDelayBetweenQueueCheck());
@@ -58,7 +61,7 @@ public class ColosseumExecutorFactory implements InitializingBean {
 
   RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors, String applicationId) {
     if (task instanceof JobTask) {
-     return new JobTaskExecutor((JobTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId);
+     return new JobTaskExecutor((JobTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId, proactiveClientService);
     }
     if (task instanceof ScheduleTask) {
       // LSZ: skip it
@@ -79,7 +82,7 @@ public class ColosseumExecutorFactory implements InitializingBean {
       return new MonitorTaskExecutor((MonitorTask)task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId);
     }
     if (task instanceof ScaleTask) {
-      return new ScaleTaskExecutor((ScaleTask) task, predecessors, api, context, checkFinishTaskToFutureFunction);
+      return new ScaleTaskExecutor((ScaleTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId);
     }
 
     throw new IllegalArgumentException(format("Task %s is not supported as RunnableTask", task.getClass().getName()));

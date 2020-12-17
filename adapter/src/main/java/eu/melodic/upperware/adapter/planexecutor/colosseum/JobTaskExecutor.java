@@ -7,6 +7,7 @@ import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
+import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -24,11 +25,13 @@ import static java.lang.String.format;
 public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
 
     private final String applicationId;
+    private final ProactiveClientService proactiveClientService;
 
     JobTaskExecutor(JobTask task, Collection<Future> predecessors, ColosseumApi api,
-                    ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId) {
+                    ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId, ProactiveClientService proactiveClientService) {
         super(task, predecessors, api, context, checkFinishTaskToFuture);
         this.applicationId = applicationId;
+        this.proactiveClientService = proactiveClientService;
     }
 
     @Override
@@ -62,7 +65,11 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .forEach(adapterCommunication -> addCommunication(communicationsJSONArray, adapterCommunication));
             jobJSON.put("communications", communicationsJSONArray);
 
-            log.info("ProActive Dev [JobTaskExecutor]: JSONObject jobJSON= {}", jobJSON);
+            log.info("ProActive Dev [JobTaskExecutor]: just before createJob - JSONObject jobJSON= {}", jobJSON);
+
+            log.info("ProActive Dev [JobTaskExecutor]: proactiveClientService.getConnectionState()= {}", proactiveClientService.getConnectionState());
+            proactiveClientService.createJob(jobJSON);
+
         } /*catch (ApiException e) {
             log.error("Could not add Job. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
             throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);

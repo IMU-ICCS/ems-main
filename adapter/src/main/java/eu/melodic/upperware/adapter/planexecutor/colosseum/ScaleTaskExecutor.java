@@ -23,17 +23,21 @@ import static java.lang.String.format;
 @Slf4j
 public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterScale> {
 
+    private final String applicationId;
+
     ScaleTaskExecutor(ScaleTask task, Collection<Future> predecessors, ColosseumApi api, ColosseumContext context,
-                      Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture) {
+                      Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId) {
         super(task, predecessors, api, context, checkFinishTaskToFuture);
+        this.applicationId = applicationId;
     }
 
     @Override
     public void create(AdapterScale taskBody) {
 
-        Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.OUT);
+        //Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.OUT);
         try {
-            Queue queue = api.triggerScale(scale);
+            log.info("ProActive Dev [ScaleTaskExecutor]: applicationId: {}\nAdapterScale taskBody= {}", applicationId, taskBody);
+            /*Queue queue = api.triggerScale(scale);
             // TODO: LSZ
             // here we can trigger scale out (adding node) to task/component (e.g. Component_App). We have new node name, new node will be
             // the same as the original one (based on the same node candidate). Probably monitor created for original node will have to be created for
@@ -53,18 +57,22 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterScal
                 context.addSchedule(newSchedule);
             } else {
                 log.error("Could not scaleTask OUT {}", taskBody.getTaskName());
-            }
-        } catch (ApiException e) {
+            }*/
+        } /*catch (ApiException e) {
             throw new RuntimeException(e);
+        }*/
+        catch (RuntimeException e) {
+            throw new AdapterException(String.format("Could not scaleTask OUT %s", taskBody.getTaskName()), e);
         }
     }
 
     @Override
     public void delete(AdapterScale taskBody) {
 
-        Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.IN);
+        //Scale scale = createScale(taskBody, Scale.ScaleDirectionEnum.IN);
         try {
-            Queue queue = api.triggerScale(scale);
+            log.info("ProActive Dev [ScaleTaskExecutor]: delete - applicationId: {}\nAdapterScale taskBody= {}", applicationId, taskBody);
+            /*Queue queue = api.triggerScale(scale);
             // TODO: LSZ
             // here we can trigger scale in (deleting nodes) from task/component (e.g. Component_App). We have a list of nodes names to delete.
 
@@ -82,9 +90,12 @@ public class ScaleTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterScal
                 context.addSchedule(newSchedule);
             } else {
                 log.error("Could not scaleTask IN {}", taskBody.getTaskName());
-            }
-        } catch (ApiException e) {
+            }*/
+        } /*catch (ApiException e) {
             throw new RuntimeException(e);
+        }*/
+        catch (RuntimeException e) {
+            throw new AdapterException(String.format("Could not scaleTask IN %s", taskBody.getTaskName()), e);
         }
     }
 
