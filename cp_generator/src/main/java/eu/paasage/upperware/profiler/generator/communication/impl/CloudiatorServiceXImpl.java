@@ -18,10 +18,11 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTas
 import io.github.cloudiator.rest.ApiException;
 import io.github.cloudiator.rest.ApiResponse;
 import io.github.cloudiator.rest.api.MatchmakingApi;
-import io.github.cloudiator.rest.model.*;
-import io.github.cloudiator.rest.model.Runtime;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.*;
+import org.activeeon.morphemic.model.Runtime;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -109,9 +110,9 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     }
 
     private Requirement createNodeTypeRequirement(NodeType nodeType) {
-        return new OclRequirement()
-                .constraint(String.format("nodes->forAll(type = NodeType::%s)", nodeType.name()))
-                .type("OclRequirement");
+        NodeTypeRequirement requirement = new NodeTypeRequirement();
+        requirement.setNodeType(org.activeeon.morphemic.model.NodeType.getByName(nodeType.name()));
+        return requirement;
     }
 
     private Collection<? extends Requirement> createResourceRequirement(ResourceRequirement resourceRequirement) {

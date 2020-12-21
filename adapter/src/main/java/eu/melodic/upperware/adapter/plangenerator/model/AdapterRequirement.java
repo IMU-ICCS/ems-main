@@ -1,9 +1,9 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import org.activeeon.morphemic.model.NodeCandidate;
 
 import java.util.function.BiPredicate;
 

@@ -19,9 +19,9 @@ import eu.paasage.upperware.profiler.generator.service.camel.parser.elements.Var
 import eu.passage.upperware.commons.model.tools.CamelModelTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.NodeCandidate;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.RandomStringGenerator;
