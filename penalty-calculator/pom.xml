@@ -82,13 +82,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.cloudiator.client</groupId>
-            <artifactId>java-rest</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
@@ -110,6 +103,13 @@
             <groupId>com.whalin</groupId>
             <artifactId>Memcached-Java-Client</artifactId>
             <version>3.0.1</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.activeeon</groupId>
+            <artifactId>morphemic-preprocessor</artifactId>
+            <version>1.4-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

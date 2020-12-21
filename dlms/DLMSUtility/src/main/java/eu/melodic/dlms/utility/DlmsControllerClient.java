@@ -19,7 +19,7 @@ import eu.melodic.dlms.utility.camel.ModelAnalyzer;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

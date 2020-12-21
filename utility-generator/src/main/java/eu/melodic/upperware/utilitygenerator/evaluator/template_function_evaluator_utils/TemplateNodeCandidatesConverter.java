@@ -8,7 +8,7 @@ import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttrib
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;

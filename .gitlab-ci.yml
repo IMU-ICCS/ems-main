@@ -224,6 +224,9 @@ build:ems-baguette-client:
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/baguette-client/target
   
 build:ems-baguette-server:
   stage: build
