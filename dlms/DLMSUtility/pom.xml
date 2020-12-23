@@ -72,6 +72,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<version>1.18.16</version>
 		</dependency>
 
 		<dependency>
@@ -99,7 +100,13 @@
 			<artifactId>client</artifactId>
 			<classifier>repackaged</classifier>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.activeeon</groupId>
+            <artifactId>morphemic-preprocessor</artifactId>
+            <version>1.4-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 	<!-- <repositories> -->
 	<!-- <repository> -->
