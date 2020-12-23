@@ -450,14 +450,10 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         List<NodeCandidate> nodeCandidates;
         try {
             nodeCandidates = cloudiatorServiceX.findNodeCandidates(requirements);
-        } catch (ApiException e) {
-            log.error("Error during fetching node candidates. Code: {}, ResponseBody: {}", e.getCode(), e.getResponseBody());
-            log.error("ApiException: ", e);
+        } catch (RuntimeException e) {
+            log.error("Error during fetching node candidates. Message: {}", e.getMessage());
+            log.error("RuntimeException: ", e);
 
-            Map<String, List<String>> responseHeaders = MapUtils.emptyIfNull(e.getResponseHeaders());
-            for (String key : responseHeaders.keySet()) {
-                log.error("ResponseHeader: Key: {}, Value: {}", key, responseHeaders.get(key));
-            }
             throw new GeneratorException("Problem during fetching node candidates", e);
         }
 

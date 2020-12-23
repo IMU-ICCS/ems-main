@@ -1,10 +1,10 @@
 package eu.melodic.dlms.utility;
 
-import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.activeeon.morphemic.model.NodeCandidate;
 
 /**
  * Just a placeholder class as the original from upperware is not accessible

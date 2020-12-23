@@ -13,28 +13,23 @@ import camel.requirement.ResourceRequirement;
 import camel.type.*;
 import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
+import eu.paasage.upperware.profiler.generator.proactive.client.ProactiveClientService;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
-import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.ApiResponse;
 import io.github.cloudiator.rest.api.MatchmakingApi;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.*;
 import org.activeeon.morphemic.model.Runtime;
+import org.activeeon.morphemic.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,25 +48,20 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
     private final MatchmakingApi matchmakingApi;
+    private final ProactiveClientService proactiveClientService;
 
-    @Retryable(value = { ApiException.class }, maxAttempts = 4, backoff = @Backoff(delay = 2000))
     @Override
-    public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) throws ApiException {
+    public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) {
         log.info("Trying to get Node candidates for requirements: {}", requirements);
-        ApiResponse<List<NodeCandidate>> response = matchmakingApi.findNodeCandidatesWithHttpInfo(requirements);
-        if (response.getStatusCode() == 200) {
-            final List<NodeCandidate> data = response.getData();
-            fillByonCloudProvider(data);
-            log.info("Successfully fetched {} NodeCandidates", data.size());
-            return data;
+        List<NodeCandidate> candidates = proactiveClientService.findNodeCandidates(requirements);
+        if (candidates.size() > 0) {
+            fillByonCloudProvider(candidates);
+            log.info("Successfully fetched {} NodeCandidates", candidates.size());
+            log.info("ProActive Dev [CloudiatorServiceXImpl]: findNodeCandidates - list of NodeCandidates: {}", candidates);
+            return candidates;
         } else {
-            throw new ApiException(String.format("Response received but HTTP status is: %d", response.getStatusCode()));
+            throw new GeneratorException("Proactive Client returned empty NodeCandidate list");
         }
-    }
-
-    @Recover
-    public List<NodeCandidate> recover(ApiException t, List<Requirement> requirements){
-        throw new GeneratorException(String.format("Could not get node candidates for : %s", requirements), t);
     }
 
     private void fillByonCloudProvider(List<NodeCandidate> nodeCandidates) {
