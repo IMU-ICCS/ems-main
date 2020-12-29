@@ -93,14 +93,14 @@ build:upperware-metamodel:
     paths: 
     - $CI_PROJECT_DIR/upperware_metamodel/target
 
-build:jwt-commons:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $JWT_COMMONS_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/jwt-commons/target
+#build:jwt-commons:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $JWT_COMMONS_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/jwt-commons/target
 
 build:melodic-commons:
   stage: build
@@ -180,80 +180,80 @@ build:dlms-agent:
   script:
     - $DLMS_AGENT_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/dlmsAgent/target
 
-build:ems:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/target
-
-build:ems-util:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_UTIL_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/util/target
-
-build:ems-broker-client:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/broker-client/target
-
-build:ems-broker-cep:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/broker-cep/target
-
-build:ems-baguette-client:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/event-management/baguette-client/target
-  
-build:ems-baguette-server:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/baguette-server/target
-
-build:ems-baguette-client-install:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/baguette-client-install/target
-
-build:ems-translator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/event-management/translator/target
+#build:ems:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/target
+#
+#build:ems-util:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_UTIL_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/util/target
+#
+#build:ems-broker-client:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/broker-client/target
+#
+#build:ems-broker-cep:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/broker-cep/target
+#
+#build:ems-baguette-client:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/baguette-client/target
+#
+#build:ems-baguette-server:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/baguette-server/target
+#
+#build:ems-baguette-client-install:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/baguette-client-install/target
+#
+#build:ems-translator:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#    - $CI_PROJECT_DIR/event-management/translator/target
 
 deploy:melodic-upperware:
   stage: deploy
@@ -282,20 +282,20 @@ deploy:upperware-metamodel:
     - build:upperware-metamodel
   script:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
-
-deploy:jwt-commons:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:jwt-commons
-  script:
-    - $DOCKER_CLI $JWT_COMMONS_CLI deploy
+#
+#deploy:jwt-commons:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build:jwt-commons
+#  script:
+#    - $DOCKER_CLI $JWT_COMMONS_CLI deploy
 
 deploy:melodic-commons:
   stage: deploy
@@ -303,6 +303,7 @@ deploy:melodic-commons:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -317,6 +318,7 @@ deploy:melodic-cache:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -331,6 +333,7 @@ deploy:dlms:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -389,6 +392,7 @@ deploy:penalty-calculator:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -418,6 +422,7 @@ deploy:utility-generator:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -432,6 +437,7 @@ deploy:zpp-solver:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -476,6 +482,7 @@ deploy:cp-solver:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -491,6 +498,7 @@ deploy:dlms-agent:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: "python:latest"
   before_script:
     - pip install awscli
@@ -637,6 +645,7 @@ deploy:gen-solver:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -684,6 +693,7 @@ deploy:nc-solver:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -701,6 +711,7 @@ deploy:pt-solver:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -718,6 +729,7 @@ deploy:mcts-solver:
     - master
     - rc3.0
     - rc3.1
+    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
