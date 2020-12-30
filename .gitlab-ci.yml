@@ -640,6 +640,21 @@ deploy:dlms-agent:
 #    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 #    - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
+deploy:cp-parser:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - checking-zpp-solvers
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-solver
+  script:
+    - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    -
 deploy:gen-solver:
   stage: deploy
   only: 
@@ -723,21 +738,6 @@ deploy:pt-solver:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
-
-deploy:cp-parser:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - checking-zpp-solvers
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-solver
-  script:
-    - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
 
 deploy:mcts-solver:
   stage: deploy
