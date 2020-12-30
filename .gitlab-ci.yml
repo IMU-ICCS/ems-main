@@ -654,7 +654,7 @@ deploy:cp-parser:
     - build:cp-solver
   script:
     - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    -
+    
 deploy:gen-solver:
   stage: deploy
   only: 
