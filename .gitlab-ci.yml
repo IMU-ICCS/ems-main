@@ -304,7 +304,6 @@ deploy:melodic-commons:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -319,7 +318,6 @@ deploy:melodic-cache:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -334,7 +332,6 @@ deploy:dlms:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -393,7 +390,6 @@ deploy:penalty-calculator:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -423,7 +419,6 @@ deploy:utility-generator:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -438,7 +433,6 @@ deploy:zpp-solver:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -483,7 +477,6 @@ deploy:cp-solver:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -499,7 +492,6 @@ deploy:dlms-agent:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: "python:latest"
   before_script:
     - pip install awscli
@@ -646,7 +638,6 @@ deploy:cp-parser:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -661,7 +652,6 @@ deploy:gen-solver:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -709,7 +699,6 @@ deploy:nc-solver:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -727,7 +716,6 @@ deploy:pt-solver:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -745,7 +733,6 @@ deploy:mcts-solver:
     - master
     - rc3.0
     - rc3.1
-    - checking-zpp-solvers
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
