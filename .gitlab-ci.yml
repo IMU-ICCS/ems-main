@@ -94,14 +94,14 @@ build:upperware-metamodel:
     paths: 
     - $CI_PROJECT_DIR/upperware_metamodel/target
 
-#build:jwt-commons:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $JWT_COMMONS_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/jwt-commons/target
+build:jwt-commons:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $JWT_COMMONS_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/jwt-commons/target
 
 build:melodic-commons:
   stage: build
@@ -184,77 +184,77 @@ build:dlms-agent:
     paths:
     - $CI_PROJECT_DIR/dlmsAgent/target
 
-#build:ems:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/target
-#
-#build:ems-util:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_UTIL_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/util/target
-#
-#build:ems-broker-client:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/broker-client/target
-#
-#build:ems-broker-cep:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/broker-cep/target
-#
-#build:ems-baguette-client:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/baguette-client/target
-#
-#build:ems-baguette-server:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/baguette-server/target
-#
-#build:ems-baguette-client-install:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/baguette-client-install/target
-#
-#build:ems-translator:
-#  stage: build
-#  image: $MAVEN_IMAGE
-#  script:
-#    - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#    - $CI_PROJECT_DIR/event-management/translator/target
+build:ems:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/target
+
+build:ems-util:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_UTIL_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/util/target
+
+build:ems-broker-client:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/broker-client/target
+
+build:ems-broker-cep:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/broker-cep/target
+
+build:ems-baguette-client:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/baguette-client/target
+
+build:ems-baguette-server:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/baguette-server/target
+
+build:ems-baguette-client-install:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/baguette-client-install/target
+
+build:ems-translator:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/translator/target
 
 deploy:melodic-upperware:
   stage: deploy
@@ -283,20 +283,20 @@ deploy:upperware-metamodel:
     - build:upperware-metamodel
   script:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
-#
-#deploy:jwt-commons:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:jwt-commons
-#  script:
-#    - $DOCKER_CLI $JWT_COMMONS_CLI deploy
+
+deploy:jwt-commons:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:jwt-commons
+  script:
+    - $DOCKER_CLI $JWT_COMMONS_CLI deploy
 
 deploy:melodic-commons:
   stage: deploy
@@ -401,21 +401,21 @@ deploy:penalty-calculator:
     - build:penalty-calculator
   script:
     - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
-#
-#deploy:jwt-server:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $JWT_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/jwtserver:unknown $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
+
+deploy:jwt-server:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $JWT_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/jwtserver:unknown $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
 
 deploy:utility-generator:
   stage: deploy
@@ -446,36 +446,36 @@ deploy:zpp-solver:
     - build:zpp-solver
   script:
     - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
-#
-#deploy:adapter:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $ADAPTER_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/adapter:unknown $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
-#
-#deploy:cp-generator:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $CP_GENERATOR_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/generator:unknown $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
+
+deploy:adapter:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $ADAPTER_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/adapter:unknown $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
+
+deploy:cp-generator:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $CP_GENERATOR_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/generator:unknown $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
 
 deploy:cp-solver:
   stage: deploy
@@ -513,132 +513,132 @@ deploy:dlms-agent:
     - ls -l $CI_PROJECT_DIR/dlmsAgent/target
     - aws s3 cp $CI_PROJECT_DIR/dlmsAgent/target/DLMSAgent-3.1.0-SNAPSHOT.jar s3://melodic.testing.data/ARTIFACTS/ow2/dlmsagent/
 
-#deploy:ems:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems
-#  script:
-#    - $DOCKER_CLI $EMS_CLI deploy
-#
-#deploy:ems-util:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-util
-#  script:
-#    - $DOCKER_CLI $EMS_UTIL_CLI deploy
-#
-#deploy:ems-broker-client:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-broker-client
-#  script:
-#    - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
-#
-#deploy:ems-broker-cep:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-broker-cep
-#  script:
-#    - $DOCKER_CLI $EMS_BROKER_CEP_CLI deploy
-#
-#deploy:ems-baguette-client:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-baguette-client
-#  script:
-#    - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_CLI deploy
-#
-#deploy:ems-baguette-server:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-baguette-server
-#  script:
-#    - $DOCKER_CLI $EMS_BAGUETTE_SERVER_CLI deploy
-#
-#deploy:ems-baguette-client-install:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-baguette-client-install
-#  script:
-#    - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_INSTALL_CLI deploy
-#
-#deploy:ems-translator:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build:ems-translator
-#  script:
-#    - $DOCKER_CLI $EMS_TRANSLATOR_CLI deploy
-#
-#deploy:ems-server:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
+deploy:ems:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems
+  script:
+    - $DOCKER_CLI $EMS_CLI deploy
+
+deploy:ems-util:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-util
+  script:
+    - $DOCKER_CLI $EMS_UTIL_CLI deploy
+
+deploy:ems-broker-client:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-broker-client
+  script:
+    - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
+
+deploy:ems-broker-cep:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-broker-cep
+  script:
+    - $DOCKER_CLI $EMS_BROKER_CEP_CLI deploy
+
+deploy:ems-baguette-client:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-baguette-client
+  script:
+    - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_CLI deploy
+
+deploy:ems-baguette-server:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-baguette-server
+  script:
+    - $DOCKER_CLI $EMS_BAGUETTE_SERVER_CLI deploy
+
+deploy:ems-baguette-client-install:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-baguette-client-install
+  script:
+    - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_INSTALL_CLI deploy
+
+deploy:ems-translator:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:ems-translator
+  script:
+    - $DOCKER_CLI $EMS_TRANSLATOR_CLI deploy
+
+deploy:ems-server:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
 deploy:cp-parser:
   stage: deploy
@@ -654,7 +654,7 @@ deploy:cp-parser:
     - build:cp-solver
   script:
     - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    
+
 deploy:gen-solver:
   stage: deploy
   only: 
@@ -673,35 +673,35 @@ deploy:gen-solver:
     - docker tag $LOCAL_REPO/melodic/geneticsolver:unknown $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
 
-#deploy:metasolver:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $METASOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/metasolver:unknown $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
-#
-#deploy:mq-adapter:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $MQ_ADAPTER_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/mq-http-adapter:unknown $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
+deploy:metasolver:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $METASOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/metasolver:unknown $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
+
+deploy:mq-adapter:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $MQ_ADAPTER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/mq-http-adapter:unknown $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
 
 deploy:nc-solver:
   stage: deploy
@@ -756,33 +756,33 @@ deploy:mcts-solver:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
-#
-#deploy:gui-backend:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $GUI_BACKEND_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/gui-backend:unknown $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
-#
-#deploy:functionizer-testing-tool:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  script:
-#    - $DOCKER_CLI $FUNCTIONIZER_TESTING_TOOL_CLI -Ddocker.imagePrefix=melodic/ clean install
-#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-#    - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
-#    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
+
+deploy:gui-backend:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $GUI_BACKEND_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/gui-backend:unknown $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
+
+deploy:functionizer-testing-tool:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $FUNCTIONIZER_TESTING_TOOL_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
