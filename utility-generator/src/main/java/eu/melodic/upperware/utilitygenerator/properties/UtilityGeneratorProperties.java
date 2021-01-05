@@ -26,10 +26,7 @@ public class UtilityGeneratorProperties {
 
     private UtilityGenerator utilityGenerator;
 
-    @Getter
-    @Setter
     public static class UtilityGenerator {
-        private String dlmsControllerUrl;
 
     }
 }

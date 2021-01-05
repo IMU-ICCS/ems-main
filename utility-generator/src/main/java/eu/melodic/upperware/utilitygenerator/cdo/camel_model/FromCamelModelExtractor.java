@@ -22,7 +22,6 @@ import camel.requirement.impl.OptimisationRequirementImpl;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOService;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
-import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
 import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -107,11 +106,6 @@ public class FromCamelModelExtractor {
         return createNodeCandidatesAttributes(filterVariables(this::isListOfAttributesOfNodeCandidates), true);
     }
 
-    /* dlms utility type */
-    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes() {
-        return createDlmsUtilityAttributes(filterVariables(this::isDlmsUtilityAttribute));
-    }
-
     /* software components with unmoveable annotation */
     public Collection<String> getUnmoveableComponentNames() {
         return ((DeploymentTypeModel) CdoTool.getFirstElement(model.getDeploymentModels()))
@@ -155,13 +149,6 @@ public class FromCamelModelExtractor {
         return attributes.stream()
                 .map(attribute -> new NodeCandidateAttribute(attribute.getName(), attribute.getComponent().getName(),
                         CamelMetadataTool.findNodeCandidateAttributeType(attribute), isList))
-                .collect(Collectors.toList());
-    }
-
-    private Collection<DLMSUtilityAttribute> createDlmsUtilityAttributes(Collection<MetricVariableImpl> attributes) {
-        return attributes.stream()
-                .map(variable -> new DLMSUtilityAttribute(variable.getName(), variable.getComponent().getName(),
-                        findDlmsUtilityAttributeType(variable)))
                 .collect(Collectors.toList());
     }
 
