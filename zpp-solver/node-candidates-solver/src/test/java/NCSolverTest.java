@@ -121,7 +121,7 @@ class NCSolverTest {
         return NodeCandidates.of(candidates);
     }
 
-    //@Test
+    @Test
     public void simpleOneComponentTest() {
         Map<ConstraintProblem, UtilityProvider> data = prepareSimpleOneComponentConstraintProblem();
         NodeCandidates nc = getNodesForSimpleProblem();
@@ -269,7 +269,7 @@ class NCSolverTest {
         return NodeCandidates.of(candidates);
     }
 
-    //@Test
+    @Test
     public void simpleTwoComponentTest() {
         Map<ConstraintProblem, UtilityProvider> data = prepareSimpleTwoComponentConstraintProblem();
         NodeCandidates nc = getNodesForTwoComponentSimpleProblem();
