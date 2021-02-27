@@ -7,15 +7,12 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.brokercep.broker;
+package eu.melodic.event.brokercep.broker.interceptor;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.broker.ProducerBrokerExchange;
-import org.apache.activemq.broker.inteceptor.MessageInterceptor;
-import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.activemq.command.Message;
@@ -30,27 +27,18 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
-public class MessageForwarderInterceptor implements MessageInterceptor {
+public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
     private final static MessageQueueProcessor messageQueueProcessor = new MessageQueueProcessor();
-    private final MessageInterceptorRegistry registry;
 
-    public MessageForwarderInterceptor(final MessageInterceptorRegistry registry, ApplicationContext applicationContext) {
-        this.registry = registry;
+    public void initialized() {
         startQueueProcessing(applicationContext);
     }
 
     @Override
-    public void intercept(ProducerBrokerExchange producerBrokerExchange, Message message) {
+    public void intercept(Message message) {
         log.debug("MessageForwarderInterceptor:  Message: {}", message);
-        try {
-            // enqueue message for processing
-            messageQueueProcessor.getMessageQueue().add(message);
-
-            registry.injectMessage(producerBrokerExchange, message);
-
-        } catch (Exception e) {
-            log.error("MessageForwarderInterceptor:  EXCEPTION: ", e);
-        }
+        // enqueue message for processing
+        messageQueueProcessor.getMessageQueue().add(message);
     }
 
     private void startQueueProcessing(ApplicationContext applicationContext) {
@@ -158,16 +146,16 @@ public class MessageForwarderInterceptor implements MessageInterceptor {
 
         private EventMap messageToEvent(Message message) {
             try {
-                log.trace("BrokerCepConsumer.onMessage(): {}", message);
+                log.trace("MessageForwarderInterceptor.messageToEvent(): message: {}", message);
                 Map<String, Object> eventProperties = message.getProperties();
-                log.trace("BrokerCepConsumer.messageToEvent(): event-properties: {}", eventProperties);
+                log.trace("MessageForwarderInterceptor.messageToEvent(): event-properties: {}", eventProperties);
                 if (message instanceof ActiveMQObjectMessage) {
                     ActiveMQObjectMessage mesg = (ActiveMQObjectMessage) message;
 
                     if (mesg.getObject() instanceof Map) {
                         EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
                         if (eventProperties!=null) eventMap.putAll(eventProperties);
-                        log.trace("BrokerCepConsumer.messageToEvent(): event-map: {}", eventMap);
+                        log.trace("MessageForwarderInterceptor.messageToEvent(): event-map: {}", eventMap);
                         return eventMap;
                     }
                 } else if (message instanceof ActiveMQTextMessage) {
@@ -176,13 +164,13 @@ public class MessageForwarderInterceptor implements MessageInterceptor {
                     // Send message to Esper
                     EventMap eventMap = EventMap.parseEventMap(mesg.getText());
                     if (eventProperties!=null) eventMap.putAll(eventProperties);
-                    log.trace("BrokerCepConsumer.messageToEvent(): event-map: {}", eventMap);
+                    log.trace("MessageForwarderInterceptor.messageToEvent(): event-map: {}", eventMap);
                     return eventMap;
                 } else {
-                    log.warn("BrokerCepConsumer.onMessage(): Message ignored: type={}", message.getClass().getName());
+                    log.warn("MessageForwarderInterceptor.messageToEvent(): Message ignored: type={}", message.getClass().getName());
                 }
             } catch (Exception ex) {
-                log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
+                log.error("MessageForwarderInterceptor.messageToEvent(): EXCEPTION: ", ex);
             }
             throw new RuntimeException("Unsupported Message type: "+message.getClass());
         }

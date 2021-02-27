@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.broker;
 
+import eu.melodic.event.brokercep.broker.interceptor.AbstractMessageInterceptor;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
@@ -18,7 +19,6 @@ import org.apache.activemq.ActiveMQSslConnectionFactory;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.SslBrokerService;
-import org.apache.activemq.broker.inteceptor.MessageInterceptor;
 import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
 import org.apache.activemq.pool.PooledConnectionFactory;
@@ -44,7 +44,6 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -344,34 +343,27 @@ public class BrokerConfig implements InitializingBean {
     }
 
     private void registerMessageInterceptors(BrokerService brokerService) {
-        log.info("BrokerConfig: Registering message interceptors...");
-
         // get message interceptor registry
         final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
         log.trace("BrokerConfig: Message interceptor registry: {}", registry);
 
-        // register interceptor for adding source (producer) address to messages
-        properties.getMessageInterceptors()
-                .forEach(bi -> {
-                    log.debug("BrokerConfig: Registering message interceptor: {}", bi);
-                    String part[] = bi.split(":");
-                    String destinationPattern = part[0];
-                    String interceptorClassName = part[1];
-                    try {
-                        Class<MessageInterceptor> interceptorClass = (Class<MessageInterceptor>) Class.forName(interceptorClassName);
-                        MessageInterceptor interceptor = null;
-                        try {
-                            interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class, ApplicationContext.class).newInstance(registry, applicationContext);
-                        } catch (NoSuchMethodException e) {
-                            interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class).newInstance(registry);
-                        }
-                        registry.addMessageInterceptorForTopic(destinationPattern, interceptor);
-                        log.info("BrokerConfig: Message interceptor registered: {}", bi);
-                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        log.error("BrokerConfig: Error while registering message interceptor: {}. Exception: ", bi, e);
-                    }
-                });
+        log.info("BrokerConfig: Message interceptors initializing...");
+        List<BrokerCepProperties.MessageInterceptorSpec> interceptorSpecs = properties.getMessageInterceptors()
+                .stream()
+                .map(c -> (BrokerCepProperties.MessageInterceptorSpec)c)
+                .collect(Collectors.toList());
+        List<AbstractMessageInterceptor> interceptors = InterceptorHelper.newInstance()
+                .initializeInterceptors(registry, applicationContext,
+                        properties.getMessageInterceptorsSpecs(), interceptorSpecs);
+        log.info("BrokerConfig: Message interceptors initialized");
 
+        // register interceptors
+        log.info("BrokerConfig: Registering message interceptors...");
+        interceptors.forEach(i -> {
+            String destinationPattern = ((BrokerCepProperties.MessageInterceptorConfig) i.getInterceptorSpec()).getDestination();
+            registry.addMessageInterceptorForTopic(destinationPattern, i);
+            log.debug("BrokerConfig: - Registered message interceptor with spec.: {}", i.getInterceptorSpec());
+        });
         log.info("BrokerConfig: Registering message interceptors... done");
     }
 

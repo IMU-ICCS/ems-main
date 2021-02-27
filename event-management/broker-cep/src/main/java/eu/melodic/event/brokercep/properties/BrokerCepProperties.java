@@ -11,13 +11,16 @@ package eu.melodic.event.brokercep.properties;
 
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Configuration
@@ -77,8 +80,9 @@ public class BrokerCepProperties {
     @Value("${broker-populate-jmsx-user-id:false}")
     private boolean populateJmsxUserId;
 
-    @Value("${message-interceptors:}#{T(java.util.Collections).emptyList()}")
-    private List<String> messageInterceptors;
+    private List<MessageInterceptorConfig> messageInterceptors;
+    private Map<String,MessageInterceptorSpec> messageInterceptorsSpecs = new HashMap<>();
+
     @Value("${message-forward-destinations:}#{T(java.util.Collections).emptyList()}")
     private List<ForwardDestinationConfig> messageForwardDestinations;
 
@@ -90,6 +94,16 @@ public class BrokerCepProperties {
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
 
+    @Data
+    public static class MessageInterceptorSpec {
+        private String className;
+        private List<String> params;
+    }
+    @Data
+    @ToString(callSuper = true)
+    public static class MessageInterceptorConfig extends MessageInterceptorSpec {
+        private String destination;
+    }
     @Data
     public static class ForwardDestinationConfig {
         private String connectionString;

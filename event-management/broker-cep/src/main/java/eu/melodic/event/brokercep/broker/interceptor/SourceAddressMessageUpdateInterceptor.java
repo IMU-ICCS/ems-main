@@ -7,32 +7,24 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.brokercep.broker;
+package eu.melodic.event.brokercep.broker.interceptor;
 
 import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.Connection;
-import org.apache.activemq.broker.ProducerBrokerExchange;
-import org.apache.activemq.broker.inteceptor.MessageInterceptor;
-import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.command.Message;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
-public class SourceAddressMessageUpdateInterceptor implements MessageInterceptor {
-    private final MessageInterceptorRegistry registry;
+public class SourceAddressMessageUpdateInterceptor extends AbstractMessageInterceptor {
     private final String sourceAddressPropertyName = "producer-host";
 
-    public SourceAddressMessageUpdateInterceptor(final MessageInterceptorRegistry registry) {
-        this.registry = registry;
-    }
-
     @Override
-    public void intercept(ProducerBrokerExchange producerBrokerExchange, Message message) {
+    public void intercept(Message message) {
         log.debug("SourceAddressMessageUpdateInterceptor:  Message: {}", message);
         try {
             // get remote address from connection
-            Connection conn = producerBrokerExchange.getConnectionContext().getConnection();
+            Connection conn = getProducerBrokerExchange().getConnectionContext().getConnection();
             log.trace("SourceAddressMessageUpdateInterceptor:  Connection: {}", conn);
             String address = conn.getRemoteAddress();
             log.trace("SourceAddressMessageUpdateInterceptor:  Producer address: {}", address);
@@ -67,8 +59,6 @@ public class SourceAddressMessageUpdateInterceptor implements MessageInterceptor
             } else if (StringUtils.isBlank(address)) {
                 log.warn("SourceAddressMessageUpdateInterceptor:  Could not resolve Producer host property: message={}", message);
             }
-
-            registry.injectMessage(producerBrokerExchange, message);
 
         } catch (Exception e) {
             log.error("SourceAddressMessageUpdateInterceptor:  EXCEPTION: ", e);
