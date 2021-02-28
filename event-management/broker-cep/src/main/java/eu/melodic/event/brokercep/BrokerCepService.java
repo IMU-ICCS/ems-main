@@ -29,15 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
-import javax.management.*;
-import java.io.*;
+import javax.management.ObjectName;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
@@ -252,7 +255,7 @@ public class BrokerCepService {
         ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryFor(connectionString);
 
         // Create a Connection
-        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}",
+        log.trace("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}",
                 connectionString, username, passwordUtil.encodePassword(password));
         Connection connection = StringUtils.isBlank(username)
                 ? connectionFactory.createConnection()
@@ -267,7 +270,7 @@ public class BrokerCepService {
     }
 
     private synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
-        log.debug("BrokerCepService._publishEvent(): Connection given: {}", connection);
+        log.trace("BrokerCepService._publishEvent(): Connection given: {}", connection);
 
         // Create a Session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -280,10 +283,10 @@ public class BrokerCepService {
     }
 
     private synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
-        log.debug("BrokerCepService._publishEvent(): Session: {}", session);
+        log.trace("BrokerCepService._publishEvent(): Session: {}", session);
 
         // Create the destination (Topic or Queue)
-        log.debug("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
+        log.trace("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
         //Destination destination = session.createQueue( destinationName );
         Destination destination = session.createTopic(destinationName);
 
@@ -298,10 +301,10 @@ public class BrokerCepService {
         // Tell the producer to send the message
         long hash = message.hashCode();
         //log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
-        log.info("BrokerCepService.publishEvent(): Sending message: destination={}, hash={}, payload={}", destinationName, hash, event);
+        log.trace("BrokerCepService.publishEvent(): Sending message: destination={}, hash={}, payload={}", destinationName, hash, event);
         producer.send(message);
         //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
-        log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
+        log.debug("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
     }
 
     private String getAddressFromBrokerUrl(String url) {

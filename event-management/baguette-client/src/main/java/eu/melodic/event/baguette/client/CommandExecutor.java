@@ -622,17 +622,17 @@ public class CommandExecutor {
                 log.info("- Publishing event to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
                         name, localBrokerUrl, topic, eventMap);
                 brokerCep.publishEvent(localBrokerUrl, topic, eventMap);
-                log.info("- Event published to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
+                log.trace("- Event published to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
                         name, localBrokerUrl, topic, eventMap);
 
                 // Send new event to the next grouping(s)
                 String username = activeGrouping.getBrokerUsername();
                 String password = activeGrouping.getBrokerPassword();
-                log.info("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
+                log.trace("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
                         name, forwardToGroupings, eventMap);
                 for (String fwdToGrouping : forwardToGroupings) {
                     brokerCep.publishEvent(fwdToGrouping, username, password, topic, eventMap);
-                    log.info("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, username={}, topic={}, payload={}",
+                    log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, username={}, topic={}, payload={}",
                             name, fwdToGrouping, username, topic, eventMap);
                 }
             } catch (Exception ex) {

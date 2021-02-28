@@ -118,7 +118,7 @@ public class CepService implements InitializingBean {
     public void handleEvent(String event, String eventType) {
         log.debug("CepService.handleEvent(): type={}, event={}", eventType, event);
         EventMap eventMap = new com.google.gson.Gson().fromJson(event, EventMap.class);
-        log.debug("CepService.handleEvent(): event-map={}", eventMap);
+        log.trace("CepService.handleEvent(): event-map={}", eventMap);
         epService.getEPRuntime().sendEvent(eventMap, eventType);
     }
 

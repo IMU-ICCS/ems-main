@@ -21,7 +21,7 @@ public class SourceAddressMessageUpdateInterceptor extends AbstractMessageInterc
 
     @Override
     public void intercept(Message message) {
-        log.debug("SourceAddressMessageUpdateInterceptor:  Message: {}", message);
+        log.trace("SourceAddressMessageUpdateInterceptor:  Message: {}", message);
         try {
             // get remote address from connection
             Connection conn = getProducerBrokerExchange().getConnectionContext().getConnection();

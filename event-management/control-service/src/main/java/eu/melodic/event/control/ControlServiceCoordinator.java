@@ -551,10 +551,10 @@ public class ControlServiceCoordinator {
                 String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
                 String username = brokerCep.getBrokerUsername();
                 String password = brokerCep.getBrokerPassword();
-                log.info("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+                log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
                         name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
                 brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
-                log.info("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+                log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
                         name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
 
             } catch (Exception ex) {

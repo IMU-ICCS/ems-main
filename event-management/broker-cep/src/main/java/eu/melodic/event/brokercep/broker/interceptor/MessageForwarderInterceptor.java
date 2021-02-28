@@ -36,7 +36,7 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
 
     @Override
     public void intercept(Message message) {
-        log.debug("MessageForwarderInterceptor:  Message: {}", message);
+        log.trace("MessageForwarderInterceptor:  Message: {}", message);
         // enqueue message for processing
         messageQueueProcessor.getMessageQueue().add(message);
     }
@@ -76,7 +76,7 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
                 String destination = null;
                 try {
                     Message m = messageQueue.take();
-                    log.debug("MessageQueueProcessor: Message taken from queue: {}", m);
+                    log.trace("MessageQueueProcessor: Message taken from queue: {}", m);
 
                     if (! isMessageForwardPossible(m)) {
                         //keepRunning = false;
@@ -89,13 +89,13 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
                         connectionString = config.getConnectionString();
                         username = config.getUsername();
                         password = config.getPassword();
-                        log.debug("MessageQueueProcessor: Forwarding message to: {}/{} (username: {}): {}",
+                        log.trace("MessageQueueProcessor: Forwarding message to: {}/{} (username: {}): {}",
                                 connectionString, destination, username, eventMap);
                         if (StringUtils.isBlank(username))
                             brokerCepService.publishEvent(connectionString, destination, eventMap);
                         else
                             brokerCepService.publishEvent(connectionString, username, password, destination, eventMap);
-                        log.info("MessageQueueProcessor: Message forwarded to: {}/{} (username: {}): {}",
+                        log.debug("MessageQueueProcessor: Message forwarded to: {}/{} (username: {}): {}",
                                 connectionString, destination, username, eventMap);
                     }
 
@@ -138,7 +138,7 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
                 }
             }
             if (forwardDestinations.size()==0) {
-                log.error("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
+                log.warn("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
                 return false;
             }
             return true;

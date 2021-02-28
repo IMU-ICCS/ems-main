@@ -94,10 +94,10 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 		if (mesg instanceof TextMessage) {
 			TextMessage txtMesg = (TextMessage) mesg;
 			String topicName = mesg.getDestination().getPhysicalName();
-			log.info("BrokerAdvisoryWatcher.onMessage(): Text Message received: topic={}, message={}", topicName, txtMesg.getText());
+			log.trace("BrokerAdvisoryWatcher.onMessage(): Text Message received: topic={}, message={}", topicName, txtMesg.getText());
 		} else {
 			String topicName = mesg.getDestination().getPhysicalName();
-			log.info("BrokerAdvisoryWatcher.onMessage(): Non-text Message received: topic={}, type={}", topicName, mesg.getClass().getName());
+			log.trace("BrokerAdvisoryWatcher.onMessage(): Non-text Message received: topic={}, type={}", topicName, mesg.getClass().getName());
 		}
 	}
 
