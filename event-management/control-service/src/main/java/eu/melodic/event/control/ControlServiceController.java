@@ -401,6 +401,21 @@ public class ControlServiceController {
     }
 
     // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/client/list", method = GET)
+    public List<String> listClients() {
+        List<String> clients = coordinator.clientList();
+        log.info("ControlServiceController.listClients(): {}", clients);
+        return clients;
+    }
+
+    @RequestMapping(value = "/client/command/{clientId}/{command}", method = GET)
+    public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
+        log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
+        return coordinator.clientCommandSend(clientId, command);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
     // EMS status and information query methods
     // ------------------------------------------------------------------------------------------------------------
 

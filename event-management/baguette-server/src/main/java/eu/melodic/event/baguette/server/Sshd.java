@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Custom SSH server
@@ -100,7 +102,7 @@ public class Sshd {
                         return this;
                     }
                 }
-                        .setCredentials(configuration.getCredentials())
+                .setCredentials(configuration.getCredentials())
         );
 
         // Set session timeout
@@ -200,6 +202,10 @@ public class Sshd {
                 csc.sendToClient(command);
             }
         }
+    }
+
+    public List<String> getActiveClients() {
+        return ClientShellCommand.getActive().stream().map(ClientShellCommand::getId).collect(Collectors.toList());
     }
 
     public void sendConstants(Map<String, Double> constants) {

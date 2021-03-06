@@ -842,8 +842,10 @@ public class ControlServiceCoordinator {
                 // Log error
                 return eventLogEnd(method, EVENT_DEBUG_ERROR);
             }
-        } else if ("*".equals(clientId)) baguette.sendToActiveClients(command);
-        else baguette.sendToClient(clientId, command);
+        } else if ("*".equals(clientId))
+            baguette.sendToActiveClients(command);
+        else
+            baguette.sendToClient("#"+clientId, command);
 
         // Log success
         return eventLogEnd(method, EVENT_DEBUG_OK);
@@ -873,6 +875,18 @@ public class ControlServiceCoordinator {
         log.debug("ControlServiceCoordinator.eventRemoteSend(): BEGIN: client={}, broker-url={}, topic={}, value={}", clientId, brokerUrl, topicName, value);
         String command = String.format(java.util.Locale.ROOT, "SEND-EVENT %s %s %f", brokerUrl, topicName, value);
         return eventSendCommandToClient("eventRemoteSend", clientId, command);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+
+    public List<String> clientList() {
+        log.debug("ControlServiceCoordinator.clientList(): BEGIN:");
+        return baguette.getActiveClients();
+    }
+
+    public String clientCommandSend(String clientId, String command) {
+        log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
+        return eventSendCommandToClient("clientCommandSend", clientId, command);
     }
 
     // ------------------------------------------------------------------------------------------------------------

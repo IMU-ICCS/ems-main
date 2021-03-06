@@ -209,6 +209,10 @@ public class BaguetteServer {
         server.sendToClient(clientId, command);
     }
 
+    public List<String> getActiveClients() {
+        return server.getActiveClients();
+    }
+
     public void sendConstants(Map<String, Double> constants) {
         server.sendConstants(constants);
     }
