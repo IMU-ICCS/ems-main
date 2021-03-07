@@ -100,6 +100,9 @@ public class CommandExecutor {
             // Respond to server with OK
             out.println("OK");
 
+        } else if ("GET-ID".equals(cmd)) {
+            log.info("GET ID: {}", clientId);
+            out.println(clientId);
         } else if ("SET-ID".equals(cmd)) {
             if (args.length < 2) return false;
             String id = args[1].trim();
