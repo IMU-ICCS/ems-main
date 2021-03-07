@@ -409,6 +409,13 @@ public class ControlServiceController {
         return clients;
     }
 
+    @RequestMapping(value = "/client/list/map", method = GET)
+    public Map<String, Map<String, String>> listClientMaps() {
+        Map<String, Map<String, String>> clients = coordinator.clientMap();
+        log.info("ControlServiceController.listClientMaps(): {}", clients);
+        return clients;
+    }
+
     @RequestMapping(value = "/client/command/{clientId}/{command}", method = GET)
     public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
         log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);

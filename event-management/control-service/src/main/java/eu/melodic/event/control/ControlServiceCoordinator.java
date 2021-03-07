@@ -884,6 +884,11 @@ public class ControlServiceCoordinator {
         return baguette.getActiveClients();
     }
 
+    public Map<String, Map<String, String>> clientMap() {
+        log.debug("ControlServiceCoordinator.clientMap(): BEGIN:");
+        return baguette.getActiveClientsMap();
+    }
+
     public String clientCommandSend(String clientId, String command) {
         log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
         return eventSendCommandToClient("clientCommandSend", clientId, command);
