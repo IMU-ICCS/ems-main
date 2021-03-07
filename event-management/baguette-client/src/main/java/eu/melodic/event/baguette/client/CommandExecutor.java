@@ -454,10 +454,17 @@ public class CommandExecutor {
                         String groupingBrokerCfg = config.getProperty(g);
                         if (groupingBrokerCfg != null) {
                             if (groupingBrokerCfg.indexOf("\n") > 0) {
+                                String brokerUrl = groupingBrokerCfg.substring(0, groupingBrokerCfg.indexOf("\n")).trim();
                                 String brokerCert = groupingBrokerCfg.substring(groupingBrokerCfg.indexOf("\n")).trim();
+                                String host = null;
+                                if (StringUtils.isNotBlank(brokerUrl))
+                                    host = StringUtils.substringBetween(brokerUrl.trim(), "://", ":");
+                                log.debug("Grouping host: {}", host);
                                 if (StringUtils.isNotEmpty(brokerCert)) {
                                     log.info("Updating broker certificate to truststore for Grouping: {}", g);
                                     brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
+                                    log.info("Updating broker certificate to truststore for Grouping Host: {}", host);
+                                    brokerCepService.addOrReplaceCertificateInTruststore(host, brokerCert);
                                 } else {
                                     log.info("No broker PEM certificate provided for Grouping: {}", g);
                                 }
