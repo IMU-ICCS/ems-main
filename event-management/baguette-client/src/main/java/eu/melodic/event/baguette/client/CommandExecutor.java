@@ -238,13 +238,16 @@ public class CommandExecutor {
             }
 
         } else if ("GET-LOCAL-NODE-CERTIFICATE".equals(cmd)) {
+            String localAddress = ClusterManager.getLocalHostAddress();
+            String localHostname = ClusterManager.getLocalHostName();
             String nlChar = (args.length > 1) ? args[1].trim() : null;
             try {
                 log.info("Retrieving this node certificate from keystore:");
                 String cert = brokerCepService.getBrokerCertificate();
                 if (cert!=null && StringUtils.isNotBlank(nlChar))
                     cert = cert.replace("\r\n", nlChar).replace("\n", nlChar);
-                log.info("{}", cert);
+                log.info("{} {} {}", localAddress, localHostname, cert);
+                out.println(localAddress+" "+localHostname+" "+cert);
             } catch (Exception e) {
                 log.error("Exception while retrieving local node certificate: ", e);
             }
