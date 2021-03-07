@@ -345,4 +345,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public String toString() {
         return "ClientShellCommand_" + id;
     }
+
+    public String toStringCluster() {
+        return getClientClusterNodeAddress()+":"+getClientClusterNodePort();
+    }
 }
