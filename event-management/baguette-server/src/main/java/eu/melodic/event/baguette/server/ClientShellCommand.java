@@ -25,12 +25,13 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     private static Object LOCK = new Object();
-    private static long counter;
+    private static AtomicLong counter = new AtomicLong(0);
     private static Set<ClientShellCommand> activeCmdList = new HashSet<>();
 
     public static Set<ClientShellCommand> getActive() {
@@ -61,7 +62,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress) {
         synchronized (LOCK) {
-            id = String.format("#%05d", counter++);
+            id = String.format("#%05d", counter.getAndIncrement());
         }
         this.coordinator = coordinator;
         this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;
@@ -111,6 +112,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         try {
             log.info("{}==> Thread started", id);
             out.printf("CLIENT (%s) : START\n", id);
+
+            this.clientIpAddress = getClientIpAddress();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line;
@@ -164,16 +167,23 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             } else
             if (s.startsWith("address=")) {
                 if (clientAddressOverrideAllowed) {
-                    this.clientIpAddress = s.substring("address=".length());
-                    log.info("{}--> Effective IP: {}", id, clientIpAddress);
+                    String addr = s.substring("address=".length());
+                    if (StringUtils.isNotBlank(addr)) {
+                        this.clientIpAddress = addr.trim();
+                        log.info("{}--> Effective IP: {}", id, clientIpAddress);
+                    }
                 }
             } else
             if (s.startsWith("port=")) {
                 if (clientAddressOverrideAllowed) {
                     try {
-                        this.clientPort = Integer.parseInt(s.substring("port=".length()));
-                        log.info("{}--> Effective Port: {}", id, clientPort);
+                        int port = Integer.parseInt(s.substring("port=".length()));
+                        if (port>0 && port<65536) {
+                            this.clientPort = port;
+                            log.info("{}--> Effective Port: {}", id, clientPort);
+                        }
                     } catch (Exception ex) {
+                        log.warn("{}--> Invalid Port value: {}: {}", id, s.substring("port=".length()), ex.getMessage());
                     }
                 }
             } else
@@ -210,10 +220,23 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);
             }
         }
+
+        if (StringUtils.isBlank(this.clientId) || "null".equalsIgnoreCase(this.clientId))
+            this.clientId = getClientId();
+        if (StringUtils.isBlank(this.clientIpAddress) || "null".equalsIgnoreCase(this.clientIpAddress))
+            this.clientIpAddress = getClientIpAddress();
+        if (this.clientPort<=0 || this.clientPort>65535)
+            this.clientPort = getClientPort();
+    }
+
+    public String getClientId() {
+        if (StringUtils.isNotBlank(clientId)) return clientId;
+        clientId = getId();
+        return clientId;
     }
 
     public String getClientIpAddress() {
-        if (clientIpAddress != null) return clientIpAddress;
+        if (StringUtils.isNotBlank(clientIpAddress)) return clientIpAddress;
         clientIpAddress = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getHostAddress();
         return clientIpAddress;
     }
