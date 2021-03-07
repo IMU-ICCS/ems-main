@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
@@ -225,7 +226,7 @@ public class Sshc {
         out.printf("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s%n",
                 clientId.replace(" ", "~~"),
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
-                clientAddress,
+                StringUtils.isNotBlank(clientAddress) ? clientAddress : "",
                 clientPort,
                 certOneLine);
         out.flush();
