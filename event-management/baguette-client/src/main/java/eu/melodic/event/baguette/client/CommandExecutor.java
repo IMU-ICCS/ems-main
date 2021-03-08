@@ -163,37 +163,45 @@ public class CommandExecutor {
             if (generator != null) {
                 generator.stop();
             }
-        } else if ("CLUSTER-INIT".equals(cmd)) {
+        } else if ("CLUSTER-JOIN".equals(cmd)) {
             if (clusterManager!=null && clusterManager.isRunning()) {
                 log.error("Cluster is running. Leave cluster first");
                 return false;
             }
+
+            // Create cluster manager and cluster properties
             if (clusterManagerProperties==null)
                 clusterManagerProperties = new ClusterManagerProperties();
-            if (clusterManagerProperties.getTls().isUseConfigOfBroker()) {
-                clusterManagerProperties.getTls().setKeystore(
-                        brokerCepService.getBrokerCepProperties().getSsl().getKeystoreFile());
-                clusterManagerProperties.getTls().setKeystorePassword(
-                        brokerCepService.getBrokerCepProperties().getSsl().getKeystorePassword());
-                clusterManagerProperties.getTls().setTruststore(
-                        brokerCepService.getBrokerCepProperties().getSsl().getTruststoreFile());
-                clusterManagerProperties.getTls().setTruststorePassword(
-                        brokerCepService.getBrokerCepProperties().getSsl().getTruststorePassword());
+            if (clusterManager==null) {
+                clusterManager = new ClusterManager();
+                clusterManager.setProperties(clusterManagerProperties);
+            }
+
+            // Set members list (first element sets current node's address and port)
+            if (args.length>1) {
+                ArrayList<String> tmp = new ArrayList<>(Arrays.asList(args));
+                tmp.remove(0);
+                clusterManager.getProperties().setMemberAddresses(tmp);
+            }
+
+            // Initialize cluster node TLS with local broker's TLS settings
+            if (clusterManagerProperties.getTls()!=null) {
+                if (clusterManagerProperties.getTls().isUseConfigOfBroker()) {
+                    clusterManagerProperties.getTls().setKeystore(
+                            brokerCepService.getBrokerCepProperties().getSsl().getKeystoreFile());
+                    clusterManagerProperties.getTls().setKeystorePassword(
+                            brokerCepService.getBrokerCepProperties().getSsl().getKeystorePassword());
+                    clusterManagerProperties.getTls().setTruststore(
+                            brokerCepService.getBrokerCepProperties().getSsl().getTruststoreFile());
+                    clusterManagerProperties.getTls().setTruststorePassword(
+                            brokerCepService.getBrokerCepProperties().getSsl().getTruststorePassword());
+                }
             }
             log.debug("Cluster properties:  {}", clusterManagerProperties);
-            clusterManager = new ClusterManager();
-            clusterManager.initialize(clusterManagerProperties);
+
+            // Join/start cluster
+            clusterManager.initialize(clusterManagerProperties, new ClusterNodeCallback());
             //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
-            clusterManager.setCallback(new ClusterNodeCallback());
-        } else if ("CLUSTER-JOIN".equals(cmd)) {
-            if (clusterManager==null) {
-                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
-                return false;
-            }
-            if (clusterManager.isRunning()) {
-                log.error("Cluster is running. Leave cluster first");
-                return false;
-            }
             clusterManager.joinCluster();
         } else if ("CLUSTER-LEAVE".equals(cmd)) {
             if (clusterManager==null) {
