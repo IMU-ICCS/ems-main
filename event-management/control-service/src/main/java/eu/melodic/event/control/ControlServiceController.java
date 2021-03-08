@@ -16,6 +16,7 @@ import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHel
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
@@ -353,11 +354,11 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST})
-    public Map<String,Object> baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
+    public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
         log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        Map<String,Object> nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
+        NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
 
         log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): Info for node at: ip-address={}, Node Info:\n{}",
                 ipAddress, nodeInfo);
@@ -370,8 +371,8 @@ public class ControlServiceController {
         log.info("ControlServiceController.baguetteGetNodeNameByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        Map<String,Object> nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
-        String nodeName = (String)nodeInfo.get("name");
+        NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
+        String nodeName = nodeInfo!=null ? nodeInfo.getPreregistration().get("name") : null;
 
         log.info("ControlServiceController.baguetteGetNodeNameByAddress(): Name of node at: ip-address={}, Node name: {}",
                 ipAddress, nodeName);

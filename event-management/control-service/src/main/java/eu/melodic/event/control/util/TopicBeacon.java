@@ -11,6 +11,7 @@ package eu.melodic.event.control.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
@@ -115,9 +116,10 @@ public class TopicBeacon implements InitializingBean {
     public void transmitInstanceInfo() throws JMSException {
         if (coordinator.getBaguetteServer().isServerRunning()) {
             log.debug("Topic Beacon: Transmitting Instance info: topics={}",beaconInstanceTopics);
-            for (Map<String, Object> node : coordinator.getBaguetteServer().getNodeRegistry().getNodes()) {
-                String nodeName = (String)node.getOrDefault("name", "");
-                String nodeIp = (String)node.getOrDefault("ip","");
+            for (NodeRegistryEntry node : coordinator.getBaguetteServer().getNodeRegistry().getNodes()) {
+                String nodeName = node.getPreregistration().getOrDefault("name", "");
+                String nodeIp = node.getIpAddress();
+                //String nodeIp = node.getPreregistration().getOrDefault("ip","");
                 String message = gson.toJson(node);
                 log.debug("Topic Beacon: Transmitting Instance info for: instance={}, ip-address={}, message={}, topics={}",
                         nodeName, nodeIp, message, beaconInstanceTopics);

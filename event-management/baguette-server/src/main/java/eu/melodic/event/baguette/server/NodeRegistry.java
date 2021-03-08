@@ -10,12 +10,11 @@
 package eu.melodic.event.baguette.server;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -24,16 +23,34 @@ import java.util.Map;
 @Slf4j
 @Service
 public class NodeRegistry {
-    private Map<String,Map<String,Object>> registry = new HashMap<>();
+    private final Map<String,NodeRegistryEntry> registry = new LinkedHashMap<>();
 
     public synchronized void addNode(Map<String,Object> nodeInfo) {
         String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
-        registry.put(ipAddress, new HashMap<>(nodeInfo));
+
+        NodeRegistryEntry entry = registry.get(ipAddress);
+        if (entry!=null) {
+            log.error("!!!!!!!!!!!  NODE ALREADY PRE-REGISTERED: ip-address={}  !!!!!!!!!!!\nOld Node Info: {}\nNew Node Info: {}",
+                    ipAddress, entry, nodeInfo);
+            throw new IllegalStateException("NODE ALREADY PRE-REGISTERED: "+ipAddress);
+        }
+
+        entry = new NodeRegistryEntry(ipAddress).nodePreregistration(nodeInfo);
+        registry.put(ipAddress, entry);
         log.debug("NodeRegistry.addNode(): Added info for node at address: {}\nNode info: {}", ipAddress, nodeInfo);
+    }
+
+    public synchronized void removeNode(NodeRegistryEntry nodeEntry) {
+        String ipAddress = nodeEntry.getIpAddress();
+        removeNode(ipAddress);
     }
 
     public synchronized void removeNode(Map<String,Object> nodeInfo) {
         String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
+        removeNode(ipAddress);
+    }
+
+    public synchronized void removeNode(String ipAddress) {
         registry.remove(ipAddress);
         log.debug("NodeRegistry.removeNode(): Removed info for node at address: {}", ipAddress);
     }
@@ -51,17 +68,17 @@ public class NodeRegistry {
         log.debug("NodeRegistry.clearNodes(): Cleared node info registry");
     }
 
-    public Map<String,Object> getNodeByAddress(String ipAddress) {
-        Map<String, Object> info = MapUtils.emptyIfNull(registry.get(ipAddress));
-        log.debug("NodeRegistry.getNodeByAddress(): Returning info for node at address: {}\nNode Info: {}", ipAddress, info);
-        return info;
+    public NodeRegistryEntry getNodeByAddress(String ipAddress) {
+        NodeRegistryEntry entry = registry.get(ipAddress);
+        log.debug("NodeRegistry.getNodeByAddress(): Returning info for node at address: {}\nNode Info: {}", ipAddress, entry);
+        return entry;
     }
 
     public Collection<String> getNodeAddresses() {
         return registry.keySet();
     }
 
-    public Collection<Map<String,Object>> getNodes() {
+    public Collection<NodeRegistryEntry> getNodes() {
         return registry.values();
     }
 }
