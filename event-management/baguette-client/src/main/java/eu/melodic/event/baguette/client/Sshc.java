@@ -54,7 +54,7 @@ public class Sshc {
     @Autowired
     private CommandExecutor commandExecutor;
     @Autowired
-    BrokerCepService brokerCepService;
+    private BrokerCepService brokerCepService;
 
     private InputStream in;
     private PrintStream out;
