@@ -32,6 +32,7 @@ variables:
   ADAPTER_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f adapter/pom.xml"
   CP_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp_generator/pom.xml"
 
+  CP_PARSER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/cp-parser/pom.xml"
   CP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp-solver/pom.xml"
   GEN_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/genetic-solver/pom.xml"
   NC_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/node-candidates-solver/pom.xml"
@@ -99,7 +100,7 @@ build:jwt-commons:
   script:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/jwt-commons/target
 
 build:melodic-commons:
@@ -117,8 +118,8 @@ build:melodic-cache:
   script:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/melodic-cache/target
+    paths: 
+    - $CI_PROJECT_DIR/melodic-cache/target
 
 build:dlms:
   stage: build
@@ -126,8 +127,8 @@ build:dlms:
   script:
     - $DLMS_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/dlms/target
+    paths: 
+    - $CI_PROJECT_DIR/dlms/target
 
 build:dlms-utility:
   stage: build
@@ -135,8 +136,8 @@ build:dlms-utility:
   script:
     - $DLMS_UTILITY_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+    paths: 
+    - $CI_PROJECT_DIR/dlms/DLMSUtility/target
 
 build:penalty-calculator:
   stage: build
@@ -144,8 +145,8 @@ build:penalty-calculator:
   script:
     - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/penalty-calculator/target
+    paths: 
+    - $CI_PROJECT_DIR/penalty-calculator/target
 
 build:utility-generator:
   stage: build
@@ -153,8 +154,8 @@ build:utility-generator:
   script:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/utility-generator/target
+    paths: 
+    - $CI_PROJECT_DIR/utility-generator/target
 
 build:cp-solver:
   stage: build
@@ -162,8 +163,8 @@ build:cp-solver:
   script:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/cp-solver/target
+    paths: 
+    - $CI_PROJECT_DIR/cp-solver/target
 
 build:zpp-solver:
   stage: build
@@ -171,8 +172,8 @@ build:zpp-solver:
   script:
     - $ZPP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
-    paths:
-      - $CI_PROJECT_DIR/zpp-solver/target
+    paths: 
+    - $CI_PROJECT_DIR/zpp-solver/target
 
 build:dlms-agent:
   stage: build
@@ -181,7 +182,7 @@ build:dlms-agent:
     - $DLMS_AGENT_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/dlmsAgent/target
+    - $CI_PROJECT_DIR/dlmsAgent/target
 
 build:ems:
   stage: build
@@ -189,7 +190,7 @@ build:ems:
   script:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/target
 
 build:ems-util:
@@ -198,7 +199,7 @@ build:ems-util:
   script:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/util/target
 
 build:ems-broker-client:
@@ -207,7 +208,7 @@ build:ems-broker-client:
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/broker-client/target
 
 build:ems-broker-cep:
@@ -216,7 +217,7 @@ build:ems-broker-cep:
   script:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/broker-cep/target
 
 build:ems-baguette-client:
@@ -231,7 +232,7 @@ build:ems-baguette-server:
   script:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/baguette-server/target
 
 build:ems-baguette-client-install:
@@ -240,7 +241,7 @@ build:ems-baguette-client-install:
   script:
     - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/baguette-client-install/target
 
 build:ems-translator:
@@ -249,7 +250,7 @@ build:ems-translator:
   script:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/event-management/translator/target
 
 build:ems-server:
@@ -291,14 +292,14 @@ deploy:upperware-metamodel:
 
 deploy:jwt-commons:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:jwt-commons
   script:
     - $DOCKER_CLI $JWT_COMMONS_CLI deploy
@@ -405,14 +406,14 @@ deploy:penalty-calculator:
 
 deploy:jwt-server:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  script: 
+  script:
     - $DOCKER_CLI $JWT_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/jwtserver:unknown $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
@@ -519,7 +520,7 @@ deploy:ems:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems
   script:
     - $DOCKER_CLI $EMS_CLI deploy
@@ -533,7 +534,7 @@ deploy:ems-util:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-util
   script:
     - $DOCKER_CLI $EMS_UTIL_CLI deploy
@@ -547,7 +548,7 @@ deploy:ems-broker-client:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-broker-client
   script:
     - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
@@ -561,7 +562,7 @@ deploy:ems-broker-cep:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-broker-cep
   script:
     - $DOCKER_CLI $EMS_BROKER_CEP_CLI deploy
@@ -575,7 +576,7 @@ deploy:ems-baguette-client:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-baguette-client
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_CLI deploy
@@ -589,7 +590,7 @@ deploy:ems-baguette-server:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-baguette-server
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_SERVER_CLI deploy
@@ -603,7 +604,7 @@ deploy:ems-baguette-client-install:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-baguette-client-install
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_INSTALL_CLI deploy
@@ -617,7 +618,7 @@ deploy:ems-translator:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:ems-translator
   script:
     - $DOCKER_CLI $EMS_TRANSLATOR_CLI deploy
@@ -631,11 +632,25 @@ deploy:ems-server:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  script: 
+  script:
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
+
+deploy:cp-parser:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-solver
+  script:
+    - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
 
 deploy:gen-solver:
   stage: deploy
