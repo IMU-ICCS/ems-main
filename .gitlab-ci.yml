@@ -174,6 +174,15 @@ build:zpp-solver:
     paths:
       - $CI_PROJECT_DIR/zpp-solver/target
 
+build:dlms-agent:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $DLMS_AGENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dlmsAgent/target
+
 build:ems:
   stage: build
   image: $MAVEN_IMAGE
@@ -481,6 +490,25 @@ deploy:cp-solver:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/cpsolver:unknown $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
+
+deploy:dlms-agent:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+  image: "python:latest"
+  before_script:
+    - pip install awscli
+  dependencies:
+    - build:dlms-agent
+  script:
+    - export AWS_ACCESS_KEY_ID=$K8S_SECRET_AWS_USER
+    - export AWS_SECRET_ACCESS_KEY=$K8S_SECRET_AWS_PASSWORD
+    - export AWS_DEFAULT_REGION=eu-west-1
+    - ls -l $CI_PROJECT_DIR/dlmsAgent
+    - ls -l $CI_PROJECT_DIR/dlmsAgent/target
+    - aws s3 cp $CI_PROJECT_DIR/dlmsAgent/target/DLMSAgent-3.1.0-SNAPSHOT.jar s3://melodic.testing.data/ARTIFACTS/ow2/dlmsagent/
 
 deploy:ems:
   stage: deploy
