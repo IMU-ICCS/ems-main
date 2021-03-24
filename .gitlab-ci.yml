@@ -127,8 +127,8 @@ build:dlms:
   script:
     - $DLMS_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlms/target
+    paths:
+      - $CI_PROJECT_DIR/dlms/target
 
 build:dlms-utility:
   stage: build
@@ -136,8 +136,17 @@ build:dlms-utility:
   script:
     - $DLMS_UTILITY_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+    paths:
+      - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+
+build:dlms-agent:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $DLMS_AGENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dlmsAgent/target
 
 build:penalty-calculator:
   stage: build
@@ -174,15 +183,6 @@ build:zpp-solver:
   artifacts:
     paths: 
     - $CI_PROJECT_DIR/zpp-solver/target
-
-build:dlms-agent:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_AGENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/dlmsAgent/target
 
 build:ems:
   stage: build
