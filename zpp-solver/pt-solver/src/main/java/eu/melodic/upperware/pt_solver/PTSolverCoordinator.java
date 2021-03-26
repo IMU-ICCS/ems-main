@@ -54,7 +54,6 @@ public class PTSolverCoordinator {
         this.env = env;
         this.restTemplate = restTemplate;
         this.melodicSecurityProperties = melodicSecurityProperties;
-        this.penaltyFunctionProperties = penaltyFunctionProperties;
         this.jwtService = jwtService;
         solutionResultNotifier = new SolutionResultNotifier(env, restTemplate);
     }
@@ -70,7 +69,6 @@ public class PTSolverCoordinator {
     private RestTemplate restTemplate;
 
     private MelodicSecurityProperties melodicSecurityProperties;
-    private PenaltyFunctionProperties penaltyFunctionProperties;
 
     private JWTService jwtService;
 
@@ -84,7 +82,7 @@ public class PTSolverCoordinator {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, numThreads).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
+                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
             solve(cp, utilityGenerator, seconds);
 
@@ -107,7 +105,7 @@ public class PTSolverCoordinator {
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
             List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
                     .mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
-                            melodicSecurityProperties, jwtService, penaltyFunctionProperties))
+                            melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds);
