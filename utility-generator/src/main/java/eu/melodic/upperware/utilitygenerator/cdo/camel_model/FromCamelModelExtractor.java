@@ -24,6 +24,7 @@ import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
+import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CamelModelTool;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
+import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findPenaltyAttributeType;
 
 @Slf4j
 public class FromCamelModelExtractor {
@@ -120,8 +122,12 @@ public class FromCamelModelExtractor {
     }
 
 
-    public void getReconfigurationPenaltyAttributes() {
-        log.warn("penalty calculator not supported!!");
+    public Collection<PenaltyAttribute> getReconfigurationPenaltyAttributes() {
+        Collection<MetricVariableImpl> reconfigurationPenaltyAttributes = filterVariables(this::isReconfigurationPenaltyAttribute);
+        if (reconfigurationPenaltyAttributes.size() == 0)
+            log.warn("Reconfiguration penalty is not supported in this version of the Melodic platform");
+
+        return Collections.emptyList();
     }
 
     /* optimisation requirement - utility function */
@@ -183,9 +189,9 @@ public class FromCamelModelExtractor {
                 && isInFormula(utilityFunctionFormula, variable.getName());
     }
 
-    private void isReconfigurationPenaltyAttribute(MetricVariableImpl variable){
-        log.warn("penalty calculator not supported!!");
+    private boolean isReconfigurationPenaltyAttribute(MetricVariableImpl variable){
+        return CamelMetadataTool.isFromPenalty(variable)
+                && isInFormula(utilityFunctionFormula, variable.getName());
     }
-
 
 }
