@@ -25,8 +25,6 @@ public class TemplateProvider {
         RAM_MIN_MAX
     }
 
-    ;
-
     public static String getTemplate(Collection<VariableDTO> variablesFromConstraintProblem,
             List<Map.Entry<AvailableTemplates, Double>> utilityComponents) {
         return getSum(utilityComponents.stream().map((template) ->
@@ -44,10 +42,6 @@ public class TemplateProvider {
                 return polynomial(inverse(add(getSumOfGivenTypeTimesCardinality(templateToVariableType(type), variablesFromConstraintProblem), "1.0")));
             case DISTANCE:
                 return getDistance(variablesFromConstraintProblem);
-            case RAM_MIN_MAX:
-            case DISK_MIN_MAX:
-            case CORES_MIN_MAX:
-                return getMinMaxPenalty(variablesFromConstraintProblem, templateToVariableType(type));
         }
         throw new RuntimeException("Template type " + type.name() + " is not supported yet");
     }
@@ -77,9 +71,7 @@ public class TemplateProvider {
         return multiply(getComponentsCount(variablesFromConstraintProblem).toString(), String.join("+", distances));
     }
 
-    private static String getMinMaxPenalty(Collection<VariableDTO> variablesFromConstraintProblem, VariableType type) {
-        String maxOfType = getMax(getVariablesOfGivenType(type, variablesFromConstraintProblem));
-        String minOfType = getMin(getVariablesOfGivenType(type, variablesFromConstraintProblem));
-        return normalizedMinusArcTangens(minus(maxOfType, minOfType));
+    private static void getMinMaxPenalty(Collection<VariableDTO> variablesFromConstraintProblem, VariableType type) {
+        log.warn("penalty calculator not supported!!");
     }
 }

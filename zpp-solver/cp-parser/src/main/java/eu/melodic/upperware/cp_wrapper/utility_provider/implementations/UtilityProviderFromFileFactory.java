@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UtilityProviderFromFileFactory implements UtilityProviderFactory {
     private MelodicSecurityProperties melodicSecurityProperties;
-    private PenaltyFunctionProperties penaltyFunctionProperties;
     private UtilityGeneratorProperties utilityGeneratorProperties;
     private JWTService jwtService;
     private NodeCandidates nodeCandidates;
@@ -23,6 +22,6 @@ public class UtilityProviderFromFileFactory implements UtilityProviderFactory {
     @Override
     public UtilityProvider create() {
         return new UtilityProviderImpl(new UtilityGeneratorApplication(camelModelFilePath, cpProblemFilePath,
-                true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties));
+                true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService));
     }
 }
