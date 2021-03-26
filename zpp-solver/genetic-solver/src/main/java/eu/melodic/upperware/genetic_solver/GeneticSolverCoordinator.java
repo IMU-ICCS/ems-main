@@ -7,7 +7,6 @@ import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.UtilityP
 import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
 import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
@@ -42,7 +41,7 @@ public class GeneticSolverCoordinator {
                                     @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                     UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
                                     RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
-                                    JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
+                                    JWTService jwtService) {
         this.clientX = clientX;
         this.filecacheService = new FilecacheService();
         this.memcacheService = memcacheService;
@@ -50,7 +49,6 @@ public class GeneticSolverCoordinator {
         this.env = env;
         this.restTemplate = restTemplate;
         this.melodicSecurityProperties = melodicSecurityProperties;
-        this.penaltyFunctionProperties = penaltyFunctionProperties;
         this.jwtService = jwtService;
         solutionResultNotifier = new SolutionResultNotifier(env, restTemplate);
     }
@@ -66,7 +64,6 @@ public class GeneticSolverCoordinator {
     private RestTemplate restTemplate;
 
     private MelodicSecurityProperties melodicSecurityProperties;
-    private PenaltyFunctionProperties penaltyFunctionProperties;
 
     private JWTService jwtService;
 
@@ -78,7 +75,7 @@ public class GeneticSolverCoordinator {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService);
 
             boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
             if (!solutionFeasible) {
@@ -103,7 +100,7 @@ public class GeneticSolverCoordinator {
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
-                    melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+                    melodicSecurityProperties, jwtService);
 
             boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
 
