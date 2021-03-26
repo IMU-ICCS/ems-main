@@ -118,7 +118,6 @@ public class UtilityFunctionEvaluator {
                                                            MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
         Collection<ArgumentConverter> argConverters = new ArrayList<>();
         argConverters.add(new DLMSConverter(properties.getUtilityGenerator().getDlmsControllerUrl(), fromCamelModelExtractor, this.deployedConfiguration, melodicSecurityProperties, jwtService));
-//        argConverters.add(new PenaltyConverter(fromCamelModelExtractor, this.deployedConfiguration));
         argConverters.add(new VariableConverter(this.variablesFromConstraintProblem, formula));
         argConverters.add(nodeCandidatesConverter);
         return argConverters;
