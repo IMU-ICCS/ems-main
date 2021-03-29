@@ -122,14 +122,6 @@ public class FromCamelModelExtractor {
     }
 
 
-    public Collection<PenaltyAttribute> getReconfigurationPenaltyAttributes() {
-        Collection<MetricVariableImpl> reconfigurationPenaltyAttributes = filterVariables(this::isReconfigurationPenaltyAttribute);
-        if (reconfigurationPenaltyAttributes.size() == 0)
-            log.warn("Reconfiguration penalty is not supported in this version of the Melodic platform");
-
-        return Collections.emptyList();
-    }
-
     /* optimisation requirement - utility function */
     private Optional<String> getUtilityFormula() {
         RequirementModel requirementModel = CdoTool.getFirstElement(model.getRequirementModels());
@@ -186,11 +178,6 @@ public class FromCamelModelExtractor {
 
     private boolean isDlmsUtilityAttribute(MetricVariableImpl variable) {
         return CamelMetadataTool.isFromDlmsUtility(variable)
-                && isInFormula(utilityFunctionFormula, variable.getName());
-    }
-
-    private boolean isReconfigurationPenaltyAttribute(MetricVariableImpl variable){
-        return CamelMetadataTool.isFromPenalty(variable)
                 && isInFormula(utilityFunctionFormula, variable.getName());
     }
 
