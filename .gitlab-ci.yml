@@ -491,6 +491,7 @@ deploy:cp-solver:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/cpsolver:unknown $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
+    - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
 deploy:dlms-agent:
   stage: deploy
