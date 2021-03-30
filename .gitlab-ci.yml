@@ -127,8 +127,8 @@ build:dlms:
   script:
     - $DLMS_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlms/target
+    paths:
+      - $CI_PROJECT_DIR/dlms/target
 
 build:dlms-utility:
   stage: build
@@ -136,8 +136,17 @@ build:dlms-utility:
   script:
     - $DLMS_UTILITY_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+    paths:
+      - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+
+build:dlms-agent:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $DLMS_AGENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dlmsAgent/target
 
 build:penalty-calculator:
   stage: build
@@ -174,15 +183,6 @@ build:zpp-solver:
   artifacts:
     paths: 
     - $CI_PROJECT_DIR/zpp-solver/target
-
-build:dlms-agent:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_AGENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/dlmsAgent/target
 
 build:ems:
   stage: build
@@ -225,10 +225,7 @@ build:ems-baguette-client:
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/event-management/baguette-client/target
-
+  
 build:ems-baguette-server:
   stage: build
   image: $MAVEN_IMAGE
@@ -255,6 +252,15 @@ build:ems-translator:
   artifacts:
     paths:
     - $CI_PROJECT_DIR/event-management/translator/target
+
+build:ems-server:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_SERVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/event-management/control-service/target
 
 deploy:melodic-upperware:
   stage: deploy
@@ -314,56 +320,56 @@ deploy:melodic-commons:
 
 deploy:melodic-cache:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:melodic-cache
   script:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
 
 deploy:dlms:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:dlms
   script:
     - $DOCKER_CLI $DLMS_CLI deploy
 
 deploy:dlms-utility:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:dlms-utility
   script:
     - $DOCKER_CLI $DLMS_UTILITY_CLI deploy
 
 deploy:dlms-controller:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  script: 
+  script:
     - $DOCKER_CLI $DLMS_CONTROLLER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/dlms-controller:unknown $CI_REGISTRY_IMAGE/dlms-controller:$CI_COMMIT_BRANCH
@@ -371,14 +377,14 @@ deploy:dlms-controller:
 
 deploy:dlms-webservice:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  script: 
+  script:
     - $DOCKER_CLI $DLMS_WEB_SERVICE_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/dlms-webservice:unknown $CI_REGISTRY_IMAGE/dlms-webservice:$CI_COMMIT_BRANCH
@@ -386,14 +392,14 @@ deploy:dlms-webservice:
 
 deploy:penalty-calculator:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:penalty-calculator
   script:
     - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
@@ -415,28 +421,28 @@ deploy:jwt-server:
 
 deploy:utility-generator:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:utility-generator
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
 deploy:zpp-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:zpp-solver
   script:
     - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
@@ -473,14 +479,14 @@ deploy:cp-generator:
 
 deploy:cp-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  script: 
+  script:
     - $DOCKER_CLI $CP_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/cpsolver:unknown $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
@@ -488,14 +494,14 @@ deploy:cp-solver:
 
 deploy:dlms-agent:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: "python:latest"
   before_script:
     - pip install awscli
-  dependencies: 
+  dependencies:
     - build:dlms-agent
   script:
     - export AWS_ACCESS_KEY_ID=$K8S_SECRET_AWS_USER
@@ -648,7 +654,7 @@ deploy:cp-parser:
 
 deploy:gen-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
@@ -657,7 +663,7 @@ deploy:gen-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-  script: 
+  script:
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/geneticsolver:unknown $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
@@ -695,7 +701,7 @@ deploy:mq-adapter:
 
 deploy:nc-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
@@ -704,7 +710,7 @@ deploy:nc-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-  script: 
+  script:
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ncsolver:unknown $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
@@ -712,7 +718,7 @@ deploy:nc-solver:
 
 deploy:pt-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
@@ -721,7 +727,7 @@ deploy:pt-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-  script: 
+  script:
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
@@ -729,7 +735,7 @@ deploy:pt-solver:
 
 deploy:mcts-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
@@ -738,7 +744,7 @@ deploy:mcts-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-  script: 
+  script:
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH

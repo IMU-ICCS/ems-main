@@ -54,7 +54,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.16.20</version>
+			<version>1.18.16</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -90,7 +90,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<descriptor>src/assembly/vm.xml</descriptor>
+					<descriptor>src/main/assembly/baguette-client-installation-package.xml</descriptor>
 					<finalName>baguette-client</finalName>
 				</configuration>
 				<executions>
@@ -156,11 +156,11 @@
 						<configuration>
 							<fileSets>
 								<fileSet>
-									<sourceFile>target/baguette-client-vm.tgz</sourceFile>
+									<sourceFile>target/baguette-client-installation-package.tgz</sourceFile>
 									<destinationFile>../config-files/resources/baguette-client.tgz</destinationFile>
 								</fileSet>
 								<fileSet>
-									<sourceFile>target/baguette-client-vm.tgz.md5</sourceFile>
+									<sourceFile>target/baguette-client-installation-package.tgz.md5</sourceFile>
 									<destinationFile>../config-files/resources/baguette-client.tgz.md5</destinationFile>
 								</fileSet>
 								<fileSet>
