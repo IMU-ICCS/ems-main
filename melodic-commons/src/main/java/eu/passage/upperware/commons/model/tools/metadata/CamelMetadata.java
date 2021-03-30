@@ -27,9 +27,8 @@ public enum CamelMetadata {
     AFFINITY_AWARENESS("AffinityAwareness", null, false, true),
     DATA_CENTRE_AWARENESS("DataCentreAwareness", null, false, true),
     SOURCE_AWARENESS("SourceAwareness", null,false, true),
-    DLMS_TOTAL_UTILITY("DLMSTotalUtility", null, false, true),
+    DLMS_TOTAL_UTILITY("DLMSTotalUtility", null, false, true);
 
-    RECONFIGURATION_TIME("ReconfigurationTime", null, false, false);
 
     public String camelName;
     public VariableType variableType;
