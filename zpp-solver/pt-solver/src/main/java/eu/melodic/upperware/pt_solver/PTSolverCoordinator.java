@@ -6,7 +6,6 @@ import eu.melodic.cache.impl.FilecacheService;
 import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
 import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
 import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
@@ -46,7 +45,7 @@ public class PTSolverCoordinator {
                                @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
                                RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
-                               JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
+                               JWTService jwtService) {
         this.clientX = clientX;
         this.filecacheService = new FilecacheService();
         this.memcacheService = memcacheService;
