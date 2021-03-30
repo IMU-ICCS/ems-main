@@ -82,7 +82,7 @@ build:melodic-upperware:
   script:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/upperware/target
 
 build:upperware-metamodel:
@@ -91,7 +91,7 @@ build:upperware-metamodel:
   script:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/upperware_metamodel/target
 
 build:jwt-commons:
@@ -109,7 +109,7 @@ build:melodic-commons:
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/melodic-commons/target
 
 build:melodic-cache:
@@ -118,7 +118,7 @@ build:melodic-cache:
   script:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/melodic-cache/target
 
 build:dlms:
@@ -154,7 +154,7 @@ build:penalty-calculator:
   script:
     - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/penalty-calculator/target
 
 build:utility-generator:
@@ -163,7 +163,7 @@ build:utility-generator:
   script:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/utility-generator/target
 
 build:cp-solver:
@@ -172,7 +172,7 @@ build:cp-solver:
   script:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/cp-solver/target
 
 build:zpp-solver:
@@ -181,7 +181,7 @@ build:zpp-solver:
   script:
     - $ZPP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
+    paths:
     - $CI_PROJECT_DIR/zpp-solver/target
 
 build:ems:
@@ -225,7 +225,7 @@ build:ems-baguette-client:
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-  
+
 build:ems-baguette-server:
   stage: build
   image: $MAVEN_IMAGE
@@ -264,28 +264,28 @@ build:ems-server:
 
 deploy:melodic-upperware:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:melodic-upperware
   script:
     - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
 
 deploy:upperware-metamodel:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:upperware-metamodel
   script:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
@@ -306,14 +306,14 @@ deploy:jwt-commons:
 
 deploy:melodic-commons:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
+  dependencies:
     - build:melodic-commons
   script:
     - $DOCKER_CLI $MELODIC_COMMONS_CLI deploy
