@@ -81,6 +81,7 @@ stages:
   - build-required-part1
   - build-required-part2
   - build-required-part3
+  - build-required-part4
   - build
   - deploy
 
@@ -138,16 +139,23 @@ build-required-part3:dlms:
     paths:
       - $CI_PROJECT_DIR/dlms/target
 
-build-required-part3:dlms-utility:
-  stage: build-required-part3
+build-required-part4:dlms-utility:
+  stage: build-required-part4
   image: $MAVEN_IMAGE
-  needs:
-    - build-required-part3:dlms
   script:
     - $DLMS_UTILITY_CLI -Pwithout-docker clean install
   artifacts:
     paths:
       - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+
+build-required-part4:cp-solver:
+  stage: build-required-part4
+  image: $MAVEN_IMAGE
+  script:
+    - $CP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/cp-solver/target
 
 build-required-part3:penalty-calculator:
   stage: build-required-part3
@@ -194,27 +202,18 @@ build:dlms-agent:
     paths:
       - $CI_PROJECT_DIR/dlmsAgent/target
 
-build:cp-solver:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $CP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/cp-solver/target
-
 build:cp-parser:
   stage: build
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  needs:
-    - build:cp-solver
+  dependencies:
+    - build-required-part4:cp-solver
   script:
     - $DOCKER_CLI $CP_PARSER_CLI -Pwithout-docker clean install
 
-build:ems-util:
-  stage: build
+build-required-part4:ems-util:
+  stage: build-required-part4
   image: $MAVEN_IMAGE
   script:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
@@ -225,8 +224,8 @@ build:ems-util:
 build:ems-broker-client:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-util
+  dependencies:
+    - build-required-part4:ems-util
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
   artifacts:
@@ -236,8 +235,6 @@ build:ems-broker-client:
 build:ems-broker-cep:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-broker-client
   script:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
@@ -247,16 +244,12 @@ build:ems-broker-cep:
 build:ems-baguette-client:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-broker-cep
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
 
 build:ems-baguette-server:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-broker-cep
   script:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
@@ -266,8 +259,6 @@ build:ems-baguette-server:
 build:ems-baguette-client-install:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-baguette-client
   script:
     - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
   artifacts:
@@ -277,8 +268,6 @@ build:ems-baguette-client-install:
 build:ems-translator:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-baguette-server
   script:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
@@ -288,8 +277,6 @@ build:ems-translator:
 build:ems-server:
   stage: build
   image: $MAVEN_IMAGE
-  needs:
-    - build:ems-translator
   script:
     - $EMS_SERVER_CLI -Pwithout-docker clean install
   artifacts:
@@ -697,7 +684,7 @@ deploy:gen-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:cp-solver
+    - build-required-part4:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -745,7 +732,7 @@ deploy:nc-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:cp-solver
+    - build-required-part4:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -763,7 +750,7 @@ deploy:pt-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:cp-solver
+    - build-required-part4:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -781,7 +768,7 @@ deploy:mcts-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:cp-solver
+    - build-required-part4:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
