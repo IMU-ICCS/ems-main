@@ -377,7 +377,7 @@ deploy:dlms-utility:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part3:dlms-utility
+    - build-required-part4:dlms-utility
   script:
     - $DOCKER_CLI $DLMS_UTILITY_CLI deploy
 
