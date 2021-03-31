@@ -197,25 +197,4 @@ class UtilityGeneratorFCRTest extends Specification{
     }
 
 
-    def "FCR with penalty - test"() {
-
-        given:
-        newConfiguration.add(new IntVariableValueDTO(cardinalityName, 2))
-        newConfiguration.add(new IntVariableValueDTO(providerName, 0))
-        newConfiguration.add(new IntVariableValueDTO(dbCardinalityName, 1))
-        newConfiguration.add(new IntVariableValueDTO(dbProviderName, 1))
-
-        path = "src/main/test/resources/FCRwithPenalty.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService)
-
-        when:
-        double result = utilityGenerator.evaluate(newConfiguration)
-        System.out.println("result = " + result)
-
-        then:
-        noExceptionThrown()
-        result != 0
-    }
-
-
 }
