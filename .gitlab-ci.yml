@@ -76,8 +76,16 @@ after_script:
   - docker image ls
   - echo '=========================================================================='
 
-build:melodic-upperware:
-  stage: build
+stages:
+  - build-basic-dependencies
+  - build-required-part1
+  - build-required-part2
+  - build-required-part3
+  - build
+  - deploy
+
+build-basic-dependencies:melodic-upperware:
+  stage: build-basic-dependencies
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
@@ -85,8 +93,8 @@ build:melodic-upperware:
     paths:
     - $CI_PROJECT_DIR/upperware/target
 
-build:upperware-metamodel:
-  stage: build
+build-required-part1:upperware-metamodel:
+  stage: build-required-part1
   image: $MAVEN_IMAGE
   script:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
@@ -94,8 +102,8 @@ build:upperware-metamodel:
     paths:
     - $CI_PROJECT_DIR/upperware_metamodel/target
 
-build:jwt-commons:
-  stage: build
+build-required-part2:jwt-commons:
+  stage: build-required-part2
   image: $MAVEN_IMAGE
   script:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
@@ -103,14 +111,70 @@ build:jwt-commons:
     paths:
     - $CI_PROJECT_DIR/jwt-commons/target
 
-build:melodic-commons:
-  stage: build
+build-required-part2:melodic-commons:
+  stage: build-required-part2
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
     - $CI_PROJECT_DIR/melodic-commons/target
+
+build-required-part3:zpp-solver:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/zpp-solver/target
+
+build-required-part3:dlms:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $DLMS_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dlms/target
+
+build-required-part3:dlms-utility:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  needs:
+    - build-required-part3:dlms
+  script:
+    - $DLMS_UTILITY_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+
+build-required-part3:penalty-calculator:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/penalty-calculator/target
+
+build-required-part3:utility-generator:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/utility-generator/target
+
+build-required-part3:ems:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/event-management/target
 
 build:melodic-cache:
   stage: build
@@ -119,25 +183,7 @@ build:melodic-cache:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/melodic-cache/target
-
-build:dlms:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/dlms/target
-
-build:dlms-utility:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_UTILITY_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+      - $CI_PROJECT_DIR/melodic-cache/target
 
 build:dlms-agent:
   stage: build
@@ -148,24 +194,6 @@ build:dlms-agent:
     paths:
       - $CI_PROJECT_DIR/dlmsAgent/target
 
-build:penalty-calculator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/penalty-calculator/target
-
-build:utility-generator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/utility-generator/target
-
 build:cp-solver:
   stage: build
   image: $MAVEN_IMAGE
@@ -175,23 +203,15 @@ build:cp-solver:
     paths:
     - $CI_PROJECT_DIR/cp-solver/target
 
-build:zpp-solver:
+build:cp-parser:
   stage: build
-  image: $MAVEN_IMAGE
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  needs:
+    - build:cp-solver
   script:
-    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/zpp-solver/target
-
-build:ems:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/event-management/target
+    - $DOCKER_CLI $CP_PARSER_CLI -Pwithout-docker clean install
 
 build:ems-util:
   stage: build
@@ -205,6 +225,8 @@ build:ems-util:
 build:ems-broker-client:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-util
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
   artifacts:
@@ -214,6 +236,8 @@ build:ems-broker-client:
 build:ems-broker-cep:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-broker-client
   script:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
@@ -223,12 +247,16 @@ build:ems-broker-cep:
 build:ems-baguette-client:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-broker-cep
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
 
 build:ems-baguette-server:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-broker-cep
   script:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
@@ -238,6 +266,8 @@ build:ems-baguette-server:
 build:ems-baguette-client-install:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-baguette-client
   script:
     - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
   artifacts:
@@ -247,6 +277,8 @@ build:ems-baguette-client-install:
 build:ems-translator:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-baguette-server
   script:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
@@ -256,6 +288,8 @@ build:ems-translator:
 build:ems-server:
   stage: build
   image: $MAVEN_IMAGE
+  needs:
+    - build:ems-translator
   script:
     - $EMS_SERVER_CLI -Pwithout-docker clean install
   artifacts:
@@ -272,7 +306,7 @@ deploy:melodic-upperware:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:melodic-upperware
+    - build-basic-dependencies:melodic-upperware
   script:
     - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
 
@@ -286,7 +320,7 @@ deploy:upperware-metamodel:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:upperware-metamodel
+    - build-required-part1:upperware-metamodel
   script:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
 
@@ -300,7 +334,7 @@ deploy:jwt-commons:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:jwt-commons
+    - build-required-part2:jwt-commons
   script:
     - $DOCKER_CLI $JWT_COMMONS_CLI deploy
 
@@ -314,7 +348,7 @@ deploy:melodic-commons:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:melodic-commons
+    - build-required-part2:melodic-commons
   script:
     - $DOCKER_CLI $MELODIC_COMMONS_CLI deploy
 
@@ -342,7 +376,7 @@ deploy:dlms:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:dlms
+    - build-required-part3
   script:
     - $DOCKER_CLI $DLMS_CLI deploy
 
@@ -356,7 +390,7 @@ deploy:dlms-utility:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:dlms-utility
+    - build-required-part3:dlms-utility
   script:
     - $DOCKER_CLI $DLMS_UTILITY_CLI deploy
 
@@ -400,7 +434,7 @@ deploy:penalty-calculator:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:penalty-calculator
+    - build-required-part3:penalty-calculator
   script:
     - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
 
@@ -429,7 +463,7 @@ deploy:utility-generator:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:utility-generator
+    - build-required-part3:utility-generator
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
@@ -443,7 +477,7 @@ deploy:zpp-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:zpp-solver
+    - build-required-part3:zpp-solver
   script:
     - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
 
@@ -522,7 +556,7 @@ deploy:ems:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems
+    - build-required-part3:ems
   script:
     - $DOCKER_CLI $EMS_CLI deploy
 
@@ -649,7 +683,7 @@ deploy:cp-parser:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:cp-solver
+    - build:cp-parser
   script:
     - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
 
@@ -664,7 +698,7 @@ deploy:gen-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-    - deploy:cp-parser
+    - build:cp-parser
   script:
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -712,7 +746,7 @@ deploy:nc-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-    - deploy:cp-parser
+    - build:cp-parser
   script:
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -730,7 +764,7 @@ deploy:pt-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-    - deploy:cp-parser
+    - build:cp-parser
   script:
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -748,7 +782,7 @@ deploy:mcts-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
-    - deploy:cp-parser
+    - build:cp-parser
   script:
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
