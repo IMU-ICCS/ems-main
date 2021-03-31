@@ -664,6 +664,7 @@ deploy:gen-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
+    - deploy:cp-parser
   script:
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -711,6 +712,7 @@ deploy:nc-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
+    - deploy:cp-parser
   script:
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -728,6 +730,7 @@ deploy:pt-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
+    - deploy:cp-parser
   script:
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -745,6 +748,7 @@ deploy:mcts-solver:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build:cp-solver
+    - deploy:cp-parser
   script:
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
