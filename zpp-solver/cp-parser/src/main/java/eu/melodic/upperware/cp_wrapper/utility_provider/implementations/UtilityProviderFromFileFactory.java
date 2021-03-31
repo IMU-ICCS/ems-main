@@ -3,7 +3,6 @@ package eu.melodic.upperware.cp_wrapper.utility_provider.implementations;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProviderFactory;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;

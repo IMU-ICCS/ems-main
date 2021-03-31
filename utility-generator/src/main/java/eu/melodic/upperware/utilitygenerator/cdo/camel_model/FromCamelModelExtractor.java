@@ -24,7 +24,6 @@ import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
-import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CamelModelTool;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
-import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findPenaltyAttributeType;
 
 @Slf4j
 public class FromCamelModelExtractor {
