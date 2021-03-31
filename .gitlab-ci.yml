@@ -557,7 +557,7 @@ deploy:ems-util:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-util
+    - build-required-part4:ems-util
   script:
     - $DOCKER_CLI $EMS_UTIL_CLI deploy
 
