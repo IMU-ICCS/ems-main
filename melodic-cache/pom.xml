@@ -39,8 +39,8 @@
 
         <dependency>
             <groupId>org.activeeon</groupId>
-            <artifactId>morphemic-preprocessor</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <artifactId>scheduling-abstraction-layer</artifactId>
+            <version>3.00-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
