@@ -1,156 +1,66 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
-import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.plangenerator.model.*;
+import eu.melodic.upperware.adapter.plangenerator.model.AdapterMonitor;
 import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.MonitorTask;
-import io.github.cloudiator.rest.ApiException;
+import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import io.github.cloudiator.rest.model.Queue;
-import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static java.lang.String.format;
 
 @Slf4j
 public class MonitorTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterMonitor> {
 
     private final String applicationId;
+    private final String authorizationBearer;
+    private final ProactiveClientService proactiveClientService;
 
     MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
-                               ColosseumApi api, ColosseumContext context,
-                               Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId) {
+                        ColosseumApi api, ColosseumContext context,
+                        Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId,
+                        String authorizationBearer,
+                        ProactiveClientService proactiveClientService) {
 
         super(task, predecessors, api, context, checkFinishTaskToFuture);
         this.applicationId = applicationId;
+        this.authorizationBearer = authorizationBearer;
+        this.proactiveClientService = proactiveClientService;
     }
 
     @Override
     public void create(AdapterMonitor taskBody) {
-
-        log.info("ProActive Dev [MonitorTaskExecutor]: applicationId: {}\nAdapterMonitor taskBody= {}", applicationId, taskBody);
-
-        /*String nodeId = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
-                .getId();
-
-        Monitor monitor = convertToMonitor(taskBody, nodeId);
-        MonitoringTarget monitoringTarget = createMonitoringTarget(nodeId);
-
-        Optional<Monitor> monitorOpt = context.getMonitor(taskBody.getMetricName(), monitoringTarget);
-        if (monitorOpt.isPresent()) {
-            log.info("There is already Monitor defined with metric: {}", taskBody.getMetricName());
-            return;
-        }
-
         try {
-            Monitor addedMonitor = api.addMonitor(monitor);
-            context.addMonitor(addedMonitor);
-            // TODO: LSZ
-            // here we can create a monitor for task/component (e.g. Component_App) that collects metrics and uses Push (app specific)
+            log.info("MonitorTaskExecutor->create: [application id: {}]\nauthorization: {}\nAdapterMonitor= {}",
+                    applicationId,
+                    StringUtils.replace(authorizationBearer, "Bearer ", ""),
+                    taskBody);
+            // here we create a monitor for task/component (e.g. Component_App) that collects metrics and uses Push (app specific)
             // or Pull (e.g. SystemCpuUsage classic metric) Sensor to do this. We know node name here, so we can use it.
             // Every sensor type sends to ems client (localhost), we have jms broker configuration.
-        } catch (ApiException e) {
-            log.error("Could not add Monitor. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
-            throw new AdapterException("Problem during adding Monitor", e);
-        }*/
-    }
 
-    private Monitor convertToMonitor(AdapterMonitor taskBody, String nodeId) {
-        return new Monitor()
-                .metric(taskBody.getMetricName())
-                .targets(convertToTargets(nodeId))
-                .sensor(convertToSensor(taskBody.getSensor()))
-                .sinks(convertToSinks(taskBody.getSinks()))
-                .tags(convertToTags(taskBody.getTags()));
-    }
+            int status = proactiveClientService.addMonitors(
+                    Collections.singletonList(taskBody.getNodeName()),
+                    StringUtils.replace(authorizationBearer, "Bearer ", "")
+            );
+            log.info("MonitorTaskExecutor->create: [application id: {}] addMonitors status= {}", applicationId, status);
 
-    private Map<String, String> convertToTags(List<Pair<String, String>> tags) {
-        return tags.stream()
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-    }
-
-    private List<DataSink> convertToSinks(List<AdapterSink> sinks) {
-        return sinks.stream()
-                .map(adapterSink -> new DataSink()
-                        .type(DataSink.TypeEnum.valueOf(adapterSink.getSinkType().name()))
-                        ._configuration(convertToConfiguration(adapterSink.getConfiguration()))
-                )
-                .collect(Collectors.toList());
-    }
-
-    private Sensor convertToSensor(AdapterSensor sensor) {
-        if (sensor instanceof AdapterPushSensor) {
-            return new PushSensor()
-                    .port(((AdapterPushSensor) sensor).getPort())
-                    .type(PushSensor.class.getSimpleName());
-        } else if (sensor instanceof AdapterPullSensor) {
-            return new PullSensor()
-                    .className(((AdapterPullSensor) sensor).getClassName())
-                    ._configuration(convertToConfiguration(((AdapterPullSensor) sensor).getConfiguration()))
-                    .interval(convertToInterval(((AdapterPullSensor) sensor).getInterval()))
-                    .type(PullSensor.class.getSimpleName());
+        } catch (RuntimeException e) {
+            log.error("MonitorTaskExecutor->create: [application id: {}] Could not add Monitor. Error: {}", applicationId, e.getMessage());
+            // TODO: LSZ - dev only ! uncomment for prod when Monitors will be fully functional on proactive side
+            //throw new AdapterException(String.format("Problem during adding Monitor [application id: %s]: %s", applicationId, e.getMessage()), e);
         }
-        throw new RuntimeException(format("Exception during converting Sensor. Only PushSensor and PullSensor are supported. Current value: %s", sensor != null ? sensor.getClass().getSimpleName() : "null"));
-    }
-
-    private Interval convertToInterval(AdapterInterval interval) {
-        return new Interval()
-                .unit(TimeUnit.valueOf(interval.getUnit().name()))
-                .period(interval.getPeriod());
-    }
-
-    private Map<String, String> convertToConfiguration(List<Pair<String, String>> configuration) {
-        return configuration.stream()
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-    }
-
-    private List<MonitoringTarget> convertToTargets(String nodeId) {
-        return Collections.singletonList(
-                new MonitoringTarget()
-                        .type(MonitoringTarget.TypeEnum.NODE)
-                        .identifier(nodeId));
     }
 
     @Override
     public void delete(AdapterMonitor taskBody) {
-
-        log.info("ProActive Dev [MonitorTaskExecutor]: delete - applicationId: {}\nAdapterMonitor taskBody= {}", applicationId, taskBody);
-
-        /*String nodeId = context.getNode(taskBody.getNodeName())
-                .orElseThrow(() -> new AdapterException(format("Could not find Node with id %s", taskBody.getNodeName())))
-                .getId();
-
-        MonitoringTarget monitoringTarget = createMonitoringTarget(nodeId);
-
-        if (!context.getMonitor(taskBody.getMetricName(), monitoringTarget).isPresent()) {
-            log.warn("Monitor with metricName {} does not exist", taskBody.getMetricName());
-            return;
-        }
-
-        log.info("Going to remove monitor {} with MonitoringTarget({}, {})", taskBody.getMetricName(), monitoringTarget.getType(), monitoringTarget.getIdentifier());
-
-        try {
-            api.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
-            context.deleteMonitor(taskBody.getMetricName(), monitoringTarget);
-        } catch (ApiException e) {
-            log.error("Could not delete Monitor with metricName {}. Error code: {}, Response body: {}, ResponseHeaders: {}",
-                    taskBody.getMetricName(), e.getCode(), e.getResponseBody(), e.getResponseHeaders());
-            throw new AdapterException("Problem during deleting Monitor", e);
-        }*/
-    }
-
-    private MonitoringTarget createMonitoringTarget(String nodeId) {
-        MonitoringTarget monitoringTarget = new MonitoringTarget();
-        monitoringTarget.setType(MonitoringTarget.TypeEnum.NODE);
-        monitoringTarget.setIdentifier(nodeId);
-        return monitoringTarget;
+        log.info("MonitorTaskExecutor->delete: [application id: {}] AdapterMonitor= {}", applicationId, taskBody);
+        log.info("MonitorTaskExecutor->delete: [application id: {}] delete not supported - only initial Monitors creation is managed by Melodic/Adapter", applicationId);
     }
 }

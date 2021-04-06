@@ -59,7 +59,7 @@ public class ColosseumExecutorFactory implements InitializingBean {
           checkFinishTaskToCallableFunction
                   .andThen(callableToFutureFunction);
 
-  RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors, String applicationId) {
+  RunnableTaskExecutor createTaskExecutor(Task task, Set<Future> predecessors, String applicationId, String authorizationBearer) {
     if (task instanceof JobTask) {
      return new JobTaskExecutor((JobTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId, proactiveClientService);
     }
@@ -68,21 +68,21 @@ public class ColosseumExecutorFactory implements InitializingBean {
       return new ScheduleTaskExecutor((ScheduleTask) task, predecessors, api, context, checkFinishTaskToFutureFunction);
     }
     if (task instanceof NodeTask) {
-      return new NodeTaskExecutor((NodeTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId);
+      return new NodeTaskExecutor((NodeTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId, proactiveClientService);
     }
     if (task instanceof ProcessTask) {
       // LSZ: skip it
       return new ProcessTaskExecutor((ProcessTask) task, predecessors, api, context, checkFinishTaskToFutureFunction);
     }
     if (task instanceof WaitTask) {
-      // LSZ: skip it (?)
+      // LSZ: skip it
       return new WaitTaskExecutor((WaitTask) task, predecessors, api, context, checkFinishTaskToFutureFunction);
     }
     if (task instanceof MonitorTask) {
-      return new MonitorTaskExecutor((MonitorTask)task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId);
+      return new MonitorTaskExecutor((MonitorTask)task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId, authorizationBearer, proactiveClientService);
     }
     if (task instanceof ScaleTask) {
-      return new ScaleTaskExecutor((ScaleTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId);
+      return new ScaleTaskExecutor((ScaleTask) task, predecessors, api, context, checkFinishTaskToFutureFunction, applicationId, proactiveClientService);
     }
 
     throw new IllegalArgumentException(format("Task %s is not supported as RunnableTask", task.getClass().getName()));

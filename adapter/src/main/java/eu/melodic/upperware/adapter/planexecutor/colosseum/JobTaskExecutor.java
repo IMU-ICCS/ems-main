@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,19 +37,15 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
 
     @Override
     public void create(AdapterJob taskBody) {
-        if (context.getJob(taskBody.getJobName()).isPresent()) {
-            log.warn("Job {} already exists in Colosseum - skipping execution of the task", taskBody.getName());
+        if (taskBody.getPreviousJob().isPresent()) {
+            log.warn("JobTaskExecutor->create: Job {} [application id: {}] has already been executed - skipping execution of the task", taskBody.getName(), applicationId);
             return;
         }
 
         try {
-            /*JobNew jobNew = convertToJobNew(taskBody);
-            Job job = api.addJob(jobNew);
-            context.addJob(job);*/
-            // TODO: LSZ
-            // here we can create workflow/job skeleton with all defined tasks (e.g. Component_App) with their communication ports and installation recipe
+            // here we create workflow/job skeleton with all defined tasks (e.g. Component_App) with their communication ports and installation recipe
             // and connection between tasks/components (by portRequired and portProvided matching)
-            log.info("ProActive Dev [JobTaskExecutor]: AdapterJob taskBody= {}", taskBody);
+            log.info("JobTaskExecutor->create: [application id: {}] AdapterJob= {}", applicationId, taskBody);
             JSONObject jobJSON = new JSONObject();
             JSONObject jobInformationJSON = new JSONObject();
             jobInformationJSON.put("id", this.applicationId);
@@ -65,156 +62,21 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
                     .forEach(adapterCommunication -> addCommunication(communicationsJSONArray, adapterCommunication));
             jobJSON.put("communications", communicationsJSONArray);
 
-            log.info("ProActive Dev [JobTaskExecutor]: just before createJob - JSONObject jobJSON= {}", jobJSON);
+            log.info("JobTaskExecutor->create: [application id: {}] ProActive job (JSONObject): \n{}", applicationId, jobJSON);
 
-            log.info("ProActive Dev [JobTaskExecutor]: proactiveClientService.getConnectionState()= {}", proactiveClientService.getConnectionState());
+            log.info("JobTaskExecutor->create: [application id: {}] ProActive Connection State={}", applicationId, proactiveClientService.getConnectionState());
             proactiveClientService.createJob(jobJSON);
 
-        } /*catch (ApiException e) {
-            log.error("Could not add Job. Error code: {}, Response body: {}, ResponseHeaders: {}", e.getCode(), e.getResponseBody(), e.getResponseHeaders());
-            throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);
-        }*/
+        }
         catch (RuntimeException e) {
-            log.error("Could not add Job. Error: {}", e.getMessage());
-            throw new AdapterException(format("Could not add Job %s", taskBody.getJobName()), e);
+            log.error("JobTaskExecutor->create: [application id: {}] Could not add Job. Error: {}", applicationId, e.getMessage());
+            throw new AdapterException(String.format("Problem during adding Job %s [application id: %s]: %s", taskBody.getJobName(), applicationId, e.getMessage()), e);
         }
     }
 
     @Override
     public void delete(AdapterJob taskBody) {
         throw new UnsupportedOperationException("Delete method is not supported for JobTaskExecutor");
-    }
-
-
-    private JobNew convertToJobNew(AdapterJob taskBody) {
-        return new JobNew()
-                .name(taskBody.getJobName())
-                .tasks(convertToTasks(taskBody.getTasks()))
-                .communications(convertToCommunications(taskBody.getCommunications()));
-    }
-
-    private List<Task> convertToTasks(List<AdapterTask> tasks) {
-        return tasks.stream()
-                .map(this::convertToTask)
-                .collect(Collectors.toList());
-    }
-
-    private Task convertToTask(AdapterTask adapterTask) {
-        return new Task()
-                .name(adapterTask.getName())
-                .behaviour(new ServiceBehaviour()
-                        .restart(true)
-                        .type(ServiceBehaviour.class.getSimpleName())
-                )
-                .ports(convertToPorts(adapterTask.getPorts()))
-                .interfaces(convertToInterfaces(adapterTask.getInterfaces()));
-    }
-
-    private List<Port> convertToPorts(List<AdapterPort> ports){
-        return ports.stream()
-                .map(this::convertToPort)
-                .collect(Collectors.toList());
-    }
-
-    private Port convertToPort(AdapterPort adapterPort) {
-        if (adapterPort instanceof AdapterPortProvided) {
-            return new PortProvided()
-                    .port(((AdapterPortProvided) adapterPort).getPort())
-                    .name(adapterPort.getName())
-                    .type(adapterPort.getType());
-        } else if (adapterPort instanceof AdapterPortRequired) {
-            return new PortRequired()
-                    .isMandatory(((AdapterPortRequired) adapterPort).getIsMandatory())
-                    .name(adapterPort.getName())
-                    .type(adapterPort.getType());
-        }
-        throw new AdapterException(format("Unknown Port type: %s", adapterPort.getClass().getSimpleName()));
-    }
-
-    private List<TaskInterface> convertToInterfaces(List<AdapterTaskInterface> interfaces) {
-        return interfaces.stream()
-                .map(this::convertToInterface)
-                .collect(Collectors.toList());
-
-    }
-
-    private TaskInterface convertToInterface(AdapterTaskInterface adapterTaskInterface) {
-        if (adapterTaskInterface instanceof AdapterLanceInterface) {
-            return new LanceInterface()
-                    .updateAction(((AdapterLanceInterface) adapterTaskInterface).getUpdate())
-                    .containerType(LanceInterface.ContainerTypeEnum.valueOf(((AdapterLanceInterface) adapterTaskInterface).getContainterType()))
-                    .operatingSystem(convertToOperatingSystem(((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem()))
-                    .preInstall(((AdapterLanceInterface) adapterTaskInterface).getPreInstall())
-                    .install(((AdapterLanceInterface) adapterTaskInterface).getInstall())
-                    .postInstall(((AdapterLanceInterface) adapterTaskInterface).getPostInstall())
-                    .start(((AdapterLanceInterface) adapterTaskInterface).getStart())
-                    .startDetection(((AdapterLanceInterface) adapterTaskInterface).getStartDetection())
-                    .stop(((AdapterLanceInterface) adapterTaskInterface).getStop())
-                    .type(LanceInterface.class.getSimpleName());
-
-        } else if (adapterTaskInterface instanceof AdapterSparkInterface) {
-            return new SparkInterface()
-                    .file(((AdapterSparkInterface) adapterTaskInterface).getFile())
-                    .className(((AdapterSparkInterface) adapterTaskInterface).getClassName())
-                    .arguments(((AdapterSparkInterface) adapterTaskInterface).getArguments())
-                    .sparkArguments(((AdapterSparkInterface) adapterTaskInterface).getSparkArguments())
-                    .sparkConfiguration(((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration())
-                    .processMapping(ProcessMapping.CLUSTER)
-                    .type(SparkInterface.class.getSimpleName());
-
-        } else if (adapterTaskInterface instanceof AdapterDockerInterface) {
-            return new DockerInterface()
-                    .dockerImage(((AdapterDockerInterface) adapterTaskInterface).getDockerImage())
-                    .environment(((AdapterDockerInterface) adapterTaskInterface).getEnvironment())
-                    .type(DockerInterface.class.getSimpleName());
-
-        } else if (adapterTaskInterface instanceof AdapterFaasInterface) {
-            return new FaasInterface()
-                    .functionName(((AdapterFaasInterface) adapterTaskInterface).getFunctionName())
-                    .sourceCodeUrl(((AdapterFaasInterface) adapterTaskInterface).getSourceCodeUrl())
-                    .handler(((AdapterFaasInterface) adapterTaskInterface).getHandler())
-                    .triggers(convertToTriggers(((AdapterFaasInterface) adapterTaskInterface).getTriggers()))
-                    .timeout(((AdapterFaasInterface) adapterTaskInterface).getTimeout())
-                    .functionEnvironment(((AdapterFaasInterface) adapterTaskInterface).getFunctionEnvironment())
-                    .type(FaasInterface.class.getSimpleName());
-        }
-        throw new AdapterException(format("Unknown TaskInterface type: %s", adapterTaskInterface.getClass().getSimpleName()));
-    }
-
-    private OperatingSystem convertToOperatingSystem(AdapterOperatingSystem adapterOperatingSystem) {
-        OperatingSystem operatingSystem = new OperatingSystem();
-        operatingSystem.setOperatingSystemFamily(OperatingSystemFamily.valueOf(adapterOperatingSystem.getOperatingSystemFamily().toString()));
-        operatingSystem.setOperatingSystemArchitecture(OperatingSystemArchitecture.valueOf(adapterOperatingSystem.getOperatingSystemArchitecture().toString()));
-        operatingSystem.setOperatingSystemVersion(adapterOperatingSystem.getOperatingSystemVersion());
-        return operatingSystem;
-    }
-
-    private List<Communication> convertToCommunications(List<AdapterCommunication> communications) {
-        return communications
-                .stream()
-                .map(this::convertToCommunication)
-                .collect(Collectors.toList());
-    }
-
-    private Communication convertToCommunication(AdapterCommunication adapterCommunication) {
-        return new Communication()
-                .portProvided(adapterCommunication.getPortProvided())
-                .portRequired(adapterCommunication.getPortRequired());
-    }
-
-    private List<Trigger> convertToTriggers(List<AdapterFaasTrigger> triggers) {
-        return triggers
-                .stream()
-                .map(this::convertToTrigger)
-                .collect(Collectors.toList());
-    }
-
-
-    private Trigger convertToTrigger(AdapterFaasTrigger trigger) {
-        return new HttpTrigger()
-                .httpMethod(trigger.getHttpMethod())
-                .httpPath(trigger.getHttpPath())
-                .type(trigger.getType());
     }
 
     private void addTask(JSONArray tasksJSONArray, AdapterTask adapterTask) {
@@ -235,7 +97,7 @@ public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
         .stream()
         .findFirst()
         .map(this::addInstallationInstructions)
-        .orElseThrow(() -> new AdapterException(format("No installation instructions for task: %s [part of application id: %s]", adapterTask.getName(), applicationId)));
+        .orElseThrow(() -> new AdapterException(format("No installation instructions for task: %s [application id: %s]", adapterTask.getName(), applicationId)));
     }
 
     private void addCommunication(JSONArray communicationsJSONArray, AdapterCommunication adapterCommunication) {

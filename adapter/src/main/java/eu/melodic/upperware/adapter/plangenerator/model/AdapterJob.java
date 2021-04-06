@@ -3,6 +3,7 @@ package eu.melodic.upperware.adapter.plangenerator.model;
 import lombok.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -16,6 +17,9 @@ public class AdapterJob implements Data {
     private List<AdapterTask> tasks;
 
     private List<AdapterCommunication> communications;
+
+    @Builder.Default
+    private Optional<AdapterJob> previousJob = Optional.empty();
 
     @Override
     public String getName() {

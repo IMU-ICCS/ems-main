@@ -166,7 +166,7 @@ public class DeployCoordinator {
             if (isValid) {
                 if (!isSimulation) {
                     log.info("Deployment plan authorized, executing...");
-                    planExecutor.executePlan(plan, resourceName);
+                    planExecutor.executePlan(plan, resourceName, authorization);
                 } else {
                     log.info("Deployment plan authorized, simulation mode on: execution stopped");
                 }
