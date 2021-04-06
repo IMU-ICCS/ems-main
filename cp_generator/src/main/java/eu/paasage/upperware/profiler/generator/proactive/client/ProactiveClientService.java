@@ -24,13 +24,12 @@ public class ProactiveClientService {
     @Autowired
     public ProactiveClientService(final GeneratorProperties generatorProperties) {
         this.generatorProperties = generatorProperties;
-        log.info("ProActive Dev [ProactiveClientService]: Proactive properties: {}", generatorProperties.getPaRest());
 
         try {
             paGateway = new PAGateway(generatorProperties.getPaRest().getUrl());
-            log.info("ProActive Dev [ProactiveClientService]: PAGateway created");
+            log.info("ProactiveClientService->constructor: PAGateway created");
         } catch (RuntimeException e) {
-            log.info("Exception caught during creation of Proactive Client (PAGateway) object, error: {}", e.getMessage());
+            log.error("ProactiveClientService->constructor: Exception caught during creation of Proactive Client (PAGateway) object, error: {}", e.getMessage());
             throw new GeneratorException("Exception caught during creation of Proactive Client (PAGateway) object", e);
         }
 
@@ -39,48 +38,48 @@ public class ProactiveClientService {
 
     private void connectToProactiveServer() {
         if (!this.connectionState.compareAndSet(0, 1)) { // trying to connect (1)
-            log.info("ProActive Dev [ProactiveClientService]: current connectionState indicates that connection is established or in progress");
+            log.debug("ProactiveClientService->connectToProactiveServer: current connectionState= {}", getConnectionState());
             return;
         }
 
         try {
-            log.info("ProActive Dev [ProactiveClientService]: Trying to connect to Proactive server using: url: {}, encrypted login: {}, encrypted password: {}",
+            log.info("ProactiveClientService->connectToProactiveServer: Trying to connect to Proactive server using: url: {}, encrypted login: {}, encrypted password: {}",
                     generatorProperties.getPaRest().getUrl(),
                     generatorProperties.getPaRest().getLogin(),
                     generatorProperties.getPaRest().getPassword());
 
             try {
-                log.info("ProActive Dev [ProactiveClientService]: decrypted login: {}", ProtectionUtils.decrypt(generatorProperties.getPaRest().getLogin()));
-                log.info("ProActive Dev [ProactiveClientService]: decrypted password: {}", ProtectionUtils.decrypt(generatorProperties.getPaRest().getPassword()));
+                log.debug("ProactiveClientService->connectToProactiveServer: decrypted login: {}", ProtectionUtils.decrypt(generatorProperties.getPaRest().getLogin()));
+                log.debug("ProactiveClientService->connectToProactiveServer: decrypted password: {}", ProtectionUtils.decrypt(generatorProperties.getPaRest().getPassword()));
             } catch (RuntimeException e) {
-                log.info("Exception caught while decrypting credentials, message: {}", e.getMessage());
+                log.debug("ProactiveClientService->connectToProactiveServer: Exception caught while decrypting Proactive server credentials, message: {}", e.getMessage());
                 throw e;
             }
 
             paGateway.connect(ProtectionUtils.decrypt(generatorProperties.getPaRest().getLogin()),
                     ProtectionUtils.decrypt(generatorProperties.getPaRest().getPassword()));
             this.connectionState.set(2); // connected (2)
-            log.info("ProActive Dev [ProactiveClientService]: Connected to Proactive server");
+            log.info("ProactiveClientService->connectToProactiveServer: Connected to Proactive server");
         } catch (Exception e) {
             this.connectionState.set(0); // disconnected (0)
-            log.info("Exception of type {} caught while connecting to Proactive server, error: {}", e.getClass().getSimpleName(), e.getMessage());
+            log.error("ProactiveClientService->connectToProactiveServer: Exception of type {} caught while connecting to Proactive server, error: {}", e.getClass().getSimpleName(), e.getMessage());
         }
     }
 
     public void disconnectFromProactiveServer() {
         if (!this.connectionState.compareAndSet(2, 3)) { // trying to disconnect (3)
-            log.info("ProActive Dev [ProactiveClientService]: current connectionState indicates that connection is not established or disconnecting in progress");
+            log.debug("ProactiveClientService->disconnectFromProactiveServer: current connectionState= {}", getConnectionState());
             return;
         }
 
         try {
-            log.info("ProActive Dev [ProactiveClientService]: Trying to disconnect from Proactive server");
+            log.info("ProactiveClientService->disconnectFromProactiveServer: Trying to disconnect from Proactive server");
             paGateway.disconnect();
             this.connectionState.set(0); // disconnected (0)
-            log.info("ProActive Dev [ProactiveClientService]: Disconnected from Proactive server");
+            log.info("ProactiveClientService->disconnectFromProactiveServer: Disconnected from Proactive server");
         } catch (Exception e) {
             this.connectionState.set(2); // connected (2)
-            log.info("Exception of type {} caught while disconnecting from Proactive server, error: {}", e.getClass().getSimpleName(), e.getMessage());
+            log.info("ProactiveClientService->disconnectFromProactiveServer: Exception of type {} caught while disconnecting from Proactive server, error: {}", e.getClass().getSimpleName(), e.getMessage());
         }
     }
 

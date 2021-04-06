@@ -57,7 +57,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         if (candidates.size() > 0) {
             fillByonCloudProvider(candidates);
             log.info("Successfully fetched {} NodeCandidates", candidates.size());
-            log.info("ProActive Dev [CloudiatorServiceXImpl]: findNodeCandidates - list of NodeCandidates: {}", candidates);
+            log.debug("CloudiatorServiceXImpl->findNodeCandidates: list of NodeCandidates: {}", candidates);
             return candidates;
         } else {
             throw new GeneratorException("Proactive Client returned empty NodeCandidate list");
@@ -322,7 +322,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private String prepareCloudTypeValue(String cloudType) {
         String enumName = StringUtils.upperCase(cloudType);
         if (EnumUtils.isValidEnum(CloudType.class, enumName)) {
-            return "CloudType::" + enumName;
+            return enumName;
         }
         throw new GeneratorException(String.format("Could not parse %s as a CloudType. Possible values are: %s", enumName, Arrays.toString(CloudType.values())));
     }
