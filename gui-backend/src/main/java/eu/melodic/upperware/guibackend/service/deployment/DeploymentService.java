@@ -11,6 +11,7 @@ import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiR
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
 import eu.melodic.upperware.guibackend.service.cdo.ModelNameGenerator;
 import eu.passage.upperware.commons.service.provider.ProviderService;
+import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.store.SecureStoreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class DeploymentService {
     private ProviderService providerService;
     private SecureStoreService secureStoreService;
     private ModelNameGenerator modelNameGenerator;
+    private final SecureStoreDBService secureStoreDBService;
 
     public DeploymentResponse createDeploymentProcess(DeploymentRequest deploymentRequest, String token, String refreshToken) {
         deploymentRequest.setCloudDefinitions(deploymentRequest.getCloudDefinitions()
@@ -147,13 +149,17 @@ public class DeploymentService {
     }
 
     private List<SecureVariable> findSecureVariables(MultipartFile xmiFile) {
-        List<String> secureVariablesKeys;
+        //List<String> secureVariablesKeys;
+        List<String> secureVariablesKeys2;
         try {
             String xmiContent = new String(xmiFile.getBytes());
-            secureVariablesKeys = secureStoreService.findSecureVariables(xmiContent);
+            //secureVariablesKeys = secureStoreService.findSecureVariables(xmiContent);
+            secureVariablesKeys2 = secureStoreDBService.findSecureVariables(xmiContent);
+            log.info("LSZ [DeploymentService]: findSecureVariables - secureVariablesKeys2={}", secureVariablesKeys2);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by parsing your uploaded file %s in order to find secure variables", xmiFile.getName()));
         }
-        return secureStoreService.fillSecureVariablesValues(secureVariablesKeys);
+        return secureStoreDBService.fillSecureVariablesValues(secureVariablesKeys2);
+        //return secureStoreService.fillSecureVariablesValues(secureVariablesKeys);
     }
 }
