@@ -1,36 +1,28 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import com.google.common.base.MoreObjects;
-import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
+import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
-import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
 import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
-import io.github.cloudiator.rest.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
 @Slf4j
-public class JobTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterJob> {
+public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
 
     private final String applicationId;
     private final ProactiveClientService proactiveClientService;
 
-    JobTaskExecutor(JobTask task, Collection<Future> predecessors, ColosseumApi api,
-                    ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId, ProactiveClientService proactiveClientService) {
-        super(task, predecessors, api, context, checkFinishTaskToFuture);
+    JobTaskExecutor(JobTask task, Collection<Future> predecessors, String applicationId, ProactiveClientService proactiveClientService) {
+        super(task, predecessors);
         this.applicationId = applicationId;
         this.proactiveClientService = proactiveClientService;
     }

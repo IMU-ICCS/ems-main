@@ -21,11 +21,8 @@ import java.util.Collection;
 public class ComparableModel {
 
   private AdapterJob adapterJob;
-  private AdapterSchedule adapterSchedule;
   @Singular
   private Collection<AdapterRequirement> adapterRequirements;
-  @Singular
-  private Collection<AdapterProcess> adapterProcesses;
   @Singular
   private Collection<AdapterMonitor> adapterMonitors;
 

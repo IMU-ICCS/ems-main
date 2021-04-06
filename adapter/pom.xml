@@ -73,11 +73,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>io.github.cloudiator</groupId>
-      <artifactId>colosseum-client</artifactId>
-      <version>${colloseum-client.version}</version>
-    </dependency>
+
     <dependency>
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-core</artifactId>
@@ -189,11 +185,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>io.github.cloudiator.client</groupId>
-      <artifactId>java-rest</artifactId>
-      <scope>compile</scope>
-    </dependency>
+
     <dependency>
       <groupId>org.activeeon</groupId>
       <artifactId>scheduling-abstraction-layer</artifactId>

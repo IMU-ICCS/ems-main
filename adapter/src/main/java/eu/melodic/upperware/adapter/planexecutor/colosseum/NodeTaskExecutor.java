@@ -1,14 +1,10 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
-import eu.melodic.upperware.adapter.communication.colosseum.ColosseumApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
-import eu.melodic.upperware.adapter.executioncontext.colosseum.ColosseumContext;
-import eu.melodic.upperware.adapter.planexecutor.TaskWatchDog;
+import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
-import eu.melodic.upperware.adapter.plangenerator.tasks.CheckFinishTask;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
 import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
-import io.github.cloudiator.rest.model.Queue;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -18,17 +14,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 @Slf4j
-public class NodeTaskExecutor extends WatchdogColosseumTaskExecutor<AdapterRequirement> implements TaskWatchDog {
+public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
 
     private final String applicationId;
     private final ProactiveClientService proactiveClientService;
 
-    NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, ColosseumApi api,
-                     ColosseumContext context, Function<CheckFinishTask, Future<Queue>> checkFinishTaskToFuture, String applicationId, ProactiveClientService proactiveClientService) {
-        super(task, predecessors, api, context, checkFinishTaskToFuture);
+    NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, String applicationId, ProactiveClientService proactiveClientService) {
+        super(task, predecessors);
         this.applicationId = applicationId;
         this.proactiveClientService = proactiveClientService;
     }

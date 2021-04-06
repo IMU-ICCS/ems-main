@@ -75,7 +75,7 @@ public class AdapterController {
 
     @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
     public void refreshContext() {
-        deployCoordinator.refreshContext();
+        log.info("refreshContext - intentionally left for backward compatibility");
     }
 
     @GetMapping(value = "/health")
