@@ -1,624 +1,100 @@
 /*
- * Copyright (C) 2019 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2020 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.upperware.penaltycalculator;
 
 import com.whalin.MemCached.MemCachedClient;
 import com.whalin.MemCached.SockIOPool;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.log4j.BasicConfigurator;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.influxdb.InfluxDB;
+import org.influxdb.InfluxDBFactory;
+import org.influxdb.dto.Query;
+import org.influxdb.dto.QueryResult;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.*;
+import java.util.Map;
+
+import java.util.Collection;
+import org.apache.commons.*; 
+import java.lang.Object;
+import java.lang.Number;
+import java.lang.Double;
+import java.lang.Integer;
+import java.util.Properties; 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
+
+
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PenaltyFunction {
 
-    @Autowired
-    @Getter
-    @Setter
-    private PenaltyFunctionProperties properties;
+    private final PenaltyFunctionProperties properties;
 
-    public PenaltyFunctionResult evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
-        try {
-            return _evaluatePenaltyFunction(actualConfiguration, newConfiguration);
-        } catch (Throwable t) {
-            log.error("-----> EXCEPTION: ", t);
-            throw t;
-        }
-    }
+    private MemCachedClient memCachedClient;
 
-    private PenaltyFunctionResult _evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
-        log.info("PROPERTIES: startup times:\n{}", properties.getStartupTimes());
-        log.info("PROPERTIES: state info:\n{}", properties.getStateInfo());
-        log.info("PROPERTIES: Memcached Port operation info:\n{}", properties.getPort());
-        log.info("PROPERTIES: Memcached Host operattion info:\n{}", properties.getHost());
+	public double[] vmStartupTimesArray = new double[30];
+    private double vmStartupTimesMax;
+    private double vmStartupTimesMin;
+    private double[][] vmDataArray;
+	
+	private double[] betaHat;
+ 
 
-        // ........
-        List<PenaltyConfigurationElement> toBeDeleted = new ArrayList<>();
-        List<PenaltyConfigurationElement> toBeAdded = new ArrayList<>();
-        List<PenaltyConfigurationElement> toBeChanged = new ArrayList<>();
+	private List<Double> vmStartupTimeslist = new ArrayList<>();
+	private List<String> vmStartupTimeslistkeys = new ArrayList<>();
+	
+	private List<String> vmStartupTimeslistkeysinfluxdbget = new ArrayList<String>();
+	
+	 
+	private List<String> vmStartupTimeslistkeysinfluxdb = new ArrayList<String>();
+		 
 
-        // find the elements in actual-current config. but not in new configuration
-        // these elements will be deleted.
-        for (PenaltyConfigurationElement s : actualConfiguration) {
-            //log.debug("LOOP-1: checking CE: {}", toString(s));
-            if (!containsEquivalent(newConfiguration, s)) {
-
-                toBeDeleted.add(s);
-                log.info(">>>>>>>>>: mcc: {}", toBeDeleted);
-            }
-        }
+    private List<ComponMeasurement> componentMeasurementsFromInfluxDbList;
+    private long componentMeasurementsFromInfluxDbTimestamp = -1;
+    private double componentMeasurementsAverage;
+    private double componentMeasurementsMin;
+    private double componentMeasurementsMax;
 
 
-        // find the elelements that exist in new configuration but not in actual-current configuration
-        // these elements will be added.
-        for (PenaltyConfigurationElement s : newConfiguration) {
-            if (!containsEquivalent(actualConfiguration, s)) {
-                toBeAdded.add(s);
-                log.info(">>>>>>>>>: mcc: {}", toBeAdded);
+    private static boolean isEquivalent(PenaltyConfigurationElement a, PenaltyConfigurationElement b) {
+        if (a.getNodeCandidate().getHardware().getRam().equals(b.getNodeCandidate().getHardware().getRam())) {
+            if (a.getNodeCandidate().getHardware().getCores().equals(b.getNodeCandidate().getHardware().getCores())) {
+                if (a.getNodeCandidate().getHardware().getName().equals(b.getNodeCandidate().getHardware().getName())) {
+                   return (a.getNodeCandidate().getHardware().getDisk().equals(b.getNodeCandidate().getHardware().getDisk()));
 
-            }
-        }
-
-
-        // find the elements that exist in current configuration and will be in the new config also.
-        // for these elements calculate the diff in cardinalities (number)
-        for (PenaltyConfigurationElement s1 : newConfiguration) {
-            for (PenaltyConfigurationElement s2 : actualConfiguration) {
-                if (isEquivalent(s1, s2)) {
-                    int newCardinality = s1.getCardinality() - s2.getCardinality();
-                    PenaltyConfigurationElement s_new = new PenaltyConfigurationElement(s1.getId(), s1.getNodeCandidate(), newCardinality);
-                    if (newCardinality > 0) {
-                        toBeChanged.add(s_new);
-                    } else {
-                        toBeDeleted.add(s1);
-                    }
                 }
             }
         }
-
-
-        //The results we need are: 'toBeAdded'&'toBeChanged'
-        List<PenaltyConfigurationElement> results = new ArrayList<PenaltyConfigurationElement>(toBeChanged);
-        results.addAll(toBeAdded);
-
-        log.info("----------------------------------------------------------------------");
-        log.info("Uncommon elements:\n{}", PenaltyFunction.toString(results));
-        log.info("Penalty: ++++++");
-
-        // Check if there is no difference
-        if (results.size()==0) {
-            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(0, 0);
-            log.warn("-----> No difference between solutions: result will be: {}", pfResult);
-            return pfResult;
-        }
-
-        // Memchache staff here
-        String str1 = "";
-        String str2 = "";
-        // Get memcached connection info from properties file
-        str1 = properties.getHost();
-        str2 = properties.getPort();
-
-
-        //initialize the SockIOPool that maintains the Memcached Server Connection Pool
-
-        BasicConfigurator.configure();
-        String[] servers = {str1 + ":" + str2};
-        SockIOPool pool = SockIOPool.getInstance("Test2");
-        log.info("servers: {}", Arrays.toString(servers));
-
-
-        pool.setServers(servers);
-        pool.setFailover(true);
-        pool.setInitConn(11);
-        pool.setMinConn(5);
-        pool.setMaxConn(250);
-        pool.setMaintSleep(30);
-        pool.setNagle(false);
-        pool.setSocketTO(3000);
-        pool.setAliveCheck(true);
-        pool.initialize();
-
-        //Get the Memcached Client from SockIOPool named Test2
-        MemCachedClient mcc = new MemCachedClient("Test2");
-
-        // connect to Daniel's InfluxDB and created database with queries...unused yet
-
-
-        String arr = null;
-        log.info(arr);
-
-        //check if we have Null Component Deployment Times and act accordingy +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        double resultss = 0;
-        double result = 0;
-        int value1 = 0;
-        double value2 = 0;
-        double result2 = 0;
-
-        if (arr != null && !arr.isEmpty()) {
-
-
-            //Find the Average Component Deployment Time ==>  avg
-            // cnt are the number of Components Deployed along with their times
-            double sum = 0;
-            int cnt = 0;
-            double avg = 0;
-        /*
-        for (ComponMeasurement cm : ComponMeasurements) {
-
-            sum += cm.timeDepl();
-            cnt++;
-        }
-
-        if (cnt > 0) {
-            avg = sum / cnt;
-        } else
-            throw new RuntimeException("some error message"); */
-            log.info("cnt={}", cnt);
-            log.info("avg={}", avg);
-
-
-            //Find the maximum Component Deployment time
-            double maxx = 0;
-        /*
-        for (ComponMeasurement cmm : ComponMeasurements) {
-
-            if (maxx < cmm.timeDepl()) {
-                maxx = cmm.timeDepl(); //swapping
-
-            }
-
-        }
-        */
-
-            log.info("The max Component Deployment Time value is " + maxx);
-
-
-            //Close connection to Influx DB
-
-            //influxDB.close();
-
-
-            HashMap<String, String> hm = new HashMap<String, String>();
-
-
-            // load old first properties file DATA
-            //IPATINI:
-            Map<String, String> prop = properties.getStartupTimes();
-            prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
-            prop.forEach((key, value) -> hm.put((String) key, (String) value));
-            log.info(">>>>>>>>>: hm: {}", hm);
-
-
-            // get the values of the HashMap hm returned as an Array
-            String[] yy = hm.values().toArray(new String[0]);
-
-            log.info(Arrays.toString(yy));
-
-            //Instantiate data for train of OLSMulitple regression algorithm
-            //convert String Array to double Array
-            double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
-
-            //Find the maximum VM Startup time
-            double max = y[0];
-            for (int i = 1; i < y.length; i++) {
-                if (max < y[i]) {
-                    max = y[i]; //swapping
-                    y[i] = y[0];
-                }
-            }
-            log.info("The max VM Startup value is " + max);
-
-
-            //Find the mimimum VM Startup time
-            double min = y[0];
-            for (int i = 1; i < y.length; i++) {
-                if (min > y[i]) {
-                    min = y[i]; //swapping
-                    y[i] = y[0];
-                }
-            }
-            log.info("The min VM Startup value is " + min);
-
-
-            log.info(">>>>>>>>>: y: {}", y);
-
-
-            log.info(">>>>>>>>>: y.length: ", y.length);
-
-            int tableStringLength = y.length;
-
-            log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
-
-
-            //instantiate the double array
-            double[][] xx = new double[tableStringLength][3];
-
-            log.info("xx.len={}", xx.length);
-
-            OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-
-
-            // load old second properties file DATA : STEFANIDI
-
-            String[] a = properties.getStateInfo().split(";");
-
-
-            //create the two dimensional array with correct size
-            String[][] array = new String[a.length][a.length];
-
-            //combine the arrays split by semicolin and comma
-            for (int i = 0; i < a.length; i++) {
-                array[i] = a[i].split(",");
-            }
-
-            //Convert two dimensions String Array to two dimensions Double Array
-
-            log.info("a.len={}", a.length);
-            log.info("xx.len={}", xx.length);
-            log.info("array: " + java.util.Arrays.deepToString(array));
-            log.info("xx: " + java.util.Arrays.deepToString(xx));
-            for (int k = 0; k < tableStringLength; k++) {
-                for (int j = 0; j < 3; j++) {
-                    //tableDouble[k][j]= Double.parseDouble(tableString[k][j]);
-                    //xx[k][j]= Double.valueOf(array[k][j]).doubleValue();
-                    xx[k][j] = Double.parseDouble(array[k][j]);
-
-                }
-            }
-
-            log.info("array: " + java.util.Arrays.deepToString(array));
-            log.info("xx_after_fill: " + java.util.Arrays.deepToString(xx));
-
-            log.info(">>>>>>>>>: xx: {}", xx);
-
-
-            regression.newSampleData(y, xx);
-            regression.setNoIntercept(true);
-            // Get the regression parameters and residuals
-            double[] betaHat = regression.estimateRegressionParameters();
-            double[] residuals = regression.estimateResiduals();
-            double rSquared = regression.calculateRSquared();
-            //print them
-
-            log.info("Regression parameters: ");
-            for (int i = 0; i < betaHat.length; i++) {
-                log.info("beta[{}]={}", i, betaHat[i]);
-            }
-
-            log.info("Residual parameter:");
-            for (int i = 0; i < residuals.length; i++) {
-                log.info("residual[{}]={}", i, residuals[i]);
-            }
-
-            //log.info("residual: " + residuals);
-            log.info("rSquared: " + rSquared);
-
-
-            for (String key : hm.keySet()) {
-                int value = 0;
-
-
-                // value=((Integer) hm.get(key)).intValue();//here is an ERROR
-                value = Integer.parseInt((String) hm.get(key));
-                for (PenaltyConfigurationElement s33 : results) {
-                    log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
-
-                    if (key.equals(s33.getNodeCandidate().getHardware().getName())) {
-
-                        //value = Integer.valueOf((String) hm.get(key));
-                        result += value;
-                        log.info("RESULT:{}", result);
-                        value1 = value1 + 1;
-                        log.info("KEY:" + key + " VALUE:" + hm.get(key));
-                    }
-
-                    if (!(hm.containsKey(s33.getNodeCandidate().getHardware().getName()))) {
-
-                        value2 = betaHat[0] + betaHat[1] * (s33.getNodeCandidate().getHardware().getCores()) + betaHat[2] * (s33.getNodeCandidate().getHardware().getRam()) + betaHat[3] * (s33.getNodeCandidate().getHardware().getDisk());
-                        log.info("value custom:" + value2);
-                        result2 += value2;
-                        value1 = value1 + 1;
-                    }
-
-
-                }
-
-
-            }
-
-
-            double avgTime = ((((result + result2) / value1) + avg) / 2) - min;
-            resultss = avgTime / (maxx - min);
-            log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, avg={}, min={}, max={} --> resultss={}", result, result2, value1, avg, min, max, resultss);
-            //return resultss;
-
-            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(resultss, avgTime);
-
-            return pfResult;
-
-        } else {
-            //do appropriate things for only VM startup times existing
-            //XXX: HashMap<String, String> hm = new HashMap<String, String>();
-            log.info("-----> Point A");
-
-            // load first properties file--REMOVED
-
-
-            // load old first properties file DATA
-            //IPAT:
-            /*XXX: Map<String, String> prop = properties.getStartupTimes();
-            prop.forEach((key, value) -> mcc.set(String.valueOf(key), String.valueOf(value)));
-            prop.forEach((key, value) -> hm.put((String) key, (String) value));
-            log.info(">>>>>>>>>: hm: {}", hm);*/
-
-            log.info("-----> Adding VM data to Memcache");
-            properties.getVmData().entrySet()
-                    .forEach(entry -> mcc.set(entry.getKey(), Integer.toString(entry.getValue().getStartupTime())));
-            log.info("-----> Point B");
-
-            // get the values of the HashMap hm returned as an Array
-            //XXX: String[] yy = hm.values().toArray(new String[0]);
-
-            //XXX: log.info(Arrays.toString(yy));
-
-            //Instantiate data for train of OLSMulitple regression algorithm
-            //convert String Array to double Array
-            double[] y = properties.getVmData().values().stream()
-                    .mapToDouble(data -> data.getStartupTime()).toArray();
-            log.info("-----> VM startup times (y-data): {}", y);
-            //XXX: double[] y = Arrays.stream(yy).mapToDouble(Double::parseDouble).toArray();
-
-            //Find the maximum VM Startup time
-            double max = Arrays.stream(y).max().getAsDouble();
-            /*XXX: double max = y[0];
-            for (int i = 1; i < y.length; i++) {
-                if (max < y[i]) {
-                    max = y[i]; //swapping
-                    y[i] = y[0];
-                }
-            }*/
-            log.info("The max VM Startup value is " + max);
-
-
-            //Find the mimimum VM Startup time
-            double min = Arrays.stream(y).min().getAsDouble();
-            /*XXX: double min = y[0];
-            for (int i = 1; i < y.length; i++) {
-                if (min > y[i]) {
-                    min = y[i]; //swapping
-                    y[i] = y[0];
-                }
-            }*/
-            log.info("The min VM Startup value is " + min);
-
-
-            /*XXX: log.info(">>>>>>>>>: y: {}", y);
-
-
-            log.info(">>>>>>>>>: y.length: ", y.length);
-
-            tableStringLength = y.length;
-
-            log.info(">>>>>>>>>: tableStringLength: ", tableStringLength);
-
-            log.info("y={}", y.length);*/
-
-
-            //instantiate the double array
-            //XXX: double[][] xx = new double[tableStringLength][3];
-            double[][] xx = properties.getVmData().values().stream()
-                    .map(PenaltyFunctionProperties.VmData::getX)
-                    .collect(Collectors.toList())
-                    .toArray(new double[0][0]);
-            log.info("------> VM core/ram/disk (x-data): {}", Arrays.deepToString(xx));
-
-            //XXX: log.info("xx.len={}", xx.length);
-
-            log.info("------> Point C");
-            OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-
-
-/*XXX:
-            //  load second properties files ----- REMOVED
-
-            // load old second properties file DATA : STEFANIDI
-
-            String[] a = properties.getStateInfo().split(";");
-
-
-            //create the two dimensional array with correct size
-            String[][] array = new String[a.length][];
-
-            //combine the arrays split by semicolin and comma
-            for (int i = 0; i < a.length; i++) {
-                array[i] = a[i].split(",");
-            }
-
-            //Convert two dimensions String Array to two dimensions Double Array
-
-            log.info("a={}", a.length);
-            log.info("xx.len={}", xx.length);
-            log.info("array: " + java.util.Arrays.deepToString(array));
-            log.info("xx: " + java.util.Arrays.deepToString(xx));
-            for (int k = 0; k < tableStringLength; k++) {
-                for (int j = 0; j < 3; j++) {
-
-                    xx[k][j] = Double.parseDouble(array[k][j]);
-
-                }
-            }
-
-            log.info("array: " + java.util.Arrays.deepToString(array));
-            log.info("xx_after_fill: " + java.util.Arrays.deepToString(xx));
-
-            log.info(">>>>>>>>>: xx: {}", xx);
-*/
-
-            log.info("-----> Calculating regression parameters...");
-            regression.newSampleData(y, xx);
-            regression.setNoIntercept(true);
-
-            // Get the regression parameters and residuals
-            double[] betaHat = regression.estimateRegressionParameters();
-            double[] residuals = regression.estimateResiduals();
-            double rSquared = regression.calculateRSquared();
-
-            //print them
-            log.info("-----> Regression parameters: {}", Arrays.toString(betaHat));
-            /*XXX: for (int i = 0; i < betaHat.length; i++) {
-                log.info("betaHat[{}]={}", i, betaHat[i]);
-            }*/
-
-            log.info("-----> Residual parameter: {}", Arrays.toString(residuals));
-            /*XXX: for (int i = 0; i < residuals.length; i++) {
-                log.info("residuals[{}]={}", i, residuals[i]);
-            }*/
-
-            //log.info("residual: " + residuals);
-            log.info("rSquared: {}", rSquared);
-
-
-/*            for (String key : hm.keySet()) {
-                int value = 0;
-
-
-                // value=((Integer) hm.get(key)).intValue();//here is an ERROR
-                value = Integer.parseInt((String) hm.get(key));
-                for (PenaltyConfigurationElement s33 : results) {
-                    log.info("KEY: {},  s33: {}", key, s33.getNodeCandidate().getHardware().getName());
-
-                    if (key.equals(s33.getNodeCandidate().getHardware().getName())) {
-                        log.info("     MATCH FOUND: {}", key);
-
-                        //value = Integer.valueOf((String) hm.get(key));
-                        result += value;
-                        log.info("RESULT:{}", result);
-                        value1 = value1 + 1;
-                        log.info("KEY:" + key + " VALUE:" + hm.get(key));
-                    }
-
-                    if (!(hm.containsKey(s33.getNodeCandidate().getHardware().getName()))) {
-                        log.info("     NO MATCH FOUND FOR: {}", s33.getNodeCandidate().getHardware().getName());
-
-                        value2 = betaHat[0] + betaHat[1] * (s33.getNodeCandidate().getHardware().getCores()) + betaHat[2] * (s33.getNodeCandidate().getHardware().getRam()) + betaHat[3] * (s33.getNodeCandidate().getHardware().getDisk());
-                        log.info("value custom:" + value2);
-                        result2 += value2;
-                        value1 = value1 + 1;
-                    }
-
-
-                }
-
-
-            }*/
-
-            log.info("-----> Point D");
-            int sumOfStartupTimesPerPCE = 0;
-            int sumOfEstimatedStartupTimesPerPCE = 0;
-            int numOfStartupTimesPerPCE = results.size();
-
-            for (PenaltyConfigurationElement pce : results) {
-                String hardwareName = pce.getNodeCandidate().getHardware().getName()
-                        .replace(".", "_");
-                log.info("-----> PCE: {}", hardwareName);
-
-                if (properties.getVmData().containsKey(hardwareName)) {
-                    log.info("     MATCH FOUND: {}", hardwareName);
-                    int hardwareStartupTime = properties.getVmData().get(hardwareName).getStartupTime();
-
-                    sumOfStartupTimesPerPCE += hardwareStartupTime;
-                    log.info("RESULT:{}", sumOfStartupTimesPerPCE);
-                    log.info("PCE:" + hardwareName + " VALUE:" + hardwareStartupTime);
-                } else {
-                    log.info("     NO MATCH FOUND FOR: {}", hardwareName);
-
-                    int hardwareCores = pce.getNodeCandidate().getHardware().getCores();
-                    long hardwareRam = pce.getNodeCandidate().getHardware().getRam();
-                    double hardwareDisk = pce.getNodeCandidate().getHardware().getDisk();
-                    log.info("     VM params: cores={}, ram={}, disk={}", hardwareCores, hardwareRam, hardwareDisk);
-                    double estimatedStartupTime = betaHat[0] + betaHat[1] * hardwareCores + betaHat[2] * hardwareRam + betaHat[3] * hardwareDisk;
-                    log.info("value custom:" + estimatedStartupTime);
-                    sumOfEstimatedStartupTimesPerPCE += estimatedStartupTime;
-
-                    // update min/max
-                    if (max < estimatedStartupTime) max = estimatedStartupTime;
-                    if (min > estimatedStartupTime) min = estimatedStartupTime;
-                }
-            }
-            log.info("----->  new-min={}, new-max={}", min, max);
-
-            double averageStartupTime = (sumOfStartupTimesPerPCE+sumOfEstimatedStartupTimesPerPCE)/numOfStartupTimesPerPCE;
-            double normalizedValue = (averageStartupTime - min) / (max - min);
-
-            log.info("----->  sum={}, sum-reg={}, num={}, avg={}, min={}, max={} --> resultss={}",
-                    sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE,
-                    averageStartupTime, min, max, normalizedValue);
-
-            // prepare results object
-            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(normalizedValue, averageStartupTime);
-
-            return pfResult;
-
-            /*resultss = ((((result + result2) / value1) - min) / (max - min));
-            log.info("!!!!!!!!!!!!!  result={}, result2={}, value1={}, min={}, max={} --> resultss={}", result, result2, value1, min, max, resultss);
-
-            return resultss;*/
-        }
-    }
-
-
-    public static boolean containsEquivalent(Collection<PenaltyConfigurationElement> collection, PenaltyConfigurationElement element) {
-        for (PenaltyConfigurationElement ce : collection) {
-            //log.debug("containsEquivalent: comparing col. elem. to given elem.: \n\t{}\n\t{}", toString(ce), toString(element));
-            if (isEquivalent(ce, element)) {
-                //log.debug("containsEquivalent: ARE EQUIV");
-                return true;
-            }
-        }
-        //log.debug("containsEquivalent: NO EQUIV FOUND");
         return false;
     }
 
-    public static boolean isEquivalent(PenaltyConfigurationElement a, PenaltyConfigurationElement b) {
-		/*log.debug("isEquivalent:              checking: {} <--> {}", toString(a), toString(b));
-		log.debug("isEquivalent:                  ram:   {} <--> {}", a.getNodeCandidate().getHardware().getRam()-b.getNodeCandidate().getHardware().getRam()==0);
-		log.debug("isEquivalent:                  cores: {} <--> {}", a.getNodeCandidate().getHardware().getCores()-b.getNodeCandidate().getHardware().getCores()==0);
-		log.debug("isEquivalent:                  disk:  {} <--> {}", a.getNodeCandidate().getHardware().getDisk()-b.getNodeCandidate().getHardware().getDisk()==0);*/
-        if (a.getNodeCandidate().getHardware().getRam() - b.getNodeCandidate().getHardware().getRam() == 0) {
-            //log.debug("isEquivalent:                  PASS-1");
-            if (a.getNodeCandidate().getHardware().getCores() - b.getNodeCandidate().getHardware().getCores() == 0) {
-                //log.debug("isEquivalent:                  PASS-2");
-                if (a.getNodeCandidate().getHardware().getName().equals( b.getNodeCandidate().getHardware().getName() )) {
-                    //log.debug("isEquivalent:                  PASS-3");
-                    if (a.getNodeCandidate().getHardware().getDisk() - b.getNodeCandidate().getHardware().getDisk() == 0) {
-                        /*if (a.getCardinality() == b.getCardinality()){
-                            return false;
-                        }*/
-                        //log.debug("isEquivalent:              checking: EQUIV");
-                        return true;
-                    }
-                }
+    private static boolean containsEquivalent(Collection<PenaltyConfigurationElement> collection, PenaltyConfigurationElement element) {
+        for (PenaltyConfigurationElement ce : collection) {
+            if (isEquivalent(ce, element)) {
+                return true;
             }
-
         }
-
-        //log.debug("isEquivalent:              checking: NOT EQUIV");
         return false;
     }
 
@@ -650,5 +126,647 @@ public class PenaltyFunction {
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    @PostConstruct
+    private synchronized void initializePenaltyFunction() {
+        initializeMemcacheClient();
+        loadVmStartupTimesFromMemcache();
+        if (vmStartupTimesArray ==null)
+            loadVmStartupTimesFromProperties();
+        calculateRegressionParameters();
+    }
+
+    private synchronized void initializeMemcacheClient() {
+
+        // check if memcache client is already initialized
+        if (memCachedClient!=null)
+            return;
+
+        // Get memcached connection settings from properties
+        String memcacheHost = properties.getMemcacheHost();
+        int memcachePort = properties.getMemcachePort();
+
+        // Initialize the SockIOPool that maintains the Memcached Server Connection Pool
+        BasicConfigurator.configure();
+        String[] servers = { memcacheHost + ":" + memcachePort };
+        SockIOPool pool = SockIOPool.getInstance("Test2");
+
+        log.debug("Connecting to Memcache servers: {}", Arrays.toString(servers));
+
+        // Connection pool settings
+        pool.setServers(servers);
+        pool.setFailover(true);
+        pool.setInitConn(11);
+        pool.setMinConn(5);
+        pool.setMaxConn(250);
+        pool.setMaintSleep(30);
+        pool.setNagle(false);
+        pool.setSocketTO(3000);
+        pool.setAliveCheck(true);
+        pool.initialize();
+
+        // Create new Memcache Client instance
+		MemCachedClient mcc = new MemCachedClient("Test2");
+
+        // Add VM startup time from properties to Memcache
+        log.debug("-----> Adding VM startup times to Memcache");
+        properties.getVmData().forEach(
+                (vmName, vmData) -> mcc.set(vmName, Integer.toString(vmData.getStartupTime())));
+				
+		//print VM data details
+		 log.debug("end of VM data details");
+		 Properties prop = System.getProperties();
+		 log.debug("print of VM data details from properties file");
+		 for (Object key: prop.keySet()) {
+			System.out.println(key + ": " + prop.getProperty(key.toString()));
+		 }
+		 vmDataArray = properties.getVmData().values().stream()
+                .map(PenaltyFunctionProperties.VmData::getCharacteristics)
+                .collect(Collectors.toList())
+                .toArray(new double[0][0]);
+				
+		log.debug("-----> print vmDataArray stored in Properties file");
+		log.debug("#################  vmDataArray", vmDataArray);
+				
+		// Get multiple keys from MemCache
+
+		//store in memcached the Vm startup times
+		Map<String, Map<String, String>> Test = mcc.statsCacheDump(1,0);
+        Map<String,String> newTest = new LinkedHashMap<String, String>();
+
+        for(Map.Entry<String, Map<String,String>> entry : Test.entrySet()) {
+            for (Map.Entry<String, String> value : entry.getValue().entrySet()) {
+                   newTest.put(value.getKey(),value.getValue());
+                 }
+             }
+	    log.debug("-----> print VM startup times stored in Memcache");
+		newTest.keySet().stream()
+				.forEach(System.out::println);
+		newTest.values().stream()
+				.forEach(System.out::println);
+		System.out.println(Arrays.asList(newTest)); // method 1
+		log.debug("-----> Adding Arrays.asList(newTest) and print the following key-values stored");
+		for (Map.Entry<String, String> entry : newTest.entrySet()) {
+             System.out.println(entry.getKey()+" : "+entry.getValue());
+        }
+		
+		String[] keys = newTest.keySet().toArray(new String[0]);
+		
+        HashMap<String,Object> hm = (HashMap<String, Object>) mcc.getMulti(keys);
+        log.debug("print what to be stored in vmStartupTimeslistkeys" );
+        for(String key : hm.keySet())
+           {
+              log.info("KEY: "+key+" VALUE: "+hm.get(key));
+			  
+			  vmStartupTimeslist.add(Double.valueOf(hm.get(key).toString()).doubleValue());
+			  vmStartupTimeslistkeys.add(key);
+		   }
+		
+		log.debug("Print vmstartuptimes array" );
+		for (int j =0; j < vmStartupTimeslist.size(); j++) {
+            vmStartupTimesArray[j] = vmStartupTimeslist.get(j); 
+			System.out.println(vmStartupTimesArray[j]);
+			System.out.println(vmStartupTimeslistkeys.get(j));
+		}
+		
+		
+		log.debug("Connect to Influx DB to find which VM startup times Vm types have been measured so far" );
+		// Connect to Influx DB to find which VM startup times Vm types have been mesaured so far. 
+		
+        String influxDbHost = properties.getInfluxDbHost();
+        int influxDbPort = properties.getInfluxDbPort();
+        String influxDbUsername = properties.getInfluxDbUsername();
+        String influxDbPassword = properties.getInfluxDbPassword();
+        String influxDbName = properties.getInfluxDbName();
+
+        InfluxDB influxDB = InfluxDBFactory.connect(influxDbHost + ":" + influxDbPort, influxDbUsername, influxDbPassword);
+
+        // Query Influx DB for VM startup Times measured
+        
+		//initial code
+		HashMap<String,Object> hminfluxdbstartupkeys = new HashMap<String,Object>();
+        		
+		String queryStrType ="SELECT \"value\" AS \"value\", \"hardware_provider\" AS \"vmtype\" FROM \"cloudiator\".\"autogen\".\"vm-start-time\"";
+		//log.info("#################  Query queryStrType ", queryStrType);
+
+		Query queryType = new Query(queryStrType, influxDbName);
+
+		QueryResult queryResultt = influxDB.query(queryType);
+
+		QueryResult.Series seriess = queryResultt.getResults().get(0).getSeries().get(0);
+
+        String seriesNamee = seriess.getName();
+		System.out.println(seriesNamee);
+		System.out.println((int)(seriess.getValues()).size());
+
+		for (int j =0; j < (seriess.getValues()).size(); j++) {
+      		
+		
+		vmStartupTimeslistkeysinfluxdbget.add(String.valueOf(seriess.getValues().get(j).get(2)));
+
+		
+		}
+		
+		Set<String> treesetList = new TreeSet<String>(vmStartupTimeslistkeysinfluxdbget);
+		System.out.printf("\nUnique VM types values using TreeSet - Sorted order: %s%n", treesetList);
+        treesetList.removeAll(Arrays.asList("null")); 		
+		System.out.printf("\nUnique VM types values using TreeSet after removal of null - Sorted order: %s%n", treesetList);
+
+		
+		vmStartupTimeslistkeysinfluxdb.addAll(treesetList);
+		
+		for(String element : vmStartupTimeslistkeysinfluxdb){
+            System.out.println( element );
+        }    
+		 
+		HashMap<String,Object> hminfluxdbstartup = new HashMap<String,Object>();
+        //query influx db for startup times after we have found the vm types that have been measured		
+		for (int k =0; k < vmStartupTimeslistkeysinfluxdb.size(); k++) {
+        
+			System.out.println(vmStartupTimeslistkeysinfluxdb.get(k));
+		
+		
+		String queryStrr ="SELECT mean(\"value\") AS \"value\" FROM \"cloudiator\".\"autogen\".\"vm-start-time\""
+				 +
+                 "WHERE \"hardware_provider\"='"+ vmStartupTimeslistkeysinfluxdb.get(k) + "'";
+				 
+		log.debug("#################  Query result each time", queryStrr);
+		System.out.println(queryStrr);
+		Query query = new Query(queryStrr, influxDbName);
+		System.out.println(query);
+		QueryResult queryResult = influxDB.query(query);
+		System.out.println(queryResult);
+
+        
+        QueryResult.Series series = queryResult.getResults().get(0).getSeries().get(0);
+		System.out.println(series);
+        String seriesName = series.getName();
+        //String seriesValues = series.getValues();		
+		System.out.println(seriesName);
+		System.out.println(series.getValues().get(0).get(1));
+		double mean = ((double)(series.getValues().get(0).get(1)))/1000;
+		System.out.println(mean);
+		hminfluxdbstartup.put(vmStartupTimeslistkeysinfluxdb.get(k), mean);
+		
+        		
+		}		 
+		
+        System.out.println(Arrays.asList(hminfluxdbstartup));
+		
+
+		
+		Collection<String> similar = new HashSet<String>(vmStartupTimeslistkeys);
+        Collection<String> different = new HashSet<String>();
+
+        different.addAll(vmStartupTimeslistkeys);
+        different.addAll(vmStartupTimeslistkeysinfluxdb);
+
+        similar.retainAll(vmStartupTimeslistkeysinfluxdb);
+        different.removeAll(similar);
+		different.removeAll(vmStartupTimeslistkeys);
+
+        System.out.printf("Memcached:%s%nInfluxDB:%s%nSimilar:%s%nDifferent:%s%n", vmStartupTimeslistkeys, vmStartupTimeslistkeysinfluxdb, similar, different);
+        log.debug("for-each loop write to memcahced the new VMtypes");
+		// for-each loop write to memcahced the new VMtypes
+		int m=0;
+        for (String s : different) {
+        System.out.println("key= " + s.replace(".","_"));
+
+		System.out.println("value= " + hminfluxdbstartup.get(s));
+
+		mcc.set((s.replace(".","_")),hminfluxdbstartup.get(s));
+		vmStartupTimesArray[m]=((double)hminfluxdbstartup.get(s));
+		m=m+1;
+           }
+		   
+		log.debug("for-each loop update to memcahced the existing VMtypes");
+		// for-each loop update to memcahced the existing VMtypes
+        for (String t : similar) {
+	
+        System.out.println("key= " + t);
+		
+		System.out.println("value= " + hminfluxdbstartup.get(t));
+		mcc.replace(t,hminfluxdbstartup.get(t));
+		
+		//m=m+1;
+	
+        }
+		
+		log.debug("#################  vmStartupTimesArray  after .......:");
+		for (int j =0; j < vmStartupTimesArray.length; j++) {
+			System.out.println(j);
+
+
+            System.out.println(vmStartupTimesArray[j]);
+        }
+        
+		   
+		
+		log.debug("hminfluxdbstartup.size():");
+	    System.out.println(hminfluxdbstartup.size());
+        // Close connection to Influx DB
+        influxDB.close();
+		
+        log.debug("Memcache client initialized");
+		/*
+		steps
+		1. init mia lista me karfwta ta keys apo influxdb ==> vmStartupTimeslistkeysinfluxdb
+		2. ena loop me queries gia mean value me where vmStartupTimeslistkeysinfluxdb.get(j) kai perneis to mean statrup time
+		    Sto idio loop add vmStartupTimeslistVALUESinfluxdb(i) to mean startup time
+        3. 	sygkrine tis dyo listes: vmStartupTimeslistkeys & 	vmStartupTimeslistkeysinfluxdb ==> vres koina kai diaforetika keys
+        4. gia ta koina kane mcc.update & gia ta diaforetika kane mcc.set 		
+         */
+
+     }
+
+    private void loadVmStartupTimesFromMemcache() {
+       // vmStartupTimesArray = null;
+		
+		
+    }
+
+    private void loadVmStartupTimesFromProperties() {
+
+        // Load VM startup times from properties
+        vmStartupTimesArray = properties.getVmData().values().stream()
+                .mapToDouble(PenaltyFunctionProperties.VmData::getStartupTime).toArray();
+        log.debug("-----> VM startup times from properties: {} METHOD: loadVmStartupTimesFromProperties()", vmStartupTimesArray);
+
+        if (vmStartupTimesArray.length==0)
+            return;
+
+        // Find the minimum and maximum VM Startup time
+        vmStartupTimesMax = Arrays.stream(vmStartupTimesArray).max().getAsDouble();
+        vmStartupTimesMin = Arrays.stream(vmStartupTimesArray).min().getAsDouble();
+        log.debug("-----> VM startup times from properties: min={}, max={}", vmStartupTimesMin, vmStartupTimesMax);
+
+        // Initialize the VM characteristics array
+        vmDataArray = properties.getVmData().values().stream()
+                .map(PenaltyFunctionProperties.VmData::getCharacteristics)
+                .collect(Collectors.toList())
+                .toArray(new double[0][0]);
+        log.debug("------> VM core/ram/disk from properties: {}", Arrays.deepToString(vmDataArray));
+    }
+
+    private synchronized void calculateRegressionParameters() {
+        
+        double[] residuals;
+        double rSquared;
+		// Create OSL Multiple Linear regression instance
+        OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
+
+        // Calculate regression parameters
+        log.debug("-----> Calculating regression parameters...");
+		// Initialize the VM characteristics array
+        
+
+		
+		
+		log.debug("------> VM core/ram/disk from properties222: {}", Arrays.deepToString(vmDataArray));
+		log.debug("Print vmstartuptimes array for RegressionParameters ....." );
+		System.out.println(Arrays.toString(vmStartupTimesArray));
+		
+        regression.newSampleData(vmStartupTimesArray, vmDataArray);
+        regression.setNoIntercept(true);
+
+        // Get the regression parameters and residuals
+        betaHat = regression.estimateRegressionParameters();
+        residuals = regression.estimateResiduals();
+        rSquared = regression.calculateRSquared();
+
+        // print regression results
+        log.debug("-----> Regression parameters: {}", Arrays.toString(betaHat));
+        log.debug("-----> Residual parameter: {}", Arrays.toString(residuals));
+        log.debug("-----> rSquared: {}", rSquared);
+    }
+
+    public PenaltyFunctionResult evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
+        try {
+            return _evaluatePenaltyFunction(actualConfiguration, newConfiguration);
+        } catch (Throwable t) {
+            log.error("-----> EXCEPTION: ", t);
+            throw t;
+        }
+    }
+
+    private List<PenaltyConfigurationElement> calculateConfigurationDifference(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
+        // initialize lists
+        List<PenaltyConfigurationElement> toBeDeleted = new ArrayList<>();
+        List<PenaltyConfigurationElement> toBeAdded = new ArrayList<>();
+        List<PenaltyConfigurationElement> toBeChanged = new ArrayList<>();
+
+        // find the elements in actual-current config. but not in new configuration
+        // these elements will be deleted.
+        for (PenaltyConfigurationElement s : actualConfiguration) {
+            if (!containsEquivalent(newConfiguration, s)) {
+                toBeDeleted.add(s);
+                log.debug("calculateConfigurationDifferences: to-be-deleted: {}", toBeDeleted);
+            }
+        }
+
+        // find the elelements that exist in new configuration but not in actual-current configuration
+        // these elements will be added.
+        for (PenaltyConfigurationElement s : newConfiguration) {
+            if (!containsEquivalent(actualConfiguration, s)) {
+                toBeAdded.add(s);
+                log.debug("calculateConfigurationDifferences: to-be-added: {}", toBeAdded);
+            }
+        }
+
+        // find the elements that exist in current configuration and will be in the new config also.
+        // for these elements calculate the diff in cardinalities (number)
+        for (PenaltyConfigurationElement s1 : newConfiguration) {
+            for (PenaltyConfigurationElement s2 : actualConfiguration) {
+                if (isEquivalent(s1, s2)) {
+                    int newCardinality = s1.getCardinality() - s2.getCardinality();
+                    PenaltyConfigurationElement s_new = new PenaltyConfigurationElement(s1.getId(), s1.getNodeCandidate(), newCardinality);
+                    if (newCardinality > 0) {
+                        toBeChanged.add(s_new);
+                    } else {
+                        toBeDeleted.add(s1);
+                    }
+                }
+            }
+        }
+
+        //The results we need are: 'toBeAdded' & 'toBeChanged'
+        List<PenaltyConfigurationElement> results = new ArrayList<PenaltyConfigurationElement>(toBeChanged);
+        results.addAll(toBeAdded);
+
+        log.debug("calculateConfigurationDifferences: ----------------------------------------------------------------------");
+        log.debug("calculateConfigurationDifferences: Uncommon elements:\n{}", PenaltyFunction.toString(results));
+
+        return results;
+    }
+
+    private List<ComponMeasurement> queryInfluxDbForComponentMeasurements() {
+
+        // Connect to Influx DB
+        String influxDbHost = properties.getInfluxDbHost();
+        int influxDbPort = properties.getInfluxDbPort();
+        String influxDbUsername = properties.getInfluxDbUsername();
+        String influxDbPassword = properties.getInfluxDbPassword();
+        String influxDbName = properties.getInfluxDbName();
+
+        InfluxDB influxDB = InfluxDBFactory.connect(influxDbHost + ":" + influxDbPort, influxDbUsername, influxDbPassword);
+
+        // Query Influx DB for Component Deployment Times
+        String queryStr1 =
+                "SELECT \"time\" AS \"time\", \"task\" AS \"ComponentName\", \"value\" AS \"timeDepl\" " +
+                        "FROM \"cloudiator\".\"autogen\".\"process-start-time\"";
+        Query query1 = new Query(queryStr1, influxDbName);
+        QueryResult queryResult1 = influxDB.query(query1);
+        List<ComponMeasurement> listComponMeasurements = new ArrayList<>();
+
+        QueryResult.Series series = queryResult1.getResults().get(0).getSeries().get(0);
+        String seriesName = series.getName();
+        List<String> seriesColumns = series.getColumns();
+        log.debug("#################  series: name={}, columns={}", seriesName, seriesColumns);
+
+        // Process query results
+        List<List<Object>> seriesValues = series.getValues();
+        log.debug("#################  values: {}", seriesValues);
+        seriesValues.forEach(row -> {
+            for (int i = 0; i < seriesColumns.size(); i++) {
+                //log.info("   -------->    {} = {} / {}", seriesColumns.get(i), row.get(i), row.get(i).getClass());
+
+                eu.melodic.upperware.penaltycalculator.ComponMeasurement cm;
+                cm = new eu.melodic.upperware.penaltycalculator.ComponMeasurement();
+                cm.setTime(Instant.parse(row.get(0).toString()));
+                cm.setComponentName(row.get(1).toString());
+                cm.setTimeDepl(Double.parseDouble(row.get(2).toString()));
+
+                listComponMeasurements.add(cm);
+            }
+        });
+        log.debug("ComponMeasurements: {}", listComponMeasurements);
+
+        // Close connection to Influx DB
+        influxDB.close();
+
+        return listComponMeasurements;
+    }
+
+    private synchronized List<ComponMeasurement> getComponentMeasurementsFromInfluxDb() {
+        if (componentMeasurementsFromInfluxDbList!=null)
+            return componentMeasurementsFromInfluxDbList;
+
+        // Query Influx DB for component deployment times
+        log.debug("Querying InfluxDB for component measurements...");
+        try {
+            componentMeasurementsFromInfluxDbList = queryInfluxDbForComponentMeasurements();
+            componentMeasurementsFromInfluxDbTimestamp = System.currentTimeMillis();
+        } catch (Exception ex) {
+            log.error("Exception while querying InfluxDB: ", ex);
+            return null;
+        }
+
+        // Calculate average, min and max component deployment times
+        log.debug("Component measurements from Influx DB: count={}", componentMeasurementsFromInfluxDbList.size());
+        if (componentMeasurementsFromInfluxDbList.size()>0) {
+            componentMeasurementsAverage = componentMeasurementsFromInfluxDbList.stream()
+                    .mapToDouble(ComponMeasurement::getTimeDepl)
+                    .average()
+                    .orElseThrow(() -> new IllegalArgumentException("No component measurements"));
+
+            componentMeasurementsMin = componentMeasurementsFromInfluxDbList.stream()
+                    .mapToDouble(ComponMeasurement::getTimeDepl)
+                    .min().getAsDouble();
+
+            componentMeasurementsMax = componentMeasurementsFromInfluxDbList.stream()
+                    .mapToDouble(ComponMeasurement::getTimeDepl)
+                    .max().getAsDouble();
+
+            log.info("Component measurements from Influx DB: average={}, min={}, max={}",
+                    componentMeasurementsAverage, componentMeasurementsMin, componentMeasurementsMax);
+        }
+
+        return componentMeasurementsFromInfluxDbList;
+    }
+
+    private PenaltyFunctionResult _evaluatePenaltyFunction(Collection<PenaltyConfigurationElement> actualConfiguration, Collection<PenaltyConfigurationElement> newConfiguration) {
+
+        // Get 'actual configuration' and 'new configuration' differences
+        List<PenaltyConfigurationElement> solutionDifferences = calculateConfigurationDifference(actualConfiguration, newConfiguration);
+
+        // Check if there is no difference
+        if (solutionDifferences.size() == 0) {
+            PenaltyFunctionResult pfResult = new PenaltyFunctionResult(0, 0);
+            log.info("-----> No difference between solutions: result will be: {}", pfResult);
+            return pfResult;
+        } else {
+            // There are differences
+            log.debug("-----> Difference between solutions: {}", solutionDifferences);
+        }
+
+
+        if (!properties.isSkipComponentDeploymentTimes()) {
+
+            // Get Component deployment times from Influx DB
+            List<ComponMeasurement> listComponMeasurements = getComponentMeasurementsFromInfluxDb();
+
+            //check if we have Null Component Deployment Times and act accordingly
+
+            // if we do not have null Component Deployment Times
+            if (listComponMeasurements!=null && listComponMeasurements.size()>0) {
+                //
+                // Calculate penalty when Component Deployment Times are available and not skipped
+                //
+
+                return _evaluatePenaltyFunctionWithDeploymentTimes(solutionDifferences, listComponMeasurements);
+
+            } // else use only VM startup times
+
+        } // else use only VM startup times
+
+        //
+        // Calculate penalty when no Component Deployment Times are available or they are skipped
+        //
+
+        return _evaluatePenaltyFunctionWithStartupTimesOnly(solutionDifferences);
+    }
+
+    private PenaltyFunctionResult _evaluatePenaltyFunctionWithDeploymentTimes(
+            List<PenaltyConfigurationElement> solutionDifferences,
+            List<ComponMeasurement> listComponMeasurements)
+    {
+        // Initialize deployment time variables - Need to convert them to ???
+        double deploymentTimeAverage = componentMeasurementsAverage;
+        double deploymentTimeMax = componentMeasurementsMax;
+        double deploymentTimeMin = componentMeasurementsMin;
+        log.info("------> Component deployment times: count={}, average={}, min={}, max={}",
+                listComponMeasurements.size(), deploymentTimeAverage, deploymentTimeMin, deploymentTimeMax);
+
+        // Initialize startup time variables
+        double min = vmStartupTimesMin;
+        double max = vmStartupTimesMax;
+        log.debug("------> VM Startup times: min={}, max={}", min, max);
+
+        double sumOfStartupTimesPerPCE = 0;
+        double sumOfEstimatedStartupTimesPerPCE = 0;
+        int numOfStartupTimesPerPCE = solutionDifferences.size();
+
+        // For every element in solution differences: get or estimate its startup time
+        for (PenaltyConfigurationElement diffElement : solutionDifferences)
+        {
+            // Get VM name from node candidate
+            String hardwareName = diffElement.getNodeCandidate().getHardware().getName()
+                    .replace(".", "_");
+            log.debug("-----> Diff-Element: {}", hardwareName);
+
+            if (properties.getVmData().containsKey(hardwareName)) {
+                log.debug("     Match found for VM: {}", hardwareName);
+
+                // Get VM startup time from properties
+                int hardwareStartupTime = properties.getVmData().get(hardwareName).getStartupTime();
+                log.trace("DIFF-ELEM: VM={}, STARTUP-TIME={}", hardwareName, hardwareStartupTime);
+
+                // Sum up startup time
+                sumOfStartupTimesPerPCE += hardwareStartupTime;
+                log.trace("Current startup time sum: {}", sumOfStartupTimesPerPCE);
+
+            } else {
+                log.debug("     No match found for VM: {}", hardwareName);
+
+                // Estimate VM startup time based on its characteristics
+                int hardwareCores = diffElement.getNodeCandidate().getHardware().getCores();
+                long hardwareRam = diffElement.getNodeCandidate().getHardware().getRam();
+                double hardwareDisk = diffElement.getNodeCandidate().getHardware().getDisk();
+                log.debug("     VM params: cores={}, ram={}, disk={}", hardwareCores, hardwareRam, hardwareDisk);
+
+                double estimatedStartupTime =
+                        betaHat[0] + betaHat[1] * hardwareCores + betaHat[2] * hardwareRam + betaHat[3] * hardwareDisk;
+                log.debug("Estimated startup time: {}", estimatedStartupTime);
+
+                // An optimization would be to cache the 'hardwareName'-to-'estimated startup time' pair
+
+                // Sum up startup time
+                sumOfEstimatedStartupTimesPerPCE += estimatedStartupTime;
+
+                // Update min/max
+                if (max < estimatedStartupTime) max = estimatedStartupTime;
+                if (min > estimatedStartupTime) min = estimatedStartupTime;
+            }
+        }
+
+        // Calculate penalty
+        double averageStartupTime = (sumOfStartupTimesPerPCE + sumOfEstimatedStartupTimesPerPCE) / numOfStartupTimesPerPCE;
+        double averageTotalTime = (averageStartupTime + deploymentTimeAverage) / 2;
+        double penaltyValue = (averageTotalTime - min) / (deploymentTimeMax - min);
+        log.debug("The max Component Deployment Time value is {}", max / 1000);
+        log.debug("------>  sum-startup-time={}, sum-estimated-startup-time={}, num-of-elements={}, total-average={}, min={}, max={} --> penalty={}",
+                sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE,
+                averageTotalTime, min, deploymentTimeMax, penaltyValue);
+
+        // return penalty function result object
+        return new PenaltyFunctionResult(penaltyValue, averageTotalTime);
+    }
+
+    private PenaltyFunctionResult _evaluatePenaltyFunctionWithStartupTimesOnly(
+            List<PenaltyConfigurationElement> solutionDifferences)
+    {
+        // Initialize variables
+        double min = vmStartupTimesMin;
+        double max = vmStartupTimesMax;
+        log.debug("------> VM Startup times: min={}, max={}", min, max);
+
+        double sumOfStartupTimesPerPCE = 0;
+        double sumOfEstimatedStartupTimesPerPCE = 0;
+        int numOfStartupTimesPerPCE = solutionDifferences.size();
+
+        // For every element in solution differences: get or estimate its startup time
+        for (PenaltyConfigurationElement diffElement : solutionDifferences) {
+            // Get VM name from node candidate
+            String hardwareName = diffElement.getNodeCandidate().getHardware().getName()
+                    .replace(".", "_");
+            log.debug("-----> Diff-Element: {}", hardwareName);
+
+            if (properties.getVmData().containsKey(hardwareName)) {
+                log.debug("     Match found for VM: {}", hardwareName);
+
+                // Get VM startup time from properties
+                int hardwareStartupTime = properties.getVmData().get(hardwareName).getStartupTime();
+                log.trace("DIFF-ELEM: VM={}, STARTUP-TIME={}", hardwareName, hardwareStartupTime);
+
+                // Sum up startup time
+                sumOfStartupTimesPerPCE += hardwareStartupTime;
+                log.trace("Current startup time sum: {}", sumOfStartupTimesPerPCE);
+
+            } else {
+                log.debug("No match found for VM: {}", hardwareName);
+
+                // Estimate VM startup time based on its characteristics
+                int hardwareCores = diffElement.getNodeCandidate().getHardware().getCores();
+                long hardwareRam = diffElement.getNodeCandidate().getHardware().getRam();
+                double hardwareDisk = diffElement.getNodeCandidate().getHardware().getDisk();
+                log.debug("     VM params: cores={}, ram={}, disk={}", hardwareCores, hardwareRam, hardwareDisk);
+
+                double estimatedStartupTime =
+                        betaHat[0] + betaHat[1] * hardwareCores + betaHat[2] * hardwareRam + betaHat[3] * hardwareDisk;
+                log.debug("Estimated startup time: {}", estimatedStartupTime);
+
+                // An optimization would be to cache the 'hardwareName'-to-'estimated startup time' pair
+
+                // Sum up startup time
+                sumOfEstimatedStartupTimesPerPCE += estimatedStartupTime;
+
+                // Update min/max
+                if (max < estimatedStartupTime) max = estimatedStartupTime;
+                if (min > estimatedStartupTime) min = estimatedStartupTime;
+            }
+        }
+        log.trace("----->  new-min={}, new-max={}", min, max);
+
+        // Calculate average VM startup time and its normalized value (aka penalty)
+        double averageStartupTime = (sumOfStartupTimesPerPCE + sumOfEstimatedStartupTimesPerPCE) / numOfStartupTimesPerPCE;
+        double normalizedValue = (averageStartupTime - min) / (max - min);
+
+        log.info("----->  sum={}, sum-reg={}, num={}, avg={}, min={}, max={} --> resultss={}",
+                sumOfStartupTimesPerPCE, sumOfEstimatedStartupTimesPerPCE, numOfStartupTimesPerPCE,
+                averageStartupTime, min, max, normalizedValue);
+
+        // return penalty function result object
+        return new PenaltyFunctionResult(normalizedValue, averageStartupTime);
     }
 }

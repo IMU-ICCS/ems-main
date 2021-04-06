@@ -1,12 +1,12 @@
 package eu.melodic.upperware.guibackend.controller.deployment;
 
 import eu.melodic.upperware.guibackend.controller.common.MelodicHeaders;
-import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
+import eu.passage.upperware.commons.model.SecureVariable;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.deployment.DeploymentService;
-import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
+import eu.passage.upperware.commons.service.store.SecureStoreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +73,7 @@ public class DeploymentController {
     @ResponseStatus(HttpStatus.CREATED)
     public List<String> saveSecureVariables(@RequestBody List<SecureVariable> secureVariablesRequest) {
         log.info("POST request for save secure variables");
+        secureStoreService.validateSecureVariables(secureVariablesRequest);
         return secureStoreService.saveSecureVariables(secureVariablesRequest);
     }
 }

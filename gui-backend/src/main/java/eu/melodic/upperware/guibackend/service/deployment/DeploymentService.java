@@ -4,14 +4,14 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
 import eu.melodic.upperware.guibackend.communication.mule.MuleApi;
-import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
+import eu.passage.upperware.commons.model.SecureVariable;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
 import eu.melodic.upperware.guibackend.service.cdo.ModelNameGenerator;
-import eu.melodic.upperware.guibackend.service.provider.ProviderService;
-import eu.melodic.upperware.guibackend.service.secure.store.SecureStoreService;
+import eu.passage.upperware.commons.service.provider.ProviderService;
+import eu.passage.upperware.commons.service.store.SecureStoreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.net4j.connector.ConnectorException;
@@ -91,6 +91,8 @@ public class DeploymentService {
         } catch (IllegalStateException e) {
             log.error("Error by uploading xmi file:", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem by uploading your %s file. CDO repository is in pending state. Please try again.", uploadXmiRequest.getResource().getFilename()));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

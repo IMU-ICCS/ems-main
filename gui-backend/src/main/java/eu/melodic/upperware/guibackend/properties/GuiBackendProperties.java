@@ -43,6 +43,10 @@ public class GuiBackendProperties {
     @NotNull
     private ExternalService metaSolver;
 
+    @Valid
+    @NotNull
+    private ExternalService functionizerTestingTool;
+
     @Getter
     @Setter
     public static class Mule extends ExternalService {

@@ -19,7 +19,7 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
@@ -41,16 +41,18 @@
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>penalty-calculator</module>
+        <module>zpp-solver</module>
+        <module>functionizer-testing-tool</module>
     </modules>
 
 
     <properties>
-        <melodic.version>3.0.0-SNAPSHOT</melodic.version>
+        <melodic.version>3.1.0-SNAPSHOT</melodic.version>
 
         <!-- version for all paasage components-->
-        <camel.version>3.0.0-SNAPSHOT</camel.version>
+        <camel.version>3.1.0-SNAPSHOT</camel.version>
 
-        <interfaces.version>3.0.0-SNAPSHOT</interfaces.version>
+        <interfaces.version>3.1.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -73,7 +75,8 @@
         <docker.push>false</docker.push>
         <docker.repository>127.0.0.1:5000/</docker.repository>
         <!--suppress UnresolvedMavenProperty -->
-        <docker.imagePrefix>melodic-${scmBranch}/</docker.imagePrefix>
+        <docker.imageTag>${scmBranch}</docker.imageTag>
+        <docker.imagePrefix>melodic/melodic-upperware/</docker.imagePrefix>
         <docker.imageName>parent</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
         <docker.spotify-plugin.version>0.4.10</docker.spotify-plugin.version>
@@ -82,6 +85,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
             <dependency>
                 <groupId>eu.melodic</groupId>
                 <artifactId>interfaces</artifactId>
@@ -115,18 +123,13 @@
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
                 <!--<version>${parent.version}</version>-->
-                <version>3.0.0-SNAPSHOT</version>
+                <version>3.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>eu.melodic.cdo</groupId>
                 <artifactId>client</artifactId>
-                <version>3.0.0-SNAPSHOT</version>
+                <version>3.1.0-SNAPSHOT</version>
                 <classifier>repackaged</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -228,8 +231,9 @@
                     <version>${docker.spotify-plugin.version}</version>
                     <configuration>
                         <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                        <imageName>${docker.repository}${docker.imagePrefix}${docker.imageName}</imageName>
+                        <imageName>${docker.repository}${docker.imagePrefix}${docker.imageName}:${docker.imageTag}</imageName>
                         <pushImage>${docker.push}</pushImage>
+                        <serverId>ow2.melodic</serverId>
                         <resources>
                             <resource>
                                 <targetPath>/</targetPath>
@@ -384,7 +388,7 @@
         <profile>
             <id>docker-remote</id>
             <properties>
-                <docker.repository>88.99.85.63:5000/</docker.repository>
+                <docker.repository>gitlab.ow2.org:4567/</docker.repository>
                 <docker.push>true</docker.push>
             </properties>
         </profile>

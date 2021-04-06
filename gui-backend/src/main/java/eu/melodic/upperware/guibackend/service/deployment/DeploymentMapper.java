@@ -8,7 +8,7 @@ import eu.melodic.upperware.guibackend.communication.mule.deployment.CloudConfig
 import eu.melodic.upperware.guibackend.communication.mule.deployment.CloudDefinitionRequest;
 import eu.melodic.upperware.guibackend.communication.mule.deployment.CredentialRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
-import eu.melodic.upperware.guibackend.model.provider.*;
+import eu.passage.upperware.commons.model.provider.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

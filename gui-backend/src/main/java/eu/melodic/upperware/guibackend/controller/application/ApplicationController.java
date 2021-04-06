@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.application;
 
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
+import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
 import io.github.cloudiator.rest.model.Function;
 import io.github.cloudiator.rest.model.Node;
 import lombok.AllArgsConstructor;

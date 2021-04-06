@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.deployment.response;
 
-import eu.melodic.upperware.guibackend.controller.deployment.common.SecureVariable;
+import eu.passage.upperware.commons.model.SecureVariable;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 

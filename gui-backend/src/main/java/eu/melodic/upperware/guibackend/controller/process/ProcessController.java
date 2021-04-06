@@ -1,7 +1,7 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
 import eu.melodic.models.services.adapter.DifferenceResponse;
-import eu.melodic.upperware.guibackend.communication.cloudiator.CloudiatorApi;
+import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;

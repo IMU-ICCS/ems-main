@@ -11,6 +11,7 @@ import org.chocosolver.solver.variables.Variable;
 import org.chocosolver.solver.variables.impl.FixedIntVarImpl;
 import org.chocosolver.solver.variables.impl.FixedRealVarImpl;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,21 @@ public class SolverParsedData {
         List<CpSolution> result = new ArrayList<>();
         while (solver.solve()) {
             result.add(createCpSolution());
+        }
+        return result;
+    }
+
+    public List<CpSolution> solve(int timeLimit) {
+        Solver solver = model.getSolver();
+        solver.limitTime(timeLimit + "s");
+        List<CpSolution> result = new ArrayList<>();
+        Clock clock = Clock.systemDefaultZone();
+        long startTime = clock.millis();
+        long currentTime = startTime;
+        while (currentTime - startTime <= 1000*timeLimit && solver.solve()) {
+            result.add(createCpSolution());
+            solver.limitTime(timeLimit + "s");
+            currentTime = clock.millis();
         }
         return result;
     }

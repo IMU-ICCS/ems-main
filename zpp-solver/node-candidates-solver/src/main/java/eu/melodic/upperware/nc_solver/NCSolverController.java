@@ -1,0 +1,44 @@
+package eu.melodic.upperware.nc_solver;
+
+import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionFromFileRequestImpl;
+import eu.melodic.models.interfaces.cpSolver.ConstraintProblemSolutionRequestImpl;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+@Slf4j
+@RestController
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
+public class NCSolverController {
+
+    private NCSolverCoordinator ncSolverCoordinator;
+
+    @RequestMapping(value = "/constraintProblemSolutionFromFile", method = POST)
+    public void constraintProblemSolutionFromFile(@RequestBody ConstraintProblemSolutionFromFileRequestImpl request) throws Exception {
+        String camelModelFilePath = request.getCamelModelFilePath();
+        String cpModelPath = request.getCpProblemFilePath();
+        String nodeCandidatesFilePath = request.getNodeCandidatesFilePath();
+        int seconds = request.getTimeLimit();
+        log.info("Received constraintProblemSolutionFromFile request: {} \n{}\n", camelModelFilePath, cpModelPath);
+
+        ncSolverCoordinator.generateCPSolutionFromFile(camelModelFilePath, cpModelPath, nodeCandidatesFilePath, seconds);
+        log.info("Sleeping...");
+    }
+
+    @RequestMapping(value = "/constraintProblemSolution", method = POST)
+    public void constraintProblemSolution(@RequestBody ConstraintProblemSolutionRequestImpl request) {
+        String applicationId = request.getApplicationId();
+        String cdoResourcePath = request.getCdoModelsPath();
+        String notificationUri = request.getNotificationURI();
+        String requestUuid = request.getWatermark().getUuid();
+        int seconds = request.getTimeLimit();
+        log.info("Received request: {}, {}, {}, {}, time limit: {}", applicationId ,cdoResourcePath ,notificationUri, requestUuid, seconds);
+        ncSolverCoordinator.generateCPSolution(applicationId, cdoResourcePath, notificationUri, requestUuid, seconds);
+        log.info("Sleeping...");
+    }
+}

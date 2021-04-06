@@ -13,7 +13,7 @@
     <parent>
         <groupId>eu.melodic.event</groupId>
         <artifactId>event-management</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>control-service</artifactId>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>eu.melodic.security.authorization</groupId>
             <artifactId>authorization-service-client</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>${melodic.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -163,11 +163,85 @@
                                     <type>jar</type>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>eu.melodic.event</groupId>
+                                    <artifactId>baguette-client</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>tgz</type>
+                                    <classifier>installation-package</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>baguette-client.tgz</destFileName>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Checksum Maven plugin (http://checksum-maven-plugin.nicoulaj.net) -->
+            <plugin>
+                <groupId>net.nicoulaj.maven.plugins</groupId>
+                <artifactId>checksum-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>files</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${project.build.directory}</directory>
+                            <!--<directory>target</directory>-->
+                            <includes>
+                                <include>*.zip</include>
+                                <include>*.tar</include>
+                                <include>*.tar.gz</include>
+                                <include>*.tgz</include>
+                            </includes>
+                            <excludes>
+                                <exclude>*.jar</exclude>
+                            </excludes>
+                        </fileSet>
+                    </fileSets>
+                    <algorithms>
+                        <algorithm>MD5</algorithm>
+                    </algorithms>
+                    <individualFiles>true</individualFiles>
+                    <failOnError>true</failOnError>
+                    <failIfNoFiles>false</failIfNoFiles>
+                </configuration>
+            </plugin>
+
+            <!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-files</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/bin/install.sh</sourceFile>
+                                    <destinationFile>target/install.sh</destinationFile>
+                                </fileSet>
+                            </fileSets>
+                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+                            <overWrite>true</overWrite>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
@@ -187,10 +261,25 @@
                         <resource>
                             <targetPath>/config</targetPath>
                             <directory>${project.basedir}/../config-files</directory>
+                            <excludes>
+                                <exclude>resources/**/*</exclude>
+                            </excludes>
+                        </resource>
+                        <!--<resource>
+                            <targetPath>/resources</targetPath>
+                            <directory>${project.basedir}/../config-files/resources</directory>
+                        </resource>-->
+                        <resource>
+                            <targetPath>/resources</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>baguette-client.tgz</include>
+                            <include>baguette-client.tgz.md5</include>
+                            <include>install.sh</include>
                         </resource>
                         <resource>
                             <targetPath>/resources</targetPath>
-                            <directory>${project.basedir}/../config-files/resources</directory>
+                            <directory>${project.basedir}/src/main/resources/public</directory>
+                            <include>*</include>
                         </resource>
                     </resources>
                 </configuration>

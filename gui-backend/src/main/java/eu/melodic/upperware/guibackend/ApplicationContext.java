@@ -3,7 +3,15 @@ package eu.melodic.upperware.guibackend;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
+import eu.passage.upperware.commons.cloudiator.CloudiatorClientApi;
 import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
+import eu.passage.upperware.commons.cloudiator.QueueInspector;
+import eu.passage.upperware.commons.service.provider.ProviderIdCreatorService;
+import eu.passage.upperware.commons.service.provider.ProviderService;
+import eu.passage.upperware.commons.service.provider.ProviderValidationService;
+import eu.passage.upperware.commons.service.store.SecureStoreService;
+import eu.passage.upperware.commons.service.yaml.YamlDataService;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.*;
 import org.springframework.context.annotation.Bean;
@@ -69,7 +77,75 @@ public class ApplicationContext {
     }
 
     @Bean
+    public QueueInspector queueInspector(
+        QueueApi queueApi,
+        CloudiatorProperties cloudiatorProperties
+    ) {
+        return new QueueInspector(queueApi, cloudiatorProperties);
+    }
+
+    @Bean
+    public CloudiatorApi cloudiatorApi(
+        CloudApi cloudApi,
+        SecurityApi securityApi,
+        NodeApi nodeApi,
+        ProcessApi processApi,
+        QueueApi queueApi,
+        JobApi jobApi,
+        MonitoringApi monitoringApi,
+        QueueInspector queueInspector
+    ) {
+        return new CloudiatorClientApi(
+            cloudApi,
+            securityApi,
+            nodeApi,
+            processApi,
+            queueApi,
+            jobApi,
+            monitoringApi,
+            queueInspector
+        );
+    }
+
+    @Bean
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);
+    }
+
+    @Bean
+    public ProviderIdCreatorService providerIdCreatorService() {
+        return new ProviderIdCreatorService();
+    }
+
+    @Bean
+    ProviderValidationService providerValidationService() {
+        return new ProviderValidationService();
+    }
+
+    @Bean
+    SecureStoreService secureStoreService(CloudiatorApi cloudiatorApi) {
+        return new SecureStoreService(cloudiatorApi);
+    }
+
+    @Bean
+    public YamlDataService yamlDataService() {
+        return new YamlDataService();
+    }
+
+    @Bean
+    public ProviderService providerService(
+        ProviderIdCreatorService providerIdCreatorService,
+        ProviderValidationService providerValidationService,
+        CloudiatorApi cloudiatorApi,
+        SecureStoreService secureStoreService,
+        YamlDataService yamlDataService
+    ) {
+        return new ProviderService(
+            providerIdCreatorService,
+            providerValidationService,
+            cloudiatorApi,
+            secureStoreService,
+            yamlDataService
+        );
     }
 }

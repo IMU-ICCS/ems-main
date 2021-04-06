@@ -2,6 +2,7 @@ package eu.melodic.upperware.guibackend.service.cdo;
 
 import camel.core.CamelModel;
 import camel.core.NamedElement;
+import camel.deployment.impl.DeploymentTypeModelImpl;
 import camel.requirement.OptimisationRequirement;
 import camel.requirement.RequirementModel;
 import camel.requirement.impl.OptimisationRequirementImpl;
@@ -32,7 +33,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +46,7 @@ public class CdoService {
     private CpModelMapper cpModelMapper;
     private GuiBackendProperties guiBackendProperties;
 
-    public boolean storeFileInCdo(String cdoName, File file) {
+    public boolean storeFileInCdo(String cdoName, File file) throws Exception {
 
         log.info("Storing Model {} into CDO with validationEnabled = {}", cdoName, guiBackendProperties.getCdoUploader().isValidationEnabled());
         EObject model = null;
@@ -55,10 +58,45 @@ public class CdoService {
             return false;
         }
 
+        log.info("Checking model's software components name uniqueness");
+        String duplicateName = validateServerlessComponentNameUniqueness(model);
+            if (duplicateName != null) {
+                client.closeSession();
+                log.error("Software component's name '{}' " +
+                        "is used in more than one component.",
+                    duplicateName
+                );
+                throw new Exception(
+                    String.format(
+                        "Software component's name '%s' is used in more than one component." +
+                            " Modify the file to have unique software component names and try again.",
+                        duplicateName
+                    )
+                );
+            }
+        log.info("Validation passed");
+
+
         boolean successfullyStored = client.storeModel(model, cdoName, guiBackendProperties.getCdoUploader().isValidationEnabled());
         log.info("Successfully stored of model {} in CDO = {}", cdoName, successfullyStored);
         client.closeSession();
         return successfullyStored;
+    }
+
+    private String validateServerlessComponentNameUniqueness(EObject model) {
+        CamelModel camelModel = (CamelModel) model;
+        DeploymentTypeModelImpl depModel = (DeploymentTypeModelImpl) camelModel.getDeploymentModels().get(0);
+        List<String> names = depModel.getSoftwareComponents()
+            .stream()
+            .map(NamedElement::getName)
+            .collect(Collectors.toList());
+        Set<String> uniqueNames = new HashSet<>();
+        for (String name : names) {
+            if (!uniqueNames.add(name)) {
+                return name;
+            }
+        }
+        return null;
     }
 
     public boolean deleteXmi(String cdoName) {

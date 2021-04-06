@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2019 Institute of Communication and Computer Systems (imu.iccs.com)
+ * Copyright (C) 2017-2020 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain one at
- * http://mozilla.org/MPL/2.0/.
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 package eu.melodic.upperware.penaltycalculator;
@@ -47,16 +46,16 @@ public class PenaltyTests implements CommandLineRunner {
 
     public void run(String... args) throws Exception {
         Collection<PenaltyConfigurationElement> collection_1 = readConfigElementsFromFile(args[0]);
-        log.info("Collection-1:\n{}", PenaltyFunction.toString(collection_1));
+        log.debug("Collection-1:\n{}", PenaltyFunction.toString(collection_1));
 
-        Collection<PenaltyConfigurationElement> collection_2 = readConfigElementsFromFile(args[0]);
-        log.info("Collection-2:\n{}", PenaltyFunction.toString(collection_2));
+        Collection<PenaltyConfigurationElement> collection_2 = readConfigElementsFromFile(args[1]);
+        log.debug("Collection-2:\n{}", PenaltyFunction.toString(collection_2));
 
         PenaltyFunctionResult penaltyResults = penaltyCalculator.evaluatePenaltyFunction(collection_1, collection_2);
 
         //normalized average startup time using max-min normalization
-        log.info("Average Time of VM Startup Time : {}", penaltyResults.getStartupTime());
-        log.info("Normalized Average Time of VM Startup Time : {}", penaltyResults.getPenaltyValue());
+        log.info("Average Time of VM and Component Startup Time : {}", penaltyResults.getStartupTime());
+        log.info("Normalized Average Time of VM and Component Startup Time : {}", penaltyResults.getPenaltyValue());
     }
 
     protected Collection<PenaltyConfigurationElement> readConfigElementsFromFile(String fileName) throws IOException {
