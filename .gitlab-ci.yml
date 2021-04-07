@@ -106,6 +106,8 @@ build-required-part1:upperware-metamodel:
 build-required-part2:jwt-commons:
   stage: build-required-part2
   image: $MAVEN_IMAGE
+  dependencies:
+    - build-required-part1:upperware-metamodel
   script:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
@@ -115,6 +117,8 @@ build-required-part2:jwt-commons:
 build-required-part2:melodic-commons:
   stage: build-required-part2
   image: $MAVEN_IMAGE
+  dependencies:
+    - build-required-part1:upperware-metamodel
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
