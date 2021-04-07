@@ -289,6 +289,7 @@ deploy:melodic-upperware:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -303,6 +304,7 @@ deploy:upperware-metamodel:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -317,6 +319,7 @@ deploy:jwt-commons:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -331,6 +334,7 @@ deploy:melodic-commons:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -345,6 +349,7 @@ deploy:melodic-cache:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -359,6 +364,7 @@ deploy:dlms:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -373,6 +379,7 @@ deploy:dlms-utility:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -387,6 +394,7 @@ deploy:dlms-controller:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -402,6 +410,7 @@ deploy:dlms-webservice:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -417,6 +426,7 @@ deploy:penalty-calculator:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -431,6 +441,7 @@ deploy:jwt-server:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -446,6 +457,7 @@ deploy:utility-generator:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -460,6 +472,7 @@ deploy:zpp-solver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -474,6 +487,7 @@ deploy:adapter:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -489,6 +503,7 @@ deploy:cp-generator:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -504,6 +519,7 @@ deploy:cp-solver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -520,6 +536,7 @@ deploy:dlms-agent:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: "python:latest"
   before_script:
     - pip install awscli
@@ -531,7 +548,7 @@ deploy:dlms-agent:
     - export AWS_DEFAULT_REGION=eu-west-1
     - ls -l $CI_PROJECT_DIR/dlmsAgent
     - ls -l $CI_PROJECT_DIR/dlmsAgent/target
-    - aws s3 cp $CI_PROJECT_DIR/dlmsAgent/target/DLMSAgent-3.1.0-SNAPSHOT.jar s3://melodic.testing.data/ARTIFACTS/ow2/dlmsagent/
+    - aws s3 cp $CI_PROJECT_DIR/dlmsAgent/target/DLMSAgent-4.0.0-SNAPSHOT.jar s3://melodic.testing.data/ARTIFACTS/ow2/dlmsagent/
 
 deploy:ems:
   stage: deploy
@@ -539,6 +556,7 @@ deploy:ems:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -553,6 +571,7 @@ deploy:ems-util:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -567,6 +586,7 @@ deploy:ems-broker-client:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -581,6 +601,7 @@ deploy:ems-broker-cep:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -595,6 +616,7 @@ deploy:ems-baguette-client:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -609,6 +631,7 @@ deploy:ems-baguette-server:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -623,6 +646,7 @@ deploy:ems-baguette-client-install:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -637,6 +661,7 @@ deploy:ems-translator:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -651,6 +676,7 @@ deploy:ems-server:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -666,6 +692,7 @@ deploy:cp-parser:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -680,6 +707,7 @@ deploy:gen-solver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -698,6 +726,7 @@ deploy:metasolver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -713,6 +742,7 @@ deploy:mq-adapter:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -728,6 +758,7 @@ deploy:nc-solver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -746,6 +777,7 @@ deploy:pt-solver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -764,6 +796,7 @@ deploy:mcts-solver:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -782,6 +815,7 @@ deploy:gui-backend:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -797,6 +831,7 @@ deploy:functionizer-testing-tool:
     - master
     - rc3.0
     - rc3.1
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
