@@ -717,7 +717,7 @@ deploy:gen-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part5:cp-solver
+    - build-required-part6:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -768,7 +768,7 @@ deploy:nc-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part5:cp-solver
+    - build-required-part6:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -787,7 +787,7 @@ deploy:pt-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part5:cp-solver
+    - build-required-part6:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -806,7 +806,7 @@ deploy:mcts-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part5:cp-solver
+    - build-required-part6:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
