@@ -94,7 +94,7 @@ build-basic-dependencies:melodic-upperware:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - upperware/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/upperware/
 
 build-required-part1:upperware-metamodel:
   stage: build-required-part1
@@ -103,7 +103,7 @@ build-required-part1:upperware-metamodel:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - upperware_metamodel/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/upperware_metamodel/
 
 build-required-part2:jwt-commons:
   stage: build-required-part2
@@ -112,7 +112,7 @@ build-required-part2:jwt-commons:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - jwt-commons/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/jwt-commons/
 
 build-required-part2:melodic-commons:
   stage: build-required-part2
@@ -121,7 +121,7 @@ build-required-part2:melodic-commons:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - melodic-commons/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/melodic-commons/
 
 build-required-part3:melodic-cache:
   stage: build-required-part3
@@ -130,7 +130,7 @@ build-required-part3:melodic-cache:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - melodic-cache/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/melodic-cache/
 
 build-required-part3:zpp-solver:
   stage: build-required-part3
@@ -139,7 +139,7 @@ build-required-part3:zpp-solver:
     - $ZPP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - zpp-solver/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/zpp-solver/
 
 build-required-part3:dlms:
   stage: build-required-part3
@@ -148,7 +148,7 @@ build-required-part3:dlms:
     - $DLMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - dlms/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/
 
 build-required-part3:penalty-calculator:
   stage: build-required-part3
@@ -157,7 +157,7 @@ build-required-part3:penalty-calculator:
     - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - penalty-calculator/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/penalty-calculator/
 
 build-required-part3:ems:
   stage: build-required-part3
@@ -166,7 +166,7 @@ build-required-part3:ems:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/
 
 build-required-part4:dlms-utility:
   stage: build-required-part4
@@ -175,7 +175,7 @@ build-required-part4:dlms-utility:
     - $DLMS_UTILITY_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - dlms/DLMSUtility/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSUtility/
 
 build-required-part4:ems-util:
   stage: build-required-part4
@@ -184,7 +184,7 @@ build-required-part4:ems-util:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/util/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/util/
 
 build-required-part5:utility-generator:
   stage: build-required-part5
@@ -193,7 +193,7 @@ build-required-part5:utility-generator:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - utility-generator/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/utility-generator/
 
 build-required-part6:cp-solver:
   stage: build-required-part6
@@ -202,7 +202,7 @@ build-required-part6:cp-solver:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - cp-solver/target/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/
 
 build:dlms-agent:
   stage: build
@@ -211,7 +211,7 @@ build:dlms-agent:
     - $DLMS_AGENT_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - dlmsAgent/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlmsAgent/
 
 build:cp-parser:
   stage: build
@@ -222,7 +222,7 @@ build:cp-parser:
     - $DOCKER_CLI $CP_PARSER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - cp-parser/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
 
 build:ems-broker-client:
   stage: build
@@ -233,7 +233,7 @@ build:ems-broker-client:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/broker-client/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/broker-client/
 
 build:ems-broker-cep:
   stage: build
@@ -242,7 +242,7 @@ build:ems-broker-cep:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/broker-cep/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/broker-cep/
 
 build:ems-baguette-client:
   stage: build
@@ -257,7 +257,7 @@ build:ems-baguette-server:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/baguette-server/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/baguette-server/
 
 build:ems-baguette-client-install:
   stage: build
@@ -266,7 +266,7 @@ build:ems-baguette-client-install:
     - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/baguette-client-install/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/baguette-client-install/
 
 build:ems-translator:
   stage: build
@@ -275,7 +275,7 @@ build:ems-translator:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/translator/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/translator/
 
 build:ems-server:
   stage: build
@@ -284,7 +284,7 @@ build:ems-server:
     - $EMS_SERVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - event-management/control-service/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/control-service/
 
 deploy:melodic-upperware:
   stage: deploy
