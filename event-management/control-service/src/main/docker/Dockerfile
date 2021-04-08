@@ -10,8 +10,8 @@
 FROM java:8-alpine
 
 ENV BASEDIR /opt/ems-server
-#ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
-#ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
+ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
+ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
 ENV JAR_PATH ${BASEDIR}/jars
 
 WORKDIR ${BASEDIR}
@@ -23,7 +23,6 @@ ADD config ./config
 ADD resources ./resources
 
 RUN mkdir logs
-RUN bash -c 'touch jars/*.jar'
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
 ENTRYPOINT ["./bin/run.sh"]
