@@ -181,7 +181,7 @@ build-required-part3:ems:
       - $CI_PROJECT_DIR/event-management/target
 
 build-required-part4:utility-generator:
-  stage: build-required-part3
+  stage: build-required-part4
   image: $MAVEN_IMAGE
   dependencies:
     - build-required-part3:melodic-cache
@@ -193,7 +193,7 @@ build-required-part4:utility-generator:
     - $CI_PROJECT_DIR/utility-generator/target
 
 build-required-part5:cp-solver:
-  stage: build-required-part4
+  stage: build-required-part5
   image: $MAVEN_IMAGE
   dependencies:
     - build-required-part4:utility-generator
