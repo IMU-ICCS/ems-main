@@ -83,6 +83,7 @@ stages:
   - build-required-part3
   - build-required-part4
   - build-required-part5
+  - build-required-part6
   - build
   - deploy
 
@@ -93,7 +94,7 @@ build-basic-dependencies:melodic-upperware:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/upperware/target
+      - upperware/target/
 
 build-required-part1:upperware-metamodel:
   stage: build-required-part1
@@ -102,29 +103,25 @@ build-required-part1:upperware-metamodel:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/upperware_metamodel/target
+      - upperware_metamodel/target/
 
 build-required-part2:jwt-commons:
   stage: build-required-part2
   image: $MAVEN_IMAGE
-  dependencies:
-    - build-required-part1:upperware-metamodel
   script:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/jwt-commons/target
+      - jwt-commons/target/
 
 build-required-part2:melodic-commons:
   stage: build-required-part2
   image: $MAVEN_IMAGE
-  dependencies:
-    - build-required-part1:upperware-metamodel
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/melodic-commons/target
+      - melodic-commons/target/
 
 build-required-part3:melodic-cache:
   stage: build-required-part3
@@ -133,7 +130,7 @@ build-required-part3:melodic-cache:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/melodic-cache/target
+      - melodic-cache/target
 
 build-required-part3:zpp-solver:
   stage: build-required-part3
@@ -142,7 +139,7 @@ build-required-part3:zpp-solver:
     - $ZPP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/zpp-solver/target
+      - zpp-solver/target
 
 build-required-part3:dlms:
   stage: build-required-part3
@@ -151,16 +148,7 @@ build-required-part3:dlms:
     - $DLMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/dlms/target
-
-build-required-part4:dlms-utility:
-  stage: build-required-part4
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_UTILITY_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/dlms/DLMSUtility/target
+      - dlms/target
 
 build-required-part3:penalty-calculator:
   stage: build-required-part3
@@ -169,7 +157,7 @@ build-required-part3:penalty-calculator:
     - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/penalty-calculator/target
+      - penalty-calculator/target/
 
 build-required-part3:ems:
   stage: build-required-part3
@@ -178,49 +166,16 @@ build-required-part3:ems:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/event-management/target
+      - event-management/target/
 
-build-required-part4:utility-generator:
+build-required-part4:dlms-utility:
   stage: build-required-part4
   image: $MAVEN_IMAGE
-  dependencies:
-    - build-required-part3:melodic-cache
-    - build-required-part3:penalty-calculator
   script:
-    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
+    - $DLMS_UTILITY_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/utility-generator/target
-
-build-required-part5:cp-solver:
-  stage: build-required-part5
-  image: $MAVEN_IMAGE
-  dependencies:
-    - build-required-part4:utility-generator
-  script:
-    - $CP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/cp-solver/target
-
-build:dlms-agent:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_AGENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/dlmsAgent/target
-
-build:cp-parser:
-  stage: build
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part5:cp-solver
-  script:
-    - $DOCKER_CLI $CP_PARSER_CLI -Pwithout-docker clean install
+      - dlms/DLMSUtility/target/
 
 build-required-part4:ems-util:
   stage: build-required-part4
@@ -229,7 +184,45 @@ build-required-part4:ems-util:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/util/target
+      - event-management/util/target/
+
+build-required-part5:utility-generator:
+  stage: build-required-part5
+  image: $MAVEN_IMAGE
+  script:
+    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - utility-generator/target/
+
+build-required-part6:cp-solver:
+  stage: build-required-part6
+  image: $MAVEN_IMAGE
+  script:
+    - $CP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - cp-solver/target/
+
+build:dlms-agent:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $DLMS_AGENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - dlmsAgent/target
+
+build:cp-parser:
+  stage: build
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  script:
+    - $DOCKER_CLI $CP_PARSER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - cp-parser/target
 
 build:ems-broker-client:
   stage: build
@@ -240,7 +233,7 @@ build:ems-broker-client:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/broker-client/target
+      - event-management/broker-client/target
 
 build:ems-broker-cep:
   stage: build
@@ -249,7 +242,7 @@ build:ems-broker-cep:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/broker-cep/target
+      - event-management/broker-cep/target
 
 build:ems-baguette-client:
   stage: build
@@ -264,7 +257,7 @@ build:ems-baguette-server:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/baguette-server/target
+      - event-management/baguette-server/target
 
 build:ems-baguette-client-install:
   stage: build
@@ -273,7 +266,7 @@ build:ems-baguette-client-install:
     - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/baguette-client-install/target
+      - event-management/baguette-client-install/target
 
 build:ems-translator:
   stage: build
@@ -282,7 +275,7 @@ build:ems-translator:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/translator/target
+      - event-management/translator/target
 
 build:ems-server:
   stage: build
@@ -291,7 +284,7 @@ build:ems-server:
     - $EMS_SERVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/control-service/target
+      - event-management/control-service/target
 
 deploy:melodic-upperware:
   stage: deploy
@@ -532,7 +525,7 @@ deploy:cp-solver:
     - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   dependencies:
-    - build-required-part5:cp-solver
+    - build-required-part6:cp-solver
   services:
     - $DOCKER_DIND_SERVICE
   script:
