@@ -82,6 +82,7 @@ stages:
   - build-required-part2
   - build-required-part3
   - build-required-part4
+  - build-required-part5
   - build
   - deploy
 
@@ -125,6 +126,15 @@ build-required-part2:melodic-commons:
     paths:
     - $CI_PROJECT_DIR/melodic-commons/target
 
+build-required-part3:melodic-cache:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $MELODIC_CACHE_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/melodic-cache/target
+
 build-required-part3:zpp-solver:
   stage: build-required-part3
   image: $MAVEN_IMAGE
@@ -152,15 +162,6 @@ build-required-part4:dlms-utility:
     paths:
       - $CI_PROJECT_DIR/dlms/DLMSUtility/target
 
-build-required-part4:cp-solver:
-  stage: build-required-part4
-  image: $MAVEN_IMAGE
-  script:
-    - $CP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - $CI_PROJECT_DIR/cp-solver/target
-
 build-required-part3:penalty-calculator:
   stage: build-required-part3
   image: $MAVEN_IMAGE
@@ -169,15 +170,6 @@ build-required-part3:penalty-calculator:
   artifacts:
     paths:
     - $CI_PROJECT_DIR/penalty-calculator/target
-
-build-required-part3:utility-generator:
-  stage: build-required-part3
-  image: $MAVEN_IMAGE
-  script:
-    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/utility-generator/target
 
 build-required-part3:ems:
   stage: build-required-part3
@@ -188,14 +180,28 @@ build-required-part3:ems:
     paths:
       - $CI_PROJECT_DIR/event-management/target
 
-build:melodic-cache:
-  stage: build
+build-required-part4:utility-generator:
+  stage: build-required-part3
   image: $MAVEN_IMAGE
+  dependencies:
+    - build-required-part3:melodic-cache
+    - build-required-part3:penalty-calculator
   script:
-    - $MELODIC_CACHE_CLI -Pwithout-docker clean install
+    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/melodic-cache/target
+    - $CI_PROJECT_DIR/utility-generator/target
+
+build-required-part5:cp-solver:
+  stage: build-required-part4
+  image: $MAVEN_IMAGE
+  dependencies:
+    - build-required-part4:utility-generator
+  script:
+    - $CP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/cp-solver/target
 
 build:dlms-agent:
   stage: build
@@ -212,7 +218,7 @@ build:cp-parser:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part4:cp-solver
+    - build-required-part5:cp-solver
   script:
     - $DOCKER_CLI $CP_PARSER_CLI -Pwithout-docker clean install
 
@@ -358,7 +364,7 @@ deploy:melodic-cache:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:melodic-cache
+    - build-required-part3:melodic-cache
   script:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
 
@@ -466,7 +472,7 @@ deploy:utility-generator:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part3:utility-generator
+    - build-required-part4:utility-generator
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
@@ -525,6 +531,8 @@ deploy:cp-solver:
     - rc3.1
     - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
+  dependencies:
+    - build-required-part5:cp-solver
   services:
     - $DOCKER_DIND_SERVICE
   script:
@@ -716,7 +724,7 @@ deploy:gen-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part4:cp-solver
+    - build-required-part5:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -767,7 +775,7 @@ deploy:nc-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part4:cp-solver
+    - build-required-part5:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -786,7 +794,7 @@ deploy:pt-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part4:cp-solver
+    - build-required-part5:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
@@ -805,7 +813,7 @@ deploy:mcts-solver:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part4:cp-solver
+    - build-required-part5:cp-solver
     - build:cp-parser
   script:
     - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
