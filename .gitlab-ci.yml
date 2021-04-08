@@ -465,7 +465,7 @@ deploy:utility-generator:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part4:utility-generator
+    - build-required-part5:utility-generator
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
