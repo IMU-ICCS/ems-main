@@ -84,6 +84,7 @@ stages:
   - build-required-part4
   - build-required-part5
   - build-required-part6
+  - build-required-part7
   - build
   - deploy
 
@@ -222,6 +223,15 @@ build-required-part6:cp-solver:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/
 
+build-required-part7:ems-baguette-client-install:
+  stage: build-required-part7
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client-install/
+
 build:dlms-agent:
   stage: build
   image: $MAVEN_IMAGE
@@ -243,28 +253,17 @@ build:cp-parser:
 build:ems-broker-client:
   stage: build
   image: $MAVEN_IMAGE
-  dependencies:
-    - build-required-part4:ems-util
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/broker-client/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-client/
 
 build:ems-baguette-client:
   stage: build
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-
-build:ems-baguette-client-install:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/baguette-client-install/
 
 build:ems-translator:
   stage: build
@@ -273,7 +272,7 @@ build:ems-translator:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/translator/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/translator/
 
 build:ems-server:
   stage: build
@@ -654,7 +653,7 @@ deploy:ems-baguette-client-install:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-baguette-client-install
+    - build-required-part7:ems-baguette-client-install
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_INSTALL_CLI deploy
 
