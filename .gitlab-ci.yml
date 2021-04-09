@@ -94,7 +94,7 @@ build-basic-dependencies:melodic-upperware:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/upperware/
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware/
 
 build-required-part1:upperware-metamodel:
   stage: build-required-part1
@@ -103,7 +103,7 @@ build-required-part1:upperware-metamodel:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/upperware_metamodel/
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware-metamodel/
 
 build-required-part2:jwt-commons:
   stage: build-required-part2
@@ -112,7 +112,7 @@ build-required-part2:jwt-commons:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/jwt-commons/
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/jwt-commons/
 
 build-required-part2:melodic-commons:
   stage: build-required-part2
@@ -121,7 +121,7 @@ build-required-part2:melodic-commons:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/melodic-commons/
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-commons/
 
 build-required-part3:melodic-cache:
   stage: build-required-part3
@@ -130,7 +130,7 @@ build-required-part3:melodic-cache:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/melodic-cache/
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-cache/
 
 build-required-part3:zpp-solver:
   stage: build-required-part3
@@ -139,7 +139,7 @@ build-required-part3:zpp-solver:
     - $ZPP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/zpp-solver/
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/zpp-solver/
 
 build-required-part3:dlms:
   stage: build-required-part3
@@ -166,7 +166,7 @@ build-required-part3:ems:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/event-management/
 
 build-required-part4:dlms-utility:
   stage: build-required-part4
@@ -193,7 +193,7 @@ build-required-part5:utility-generator:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/utility-generator/4.0.0-SNAPSHOT/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/utility-generator/
 
 build-required-part5:ems-broker-cep:
   stage: build-required-part5
@@ -202,7 +202,7 @@ build-required-part5:ems-broker-cep:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-cep/4.0.0-SNAPSHOT/broker-cep-4.0.0-SNAPSHOT.jar
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-cep/
 
 build-required-part6:ems-baguette-server:
   stage: build-required-part6
@@ -211,7 +211,7 @@ build-required-part6:ems-baguette-server:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-server/4.0.0-SNAPSHOT/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-server/
 
 build-required-part6:cp-solver:
   stage: build-required-part6
@@ -220,7 +220,7 @@ build-required-part6:cp-solver:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/4.0.0-SNAPSHOT/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/
 
 build:dlms-agent:
   stage: build
