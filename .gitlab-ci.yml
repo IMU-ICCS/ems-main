@@ -184,7 +184,7 @@ build-required-part4:ems-util:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/util/4.0.0-SNAPSHOT/
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/util/
 
 build-required-part5:utility-generator:
   stage: build-required-part5
