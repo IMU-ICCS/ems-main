@@ -14,7 +14,6 @@ import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePo
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -45,13 +44,11 @@ public class MCTSSolverCoordinator {
     @Autowired
     public MCTSSolverCoordinator(CDOClientX clientX,
                                  @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
-                                 UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
-                                 RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
+                                 Environment env, RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
                                  JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
         this.clientX = clientX;
         this.filecacheService = new FilecacheService();
         this.memcacheService = memcacheService;
-        this.utilityGeneratorProperties = utilityGeneratorProperties;
         this.env = env;
         this.restTemplate = restTemplate;
         this.melodicSecurityProperties = melodicSecurityProperties;
@@ -65,7 +62,6 @@ public class MCTSSolverCoordinator {
     private CacheService<NodeCandidates> memcacheService;
     private CacheService<NodeCandidates> filecacheService;
 
-    private UtilityGeneratorProperties utilityGeneratorProperties;
     private Environment env;
 
     private RestTemplate restTemplate;
@@ -87,7 +83,7 @@ public class MCTSSolverCoordinator {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, NUM_THREADS).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
+                    true, nodeCandidates, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + NUM_THREADS + " threads for " + seconds + " seconds");
             solve(cp, utilityGenerator, seconds, nodeCandidates);
 
@@ -108,7 +104,7 @@ public class MCTSSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
+            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
                     melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds, nodeCandidates);
