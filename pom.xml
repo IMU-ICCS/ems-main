@@ -26,23 +26,23 @@
 
     <modules>
         <module>upperware_metamodel</module>
-<!--        <module>jwt-commons</module>-->
-<!--        <module>jwt-server</module>-->
+        <module>jwt-commons</module>
+        <module>jwt-server</module>
         <module>melodic-commons</module>
         <module>melodic-cache</module>
         <module>adapter</module>
-<!--        <module>cp_generator</module>-->
-<!--        <module>gui-backend</module>-->
-<!--        <module>meta_solver</module>-->
+        <module>cp_generator</module>
+        <module>gui-backend</module>
+        <module>meta_solver</module>
         <module>utility-generator</module>
         <module>cp-solver</module>
-<!--        <module>la_converter</module>-->
+        <module>la_converter</module>
         <module>dlms</module>
-<!--        <module>event-management</module>-->
-<!--        <module>mq-http-adapter</module>-->
+        <module>event-management</module>
+        <module>mq-http-adapter</module>
         <module>penalty-calculator</module>
-<!--        <module>zpp-solver</module>-->
-<!--        <module>functionizer-testing-tool</module>-->
+        <module>zpp-solver</module>
+        <module>functionizer-testing-tool</module>
     </modules>
 
 
@@ -77,8 +77,7 @@
         <docker.push>false</docker.push>
         <docker.repository>127.0.0.1:5000/</docker.repository>
         <!--suppress UnresolvedMavenProperty -->
-        <!--<docker.imageTag>${scmBranch}</docker.imageTag>-->
-        <docker.imageTag>lszdev</docker.imageTag>
+        <docker.imageTag>${scmBranch}</docker.imageTag>
         <docker.imagePrefix>melodic/melodic-upperware/</docker.imagePrefix>
         <docker.imageName>parent</docker.imageName>
         <docker.jarToInclude>${project.build.finalName}.jar</docker.jarToInclude>
