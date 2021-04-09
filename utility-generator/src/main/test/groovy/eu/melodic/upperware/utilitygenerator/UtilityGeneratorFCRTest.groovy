@@ -4,7 +4,6 @@ import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.Hardware
@@ -15,7 +14,6 @@ class UtilityGeneratorFCRTest extends Specification{
 
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
-    UtilityGeneratorProperties utilityGeneratorProperties = new UtilityGeneratorProperties()
     MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
     PenaltyFunctionProperties properties
     JWTService jwtService
@@ -69,8 +67,6 @@ class UtilityGeneratorFCRTest extends Specification{
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
 
-        utilityGeneratorProperties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
-        utilityGeneratorProperties.getUtilityGenerator().setDlmsControllerUrl("")
 
         jwtService = GroovyMock(JWTService)
 

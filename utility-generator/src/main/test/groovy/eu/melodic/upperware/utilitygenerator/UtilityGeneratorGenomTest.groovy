@@ -5,7 +5,6 @@ import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.GeoLocation
@@ -18,7 +17,6 @@ class UtilityGeneratorGenomTest extends Specification{
 
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
-    UtilityGeneratorProperties ugproperties = new UtilityGeneratorProperties()
     MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
     PenaltyFunctionProperties properties
 
@@ -62,8 +60,6 @@ class UtilityGeneratorGenomTest extends Specification{
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
 
-        ugproperties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
-        ugproperties.getUtilityGenerator().setDlmsControllerUrl("")
         jwtService = GroovyMock(JWTService)
 
         properties = GroovyMock(PenaltyFunctionProperties)
