@@ -92,7 +92,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 405 ))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, ugproperties,securityProperties, jwtService, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates,securityProperties, jwtService, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -113,7 +113,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(latitudeName, 47))
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 509))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, ugproperties, securityProperties, jwtService, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, securityProperties, jwtService, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
