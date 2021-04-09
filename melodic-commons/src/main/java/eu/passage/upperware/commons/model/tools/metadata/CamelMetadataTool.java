@@ -47,9 +47,6 @@ public class CamelMetadataTool {
         return findCamelMetaDataType(metricVariable, CamelMetadata.NC_LIST);
     }
 
-    public static CamelMetadata findDlmsUtilityAttributeType(MetricVariableImpl metricVariable){
-        return findCamelMetaDataType(metricVariable, CamelMetadata.DLMS_LIST);
-    }
 
     public static CamelMetadata findPenaltyAttributeType(MetricVariableImpl metricVariable){
         return findCamelMetaDataType(metricVariable, CamelMetadata.PENALTY_LIST);
