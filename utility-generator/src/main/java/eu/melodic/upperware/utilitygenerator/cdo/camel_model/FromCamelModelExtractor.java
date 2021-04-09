@@ -43,7 +43,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
-import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
 import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findPenaltyAttributeType;
 
 @Slf4j
@@ -175,10 +174,6 @@ public class FromCamelModelExtractor {
                 && !variable.isCurrentConfiguration();
     }
 
-    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable) {
-        return CamelMetadataTool.isFromDlmsUtility(variable)
-                && isInFormula(utilityFunctionFormula, variable.getName());
-    }
 
     private boolean isReconfigurationPenaltyAttribute(MetricVariableImpl variable){
         return CamelMetadataTool.isFromPenalty(variable)
