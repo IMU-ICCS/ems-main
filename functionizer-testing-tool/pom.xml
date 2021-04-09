@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>upperware</artifactId>
 		<groupId>org.ow2.paasage</groupId>
-		<version>3.1.0-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +17,7 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<cdo.version>3.1.0-SNAPSHOT</cdo.version>
-		<upperware.version>3.1.0-SNAPSHOT</upperware.version>
+		<upperware.version>4.0.0-SNAPSHOT</upperware.version>
 		<!--DOCKER plugin properties-->
 		<docker.imageName>functionizer-testing-tool</docker.imageName>
 	</properties>
