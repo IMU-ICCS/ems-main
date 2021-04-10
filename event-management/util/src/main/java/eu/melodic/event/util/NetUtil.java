@@ -128,18 +128,30 @@ public class NetUtil {
         return list;
     }
 
-    public static String getIpAddress() {
+    protected static InetAddress _getIpAddress() {
         try {
             List<InetAddress> list = getIpAddresses();
             if (list.size() == 0) {
                 log_debug("NetUtil.getIpAddress(): Returning 'null' because getIpAddresses() returned an empty list");
                 return null;
             }
-            return list.get(0).getHostAddress();
+            return list.get(0);
         } catch (SocketException se) {
             log_debug("NetUtil.getIpAddress(): Returning 'null' due to exception: ", se);
             return null;
         }
+    }
+
+    public static String getIpAddress() {
+        return _getIpAddress().getHostAddress();
+    }
+
+    public static String getHostname() {
+        return _getIpAddress().getHostName();
+    }
+
+    public static String getCanonicalHostName() {
+        return _getIpAddress().getCanonicalHostName();
     }
 
     // ------------------------------------------------------------------------

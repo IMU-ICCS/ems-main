@@ -241,6 +241,7 @@ public class CloudiatorInstallationHelper implements InitializingBean, Applicati
         Map<String,String> valueMap = new HashMap<>();
         valueMap.put("BAGUETTE_CLIENT_ID", clientId);
         valueMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
+        valueMap.put("BAGUETTE_SERVER_HOSTNAME", baguette.getConfiguration().getServerHostname());
         valueMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());
         valueMap.put("BAGUETTE_SERVER_PUBKEY", baguette.getServerPubkey());
         valueMap.put("BAGUETTE_SERVER_PUBKEY_FINGERPRINT", baguette.getServerPubkeyFingerprint());

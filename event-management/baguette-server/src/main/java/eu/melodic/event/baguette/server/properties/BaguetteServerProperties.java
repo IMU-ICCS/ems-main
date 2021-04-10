@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server.properties;
 
 import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.NetUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -53,13 +54,21 @@ public class BaguetteServerProperties {
     public String getServerAddress() {
         String oldVal = serverAddress;
         if (StringUtils.isEmpty(serverAddress) || "%{PUBLIC_IP}%".equals(serverAddress.trim())) {
-            serverAddress = eu.melodic.event.util.NetUtil.getPublicIpAddress();
+            serverAddress = NetUtil.getPublicIpAddress();
             log.info("BaguetteServerProperties: Set serverAddress to PUBLIC: {} -> {}", oldVal, serverAddress);
         } else if ("%{DEFAULT_IP}%".equals(serverAddress.trim())) {
             serverAddress = eu.melodic.event.util.NetUtil.getDefaultIpAddress();
             log.info("BaguetteServerProperties: Set serverAddress to DEFAULT: {} -> {}", oldVal, serverAddress);
         }
         return serverAddress;
+    }
+
+    public String getServerHostname() {
+        return NetUtil.getHostname();
+    }
+
+    public String getCanonicalHostName() {
+        return NetUtil.getCanonicalHostName();
     }
 
     @Value("${baguette.server.port:2222}")
