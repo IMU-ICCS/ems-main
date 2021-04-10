@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server.properties;
 
+import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
 import lombok.Data;
@@ -22,8 +23,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @Validated
@@ -32,10 +33,31 @@ import javax.validation.constraints.Size;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-server.properties")
 @Slf4j
 public class BaguetteServerProperties {
-    @NotNull
-    @Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
+
+    /*@Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        log.warn("!!!!!!!!!!!!  BaguetteServerProperties: {}", this);
+
+        // Check that either coordinator class or id is provided
+        if (coordinatorClass==null && StringUtils.isBlank(coordinatorId))
+            throw new IllegalArgumentException("Either coordinator class or id must be provided");
+        if (StringUtils.isNotBlank(coordinatorId)) {
+            CoordinatorConfig cc = getCoordinatorConfig().get(coordinatorId);
+            if (cc==null)
+                throw new IllegalArgumentException("Not found coordinator configuration with id: "+coordinatorId);
+            if (cc.getCoordinatorClass()==null)
+                throw new IllegalArgumentException("No coordinator class in configuration with id: "+coordinatorId);
+        }
+    }*/
+
+    //@Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
     @Value("${baguette.server.coordinator.class}")
-    private String coordinatorClass;
+    private Class<ServerCoordinator> coordinatorClass;
+    private Map<String,String> coordinatorParameters = new HashMap<>();
+
+    @Value("${baguette.server.coordinator.id}")
+    private String coordinatorId;
+    private Map<String, CoordinatorConfig> coordinatorConfig = new HashMap<>();
 
     @Value("${baguette.server.registration-window:30000}")
     @Min(-1)
@@ -92,4 +114,10 @@ public class BaguetteServerProperties {
     private String clientIdFormatEscape;
 
     private final CredentialsMap credentials = new CredentialsMap();
+
+    @Data
+    public static class CoordinatorConfig {
+        private Class<ServerCoordinator> coordinatorClass;
+        private Map<String,String> parameters;
+    }
 }

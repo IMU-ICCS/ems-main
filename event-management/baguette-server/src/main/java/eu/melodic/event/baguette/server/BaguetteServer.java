@@ -173,7 +173,7 @@ public class BaguetteServer {
 
         // Initialize server coordinator
         log.info("BaguetteServer.setTopologyConfiguration(): Initializing Baguette protocol coordinator...");
-        ServerCoordinator coordinator = createServerCoordinator(config.getCoordinatorClass());
+        ServerCoordinator coordinator = createServerCoordinator(config);
         log.info("BaguetteServer.setTopologyConfiguration(): Coordinator: {}", coordinator.getClass().getName());
         coordinator.initialize(
                 this,
@@ -193,12 +193,37 @@ public class BaguetteServer {
         log.info("BaguetteServer.setTopologyConfiguration(): END");
     }
 
-    protected static ServerCoordinator createServerCoordinator(String classStr) {
+    protected static ServerCoordinator createServerCoordinator(BaguetteServerProperties config) {
+        // Initialize coordinator class and parameters for backward compatibility
+        Class<ServerCoordinator> coordinatorClass = config.getCoordinatorClass();
+        Map<String,String> coordinatorParams = config.getCoordinatorParameters();
+
+        // Check if Coordinator Id has been specified (this overrides)
+        String id = config.getCoordinatorId();
+        if (StringUtils.isNotBlank(id)) {
+            BaguetteServerProperties.CoordinatorConfig coordConfig = config.getCoordinatorConfig().get(id);
+            if (coordConfig==null)
+                throw new IllegalArgumentException("Not found coordinator configuration with id: "+id);
+            coordinatorClass = coordConfig.getCoordinatorClass();
+            if (coordinatorClass==null)
+                throw new IllegalArgumentException("Not found coordinator class in configuration with id: "+id);
+            coordinatorParams = coordConfig.getParameters();
+        }
+        if (coordinatorClass==null)
+            throw new IllegalArgumentException("Either coordinator class or configuration id must be specified");
+
+        // Initialize coordinator instance
+        ServerCoordinator coordinator = null;
         try {
-            return (ServerCoordinator) Class.forName(classStr).newInstance();
+            coordinator = (ServerCoordinator) coordinatorClass.newInstance();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+
+        // Set coordinator parameters
+        coordinator.setProperties(coordinatorParams);
+
+        return coordinator;
     }
 
     public void sendToActiveClients(String command) {
