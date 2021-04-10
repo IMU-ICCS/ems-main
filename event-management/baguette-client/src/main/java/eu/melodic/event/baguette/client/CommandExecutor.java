@@ -22,6 +22,7 @@ import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.PasswordUtil;
 import io.atomix.cluster.Member;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -41,11 +42,14 @@ import java.util.function.Consumer;
 @Service
 public class CommandExecutor {
     private final static String DEFAULT_ID_FILE = "cached-id.properties";
+    private final static String DEFAULT_KEYSTORE_DIR = "conf";
 
     @Autowired
     private BrokerCepService brokerCepService;
     @Autowired
     private BrokerClientProperties brokerClientProperties;
+    @Autowired
+    private PasswordUtil passwordUtil;
 
     private BaguetteClientProperties config;
     private String idFile;
@@ -63,6 +67,11 @@ public class CommandExecutor {
     @Autowired
     private ClusterManagerProperties clusterManagerProperties;
     private ClusterManager clusterManager;
+    private boolean clusterKeystoreEnabled = false;
+    private String clusterKeystoreFile;
+    private String clusterKeystoreType;
+    private String clusterKeystorePassword;
+
 
     public void setConfiguration(BaguetteClientProperties config) {
         log.trace("CommandExecutor: brokerCepService: {}", brokerCepService);
@@ -163,46 +172,61 @@ public class CommandExecutor {
             if (generator != null) {
                 generator.stop();
             }
+        } else if ("CLUSTER-KEY".equals(cmd)) {
+            if (args.length<5) {
+                log.error("Too few arguments");
+                return false;
+            }
+
+            setClusterKeystore(args[1], args[2], args[3], args[4]);
+
         } else if ("CLUSTER-JOIN".equals(cmd)) {
             if (clusterManager!=null && clusterManager.isRunning()) {
                 log.error("Cluster is running. Leave cluster first");
                 return false;
             }
 
-            // Create cluster manager and cluster properties
+            // Check arguments
+            if (args.length<3) {
+                log.error("Too few arguments");
+                return false;
+            }
+
+            // Initialize cluster properties
             if (clusterManagerProperties==null)
                 clusterManagerProperties = new ClusterManagerProperties();
+            clusterManagerProperties.setClusterId(args[1]);
+
+            clusterManagerProperties.getTls().setEnabled(clusterKeystoreEnabled);
+            if (clusterKeystoreEnabled) {
+                clusterManagerProperties.getTls().setKeystore(clusterKeystoreFile);
+                clusterManagerProperties.getTls().setKeystorePassword(clusterKeystorePassword);
+                clusterManagerProperties.getTls().setTruststore(clusterKeystoreFile);
+                clusterManagerProperties.getTls().setTruststorePassword(clusterKeystorePassword);
+            }
+
+            clusterManagerProperties.getLocalNode().setAddress(args[2]);
+            clusterManagerProperties.setMemberAddresses(
+                    (args.length>3) ? Arrays.asList(args).subList(3, args.length) : null);
+            log.warn(">>> Cluster properties:  {}", clusterManagerProperties);
+
+            // Initialize cluster manager
             if (clusterManager==null) {
                 clusterManager = new ClusterManager();
                 clusterManager.setProperties(clusterManagerProperties);
             }
 
-            // Set members list (first element sets current node's address and port)
-            if (args.length>1) {
-                ArrayList<String> tmp = new ArrayList<>(Arrays.asList(args));
-                tmp.remove(0);
-                clusterManager.getProperties().setMemberAddresses(tmp);
-            }
-
-            // Initialize cluster node TLS with local broker's TLS settings
-            if (clusterManagerProperties.getTls()!=null) {
-                if (clusterManagerProperties.getTls().isUseConfigOfBroker()) {
-                    clusterManagerProperties.getTls().setKeystore(
-                            brokerCepService.getBrokerCepProperties().getSsl().getKeystoreFile());
-                    clusterManagerProperties.getTls().setKeystorePassword(
-                            brokerCepService.getBrokerCepProperties().getSsl().getKeystorePassword());
-                    clusterManagerProperties.getTls().setTruststore(
-                            brokerCepService.getBrokerCepProperties().getSsl().getTruststoreFile());
-                    clusterManagerProperties.getTls().setTruststorePassword(
-                            brokerCepService.getBrokerCepProperties().getSsl().getTruststorePassword());
-                }
-            }
-            log.debug("Cluster properties:  {}", clusterManagerProperties);
-
             // Join/start cluster
             clusterManager.initialize(clusterManagerProperties, new ClusterNodeCallback());
             //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
             clusterManager.joinCluster();
+            clusterManager.waitToJoin();
+            log.warn(">>> Joined to cluster");
+
+        } else if ("CLUSTER-TEST".equals(cmd)) {
+
+            clusterManager.runTest();
+
         } else if ("CLUSTER-LEAVE".equals(cmd)) {
             if (clusterManager==null) {
                 log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
@@ -298,6 +322,29 @@ public class CommandExecutor {
                 log.warn("UNKNOWN COMMAND: {}", line);
         }
         return false;
+    }
+
+    private void setClusterKeystore(String ksFile, String ksType, String ksPassword, String ksBase64) {
+        String ksDir = clusterManagerProperties.getTls().getKeystoreDir();
+        if (StringUtils.isBlank(ksDir)) ksDir = DEFAULT_KEYSTORE_DIR;
+        if (!ksDir.endsWith("/")) ksDir += "/";
+        this.clusterKeystoreEnabled = true;
+        this.clusterKeystoreFile = ksDir + ksFile;
+        this.clusterKeystoreType = ksType;
+        this.clusterKeystorePassword = ksPassword;
+        String clusterKeystoreBase64 = ksBase64;
+        log.info("Cluster Keystore: file: {}", clusterKeystoreFile);
+        log.info("                  type: {}", clusterKeystoreType);
+        log.info("              password: {}", passwordUtil.encodePassword(clusterKeystorePassword));
+        log.debug("        Base64 content: {}", clusterKeystoreBase64);
+        try {
+            KeystoreUtil
+                    .getKeystore(clusterKeystoreFile, clusterKeystoreType, clusterKeystorePassword)
+                    .createIfNotExist()
+                    .writeBase64ToFile(clusterKeystoreBase64);
+        } catch (Exception e) {
+            log.error("Exception while creting cluster keystore", e);
+        }
     }
 
     /*protected Properties _base64ToProperties(String paramsStr) {

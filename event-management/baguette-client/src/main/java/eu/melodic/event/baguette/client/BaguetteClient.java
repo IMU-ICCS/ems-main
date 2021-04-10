@@ -186,7 +186,7 @@ public class BaguetteClient implements ApplicationRunner {
     protected static void forceExit() {
         // Print remaining threads
         Thread.getAllStackTraces().keySet()
-                .forEach(s -> log.debug("---> {}.{}: {} aliver={}, daemon={}, interrupted={}",
+                .forEach(s -> log.debug("---> {}.{}: {} alive={}, daemon={}, interrupted={}",
                         s.getThreadGroup().getName(), s.getName(), s.getState(),
                         s.isAlive(), s.isDaemon(), s.isInterrupted()));
 

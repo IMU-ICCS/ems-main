@@ -33,6 +33,29 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = true)
 public class ClusterManager extends AbstractLogBase {
 
+	public void runTest() {
+		// Start doing work...
+		int iterations = 0;
+		while (true) {
+			iterations++;
+			log_info("-- Iter={} ---------------------------------------", iterations);
+
+			// Get cluster members
+			log_info(">>> CLUSTER-MEMBERS: {}", atomix.getMembershipService().getMembers().stream()
+					.map(m -> "\n\t"+m.id().id()
+							+ "/" + m.properties().getProperty("address", "---")
+							+ "/" + (m.isActive()?"active":"inactive")
+							+ (!m.isReachable() ? "/unreachable" : ""))
+					.collect(Collectors.toList()));
+
+			// Sleep for 5 seconds
+			try { Thread.sleep(5000); } catch (Exception e) {}
+		}
+	}
+
+	// ------------------------------------------------------------
+
+//	private static final String NODE_NAME_PREFIX = "";
 	private static final String NODE_NAME_PREFIX = "node_";
 
 	private ClusterManagerProperties properties;
@@ -111,15 +134,13 @@ public class ClusterManager extends AbstractLogBase {
 	}
 
 	public void initialize(ClusterManagerProperties p, BrokerUtil.NodeCallback callback) {
-		assert (p!=null);
+		// Store properties and callback
+		if (p!=null) this.properties = p;
+		if (callback!=null) this.callback = callback;
 
 		// Set logging and output flags
-		setLogEnabled(p.isLogEnabled());
-		setOutEnabled(p.isOutEnabled());
-
-		// Store properties
-		this.properties = p;
-		this.callback = callback;
+		setLogEnabled(properties.isLogEnabled());
+		setOutEnabled(properties.isOutEnabled());
 
 		// Initialize member scoring function
 		this.scoreFunction = properties.getScore()!=null
@@ -133,23 +154,16 @@ public class ClusterManager extends AbstractLogBase {
 
 		// Get local address and port
 		localAddress = properties.getLocalNode().getAddress();
-		log_debug("CLM: resolving local-address (1): {}", localAddress);
-		boolean hasLocalAddress = false;
-		if (localAddress==null) {
-			localAddress = getLocalAddressFromMembersList(properties.getMemberAddresses());
-			log_debug("CLM: resolving local-address (2): {}", localAddress);
-			hasLocalAddress = (localAddress!=null);
-		}
+		log_debug("CLM: Provided local-address: {}", localAddress);
 		if (localAddress==null) {
 			//localAddress = Address.from(getLocalHostName() + ":1234");
 			localAddress = Address.from(getLocalHostAddress() + ":1234");
-			log_debug("CLM: resolving local-address (3): {}", localAddress);
+			log_debug("CLM: Resolving local-address: {}", localAddress);
 		}
-		log_info("CLM: Local address to be used when building Atomix: {}", localAddress);
+		log_info("CLM: Local address used for building Atomix: {}", localAddress);
 
 		// Initialize Membership provider
-		bootstrapDiscoveryProvider = buildNodeDiscoveryProvider(
-				properties.getMemberAddresses(), !hasLocalAddress);
+		bootstrapDiscoveryProvider = buildNodeDiscoveryProvider(properties.getMemberAddresses());
 
 		// Create Atomix and Join/start cluster
 		atomix = buildAtomix(properties, localAddress, bootstrapDiscoveryProvider);
@@ -176,7 +190,7 @@ public class ClusterManager extends AbstractLogBase {
 
 		// Populate default local member properties
 		Member localMember = atomix.getMembershipService().getLocalMember();
-		String addrStr = localMember.address().host()+":"+localMember.address().port();
+		String addrStr = localMember.address().host() + ":" + localMember.address().port();
 		atomix.getMembershipService().getLocalMember().properties().setProperty("address", addrStr);
 		atomix.getMembershipService().getLocalMember().properties().setProperty("uuid", UUID.randomUUID().toString());
 		atomix.getMembershipService().getLocalMember().properties().setProperty(BrokerUtil.BROKER_PROPERTY, BrokerUtil.STATUS_CANDIDATE);
@@ -202,6 +216,23 @@ public class ClusterManager extends AbstractLogBase {
 		if (startElection) {
 			brokerUtil.setDontInit(false);
 			brokerUtil.checkBroker();
+		}
+	}
+
+	public void waitToJoin() {
+		while (true) {
+			if (isInitialized() && isRunning()) break;
+			try { Thread.sleep(500); } catch (InterruptedException e) { break; }
+		}
+	}
+
+	public void waitToJoin(long waitForMillis) {
+		long startTm = System.currentTimeMillis();
+		long endTm = startTm + waitForMillis;
+		while (true) {
+			if (isInitialized() && isRunning()) break;
+			long waitFor = Math.min(500, endTm-System.currentTimeMillis());
+			try { Thread.sleep(waitFor); } catch (InterruptedException e) { break; }
 		}
 	}
 
@@ -245,9 +276,9 @@ public class ClusterManager extends AbstractLogBase {
 
 	// ------------------------------------------------------------------------
 
-	private String createMemberName(int port) { return createMemberName(":"+port); }
+	private String createMemberName(int port) { return createMemberName(getLocalHostName()+":"+port); }
 	private String createMemberName(String address) {
-		return NODE_NAME_PREFIX+getLocalHostName()+"_"+address.replace(":", "_");
+		return NODE_NAME_PREFIX+address.replace(":", "_");
 	}
 
 	private Node createNode(String address, String port) { return createNode(address, Integer.parseInt(port)); }
@@ -268,12 +299,6 @@ public class ClusterManager extends AbstractLogBase {
 				.build();
 	}
 
-	private Address getLocalAddressFromMembersList(List<String> addresses) {
-		if (addresses==null || addresses.size()==0)
-			return null;
-		return getAddressFromString(addresses.get(0));
-	}
-
 	public static Address getAddressFromString(String localAddressStr) {
 		Address localAddress;
 		localAddressStr = localAddressStr.trim();
@@ -288,29 +313,20 @@ public class ClusterManager extends AbstractLogBase {
 		return localAddress;
 	}
 
-	private NodeDiscoveryProvider buildNodeDiscoveryProvider(List<String> addresses, boolean skipFirst) {
+	private NodeDiscoveryProvider buildNodeDiscoveryProvider(List<String> addresses) {
 		return buildNodeDiscoveryProviderFromProperties(
 				addresses!=null
 						? addresses.stream()
 								.map(ClusterManager::getAddressFromString)
 								.map(address -> new ClusterManagerProperties.NodeProperties(null, address, null))
 								.collect(Collectors.toList())
-						: null,
-				skipFirst);
+						: null);
 	}
 
-	private NodeDiscoveryProvider buildNodeDiscoveryProviderFromProperties(List<ClusterManagerProperties.NodeProperties> nodePropertiesList, boolean skipFirst) {
+	private NodeDiscoveryProvider buildNodeDiscoveryProviderFromProperties(List<ClusterManagerProperties.NodeProperties> nodePropertiesList) {
 		List<Node> nodes = new ArrayList<>();
 		if (nodePropertiesList!=null) {
-			boolean first = skipFirst;
-			for (ClusterManagerProperties.NodeProperties nodeProperties : nodePropertiesList) {
-				if (first) {
-					first = false;
-					continue;
-				}
-				Node node = createNode(nodeProperties);
-				nodes.add(node);
-			}
+			nodes = nodePropertiesList.stream().map(this::createNode).collect(Collectors.toList());
 		}
 		log_info("CLM: Building Atomix: Other members: {}", nodes);
 		return BootstrapDiscoveryProvider.builder()
@@ -339,9 +355,6 @@ public class ClusterManager extends AbstractLogBase {
 	}
 
 	private Atomix buildAtomix(ClusterManagerProperties properties, Address localAddress, NodeDiscoveryProvider bootstrapDiscoveryProvider) {
-		if (localAddress==null)
-			localAddress = Address.local();
-
 		// Configuring local cluster member
 		AtomixBuilder atomixBuilder = Atomix.builder();
 
@@ -407,12 +420,14 @@ public class ClusterManager extends AbstractLogBase {
 
 		// Configure TLS for messaging
 		log_info("CLM: Building Atomix: TLS enabled={}", properties.getTls().isEnabled());
-		atomixBuilder
-				.withTlsEnabled(properties.getTls().isEnabled())
-				.withKeyStore(properties.getTls().getKeystore())
-				.withKeyStorePassword(properties.getTls().getKeystorePassword())
-				.withTrustStore(properties.getTls().getTruststore())
-				.withTrustStorePassword(properties.getTls().getTruststorePassword());
+		if (properties.getTls().isEnabled()) {
+			atomixBuilder
+					.withTlsEnabled(true)
+					.withKeyStore(properties.getTls().getKeystore())
+					.withKeyStorePassword(properties.getTls().getKeystorePassword())
+					.withTrustStore(properties.getTls().getTruststore())
+					.withTrustStorePassword(properties.getTls().getTruststorePassword());
+		}
 
 		return atomixBuilder.build();
 	}

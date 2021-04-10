@@ -22,10 +22,12 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cryptacular.util.CertUtil;
 import org.cryptacular.x509.GeneralNameType;
+import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -379,6 +381,17 @@ public class KeystoreUtil {
 
     public KeystoreUtil writeKeystore(KeyStore keystore) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         KeystoreUtil.writeKeystore(keystore, keystoreFile, keystoreType, keystorePassword);
+        return this;
+    }
+
+    public String readFileAsBase64() throws IOException {
+        byte[] encoded = Base64.getEncoder().encode(FileCopyUtils.copyToByteArray(new File(keystoreFile)));
+        return new String(encoded, StandardCharsets.US_ASCII);
+    }
+
+    public KeystoreUtil writeBase64ToFile(String base64) throws IOException {
+        byte[] bytes = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.US_ASCII));
+        FileCopyUtils.copy(bytes, new File(keystoreFile));
         return this;
     }
 

@@ -64,11 +64,11 @@ public class ClusterManagerProperties {
 	@ToString(exclude = {"keystorePassword", "truststorePassword"})
 	public static class TlsProperties {
 		private boolean enabled;
-		private boolean useConfigOfBroker;
 		private String keystore;
 		private String keystorePassword;
 		private String truststore;
 		private String truststorePassword;
+		private String keystoreDir;
 	}
 
 	@Data
