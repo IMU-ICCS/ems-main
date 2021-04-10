@@ -34,7 +34,8 @@ import java.util.Map;
 @Slf4j
 public class BaguetteServerProperties {
 
-    /*@Override
+    /*XXX: TODO: Add combinatorial properties check
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         log.warn("!!!!!!!!!!!!  BaguetteServerProperties: {}", this);
 
