@@ -593,7 +593,7 @@ deploy:ems-broker-client:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-broker-client
+    - build-required-part7:ems-broker-client
   script:
     - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
 
