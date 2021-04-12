@@ -232,6 +232,15 @@ build-required-part7:ems-baguette-client-install:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client-install/
 
+build-required-part7:ems-broker-client:
+  stage: build-required-part7
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-client/
+
 build:dlms-agent:
   stage: build
   image: $MAVEN_IMAGE
@@ -243,21 +252,12 @@ build:dlms-agent:
 
 build:cp-parser:
   stage: build
-  image: $DOCKER_DIND_IMAGE
+  image: $MAVEN_IMAGE
   script:
     - $CP_PARSER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
-
-build:ems-broker-client:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-client/
 
 build:ems-baguette-client:
   stage: build
