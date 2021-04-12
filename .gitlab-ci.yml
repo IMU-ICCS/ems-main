@@ -85,6 +85,7 @@ stages:
   - build-required-part5
   - build-required-part6
   - build-required-part7
+  - build-required-part8
   - build
   - deploy
 
@@ -250,6 +251,15 @@ build-required-part7:ems-translator:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/translator/
 
+build-required-part8:ems-baguette-client:
+  stage: build-required-part8
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
+
 build:dlms-agent:
   stage: build
   image: $MAVEN_IMAGE
@@ -267,12 +277,6 @@ build:cp-parser:
   artifacts:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
-
-build:ems-baguette-client:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
 
 build:ems-server:
   stage: build
@@ -623,7 +627,7 @@ deploy:ems-baguette-client:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-baguette-client
+    - build-required-part8:ems-baguette-client
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_CLI deploy
 
