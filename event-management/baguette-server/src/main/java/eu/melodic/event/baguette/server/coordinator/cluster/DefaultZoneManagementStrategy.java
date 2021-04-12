@@ -16,6 +16,14 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.InetSocketAddress;
 import java.util.UUID;
 
+/**
+ * The default Zone Management Strategy used when 'zone-management-strategy-class' property is not set.
+ * Groups clients based on domain, or last byte of IP Address. If neither is available it assigns client
+ * in a new zone identified with a new UUID.
+ * When a zone contains only one client, no cluster initialization is instructed.
+ * When a zone contains exactly two clients, then both clients are initialized as cluster nodes.
+ * If only one client is left in a zone, it is instructed to leave cluster.
+ */
 @Slf4j
 public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     @Override
@@ -26,9 +34,9 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     @Override
     public String getZoneIdFor(ClientShellCommand c) {
         String nodeAddress = c.getClientIpAddress();
-        String hostname = ((InetSocketAddress) c.getSession().getIoSession().getRemoteAddress()).getAddress().getHostName();
-        log.warn(">>>>>>>  address: {}", nodeAddress);
-        log.warn(">>>>>>> hostname: {}", hostname);
+        String hostname = c.getClientHostname();
+        log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
+        log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
         String zoneName = null;
         if (StringUtils.isNotBlank(hostname)) {
             int p = hostname.indexOf(".");
