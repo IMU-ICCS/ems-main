@@ -1,0 +1,202 @@
+/*
+ * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
+ */
+
+package eu.melodic.event.baguette.server.coordinator.cluster;
+
+import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Slf4j
+public class ClusteringCoordinator extends NoopCoordinator {
+    private final static String DEFAULT_ZONE = "default_zone";
+
+    private final Map<String, ClusterZone> topologyMap = new HashMap<>();
+
+    private IZoneManagementStrategy zoneManagementStrategy;
+    private int zoneStartPort = 1200;
+    private int zoneEndPort = 65535;
+
+    @SneakyThrows
+    public void setProperties(Map<String, String> zoneConfig) {
+        log.debug("Zone configuration: {}", zoneConfig);
+        zoneManagementStrategy = zoneConfig.containsKey("zone-management-strategy-class")
+                ? (IZoneManagementStrategy) Class.forName(zoneConfig.get("zone-management-strategy-class")).newInstance()
+                : new DefaultZoneManagementStrategy();
+        zoneStartPort = zoneConfig.containsKey("zone-port-start")
+                ? Integer.parseInt(zoneConfig.get("zone-port-start")) : zoneStartPort;
+        zoneEndPort = zoneConfig.containsKey("zone-port-end")
+                ? Integer.parseInt(zoneConfig.get("zone-port-end")) : zoneEndPort;
+    }
+
+    @Override
+    public synchronized void register(ClientShellCommand csc) {
+        if (!_logInvocation("register", csc, true)) return;
+
+        // Check if client has been preregistered
+        NodeRegistryEntry preregEntry = server.getNodeRegistry().getNodeByAddress(csc.getClientIpAddress());
+        if (preregEntry==null) {
+            log.warn("Non Preregistered node connected: {} @ {}", csc.getId(), csc.getClientIpAddress());
+            zoneManagementStrategy.unexpectedNode(csc);
+        }
+
+        // Register client
+        _do_register(csc);
+    }
+
+    @Override
+    public synchronized void unregister(ClientShellCommand csc) {
+        if (!_logInvocation("unregister", csc, true)) return;
+        _do_unregister(csc);
+    }
+
+    protected synchronized void _do_register(ClientShellCommand csc) {
+        // prepare configuration
+        java.util.Properties cfg = new java.util.Properties();
+        Map<String,String> cfgMap;
+        cfg.putAll(cfgMap = getUpperwareBrokerConfig(server));
+        log.trace("ClusteringCoordinator: GLOBAL broker config.: {}", cfgMap);
+
+        cfg.putAll(cfgMap = getGroupingBrokerConfig("PER_CLOUD", csc));
+        log.trace("ClusteringCoordinator: {} broker config.: {}", "PER_CLOUD", cfgMap);
+
+        // prepare Broker-CEP configuration
+        log.info("ClusteringCoordinator: --------------------------------------------------");
+        log.info("ClusteringCoordinator: Sending grouping configurations...");
+        sendGroupingConfigurations(cfg, csc, server);
+        log.info("ClusteringCoordinator: Sending grouping configurations... done");
+        sleep(500);
+
+        // Set active grouping
+        String grouping = "PER_INSTANCE";
+        log.info("ClusteringCoordinator: --------------------------------------------------");
+        log.info("ClusteringCoordinator: Setting active grouping: {}", grouping);
+        csc.setActiveGrouping(grouping);
+        log.info("ClusteringCoordinator: --------------------------------------------------");
+        sleep(500);
+
+        // Add registered node in topology map
+        addNodeInTopology(csc);
+    }
+
+    private synchronized void addNodeInTopology(ClientShellCommand csc) {
+        // Assign client in a zone
+        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        log.debug("addNodeInTopology: New client: id={}, address={}, zone-id={}", csc.getId(), csc.getClientIpAddress(), zoneId);
+        ClusterZone zone = topologyMap.computeIfAbsent(zoneId, id -> new ClusterZone(id, zoneStartPort, zoneEndPort));
+        log.trace("addNodeInTopology: Zone members: BEFORE: {}", zone.getNodes());
+        zone.addNode(csc);
+        log.trace("addNodeInTopology: Zone members:  AFTER: {}", zone.getNodes());
+
+        // Initialize new client's cluster node address/hostname, port and certificate
+        String nodeAddress = csc.getClientIpAddress();
+        String nodeHostname = csc.getClientHostname();
+        String nodeCanonical = csc.getClientCanonicalHostname();
+        int nodePort = zone.getPortForAddress(nodeAddress);
+        csc.setClientClusterNodePort(nodePort);
+        csc.setClientClusterNodeAddress(nodeAddress);
+        csc.setClientClusterNodeHostname(nodeHostname);
+        //csc.setClientClusterNodeHostname(nodeCanonical);
+        log.debug("addNodeInTopology: New client: Cluster node: address={}, hostname={} // {}, port={}",
+                nodeAddress, nodeHostname, nodeCanonical, nodePort);
+
+        // Signal Zone Management Strategy for new client registration
+        zoneManagementStrategy.nodeAdded(csc, this, zone);
+        log.info("addNodeInTopology: Client added in topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
+    }
+
+    protected synchronized void _do_unregister(ClientShellCommand csc) {
+        // Remove node from topology map
+        removeNodeFromTopology(csc);
+    }
+
+    private synchronized void removeNodeFromTopology(ClientShellCommand csc) {
+        // Assign client in a zone
+        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        ClusterZone zone = topologyMap.get(zoneId);
+        if (zone == null) {
+            log.warn("removeNodeFromTopology: Not Registered client removed: client={}, address={}", csc.getId(), csc.getClientIpAddress());
+        } else {
+            log.trace("removeNodeFromTopology: Zone members: BEFORE: {}", zone.getNodes());
+            zone.removeNode(csc);
+            log.trace("removeNodeFromTopology: Zone members:  AFTER: {}", zone.getNodes());
+            zoneManagementStrategy.nodeRemoved(csc, this, zone);
+            log.info("removeNodeFromTopology: Client removed from topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Methods to be used by Zone Management Strategies
+    // ------------------------------------------------------------------------
+
+    void sendClusterKey(ClientShellCommand csc, ClusterZone zoneInfo) {
+        csc.sendCommand(String.format("CLUSTER-KEY %s %s %s %s",
+                zoneInfo.getClusterKeystoreFile().getName(), zoneInfo.getClusterKeystoreType(),
+                zoneInfo.getClusterKeystorePassword(), zoneInfo.getClusterKeystoreBase64()));
+    }
+
+    void sendCommandToZone(String command, List<ClientShellCommand> zoneNodes) {
+        log.info("sendCommandToZone: Sending command: \"{}\" to zone nodes: {}", command,
+                zoneNodes.stream().map(ClientShellCommand::toStringCluster).collect(Collectors.toList()));
+        zoneNodes.forEach(c -> {
+            c.sendCommand(command);
+        });
+    }
+
+    void instructClusterJoin(ClientShellCommand csc, ClusterZone zone) {
+        List<ClientShellCommand> zoneNodes = zone.getNodes();
+        log.debug("instructClusterJoin: Zone members: {}", zoneNodes);
+
+        // Build zone members list
+        final List<String> addresses = new ArrayList<>();
+        final List<String> hostnames = new ArrayList<>();
+        zoneNodes.forEach(c -> {
+            if (c!=csc) {
+                addresses.add(c.getClientClusterNodeAddress()+":"+c.getClientClusterNodePort());
+                hostnames.add(c.getClientClusterNodeHostname()+":"+c.getClientClusterNodePort());
+            }
+        });
+        log.debug("instructClusterJoin: New cluster node nearby members: addresses={}, hostnames={}", addresses, hostnames);
+
+        // Prepare cluster join commands
+        String command1 =
+                zone.getId()+" "
+                +csc.getClientClusterNodeAddress()+":"+csc.getClientClusterNodePort()+" "
+                +String.join(" ", addresses);
+        String command2 =
+                zone.getId()+" "
+                +csc.getClientClusterNodeHostname()+":"+csc.getClientClusterNodePort()+" "
+                +String.join(" ", hostnames);
+
+        // Send cluster join commands
+        String addr = csc.getClientClusterNodeAddress();
+        log.info("======> {}: CLUSTER-JOIN {}", addr, command1);
+        csc.sendCommand("CLUSTER-JOIN "+command1);
+        //log.info("======> {}: CLUSTER-JOIN {}", addr, command2);
+        //csc.sendCommand("CLUSTER-JOIN "+command2);
+    }
+
+    void instructClusterLeave(ClientShellCommand csc, ClusterZone zone) {
+        // Send cluster leave command
+        log.info("======> {}: CLUSTER-LEAVE", csc.getClientIpAddress());
+        csc.sendCommand("CLUSTER-LEAVE");
+    }
+
+    void electAggregator(ClusterZone zone) {
+        sendCommandToZone("CLUSTER-EXEC broker elect", zone.getNodes());
+    }
+}

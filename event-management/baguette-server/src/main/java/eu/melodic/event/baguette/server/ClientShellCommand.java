@@ -55,7 +55,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private String clientHostname;
     private String clientCanonicalHostname;
     private int clientPort = -1;
-    @Getter private String clientCertificate;
+    @Getter private String clientCertificate;   // Broker certificate of Client
+
+    @Getter @Setter private int clientClusterNodePort;
+    @Getter @Setter private String clientClusterNodeAddress;
+    @Getter @Setter private String clientClusterNodeHostname;
 
     private ServerCoordinator coordinator;
     private boolean clientAddressOverrideAllowed;

@@ -90,7 +90,7 @@ public class NoopCoordinator implements ServerCoordinator {
         return started;
     }
 
-    protected void sleep(long millis) {
+    public void sleep(long millis) {
         try { Thread.sleep(millis); } catch (Exception ignored) { }
     }
 }

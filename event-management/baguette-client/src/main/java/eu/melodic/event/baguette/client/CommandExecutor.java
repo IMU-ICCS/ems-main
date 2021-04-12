@@ -241,7 +241,7 @@ public class CommandExecutor {
 
         } else if ("CLUSTER-LEAVE".equals(cmd)) {
             if (clusterManager==null) {
-                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                log.error("Cluster has not been initialized. Run CLUSTER-JOIN first");
                 return false;
             }
             if (! clusterManager.isRunning()) {
@@ -257,7 +257,7 @@ public class CommandExecutor {
             }
         } else if ("CLUSTER-SHELL".equals(cmd)) {
             if (clusterManager==null) {
-                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                log.error("Cluster has not been initialized. Run CLUSTER-JOIN first");
                 return false;
             }
             ClusterCLI cli = clusterManager.getCli();
@@ -274,7 +274,7 @@ public class CommandExecutor {
                 return false;
             }
             if (clusterManager==null) {
-                log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
+                log.error("Cluster has not been initialized. Run CLUSTER-JOIN first");
                 return false;
             }
             ClusterCLI cli = clusterManager.getCli();
