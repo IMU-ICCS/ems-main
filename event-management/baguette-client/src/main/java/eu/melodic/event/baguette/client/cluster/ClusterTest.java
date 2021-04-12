@@ -15,8 +15,7 @@ import lombok.*;
 import java.util.stream.Collectors;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class ClusterTest extends AbstractLogBase implements Runnable {
+public class ClusterTest implements Runnable {
 
 	@NonNull
 	private final ClusterManager clusterManager;
@@ -65,11 +64,11 @@ public class ClusterTest extends AbstractLogBase implements Runnable {
 		int iterations = 0;
 		while (keepRunning) {
 			iterations++;
-			log_info("-- Iter={} ---------------------------------------", iterations);
+			clusterManager.log_info("-- Iter={} ---------------------------------------", iterations);
 
 			// Get cluster members
-			log_info(">>> CLUSTER-MEMBERS: {}", atomix.getMembershipService().getMembers().stream()
-					.map(m -> "\n\t"+m.id().id()
+			clusterManager.log_info("-- CLUSTER-MEMBERS: {}", atomix.getMembershipService().getMembers().stream()
+					.map(m -> "\n  "+m.id().id()
 							+ "/" + m.properties().getProperty("broker", "???")
 							+ "/" + m.properties().getProperty("address", "---")
 							+ "/" + (m.isActive()?"active":"inactive")

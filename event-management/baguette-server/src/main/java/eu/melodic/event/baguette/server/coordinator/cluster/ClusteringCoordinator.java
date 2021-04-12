@@ -173,26 +173,23 @@ public class ClusteringCoordinator extends NoopCoordinator {
         log.debug("instructClusterJoin: New cluster node nearby members: addresses={}, hostnames={}", addresses, hostnames);
 
         // Prepare cluster join commands
-        String command1 =
+        String command =
                 zone.getId()+" "
                 +csc.getClientClusterNodeAddress()+":"+csc.getClientClusterNodePort()+" "
                 +String.join(" ", addresses);
-        String command2 =
+        /*String command =
                 zone.getId()+" "
                 +csc.getClientClusterNodeHostname()+":"+csc.getClientClusterNodePort()+" "
-                +String.join(" ", hostnames);
+                +String.join(" ", hostnames);*/
 
-        // Send cluster join commands
-        String addr = csc.getClientClusterNodeAddress();
-        log.info("======> {}: CLUSTER-JOIN {}", addr, command1);
-        csc.sendCommand("CLUSTER-JOIN "+command1);
-        //log.info("======> {}: CLUSTER-JOIN {}", addr, command2);
-        //csc.sendCommand("CLUSTER-JOIN "+command2);
+        // Send cluster join command
+        log.debug("instructClusterJoin: Client {} @ {} joins cluster: CLUSTER-JOIN {}", csc.getId(), csc.getClientIpAddress(), command);
+        csc.sendCommand("CLUSTER-JOIN "+command);
     }
 
     void instructClusterLeave(ClientShellCommand csc, ClusterZone zone) {
         // Send cluster leave command
-        log.info("======> {}: CLUSTER-LEAVE", csc.getClientIpAddress());
+        log.debug("instructClusterJoin: Client {} @ {} leaves cluster: CLUSTER-LEAVE", csc.getId(), csc.getClientIpAddress());
         csc.sendCommand("CLUSTER-LEAVE");
     }
 

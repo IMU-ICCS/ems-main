@@ -206,7 +206,7 @@ public class CommandExecutor {
             clusterManagerProperties.getLocalNode().setAddress(args[2]);
             clusterManagerProperties.setMemberAddresses(
                     (args.length>3) ? Arrays.asList(args).subList(3, args.length) : null);
-            log.warn(">>> Cluster properties:  {}", clusterManagerProperties);
+            log.debug("Cluster properties:  {}", clusterManagerProperties);
 
             // Initialize cluster manager
             if (clusterManager==null) {
@@ -219,7 +219,7 @@ public class CommandExecutor {
             //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
             clusterManager.joinCluster();
             clusterManager.waitToJoin();
-            log.warn(">>> Joined to cluster");
+            log.info("Joined to cluster");
 
         } else if ("CLUSTER-TEST".equals(cmd)) {
 
@@ -255,6 +255,8 @@ public class CommandExecutor {
                 clusterTest.stopTest();
                 clusterTest = null;
             }
+            log.info("Left cluster");
+
         } else if ("CLUSTER-SHELL".equals(cmd)) {
             if (clusterManager==null) {
                 log.error("Cluster has not been initialized. Run CLUSTER-JOIN first");
