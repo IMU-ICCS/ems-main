@@ -33,29 +33,6 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = true)
 public class ClusterManager extends AbstractLogBase {
 
-	public void runTest() {
-		// Start doing work...
-		int iterations = 0;
-		while (true) {
-			iterations++;
-			log_info("-- Iter={} ---------------------------------------", iterations);
-
-			// Get cluster members
-			log_info(">>> CLUSTER-MEMBERS: {}", atomix.getMembershipService().getMembers().stream()
-					.map(m -> "\n\t"+m.id().id()
-							+ "/" + m.properties().getProperty("address", "---")
-							+ "/" + (m.isActive()?"active":"inactive")
-							+ (!m.isReachable() ? "/unreachable" : ""))
-					.collect(Collectors.toList()));
-
-			// Sleep for 5 seconds
-			try { Thread.sleep(5000); } catch (Exception e) {}
-		}
-	}
-
-	// ------------------------------------------------------------
-
-//	private static final String NODE_NAME_PREFIX = "";
 	private static final String NODE_NAME_PREFIX = "node_";
 
 	private ClusterManagerProperties properties;

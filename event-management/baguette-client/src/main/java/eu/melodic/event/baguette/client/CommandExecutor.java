@@ -9,10 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
-import eu.melodic.event.baguette.client.cluster.BrokerUtil;
-import eu.melodic.event.baguette.client.cluster.ClusterCLI;
-import eu.melodic.event.baguette.client.cluster.ClusterManager;
-import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
+import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
@@ -67,6 +64,7 @@ public class CommandExecutor {
     @Autowired
     private ClusterManagerProperties clusterManagerProperties;
     private ClusterManager clusterManager;
+    private ClusterTest clusterTest;
     private boolean clusterKeystoreEnabled = false;
     private String clusterKeystoreFile;
     private String clusterKeystoreType;
@@ -225,7 +223,21 @@ public class CommandExecutor {
 
         } else if ("CLUSTER-TEST".equals(cmd)) {
 
-            clusterManager.runTest();
+            if (args.length<2 || "START".equalsIgnoreCase(args[1])) {
+                if (clusterManager==null) {
+                    log.error("Cluster has not been initialized. Run CLUSTER-JOIN first");
+                    return false;
+                }
+                clusterTest = new ClusterTest(clusterManager);
+                clusterTest.startTest();
+            } else if ("STOP".equalsIgnoreCase(args[1])) {
+                if (clusterTest==null) {
+                    log.error("Cluster test is not running");
+                    return false;
+                }
+                clusterTest.stopTest();
+                clusterTest = null;
+            }
 
         } else if ("CLUSTER-LEAVE".equals(cmd)) {
             if (clusterManager==null) {
@@ -236,7 +248,13 @@ public class CommandExecutor {
                 log.error("Cluster is not running. Join cluster first");
                 return false;
             }
+
             clusterManager.leaveCluster();
+
+            if (clusterTest!=null) {
+                clusterTest.stopTest();
+                clusterTest = null;
+            }
         } else if ("CLUSTER-SHELL".equals(cmd)) {
             if (clusterManager==null) {
                 log.error("Cluster has not been initialized. Run CLUSTER-INIT first");
