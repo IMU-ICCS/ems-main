@@ -60,8 +60,6 @@ public class ClusterTest extends AbstractLogBase implements Runnable {
 	}
 
 	public void run() {
-		checkRunning();
-
 		// Start doing work...
 		Atomix atomix = clusterManager.getAtomix();
 		int iterations = 0;
