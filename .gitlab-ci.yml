@@ -241,6 +241,15 @@ build-required-part7:ems-broker-client:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-client/
 
+build-required-part7:ems-translator:
+  stage: build-required-part7
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/translator/
+
 build:dlms-agent:
   stage: build
   image: $MAVEN_IMAGE
@@ -264,15 +273,6 @@ build:ems-baguette-client:
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-
-build:ems-translator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/translator/
 
 build:ems-server:
   stage: build
@@ -668,7 +668,7 @@ deploy:ems-translator:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-translator
+    - build-required-part7:ems-translator
   script:
     - $DOCKER_CLI $EMS_TRANSLATOR_CLI deploy
 
