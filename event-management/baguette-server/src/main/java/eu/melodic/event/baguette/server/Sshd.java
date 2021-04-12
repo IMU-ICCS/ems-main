@@ -77,7 +77,7 @@ public class Sshd {
                         return null;
                     }
 
-                    public Factory setCoordinator(ServerCoordinator coordinator) {
+                    public Factory<Command> setCoordinator(ServerCoordinator coordinator) {
                         this.coordinator = coordinator;
                         return this;
                     }

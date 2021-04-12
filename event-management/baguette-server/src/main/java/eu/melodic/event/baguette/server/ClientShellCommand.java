@@ -52,6 +52,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter private String clientId;
     @Getter private String clientBrokerUrl;
     private String clientIpAddress;
+    private String clientHostname;
+    private String clientCanonicalHostname;
     private int clientPort = -1;
     @Getter private String clientCertificate;
 
@@ -144,6 +146,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 activeCmdList.remove(this);
             }
             log.info("{}--> Thread stops", id);
+            coordinator.unregister(this);
             if (!callbackCalled) {
                 callbackCalled = true;
                 callback.onExit(0);
@@ -239,6 +242,18 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         if (StringUtils.isNotBlank(clientIpAddress)) return clientIpAddress;
         clientIpAddress = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getHostAddress();
         return clientIpAddress;
+    }
+
+    public String getClientHostname() {
+        if (StringUtils.isNotBlank(clientHostname)) return clientHostname;
+        clientHostname = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getHostName();
+        return clientHostname;
+    }
+
+    public String getClientCanonicalHostname() {
+        if (StringUtils.isNotBlank(clientCanonicalHostname)) return clientCanonicalHostname;
+        clientCanonicalHostname = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getCanonicalHostName();
+        return clientCanonicalHostname;
     }
 
     public int getClientPort() {
