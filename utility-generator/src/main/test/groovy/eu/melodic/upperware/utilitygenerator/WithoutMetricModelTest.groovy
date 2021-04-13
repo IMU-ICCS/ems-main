@@ -80,7 +80,7 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, ugproperties, securityProperties, jwtService, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, securityProperties, jwtService, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -100,7 +100,7 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModelWithSolution.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, ugproperties, securityProperties, jwtService, properties)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, securityProperties, jwtService, properties)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

@@ -168,11 +168,11 @@ class TemplateUtilityFCRTest extends Specification{
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
+                        mockNodeCandidates, securityProperties, jwtService, properties,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService, properties,
+                        mockNodeCandidates, securityProperties, jwtService, properties,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
                         new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
                         new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
