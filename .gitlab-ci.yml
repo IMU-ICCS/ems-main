@@ -554,8 +554,8 @@ deploy:dlms-agent:
     - export AWS_SECRET_ACCESS_KEY=$K8S_SECRET_AWS_PASSWORD
     - export AWS_DEFAULT_REGION=eu-west-1
     - ls -l /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/
-    - ls -l /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/target
-    - aws s3 cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/target/DLMSAgent-4.0.0-SNAPSHOT.jar s3://melodic.testing.data/ARTIFACTS/ow2/dlmsagent/
+    - ls -l /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/4.0.0-SNAPSHOT/
+    - aws s3 cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/4.0.0-SNAPSHOT/DLMSAgent-4.0.0-SNAPSHOT.jar s3://melodic.testing.data/ARTIFACTS/ow2/dlmsagent/
 
 deploy:ems:
   stage: deploy
