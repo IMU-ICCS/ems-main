@@ -303,6 +303,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
+                <configuration>
+                    <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
+                </configuration>
             </plugin>
         </plugins>
     </build>
