@@ -31,9 +31,6 @@ public class CamelMetadataTool {
         return isVariableFromGroup(metricVariable, CamelMetadata.NC_LIST);
     }
 
-    public static boolean isFromDlmsUtility(MetricVariableImpl metricVariable) {
-        return isVariableFromGroup(metricVariable, CamelMetadata.DLMS_LIST);
-    }
 
     public static boolean isFromPenalty(MetricVariableImpl metricVariable){
         return isVariableFromGroup(metricVariable, CamelMetadata.PENALTY_LIST);
