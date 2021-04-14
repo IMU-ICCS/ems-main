@@ -22,12 +22,6 @@ public enum CamelMetadata {
 
     PRICE("Cost", null, true, false),
 
-    UNMOVEABLE("Unmoveable", null, false, false),
-
-    AFFINITY_AWARENESS("AffinityAwareness", null, false, false),
-    DATA_CENTRE_AWARENESS("DataCentreAwareness", null, false, false),
-    SOURCE_AWARENESS("SourceAwareness", null,false, false),
-
     PENALTY("AdapterUtility", null, false, true),
     RECONFIGURATION_TIME("ReconfigurationTime", null, false, true);
 
