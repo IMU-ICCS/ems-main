@@ -65,7 +65,7 @@ public class CommandExecutor {
     private ClusterManagerProperties clusterManagerProperties;
     private ClusterManager clusterManager;
     private ClusterTest clusterTest;
-    private boolean clusterKeystoreEnabled = false;
+    private boolean clusterKeystoreInitialized = false;
     private String clusterKeystoreFile;
     private String clusterKeystoreType;
     private String clusterKeystorePassword;
@@ -195,12 +195,15 @@ public class CommandExecutor {
                 clusterManagerProperties = new ClusterManagerProperties();
             clusterManagerProperties.setClusterId(args[1]);
 
-            clusterManagerProperties.getTls().setEnabled(clusterKeystoreEnabled);
-            if (clusterKeystoreEnabled) {
-                clusterManagerProperties.getTls().setKeystore(clusterKeystoreFile);
-                clusterManagerProperties.getTls().setKeystorePassword(clusterKeystorePassword);
-                clusterManagerProperties.getTls().setTruststore(clusterKeystoreFile);
-                clusterManagerProperties.getTls().setTruststorePassword(clusterKeystorePassword);
+            if (clusterManagerProperties.getTls().isEnabled()) {
+                log.debug("Cluster TLS is enabled");
+                if (clusterKeystoreInitialized) {
+                    log.debug("Cluster TLS Keystore has been initialized");
+                    clusterManagerProperties.getTls().setKeystore(clusterKeystoreFile);
+                    clusterManagerProperties.getTls().setKeystorePassword(clusterKeystorePassword);
+                    clusterManagerProperties.getTls().setTruststore(clusterKeystoreFile);
+                    clusterManagerProperties.getTls().setTruststorePassword(clusterKeystorePassword);
+                }
             }
 
             clusterManagerProperties.getLocalNode().setAddress(args[2]);
@@ -348,7 +351,7 @@ public class CommandExecutor {
         String ksDir = clusterManagerProperties.getTls().getKeystoreDir();
         if (StringUtils.isBlank(ksDir)) ksDir = DEFAULT_KEYSTORE_DIR;
         if (!ksDir.endsWith("/")) ksDir += "/";
-        this.clusterKeystoreEnabled = true;
+        this.clusterKeystoreInitialized = true;
         this.clusterKeystoreFile = ksDir + ksFile;
         this.clusterKeystoreType = ksType;
         this.clusterKeystorePassword = ksPassword;
