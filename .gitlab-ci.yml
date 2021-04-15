@@ -88,9 +88,10 @@ stages:
   - build-required-part8
   - build
   - deploy
-  - deploy-solvers
   - deploy-solvers-part1
   - deploy-solvers-part2
+  - deploy-solvers-part3
+  - deploy-solvers-part4
 
 build-basic-dependencies:melodic-upperware:
   stage: build-basic-dependencies
@@ -760,8 +761,8 @@ deploy:functionizer-testing-tool:
     - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
 
-deploy:nc-solver:
-  stage: deploy
+deploy-solvers-part1:nc-solver:
+  stage: deploy-solvers-part1
   only:
     - master
     - rc3.0
@@ -780,8 +781,8 @@ deploy:nc-solver:
     - docker tag $LOCAL_REPO/melodic/ncsolver:unknown $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
 
-deploy-solvers-part1:pt-solver:
-  stage: deploy-solvers-part1
+deploy-solvers-part2:pt-solver:
+  stage: deploy-solvers-part2
   only:
     - master
     - rc3.0
@@ -800,8 +801,8 @@ deploy-solvers-part1:pt-solver:
     - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
 
-deploy-solvers-part1:mcts-solver:
-  stage: deploy-solvers-part1
+deploy-solvers-part3:mcts-solver:
+  stage: deploy-solvers-part3
   only:
     - master
     - rc3.0
@@ -820,8 +821,8 @@ deploy-solvers-part1:mcts-solver:
     - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
 
-deploy-solvers-part2:gen-solver:
-  stage: deploy-solvers-part2
+deploy-solvers-part4:gen-solver:
+  stage: deploy-solvers-part4
   only:
     - master
     - rc3.0
