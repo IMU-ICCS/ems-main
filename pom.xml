@@ -40,7 +40,6 @@
         <module>dlms</module>
         <module>event-management</module>
         <module>mq-http-adapter</module>
-        <module>penalty-calculator</module>
         <module>zpp-solver</module>
         <module>functionizer-testing-tool</module>
     </modules>

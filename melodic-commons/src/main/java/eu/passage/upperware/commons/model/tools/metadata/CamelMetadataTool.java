@@ -35,10 +35,6 @@ public class CamelMetadataTool {
         return isVariableFromGroup(metricVariable, CamelMetadata.DLMS_LIST);
     }
 
-    public static boolean isFromPenalty(MetricVariableImpl metricVariable){
-        return isVariableFromGroup(metricVariable, CamelMetadata.PENALTY_LIST);
-    }
-
     public static CamelMetadata findVariableType(MetricVariableImpl metricVariable) {
         return findCamelMetaDataType(metricVariable, CamelMetadata.VM_LIST);
     }
@@ -51,9 +47,6 @@ public class CamelMetadataTool {
         return findCamelMetaDataType(metricVariable, CamelMetadata.DLMS_LIST);
     }
 
-    public static CamelMetadata findPenaltyAttributeType(MetricVariableImpl metricVariable){
-        return findCamelMetaDataType(metricVariable, CamelMetadata.PENALTY_LIST);
-    }
 
     private static CamelMetadata findCamelMetaDataType(MetricVariableImpl metricVariable, List<CamelMetadata> metadataList) {
         String annotation = getAnnotationOfMetricVariable(metricVariable);

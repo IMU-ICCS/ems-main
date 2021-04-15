@@ -8,7 +8,6 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
@@ -50,7 +49,7 @@ public class CPSolverCoordinator {
                                @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService,
                                UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
                                RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
-                               JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
+                               JWTService jwtService) {
         this.cpSolver = cpSolver;
         this.clientX = clientX;
         this.memcacheService = memcacheService;
@@ -59,7 +58,6 @@ public class CPSolverCoordinator {
         this.env = env;
         this.restTemplate = restTemplate;
         this.melodicSecurityProperties = melodicSecurityProperties;
-        this.penaltyFunctionProperties = penaltyFunctionProperties;
         this.jwtService = jwtService;
     }
 
@@ -77,7 +75,6 @@ public class CPSolverCoordinator {
     private RestTemplate restTemplate;
 
     private MelodicSecurityProperties melodicSecurityProperties;
-    private PenaltyFunctionProperties penaltyFunctionProperties;
 
     private JWTService jwtService;
 
@@ -105,7 +102,7 @@ public class CPSolverCoordinator {
             }
 
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
-                    melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+                    melodicSecurityProperties, jwtService);
 
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();
@@ -246,7 +243,7 @@ public class CPSolverCoordinator {
             }
 
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService, penaltyFunctionProperties);
+                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService);
 
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();
