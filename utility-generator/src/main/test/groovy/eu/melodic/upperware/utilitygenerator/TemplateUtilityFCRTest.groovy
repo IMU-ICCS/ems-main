@@ -1,7 +1,6 @@
 package eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider
@@ -18,7 +17,6 @@ class TemplateUtilityFCRTest extends Specification{
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
     MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
-    PenaltyFunctionProperties properties
     JWTService jwtService
 
     String cardinalityName = "AppCardinality"
@@ -85,23 +83,6 @@ class TemplateUtilityFCRTest extends Specification{
         jwtService = GroovyMock(JWTService)
 
 
-        properties = GroovyMock(PenaltyFunctionProperties)
-        Map<String, String> startupTimes = new HashMap<String, String>()
-        startupTimes.put("t1.micro", "50")
-        startupTimes.put("t1.small", "100")
-        startupTimes.put("t1.xlarge", "120")
-        startupTimes.put("t1.medium", "110")
-        startupTimes.put("t1.xxlarge", "130")
-        startupTimes.put("m1.tiny", "55")
-        startupTimes.put("m1.small", "79")
-        startupTimes.put("m1.medium", "88")
-        startupTimes.put("m1.large", "132")
-        startupTimes.put("m1.xlarge", "140")
-        startupTimes.put("t1.large", "110")
-        properties.getStartupTimes() >> startupTimes
-        properties.getStateInfo() >>"1,0.6,0.5;1,1.7,160;4,7.5,850;8,15,1690;7,17.1,420;5,2,350;1,0.5,0.5;1,2.048,10;2,4.096,10;4,8.192,20;8,16.384,40"
-        properties.getPort() >> 1234
-        properties.getHost() >> "memcachehost"
     }
 
     def "FCR template evaluation test"() {
@@ -131,9 +112,9 @@ class TemplateUtilityFCRTest extends Specification{
                 new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
                         mockNodeCandidates,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d)))
+                                new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
+                                new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
+                                new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d)))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)
@@ -168,15 +149,15 @@ class TemplateUtilityFCRTest extends Specification{
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, securityProperties, jwtService, properties,
+                        mockNodeCandidates, securityProperties, jwtService,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, securityProperties, jwtService, properties,
+                        mockNodeCandidates, securityProperties, jwtService,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
-                        new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d)))
+                                new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
+                                new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
+                                new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.RAM, 0.5d*0.333d)))
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result2 = utilityGenerator2.evaluate(newConfiguration)

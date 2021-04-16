@@ -23,7 +23,6 @@ import eu.melodic.upperware.utilitygenerator.cdo.CDOService;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
-import eu.melodic.upperware.utilitygenerator.reconfiguration_penalty.PenaltyAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.passage.upperware.commons.model.tools.CamelModelTool;
@@ -43,7 +42,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
-import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findPenaltyAttributeType;
 
 @Slf4j
 public class FromCamelModelExtractor {
@@ -115,18 +113,6 @@ public class FromCamelModelExtractor {
     }
 
 
-    public Collection<PenaltyAttribute> getReconfigurationPenaltyAttributes() {
-        Collection<MetricVariableImpl> reconfigurationPenaltyAttributes = filterVariables(this::isReconfigurationPenaltyAttribute);
-        if (reconfigurationPenaltyAttributes.size() == 0) {
-            log.info("Reconfiguration penalty has not been declared.");
-            return Collections.emptyList();
-        }
-        return reconfigurationPenaltyAttributes.stream()
-                .map(mv -> new PenaltyAttribute(mv.getName(), mv.getComponent().getName(),
-                        findPenaltyAttributeType(mv)))
-                .collect(Collectors.toList());
-    }
-
     /* optimisation requirement - utility function */
     private Optional<String> getUtilityFormula() {
         RequirementModel requirementModel = CdoTool.getFirstElement(model.getRequirementModels());
@@ -172,12 +158,6 @@ public class FromCamelModelExtractor {
                 && isInFormula(utilityFunctionFormula, variable.getName())
                 && !variable.isOnNodeCandidates()
                 && !variable.isCurrentConfiguration();
-    }
-
-
-    private boolean isReconfigurationPenaltyAttribute(MetricVariableImpl variable){
-        return CamelMetadataTool.isFromPenalty(variable)
-                && isInFormula(utilityFunctionFormula, variable.getName());
     }
 
 

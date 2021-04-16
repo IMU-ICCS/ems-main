@@ -19,7 +19,6 @@ This provides application with the properties (in that way can be provided exter
 package eu.melodic.upperware.cpsolver;
 
 import eu.melodic.cache.properties.CacheProperties;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

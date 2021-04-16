@@ -1,7 +1,6 @@
 package eu.melodic.upperware.pt_solver;
 
 import eu.melodic.cache.properties.CacheProperties;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ComponentScan(basePackages = {"eu.melodic.upperware.pt_solver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator"})
 @Configuration
 @SpringBootApplication
-@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class, PenaltyFunctionProperties.class})
+@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class PTSolverApplication {
     public static void main(String[] args) {
         SpringApplication.run(PTSolverApplication.class, args);

@@ -6,7 +6,6 @@ import eu.melodic.cache.impl.FilecacheService;
 import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.ParallelUtilityProviderImpl;
 import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
 import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
-import eu.melodic.upperware.penaltycalculator.PenaltyFunctionProperties;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
@@ -44,14 +43,13 @@ public class PTSolverCoordinator {
     public PTSolverCoordinator(CDOClientX clientX,
                                @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                Environment env, RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
-                               JWTService jwtService, PenaltyFunctionProperties penaltyFunctionProperties) {
+                               JWTService jwtService) {
         this.clientX = clientX;
         this.filecacheService = new FilecacheService();
         this.memcacheService = memcacheService;
         this.env = env;
         this.restTemplate = restTemplate;
         this.melodicSecurityProperties = melodicSecurityProperties;
-        this.penaltyFunctionProperties = penaltyFunctionProperties;
         this.jwtService = jwtService;
         solutionResultNotifier = new SolutionResultNotifier(env, restTemplate);
     }
@@ -66,7 +64,6 @@ public class PTSolverCoordinator {
     private RestTemplate restTemplate;
 
     private MelodicSecurityProperties melodicSecurityProperties;
-    private PenaltyFunctionProperties penaltyFunctionProperties;
 
     private JWTService jwtService;
 
@@ -80,7 +77,7 @@ public class PTSolverCoordinator {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, numThreads).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, melodicSecurityProperties, jwtService, penaltyFunctionProperties)).collect(Collectors.toList());
+                    true, nodeCandidates, melodicSecurityProperties, jwtService)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
             solve(cp, utilityGenerator, seconds);
 
@@ -103,7 +100,7 @@ public class PTSolverCoordinator {
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
             List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
                     .mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
-                            melodicSecurityProperties, jwtService, penaltyFunctionProperties))
+                            melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds);

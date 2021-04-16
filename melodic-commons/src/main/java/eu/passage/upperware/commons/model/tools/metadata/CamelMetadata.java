@@ -19,20 +19,18 @@ public enum CamelMetadata {
     LONGITUDE("longitude", VariableType.LONGITUDE, false, false),
 
     PROVIDER("", VariableType.PROVIDER, false, false),
-
+    
     PRICE("Cost", null, true, false),
-
-    PENALTY("AdapterUtility", null, false, true),
-    RECONFIGURATION_TIME("ReconfigurationTime", null, false, true);
-
+    
+    AFFINITY_AWARENESS("AffinityAwareness", null, false, true),
+    DATA_CENTRE_AWARENESS("DataCentreAwareness", null, false, true),
+    SOURCE_AWARENESS("SourceAwareness", null,false, true),
+  
     public String camelName;
     public VariableType variableType;
     public boolean onNodeCandidate;
-    public boolean reconfigurationPenalty;
-
 
     public static final List<CamelMetadata> VM_LIST = Collections.unmodifiableList(Arrays.asList(CORES, RAM, STORAGE, CARDINALITY, LATITUDE, LONGITUDE));
     public static final List<CamelMetadata> NC_LIST = Collections.unmodifiableList(Collections.singletonList(PRICE));
-    public static final List<CamelMetadata> PENALTY_LIST = Collections.unmodifiableList(Arrays.asList(PENALTY, RECONFIGURATION_TIME));
 
 }

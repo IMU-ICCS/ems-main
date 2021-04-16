@@ -69,186 +69,231 @@ after_script:
   - docker image ls
   - echo '=========================================================================='
 
-build:melodic-upperware:
-  stage: build
+stages:
+  - build-basic-dependencies
+  - build-required-part1
+  - build-required-part2
+  - build-required-part3
+  - build-required-part4
+  - build-required-part5
+  - build-required-part6
+  - build-required-part7
+  - build-required-part8
+  - build
+  - deploy
+  - deploy-solvers-part1
+  - deploy-solvers-part2
+  - deploy-solvers-part3
+  - deploy-solvers-part4
+
+build-basic-dependencies:melodic-upperware:
+  stage: build-basic-dependencies
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/upperware/target
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware/
 
-build:upperware-metamodel:
-  stage: build
+build-required-part1:upperware-metamodel:
+  stage: build-required-part1
   image: $MAVEN_IMAGE
   script:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/upperware_metamodel/target
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware-metamodel/
 
-build:jwt-commons:
-  stage: build
+build-required-part2:jwt-commons:
+  stage: build-required-part2
   image: $MAVEN_IMAGE
   script:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/jwt-commons/target
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/jwt-commons/
 
-build:melodic-commons:
-  stage: build
+build-required-part2:melodic-commons:
+  stage: build-required-part2
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/melodic-commons/target
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-commons/
 
-build:melodic-cache:
-  stage: build
+build-required-part3:melodic-cache:
+  stage: build-required-part3
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/melodic-cache/target
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-cache/
 
-build:penalty-calculator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/penalty-calculator/target
-
-build:utility-generator:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/utility-generator/target
-
-build:cp-solver:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $CP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/cp-solver/target
-
-build:zpp-solver:
-  stage: build
+build-required-part3:zpp-solver:
+  stage: build-required-part3
   image: $MAVEN_IMAGE
   script:
     - $ZPP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
-    paths: 
-    - $CI_PROJECT_DIR/zpp-solver/target
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/zpp-solver/
 
-build:ems:
-  stage: build
+build-required-part3:penalty-calculator:
+  stage: build-required-part3
+  image: $MAVEN_IMAGE
+  script:
+    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/penalty-calculator/
+
+build-required-part3:ems:
+  stage: build-required-part3
   image: $MAVEN_IMAGE
   script:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/event-management/
 
-build:ems-util:
-  stage: build
+
+build-required-part4:ems-util:
+  stage: build-required-part4
   image: $MAVEN_IMAGE
   script:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/util/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/util/
 
-build:ems-broker-client:
-  stage: build
+build-required-part5:utility-generator:
+  stage: build-required-part5
   image: $MAVEN_IMAGE
   script:
-    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
+    - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/broker-client/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/utility-generator/
 
-build:ems-broker-cep:
-  stage: build
+build-required-part5:ems-broker-cep:
+  stage: build-required-part5
   image: $MAVEN_IMAGE
   script:
     - $EMS_BROKER_CEP_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/broker-cep/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-cep/
 
-build:ems-baguette-client:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/event-management/baguette-client/target
-
-build:ems-baguette-server:
-  stage: build
+build-required-part6:ems-baguette-server:
+  stage: build-required-part6
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_SERVER_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/baguette-server/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-server/
 
-build:ems-baguette-client-install:
-  stage: build
+build-required-part6:cp-solver:
+  stage: build-required-part6
+  image: $MAVEN_IMAGE
+  script:
+    - $CP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/
+
+build-required-part7:ems-baguette-client-install:
+  stage: build-required-part7
   image: $MAVEN_IMAGE
   script:
     - $EMS_BAGUETTE_CLIENT_INSTALL_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/baguette-client-install/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client-install/
 
-build:ems-translator:
-  stage: build
+build-required-part7:ems-broker-client:
+  stage: build-required-part7
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-client/
+
+build-required-part7:ems-translator:
+  stage: build-required-part7
   image: $MAVEN_IMAGE
   script:
     - $EMS_TRANSLATOR_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/event-management/translator/target
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/translator/
+
+build-required-part8:ems-baguette-client:
+  stage: build-required-part8
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_BAGUETTE_CLIENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
+
+build:dlms-agent:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $DLMS_AGENT_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/
+
+build:cp-parser:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $CP_PARSER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
+
+build:ems-server:
+  stage: build
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_SERVER_CLI -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/control-service/
 
 deploy:melodic-upperware:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:melodic-upperware
+  dependencies:
+    - build-basic-dependencies:melodic-upperware
   script:
     - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
 
 deploy:upperware-metamodel:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:upperware-metamodel
+  dependencies:
+    - build-required-part1:upperware-metamodel
   script:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
 
@@ -258,57 +303,57 @@ deploy:jwt-commons:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:jwt-commons
+    - build-required-part2:jwt-commons
   script:
     - $DOCKER_CLI $JWT_COMMONS_CLI deploy
 
 deploy:melodic-commons:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:melodic-commons
+  dependencies:
+    - build-required-part2:melodic-commons
   script:
     - $DOCKER_CLI $MELODIC_COMMONS_CLI deploy
 
 deploy:melodic-cache:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:melodic-cache
+  dependencies:
+    - build-required-part3:melodic-cache
   script:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
 
 deploy:penalty-calculator:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:penalty-calculator
+  dependencies:
+    - build-required-part3:penalty-calculator
   script:
     - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
 
@@ -318,7 +363,7 @@ deploy:jwt-server:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -330,31 +375,31 @@ deploy:jwt-server:
 
 deploy:utility-generator:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:utility-generator
+  dependencies:
+    - build-required-part5:utility-generator
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
 deploy:zpp-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies: 
-    - build:zpp-solver
+  dependencies:
+    - build-required-part3:zpp-solver
   script:
     - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
 
@@ -364,7 +409,7 @@ deploy:adapter:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -380,7 +425,7 @@ deploy:cp-generator:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -392,19 +437,22 @@ deploy:cp-generator:
 
 deploy:cp-solver:
   stage: deploy
-  only: 
+  only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
+  dependencies:
+    - build-required-part6:cp-solver
   services:
     - $DOCKER_DIND_SERVICE
-  script: 
+  script:
     - $DOCKER_CLI $CP_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/cpsolver:unknown $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
+    - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
 deploy:ems:
   stage: deploy
@@ -412,12 +460,12 @@ deploy:ems:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems
+    - build-required-part3:ems
   script:
     - $DOCKER_CLI $EMS_CLI deploy
 
@@ -427,12 +475,12 @@ deploy:ems-util:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-util
+    - build-required-part4:ems-util
   script:
     - $DOCKER_CLI $EMS_UTIL_CLI deploy
 
@@ -442,12 +490,12 @@ deploy:ems-broker-client:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-broker-client
+    - build-required-part7:ems-broker-client
   script:
     - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
 
@@ -457,12 +505,12 @@ deploy:ems-broker-cep:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-broker-cep
+    - build-required-part5:ems-broker-cep
   script:
     - $DOCKER_CLI $EMS_BROKER_CEP_CLI deploy
 
@@ -472,12 +520,13 @@ deploy:ems-baguette-client:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-baguette-client
+    - build-required-part8:ems-baguette-client
+    - build-required-part5:ems-broker-cep
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_CLI deploy
 
@@ -487,12 +536,12 @@ deploy:ems-baguette-server:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-baguette-server
+    - build-required-part6:ems-baguette-server
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_SERVER_CLI deploy
 
@@ -502,12 +551,12 @@ deploy:ems-baguette-client-install:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-baguette-client-install
+    - build-required-part7:ems-baguette-client-install
   script:
     - $DOCKER_CLI $EMS_BAGUETTE_CLIENT_INSTALL_CLI deploy
 
@@ -517,12 +566,12 @@ deploy:ems-translator:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build:ems-translator
+    - build-required-part7:ems-translator
   script:
     - $DOCKER_CLI $EMS_TRANSLATOR_CLI deploy
 
@@ -532,7 +581,7 @@ deploy:ems-server:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -542,46 +591,13 @@ deploy:ems-server:
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
-deploy:cp-parser:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - DLMS-deletion
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-solver
-  script:
-    - $DOCKER_CLI $CP_PARSER_CLI -Ddocker.imagePrefix=melodic/ clean install
-
-deploy:gen-solver:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-    - DLMS-deletion
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-solver
-  script: 
-    - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/geneticsolver:unknown $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
-
 deploy:metasolver:
   stage: deploy
   only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -597,7 +613,7 @@ deploy:mq-adapter:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -607,67 +623,13 @@ deploy:mq-adapter:
     - docker tag $LOCAL_REPO/melodic/mq-http-adapter:unknown $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
 
-deploy:nc-solver:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-    - DLMS-deletion
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-solver
-  script: 
-    - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/ncsolver:unknown $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
-
-deploy:pt-solver:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-    - DLMS-deletion
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-solver
-  script: 
-    - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
-
-deploy:mcts-solver:
-  stage: deploy
-  only: 
-    - master
-    - rc3.0
-    - rc3.1
-    - DLMS-deletion
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-solver
-  script: 
-    - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
-
 deploy:gui-backend:
   stage: deploy
   only:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -683,7 +645,7 @@ deploy:functionizer-testing-tool:
     - master
     - rc3.0
     - rc3.1
-    - DLMS-deletion
+    - morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -692,3 +654,83 @@ deploy:functionizer-testing-tool:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
+
+deploy-solvers-part1:nc-solver:
+  stage: deploy-solvers-part1
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc1.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part6:cp-solver
+    - build:cp-parser
+    - build-required-part3:zpp-solver
+  script:
+    - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ncsolver:unknown $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
+
+deploy-solvers-part2:pt-solver:
+  stage: deploy-solvers-part2
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc1.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part6:cp-solver
+    - build:cp-parser
+    - build-required-part3:zpp-solver
+  script:
+    - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
+
+deploy-solvers-part3:mcts-solver:
+  stage: deploy-solvers-part3
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc1.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part6:cp-solver
+    - build:cp-parser
+    - build-required-part3:zpp-solver
+  script:
+    - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
+
+deploy-solvers-part4:gen-solver:
+  stage: deploy-solvers-part4
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc1.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part6:cp-solver
+    - build:cp-parser
+    - build-required-part3:zpp-solver
+  script:
+    - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/geneticsolver:unknown $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
