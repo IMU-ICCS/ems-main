@@ -78,4 +78,8 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
     public String getConfiguration(Member local) {
         return String.format("ssl://%s:61617", local.address().host());
     }
+
+    public void setConfiguration(String newConfig) {
+        log_info("__TestNode at {}: New configuration: {}", address, newConfig);
+    }
 }

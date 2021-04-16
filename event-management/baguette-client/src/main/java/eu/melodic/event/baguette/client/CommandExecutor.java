@@ -753,5 +753,10 @@ public class CommandExecutor {
         public String getConfiguration(Member local) {
             return null;
         }
+
+        @Override
+        public void setConfiguration(String newConfig) {
+            log.warn(">>>>>>>  TODO: BROKER: NEW CONFIG: "+newConfig);
+        }
     }
 }

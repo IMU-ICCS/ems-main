@@ -40,6 +40,7 @@ public class BrokerUtil extends AbstractLogBase {
     protected final static String MESSAGE_APPOINT = "appoint";
     protected final static String MESSAGE_INITIALIZE = "initialize";
     protected final static String MESSAGE_READY = "ready";
+    private static final String MARKER_NEW_CONFIGURATION = "New config: ";
 
     private final Atomix atomix;
     private final ClusterManager clusterManager;
@@ -86,6 +87,12 @@ public class BrokerUtil extends AbstractLogBase {
             String[] part = message.split(" ", 3);
             String brokerId = part[1];
             String newConfig = part[2];
+            // Strip 'New config.' marker
+            if (newConfig.startsWith(MARKER_NEW_CONFIGURATION)) {
+                newConfig = newConfig.substring(MARKER_NEW_CONFIGURATION.length()).trim();
+            } else {
+                log_error("BRU: !!!!  BUG: New configuration not properly marked: {}  !!!!", newConfig);
+            }
             log_info("BRU: **** BROKER: New Broker is ready: {}, New config: {}", brokerId, newConfig);
 
             // If i am not the new Broker then reset our broker status
@@ -111,6 +118,9 @@ public class BrokerUtil extends AbstractLogBase {
             //if (! local.properties().getProperty("configuration", "").equals(newConfig))
             local.properties().setProperty("configuration", newConfig);
             log_info("BRU: Node configuration updated: {}", newConfig);
+            if (callback!=null) {
+                callback.setConfiguration(newConfig);
+            }
         } else
             log_warn("BRU:    BROKER: Unknown message received: {}", message);
     }
@@ -177,7 +187,7 @@ public class BrokerUtil extends AbstractLogBase {
 
         // Notify others that this node is ready to serve as Broker
         String brokerId = local.id().id();
-        String newConf = "New config: " +
+        String newConf = MARKER_NEW_CONFIGURATION +
                 (callback!=null ? callback.getConfiguration(local) : "");
         atomix.getCommunicationService().broadcastIncludeSelf(BROKER_MESSAGE_TOPIC, MESSAGE_READY + " " + brokerId + " " + newConf);
     }
@@ -321,5 +331,6 @@ public class BrokerUtil extends AbstractLogBase {
         void stepDown();
         void backOff();
         String getConfiguration(Member local);
+        void setConfiguration(String newConfig);
     }
 }

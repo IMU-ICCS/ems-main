@@ -76,6 +76,13 @@ public abstract class AbstractLogBase {
         }
     }
 
+    protected void log_error(String formatter, Object...args) {
+        if (log.isErrorEnabled()) {
+            if (logEnabled) log.error(formatter, args);
+            if (outEnabled) err.println(MessageFormatter.arrayFormat(formatter, args).getMessage());
+        }
+    }
+
     protected void log_error(String formatter, Exception ex) {
         if (log.isErrorEnabled()) {
             if (logEnabled) log.error(formatter, ex);
