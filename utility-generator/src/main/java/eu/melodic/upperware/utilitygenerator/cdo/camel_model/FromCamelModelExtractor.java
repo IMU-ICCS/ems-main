@@ -22,7 +22,6 @@ import camel.requirement.impl.OptimisationRequirementImpl;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOService;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
-import eu.melodic.upperware.utilitygenerator.dlms.DLMSUtilityAttribute;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
@@ -43,7 +42,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
-import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool.findDlmsUtilityAttributeType;
 
 @Slf4j
 public class FromCamelModelExtractor {
@@ -105,11 +103,6 @@ public class FromCamelModelExtractor {
         return createNodeCandidatesAttributes(filterVariables(this::isListOfAttributesOfNodeCandidates), true);
     }
 
-    /* dlms utility type */
-    public Collection<DLMSUtilityAttribute> getListOfDlmsUtilityAttributes() {
-        return createDlmsUtilityAttributes(filterVariables(this::isDlmsUtilityAttribute));
-    }
-
     /* software components with unmoveable annotation */
     public Collection<String> getUnmoveableComponentNames() {
         return ((DeploymentTypeModel) CdoTool.getFirstElement(model.getDeploymentModels()))
@@ -144,13 +137,6 @@ public class FromCamelModelExtractor {
                 .collect(Collectors.toList());
     }
 
-    private Collection<DLMSUtilityAttribute> createDlmsUtilityAttributes(Collection<MetricVariableImpl> attributes) {
-        return attributes.stream()
-                .map(variable -> new DLMSUtilityAttribute(variable.getName(), variable.getComponent().getName(),
-                        findDlmsUtilityAttributeType(variable)))
-                .collect(Collectors.toList());
-    }
-
     /* on candidates flag */
     private boolean isListOfAttributesOfNodeCandidates(MetricVariableImpl variable) {
         return CamelMetadataTool.isFromNodeCandidate(variable)
@@ -174,9 +160,5 @@ public class FromCamelModelExtractor {
                 && !variable.isCurrentConfiguration();
     }
 
-    private boolean isDlmsUtilityAttribute(MetricVariableImpl variable) {
-        return CamelMetadataTool.isFromDlmsUtility(variable)
-                && isInFormula(utilityFunctionFormula, variable.getName());
-    }
 
 }

@@ -4,7 +4,6 @@ package groovy.eu.melodic.upperware.utilitygenerator
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.NodeCandidate
@@ -15,7 +14,6 @@ class WithoutMetricModelTest extends Specification{
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
 
-    UtilityGeneratorProperties ugproperties = new UtilityGeneratorProperties()
     MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
 
     JWTService jwtService
@@ -41,8 +39,7 @@ class WithoutMetricModelTest extends Specification{
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
 
-        ugproperties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
-        ugproperties.getUtilityGenerator().setDlmsControllerUrl("")
+
 
         newConfiguration.add(new IntVariableValueDTO(cardinalityApp, 2))
         newConfiguration.add(new IntVariableValueDTO(providerApp, 1))
@@ -65,8 +62,8 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, ugproperties, securityProperties, jwtService)
-properties
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, securityProperties, jwtService)
+
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
         double result1 = utilityGenerator.evaluate(secondConfiguration)
@@ -85,7 +82,7 @@ properties
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModelWithSolution.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, ugproperties, securityProperties, jwtService)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

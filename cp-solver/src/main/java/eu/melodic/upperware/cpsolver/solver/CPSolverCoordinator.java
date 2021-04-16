@@ -11,7 +11,6 @@ import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotification
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.*;
@@ -47,14 +46,12 @@ public class CPSolverCoordinator {
     public CPSolverCoordinator(CPSolver cpSolver, CDOClientX clientX,
                                @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
                                @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService,
-                               UtilityGeneratorProperties utilityGeneratorProperties, Environment env,
-                               RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
+                               Environment env, RestTemplate restTemplate, MelodicSecurityProperties melodicSecurityProperties,
                                JWTService jwtService) {
         this.cpSolver = cpSolver;
         this.clientX = clientX;
         this.memcacheService = memcacheService;
         this.filecacheService = filecacheService;
-        this.utilityGeneratorProperties = utilityGeneratorProperties;
         this.env = env;
         this.restTemplate = restTemplate;
         this.melodicSecurityProperties = melodicSecurityProperties;
@@ -69,7 +66,6 @@ public class CPSolverCoordinator {
     private CacheService<NodeCandidates> memcacheService;
     private CacheService<NodeCandidates> filecacheService;
 
-    private UtilityGeneratorProperties utilityGeneratorProperties;
     private Environment env;
 
     private RestTemplate restTemplate;
@@ -101,7 +97,7 @@ public class CPSolverCoordinator {
                 return;
             }
 
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates, utilityGeneratorProperties,
+            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
                     melodicSecurityProperties, jwtService);
 
             double maxUtility = 0.0;
@@ -243,7 +239,7 @@ public class CPSolverCoordinator {
             }
 
             UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, utilityGeneratorProperties, melodicSecurityProperties, jwtService);
+                    true, nodeCandidates, melodicSecurityProperties, jwtService);
 
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();

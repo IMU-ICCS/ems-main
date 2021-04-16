@@ -4,7 +4,6 @@ import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
 import io.github.cloudiator.rest.model.GeoLocation
@@ -17,7 +16,6 @@ class UtilityGeneratorGenomTest extends Specification{
 
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
-    UtilityGeneratorProperties ugproperties = new UtilityGeneratorProperties()
     MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
 
     JWTService jwtService
@@ -60,8 +58,6 @@ class UtilityGeneratorGenomTest extends Specification{
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
 
-        ugproperties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
-        ugproperties.getUtilityGenerator().setDlmsControllerUrl("")
         jwtService = GroovyMock(JWTService)
 
 
@@ -77,7 +73,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 405 ))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates, ugproperties,securityProperties, jwtService)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates,securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -98,7 +94,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(latitudeName, 47))
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 509))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, ugproperties, securityProperties, jwtService)
+        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, securityProperties, jwtService)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

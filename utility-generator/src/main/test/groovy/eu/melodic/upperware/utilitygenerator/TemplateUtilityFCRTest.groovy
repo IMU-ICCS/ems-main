@@ -3,7 +3,6 @@ package eu.melodic.upperware.utilitygenerator
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
@@ -17,7 +16,6 @@ class TemplateUtilityFCRTest extends Specification{
 
 
     NodeCandidates mockNodeCandidates = GroovyMock(NodeCandidates)
-    UtilityGeneratorProperties utilityGeneratorProperties = new UtilityGeneratorProperties()
     MelodicSecurityProperties securityProperties = new MelodicSecurityProperties()
     JWTService jwtService
 
@@ -81,8 +79,6 @@ class TemplateUtilityFCRTest extends Specification{
         mockNodeCandidates.getCheapest(_, _, _) >> Optional.of(nodeCandidate)
         mockNodeCandidates.get(_) >> nodeCandidatesMap
 
-        utilityGeneratorProperties.setUtilityGenerator(new UtilityGeneratorProperties.UtilityGenerator())
-        utilityGeneratorProperties.getUtilityGenerator().setDlmsControllerUrl("")
 
         jwtService = GroovyMock(JWTService)
 
@@ -153,11 +149,11 @@ class TemplateUtilityFCRTest extends Specification{
 
         UtilityGeneratorApplication utilityGenerator =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService,
+                        mockNodeCandidates, securityProperties, jwtService,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
         UtilityGeneratorApplication utilityGenerator2 =
                 new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, utilityGeneratorProperties, securityProperties, jwtService,
+                        mockNodeCandidates, securityProperties, jwtService,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
                                 new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
                                 new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),

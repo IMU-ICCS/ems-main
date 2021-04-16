@@ -11,7 +11,6 @@ package eu.melodic.upperware.utilitygenerator;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
-import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties;
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -26,18 +25,18 @@ public class UtilityGeneratorApplication {
 
     private UtilityFunctionEvaluator utilityFunctionEvaluator;
 
-    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates,
             MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService) {
         log.info("Creating of the Utility Generator");
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties, melodicSecurityProperties, jwtService);
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, melodicSecurityProperties, jwtService);
     }
 
-    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates, UtilityGeneratorProperties properties,
+    public UtilityGeneratorApplication(String camelModelFilePath, String cpModelFilePath, boolean readFromFile, NodeCandidates nodeCandidates,
             MelodicSecurityProperties melodicSecurityProperties, JWTService jwtService,
             List<Map.Entry<TemplateProvider.AvailableTemplates, Double>> utilityComponents) {
         log.info("Creating template Utility Generator");
         checkWeightsOfUtilityComponents(utilityComponents);
-        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates, properties,
+        utilityFunctionEvaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates,
                 melodicSecurityProperties, jwtService, utilityComponents);
     }
 
