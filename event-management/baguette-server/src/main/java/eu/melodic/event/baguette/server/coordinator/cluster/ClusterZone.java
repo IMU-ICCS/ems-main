@@ -57,7 +57,8 @@ public class ClusterZone {
         this.clusterKeystoreFile = new File(fileName);
         this.clusterKeystoreType = "JKS";
         this.clusterKeystorePassword = RandomStringUtils.randomAlphanumeric(64);
-        log.info("New ClusterZone:  file: {}", clusterKeystoreFile);
+        log.info("New ClusterZone:  zone: {}", id);
+        log.info("                  file: {}", clusterKeystoreFile);
         log.info("                  type: {}", clusterKeystoreType);
         log.debug("              password: {}",
                 StringUtils.isNotBlank(clusterKeystorePassword) ? "Provided" : "Not provided");

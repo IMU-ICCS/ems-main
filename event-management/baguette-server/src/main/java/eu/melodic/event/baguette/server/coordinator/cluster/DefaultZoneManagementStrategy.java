@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server.coordinator.cluster;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.internal.guava.InetAddresses;
 
 import java.net.InetSocketAddress;
 import java.util.UUID;
@@ -38,7 +39,7 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
         log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
         log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
         String zoneName = null;
-        if (StringUtils.isNotBlank(hostname)) {
+        if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
             int p = hostname.indexOf(".");
             if (p>0)
                 zoneName = hostname.substring(p+1);
