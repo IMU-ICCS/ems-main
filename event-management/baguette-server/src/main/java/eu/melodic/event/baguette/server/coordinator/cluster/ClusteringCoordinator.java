@@ -71,8 +71,11 @@ public class ClusteringCoordinator extends NoopCoordinator {
         cfg.putAll(cfgMap = getUpperwareBrokerConfig(server));
         log.trace("ClusteringCoordinator: GLOBAL broker config.: {}", cfgMap);
 
-        cfg.putAll(cfgMap = getGroupingBrokerConfig("PER_CLOUD", csc));
-        log.trace("ClusteringCoordinator: {} broker config.: {}", "PER_CLOUD", cfgMap);
+        // collect configurations per grouping
+        for (String groupingName : server.getGroupingNames()) {
+            cfg.putAll(cfgMap = getGroupingBrokerConfig(groupingName, csc));
+            log.trace("ClusteringCoordinator: {} broker config.: {}", groupingName, cfgMap);
+        }
 
         // prepare Broker-CEP configuration
         log.info("ClusteringCoordinator: --------------------------------------------------");
