@@ -21,7 +21,6 @@ import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import io.atomix.cluster.Member;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -117,8 +116,7 @@ public class CommandExecutor {
         args[0] = "";
 
         if ("EXIT".equals(cmd)) {
-            boolean canExit = false;
-            try { canExit = config.isExitCommandAllowed(); } catch (Exception ignored) {}
+            boolean canExit = config != null && config.isExitCommandAllowed();
             if (canExit) {
                 if (clusterManager != null && clusterManager.isRunning())
                     clusterManager.leaveCluster();
@@ -407,7 +405,7 @@ public class CommandExecutor {
             params.load(new StringReader(paramsStr));
             return params;
         } catch (IOException e) {
-            log.error("Could not unserialize parameters: ", e);
+            log.error("Could not deserialize parameters: ", e);
         }
         return null;
     }*/
@@ -415,7 +413,7 @@ public class CommandExecutor {
     /**
      * Read the object from Base64 string.
      */
-    protected Object unserializeFromString(String s) throws IOException, ClassNotFoundException {
+    protected Object deserializeFromString(String s) throws IOException, ClassNotFoundException {
         byte[] data = Base64.getDecoder().decode(s);
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
         Object o = ois.readObject();
@@ -461,14 +459,14 @@ public class CommandExecutor {
             log.debug("New grouping config.: {}", grouping);
 
         } catch (Exception ex) {
-            log.error("Exception while unserializing received Grouping configuration: ", ex);
+            log.error("Exception while deserializing received Grouping configuration: ", ex);
         }
     }
 
     protected synchronized void setConstants(String configStr) {
         try {
             log.debug("Received serialization of Constants: {}", configStr);
-            HashMap all = (HashMap) unserializeFromString(configStr);
+            HashMap all = (HashMap) deserializeFromString(configStr);
             Map<String, Double> constants = (Map<String, Double>) all.get("constants");
             log.debug("Received Constants: {}", constants);
 
