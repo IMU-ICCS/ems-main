@@ -42,6 +42,7 @@ public interface ServerCoordinator {
     default Map<String,String> getGroupingBrokerConfig(String grouping, ClientShellCommand c) {
         String brokerUrl = c.getClientBrokerUrl();
         String brokerCert = c.getClientCertificate();
+        if (brokerCert==null) brokerCert = "";
         Map<String,String> result = new HashMap<>();
         result.put(grouping, (brokerUrl+"\n"+brokerCert).trim());
         return result;

@@ -79,15 +79,15 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
         // prepare Broker-CEP configuration
         log.info("ClusteringCoordinator: --------------------------------------------------");
-        log.info("ClusteringCoordinator: Sending grouping configurations...");
+        log.info("ClusteringCoordinator: Sending grouping configurations to client {}...\n{}", csc.getId(), cfg);
         sendGroupingConfigurations(cfg, csc, server);
-        log.info("ClusteringCoordinator: Sending grouping configurations... done");
+        log.info("ClusteringCoordinator: Sending grouping configurations to client {}... done", csc.getId());
         sleep(500);
 
         // Set active grouping
         String grouping = "PER_INSTANCE";
         log.info("ClusteringCoordinator: --------------------------------------------------");
-        log.info("ClusteringCoordinator: Setting active grouping: {}", grouping);
+        log.info("ClusteringCoordinator: Setting active grouping of client {}: {}", csc.getId(), grouping);
         csc.setActiveGrouping(grouping);
         log.info("ClusteringCoordinator: --------------------------------------------------");
         sleep(500);
