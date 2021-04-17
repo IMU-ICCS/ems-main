@@ -484,7 +484,7 @@ public class CommandExecutor {
             log.info("Setting broker credentials: username={}, password=****", activeGrouping.getBrokerUsername());
             brokerCepService.setBrokerCredentials(activeGrouping.getBrokerUsername(), activeGrouping.getBrokerPassword());
 
-            log.info("Setting event types: {}", activeGrouping.getEventTypeNames());
+            //log.info("Setting event types: {}", activeGrouping.getEventTypeNames());
             brokerCepService.clearState();
             brokerCepService.addEventTypes(activeGrouping.getEventTypeNames(), EventMap.getPropertyNames(), EventMap.getPropertyClasses());
             //brokerCepService.addEventTypes( activeGrouping.getEventTypeNames(), eu.melodic.event.brokercep.event.MetricEvent.class );
