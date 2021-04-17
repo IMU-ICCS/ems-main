@@ -12,7 +12,7 @@ package eu.melodic.event.translate;
 import camel.core.CamelModel;
 import camel.core.CorePackage;
 import camel.core.NamedElement;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.translate.analyze.ModelAnalyzer;
 import eu.melodic.event.translate.generate.RuleGenerator;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;

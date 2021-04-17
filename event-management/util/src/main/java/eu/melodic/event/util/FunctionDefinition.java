@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.brokercep.cep;
+package eu.melodic.event.util;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -16,9 +16,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-//import lombok.Builder;
-
-//@Builder
 @Getter
 @ToString
 public class FunctionDefinition implements Serializable {

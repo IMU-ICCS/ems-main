@@ -13,7 +13,7 @@ package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;

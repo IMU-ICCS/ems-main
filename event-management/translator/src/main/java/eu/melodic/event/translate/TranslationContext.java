@@ -18,7 +18,7 @@ import camel.deployment.Component;
 import camel.metric.*;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.Event;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.models.interfaces.ems.Monitor;
 import lombok.ToString;

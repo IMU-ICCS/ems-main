@@ -11,6 +11,7 @@ package eu.melodic.event.brokercep.cep;
 
 import com.espertech.esper.client.*;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.util.FunctionDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;

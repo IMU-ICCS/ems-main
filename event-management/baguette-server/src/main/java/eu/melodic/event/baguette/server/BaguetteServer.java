@@ -11,7 +11,7 @@ package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
