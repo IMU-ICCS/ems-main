@@ -11,7 +11,7 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.brokercep.BrokerCepService;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.GroupingConfiguration;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.BrokerClient;
@@ -67,8 +67,8 @@ public class CommandExecutor {
     private PrintStream err;
     private String clientId;
 
-    private Map<String, Grouping> groupings = new HashMap<>();
-    private Grouping activeGrouping;
+    private Map<String, GroupingConfiguration> groupings = new HashMap<>();
+    private GroupingConfiguration activeGrouping;
 
     private Map<String, EventGenerator> eventGenerators = new HashMap<>();
 
@@ -485,7 +485,7 @@ public class CommandExecutor {
     }
 
     protected synchronized void setActiveGrouping(String newGroupingName) {
-        Grouping newGrouping = groupings.get(newGroupingName);
+        GroupingConfiguration newGrouping = groupings.get(newGroupingName);
         if (newGrouping == null) {
             log.error("Grouping specified does not exist: {}", newGroupingName);
         } else {
@@ -717,30 +717,13 @@ public class CommandExecutor {
         }
     }
 
-    @Data
-    private static class Grouping {
-        private String name;
-        private Properties config;
-        private Set<String> eventTypeNames;
-        private Map<String, Set<String>> rules;
-        private Map<String, Set<String>> connections;
-        private Set<FunctionDefinition> functionDefinitions;
-        private Map<String, Double> constants;
-        private String brokerUsername;
-        private String brokerPassword;
-
-        public Grouping(String name) {
-            this.name = name;
-        }
-    }
-
     public static class ClientStatementSubscriber implements StatementSubscriber {
         private String name;
         private String topic;
         private String statement;
         private Set<String> forwardToGroupings;
         private BrokerCepService brokerCep;
-        private Grouping activeGrouping;
+        private GroupingConfiguration activeGrouping;
 
         public String getName() {
             return name;
@@ -758,7 +741,7 @@ public class CommandExecutor {
             return forwardToGroupings;
         }
 
-        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<String> f, BrokerCepService bc, Grouping ag) {
+        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<String> f, BrokerCepService bc, GroupingConfiguration ag) {
             name = n;
             topic = t;
             statement = s;
