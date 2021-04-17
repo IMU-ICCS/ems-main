@@ -23,11 +23,13 @@ import eu.melodic.event.util.PasswordUtil;
 import io.atomix.cluster.Member;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -38,8 +40,18 @@ import java.util.function.Consumer;
 @Slf4j
 @Service
 public class CommandExecutor {
-    private final static String DEFAULT_ID_FILE = "cached-id.properties";
-    private final static String DEFAULT_KEYSTORE_DIR = "conf";
+
+    private static String getConfigDir() {
+        String confDir = System.getenv("MELODIC_CONFIG_DIR");
+        if (StringUtils.isBlank(confDir)) confDir = System.getProperty("MELODIC_CONFIG_DIR");
+        if (StringUtils.isBlank(confDir)) confDir = "conf";
+        return confDir;
+    }
+
+    private final static String DEFAULT_CONF_DIR = getConfigDir();
+    private final static String DEFAULT_ID_FILE = DEFAULT_CONF_DIR + "/cached-id.properties";
+    private static final int DEFAULT_ID_LENGTH = 32;
+    private final static String DEFAULT_KEYSTORE_DIR = DEFAULT_CONF_DIR;
 
     @Autowired
     private BrokerCepService brokerCepService;
@@ -71,11 +83,28 @@ public class CommandExecutor {
     private String clusterKeystorePassword;
 
 
+    public CommandExecutor() {
+        initializeClientId();
+    }
+
     public void setConfiguration(BaguetteClientProperties config) {
         log.trace("CommandExecutor: brokerCepService: {}", brokerCepService);
         this.config = config;
         this.idFile = DEFAULT_ID_FILE;
-        this.clientId = config.getClientId();
+        initializeClientId();
+    }
+
+    private void initializeClientId() {
+        if (config!=null && StringUtils.isNotBlank(config.getClientId())) {
+            clientId = config.getClientId().trim();
+            saveClientId(clientId);
+        }
+        if (StringUtils.isBlank(clientId))
+            clientId = loadCachedClientId();
+        if (StringUtils.isBlank(clientId)) {
+            this.clientId = RandomStringUtils.randomAlphanumeric(DEFAULT_ID_LENGTH);
+            saveClientId(clientId);
+        }
     }
 
     boolean executeCommand(String line, InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
@@ -115,7 +144,7 @@ public class CommandExecutor {
             String id = args[1].trim();
             log.info("SET ID: {}", id);
             // Execute command
-            setClientId(id);
+            saveClientId(id);
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -602,33 +631,70 @@ public class CommandExecutor {
         }
     }
 
-    protected synchronized void setClientId(String id) {
+    protected synchronized String loadCachedClientId() {
+        // Get the 'cached client id' file name
+        if (idFile == null)
+            idFile = DEFAULT_ID_FILE;
+
+        // Check if the cached client id file exists
+        File file = Paths.get(idFile).toFile();
+        if (! file.exists()) { log.warn("loadCachedClientId: Cached client id file not exists: {}", idFile); return null; }
+        if (! file.isFile()) { log.warn("loadCachedClientId: Cached client id file is not a regular file: {}", idFile); return null; }
+
+        // Load contents of existing 'client id' file
+        try (InputStream in = new FileInputStream(idFile)) {
+
+            Properties p = new Properties();
+            p.load(in);
+
+            // Get cached client id (if any)
+            String id = p.getProperty("client.id", null);
+            if (StringUtils.isNotBlank(id)) {
+                id = id.trim();
+                log.info("loadCachedClientId: Used cached Client Id: {}", clientId);
+                return id;
+            } else {
+                log.warn("loadCachedClientId: No cached Client id found in file: {}", idFile);
+            }
+        } catch (Exception e) {
+            log.warn("loadCachedClientId: EXCEPTION while loading cached Client id from file: {}\n", idFile, e);
+        }
+        return null;
+    }
+
+    protected synchronized void saveClientId(String id) {
         // Check new id value
-        if (StringUtils.isEmpty(id)) {
+        if (StringUtils.isBlank(id)) {
             log.error("SET-ID: ERROR: Empty id: {}", id);
             err.println("ERROR Empty id: " + id);
             return;
         }
-        clientId = id;
+        clientId = id.trim();
 
         // Load contents of existing 'id file' (if any)
-        if (idFile == null)
+        if (StringUtils.isBlank(idFile))
             idFile = DEFAULT_ID_FILE;
         Properties p = new Properties();
-        try (InputStream in = new FileInputStream(idFile)) {
-            p.load(in);
-        } catch (Exception ignored) { }
+        // Check if the cached client id file exists
+        File file = Paths.get(idFile).toFile();
+        if (file.exists() && file.isFile()) {
+            try (InputStream in = new FileInputStream(idFile)) {
+                p.load(in);
+            } catch (Exception e) {
+                log.warn("saveClientId: EXCEPTION while reading cached Client id from file: {}\n", idFile, e);
+            }
+        } else {
+            log.warn("saveClientId: Cached client id file not exists or is not a regular file: {}", idFile);
+        }
 
-        // Update 'id file' contents in-memory
+        // Update 'id' in file contents in-memory
         p.setProperty("client.id", id);
 
         // Store new contents into 'id file'
-        try {
-            try (OutputStream os = new FileOutputStream(idFile)) {
-                p.store(os, "# Saved on " + new java.util.Date());
-            }
+        try (OutputStream os = new FileOutputStream(idFile)) {
+            p.store(os, null);
             log.info("ID SET to: {}", id);
-            out.println("ID SET");
+            if (out!=null) out.println("ID SET");
         } catch (Exception ex) {
             log.error("SET-ID: EXCEPTION: ", ex);
             err.println("ERROR While storing id to file: " + ex);
