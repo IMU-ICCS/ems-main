@@ -424,38 +424,14 @@ public class CommandExecutor {
     protected synchronized void setGroupingConfiguration(String configStr) {
         try {
             log.debug("Received serialization of Grouping configuration: {}", configStr);
-            HashMap all = (HashMap) unserializeFromString(configStr);
-            log.debug("Received Grouping configuration: {}", all);
-
-            String groupingName = (String) all.get("grouping");
-            Properties config = (Properties) all.get("config");
-            HashSet<String> eventTypes = (HashSet<String>) all.get("eventTypes");
-            Map<String, Set<String>> rules = (Map<String, Set<String>>) all.get("rules");
-            Map<String, Set<String>> connections = (Map<String, Set<String>>) all.get("connections");
-            Set<FunctionDefinition> functionDefs = (Set<FunctionDefinition>) all.get("function-definitions");
-            Map<String, Double> constants = (Map<String, Double>) all.get("constants");
-            String username = (String) all.get("common-broker-username");
-            String password = (String) all.get("common-broker-password");
-
-            log.info("SETTING GROUPING CONFIGURATION: grouping={}, configuration={}, event-types={}, rules={}, connections={}, constants={}, function-definitions={}",
-                    groupingName, config, eventTypes, rules, connections, constants, functionDefs);
-            Grouping grouping = groupings.get(groupingName);
-            if (grouping == null) {
-                grouping = new Grouping(groupingName);
-                synchronized (groupings) {
-                    groupings.put(groupingName, grouping);
-                }
-            } else {
-                log.debug("Old grouping config.: {}", grouping);
+            GroupingConfiguration grouping = (GroupingConfiguration) deserializeFromString(configStr);
+            GroupingConfiguration oldGrouping = groupings.get(grouping.getName());
+            if (oldGrouping!=null) {
+                log.debug("Old grouping config.: {}", oldGrouping);
             }
-            grouping.setConfig(config);
-            grouping.setEventTypeNames(eventTypes);
-            grouping.setRules(rules);
-            grouping.setConnections(connections);
-            grouping.setConstants(constants);
-            grouping.setFunctionDefinitions(functionDefs);
-            grouping.setBrokerUsername(username);
-            grouping.setBrokerPassword(password);
+            synchronized (groupings) {
+                groupings.put(grouping.getName(), grouping);
+            }
             log.debug("New grouping config.: {}", grouping);
 
         } catch (Exception ex) {
@@ -480,7 +456,7 @@ public class CommandExecutor {
             }
 
         } catch (Exception ex) {
-            log.error("Exception while unserializing received Constants: ", ex);
+            log.error("Exception while deserializing received Constants: ", ex);
         }
     }
 

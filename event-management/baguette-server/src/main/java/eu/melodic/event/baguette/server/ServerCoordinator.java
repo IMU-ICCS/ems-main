@@ -9,6 +9,8 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.util.GroupingConfiguration;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -34,8 +36,8 @@ public interface ServerCoordinator {
 
     default void sendGroupingConfigurations(Properties cfg, ClientShellCommand c, BaguetteServer server) {
         for (String grouping : server.getGroupingNames()) {
-            GroupingConfiguration gc = new GroupingConfiguration(grouping, cfg, server);
-            c.sendGroupingConfiguration(grouping, gc);
+            GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, cfg, server);
+            c.sendGroupingConfiguration(gc);
         }
     }
 

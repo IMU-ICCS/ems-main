@@ -326,24 +326,20 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     public void sendGroupingConfiguration(String grouping, Properties config, BaguetteServer server) {
-        GroupingConfiguration gc = new GroupingConfiguration(grouping, config, server);
-        sendGroupingConfiguration(grouping, gc);
+        GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, config, server);
+        sendGroupingConfiguration(gc);
     }
 
-    public void sendGroupingConfiguration(String grouping, GroupingConfiguration gc) {
+    public void sendGroupingConfiguration(GroupingConfiguration gc) {
+        String grouping = gc.getName();
         log.debug("sendGroupingConfiguration: id={}, grouping={}, grouping-config={}", id, grouping, gc);
-        if (grouping != null && !grouping.trim().isEmpty()) {
-            HashMap<String, Object> all = new HashMap<>(gc.getConfigurationMap());
-            log.debug("sendGroupingConfiguration: Grouping configuration for {}: {}", grouping, all);
-
-            try {
-                String allStr = serializeToString(all);
-                log.info("sendGroupingConfiguration: Serialization of Grouping configuration for {}: {}", grouping, allStr);
-                sendToClient("SET-GROUPING-CONFIG " + allStr);
-            } catch (IOException ex) {
-                log.error("sendGroupingConfiguration: Exception while serializing Grouping configuration: ", ex);
-                log.error("sendGroupingConfiguration: SET-GROUPING-CONFIG command *NOT* sent to client");
-            }
+        try {
+            String allStr = serializeToString(gc);
+            log.info("sendGroupingConfiguration: Serialization of Grouping configuration for {}: {}", grouping, allStr);
+            sendToClient("SET-GROUPING-CONFIG " + allStr);
+        } catch (IOException ex) {
+            log.error("sendGroupingConfiguration: Exception while serializing Grouping configuration: ", ex);
+            log.error("sendGroupingConfiguration: SET-GROUPING-CONFIG command *NOT* sent to client");
         }
     }
 
