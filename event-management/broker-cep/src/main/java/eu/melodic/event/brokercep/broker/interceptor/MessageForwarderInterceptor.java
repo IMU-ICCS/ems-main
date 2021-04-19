@@ -138,7 +138,7 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
                 }
             }
             if (forwardDestinations.size()==0) {
-                log.warn("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
+                log.debug("MessageQueueProcessor: No forward destinations specified. Discarding message: {}", m);
                 return false;
             }
             return true;
