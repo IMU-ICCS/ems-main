@@ -138,6 +138,15 @@ public class CommandExecutor {
             // Respond to server with OK
             out.println("OK");
 
+        } else if ("GET-ID".equals(cmd)) {
+            log.info("GET ID: {}", clientId);
+            out.println(clientId);
+        } else if ("SET-ID".equals(cmd)) {
+            if (args.length < 2) return false;
+            String id = args[1].trim();
+            log.info("SET ID: {}", id);
+            saveClientId(id);
+
         } else if ("WRITE-CONFIGURATION".equals(cmd)) {
             String fileName = (args.length>1) ? args[1].trim() : DEFAULT_CONF_DIR + "/config-export.json";
             ConfigurationContents contents = ConfigurationContents.builder()
@@ -178,15 +187,6 @@ public class CommandExecutor {
 
             log.info("Current configuration loaded from file: {}", file.getPath());
 
-        } else if ("GET-ID".equals(cmd)) {
-            log.info("GET ID: {}", clientId);
-            out.println(clientId);
-        } else if ("SET-ID".equals(cmd)) {
-            if (args.length < 2) return false;
-            String id = args[1].trim();
-            log.info("SET ID: {}", id);
-            // Execute command
-            saveClientId(id);
         } else if ("LIST-GROUPING-CONFIGS".equals(cmd)) {
             log.info("Configured groupings: {}", groupings.keySet());
             out.println(String.join(", ", groupings.keySet()));
