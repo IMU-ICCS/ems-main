@@ -12,15 +12,13 @@ package eu.melodic.event.baguette.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.brokercep.BrokerCepService;
-import eu.melodic.event.util.GroupingConfiguration;
+import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
-import eu.melodic.event.util.GROUPING;
-import eu.melodic.event.util.KeystoreUtil;
-import eu.melodic.event.util.PasswordUtil;
+import eu.melodic.event.util.*;
 import io.atomix.cluster.Member;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
@@ -72,8 +72,11 @@ public class CommandExecutor {
     private PrintStream err;
     private String clientId;
 
-    private Map<String, GroupingConfiguration> groupings = new HashMap<>();
+    private Map<String, GroupingConfiguration> groupings = new LinkedHashMap<>();
     private GroupingConfiguration activeGrouping;
+
+    private final AtomicLong subscriberCount = new AtomicLong(0);
+    private final Map<String,List<ClientStatementSubscriber>> groupingsSubscribers = new LinkedHashMap<>();
 
     private Map<String, EventGenerator> eventGenerators = new HashMap<>();
 
@@ -172,8 +175,7 @@ public class CommandExecutor {
             log.debug("Configuration read from file: {}\n{}", file, config);
 
             // Clear current state
-            clearActiveGrouping();
-            groupings.clear();
+            clearGroupings();
 
             // Initialize current state
             String newId = config.getClientId();
@@ -191,21 +193,32 @@ public class CommandExecutor {
         } else if ("LIST-GROUPING-CONFIGS".equals(cmd)) {
             log.info("Configured groupings: {}", groupings.keySet());
             out.println(String.join(", ", groupings.keySet()));
+        } else if ("CLEAR-GROUPING-CONFIGS".equals(cmd)) {
+            clearGroupings();
+        } else if ("GET-GROUPING-CONFIG".equals(cmd)) {
+            if (args.length < 2) return false;
+            GroupingConfiguration grouping = groupings.get(args[1].trim());
+            log.info("{}", grouping);
+            out.printf("%s\n", grouping);
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
             log.trace("grouping-config-base64: {}", configStr);
             setGroupingConfiguration(configStr);
-        } else if ("SET-CONSTANTS".equals(cmd)) {
-            if (args.length < 2) return false;
-            String configStr = String.join(" ", args).trim();
-            log.trace("constants-base64: {}", configStr);
-            setConstants(configStr);
+        } else if ("GET-ACTIVE-GROUPING".equals(cmd)) {
+            String activeGroupingName = activeGrouping != null ? activeGrouping.getName() : "-";
+            log.info("Active grouping: {}", activeGroupingName);
+            out.println(activeGroupingName);
         } else if ("SET-ACTIVE-GROUPING".equals(cmd)) {
             if (args.length < 2) return false;
             String newGrouping = String.join(" ", args).trim();
             log.trace("new-active-grouping: {}", newGrouping);
             setActiveGrouping(newGrouping);
+        } else if ("SET-CONSTANTS".equals(cmd)) {
+            if (args.length < 2) return false;
+            String configStr = String.join(" ", args).trim();
+            log.trace("constants-base64: {}", configStr);
+            setConstants(configStr);
         } else if ("SEND-LOCAL-EVENT".equals(cmd)) {
             if (args.length < 2) return false;
             String destination = args[1].trim();
@@ -508,112 +521,270 @@ public class CommandExecutor {
         }
     }
 
+    protected synchronized void clearGroupings() {
+        // Clear state of all groupings
+        log.info("Old active grouping: {}", activeGrouping!=null ? activeGrouping.getName(): null);
+        log.info("Clearing all groupings...");
+        activeGrouping = null;
+        brokerCepService.clearState();
+        groupingsSubscribers.clear();
+        log.info("Clearing all groupings completed");
+    }
+
     protected synchronized void setActiveGrouping(String newGroupingName) {
+        // Checking if new grouping is valid
         GroupingConfiguration newGrouping = groupings.get(newGroupingName);
         if (newGrouping == null) {
-            log.error("Grouping specified does not exist: {}", newGroupingName);
+            log.error("setActiveGrouping: Grouping specified does not exist: {}", newGroupingName);
+            return;
+        }
+        if ("GLOBAL".equalsIgnoreCase(newGroupingName)) {
+            throw new IllegalArgumentException("BUG: GLOBAL grouping configuration must have never been set");
+        }
+
+        // Figure out if we need to add or remove groupings
+        boolean addGroupings = true;
+        String activeGroupingName = "()";
+        if (activeGrouping != null) {
+            activeGroupingName = activeGrouping.getName();
+            int diff = GROUPING.valueOf(activeGroupingName).compareTo(GROUPING.valueOf(newGroupingName));
+            log.trace("setActiveGrouping: Grouping difference: {}", diff);
+            if (diff == 0) {
+                log.info("No need to switch grouping. Active grouping is: {}", newGroupingName);
+                return;
+            }
+            addGroupings = diff > 0;
+        }
+
+        // Add or Remove groupings between active and new grouping
+        if (addGroupings) {
+            log.info("Need to add groupings from {} to {}", activeGroupingName, newGroupingName);
+            addGroupingsTill(newGroupingName);
         } else {
-            // Clear actions of "old" active grouping
-            String oldGroupingName = "()";
-            if (activeGrouping != null) {
-                oldGroupingName = activeGrouping.getName();
-                log.info("Old active grouping: {}", oldGroupingName);
-            } else {
-                log.info("No previous active grouping");
-            }
+            log.info("Need to remove groupings from {} to {}", activeGroupingName, newGroupingName);
+            removeGroupingsTill(newGroupingName);
+        }
 
-            // Apply "new" active group settings
-            activeGrouping = newGrouping;
-            log.info("New active grouping: {}", newGrouping.getName());
+        // Set broker credentials of new grouping
+        log.info("Setting broker credentials: username={}, password=****", newGrouping.getBrokerUsername());
+        brokerCepService.setBrokerCredentials(newGrouping.getBrokerUsername(), newGrouping.getBrokerPassword());
 
-            String activeGroupingName = newGrouping.getName();
-            Properties config = activeGrouping.getConfig();
+        // Complete active grouping switch
+        activeGrouping = groupings.get(newGroupingName);
+        log.info("Active grouping switch completed: {} -> {}", activeGroupingName, newGroupingName);
+    }
 
-            log.info("Setting broker credentials: username={}, password=****", activeGrouping.getBrokerUsername());
-            brokerCepService.setBrokerCredentials(activeGrouping.getBrokerUsername(), activeGrouping.getBrokerPassword());
+    protected synchronized void addGroupingsTill(String newGroupingName) {
+        // Get available grouping names (in reverse order, i.e. from PER_INSTANCE to PER_CLOUD)
+        List<String> availableGroupings = GROUPING.getNames().stream()
+                .filter(g -> groupings.containsKey(g)).collect(Collectors.toList());
+        Collections.reverse(availableGroupings);
+        log.info("addGroupingsTill: Available grouping configurations: {}", availableGroupings);
 
-            //log.info("Setting event types: {}", activeGrouping.getEventTypeNames());
-            brokerCepService.clearState();
-            brokerCepService.addEventTypes(activeGrouping.getEventTypeNames(), EventMap.getPropertyNames(), EventMap.getPropertyClasses());
-            //brokerCepService.addEventTypes( activeGrouping.getEventTypeNames(), eu.melodic.event.brokercep.event.MetricEvent.class );
+        // Get groupings between active and new grouping
+        int start = 0;
+        if (activeGrouping != null) {
+            start = availableGroupings.indexOf(activeGrouping.getName()) + 1;
+            log.trace("addGroupingsTill: active-grouping-index + 1: {}", start);
+        }
+        int end = availableGroupings.indexOf(newGroupingName)+1;
+        log.trace("addGroupingsTill: new-grouping-index + 1: {}", end);
+        log.trace("addGroupingsTill: grouping-range: [{}..{})", start, end);
+        List<String> groupingsToAdd = availableGroupings.subList(start, end);
+        log.debug("addGroupingsTill: groupings-to-add: {}",groupingsToAdd);
 
-            log.info("Setting constants: {}", activeGrouping.getConstants());
-            brokerCepService.setConstants(activeGrouping.getConstants());
+        // Collect and merge settings of groupings between active and new
+        Set<String> eventTypes = new LinkedHashSet<>();
+        Map<String,Double> constants = new HashMap<>();
+        Set<FunctionDefinition> functionDefinitions = new LinkedHashSet<>();
+        Map<String,Map<String, Set<String>>> rules = new LinkedHashMap<>();
+        for (String groupingName : groupingsToAdd) {
+            log.debug("addGroupingsTill: Merging settings of grouping: {}", groupingName);
+            GroupingConfiguration grouping = groupings.get(groupingName);
 
-            log.info("Setting function definitions: {}", activeGrouping.getFunctionDefinitions());
-            brokerCepService.addFunctionDefinitions(activeGrouping.getFunctionDefinitions());
+            // Add event types
+            Set<String> et = grouping.getEventTypeNames();
+            eventTypes.addAll(et);
+            log.trace("addGroupingsTill: + Grouping event types: {}", et);
+            // Add constants
+            Map<String, Double> con = grouping.getConstants();
+            constants.putAll(con);
+            log.trace("addGroupingsTill: +   Grouping constants: {}", con);
+            // Add function definitions
+            Set<FunctionDefinition> fd = grouping.getFunctionDefinitions();
+            functionDefinitions.addAll(fd);
+            log.trace("addGroupingsTill: +  Grouping func. defs: {}", fd);
+            // List cep rules
+            Map<String, Set<String>> rl = grouping.getRules();
+            rules.put(groupingName, rl);
+            log.trace("addGroupingsTill: +    Grouping rule map: {}", rl);
+        }
+        log.debug("addGroupingsTill: = Collected event types: {}", eventTypes);
+        log.debug("addGroupingsTill: =   Collected constants: {}", constants);
+        log.debug("addGroupingsTill: =  Collected func. defs: {}", functionDefinitions);
+        log.debug("addGroupingsTill: =   Collected rule maps: {}", rules);
 
-            if (activeGrouping.getRules() != null) {
-                log.info("Adding level EPL statements: {}", activeGrouping.getRules());
-                int cnt = 0;
-                for (Map.Entry<String, Set<String>> topicRules : activeGrouping.getRules().entrySet()) {
+        // Apply merged settings
+        brokerCepService.addEventTypes(eventTypes, EventMap.getPropertyNames(), EventMap.getPropertyClasses());
+        brokerCepService.setConstants(constants);
+        brokerCepService.addFunctionDefinitions(functionDefinitions);   //XXX: SOS: CHECK if func.def. replacement occurs
+        log.warn("!!!!!!!!!!!!!!!!  IMPORTANT NOTE:\n", new RuntimeException("XXX: SOS: CHECK if func.def. replacement occurs"));
+
+        // Clear forward-to-groupings settings of (old) active grouping
+        clearActiveGroupingForwards();
+
+        // Apply forward settings of new grouping
+        Map<String, Set<String>> lastRuleMap = (rules.size() > 0) ? rules.get(rules.size() - 1) : null;
+        rules.forEach((groupingName, grpRules) -> {
+            log.debug("addGroupingsTill: Processing rule map: {}", grpRules);
+            if (grpRules != null) {
+                boolean isLast = grpRules == lastRuleMap;
+                if (isLast) log.debug("addGroupingsTill: It is the last rule map");
+                for (Map.Entry<String, Set<String>> topicRules : grpRules.entrySet()) {
                     String topic = topicRules.getKey();
-                    log.info(" + Adding EPL statements for topic: {}", topic);
+                    log.info("addGroupingsTill: Processing settings of topic: {}", topic);
                     for (String rule : topicRules.getValue()) {
-                        // Build forward-to-groupings set for current EPL statement
-                        Set<String> forwardToGroupings = new HashSet<>();
-                        if (activeGrouping.getConnections() != null) {
-                            log.info(" + Connections for topic: {} --> {}", topic, activeGrouping.getConnections().get(topic));
-                            if (activeGrouping.getConnections() != null && activeGrouping.getConnections().get(topic) != null) {
-                                for (String fwdToGrouping : activeGrouping.getConnections().get(topic)) {
-                                    String brokerUrl = config.getProperty(fwdToGrouping).split("\n")[0];    // the remaining lines are Broker Certificate
-                                    forwardToGroupings.add(brokerUrl);
-                                }
-                            }
-                        }
-
                         // Add EPL statement subscriber
-                        String subscriberName = "Subscriber_" + cnt++;
-                        log.info(" + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}, forward-to-groupings={}", subscriberName, topic, rule, forwardToGroupings);
+                        String subscriberName = "Subscriber_" + subscriberCount.getAndIncrement();
+                        log.info("addGroupingsTill: + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}", subscriberName, topic, rule);
+                        ClientStatementSubscriber statementSubscriber = new ClientStatementSubscriber();
                         brokerCepService.getCepService().addStatementSubscriber(
-                                new ClientStatementSubscriber().setNameAndStatement(subscriberName, topic, rule, forwardToGroupings, brokerCepService, activeGrouping)
+                                statementSubscriber.setNameAndStatement(subscriberName, topic, rule, Collections.emptySet(), brokerCepService)
                         );
+                        groupingsSubscribers.computeIfAbsent(groupingName, s -> new LinkedList<>()).add(statementSubscriber);
                     }
-                }
-            } else {
-                log.warn("No EPL statements found for active grouping: {}", activeGrouping);
-            }
-
-            // Update truststore with per-grouping broker certificates
-            if (brokerCepService.getBrokerTruststore()==null) {
-                log.debug("Broker-CEP trust store has not been initialized. Probably SSL is disabled.");
-                log.debug("Broker URL: {}", brokerCepService.getBrokerCepProperties().getBrokerUrl());
-            } else {
-                try {
-                    log.debug("Truststore certificates before update: {}",
-                            KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
-                    for (String g : GROUPING.getNames()) {
-                        String groupingBrokerCfg = config.getProperty(g);
-                        if (groupingBrokerCfg != null) {
-                            if (groupingBrokerCfg.indexOf("\n") > 0) {
-                                String brokerUrl = groupingBrokerCfg.substring(0, groupingBrokerCfg.indexOf("\n")).trim();
-                                String brokerCert = groupingBrokerCfg.substring(groupingBrokerCfg.indexOf("\n")).trim();
-                                String host = null;
-                                if (StringUtils.isNotBlank(brokerUrl))
-                                    host = StringUtils.substringBetween(brokerUrl.trim(), "://", ":");
-                                log.debug("Grouping host: {}", host);
-                                if (StringUtils.isNotEmpty(brokerCert)) {
-                                    log.info("Updating broker certificate to truststore for Grouping: {}", g);
-                                    brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
-                                    log.info("Updating broker certificate to truststore for Grouping Host: {}", host);
-                                    brokerCepService.addOrReplaceCertificateInTruststore(host, brokerCert);
-                                } else {
-                                    log.info("No broker PEM certificate provided for Grouping: {}", g);
-                                }
-                            }
-                        } else {
-                            log.info("Removing broker certificate from truststore for Grouping (no new certificate provided): {}", g);
-                            brokerCepService.deleteCertificateFromTruststore(g);
-                        }
-                    }
-                    log.debug("Truststore certificates after update: {}",
-                            KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
-                } catch (Exception ex) {
-                    log.error("EXCEPTION while updating Trust store: ", ex);
+                    log.trace("addGroupingsTill: Added to groupingsSubscribers: {}", groupingsSubscribers);
                 }
             }
+        });
+        log.trace("addGroupingsTill: Final groupingsSubscribers: {}", groupingsSubscribers);
 
-            log.info("Active grouping switch completed: {} -> {}", oldGroupingName, newGroupingName);
+        // Set forward-to-topic settings of new grouping (active to-be)
+        setGroupingForwards(newGroupingName);
+
+        //XXX: CHECK if it's ok
+        updateCertificates();
+    }
+
+    protected synchronized void removeGroupingsTill(String newGroupingName) {
+        // Get available grouping names (in normal order, i.e. from PER_CLOUD to PER_INSTANCE)
+        List<String> availableGroupings = GROUPING.getNames().stream()
+                .filter(g -> groupings.containsKey(g)).collect(Collectors.toList());
+        log.info("removeGroupingsTill: Available grouping configurations: {}", availableGroupings);
+
+        // Get groupings between active and new grouping
+        int start = availableGroupings.indexOf(activeGrouping.getName());
+        log.trace("removeGroupingsTill: active-grouping-index: {}", start);
+
+        int end = availableGroupings.indexOf(newGroupingName);
+        log.trace("removeGroupingsTill: new-grouping-index: {}", end);
+        log.trace("removeGroupingsTill: grouping-range: [{}..{})", start, end);
+        List<String> groupingsToRemove = availableGroupings.subList(start, end);
+        log.debug("removeGroupingsTill: groupings-to-remove: {}",groupingsToRemove);
+
+        // Clear forward-to-topic settings of (old) active grouping
+        clearActiveGroupingForwards();
+
+        // Remove subscribers and topics of groupings higher than new grouping
+        LinkedHashSet<String> eventTypes = new LinkedHashSet<>();
+        final CepService cepService = brokerCepService.getCepService();
+        for (String groupingName : groupingsToRemove) {
+            log.debug("removeGroupingsTill: Clearing settings of grouping: {}", groupingName);
+            GroupingConfiguration grouping = groupings.get(groupingName);
+            eventTypes.addAll(grouping.getEventTypeNames());
+            groupingsSubscribers.get(groupingName).forEach(cepService::removeStatementSubscriber);
+            groupingsSubscribers.remove(groupingName);
+        }
+        eventTypes.forEach(s->brokerCepService.getBrokerCepBridge().removeConsumerOf(s));
+
+        // Set forward-to-topic settings of new grouping (active to-be)
+        setGroupingForwards(newGroupingName);
+    }
+
+    private void clearActiveGroupingForwards() {
+        if (activeGrouping==null) {
+            log.debug("clearActiveGroupingForwards: No active grouping");
+            return;
+        }
+        log.debug("clearActiveGroupingForwards: Clearing forward-to-grouping settings of active grouping: {}", activeGrouping.getName());
+        log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
+        for (ClientStatementSubscriber subscriber : groupingsSubscribers.get(activeGrouping.getName())) {
+            log.debug("clearActiveGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
+                    subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
+            subscriber.setForwardToGroupings(Collections.emptySet());
+        }
+        log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: AFTER: {}", groupingsSubscribers);
+    }
+
+    private void setGroupingForwards(String newGroupingName) {
+        GroupingConfiguration newGrouping = groupings.get(newGroupingName);
+        final Map<String,Set<BrokerConnectionConfig>> topicFwdUrls = new HashMap<>();
+        for (Map.Entry<String, Set<String>> topicRules : newGrouping.getRules().entrySet()) {
+            String topic = topicRules.getKey();
+            log.info("setGroupingForwards: Processing settings of topic: {}", topic);
+
+            // Build forward-to-groupings set for current topic
+            Set<BrokerConnectionConfig> forwardToGroupings = new HashSet<>();
+            Set<String> connections = newGrouping.getConnections().get(topic);
+            log.info("setGroupingForwards: + Adding connections for topic: {} --> {}", topic, connections);
+            if (connections != null) {
+                for (String fwdToGrouping : connections) {
+                    BrokerConnectionConfig fwdBrokerConn = newGrouping.getBrokerConnections().get(fwdToGrouping);
+                    forwardToGroupings.add(fwdBrokerConn);
+                }
+            }
+            log.info("setGroupingForwards: = forwardToGroupings of topic {}: {}", topic, forwardToGroupings);
+            topicFwdUrls.put(topic, forwardToGroupings);
+        }
+        log.trace("setGroupingForwards: Update groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
+        groupingsSubscribers.get(newGroupingName).forEach(subscriber -> {
+            Set<BrokerConnectionConfig> fwdUrls = topicFwdUrls.get(subscriber.getTopic());
+            if (fwdUrls!=null) subscriber.setForwardToGroupings(fwdUrls);
+        });
+        log.trace("setGroupingForwards: Update groupingsSubscribers: AFTER: {}", groupingsSubscribers);
+    }
+
+    protected void updateCertificates() {
+        if (brokerCepService.getBrokerTruststore()==null) {
+            log.debug("Broker-CEP trust store has not been initialized. Probably SSL is disabled.");
+            log.debug("Broker URL: {}", brokerCepService.getBrokerCepProperties().getBrokerUrl());
+            return;
+        }
+        if (activeGrouping==null) {
+            log.debug("No active grouping. Broker-CEP trust store will not be updated.");
+            return;
+        }
+
+        // Update truststore with per-grouping broker certificates
+        try {
+            log.debug("Truststore certificates before update: {}",
+                    KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
+            for (String g : GROUPING.getNames()) {
+                BrokerConnectionConfig groupingBrokerCfg = activeGrouping.getBrokerConnections().get(g);
+                if (groupingBrokerCfg != null) {
+                    String brokerUrl = groupingBrokerCfg.getUrl().trim();
+                    String brokerCert = groupingBrokerCfg.getCertificate().trim();
+                    String host = null;
+                    if (StringUtils.isNotBlank(brokerUrl))
+                        host = StringUtils.substringBetween(brokerUrl.trim(), "://", ":");
+                    log.debug("Grouping host: {}", host);
+                    if (StringUtils.isNotEmpty(brokerCert)) {
+                        log.info("Updating broker certificate to truststore for Grouping: {}", g);
+                        brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
+                        log.info("Updating broker certificate to truststore for Grouping Host: {}", host);
+                        brokerCepService.addOrReplaceCertificateInTruststore(host, brokerCert);
+                    } else {
+                        log.info("No broker PEM certificate provided for Grouping: {}", g);
+                    }
+                } else {
+                    log.info("Removing broker certificate from truststore for Grouping (no new certificate provided): {}", g);
+                    brokerCepService.deleteCertificateFromTruststore(g);
+                }
+            }
+            log.debug("Truststore certificates after update: {}",
+                    KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
+        } catch (Exception ex) {
+            log.error("EXCEPTION while updating Trust store: ", ex);
         }
     }
 
@@ -750,7 +921,6 @@ public class CommandExecutor {
         @Setter
         private Set<BrokerConnectionConfig> forwardToGroupings;
         private BrokerCepService brokerCep;
-        private GroupingConfiguration activeGrouping;
 
         public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<BrokerConnectionConfig> f, BrokerCepService bc) {
             name = n;
@@ -758,7 +928,6 @@ public class CommandExecutor {
             statement = s;
             forwardToGroupings = f;
             brokerCep = bc;
-            activeGrouping = ag;
             return this;
         }
 
