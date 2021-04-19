@@ -11,20 +11,17 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum CamelMetadata {
 
-    CORES("CPU", VariableType.CORES, false, false),
-    RAM("RAM", VariableType.RAM, false,false),
-    STORAGE("Storage", VariableType.STORAGE, false, false),
-    CARDINALITY("Cardinality", VariableType.CARDINALITY, false, false),
-    LATITUDE("latitude", VariableType.LATITUDE, false, false),
-    LONGITUDE("longitude", VariableType.LONGITUDE, false, false),
+    CORES("CPU", VariableType.CORES, false),
+    RAM("RAM", VariableType.RAM, false),
+    STORAGE("Storage", VariableType.STORAGE, false),
+    CARDINALITY("Cardinality", VariableType.CARDINALITY, false),
+    LATITUDE("latitude", VariableType.LATITUDE, false),
+    LONGITUDE("longitude", VariableType.LONGITUDE, false),
 
-    PROVIDER("", VariableType.PROVIDER, false, false),
+    PROVIDER("", VariableType.PROVIDER, false),
     
-    PRICE("Cost", null, true, false),
-    
-    AFFINITY_AWARENESS("AffinityAwareness", null, false, true),
-    DATA_CENTRE_AWARENESS("DataCentreAwareness", null, false, true),
-    SOURCE_AWARENESS("SourceAwareness", null,false, true),
+    PRICE("Cost", null, true),
+    UNMOVEABLE("Unmoveable", null, false);
   
     public String camelName;
     public VariableType variableType;
