@@ -179,8 +179,9 @@ public class BrokerCepService {
     }
 
     public void setConstants(Map<String, Double> constants) {
-        log.debug("BrokerCepService.setConstants(): Add/Set constants in map: {}", constants);
+        log.info("BrokerCepService.setConstants(): Add/Set constants: {}", constants);
         cepService.setConstants(constants);
+        log.info("BrokerCepService.setConstants(): Add/Set constants: ok");
     }
 
     public void addFunctionDefinitions(Set<FunctionDefinition> definitions) {

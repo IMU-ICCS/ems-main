@@ -740,29 +740,16 @@ public class CommandExecutor {
         }
     }
 
+    @Getter
+    @ToString
     public static class ClientStatementSubscriber implements StatementSubscriber {
         private String name;
         private String topic;
         private String statement;
+        @Setter
         private Set<String> forwardToGroupings;
         private BrokerCepService brokerCep;
         private GroupingConfiguration activeGrouping;
-
-        public String getName() {
-            return name;
-        }
-
-        public String getTopic() {
-            return topic;
-        }
-
-        public String getStatement() {
-            return statement;
-        }
-
-        public Set<String> getForwardToGroupings() {
-            return forwardToGroupings;
-        }
 
         public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<String> f, BrokerCepService bc, GroupingConfiguration ag) {
             name = n;
