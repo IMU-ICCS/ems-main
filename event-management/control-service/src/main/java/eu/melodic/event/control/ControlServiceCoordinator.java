@@ -27,8 +27,8 @@ import eu.melodic.models.interfaces.ems.Monitor;
 import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -535,14 +535,14 @@ public class ControlServiceCoordinator {
         return map;
     }
 
-    @AllArgsConstructor
+    @RequiredArgsConstructor
     @Getter
     public static class CscStatementSubscriber implements StatementSubscriber {
-        private String name;
-        private String topic;
-        private String statement;
-        private BrokerCepService brokerCep;
-        private PasswordUtil passwordUtil;
+        private final String name;
+        private final String topic;
+        private final String statement;
+        private final BrokerCepService brokerCep;
+        private final PasswordUtil passwordUtil;
 
         public void update(java.util.Map<String, Object> eventMap) {
             try {

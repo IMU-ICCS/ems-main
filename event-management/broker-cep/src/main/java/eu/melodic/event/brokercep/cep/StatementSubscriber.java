@@ -23,7 +23,7 @@ public interface StatementSubscriber {
     String getName();
 
     /**
-     * Get the EPL Stamement the Subscriber will listen to.
+     * Get the EPL Statement the Subscriber will listen to.
      *
      * @return EPL Statement
      */
