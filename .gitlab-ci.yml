@@ -18,7 +18,6 @@ variables:
   MELODIC_COMMONS_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f melodic-commons/pom.xml"
   MELODIC_CACHE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f melodic-cache/pom.xml"
 
-  PENALTY_CALCULATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f penalty-calculator/pom.xml"
   JWT_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f jwt-server/pom.xml"
   UTILITY_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f utility-generator/pom.xml"
 
@@ -140,14 +139,6 @@ build-required-part3:zpp-solver:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/zpp-solver/
 
-build-required-part3:penalty-calculator:
-  stage: build-required-part3
-  image: $MAVEN_IMAGE
-  script:
-    - $PENALTY_CALCULATOR_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/penalty-calculator/
 
 build-required-part3:ems:
   stage: build-required-part3
@@ -240,14 +231,6 @@ build-required-part8:ems-baguette-client:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
 
-build:dlms-agent:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $DLMS_AGENT_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/dlms/DLMSAgent/
 
 build:cp-parser:
   stage: build
@@ -342,20 +325,7 @@ deploy:melodic-cache:
   script:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
 
-deploy:penalty-calculator:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part3:penalty-calculator
-  script:
-    - $DOCKER_CLI $PENALTY_CALCULATOR_CLI deploy
+
 
 deploy:jwt-server:
   stage: deploy
