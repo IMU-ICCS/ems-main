@@ -52,6 +52,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     @Getter private String clientId;
     @Getter private String clientBrokerUrl;
+    @Getter private String clientBrokerUsername;
+    @Getter private String clientBrokerPassword;
     private String clientIpAddress;
     private String clientHostname;
     private String clientCanonicalHostname;
@@ -194,6 +196,14 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         log.warn("{}--> Invalid Port value: {}: {}", id, s.substring("port=".length()), ex.getMessage());
                     }
                 }
+            } else
+            if (s.startsWith("username=")) {
+                this.clientBrokerUsername = s.substring("username=".length());
+                log.info("{}--> Broker Username: {}", id, clientBrokerUsername);
+            } else
+            if (s.startsWith("password=")) {
+                this.clientBrokerPassword = s.substring("password=".length());
+                log.info("{}--> Broker Password: {}", id, clientBrokerPassword);
             } else
             if (s.startsWith("cert=")) {
                 this.clientCertificate = s.substring("cert=".length())

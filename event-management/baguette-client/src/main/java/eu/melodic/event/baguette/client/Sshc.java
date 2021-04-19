@@ -223,11 +223,13 @@ public class Sshc {
                 .replace("\n","$$");
         String clientAddress = config.getDebugFakeIpAddress();
         int clientPort = -1;
-        out.printf("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s%n",
+        out.printf("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d username=%s password=%s cert=%s%n",
                 clientId.replace(" ", "~~"),
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
                 StringUtils.isNotBlank(clientAddress) ? clientAddress : "",
                 clientPort,
+                brokerCepService.getBrokerUsername(),
+                brokerCepService.getBrokerPassword(),
                 certOneLine);
         out.flush();
         String line;
