@@ -31,7 +31,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 @ComponentScan(basePackages = {"eu.melodic.upperware.cpsolver", "eu.melodic.cache", "eu.melodic.upperware.utilitygenerator"})
 @SpringBootApplication
-@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class, PenaltyFunctionProperties.class})
+@EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class CPSolverApplication {
 
     public static void main(String[] args) {
