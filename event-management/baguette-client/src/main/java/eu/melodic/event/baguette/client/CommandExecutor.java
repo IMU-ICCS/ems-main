@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.util.GroupingConfiguration;
@@ -21,6 +22,7 @@ import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import io.atomix.cluster.Member;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
@@ -134,6 +138,46 @@ public class CommandExecutor {
             // Respond to server with OK
             out.println("OK");
 
+        } else if ("WRITE-CONFIGURATION".equals(cmd)) {
+            String fileName = (args.length>1) ? args[1].trim() : DEFAULT_CONF_DIR + "/config-export.json";
+            ConfigurationContents contents = ConfigurationContents.builder()
+                    .timestamp(System.currentTimeMillis())
+                    .clientId(this.clientId)
+                    .activeGrouping(this.activeGrouping.getName())
+                    .groupings(this.groupings)
+                    .build();
+
+            ObjectMapper mapper = new ObjectMapper();
+            File file = Paths.get(fileName).toFile();
+            mapper.writer().writeValue(file, contents);
+            log.info("Current configuration saved to file: {}", file.getPath());
+
+        } else if ("READ-CONFIGURATION".equals(cmd)) {
+            String fileName = (args.length>1) ? args[1].trim() : DEFAULT_CONF_DIR + "/config-export.json";
+            File file = Paths.get(fileName).toFile();
+            String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+
+            ObjectMapper mapper = new ObjectMapper();
+            ConfigurationContents config = mapper.readValue(content, ConfigurationContents.class);
+            log.debug("Configuration read from file: {}\n{}", file, config);
+
+            // Clear current state
+            clearActiveGrouping();
+            groupings.clear();
+
+            // Initialize current state
+            String newId = config.getClientId();
+            if (StringUtils.isNotBlank(newId))
+                saveClientId(newId);
+
+            config.getGroupings().forEach((k,v) -> groupings.put(k, v));
+
+            String activeConf = config.getActiveGrouping();
+            if (StringUtils.isNotBlank(activeConf))
+                setActiveGrouping(activeConf);
+
+            log.info("Current configuration loaded from file: {}", file.getPath());
+
         } else if ("GET-ID".equals(cmd)) {
             log.info("GET ID: {}", clientId);
             out.println(clientId);
@@ -143,6 +187,9 @@ public class CommandExecutor {
             log.info("SET ID: {}", id);
             // Execute command
             saveClientId(id);
+        } else if ("LIST-GROUPING-CONFIGS".equals(cmd)) {
+            log.info("Configured groupings: {}", groupings.keySet());
+            out.println(String.join(", ", groupings.keySet()));
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -754,6 +801,17 @@ public class CommandExecutor {
                         name, forwardToGroupings, eventMap, ex);
             }
         }
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    protected static class ConfigurationContents {
+        private long timestamp;
+        private String clientId;
+        private String activeGrouping;
+        private Map<String, GroupingConfiguration> groupings;
     }
 
     protected static class ClusterNodeCallback implements BrokerUtil.NodeCallback {

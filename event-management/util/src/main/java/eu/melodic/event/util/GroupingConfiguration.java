@@ -9,10 +9,7 @@
 
 package eu.melodic.event.util;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -23,15 +20,17 @@ import java.util.Set;
  * Baguette Client Configuration
  */
 @Data
-@ToString(exclude = {"brokerPassword"})
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = {"brokerPassword"})
 public class GroupingConfiguration implements Serializable {
-    @NonNull private final String name;
-    @NonNull private final Properties config;
-    @NonNull private final Set<String> eventTypeNames;
-    @NonNull private final Map<String, Set<String>> rules;
-    @NonNull private final Map<String, Set<String>> connections;
-    @NonNull private final Set<FunctionDefinition> functionDefinitions;
+    @NonNull private String name;
+    @NonNull private Properties config;
+    @NonNull private Set<String> eventTypeNames;
+    @NonNull private Map<String, Set<String>> rules;
+    @NonNull private Map<String, Set<String>> connections;
+    @NonNull private Set<FunctionDefinition> functionDefinitions;
     @NonNull private Map<String, Double> constants;
     @NonNull private String brokerUsername;
     @NonNull private String brokerPassword;
