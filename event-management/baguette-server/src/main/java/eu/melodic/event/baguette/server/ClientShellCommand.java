@@ -335,8 +335,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         return o;
     }
 
-    public void sendGroupingConfiguration(String grouping, Properties config, BaguetteServer server) {
-        GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, config, server);
+    public void sendGroupingConfiguration(String grouping, Map<String, GroupingConfiguration.BrokerConnectionConfig> connectionConfigs, BaguetteServer server) {
+        GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, connectionConfigs, server);
         sendGroupingConfiguration(gc);
     }
 

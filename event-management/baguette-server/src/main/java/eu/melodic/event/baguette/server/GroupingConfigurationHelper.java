@@ -11,16 +11,19 @@ package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.util.GroupingConfiguration;
 
-import java.util.Properties;
+import java.util.Map;
+
+import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
 /**
  * Baguette Client Configuration creation helper
  */
 public class GroupingConfigurationHelper {
-    public static GroupingConfiguration newGroupingConfiguration(String groupingName, Properties config, BaguetteServer server) {
+    public static GroupingConfiguration newGroupingConfiguration(String groupingName, Map<String,BrokerConnectionConfig> connectionConfigs, BaguetteServer server) {
         return GroupingConfiguration.builder()
                 .name( groupingName )
-                .config( config )
+                .properties(null)
+                .brokerConnections(connectionConfigs)
                 .eventTypeNames( server.getTopicsForGrouping(groupingName) )
                 .rules( server.getRulesForGrouping(groupingName) )
                 .connections( server.getTopicConnectionsForGrouping(groupingName) )

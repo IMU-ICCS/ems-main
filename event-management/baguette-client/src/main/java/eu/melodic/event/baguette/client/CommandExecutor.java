@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
 /**
  * Command Executor
@@ -747,11 +748,11 @@ public class CommandExecutor {
         private String topic;
         private String statement;
         @Setter
-        private Set<String> forwardToGroupings;
+        private Set<BrokerConnectionConfig> forwardToGroupings;
         private BrokerCepService brokerCep;
         private GroupingConfiguration activeGrouping;
 
-        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<String> f, BrokerCepService bc, GroupingConfiguration ag) {
+        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<BrokerConnectionConfig> f, BrokerCepService bc) {
             name = n;
             topic = t;
             statement = s;
@@ -774,12 +775,13 @@ public class CommandExecutor {
                         name, localBrokerUrl, topic, eventMap);
 
                 // Send new event to the next grouping(s)
-                String username = activeGrouping.getBrokerUsername();
-                String password = activeGrouping.getBrokerPassword();
                 log.trace("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
                         name, forwardToGroupings, eventMap);
-                for (String fwdToGrouping : forwardToGroupings) {
-                    brokerCep.publishEvent(fwdToGrouping, username, password, topic, eventMap);
+                for (BrokerConnectionConfig fwdToGrouping : forwardToGroupings) {
+                    String brokerUrl = fwdToGrouping.getUrl();
+                    String username = fwdToGrouping.getUsername();
+                    String password = fwdToGrouping.getPassword();
+                    brokerCep.publishEvent(brokerUrl, username, password, topic, eventMap);
                     log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, username={}, topic={}, payload={}",
                             name, fwdToGrouping, username, topic, eventMap);
                 }

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
+
 @Slf4j
 public class ClusteringCoordinator extends NoopCoordinator {
     private final static String DEFAULT_ZONE = "default_zone";
@@ -66,10 +68,10 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     protected synchronized void _do_register(ClientShellCommand csc) {
         // prepare configuration
-        java.util.Properties cfg = new java.util.Properties();
-        Map<String,String> cfgMap;
-        cfg.putAll(cfgMap = getUpperwareBrokerConfig(server));
-        log.trace("ClusteringCoordinator: GLOBAL broker config.: {}", cfgMap);
+        Map<String,BrokerConnectionConfig> connCfgMap = new LinkedHashMap<>();
+        BrokerConnectionConfig groupingConn = getUpperwareBrokerConfig(server);
+        connCfgMap.put(server.getUpperwareGrouping(), groupingConn);
+        log.trace("ClusteringCoordinator: GLOBAL broker config.: {}", groupingConn);
 
         // collect configurations per grouping
         for (String groupingName : server.getGroupingNames()) {
@@ -79,8 +81,8 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
         // prepare Broker-CEP configuration
         log.info("ClusteringCoordinator: --------------------------------------------------");
-        log.info("ClusteringCoordinator: Sending grouping configurations to client {}...\n{}", csc.getId(), cfg);
-        sendGroupingConfigurations(cfg, csc, server);
+        log.info("ClusteringCoordinator: Sending grouping configurations to client {}...\n{}", csc.getId(), connCfgMap);
+        sendGroupingConfigurations(connCfgMap, csc, server);
         log.info("ClusteringCoordinator: Sending grouping configurations to client {}... done", csc.getId());
         sleep(500);
 

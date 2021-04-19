@@ -26,12 +26,24 @@ import java.util.Set;
 @ToString(exclude = {"brokerPassword"})
 public class GroupingConfiguration implements Serializable {
     @NonNull private String name;
-    @NonNull private Properties config;
+    /*@NonNull*/ private Properties properties;
+    @NonNull private Map<String, BrokerConnectionConfig> brokerConnections;
     @NonNull private Set<String> eventTypeNames;
     @NonNull private Map<String, Set<String>> rules;
     @NonNull private Map<String, Set<String>> connections;
     @NonNull private Set<FunctionDefinition> functionDefinitions;
     @NonNull private Map<String, Double> constants;
-    @NonNull private String brokerUsername;
-    @NonNull private String brokerPassword;
+    /*@NonNull*/ private String brokerUsername;
+    /*@NonNull*/ private String brokerPassword;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BrokerConnectionConfig {
+        private String grouping;
+        private String url;
+        private String certificate;
+        private String username;
+        private String password;
+    }
 }

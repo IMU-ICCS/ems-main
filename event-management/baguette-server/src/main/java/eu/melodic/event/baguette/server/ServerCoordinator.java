@@ -11,9 +11,9 @@ package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.util.GroupingConfiguration;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
+
+import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
 public interface ServerCoordinator {
     void initialize(BaguetteServer server, Runnable callback);
@@ -34,27 +34,25 @@ public interface ServerCoordinator {
 
     void stop();
 
-    default void sendGroupingConfigurations(Properties cfg, ClientShellCommand c, BaguetteServer server) {
+    default void sendGroupingConfigurations(Map<String,BrokerConnectionConfig> connectionConfigs, ClientShellCommand c, BaguetteServer server) {
         for (String grouping : server.getGroupingNames()) {
-            GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, cfg, server);
+            GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, connectionConfigs, server);
             c.sendGroupingConfiguration(gc);
         }
     }
 
-    default Map<String,String> getGroupingBrokerConfig(String grouping, ClientShellCommand c) {
+    default BrokerConnectionConfig getGroupingBrokerConfig(String grouping, ClientShellCommand c) {
         String brokerUrl = c.getClientBrokerUrl();
         String brokerCert = c.getClientCertificate();
-        if (brokerCert==null) brokerCert = "";
-        Map<String,String> result = new HashMap<>();
-        result.put(grouping, (brokerUrl+"\n"+brokerCert).trim());
-        return result;
+        String username = c.getClientBrokerUsername();
+        String password = c.getClientBrokerPassword();
+        return new BrokerConnectionConfig(grouping, brokerUrl, brokerCert, username, password);
     }
-    default Map<String,String> getUpperwareBrokerConfig(BaguetteServer server) {
-        String grouping = server.getUpperwareGrouping();
+    default BrokerConnectionConfig getUpperwareBrokerConfig(BaguetteServer server) {
         String brokerUrl = server.getUpperwareBrokerUrl();
         String brokerCert = server.getBrokerCepService().getBrokerCertificate();
-        Map<String,String> result = new HashMap<>();
-        result.put(grouping, (brokerUrl+"\n"+brokerCert).trim());
-        return result;
+        String username = server.getBrokerUsername();
+        String password = server.getBrokerPassword();
+        return new BrokerConnectionConfig(server.getUpperwareGrouping(), brokerUrl, brokerCert, username, password);
     }
 }

@@ -11,9 +11,11 @@ package eu.melodic.event.baguette.server.coordinator;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
 @Slf4j
 public class TestCoordinator extends NoopCoordinator {
@@ -25,18 +27,18 @@ public class TestCoordinator extends NoopCoordinator {
 
     protected synchronized void _do_register(ClientShellCommand c) {
         // prepare configuration
-        java.util.Properties cfg = new java.util.Properties();
-        Map<String,String> cfgMap;
-        cfg.putAll(cfgMap = getUpperwareBrokerConfig(server));
-        log.trace("TestCoordinator.test(): GLOBAL broker config.: {}", cfgMap);
+        Map<String, BrokerConnectionConfig> connCfgMap = new LinkedHashMap<>();
+        BrokerConnectionConfig groupingConn = getUpperwareBrokerConfig(server);
+        connCfgMap.put(server.getUpperwareGrouping(), groupingConn);
+        log.trace("ClusteringCoordinator: GLOBAL broker config.: {}", groupingConn);
 
-        cfg.putAll(cfgMap = getGroupingBrokerConfig("PER_CLOUD", c));
-        log.trace("TestCoordinator.test(): {} broker config.: {}", "PER_CLOUD", cfgMap);
+        connCfgMap.put("PER_CLOUD", groupingConn = getGroupingBrokerConfig("PER_CLOUD", c));
+        log.trace("TestCoordinator.test(): {} broker config.: {}", "PER_CLOUD", groupingConn);
 
         // prepare Broker-CEP configuration
         log.info("TestCoordinator.test(): --------------------------------------------------");
         log.info("TestCoordinator.test(): Sending grouping configurations...");
-        sendGroupingConfigurations(cfg, c, server);
+        sendGroupingConfigurations(connCfgMap, c, server);
         log.info("TestCoordinator.test(): Sending grouping configurations... done");
 
         // Set active grouping and send an event
