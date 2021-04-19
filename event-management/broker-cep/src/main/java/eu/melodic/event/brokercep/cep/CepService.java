@@ -85,8 +85,17 @@ public class CepService implements InitializingBean {
         log.debug("CepService: Register EPL statement and subscriber: {}", subscriber.getName());
         String statementStr = subscriber.getStatement();
         log.debug("CepService: EPL statement: {}", statementStr);
-        EPStatement eventStatement = epService.getEPAdministrator().createEPL(statementStr);
+        EPStatement eventStatement = epService.getEPAdministrator().createEPL(statementStr, subscriber.getName());
         eventStatement.setSubscriber(subscriber);
+    }
+
+    /**
+     * Dynamic de-registration of existing EPL statements and corresponding subscribers
+     */
+    public synchronized void removeStatementSubscriber(StatementSubscriber subscriber) {
+        EPStatement stmt = epService.getEPAdministrator().getStatement(subscriber.getName());
+        stmt.stop();
+        stmt.destroy();
     }
 
     /**

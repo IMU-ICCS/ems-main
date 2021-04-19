@@ -23,9 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -41,7 +40,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
     private Connection connection;
     private Session session;
-    private final Set<String> addedDestinations = new HashSet<>();
+    private final Map<String,MessageConsumer> addedDestinations = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() {
@@ -87,7 +86,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
     public synchronized void addQueue(String queueName) {
         log.debug("BrokerCepConsumer.addQueue(): Adding queue: {}", queueName);
-        if (addedDestinations.contains(queueName)) {
+        if (addedDestinations.containsKey(queueName)) {
             log.debug("BrokerCepConsumer.addQueue(): Queue already added: {}", queueName);
             return;
         }
@@ -95,7 +94,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             Queue queue = session.createQueue(queueName);
             MessageConsumer consumer = session.createConsumer(queue);
             consumer.setMessageListener(this);
-            addedDestinations.add(queueName);
+            addedDestinations.put(queueName, consumer);
             log.debug("BrokerCepConsumer.addQueue(): Added queue: {}", queueName);
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.addQueue(): EXCEPTION: ", ex);
@@ -104,7 +103,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
     public synchronized void addTopic(String topicName) {
         log.debug("BrokerCepConsumer.addTopic(): Adding topic: {}", topicName);
-        if (addedDestinations.contains(topicName)) {
+        if (addedDestinations.containsKey(topicName)) {
             log.debug("BrokerCepConsumer.addTopic(): Topic already added: {}", topicName);
             return;
         }
@@ -112,15 +111,30 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             Topic topic = session.createTopic(topicName);
             MessageConsumer consumer = session.createConsumer(topic);
             consumer.setMessageListener(this);
-            addedDestinations.add(topicName);
+            addedDestinations.put(topicName, consumer);
             log.debug("BrokerCepConsumer.addTopic(): Added topic: {}", topicName);
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.addTopic(): EXCEPTION: ", ex);
         }
     }
 
+    public synchronized void removeConsumerOf(String name) {
+        log.debug("BrokerCepConsumer.removeConsumerOf(): Removing topic or queue: {}", name);
+        if (!addedDestinations.containsKey(name)) {
+            log.debug("BrokerCepConsumer.removeConsumerOf(): Topic/Queue not exists: {}", name);
+            return;
+        }
+        try {
+            MessageConsumer consumer = addedDestinations.remove(name);
+            if (consumer!=null) consumer.close();
+            log.debug("BrokerCepConsumer.removeConsumerOf(): Removed topic: {}", name);
+        } catch (Exception ex) {
+            log.error("BrokerCepConsumer.removeConsumerOf(): EXCEPTION: ", ex);
+        }
+    }
+
     public boolean containsDestination(String name) {
-        return addedDestinations.contains(name);
+        return addedDestinations.containsKey(name);
     }
 
     @Override
