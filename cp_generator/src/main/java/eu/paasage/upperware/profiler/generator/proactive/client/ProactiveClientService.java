@@ -20,13 +20,15 @@ public class ProactiveClientService {
     private final PAGateway paGateway;
     private final GeneratorProperties generatorProperties;
     private final AtomicInteger connectionState = new AtomicInteger(0);
+    private final ProtectionUtils protectionUtils;
 
     @Autowired
-    public ProactiveClientService(final GeneratorProperties generatorProperties) {
+    public ProactiveClientService(final GeneratorProperties generatorProperties, final ProtectionUtils protectionUtils) {
         this.generatorProperties = generatorProperties;
+        this.protectionUtils = protectionUtils;
 
         try {
-            paGateway = new PAGateway(generatorProperties.getPaRest().getUrl());
+            paGateway = new PAGateway(generatorProperties.getPaConfig().getRestUrl());
             log.info("ProactiveClientService->constructor: PAGateway created");
         } catch (RuntimeException e) {
             log.error("ProactiveClientService->constructor: Exception caught during creation of Proactive Client (PAGateway) object, error: {}", e.getMessage());
@@ -44,20 +46,20 @@ public class ProactiveClientService {
 
         try {
             log.info("ProactiveClientService->connectToProactiveServer: Trying to connect to Proactive server using: url: {}, encrypted login: {}, encrypted password: {}",
-                    generatorProperties.getPaRest().getUrl(),
-                    generatorProperties.getPaRest().getLogin(),
-                    generatorProperties.getPaRest().getPassword());
+                    generatorProperties.getPaConfig().getRestUrl(),
+                    generatorProperties.getPaConfig().getLogin(),
+                    generatorProperties.getPaConfig().getPassword());
 
             try {
-                log.debug("ProactiveClientService->connectToProactiveServer: decrypted login: {}", ProtectionUtils.decrypt(generatorProperties.getPaRest().getLogin()));
-                log.debug("ProactiveClientService->connectToProactiveServer: decrypted password: {}", ProtectionUtils.decrypt(generatorProperties.getPaRest().getPassword()));
+                log.debug("ProactiveClientService->connectToProactiveServer: decrypted login: {}", protectionUtils.decrypt(generatorProperties.getPaConfig().getLogin()));
+                log.debug("ProactiveClientService->connectToProactiveServer: decrypted password: {}", protectionUtils.decrypt(generatorProperties.getPaConfig().getPassword()));
             } catch (RuntimeException e) {
                 log.debug("ProactiveClientService->connectToProactiveServer: Exception caught while decrypting Proactive server credentials, message: {}", e.getMessage());
                 throw e;
             }
 
-            paGateway.connect(ProtectionUtils.decrypt(generatorProperties.getPaRest().getLogin()),
-                    ProtectionUtils.decrypt(generatorProperties.getPaRest().getPassword()));
+            paGateway.connect(protectionUtils.decrypt(generatorProperties.getPaConfig().getLogin()),
+                    protectionUtils.decrypt(generatorProperties.getPaConfig().getPassword()));
             this.connectionState.set(2); // connected (2)
             log.info("ProactiveClientService->connectToProactiveServer: Connected to Proactive server");
         } catch (Exception e) {

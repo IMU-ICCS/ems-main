@@ -4,26 +4,27 @@ import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
 public class ProtectionUtils {
 
-    public static final StandardPBEStringEncryptor textEncryptor = new StandardPBEStringEncryptor();
+    public final StandardPBEStringEncryptor textEncryptor = new StandardPBEStringEncryptor();
 
-    public static final String PASSWORD = "1MORPH#0#"; // TODO supply this password in different way, e.g. env var
+    public final String encryptorPassword;
 
-    private static boolean isSet = false;
+    private boolean isSet = false;
 
-    private ProtectionUtils() {
+    public ProtectionUtils(final String encryptorPassword) {
+        this.encryptorPassword = encryptorPassword;
     }
 
-    public static String decrypt(String encryptedText) {
+    public String decrypt(String encryptedText) {
         if (!isSet) {
-            textEncryptor.setPassword(PASSWORD);
+            textEncryptor.setPassword(encryptorPassword);
             isSet = true;
         }
         return textEncryptor.decrypt(encryptedText);
     }
 
-    public static String encrypt(String plainText) {
+    public String encrypt(String plainText) {
         if (!isSet) {
-            textEncryptor.setPassword(PASSWORD);
+            textEncryptor.setPassword(encryptorPassword);
             isSet = true;
         }
         return textEncryptor.encrypt(plainText);

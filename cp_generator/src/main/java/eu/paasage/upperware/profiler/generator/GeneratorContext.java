@@ -9,6 +9,7 @@ import eu.paasage.upperware.profiler.generator.communication.CdoService;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
+import eu.paasage.upperware.profiler.generator.proactive.client.ProtectionUtils;
 import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
@@ -119,4 +120,8 @@ public class GeneratorContext {
         return apiClient;
     }
 
+    @Bean
+    public ProtectionUtils protectionUtils(GeneratorProperties generatorProperties) {
+        return new ProtectionUtils(generatorProperties.getPaConfig().getEncryptorPw());
+    }
 }

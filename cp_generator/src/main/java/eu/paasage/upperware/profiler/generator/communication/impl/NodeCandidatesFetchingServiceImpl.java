@@ -11,12 +11,11 @@ import camel.requirement.PaaSRequirement;
 import camel.requirement.ProviderRequirement;
 import camel.requirement.ResourceRequirement;
 import camel.type.*;
-import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
+import eu.paasage.upperware.profiler.generator.communication.NodeCandidatesFetchingService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.proactive.client.ProactiveClientService;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
-import io.github.cloudiator.rest.api.MatchmakingApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.Runtime;
@@ -39,7 +38,7 @@ import static eu.passage.upperware.commons.model.tools.metadata.CamelMetadataFor
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class CloudiatorServiceXImpl implements CloudiatorServiceX {
+public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetchingService {
 
     private static final String HARDWARE_CLASS = "hardware";
     private static final String IMAGE_CLASS = "image";
@@ -47,7 +46,6 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
     private static final String CLOUD_CLASS = "cloud";
     private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
-    private final MatchmakingApi matchmakingApi;
     private final ProactiveClientService proactiveClientService;
 
     @Override
@@ -57,7 +55,7 @@ public class CloudiatorServiceXImpl implements CloudiatorServiceX {
         if (candidates.size() > 0) {
             fillByonCloudProvider(candidates);
             log.info("Successfully fetched {} NodeCandidates", candidates.size());
-            log.debug("CloudiatorServiceXImpl->findNodeCandidates: list of NodeCandidates: {}", candidates);
+            log.debug("NodeCandidatesFetchingServiceImpl->findNodeCandidates: list of NodeCandidates: {}", candidates);
             return candidates;
         } else {
             throw new GeneratorException("Proactive Client returned empty NodeCandidate list");

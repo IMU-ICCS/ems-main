@@ -45,7 +45,7 @@ public class AdapterProperties {
 
   @Valid
   @NotNull
-  private ProActive paRest;
+  private ProActive paConfig;
 
   @Getter
   @Setter
@@ -93,10 +93,12 @@ public class AdapterProperties {
   @ToString
   public static class ProActive {
     @NotNull
-    private String url;
+    private String restUrl;
     @NotNull
     private String login;
     @NotNull
     private String password;
+    @NotNull
+    private String encryptorPw;
   }
 }

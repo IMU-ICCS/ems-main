@@ -7,7 +7,7 @@ import org.activeeon.morphemic.model.Requirement;
 
 import java.util.List;
 
-public interface CloudiatorServiceX {
+public interface NodeCandidatesFetchingService {
 
     List<NodeCandidate> findNodeCandidates(List<Requirement> requirements);
 

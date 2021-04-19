@@ -28,7 +28,7 @@ public class ProactiveClientService {
         this.adapterProperties = adapterProperties;
 
         try {
-            paGateway = new PAGateway(adapterProperties.getPaRest().getUrl());
+            paGateway = new PAGateway(adapterProperties.getPaConfig().getRestUrl());
             log.info("ProactiveClientService->constructor: PAGateway created");
         } catch (RuntimeException e) {
             log.error("ProactiveClientService->constructor: Exception caught during creation of Proactive Client (PAGateway) object, error: {}", e.getMessage());
@@ -46,20 +46,20 @@ public class ProactiveClientService {
 
         try {
             log.info("ProactiveClientService->connectToProactiveServer: Trying to connect to Proactive server using: url: {}, encrypted login: {}, encrypted password: {}",
-                    adapterProperties.getPaRest().getUrl(),
-                    adapterProperties.getPaRest().getLogin(),
-                    adapterProperties.getPaRest().getPassword());
+                    adapterProperties.getPaConfig().getRestUrl(),
+                    adapterProperties.getPaConfig().getLogin(),
+                    adapterProperties.getPaConfig().getPassword());
 
             try {
-                log.debug("ProactiveClientService->connectToProactiveServer: decrypted login: {}", ProtectionUtils.decrypt(adapterProperties.getPaRest().getLogin()));
-                log.debug("ProactiveClientService->connectToProactiveServer: decrypted password: {}", ProtectionUtils.decrypt(adapterProperties.getPaRest().getPassword()));
+                log.debug("ProactiveClientService->connectToProactiveServer: decrypted login: {}", ProtectionUtils.decrypt(adapterProperties.getPaConfig().getLogin()));
+                log.debug("ProactiveClientService->connectToProactiveServer: decrypted password: {}", ProtectionUtils.decrypt(adapterProperties.getPaConfig().getPassword()));
             } catch (RuntimeException e) {
                 log.debug("ProactiveClientService->connectToProactiveServer: Exception caught while decrypting Proactive server credentials, message: {}", e.getMessage());
                 throw e;
             }
 
-            paGateway.connect(ProtectionUtils.decrypt(adapterProperties.getPaRest().getLogin()),
-                    ProtectionUtils.decrypt(adapterProperties.getPaRest().getPassword()));
+            paGateway.connect(ProtectionUtils.decrypt(adapterProperties.getPaConfig().getLogin()),
+                    ProtectionUtils.decrypt(adapterProperties.getPaConfig().getPassword()));
             this.connectionState.set(2); // connected (2)
             log.info("ProactiveClientService->connectToProactiveServer: Connected to Proactive server");
         } catch (Exception e) {
@@ -89,11 +89,13 @@ public class ProactiveClientService {
         return ProactiveConnectionState.findByCode(this.connectionState.get());
     }
 
-    public void createJob(JSONObject job) {
+    public int createJob(JSONObject job) {
         connectToProactiveServer();
         if(getConnectionState().equals(ProactiveConnectionState.CONNECTED)) {
             this.paGateway.createJob(job);
+            return 0;
         }
+        return -1;
     }
 
     public int addNodes(JSONArray nodes, String jobId) {
