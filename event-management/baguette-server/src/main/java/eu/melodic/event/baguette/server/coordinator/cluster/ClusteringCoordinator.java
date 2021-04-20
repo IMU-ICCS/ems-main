@@ -15,10 +15,7 @@ import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
@@ -75,8 +72,9 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
         // collect configurations per grouping
         for (String groupingName : server.getGroupingNames()) {
-            cfg.putAll(cfgMap = getGroupingBrokerConfig(groupingName, csc));
-            log.trace("ClusteringCoordinator: {} broker config.: {}", groupingName, cfgMap);
+            groupingConn = getGroupingBrokerConfig(groupingName, csc);
+            connCfgMap.put(groupingName, groupingConn);
+            log.trace("ClusteringCoordinator: {} broker config.: {}", groupingName, groupingConn);
         }
 
         // prepare Broker-CEP configuration
@@ -157,9 +155,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     void sendCommandToZone(String command, List<ClientShellCommand> zoneNodes) {
         log.info("sendCommandToZone: Sending command: \"{}\" to zone nodes: {}", command,
                 zoneNodes.stream().map(ClientShellCommand::toStringCluster).collect(Collectors.toList()));
-        zoneNodes.forEach(c -> {
-            c.sendCommand(command);
-        });
+        zoneNodes.forEach(c -> c.sendCommand(command));
     }
 
     void instructClusterJoin(ClientShellCommand csc, ClusterZone zone) {
