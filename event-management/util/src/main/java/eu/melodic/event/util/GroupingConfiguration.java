@@ -39,7 +39,7 @@ public class GroupingConfiguration implements Serializable {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class BrokerConnectionConfig {
+    public static class BrokerConnectionConfig implements Serializable {
         private String grouping;
         private String url;
         private String certificate;
