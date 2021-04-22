@@ -212,10 +212,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         .replace("$$", "\n");
                 log.info("{}--> Broker Cert.: {}", id, clientCertificate);
 
-                // Get certificate alias from client name or IP address
-                String alias = StringUtils.isNotBlank(clientId)
+                // Get certificate alias from client Id or IP address
+                String alias = /*StringUtils.isNotBlank(clientId)
                         ? clientId.trim()
-                        : getClientIpAddress();
+                        :*/ getClientIpAddress();
                 log.info("{}--> Adding/Replacing client certificate in Truststore: alias={}", id, alias);
 
                 if (StringUtils.isNotEmpty(clientCertificate)) {
