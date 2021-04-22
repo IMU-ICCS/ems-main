@@ -21,7 +21,7 @@ import java.util.UUID;
  * It groups clients based on domain name, or last byte of IP Address. If neither is available it assigns client
  * in a new zone identified by a random UUID.
  * The first client to join a zone will be instructed to start cluster and become aggregator.
- * Subsequent client will just join the cluster.
+ * Subsequent clients will just join the cluster.
  */
 @Slf4j
 public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
