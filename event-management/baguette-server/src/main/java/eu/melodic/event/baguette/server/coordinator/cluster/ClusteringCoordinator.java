@@ -70,14 +70,14 @@ public class ClusteringCoordinator extends NoopCoordinator {
         connCfgMap.put(server.getUpperwareGrouping(), groupingConn);
         log.trace("ClusteringCoordinator: GLOBAL broker config.: {}", groupingConn);
 
-        // collect configurations per grouping
+        // collect client configurations per grouping
         for (String groupingName : server.getGroupingNames()) {
             groupingConn = getGroupingBrokerConfig(groupingName, csc);
             connCfgMap.put(groupingName, groupingConn);
             log.trace("ClusteringCoordinator: {} broker config.: {}", groupingName, groupingConn);
         }
 
-        // prepare Broker-CEP configuration
+        // send grouping configurations to client
         log.info("ClusteringCoordinator: --------------------------------------------------");
         log.info("ClusteringCoordinator: Sending grouping configurations to client {}...\n{}", csc.getId(), connCfgMap);
         sendGroupingConfigurations(connCfgMap, csc, server);
@@ -190,8 +190,13 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     void instructClusterLeave(ClientShellCommand csc, ClusterZone zone) {
         // Send cluster leave command
-        log.debug("instructClusterJoin: Client {} @ {} leaves cluster: CLUSTER-LEAVE", csc.getId(), csc.getClientIpAddress());
-        csc.sendCommand("CLUSTER-LEAVE");
+        log.debug("instructClusterLeave: Client {} @ {} leaves cluster: CLUSTER-LEAVE", csc.getId(), csc.getClientIpAddress());
+        try {
+            csc.sendCommand("CLUSTER-LEAVE");
+        } catch (Exception e) {
+            // Channel has probably already been closed
+            log.warn("instructClusterLeave: EXCEPTION: ", e);
+        }
     }
 
     void electAggregator(ClusterZone zone) {
