@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class MathUtil {
-    private static Set<Function> functions = new HashSet<>();
+    private static Map<String, Function> functions = new HashMap<>();
     private static Map<String, Constant> constants = new HashMap<>();
 
     // ------------------------------------------------------------------------
@@ -37,7 +37,7 @@ public class MathUtil {
         String defStr = functionDef.getName() + "(" + argsStr + ") = " + functionDef.getExpression();
         log.debug("MathUtil: definition-string: {}", defStr);
         Function func = new Function(defStr);
-        functions.add(func);
+        functions.put(functionDef.getName(), func);
     }
 
     public static void clearFunctionDefinitions() {
@@ -82,7 +82,7 @@ public class MathUtil {
         e.addConstants(new ArrayList(constants.values()));
 
         // Add functions
-        for (Function f : functions) e.addFunctions(f);
+        for (Function f : functions.values()) e.addFunctions(f);
 
         // Get argument names
         boolean lexSyntax = e.checkLexSyntax();
@@ -126,7 +126,7 @@ public class MathUtil {
         e.addConstants(new ArrayList(constants.values()));
 
         // Add functions
-        for (Function f : functions) e.addFunctions(f);
+        for (Function f : functions.values()) e.addFunctions(f);
 
         // Get argument names
         boolean lexSyntax = e.checkLexSyntax();
@@ -211,7 +211,7 @@ public class MathUtil {
         e.addConstants(new ArrayList(constants.values()));
 
         // Add functions
-        for (Function f : functions) e.addFunctions(f);
+        for (Function f : functions.values()) e.addFunctions(f);
 
         // Get argument names
         boolean lexSyntax = e.checkLexSyntax();
