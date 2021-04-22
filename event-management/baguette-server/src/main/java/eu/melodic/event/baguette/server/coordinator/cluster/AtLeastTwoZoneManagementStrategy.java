@@ -17,17 +17,18 @@ import org.glassfish.jersey.internal.guava.InetAddresses;
 import java.util.UUID;
 
 /**
- * The default Zone Management Strategy used when 'zone-management-strategy-class' property is not set.
+ * A smarter than default Zone Management Strategy.
  * It groups clients based on domain name, or last byte of IP Address. If neither is available it assigns client
  * in a new zone identified by a random UUID.
- * The first client to join a zone will be instructed to start cluster and become aggregator.
- * Subsequent client will just join the cluster.
+ * When a zone contains only one client, no cluster initialization is instructed.
+ * When a zone contains exactly two clients, they are both initialized as cluster nodes.
+ * If only one client is left in a zone, it is instructed to leave cluster.
  */
 @Slf4j
-public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
+public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy {
     @Override
     public void unexpectedNode(ClientShellCommand csc) {
-        log.warn("DefaultZoneManagementStrategy: Unexpected node registered: {}", csc.getId());
+        log.warn("AtLeastTwoZoneManagementStrategy: Unexpected node registered: {}", csc.getId());
     }
 
     @Override
@@ -55,20 +56,25 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
 
     @Override
     public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
-        if (zone.getNodes().size()==1) {
-            // Instruct first node to start the cluster
-            ClientShellCommand firstNode = zone.getNodes().get(0);
-            log.info("DefaultZoneManagementStrategy: First node to join cluster: client={}, zone={}", firstNode.getId(), zone.getId());
-            joinToCluster(firstNode, coordinator, zone);
+        if (zone.getNodes().size() < 2)
+            return;
 
-            // Instruct aggregator election (therefore the client will become aggregator)
-            log.info("DefaultZoneManagementStrategy: Elect aggregator: zone={}", zone.getId());
+        if (zone.getNodes().size()==2) {
+            // Instruct first node to join cluster first (in fact to initialize it)
+            ClientShellCommand firstNode = zone.getNodes().get(0);
+            log.info("AtLeastTwoZoneManagementStrategy: First node to join cluster: client={}, zone={}", firstNode.getId(), zone.getId());
+            joinToCluster(firstNode, coordinator, zone);
+        }
+
+        // Instruct new node to join cluster
+        log.info("AtLeastTwoZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());
+        joinToCluster(csc, coordinator, zone);
+
+        // Instruct aggregator election if at least 2 nodes are present in the zone
+        if (zone.getNodes().size()==2) {
+            log.info("AtLeastTwoZoneManagementStrategy: Elect aggregator: zone={}", zone.getId());
             coordinator.sleep(5000);
             coordinator.electAggregator(zone);
-        } else {
-            // Instruct new node to join cluster
-            log.info("DefaultZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());
-            joinToCluster(csc, coordinator, zone);
         }
     }
 
@@ -85,7 +91,14 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     @Override
     public synchronized void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
         // Instruct node to leave cluster
-        log.info("DefaultZoneManagementStrategy: Node to leave cluster: client={}, zone={}", csc.getId(), zone.getId());
+        log.info("AtLeastTwoZoneManagementStrategy: Node to leave cluster: client={}, zone={}", csc.getId(), zone.getId());
         coordinator.instructClusterLeave(csc, zone);
+
+        if (zone.getNodes().size()==1) {
+            // Instruct last node to leave cluster (and terminate cluster)
+            ClientShellCommand lastNode = zone.getNodes().get(0);
+            log.info("AtLeastTwoZoneManagementStrategy: Last node to leave cluster: client={}, zone={}", lastNode.getId(), zone.getId());
+            coordinator.instructClusterLeave(lastNode, zone);
+        }
     }
 }
