@@ -47,7 +47,7 @@
             <version>1.2.3</version>
         </dependency>
 
-        <!-- Bouncy Castle cryptography -->
+        <!-- Bouncy Castle cryptography used in Baguette Server and Client -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpg-jdk15on</artifactId>
