@@ -950,9 +950,11 @@ public class CommandExecutor {
                     String brokerUrl = fwdToGrouping.getUrl();
                     String username = fwdToGrouping.getUsername();
                     String password = fwdToGrouping.getPassword();
+                    log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, payload={}",
+                            name, fwdToGrouping, brokerUrl, username, topic, eventMap);
                     brokerCep.publishEvent(brokerUrl, username, password, topic, eventMap);
-                    log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, username={}, topic={}, payload={}",
-                            name, fwdToGrouping, username, topic, eventMap);
+                    log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, url={}, username={}, topic={}, payload={}",
+                            name, fwdToGrouping, brokerUrl, username, topic, eventMap);
                 }
             } catch (Exception ex) {
                 log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, payload={}, exception: ",

@@ -215,8 +215,9 @@ public class BrokerConfig implements InitializingBean {
             brokerUsername = s;
             userList.get(LOCAL_USER_INDEX).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
-        }
-        log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
+            log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
+        } else
+            log.debug("BrokerConfig.setBrokerUsername(): Username not set");
     }
 
     public void setBrokerPassword(String password) {
@@ -224,8 +225,9 @@ public class BrokerConfig implements InitializingBean {
             brokerPassword = password;
             userList.get(LOCAL_USER_INDEX).setPassword(password);
             brokerAuthenticationPlugin.setUsers(userList);
-        }
-        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordUtil.encodePassword(password));
+            log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordUtil.encodePassword(password));
+        } else
+            log.debug("BrokerConfig.setBrokerPassword(): Password not set");
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
