@@ -19,10 +19,10 @@ import java.util.UUID;
 
 /**
  * The default Zone Management Strategy used when 'zone-management-strategy-class' property is not set.
- * Groups clients based on domain, or last byte of IP Address. If neither is available it assigns client
- * in a new zone identified with a new UUID.
+ * It groups clients based on domain name, or last byte of IP Address. If neither is available it assigns client
+ * in a new zone identified by a random UUID.
  * When a zone contains only one client, no cluster initialization is instructed.
- * When a zone contains exactly two clients, then both clients are initialized as cluster nodes.
+ * When a zone contains exactly two clients, they are both initialized as cluster nodes.
  * If only one client is left in a zone, it is instructed to leave cluster.
  */
 @Slf4j
@@ -56,7 +56,7 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     }
 
     @Override
-    public void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
         if (zone.getNodes().size() < 2)
             return;
 
@@ -90,7 +90,7 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     }
 
     @Override
-    public void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    public synchronized void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
         // Instruct node to leave cluster
         log.info("DefaultZoneManagementStrategy: Node to leave cluster: client={}, zone={}", csc.getId(), zone.getId());
         coordinator.instructClusterLeave(csc, zone);
