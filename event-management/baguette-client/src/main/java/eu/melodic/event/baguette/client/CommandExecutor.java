@@ -658,7 +658,7 @@ public class CommandExecutor {
         // Set forward-to-topic settings of new grouping (active to-be)
         setGroupingForwards(newGroupingName);
 
-        //XXX: CHECK if it's ok
+        // Update truststore certificates from grouping settings
         updateCertificates(groupings.get(newGroupingName));
     }
 
@@ -743,13 +743,13 @@ public class CommandExecutor {
     protected void updateCertificates(@NonNull GroupingConfiguration grouping) {
         if (brokerCepService.getBrokerTruststore()==null) {
             log.warn("Broker-CEP trust store has not been initialized. Probably SSL is disabled.");
-            log.warn("Broker URL: {}", brokerCepService.getBrokerCepProperties().getBrokerUrl());
+            log.debug("Broker URL: {}", brokerCepService.getBrokerCepProperties().getBrokerUrl());
             return;
         }
 
         // Update truststore with per-grouping broker certificates
         try {
-            log.warn("Truststore certificates before update: {}",
+            log.debug("Truststore certificates before update: {}",
                     KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
             for (String g : GROUPING.getNames()) {
                 BrokerConnectionConfig groupingBrokerCfg = grouping.getBrokerConnections().get(g);
@@ -759,21 +759,21 @@ public class CommandExecutor {
                     String host = null;
                     if (StringUtils.isNotBlank(brokerUrl))
                         host = StringUtils.substringBetween(brokerUrl.trim(), "://", ":");
-                    log.warn("Grouping host: {}", host);
+                    log.debug("Grouping host: {}", host);
                     if (StringUtils.isNotEmpty(brokerCert)) {
-                        log.warn("Updating broker certificate to truststore for Grouping: {}", g);
-                        brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
-                        log.warn("Updating broker certificate to truststore for Grouping Host: {}", host);
+                        //log.debug("Updating broker certificate to truststore for Grouping: {}", g);
+                        //brokerCepService.addOrReplaceCertificateInTruststore(g, brokerCert);
+                        log.debug("Updating broker certificate to truststore for Grouping Host: {}", host);
                         brokerCepService.addOrReplaceCertificateInTruststore(host, brokerCert);
                     } else {
                         log.warn("No broker PEM certificate provided for Grouping: {}", g);
                     }
                 } else {
-                    log.warn("Removing broker certificate from truststore for Grouping (no new certificate provided): {}", g);
+                    log.debug("Removing broker certificate from truststore for Grouping (no new certificate provided): {}", g);
                     brokerCepService.deleteCertificateFromTruststore(g);
                 }
             }
-            log.warn("Truststore certificates after update: {}",
+            log.debug("Truststore certificates after update: {}",
                     KeystoreUtil.getCertificateAliases(brokerCepService.getBrokerTruststore()));
         } catch (Exception ex) {
             log.error("EXCEPTION while updating Trust store: ", ex);
