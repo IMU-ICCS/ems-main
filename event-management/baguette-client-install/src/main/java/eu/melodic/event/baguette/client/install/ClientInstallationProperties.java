@@ -49,6 +49,8 @@ public class ClientInstallationProperties {
     private String copyFilesToClientDir;        // location in VM where server files will be copied into
 
     private String clientTmpDir;                // location of temp. directory in VM (typically /tmp)
+    private String serverTmpDir;                // location of temp. directory in EMS server
+    private boolean keepTempFiles;              // keep temporary files in EMS server (during debug)
 
     // ----------------------------------------------------
 

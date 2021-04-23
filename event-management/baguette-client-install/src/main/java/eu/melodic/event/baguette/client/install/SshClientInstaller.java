@@ -33,6 +33,8 @@ import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
@@ -422,10 +424,12 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         streamLogger.logMessage(String.format("UPLOAD: SCP: %s -> %s\n", localFilePath, remoteFilePath));
         try {
+            long startTm = System.currentTimeMillis();
             log.info("SshClientInstaller: Uploading file: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
             ScpClient scpClient = session.createScpClient();
             scpClient.upload(localFilePath, remoteFilePath, ScpClient.Option.PreserveAttributes);
-            log.info("SshClientInstaller: File upload completed: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
+            long endTm = System.currentTimeMillis();
+            log.info("SshClientInstaller: File upload completed in {}ms: task #{}: local: {} -> remote: {}", endTm-startTm, taskCounter, localFilePath, remoteFilePath);
         } catch (Exception ex) {
             log.error("SshClientInstaller: File upload failed: task #{}: local: {} -> remote: {} Exception: ", taskCounter, localFilePath, remoteFilePath, ex);
             throw ex;
@@ -450,8 +454,35 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             log.trace("SshClientInstaller: Uploading file: task #{}: remote: {}, perm={}, content:\n{}", taskCounter, remoteFilePath, permissions, content);
             ScpClient scpClient = session.createScpClient();
             scpClient.upload(content.getBytes(), remoteFilePath, permissions, new ScpTimestamp(timestamp, timestamp));
-            log.info("SshClientInstaller: File upload completed: task #{}: remote: {}, content-length={}", taskCounter, remoteFilePath, content.length());
-            log.trace("SshClientInstaller: File upload completed: task #{}: remote: {}, content:\n{}", taskCounter, remoteFilePath, content);
+            */
+
+             /*
+             The alternative approach next is much faster than the original approach above (commented out)
+             Old approach: write bytes directly to remote file
+             New approach: write contents to a local temp. file and then upload it to remote side
+             */
+
+            // Write contents to a temporary local file
+            File tmpDir = Paths.get(properties.getServerTmpDir()).toFile();
+            tmpDir.mkdirs();
+            File tmp = File.createTempFile("bci_upload_", ".tmp", tmpDir);
+            log.debug("SshClientInstaller: Write to temp. file: task #{}: temp-file: {}, remote: {}, content-length: {}", taskCounter, tmp, remoteFilePath, content.length());
+            log.trace("SshClientInstaller: Write to temp. file: task #{}: temp-file: {}, remote: {}, content:\n{}", taskCounter, tmp, remoteFilePath, content);
+            try (FileWriter fw = new FileWriter(tmp.getAbsoluteFile())) { fw.write(content); }
+
+            // Upload temporary local file to remote side
+            log.trace("SshClientInstaller: Call 'sshFileUpload': task #{}: temp-file={}, remote={}", taskCounter, tmp, remoteFilePath);
+            sshFileUpload(tmp.getAbsolutePath(), remoteFilePath);
+
+            // Delete temporary file
+            if (!properties.isKeepTempFiles()) {
+                log.trace("SshClientInstaller: Remove temp. file: task #{}: temp-file={}", taskCounter, tmp);
+                tmp.delete();
+            }
+
+            long endTm = System.currentTimeMillis();
+            log.info("SshClientInstaller: File upload completed in {}ms: task #{}: remote: {}, content-length={}", endTm-timestamp, taskCounter, remoteFilePath, content.length());
+            log.trace("SshClientInstaller: File upload completed in {}ms: task #{}: remote: {}, content:\n{}", endTm-timestamp, taskCounter, remoteFilePath, content);
         } catch (Exception ex) {
             log.error("SshClientInstaller: File upload failed: task #{}: remote: {}, Exception: ", taskCounter, remoteFilePath, ex);
             throw ex;
