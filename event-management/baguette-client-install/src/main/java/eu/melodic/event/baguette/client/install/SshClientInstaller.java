@@ -447,7 +447,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         streamLogger.logMessage(String.format("WRITE FILE: SCP: %s, content-length=%d \n", remoteFilePath, content.length()));
         try {
             long timestamp = System.currentTimeMillis();
-            Collection<PosixFilePermission> permissions = isExecutable
+            /*Collection<PosixFilePermission> permissions = isExecutable
                     ? Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE)
                     : Arrays.asList(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
             log.info("SshClientInstaller: Uploading file: task #{}: remote: {}, perm={}, content-length={}", taskCounter, remoteFilePath, permissions, content.length());
