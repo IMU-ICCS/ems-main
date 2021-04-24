@@ -24,8 +24,15 @@
 			<groupId>eu.melodic.event</groupId>
 			<artifactId>broker-cep</artifactId>
 			<version>${project.version}</version>
+			<scope>compile</scope>
 		</dependency>
-		
+		<dependency>
+			<groupId>eu.melodic.event</groupId>
+			<artifactId>translator</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
 		<dependency>
 			<groupId>org.apache.sshd</groupId>

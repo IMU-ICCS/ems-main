@@ -13,6 +13,7 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,7 +24,7 @@ public class NoopCoordinator implements ServerCoordinator {
     protected boolean started;
 
     @Override
-    public void initialize(BaguetteServer server, Runnable callback) {
+    public void initialize(final TranslationContext TC, String upperwareGrouping, BaguetteServer server, Runnable callback) {
         if (_logInvocation("initialize", null, false)) return;
         this.server = server;
         this.config = server.getConfiguration();

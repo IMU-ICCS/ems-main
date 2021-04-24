@@ -24,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -57,7 +58,7 @@ public class BaguetteServerProperties {
     private Map<String,String> coordinatorParameters = new HashMap<>();
 
     @Value("${baguette.server.coordinator.id}")
-    private String coordinatorId;
+    private List<String> coordinatorId;
     private Map<String, CoordinatorConfig> coordinatorConfig = new HashMap<>();
 
     @Value("${baguette.server.registration-window:30000}")

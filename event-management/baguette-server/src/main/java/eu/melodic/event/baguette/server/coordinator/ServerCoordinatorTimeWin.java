@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server.coordinator;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.ServerCoordinator;
+import eu.melodic.event.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Vector;
@@ -34,7 +35,7 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
     private String brokerCfgIpAddressCmd;
     private String brokerCfgPortCmd;
 
-    public void initialize(BaguetteServer server, Runnable callback) {
+    public void initialize(final TranslationContext TC, String upperwareGrouping, BaguetteServer server, Runnable callback) {
         this.server = server;
         this.registrationWindow = server.getConfiguration().getRegistrationWindow();
         this.callback = callback;

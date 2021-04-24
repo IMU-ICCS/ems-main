@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.GroupingConfiguration;
 
 import java.util.Map;
@@ -16,7 +17,9 @@ import java.util.Map;
 import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
 public interface ServerCoordinator {
-    void initialize(BaguetteServer server, Runnable callback);
+    default boolean isSupported(TranslationContext tc) { return true; }
+
+    void initialize(TranslationContext tc, String upperwareGrouping, BaguetteServer server, Runnable callback);
 
     default void setProperties(Map<String, String> p) { }
 
