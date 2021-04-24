@@ -9,10 +9,12 @@
 
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
+import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.GROUPING;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,12 +33,34 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private int zoneStartPort = 1200;
     private int zoneEndPort = 65535;
 
+    private GROUPING topLevelGrouping;
+    private GROUPING aggregatorGrouping;
+    private GROUPING lastLevelGrouping;
+
     @Override
     public boolean isSupported(final TranslationContext _TC) {
         // Check if it is a 3-level architecture
         Set<String> groupings = _TC.getG2R().keySet();
         if (!groupings.contains("GLOBAL")) return false;
         return groupings.size()==3;
+    }
+
+    @Override
+    public void initialize(final TranslationContext TC, String upperwareGrouping, BaguetteServer server, Runnable callback) {
+        if (!isSupported(TC))
+            throw new IllegalArgumentException("Passed Translation Context is not supported");
+
+        super.initialize(TC, upperwareGrouping, server, callback);
+        List<GROUPING> groupings = TC.getG2R().keySet().stream()
+                .map(GROUPING::valueOf)
+                .sorted()
+                .collect(Collectors.toList());
+        log.debug("ClusteringCoordinator.initialize(): Groupings: {}", groupings);
+        this.topLevelGrouping = groupings.get(0);
+        this.aggregatorGrouping = groupings.get(1);
+        this.lastLevelGrouping = groupings.get(2);
+        log.info("ClusteringCoordinator.initialize(): Groupings: top-level={}, aggregator={}, last-level={}",
+                topLevelGrouping, aggregatorGrouping, lastLevelGrouping);
     }
 
     @SneakyThrows
