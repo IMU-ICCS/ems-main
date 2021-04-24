@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server.coordinator.cluster;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
+import eu.melodic.event.translate.TranslationContext;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +30,14 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private IZoneManagementStrategy zoneManagementStrategy;
     private int zoneStartPort = 1200;
     private int zoneEndPort = 65535;
+
+    @Override
+    public boolean isSupported(final TranslationContext _TC) {
+        // Check if it is a 3-level architecture
+        Set<String> groupings = _TC.getG2R().keySet();
+        if (!groupings.contains("GLOBAL")) return false;
+        return groupings.size()==3;
+    }
 
     @SneakyThrows
     public void setProperties(Map<String, String> zoneConfig) {
