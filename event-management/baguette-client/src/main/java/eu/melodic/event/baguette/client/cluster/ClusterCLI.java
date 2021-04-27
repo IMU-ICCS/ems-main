@@ -190,7 +190,7 @@ public class ClusterCLI extends AbstractLogBase {
 			if ("list".equalsIgnoreCase(op) || "bl".equalsIgnoreCase(cmd[0])) {
 				log_info("CLI: Node status and scores:");
 				final BrokerUtil brokerUtil1 = clusterManager.getBrokerUtil();
-				brokerUtil1.getAllNodes().forEach(ms -> log_info("CLI:    {}  [{}, {}, {}]",
+				brokerUtil1.getActiveNodes().forEach(ms -> log_info("CLI:    {}  [{}, {}, {}]",
 						ms.getMember().id().id(), brokerUtil1.getNodeStatus(ms.getMember()),
 						ms.getScore(), ms.getMember().properties().getProperty("uuid", null)));
 			} else

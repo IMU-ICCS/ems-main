@@ -299,7 +299,7 @@ public class BrokerUtil extends AbstractLogBase {
                 .collect(Collectors.toList());
     }
 
-    public List<MemberWithScore> getAllNodes() {
+    public List<MemberWithScore> getActiveNodes() {
         return atomix.getMembershipService().getMembers().stream()
                 .filter(m -> m.isActive() && m.isReachable())
                 .map(m -> new MemberWithScore(m, clusterManager.getScoreFunction()))
@@ -308,15 +308,14 @@ public class BrokerUtil extends AbstractLogBase {
 
     public void checkBroker() {
         List<Member> brokers = getBrokers();
-        if (brokers.size() != 1) {
-            log_info("BRU: Brokers after cluster change: {}", brokers);
+        log_info("BRU: Brokers after cluster change: {}", brokers);
 
-            // Check if any node is initializing as broker (then don't start election)
-            if (getAllNodes().stream()
-                    .noneMatch(m -> STATUS_INITIALIZING.equals(getNodeStatus(m.getMember()))))
-            {
-                startElection();
-            }
+        // Check if any node is initializing as broker (then don't start election)
+        if (getActiveNodes().stream()
+                .map(MemberWithScore::getMember).map(this::getNodeStatus)
+                .noneMatch(s -> STATUS_INITIALIZING.equals(s) || STATUS_BROKER.equals(s)))
+        {
+            startElection();
         }
     }
 
