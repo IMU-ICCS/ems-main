@@ -1,9 +1,9 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterMonitor;
 import eu.melodic.upperware.adapter.plangenerator.tasks.MonitorTask;
-import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,17 +16,17 @@ public class MonitorTaskExecutor extends RunnableTaskExecutor<AdapterMonitor> {
 
     private final String applicationId;
     private final String authorizationBearer;
-    private final ProactiveClientService proactiveClientService;
+    private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
 
     MonitorTaskExecutor(MonitorTask task, Collection<Future> predecessors,
                         String applicationId,
                         String authorizationBearer,
-                        ProactiveClientService proactiveClientService) {
+                        ProactiveClientServiceForAdapter proactiveClientServiceForAdapter) {
 
         super(task, predecessors);
         this.applicationId = applicationId;
         this.authorizationBearer = authorizationBearer;
-        this.proactiveClientService = proactiveClientService;
+        this.proactiveClientServiceForAdapter = proactiveClientServiceForAdapter;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class MonitorTaskExecutor extends RunnableTaskExecutor<AdapterMonitor> {
             // or Pull (e.g. SystemCpuUsage classic metric) Sensor to do this. We know node name here, so we can use it.
             // Every sensor type sends to ems client (localhost), we have jms broker configuration.
 
-            int status = proactiveClientService.addMonitors(
+            int status = proactiveClientServiceForAdapter.addMonitors(
                     Collections.singletonList(taskBody.getNodeName()),
                     StringUtils.replace(authorizationBearer, "Bearer ", "")
             );

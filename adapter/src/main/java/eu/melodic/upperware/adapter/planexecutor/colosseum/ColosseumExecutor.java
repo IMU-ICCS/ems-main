@@ -10,12 +10,12 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import com.google.common.collect.Maps;
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
-import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.DirectedGraph;
@@ -42,7 +42,7 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
 
   private ColosseumExecutorFactory factory;
   private ThreadPoolTaskExecutor executor;
-  private final ProactiveClientService proactiveClientService;
+  private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
   private final long TIMEOUT_SECONDS = 5;
 
   @Override
@@ -73,7 +73,7 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
     }
 
     log.info("Execute Plan: all tasks (futures) have been completed, now submitting the job");
-    long jobId = proactiveClientService.submitJob(applicationId);
+    long jobId = proactiveClientServiceForAdapter.submitJob(applicationId);
     log.info("Execute Plan: ProActive jobId={}", jobId);
 
     waitForJobFinish(applicationId);
@@ -81,7 +81,7 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
 
   private void waitForJobFinish(String applicationId) {
     int loops = 0;
-    Optional<JobStatus> jobStatus = proactiveClientService.getJobStatus(applicationId);
+    Optional<JobStatus> jobStatus = proactiveClientServiceForAdapter.getJobStatus(applicationId);
 
     while(jobStatus.isPresent() && jobStatus.get().isJobAlive()) {
       try {
@@ -93,7 +93,7 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
         log.error("Execute Plan: [application id: {}, loops: {}, TIMEOUT_SECONDS: {}] job got interrupted while sleeping: {}", applicationId, loops, TIMEOUT_SECONDS, e.getMessage());
       }
       loops++;
-      jobStatus = proactiveClientService.getJobStatus(applicationId);
+      jobStatus = proactiveClientServiceForAdapter.getJobStatus(applicationId);
     }
 
     log.info("Execute Plan: final jobStatus: {} - waited for a total of {} seconds", jobStatus, loops * TIMEOUT_SECONDS);

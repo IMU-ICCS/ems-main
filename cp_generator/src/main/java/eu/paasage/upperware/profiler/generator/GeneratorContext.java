@@ -6,10 +6,11 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.upperware.metamodel.cp.CpFactory;
 import eu.paasage.upperware.metamodel.types.TypesFactory;
 import eu.paasage.upperware.profiler.generator.communication.CdoService;
+import eu.paasage.upperware.profiler.generator.communication.ProactiveClientServiceForGenerator;
+import eu.paasage.upperware.profiler.generator.communication.impl.ProactiveClientServiceForGeneratorImpl;
 import eu.paasage.upperware.profiler.generator.notification.NotificationService;
 import eu.paasage.upperware.profiler.generator.orchestrator.GenerationOrchestrator;
 import eu.paasage.upperware.profiler.generator.orchestrator.RequestSynchronizer;
-import eu.paasage.upperware.profiler.generator.proactive.client.ProtectionUtils;
 import eu.paasage.upperware.profiler.generator.properties.GeneratorProperties;
 import eu.paasage.upperware.profiler.generator.service.camel.IdGenerator;
 import eu.paasage.upperware.profiler.generator.service.camel.NewConstraintProblemServiceX;
@@ -19,7 +20,6 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.github.cloudiator.rest.ApiClient;
 import io.github.cloudiator.rest.api.MatchmakingApi;
-import io.github.cloudiator.rest.api.ProcessApi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
@@ -121,7 +121,10 @@ public class GeneratorContext {
     }
 
     @Bean
-    public ProtectionUtils protectionUtils(GeneratorProperties generatorProperties) {
-        return new ProtectionUtils(generatorProperties.getPaConfig().getEncryptorPw());
+    public ProactiveClientServiceForGenerator proactiveClientServiceForGenerator(GeneratorProperties generatorProperties) {
+        return new ProactiveClientServiceForGeneratorImpl(generatorProperties.getPaConfig().getRestUrl(),
+                generatorProperties.getPaConfig().getLogin(),
+                generatorProperties.getPaConfig().getPassword(),
+                generatorProperties.getPaConfig().getEncryptorPw());
     }
 }

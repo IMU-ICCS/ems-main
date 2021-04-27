@@ -1,4 +1,4 @@
-package eu.melodic.upperware.adapter.exception;
+package eu.passage.upperware.commons.proactive.client;
 
 public class ProactiveClientException extends RuntimeException {
     public ProactiveClientException(String message) {

@@ -11,9 +11,9 @@ import camel.requirement.PaaSRequirement;
 import camel.requirement.ProviderRequirement;
 import camel.requirement.ResourceRequirement;
 import camel.type.*;
+import eu.paasage.upperware.profiler.generator.communication.ProactiveClientServiceForGenerator;
 import eu.paasage.upperware.profiler.generator.communication.NodeCandidatesFetchingService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
-import eu.paasage.upperware.profiler.generator.proactive.client.ProactiveClientService;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInterfaces;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +46,12 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
     private static final String CLOUD_CLASS = "cloud";
     private static final String FAAS_ENVIRONMENT_CLASS = "environment";
 
-    private final ProactiveClientService proactiveClientService;
+    private final ProactiveClientServiceForGenerator proactiveClientServiceForGenerator;
 
     @Override
     public List<NodeCandidate> findNodeCandidates(List<Requirement> requirements) {
         log.info("Trying to get Node candidates for requirements: {}", requirements);
-        List<NodeCandidate> candidates = proactiveClientService.findNodeCandidates(requirements);
+        List<NodeCandidate> candidates = proactiveClientServiceForGenerator.findNodeCandidates(requirements);
         if (candidates.size() > 0) {
             fillByonCloudProvider(candidates);
             log.info("Successfully fetched {} NodeCandidates", candidates.size());

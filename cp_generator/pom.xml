@@ -23,6 +23,7 @@
     <properties>
         <!--DOCKER plugin properties-->
         <docker.imageName>generator</docker.imageName>
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <dependencies>
@@ -122,12 +123,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
@@ -164,12 +159,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.cloudiator.client</groupId>
-            <artifactId>java-rest</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>jwt-commons</artifactId>
         </dependency>
@@ -186,17 +175,6 @@
             <version>1.4</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.activeeon</groupId>
-            <artifactId>scheduling-abstraction-layer</artifactId>
-            <version>3.00-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-text</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
@@ -219,6 +197,34 @@
                 <groupId>org.codehaus.groovy.maven</groupId>
                 <artifactId>gmaven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence/>
+                                <requireUpperBoundDeps>
+                                    <!-- 'uniqueVersions' (default:false) can be set to true if you want to compare the timestamped SNAPSHOTs  -->
+                                    <!-- <uniqueVersions>true</uniqueVersions> -->
+                                    <!-- If you wish to ignore certain cases:
+                                    <excludes>
+                                      <exclude>com.google.guava:guava</exclude>
+                                    </excludes>
+                                    -->
+                                </requireUpperBoundDeps>
+                            </rules>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
         </plugins>
     </build>
 

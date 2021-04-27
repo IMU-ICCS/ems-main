@@ -1,10 +1,10 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
-import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -19,12 +19,12 @@ import java.util.concurrent.Future;
 public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
 
     private final String applicationId;
-    private final ProactiveClientService proactiveClientService;
+    private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
 
-    NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, String applicationId, ProactiveClientService proactiveClientService) {
+    NodeTaskExecutor(NodeTask task, Collection<Future> predecessors, String applicationId, ProactiveClientServiceForAdapter proactiveClientServiceForAdapter) {
         super(task, predecessors);
         this.applicationId = applicationId;
-        this.proactiveClientService = proactiveClientService;
+        this.proactiveClientServiceForAdapter = proactiveClientServiceForAdapter;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
             nodesJSONArray.put(nodeJSON);
             log.info("NodeTaskExecutor->create: [application id: {}] ProActive node(s) (JSONArray): \n{}", applicationId, nodesJSONArray);
 
-            int status = proactiveClientService.addNodes(nodesJSONArray, applicationId);
+            int status = proactiveClientServiceForAdapter.addNodes(nodesJSONArray, applicationId);
 
             log.info("NodeTaskExecutor->create: [application id: {}] addNodes status= {}", applicationId, status);
         }
@@ -63,7 +63,7 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
             List<String> nodeNames = Collections.singletonList(taskBody.getNodeName());
             log.info("NodeTaskExecutor->delete: [application id: {}] nodeNames= {}", applicationId, nodeNames);
 
-            int status = proactiveClientService.removeNodes(nodeNames);
+            int status = proactiveClientServiceForAdapter.removeNodes(nodeNames);
 
             log.info("NodeTaskExecutor->delete: [application id: {}] removeNodes status= {}", applicationId, status);
         }

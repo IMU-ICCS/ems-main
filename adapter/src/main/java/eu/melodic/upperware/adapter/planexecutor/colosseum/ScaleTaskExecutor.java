@@ -1,10 +1,10 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterScale;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScaleTask;
-import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -14,12 +14,12 @@ import java.util.concurrent.Future;
 public class ScaleTaskExecutor extends RunnableTaskExecutor<AdapterScale> {
 
     private final String applicationId;
-    private final ProactiveClientService proactiveClientService;
+    private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
 
-    ScaleTaskExecutor(ScaleTask task, Collection<Future> predecessors, String applicationId, ProactiveClientService proactiveClientService) {
+    ScaleTaskExecutor(ScaleTask task, Collection<Future> predecessors, String applicationId, ProactiveClientServiceForAdapter proactiveClientServiceForAdapter) {
         super(task, predecessors);
         this.applicationId = applicationId;
-        this.proactiveClientService = proactiveClientService;
+        this.proactiveClientServiceForAdapter = proactiveClientServiceForAdapter;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class ScaleTaskExecutor extends RunnableTaskExecutor<AdapterScale> {
             // the same as the original one (based on the same node candidate). Probably monitor created for original node will have to be created for
             // new node as well. Scale out is one node at a time.
             log.info("ScaleTaskExecutor->create: [application id: {}] ScaleDirection->OUT AdapterScale= {}", applicationId, taskBody);
-            int status = proactiveClientService.addScaleOutTask(taskBody.getNodeNames(), applicationId, taskBody.getTaskName());
+            int status = proactiveClientServiceForAdapter.addScaleOutTask(taskBody.getNodeNames(), applicationId, taskBody.getTaskName());
             log.info("ScaleTaskExecutor->create: [application id: {}] addScaleOutTask status= {}", applicationId, status);
 
         }
@@ -44,7 +44,7 @@ public class ScaleTaskExecutor extends RunnableTaskExecutor<AdapterScale> {
         try {
             // here we trigger scale in (deleting nodes) from task/component (e.g. Component_App). We have a list of nodes names to delete.
             log.info("ScaleTaskExecutor->delete: [application id: {}] ScaleDirection->IN AdapterScale= {}", applicationId, taskBody);
-            int status = proactiveClientService.addScaleInTask(taskBody.getNodeNames(), applicationId, taskBody.getTaskName());
+            int status = proactiveClientServiceForAdapter.addScaleInTask(taskBody.getNodeNames(), applicationId, taskBody.getTaskName());
             log.info("ScaleTaskExecutor->delete: [application id: {}] addScaleInTask status= {}", applicationId, status);
         }
         catch (RuntimeException e) {

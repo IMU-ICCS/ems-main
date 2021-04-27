@@ -1,11 +1,11 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
 import com.google.common.base.MoreObjects;
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
-import eu.melodic.upperware.adapter.proactive.client.ProactiveClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,12 +19,12 @@ import static java.lang.String.format;
 public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
 
     private final String applicationId;
-    private final ProactiveClientService proactiveClientService;
+    private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
 
-    JobTaskExecutor(JobTask task, Collection<Future> predecessors, String applicationId, ProactiveClientService proactiveClientService) {
+    JobTaskExecutor(JobTask task, Collection<Future> predecessors, String applicationId, ProactiveClientServiceForAdapter proactiveClientServiceForAdapter) {
         super(task, predecessors);
         this.applicationId = applicationId;
-        this.proactiveClientService = proactiveClientService;
+        this.proactiveClientServiceForAdapter = proactiveClientServiceForAdapter;
     }
 
     @Override
@@ -56,8 +56,8 @@ public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
 
             log.info("JobTaskExecutor->create: [application id: {}] ProActive job (JSONObject): \n{}", applicationId, jobJSON);
 
-            log.info("JobTaskExecutor->create: [application id: {}] ProActive Connection State={}", applicationId, proactiveClientService.getConnectionState());
-            int status = proactiveClientService.createJob(jobJSON);
+            log.info("JobTaskExecutor->create: [application id: {}] ProActive Connection State={}", applicationId, proactiveClientServiceForAdapter.getConnectionState());
+            int status = proactiveClientServiceForAdapter.createJob(jobJSON);
 
             log.info("JobTaskExecutor->create: [application id: {}] createJob status= {}", applicationId, status);
 

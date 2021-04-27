@@ -1,4 +1,4 @@
-package eu.paasage.upperware.profiler.generator.proactive.client;
+package eu.passage.upperware.commons.proactive.client;
 
 import lombok.ToString;
 

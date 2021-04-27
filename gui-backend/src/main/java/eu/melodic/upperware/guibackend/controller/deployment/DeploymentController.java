@@ -75,10 +75,7 @@ public class DeploymentController {
     @ResponseStatus(HttpStatus.CREATED)
     public List<String> saveSecureVariables(@RequestBody List<SecureVariable> secureVariablesRequest) {
         log.info("POST request for save secure variables");
-        //secureStoreService.validateSecureVariables(secureVariablesRequest);
-        //log.info("LSZ [DeploymentController]: saveSecureVariables - saving list: {}", secureVariablesRequest);
         secureStoreDBService.validateSecureVariables(secureVariablesRequest);
         return secureStoreDBService.saveSecureVariables(secureVariablesRequest);
-        //return secureStoreService.saveSecureVariables(secureVariablesRequest);
     }
 }

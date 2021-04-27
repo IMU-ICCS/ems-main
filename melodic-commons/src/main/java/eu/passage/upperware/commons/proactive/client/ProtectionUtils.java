@@ -1,8 +1,8 @@
-package eu.paasage.upperware.profiler.generator.proactive.client;
+package eu.passage.upperware.commons.proactive.client;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
-public class ProtectionUtils {
+class ProtectionUtils {
 
     public final StandardPBEStringEncryptor textEncryptor = new StandardPBEStringEncryptor();
 
