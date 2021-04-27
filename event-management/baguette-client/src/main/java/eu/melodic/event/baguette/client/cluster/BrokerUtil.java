@@ -47,8 +47,6 @@ public class BrokerUtil extends AbstractLogBase {
 
     @Getter @Setter
     private NodeCallback callback;
-    @Getter @Setter
-    private boolean dontInit = true;    // Don't run election until elect/appoint is explicitly invoked at a node
 
     public BrokerUtil(ClusterManager clusterManager, NodeCallback callback) {
         this.clusterManager = clusterManager;
@@ -61,7 +59,6 @@ public class BrokerUtil extends AbstractLogBase {
         String message = m.toString();
         log_info("BRU: **** Broker message received: {}", message);
 
-        dontInit = false;
         String messageType = message.split(" ", 2)[0];
         if (MESSAGE_ELECTION.equalsIgnoreCase(messageType)) {
             // Get excluded nodes (if any)
@@ -155,7 +152,6 @@ public class BrokerUtil extends AbstractLogBase {
 
     public void appointment(String appointedNodeId) {
         // Check i am appointed
-        dontInit = false;
         Member local = atomix.getMembershipService().getLocalMember();
         if (! local.id().id().equals(appointedNodeId)) {
             log_debug("BRU: I am not appointed: me={} <> appointed={}", local.id().id(), appointedNodeId);
@@ -311,8 +307,6 @@ public class BrokerUtil extends AbstractLogBase {
     }
 
     public void checkBroker() {
-        if (dontInit) return;
-
         List<Member> brokers = getBrokers();
         if (brokers.size() != 1) {
             log_info("BRU: Brokers after cluster change: {}", brokers);

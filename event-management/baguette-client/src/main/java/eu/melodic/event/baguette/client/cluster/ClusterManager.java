@@ -191,7 +191,6 @@ public class ClusterManager extends AbstractLogBase {
 
 		// Start election if no broker exists
 		if (startElection) {
-			brokerUtil.setDontInit(false);
 			brokerUtil.checkBroker();
 		}
 	}
