@@ -231,7 +231,6 @@ build-required-part8:ems-baguette-client:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
 
-
 build:cp-parser:
   stage: build
   image: $MAVEN_IMAGE
@@ -324,8 +323,6 @@ deploy:melodic-cache:
     - build-required-part3:melodic-cache
   script:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
-
-
 
 deploy:jwt-server:
   stage: deploy
@@ -624,6 +621,23 @@ deploy:functionizer-testing-tool:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
+
+deploy:cp-parser:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc1.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build:cp-parser
+    - build-required-part3:zpp-solver
+    - build-required-part6:cp-solver
+  script:
+    - $DOCKER_CLI $CP_PARSER_CLI deploy
 
 deploy-solvers-part1:nc-solver:
   stage: deploy-solvers-part1
