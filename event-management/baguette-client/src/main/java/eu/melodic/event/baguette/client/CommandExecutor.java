@@ -33,7 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
@@ -623,8 +622,7 @@ public class CommandExecutor {
         // Apply merged settings
         brokerCepService.addEventTypes(eventTypes, EventMap.getPropertyNames(), EventMap.getPropertyClasses());
         brokerCepService.setConstants(constants);
-        brokerCepService.addFunctionDefinitions(functionDefinitions);   //XXX: SOS: CHECK if func.def. replacement occurs
-        log.warn("!!!!!!!!!!!!!!!!  IMPORTANT NOTE:\n", new RuntimeException("XXX: SOS: CHECK if func.def. replacement occurs"));
+        brokerCepService.addFunctionDefinitions(functionDefinitions);
 
         // Clear forward-to-groupings settings of (old) active grouping
         clearActiveGroupingForwards();
@@ -886,7 +884,40 @@ public class CommandExecutor {
         }
     }
 
-    private static class StreamGobbler implements Runnable {
+    public BrokerConnectionConfig getBrokerConfiguration() {
+        BrokerConnectionConfig config = new BrokerConnectionConfig(
+                activeGrouping!=null ? activeGrouping.getName() : null,
+                brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
+                brokerCepService.getBrokerCertificate(),
+                brokerCepService.getBrokerUsername(),
+                brokerCepService.getBrokerPassword()
+        );
+        log.debug("getBrokerConfiguration: {}", config);
+        return config;
+    }
+
+    @SneakyThrows
+    public String getBrokerConfigurationAsString() {
+        ObjectMapper mapper = new ObjectMapper();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            mapper.writer().writeValue(baos, getBrokerConfiguration());
+            String configStr = Base64.getEncoder().encodeToString(baos.toByteArray());
+            log.debug("getBrokerConfigurationAsString: {}", configStr);
+            return configStr;
+        }
+    }
+
+    @SneakyThrows
+    public BrokerConnectionConfig getBrokerConfigurationFromString(String configStr) {
+        log.debug("getBrokerConfigurationFromString: INPUT: {}", configStr);
+        ObjectMapper mapper = new ObjectMapper();
+        BrokerConnectionConfig config = mapper
+                .readValue(Base64.getDecoder().decode(configStr), BrokerConnectionConfig.class);
+        log.debug("getBrokerConfigurationFromString: OUTPUT: {}", config);
+        return config;
+    }
+
+    /*private static class StreamGobbler implements Runnable {
         private InputStream inputStream1;
         private InputStream inputStream2;
         private Consumer<String> consumer;
@@ -902,7 +933,7 @@ public class CommandExecutor {
             new BufferedReader(new InputStreamReader(inputStream1)).lines().forEach(consumer);
             new BufferedReader(new InputStreamReader(inputStream2)).lines().forEach(consumer);
         }
-    }
+    }*/
 
     @Getter
     @ToString
