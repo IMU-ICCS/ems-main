@@ -131,10 +131,28 @@
 						<td><span id="c-span-1-result" /></td>
 					</tr>
 					<tr>
-						<td><input id="cmd-2-client" name="cmd-1-client" value="*" /></td>
-						<td><input id="cmd-2-command" name="cmd-1-command" value="CLUSTER-EXEC broker list" /></td>
+						<td><input id="cmd-2-client" name="cmd-2-client" value="*" /></td>
+						<td><input id="cmd-2-command" name="cmd-2-command" value="GET-ACTIVE-GROUPING" /></td>
 						<td><button id="cmd-2-send" onClick="sendCommand('2');">Send</button></td>
 						<td><span id="c-span-2-result" /></td>
+					</tr>
+					<tr>
+						<td><input id="cmd-3-client" name="cmd-3-client" value="*" /></td>
+						<td><input id="cmd-3-command" name="cmd-3-command" value="GET-GROUPING-CONFIG PER_ZONE" /></td>
+						<td><button id="cmd-3-send" onClick="sendCommand('3');">Send</button></td>
+						<td><span id="c-span-3-result" /></td>
+					</tr>
+					<tr>
+						<td><input id="cmd-4-client" name="cmd-4-client" value="*" /></td>
+						<td><input id="cmd-4-command" name="cmd-4-command" value="CLUSTER-TEST START" /></td>
+						<td><button id="cmd-4-send" onClick="sendCommand('4');">Send</button></td>
+						<td><span id="c-span-4-result" /></td>
+					</tr>
+					<tr>
+						<td><input id="cmd-5-client" name="cmd-5-client" value="*" /></td>
+						<td><input id="cmd-5-command" name="cmd-5-command" value="CLUSTER-EXEC broker list" /></td>
+						<td><button id="cmd-5-send" onClick="sendCommand('5');">Send</button></td>
+						<td><span id="c-span-5-result" /></td>
 					</tr>
 				</tbody>
 			</table>
