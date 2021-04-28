@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -86,6 +87,7 @@ public class CommandExecutor {
 
     @Autowired
     private ClusterManagerProperties clusterManagerProperties;
+    @Getter
     private ClusterManager clusterManager;
     private ClusterTest clusterTest;
     private boolean clusterKeystoreInitialized = false;
@@ -310,7 +312,7 @@ public class CommandExecutor {
             }
 
             // Join/start cluster
-            clusterManager.initialize(clusterManagerProperties, new ClusterNodeCallback());
+            clusterManager.initialize(clusterManagerProperties, new ClusterNodeCallback(this));
             //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
             clusterManager.joinCluster();
             clusterManager.waitToJoin();
@@ -1042,30 +1044,108 @@ public class CommandExecutor {
         private Map<String, GroupingConfiguration> groupings;
     }
 
+    @Data
     protected static class ClusterNodeCallback implements BrokerUtil.NodeCallback {
+        //XXX: Try to eliminate in-callback status tracking
+        // Try to use the status from ClusterManager
+        enum STATE { OFF, NODE, INITIALIZING, AGGREGATOR, STEPPING_DOWN }
+
+        @NonNull private final CommandExecutor commandExecutor;
+        private STATE state = STATE.NODE;
+        private AtomicBoolean backOff = new AtomicBoolean();
+
         @Override
         public void initialize() {
-            log.warn(">>>>>>>  TODO: BROKER: INITIALIZE");
+            // Check if node is in the right state
+            log.debug("initialize(): INITIALIZE");
+            log.trace("initialize(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
+            log.trace("initialize(): Back-off flag: {}", backOff.get());
+
+//            STATE state = STATE.valueOf(commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus());
+            if (state!=STATE.NODE || backOff.getAndSet(false)) {
+                log.warn("initialize(): Node cannot be initialized as Aggregator. Current state: {}", state);
+                return;
+            }
+
+            log.info("initialize(): Node starts initializing as Aggregator...");
+            state = STATE.INITIALIZING;
+//            commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_INITIALIZING);
+            commandExecutor.setActiveGrouping(AGGREGATOR_GROUPING);
+            state = STATE.AGGREGATOR;
+//            commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_BROKER);
+            log.info("initialize(): Node initialized as Aggregator");
+
+            if (backOff.getAndSet(false)) {
+                log.debug("initialize(): Back-off flag has been set. Stepping down immediately.");
+                stepDown();
+            }
         }
 
         @Override
         public void stepDown() {
-            log.warn(">>>>>>>  TODO: BROKER: STEP DOWN");
+            log.debug("stepDown(): STEP DOWN");
+            log.trace("stepDown(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
+            log.trace("stepDown(): Back-off flag: {}", backOff.get());
+
+//            STATE state = STATE.valueOf(commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus());
+            switch (state) {
+                case NODE:
+                    log.debug("stepDown(): Node is not Aggregator. Clearing back-off flag");
+                    backOff.set(false); break;
+                case INITIALIZING:
+                    log.debug("stepDown(): Node is initializing. Back-off flag set");
+                    backOff(); break;
+                case AGGREGATOR:
+                    log.info("stepDown(): Node is Aggregator. Start stepping down...");
+                    state = STATE.STEPPING_DOWN;
+//                    commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_NOT_CANDIDATE);
+                    commandExecutor.setActiveGrouping(NODE_GROUPING);
+                    state = STATE.NODE;
+//                    commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_CANDIDATE);
+                    backOff.set(false);
+                    log.info("stepDown(): Node stepped down");
+                    break;
+                case STEPPING_DOWN:
+                    log.debug("stepDown(): Node is already stepping down. Nothing to do");
+                    backOff.set(false);
+                    break;
+            }
         }
 
         @Override
         public void backOff() {
-            log.warn(">>>>>>>  TODO: BROKER: BACK OFF");
+            log.debug("backOff(): BACK OFF");
+            log.trace("backOff(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
+            log.trace("backOff(): Back-off flag: {}", backOff.get());
+
+//            STATE state = STATE.valueOf(commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus());
+            if (state==STATE.INITIALIZING) {
+                log.debug("backOff(): Set Back-off flag to step down after initialization");
+                backOff.set(true);
+            } else
+            if (state==STATE.AGGREGATOR) {
+                log.debug("backOff(): Stepping down because Back-off flag has been set");
+                stepDown();
+            }
         }
 
         @Override
         public String getConfiguration(Member local) {
-            return null;
+            log.trace("getConfiguration(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
+            log.trace("getConfiguration(): Back-off flag: {}", backOff.get());
+            String brokerConfig = commandExecutor.getBrokerConfigurationAsString();
+            log.trace("getConfiguration(): Config. string: {}", brokerConfig);
+            return brokerConfig;
         }
 
         @Override
         public void setConfiguration(String newConfig) {
-            log.warn(">>>>>>>  TODO: BROKER: NEW CONFIG: "+newConfig);
+            log.debug("setConfiguration(): SET CONFIG: {}", newConfig);
+            log.trace("setConfiguration(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
+            log.trace("setConfiguration(): Back-off flag: {}", backOff.get());
+
+            // Update broker connection configuration for aggregator grouping
+            commandExecutor.setBrokerConfigurationFromString(newConfig);
         }
     }
 }
