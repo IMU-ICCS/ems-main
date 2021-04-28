@@ -44,6 +44,11 @@ import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig
 @Service
 public class CommandExecutor {
 
+    //XXX: MAKE CONFIGURABLE FROM BAGUETTE SERVER
+    private final static String GLOBAL_GROUPING = "GLOBAL";
+    private final static String AGGREGATOR_GROUPING = "PER_ZONE";
+    private final static String NODE_GROUPING = "PER_INSTANCE";
+
     private static String getConfigDir() {
         String confDir = System.getenv("MELODIC_CONFIG_DIR");
         if (StringUtils.isBlank(confDir)) confDir = System.getProperty("MELODIC_CONFIG_DIR");
@@ -310,6 +315,25 @@ public class CommandExecutor {
             clusterManager.joinCluster();
             clusterManager.waitToJoin();
             log.info("Joined to cluster");
+
+            // Set this node's broker connection configuration (Used if it becomes the Aggregator)
+            String brokerConnConfig = getBrokerConfigurationAsString();
+            clusterManager.getLocalMember().properties().setProperty("aggregator-connection-configuration", brokerConnConfig);
+
+            // Update forwards to Aggregator (if any)
+            List<Member> aggregators = clusterManager.getBrokerUtil().getBrokers();
+            if (aggregators.size()==1) {
+                String newConfig = aggregators.get(0).properties().getProperty("aggregator-connection-configuration", "");
+                if (StringUtils.isNotBlank(newConfig)) {
+                    setBrokerConfigurationFromString(newConfig);
+                } else {
+                    log.error("CLUSTERING ERROR: Aggregator broker connection config. is not available: {}", aggregators.get(0));
+                }
+            } else if (aggregators.isEmpty()) {
+                log.info("No Aggregators found. Waiting for Baguette Server commands");
+            } else {
+                log.error("CLUSTERING ERROR: Many Aggregators found! {}", aggregators);
+            }
 
         } else if ("CLUSTER-TEST".equals(cmd)) {
 
@@ -912,6 +936,30 @@ public class CommandExecutor {
                 .readValue(Base64.getDecoder().decode(configStr), BrokerConnectionConfig.class);
         log.debug("getBrokerConfigurationFromString: OUTPUT: {}", config);
         return config;
+    }
+
+    private void setBrokerConfigurationFromString(String brokerConfigStr) {
+        BrokerConnectionConfig brokerConfig = getBrokerConfigurationFromString(brokerConfigStr);
+        setBrokerConfiguration(brokerConfig);
+    }
+
+    private void setBrokerConfiguration(BrokerConnectionConfig brokerConfig) {
+        log.debug("setBrokerConfiguration(): PASSED (NEW) CONFIG:\n{}", brokerConfig);
+        log.debug("setBrokerConfiguration(): ACTIVE GROUPING: {}", activeGrouping.getName());
+        log.debug("setBrokerConfiguration(): OLD BROKER CONNECTIONS:\n{}", activeGrouping.getBrokerConnections());
+
+        // Update broker connection configuration for aggregator grouping
+        BrokerConnectionConfig oldConn = activeGrouping.getBrokerConnections().get(AGGREGATOR_GROUPING);
+        activeGrouping.getBrokerConnections().put(AGGREGATOR_GROUPING, brokerConfig);
+        log.debug("setBrokerConfiguration(): NEW BROKER CONNECTIONS:\n{}", activeGrouping.getBrokerConnections());
+
+        // Update forward settings of active grouping
+        // Clear forward-to-groupings settings of active grouping
+        clearActiveGroupingForwards();
+        // Set forward-to-topic settings of active grouping
+        setGroupingForwards(activeGrouping.getName());
+        // Update truststore certificates from active grouping settings
+        updateCertificates(activeGrouping);
     }
 
     /*private static class StreamGobbler implements Runnable {

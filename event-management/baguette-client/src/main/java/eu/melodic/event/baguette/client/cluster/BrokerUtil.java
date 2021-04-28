@@ -111,9 +111,7 @@ public class BrokerUtil extends AbstractLogBase {
                         local.properties().setProperty(BROKER_PROPERTY, STATUS_CANDIDATE);
                 }
 
-            // Store new configuration
-            //if (! local.properties().getProperty("configuration", "").equals(newConfig))
-            local.properties().setProperty("configuration", newConfig);
+            // Pass new configuration to callback
             log_info("BRU: Node configuration updated: {}", newConfig);
             if (callback!=null) {
                 callback.setConfiguration(newConfig);
