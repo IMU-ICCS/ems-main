@@ -624,16 +624,10 @@ public class CommandExecutor {
         brokerCepService.setConstants(constants);
         brokerCepService.addFunctionDefinitions(functionDefinitions);
 
-        // Clear forward-to-groupings settings of (old) active grouping
-        clearActiveGroupingForwards();
-
-        // Apply forward settings of new grouping
-        Map<String, Set<String>> lastRuleMap = (rules.size() > 0) ? rules.get(rules.size() - 1) : null;
+        // Apply rules-per-topic of new grouping
         rules.forEach((groupingName, grpRules) -> {
             log.debug("addGroupingsTill: Processing rule map: {}", grpRules);
             if (grpRules != null) {
-                boolean isLast = grpRules == lastRuleMap;
-                if (isLast) log.debug("addGroupingsTill: It is the last rule map");
                 for (Map.Entry<String, Set<String>> topicRules : grpRules.entrySet()) {
                     String topic = topicRules.getKey();
                     log.info("addGroupingsTill: Processing settings of topic: {}", topic);
@@ -652,6 +646,9 @@ public class CommandExecutor {
             }
         });
         log.trace("addGroupingsTill: Final groupingsSubscribers: {}", groupingsSubscribers);
+
+        // Clear forward-to-groupings settings of (old) active grouping
+        clearActiveGroupingForwards();
 
         // Set forward-to-topic settings of new grouping (active to-be)
         setGroupingForwards(newGroupingName);
