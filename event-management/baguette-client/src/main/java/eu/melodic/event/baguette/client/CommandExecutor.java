@@ -673,9 +673,6 @@ public class CommandExecutor {
         List<String> groupingsToRemove = availableGroupings.subList(start, end);
         log.debug("removeGroupingsTill: groupings-to-remove: {}",groupingsToRemove);
 
-        // Clear forward-to-topic settings of (old) active grouping
-        clearActiveGroupingForwards();
-
         // Remove subscribers and topics of groupings higher than new grouping
         LinkedHashSet<String> eventTypes = new LinkedHashSet<>();
         final CepService cepService = brokerCepService.getCepService();
@@ -687,6 +684,9 @@ public class CommandExecutor {
             groupingsSubscribers.remove(groupingName);
         }
         eventTypes.forEach(s->brokerCepService.getBrokerCepBridge().removeConsumerOf(s));
+
+        // Clear forward-to-topic settings of (old) active grouping
+        clearActiveGroupingForwards();
 
         // Set forward-to-topic settings of new grouping (active to-be)
         setGroupingForwards(newGroupingName);
