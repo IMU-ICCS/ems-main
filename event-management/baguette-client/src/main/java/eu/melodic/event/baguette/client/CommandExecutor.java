@@ -905,7 +905,7 @@ public class CommandExecutor {
         }
     }
 
-    public BrokerConnectionConfig getBrokerConfiguration() {
+    private BrokerConnectionConfig getBrokerConfiguration() {
         BrokerConnectionConfig config = new BrokerConnectionConfig(
                 activeGrouping!=null ? activeGrouping.getName() : null,
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
@@ -918,7 +918,7 @@ public class CommandExecutor {
     }
 
     @SneakyThrows
-    public String getBrokerConfigurationAsString() {
+    private String getBrokerConfigurationAsString() {
         ObjectMapper mapper = new ObjectMapper();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             mapper.writer().writeValue(baos, getBrokerConfiguration());
@@ -929,7 +929,7 @@ public class CommandExecutor {
     }
 
     @SneakyThrows
-    public BrokerConnectionConfig getBrokerConfigurationFromString(String configStr) {
+    private BrokerConnectionConfig getBrokerConfigurationFromString(String configStr) {
         log.debug("getBrokerConfigurationFromString: INPUT: {}", configStr);
         ObjectMapper mapper = new ObjectMapper();
         BrokerConnectionConfig config = mapper
