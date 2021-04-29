@@ -209,10 +209,12 @@ public class ClusteringCoordinator extends NoopCoordinator {
         // Prepare cluster join commands
         String command =
                 zone.getId()+" "
+                +topLevelGrouping+":"+aggregatorGrouping+":"+lastLevelGrouping+" "
                 +csc.getClientClusterNodeAddress()+":"+csc.getClientClusterNodePort()+" "
                 +String.join(" ", addresses);
         /*String command =
                 zone.getId()+" "
+                +topLevelGrouping+":"+aggregatorGrouping+":"+lastLevelGrouping+" "
                 +csc.getClientClusterNodeHostname()+":"+csc.getClientClusterNodePort()+" "
                 +String.join(" ", hostnames);*/
 

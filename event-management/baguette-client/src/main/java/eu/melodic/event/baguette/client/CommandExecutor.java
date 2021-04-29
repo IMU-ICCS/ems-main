@@ -45,11 +45,6 @@ import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig
 @Service
 public class CommandExecutor {
 
-    //XXX: MAKE CONFIGURABLE FROM BAGUETTE SERVER
-    private final static String GLOBAL_GROUPING = "GLOBAL";
-    private final static String AGGREGATOR_GROUPING = "PER_ZONE";
-    private final static String NODE_GROUPING = "PER_INSTANCE";
-
     private static String getConfigDir() {
         String confDir = System.getenv("MELODIC_CONFIG_DIR");
         if (StringUtils.isBlank(confDir)) confDir = System.getProperty("MELODIC_CONFIG_DIR");
@@ -94,6 +89,10 @@ public class CommandExecutor {
     private String clusterKeystoreFile;
     private String clusterKeystoreType;
     private String clusterKeystorePassword;
+
+    @Getter private String globalGrouping;
+    @Getter private String aggregatorGrouping;
+    @Getter private String nodeGrouping;
 
 
     public CommandExecutor() {
@@ -278,16 +277,33 @@ public class CommandExecutor {
                 return false;
             }
 
-            // Check arguments
-            if (args.length<3) {
+            // Check and collect arguments
+            if (args.length<4) {
                 log.error("Too few arguments");
+                out.println("Too few arguments (CLUSTER-JOIN)");
                 return false;
             }
+            List<String> argsList = new ArrayList<>(Arrays.asList(args));
+            argsList.remove(0); // Discard command part
+            String clusterId = argsList.remove(0);
+            String groupings = argsList.remove(0);
+            String localNodeAddress = argsList.remove(0);
+            List<String> otherNodeAddresses = argsList.isEmpty() ? null : argsList;
+            log.info("CLUSTER-JOIN ARGS: cluster-id={}, groupings={}, local-node={}, other-nodes={}",
+                    clusterId, groupings, localNodeAddress, otherNodeAddresses);
+
+            // Setup groupings
+            String[] grpPart = groupings.split(":");
+            globalGrouping = grpPart[0];
+            aggregatorGrouping = grpPart[1];
+            nodeGrouping = grpPart[2];
+            log.info("CLUSTER-JOIN ARGS: Groupings: global={}, aggregator={}, node={}",
+                    globalGrouping, aggregatorGrouping, nodeGrouping);
 
             // Initialize cluster properties
             if (clusterManagerProperties==null)
                 clusterManagerProperties = new ClusterManagerProperties();
-            clusterManagerProperties.setClusterId(args[1]);
+            clusterManagerProperties.setClusterId(clusterId);
 
             if (clusterManagerProperties.getTls().isEnabled()) {
                 log.debug("Cluster TLS is enabled");
@@ -300,9 +316,8 @@ public class CommandExecutor {
                 }
             }
 
-            clusterManagerProperties.getLocalNode().setAddress(args[2]);
-            clusterManagerProperties.setMemberAddresses(
-                    (args.length>3) ? Arrays.asList(args).subList(3, args.length) : null);
+            clusterManagerProperties.getLocalNode().setAddress(localNodeAddress);
+            clusterManagerProperties.setMemberAddresses(otherNodeAddresses);
             log.debug("Cluster properties:  {}", clusterManagerProperties);
 
             // Initialize cluster manager
@@ -951,8 +966,8 @@ public class CommandExecutor {
         log.debug("setBrokerConfiguration(): OLD BROKER CONNECTIONS:\n{}", activeGrouping.getBrokerConnections());
 
         // Update broker connection configuration for aggregator grouping
-        BrokerConnectionConfig oldConn = activeGrouping.getBrokerConnections().get(AGGREGATOR_GROUPING);
-        activeGrouping.getBrokerConnections().put(AGGREGATOR_GROUPING, brokerConfig);
+        BrokerConnectionConfig oldConn = activeGrouping.getBrokerConnections().get(aggregatorGrouping);
+        activeGrouping.getBrokerConnections().put(aggregatorGrouping, brokerConfig);
         log.debug("setBrokerConfiguration(): NEW BROKER CONNECTIONS:\n{}", activeGrouping.getBrokerConnections());
 
         // Update forward settings of active grouping
@@ -1070,7 +1085,7 @@ public class CommandExecutor {
             log.info("initialize(): Node starts initializing as Aggregator...");
             state = STATE.INITIALIZING;
 //            commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_INITIALIZING);
-            commandExecutor.setActiveGrouping(AGGREGATOR_GROUPING);
+            commandExecutor.setActiveGrouping(commandExecutor.getAggregatorGrouping());
             state = STATE.AGGREGATOR;
 //            commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_BROKER);
             log.info("initialize(): Node initialized as Aggregator");
@@ -1099,7 +1114,7 @@ public class CommandExecutor {
                     log.info("stepDown(): Node is Aggregator. Start stepping down...");
                     state = STATE.STEPPING_DOWN;
 //                    commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_NOT_CANDIDATE);
-                    commandExecutor.setActiveGrouping(NODE_GROUPING);
+                    commandExecutor.setActiveGrouping(commandExecutor.getNodeGrouping());
                     state = STATE.NODE;
 //                    commandExecutor.getClusterManager().getBrokerUtil().setLocalStatus(BrokerUtil.STATUS_CANDIDATE);
                     backOff.set(false);
