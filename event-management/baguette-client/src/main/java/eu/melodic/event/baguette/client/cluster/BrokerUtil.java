@@ -92,15 +92,14 @@ public class BrokerUtil extends AbstractLogBase {
             }
             log_info("BRU: **** BROKER: New Broker is ready: {}, New config: {}", brokerId, newConfig);
 
-            // If i am not the new Broker then reset our broker status
+            // If i am not the new Broker then reset broker status
             Member local = getLocalMember();
             NODE_STATUS localStatus = getLocalStatus();
             log_debug("BRU: Nodes: local={}, broker={}", local.id().id(), brokerId);
             if (BROKER_STATUSES.contains(localStatus))
                 if (!local.id().id().equals(brokerId)) {
                     // Temporarily make node unavailable for being elected as Broker, until step down completes
-                    setLocalStatus(NODE_STATUS.NOT_CANDIDATE);
-                    //XXX: TODO: Change to STEPPING_DOWN...
+                    setLocalStatus(NODE_STATUS.STEPPING_DOWN);
 
                     // Step down
                     log_info("BRU: Old broker steps down: {}", local.id().id());
