@@ -24,17 +24,17 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class BrokerUtil extends AbstractLogBase {
-    public final static String BROKER_MESSAGE_TOPIC = "BROKER";
-    public final static String BROKER_PROPERTY = "broker";
-    public final static String STATUS_BROKER = "broker";
-    public final static String STATUS_CANDIDATE = "candidate";
-    public final static String STATUS_NOT_CANDIDATE = "off";
-    public final static String STATUS_INITIALIZING = "initializing";
-    public final static String STATUS_RETIRING = "retiring";
+    public enum NODE_STATUS { BROKER, CANDIDATE, NOT_CANDIDATE, INITIALIZING, STEPPING_DOWN, RETIRING, NOT_SET }
 
-    protected final static Collection<String> BROKER_STATUSES = Arrays.asList(STATUS_BROKER, "is-broker", "current-broker", STATUS_RETIRING);
-    protected final static Collection<String> CANDIDATE_STATUSES = Arrays.asList("capable", "yes", STATUS_CANDIDATE, STATUS_BROKER, "is-broker", "current-broker");
-    protected final static Collection<String> NON_CANDIDATE_STATUSES = Arrays.asList("no", "", STATUS_NOT_CANDIDATE);
+    protected final static Collection<NODE_STATUS> BROKER_STATUSES = Arrays.asList(
+            NODE_STATUS.BROKER, NODE_STATUS.RETIRING);
+    protected final static Collection<NODE_STATUS> CANDIDATE_STATUSES = Arrays.asList(
+            NODE_STATUS.CANDIDATE, NODE_STATUS.BROKER);
+    protected final static Collection<NODE_STATUS> NON_CANDIDATE_STATUSES = Arrays.asList(
+            NODE_STATUS.NOT_CANDIDATE, NODE_STATUS.STEPPING_DOWN);
+
+    public final static String BROKER_MESSAGE_TOPIC = "BROKER";
+    public final static String STATUS_PROPERTY = "node-status";
 
     protected final static String MESSAGE_ELECTION = "election";
     protected final static String MESSAGE_APPOINT = "appoint";
@@ -93,13 +93,14 @@ public class BrokerUtil extends AbstractLogBase {
             log_info("BRU: **** BROKER: New Broker is ready: {}, New config: {}", brokerId, newConfig);
 
             // If i am not the new Broker then reset our broker status
-            Member local = atomix.getMembershipService().getLocalMember();
-            String localStatus = local.properties().getProperty(BROKER_PROPERTY, "");
+            Member local = getLocalMember();
+            NODE_STATUS localStatus = getLocalStatus();
             log_debug("BRU: Nodes: local={}, broker={}", local.id().id(), brokerId);
             if (BROKER_STATUSES.contains(localStatus))
                 if (!local.id().id().equals(brokerId)) {
                     // Temporarily make node unavailable for being elected as Broker, until step down completes
-                    local.properties().setProperty(BROKER_PROPERTY, STATUS_NOT_CANDIDATE);
+                    setLocalStatus(NODE_STATUS.NOT_CANDIDATE);
+                    //XXX: TODO: Change to STEPPING_DOWN...
 
                     // Step down
                     log_info("BRU: Old broker steps down: {}", local.id().id());
@@ -107,8 +108,10 @@ public class BrokerUtil extends AbstractLogBase {
                         callback.stepDown();
 
                     // After step down, and if node hasn't retired, node status changes to 'candidate'
-                    if (!"retiring".equalsIgnoreCase(localStatus))
-                        local.properties().setProperty(BROKER_PROPERTY, STATUS_CANDIDATE);
+                    if (NODE_STATUS.RETIRING!=localStatus)
+                        setLocalStatus(NODE_STATUS.CANDIDATE);
+                    else
+                        setLocalStatus(NODE_STATUS.NOT_CANDIDATE);
                 }
 
             // Pass new configuration to callback
@@ -122,8 +125,7 @@ public class BrokerUtil extends AbstractLogBase {
 
     public void startElection() {
         log_info("BRU: Broker election requested: broadcasting election message...");
-        atomix.getCommunicationService().broadcast(BROKER_MESSAGE_TOPIC, MESSAGE_ELECTION);
-        election(null);
+        atomix.getCommunicationService().broadcastIncludeSelf(BROKER_MESSAGE_TOPIC, MESSAGE_ELECTION);
     }
 
     public void election(List<String> excludeNodes) {
@@ -133,7 +135,7 @@ public class BrokerUtil extends AbstractLogBase {
         Member broker = atomix.getMembershipService().getMembers().stream()
                 .filter(m -> m.isActive() && m.isReachable())
                 .filter(m -> !excludes.contains(m.id().id()))
-                .filter(m -> CANDIDATE_STATUSES.contains(m.properties().getProperty(BROKER_PROPERTY, "")))
+                .filter(m -> CANDIDATE_STATUSES.contains(getNodeStatus(m)))
                 .map(m -> new MemberWithScore(m, clusterManager.getScoreFunction()))
                 .peek(ms -> log_info("BRU: Member-Score: {} => {}  {}", ms.getMember().id().id(), ms.getScore(),
                         ms.getMember().properties().getProperty("uuid", null)))
@@ -143,23 +145,23 @@ public class BrokerUtil extends AbstractLogBase {
         log_info("BRU: Broker: {}", broker != null ? broker.id().id() : null);
 
         // If local node is the selected broker...
-        if (atomix.getMembershipService().getLocalMember().equals(broker)) {
+        if (getLocalMember().equals(broker)) {
             appointment(broker.id().id());
         }
     }
 
     public void appointment(String appointedNodeId) {
         // Check i am appointed
-        Member local = atomix.getMembershipService().getLocalMember();
+        Member local = getLocalMember();
         if (! local.id().id().equals(appointedNodeId)) {
             log_debug("BRU: I am not appointed: me={} <> appointed={}", local.id().id(), appointedNodeId);
             return;
         }
 
         // Check if i am already a broker
-        String localStatus = local.properties().getProperty(BROKER_PROPERTY, "");
+        NODE_STATUS localStatus = getLocalStatus();
         if (BROKER_STATUSES.contains(localStatus)) {
-            if ("retiring".equalsIgnoreCase(localStatus)) {
+            if (NODE_STATUS.RETIRING==localStatus) {
                 log_error("BRU: !!!! BUG: RETIRING BROKER HAS BEEN ELECTED AGAIN !!!!");
             } else {
                 log_info("BRU: Broker elected again");
@@ -168,14 +170,14 @@ public class BrokerUtil extends AbstractLogBase {
             // Notify others that this node starts initializing as Broker
             log_info("BRU: Node will become Broker. Initializing...");
             atomix.getCommunicationService().broadcast(BROKER_MESSAGE_TOPIC, MESSAGE_INITIALIZE + " " + local.id().id());
-            atomix.getMembershipService().getLocalMember().properties().setProperty(BROKER_PROPERTY, STATUS_INITIALIZING);
+            setLocalStatus(NODE_STATUS.INITIALIZING);
 
             // Start initializing as Broker...
             if (callback!=null)
                 callback.initialize();
 
             // Update node status to Broker
-            local.properties().setProperty(BROKER_PROPERTY, STATUS_BROKER);
+            setLocalStatus(NODE_STATUS.BROKER);
             log_info("BRU: Node is ready to act as Broker. Ready");
         }
 
@@ -190,13 +192,13 @@ public class BrokerUtil extends AbstractLogBase {
         // Check if already a broker
         if (getBrokers().stream().anyMatch(m -> m.id().id().equals(brokerId))) {
             log_info("BRU: Node is already a broker: {}", brokerId);
-            if (STATUS_RETIRING.equals(getNodeStatus(brokerId)))
-                setNodeStatus(brokerId, STATUS_BROKER);
+            if (NODE_STATUS.RETIRING==getNodeStatus(brokerId))
+                setNodeStatus(brokerId, NODE_STATUS.BROKER);
             return;
         }
 
         // Check if not a candidate
-        String brokerStatus = getNodeStatus(brokerId);
+        NODE_STATUS brokerStatus = getNodeStatus(brokerId);
         log_debug("BRU: Node status: {}", brokerStatus);
         if (!CANDIDATE_STATUSES.contains(brokerStatus)) {
             log_info("BRU: Node is not a broker candidate: {}", brokerId);
@@ -209,15 +211,16 @@ public class BrokerUtil extends AbstractLogBase {
     }
 
     public void retire() {
-        String localStatus = atomix.getMembershipService().getLocalMember().properties().getProperty(BROKER_PROPERTY, "");
+        NODE_STATUS localStatus = getLocalStatus();
         if (BROKER_STATUSES.contains(localStatus)) {
-            if ("retiring".equalsIgnoreCase(localStatus)) {
+            if (NODE_STATUS.RETIRING==localStatus) {
                 log_info("BRU: Already retiring");
             } else {
-                atomix.getMembershipService().getLocalMember().properties().setProperty(BROKER_PROPERTY, STATUS_RETIRING);
+                setLocalStatus(NODE_STATUS.RETIRING);
                 log_info("BRU: Broker retires: broadcasting election message...");
-                atomix.getCommunicationService().broadcast(BROKER_MESSAGE_TOPIC, MESSAGE_ELECTION + " -" + atomix.getMembershipService().getLocalMember().id().id());
-                election(Collections.singletonList(atomix.getMembershipService().getLocalMember().id().id()));
+                String localNodeId = getLocalMember().id().id();
+                atomix.getCommunicationService().broadcast(BROKER_MESSAGE_TOPIC, MESSAGE_ELECTION + " -" + localNodeId);
+                election(Collections.singletonList(localNodeId));
             }
         } else
             log_info("BRU: Not a Broker");
@@ -226,34 +229,44 @@ public class BrokerUtil extends AbstractLogBase {
     public List<Member> getBrokers() {
         return atomix.getMembershipService().getMembers().stream()
                 .filter(m -> m.isActive() && m.isReachable())
-                .filter(m -> BROKER_STATUSES.contains(m.properties().getProperty(BROKER_PROPERTY, "")))
+                .filter(m -> BROKER_STATUSES.contains(getNodeStatus(m)))
                 .collect(Collectors.toList());
     }
 
-    public String getLocalStatus() {
-        return getNodeStatus(atomix.getMembershipService().getLocalMember());
+    private Member getLocalMember() {
+        return atomix.getMembershipService().getLocalMember();
     }
 
-    public void setLocalStatus(String status) {
-        setNodeStatus(atomix.getMembershipService().getLocalMember(), status);
+    public NODE_STATUS getLocalStatus() {
+        return getNodeStatus(getLocalMember());
     }
 
-    public String getNodeStatus(Member member) {
-        return member.properties().getProperty(BROKER_PROPERTY, "");
+    public void setLocalStatus(NODE_STATUS status) {
+        setNodeStatus(getLocalMember(), status);
     }
 
-    public void setNodeStatus(Member member, String status) {
-        member.properties().setProperty(BROKER_PROPERTY, status);
+    public NODE_STATUS getNodeStatus(Member member) {
+        return NODE_STATUS.valueOf(member.properties().getProperty(STATUS_PROPERTY, NODE_STATUS.NOT_SET.name()));
     }
 
-    public String getNodeStatus(String memberId) {
+    public void setNodeStatus(Member member, NODE_STATUS status) {
+        log_trace("BRU: setNodeStatus: Node properties BEFORE CHANGE: {}", member.properties());
+        String oldStatusName = (String) member.properties().setProperty(STATUS_PROPERTY, status.name());
+        log_trace("BRU: setNodeStatus: Node properties AFTER CHANGE:  {}", member.properties());
+        log_debug("BRU: setNodeStatus: Status changed: {} --> {}", oldStatusName, status);
+        NODE_STATUS oldStatus = StringUtils.isNotBlank(oldStatusName) ? NODE_STATUS.valueOf(oldStatusName) : null;
+        if (callback!=null & oldStatus!=status)
+            callback.statusChanged(oldStatus, status);
+    }
+
+    public NODE_STATUS getNodeStatus(String memberId) {
         Member member = getMemberById(memberId);
         if (member != null)
             return getNodeStatus(member);
         return null;
     }
 
-    public void setNodeStatus(String memberId, String status) {
+    public void setNodeStatus(String memberId, NODE_STATUS status) {
         Member member = getMemberById(memberId);
         if (member != null)
             setNodeStatus(member, status);
@@ -268,22 +281,22 @@ public class BrokerUtil extends AbstractLogBase {
     }
 
     public void setCandidate() {
-        String localStatus = atomix.getMembershipService().getLocalMember().properties().getProperty(BROKER_PROPERTY, "");
+        NODE_STATUS localStatus = getLocalStatus();
         if (!BROKER_STATUSES.contains(localStatus) && !CANDIDATE_STATUSES.contains(localStatus)) {
-            atomix.getMembershipService().getLocalMember().properties().setProperty(BROKER_PROPERTY, STATUS_CANDIDATE);
+            setLocalStatus(NODE_STATUS.CANDIDATE);
             log_info("BRU: Node becomes Broker candidate");
         } else
             log_info("BRU: Node is already Broker candidate");
     }
 
     public void clearCandidate() {
-        String localStatus = atomix.getMembershipService().getLocalMember().properties().getProperty(BROKER_PROPERTY, "");
+        NODE_STATUS localStatus = getLocalStatus();
         if (BROKER_STATUSES.contains(localStatus)) {
             log_warn("BRU: Node is the Broker. Select 'retire' instead");
             return;
         }
         if (CANDIDATE_STATUSES.contains(localStatus)) {
-            atomix.getMembershipService().getLocalMember().properties().setProperty(BROKER_PROPERTY, STATUS_NOT_CANDIDATE);
+            setLocalStatus(NODE_STATUS.NOT_CANDIDATE);
             log_info("BRU: Node removed from Broker candidates");
         } else
             log_info("BRU: Node is not Broker candidate");
@@ -292,7 +305,7 @@ public class BrokerUtil extends AbstractLogBase {
     public List<MemberWithScore> getCandidates() {
         return atomix.getMembershipService().getMembers().stream()
                 .filter(m -> m.isActive() && m.isReachable())
-                .filter(m -> CANDIDATE_STATUSES.contains(m.properties().getProperty(BROKER_PROPERTY, "")))
+                .filter(m -> CANDIDATE_STATUSES.contains(getNodeStatus(m)))
                 .map(m -> new MemberWithScore(m, clusterManager.getScoreFunction()))
                 .collect(Collectors.toList());
     }
@@ -311,7 +324,7 @@ public class BrokerUtil extends AbstractLogBase {
         // Check if any node is initializing as broker (then don't start election)
         if (getActiveNodes().stream()
                 .map(MemberWithScore::getMember).map(this::getNodeStatus)
-                .noneMatch(s -> STATUS_INITIALIZING.equals(s) || STATUS_BROKER.equals(s)))
+                .noneMatch(s -> NODE_STATUS.INITIALIZING==s || NODE_STATUS.BROKER==s))
         {
             startElection();
         }
@@ -321,6 +334,7 @@ public class BrokerUtil extends AbstractLogBase {
         void initialize();
         void stepDown();
         void backOff();
+        void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus);
         String getConfiguration(Member local);
         void setConfiguration(String newConfig);
     }

@@ -170,7 +170,7 @@ public class ClusterManager extends AbstractLogBase {
 		String addrStr = localMember.address().host() + ":" + localMember.address().port();
 		atomix.getMembershipService().getLocalMember().properties().setProperty("address", addrStr);
 		atomix.getMembershipService().getLocalMember().properties().setProperty("uuid", UUID.randomUUID().toString());
-		atomix.getMembershipService().getLocalMember().properties().setProperty(BrokerUtil.BROKER_PROPERTY, BrokerUtil.STATUS_CANDIDATE);
+		brokerUtil.setLocalStatus(BrokerUtil.NODE_STATUS.CANDIDATE);
 
 		// Add membership listener
 		atomix.getMembershipService().addListener(event -> {

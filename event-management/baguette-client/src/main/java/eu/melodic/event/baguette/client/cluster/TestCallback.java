@@ -75,6 +75,10 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
         }
     }
 
+    public void statusChanged(BrokerUtil.NODE_STATUS oldStatus, BrokerUtil.NODE_STATUS newStatus) {
+        log_info("__TestNode at {}: Status changed: {} --> {}", address, oldStatus, newStatus);
+    }
+
     public String getConfiguration(Member local) {
         return String.format("ssl://%s:61617", local.address().host());
     }

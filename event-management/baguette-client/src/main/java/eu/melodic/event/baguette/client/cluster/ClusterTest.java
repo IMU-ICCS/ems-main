@@ -69,7 +69,7 @@ public class ClusterTest implements Runnable {
 			// Get cluster members
 			clusterManager.log_info("-- CLUSTER-MEMBERS: {}", atomix.getMembershipService().getMembers().stream()
 					.map(m -> "\n  "+m.id().id()
-							+ "/" + m.properties().getProperty("broker", "???")
+							+ "/" + clusterManager.getBrokerUtil().getNodeStatus(m)
 							+ "/" + m.properties().getProperty("address", "---")
 							+ "/" + (m.isActive()?"active":"inactive")
 							+ (!m.isReachable() ? "/unreachable" : ""))
