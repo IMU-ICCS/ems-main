@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class BrokerUtil extends AbstractLogBase {
-    public enum NODE_STATUS { BROKER, CANDIDATE, NOT_CANDIDATE, INITIALIZING, STEPPING_DOWN, RETIRING, NOT_SET }
+    public enum NODE_STATUS {AGGREGATOR, CANDIDATE, NOT_CANDIDATE, INITIALIZING, STEPPING_DOWN, RETIRING, NOT_SET }
 
     protected final static Collection<NODE_STATUS> BROKER_STATUSES = Arrays.asList(
-            NODE_STATUS.BROKER, NODE_STATUS.RETIRING);
+            NODE_STATUS.AGGREGATOR, NODE_STATUS.RETIRING);
     protected final static Collection<NODE_STATUS> CANDIDATE_STATUSES = Arrays.asList(
-            NODE_STATUS.CANDIDATE, NODE_STATUS.BROKER);
+            NODE_STATUS.CANDIDATE, NODE_STATUS.AGGREGATOR);
     protected final static Collection<NODE_STATUS> NON_CANDIDATE_STATUSES = Arrays.asList(
             NODE_STATUS.NOT_CANDIDATE, NODE_STATUS.STEPPING_DOWN);
 
-    public final static String BROKER_MESSAGE_TOPIC = "BROKER";
+    public final static String NODE_MESSAGE_TOPIC = "NODE-MESSAGE-TOPIC";
     public final static String STATUS_PROPERTY = "node-status";
 
     protected final static String MESSAGE_ELECTION = "election";
@@ -124,7 +124,7 @@ public class BrokerUtil extends AbstractLogBase {
 
     public void startElection() {
         log_info("BRU: Broker election requested: broadcasting election message...");
-        atomix.getCommunicationService().broadcastIncludeSelf(BROKER_MESSAGE_TOPIC, MESSAGE_ELECTION);
+        atomix.getCommunicationService().broadcastIncludeSelf(NODE_MESSAGE_TOPIC, MESSAGE_ELECTION);
     }
 
     public void election(List<String> excludeNodes) {
@@ -168,7 +168,7 @@ public class BrokerUtil extends AbstractLogBase {
         } else {
             // Notify others that this node starts initializing as Broker
             log_info("BRU: Node will become Broker. Initializing...");
-            atomix.getCommunicationService().broadcast(BROKER_MESSAGE_TOPIC, MESSAGE_INITIALIZE + " " + local.id().id());
+            atomix.getCommunicationService().broadcast(NODE_MESSAGE_TOPIC, MESSAGE_INITIALIZE + " " + local.id().id());
             setLocalStatus(NODE_STATUS.INITIALIZING);
 
             // Start initializing as Broker...
@@ -176,7 +176,7 @@ public class BrokerUtil extends AbstractLogBase {
                 callback.initialize();
 
             // Update node status to Broker
-            setLocalStatus(NODE_STATUS.BROKER);
+            setLocalStatus(NODE_STATUS.AGGREGATOR);
             log_info("BRU: Node is ready to act as Broker. Ready");
         }
 
@@ -184,7 +184,7 @@ public class BrokerUtil extends AbstractLogBase {
         String brokerId = local.id().id();
         String newConf = MARKER_NEW_CONFIGURATION +
                 (callback!=null ? callback.getConfiguration(local) : "");
-        atomix.getCommunicationService().broadcastIncludeSelf(BROKER_MESSAGE_TOPIC, MESSAGE_READY + " " + brokerId + " " + newConf);
+        atomix.getCommunicationService().broadcastIncludeSelf(NODE_MESSAGE_TOPIC, MESSAGE_READY + " " + brokerId + " " + newConf);
     }
 
     public void appoint(String brokerId) {
@@ -192,7 +192,7 @@ public class BrokerUtil extends AbstractLogBase {
         if (getBrokers().stream().anyMatch(m -> m.id().id().equals(brokerId))) {
             log_info("BRU: Node is already a broker: {}", brokerId);
             if (NODE_STATUS.RETIRING==getNodeStatus(brokerId))
-                setNodeStatus(brokerId, NODE_STATUS.BROKER);
+                setNodeStatus(brokerId, NODE_STATUS.AGGREGATOR);
             return;
         }
 
@@ -205,7 +205,7 @@ public class BrokerUtil extends AbstractLogBase {
         }
 
         // Broadcast appointment message
-        atomix.getCommunicationService().broadcastIncludeSelf(BROKER_MESSAGE_TOPIC, MESSAGE_APPOINT + " " + brokerId);
+        atomix.getCommunicationService().broadcastIncludeSelf(NODE_MESSAGE_TOPIC, MESSAGE_APPOINT + " " + brokerId);
         log_info("BRU: Broker appointment broadcast: {}", brokerId);
     }
 
@@ -218,7 +218,7 @@ public class BrokerUtil extends AbstractLogBase {
                 setLocalStatus(NODE_STATUS.RETIRING);
                 log_info("BRU: Broker retires: broadcasting election message...");
                 String localNodeId = getLocalMember().id().id();
-                atomix.getCommunicationService().broadcast(BROKER_MESSAGE_TOPIC, MESSAGE_ELECTION + " -" + localNodeId);
+                atomix.getCommunicationService().broadcast(NODE_MESSAGE_TOPIC, MESSAGE_ELECTION + " -" + localNodeId);
                 election(Collections.singletonList(localNodeId));
             }
         } else
@@ -323,7 +323,7 @@ public class BrokerUtil extends AbstractLogBase {
         // Check if any node is initializing as broker (then don't start election)
         if (getActiveNodes().stream()
                 .map(MemberWithScore::getMember).map(this::getNodeStatus)
-                .noneMatch(s -> NODE_STATUS.INITIALIZING==s || NODE_STATUS.BROKER==s))
+                .noneMatch(s -> NODE_STATUS.INITIALIZING==s || NODE_STATUS.AGGREGATOR ==s))
         {
             startElection();
         }

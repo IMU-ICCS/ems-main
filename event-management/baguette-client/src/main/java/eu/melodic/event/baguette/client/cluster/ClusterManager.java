@@ -184,7 +184,7 @@ public class ClusterManager extends AbstractLogBase {
 		});
 
 		// Add broker message listener
-		atomix.getCommunicationService().subscribe(BrokerUtil.BROKER_MESSAGE_TOPIC, m -> {
+		atomix.getCommunicationService().subscribe(BrokerUtil.NODE_MESSAGE_TOPIC, m -> {
 			brokerUtil.processBrokerMessage(m);
 			return CompletableFuture.completedFuture("ok");
 		});

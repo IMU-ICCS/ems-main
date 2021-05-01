@@ -1111,7 +1111,7 @@ public class CommandExecutor {
                 case INITIALIZING:
                     log.debug("stepDown(): Node is initializing. Back-off flag set");
                     backOff(); break;
-                case BROKER:
+                case AGGREGATOR:
                     log.info("stepDown(): Node is Aggregator. Start stepping down...");
                     commandExecutor.setActiveGrouping(commandExecutor.getNodeGrouping());
                     backOff.set(false);
@@ -1135,7 +1135,7 @@ public class CommandExecutor {
                 log.debug("backOff(): Set Back-off flag to step down after initialization");
                 backOff.set(true);
             } else
-            if (state==BROKER) {
+            if (state==AGGREGATOR) {
                 log.debug("backOff(): Stepping down because Back-off flag has been set");
                 stepDown();
             }
