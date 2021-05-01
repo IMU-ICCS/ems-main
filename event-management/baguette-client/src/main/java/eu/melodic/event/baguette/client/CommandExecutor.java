@@ -125,7 +125,7 @@ public class CommandExecutor {
         return execCmd(line.split("[ \t]+"), in, out, err);
     }
 
-    boolean execCmd(String args[], InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
+    boolean execCmd(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
         if (args == null || args.length == 0) return false;
         String cmd = args[0].toUpperCase();
         args[0] = "";
@@ -617,7 +617,7 @@ public class CommandExecutor {
     protected synchronized void addGroupingsTill(String newGroupingName) {
         // Get available grouping names (in reverse order, i.e. from PER_INSTANCE to PER_CLOUD)
         List<String> availableGroupings = GROUPING.getNames().stream()
-                .filter(g -> groupings.containsKey(g)).collect(Collectors.toList());
+                .filter(groupings::containsKey).collect(Collectors.toList());
         Collections.reverse(availableGroupings);
         log.info("addGroupingsTill: Available grouping configurations: {}", availableGroupings);
 
@@ -705,7 +705,7 @@ public class CommandExecutor {
     protected synchronized void removeGroupingsTill(String newGroupingName) {
         // Get available grouping names (in normal order, i.e. from PER_CLOUD to PER_INSTANCE)
         List<String> availableGroupings = GROUPING.getNames().stream()
-                .filter(g -> groupings.containsKey(g)).collect(Collectors.toList());
+                .filter(groupings::containsKey).collect(Collectors.toList());
         log.info("removeGroupingsTill: Available grouping configurations: {}", availableGroupings);
 
         // Get groupings between active and new grouping
