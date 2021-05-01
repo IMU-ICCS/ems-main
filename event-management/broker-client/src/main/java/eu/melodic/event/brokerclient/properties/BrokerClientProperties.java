@@ -57,7 +57,7 @@ public class BrokerClientProperties {
 
     public BrokerClientProperties() {
         brokerName = "broker";
-        brokerUrl = "ssl://localhost:61616}";
+        brokerUrl = "ssl://localhost:61616";
         brokerUrlProperties = "";
         connectorPort = -1;
         preserveConnection = true;
