@@ -31,9 +31,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class ClientShellCommand implements Command, Runnable, SessionAware {
 
-    private static Object LOCK = new Object();
-    private static AtomicLong counter = new AtomicLong(0);
-    private static Set<ClientShellCommand> activeCmdList = new HashSet<>();
+    private final static Object LOCK = new Object();
+    private final static AtomicLong counter = new AtomicLong(0);
+    private final static Set<ClientShellCommand> activeCmdList = new HashSet<>();
 
     public static Set<ClientShellCommand> getActive() {
         return Collections.unmodifiableSet(activeCmdList);
@@ -63,9 +63,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter private int clientClusterNodePort;
     @Getter @Setter private String clientClusterNodeAddress;
     @Getter @Setter private String clientClusterNodeHostname;
+    @Getter @Setter private Object clientZone;
 
-    private ServerCoordinator coordinator;
-    private boolean clientAddressOverrideAllowed;
+    private final ServerCoordinator coordinator;
+    private final boolean clientAddressOverrideAllowed;
     @Getter
     private ServerSession session;
 

@@ -11,10 +11,7 @@ package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.util.KeystoreUtil;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.SneakyThrows;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -93,12 +90,19 @@ public class ClusterZone {
         addressPortCache.clear();
     }
 
-    public void addNode(ClientShellCommand csc) {
-        nodes.put(csc.getClientIpAddress(), csc);
+    public void addNode(@NonNull ClientShellCommand csc) {
+        synchronized (Objects.requireNonNull(csc)) {
+            nodes.put(csc.getClientIpAddress(), csc);
+            csc.setClientZone(this);
+        }
     }
 
-    public void removeNode(ClientShellCommand csc) {
-        nodes.remove(csc.getClientIpAddress());
+    public void removeNode(@NonNull ClientShellCommand csc) {
+        synchronized (Objects.requireNonNull(csc)) {
+            nodes.remove(csc.getClientIpAddress());
+            if (csc.getClientZone()==this)
+                csc.setClientZone(null);
+        }
     }
 
     public List<ClientShellCommand> getNodes() {
