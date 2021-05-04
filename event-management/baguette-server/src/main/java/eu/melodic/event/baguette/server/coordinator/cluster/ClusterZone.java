@@ -108,4 +108,8 @@ public class ClusterZone {
     public List<ClientShellCommand> getNodes() {
         return new ArrayList<>(nodes.values());
     }
+
+    public ClientShellCommand getNodeByAddress(String address) {
+        return nodes.get(address);
+    }
 }

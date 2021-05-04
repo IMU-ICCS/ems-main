@@ -76,14 +76,47 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     @Override
+    public boolean allowAlreadyPreregisteredNode(Map<String,Object> nodeInfo) {
+        return zoneManagementStrategy.allowAlreadyPreregisteredNode(nodeInfo);
+    }
+
+    @Override
+    public boolean allowAlreadyRegisteredNode(ClientShellCommand csc) {
+        return zoneManagementStrategy.allowAlreadyRegisteredNode(csc);
+    }
+
+    @Override
+    public boolean allowNotPreregisteredNode(ClientShellCommand csc) {
+        return zoneManagementStrategy.allowNotPreregisteredNode(csc);
+    }
+
+    @Override
     public synchronized void register(ClientShellCommand csc) {
         if (!_logInvocation("register", csc, true)) return;
 
-        // Check if client has been preregistered
+        // Check if client has been preregistered (or connected without being expected)
         NodeRegistryEntry preregEntry = server.getNodeRegistry().getNodeByAddress(csc.getClientIpAddress());
-        if (preregEntry==null) {
+        if (preregEntry==null && zoneManagementStrategy.allowNotPreregisteredNode(csc)) {
             log.warn("Non Preregistered node connected: {} @ {}", csc.getId(), csc.getClientIpAddress());
-            zoneManagementStrategy.unexpectedNode(csc);
+            zoneManagementStrategy.notPreregisteredNode(csc);
+        } else if (preregEntry==null) {
+            log.warn("Non Preregistered node is refused connection: {} @ {}", csc.getId(), csc.getClientIpAddress());
+            csc.setCloseConnection(true);
+            return;
+        }
+
+        // Check if client has already been registered (i.e. is still connected)
+        ClientShellCommand regEntry = topologyMap.values().stream()
+                .map(zone->zone.getNodeByAddress(csc.getClientIpAddress()))
+                .filter(Objects::nonNull)
+                .findAny().orElse(null);
+        if (regEntry!=null && allowAlreadyRegisteredNode(csc)) {
+            log.warn("Already Registered node connected: {} @ {}", csc.getId(), csc.getClientIpAddress());
+            zoneManagementStrategy.alreadyRegisteredNode(csc);
+        } else if (regEntry!=null) {
+            log.warn("New node is refused connection because an active connection from the same IP address already exists: {} @ {}", csc.getId(), csc.getClientIpAddress());
+            csc.setCloseConnection(true);
+            return;
         }
 
         // Register client

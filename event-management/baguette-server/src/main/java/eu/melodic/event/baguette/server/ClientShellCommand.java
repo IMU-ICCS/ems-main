@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
@@ -43,7 +44,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private PrintStream out;
     private PrintStream err;
     private ExitCallback callback;
-    private boolean callbackCalled;
+    private final AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
     @Getter @Setter
     private String id;
@@ -69,6 +70,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private final boolean clientAddressOverrideAllowed;
     @Getter
     private ServerSession session;
+    @Getter @Setter
+    private boolean closeConnection = false;
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress) {
         synchronized (LOCK) {
@@ -115,6 +118,24 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     public void run() {
+        if (closeConnection) {
+            log.warn("{}--> Exiting immediately because 'closeConnection' flag is set", id);
+            coordinator.unregister(this);
+            if (this.session!=null && this.session.isOpen()) {
+                try {
+                    this.session.close();
+                } catch (IOException e) {
+                    log.warn("Closing session caused on exception: ", e);
+                }
+                this.session = null;
+            }
+            if (!callbackCalled.getAndSet(true)) {
+                callback.onExit(2);
+            }
+            log.info("{}--> Thread stopped immediately", id);
+            return;
+        }
+
         synchronized (activeCmdList) {
             activeCmdList.add(this);
         }
@@ -155,8 +176,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             }
             log.info("{}--> Thread stops", id);
             coordinator.unregister(this);
-            if (!callbackCalled) {
-                callbackCalled = true;
+            if (!callbackCalled.getAndSet(true)) {
                 callback.onExit(0);
             }
         }
@@ -386,8 +406,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public void stop(String msg) {
         log.info("{}==> STOP : {}", id, msg);
         out.println("EXIT " + msg);
-        if (!callbackCalled) {
-            callbackCalled = true;
+        if (!callbackCalled.getAndSet(true)) {
             callback.onExit(1);
         }
     }

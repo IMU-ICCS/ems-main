@@ -27,6 +27,12 @@ public interface ServerCoordinator {
 
     int getPhase();
 
+    default boolean allowAlreadyPreregisteredNode(Map<String,Object> nodeInfo) { return true; }
+
+    default boolean allowAlreadyRegisteredNode(ClientShellCommand csc) { return true; }
+
+    default boolean allowNotPreregisteredNode(ClientShellCommand csc) { return true; }
+
     void register(ClientShellCommand c);
 
     void unregister(ClientShellCommand c);

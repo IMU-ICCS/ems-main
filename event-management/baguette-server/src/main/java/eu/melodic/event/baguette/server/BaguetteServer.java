@@ -103,6 +103,7 @@ public class BaguetteServer {
     public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
         if (server == null) {
             log.info("BaguetteServer.startServer(): Starting SSH server instance...");
+            nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
             server.start(config, coordinator);
             this.server = server;
@@ -117,6 +118,7 @@ public class BaguetteServer {
             log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server...");
             server.stop();
             this.server = null;
+            nodeRegistry.setCoordinator(null);
             log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server... done");
         } else {
             log.warn("BaguetteServer.stop(): No SSH server instance is running");

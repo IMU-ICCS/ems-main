@@ -26,8 +26,13 @@ import java.util.UUID;
 @Slf4j
 public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     @Override
-    public void unexpectedNode(ClientShellCommand csc) {
-        log.warn("DefaultZoneManagementStrategy: Unexpected node registered: {}", csc.getId());
+    public void notPreregisteredNode(ClientShellCommand csc) {
+        log.warn("DefaultZoneManagementStrategy: Unexpected node connected: {} @ {}", csc.getId(), csc.getClientIpAddress());
+    }
+
+    @Override
+    public void alreadyRegisteredNode(ClientShellCommand csc) {
+        log.warn("DefaultZoneManagementStrategy: Node connection from an already registered IP address: {} @ {}", csc.getId(), csc.getClientIpAddress());
     }
 
     @Override

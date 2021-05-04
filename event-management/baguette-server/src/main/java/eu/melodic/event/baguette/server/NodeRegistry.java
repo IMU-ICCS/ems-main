@@ -9,6 +9,8 @@
 
 package eu.melodic.event.baguette.server;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -24,15 +26,24 @@ import java.util.Map;
 @Service
 public class NodeRegistry {
     private final Map<String,NodeRegistryEntry> registry = new LinkedHashMap<>();
+    @Getter @Setter
+    private ServerCoordinator coordinator;
 
     public synchronized void addNode(Map<String,Object> nodeInfo) {
         String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
 
         NodeRegistryEntry entry = registry.get(ipAddress);
         if (entry!=null) {
-            log.error("!!!!!!!!!!!  NODE ALREADY PRE-REGISTERED: ip-address={}  !!!!!!!!!!!\nOld Node Info: {}\nNew Node Info: {}",
+            log.debug("NodeRegistry.addNode(): Node already pre-registered: ip-address={}\nOld Node Info: {}\nNew Node Info: {}",
                     ipAddress, entry, nodeInfo);
-            throw new IllegalStateException("NODE ALREADY PRE-REGISTERED: "+ipAddress);
+            if (coordinator!=null && coordinator.allowAlreadyPreregisteredNode(nodeInfo)) {
+                log.info("NodeRegistry.addNode(): PREVIOUS NODE INFO WILL BE OVERWRITTEN: ip-address={}\nOld Node Info: {}\nNew Node Info: {}",
+                        ipAddress, entry, nodeInfo);
+            } else {
+                log.error("NodeRegistry.addNode(): Node already pre-registered and coordinator does not allow new pre-registration requests to overwrite the existing one: ip-address={}\nOld Node Info: {}\nNew Node Info: {}",
+                        ipAddress, entry, nodeInfo);
+                throw new IllegalStateException("NODE ALREADY PRE-REGISTERED: "+ipAddress);
+            }
         }
 
         entry = new NodeRegistryEntry(ipAddress).nodePreregistration(nodeInfo);
