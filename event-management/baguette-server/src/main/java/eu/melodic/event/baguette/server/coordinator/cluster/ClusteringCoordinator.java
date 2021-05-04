@@ -191,7 +191,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         zoneNodes.forEach(c -> c.sendCommand(command));
     }
 
-    void instructClusterJoin(ClientShellCommand csc, ClusterZone zone) {
+    void instructClusterJoin(ClientShellCommand csc, ClusterZone zone, boolean startElection) {
         List<ClientShellCommand> zoneNodes = zone.getNodes();
         log.debug("instructClusterJoin: Zone members: {}", zoneNodes);
 
@@ -207,15 +207,17 @@ public class ClusteringCoordinator extends NoopCoordinator {
         log.debug("instructClusterJoin: New cluster node nearby members: addresses={}, hostnames={}", addresses, hostnames);
 
         // Prepare cluster join commands
-        String command = String.format("%s  %s:%s:%s  %s:%d  %s",
+        String command = String.format("%s  %s:%s:%s  start-election=%b  %s:%d  %s",
                 zone.getId(),
                 topLevelGrouping, aggregatorGrouping, lastLevelGrouping,
+                startElection,
                 csc.getClientClusterNodeAddress(),
                 csc.getClientClusterNodePort(),
                 String.join(" ", addresses));
         /*String command =
                 zone.getId()+" "
                 +topLevelGrouping+":"+aggregatorGrouping+":"+lastLevelGrouping+" "
+                +startElection+" "
                 +csc.getClientClusterNodeHostname()+":"+csc.getClientClusterNodePort()+" "
                 +String.join(" ", hostnames);*/
 

@@ -278,7 +278,7 @@ public class CommandExecutor {
             }
 
             // Check and collect arguments
-            if (args.length<4) {
+            if (args.length<5) {
                 log.error("Too few arguments");
                 out.println("Too few arguments (CLUSTER-JOIN)");
                 return false;
@@ -287,6 +287,8 @@ public class CommandExecutor {
             argsList.remove(0); // Discard command part
             String clusterId = argsList.remove(0);
             String groupings = argsList.remove(0);
+            boolean startElection = Boolean.parseBoolean(
+                    StringUtils.substringAfter(argsList.remove(0), "start-election="));
             String localNodeAddress = argsList.remove(0);
             List<String> otherNodeAddresses = argsList.isEmpty() ? null : argsList;
             log.info("CLUSTER-JOIN ARGS: cluster-id={}, groupings={}, local-node={}, other-nodes={}",
@@ -329,7 +331,7 @@ public class CommandExecutor {
             // Join/start cluster
             clusterManager.initialize(clusterManagerProperties, new ClusterNodeCallback(this));
             //clusterManager.setCallback(new TestCallback(clusterManager.getLocalAddress()));
-            clusterManager.joinCluster();
+            clusterManager.joinCluster( startElection );
             clusterManager.waitToJoin();
             log.info("Joined to cluster");
 

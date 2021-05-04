@@ -80,7 +80,7 @@ public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy
 
     private void joinToCluster(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
         coordinator.sendClusterKey(csc, zone);
-        coordinator.instructClusterJoin(csc, zone);
+        coordinator.instructClusterJoin(csc, zone, false);
 
         coordinator.sleep(1000);
         csc.sendCommand("CLUSTER-EXEC broker list");

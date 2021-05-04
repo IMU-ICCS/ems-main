@@ -55,26 +55,14 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
 
     @Override
     public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
-        if (zone.getNodes().size()==1) {
-            // Instruct first node to start the cluster
-            ClientShellCommand firstNode = zone.getNodes().get(0);
-            log.info("DefaultZoneManagementStrategy: First node to join cluster: client={}, zone={}", firstNode.getId(), zone.getId());
-            joinToCluster(firstNode, coordinator, zone);
-
-            // Instruct aggregator election (therefore the client will become aggregator)
-            log.info("DefaultZoneManagementStrategy: Elect aggregator: zone={}", zone.getId());
-            coordinator.sleep(5000);
-            coordinator.electAggregator(zone);
-        } else {
-            // Instruct new node to join cluster
-            log.info("DefaultZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());
-            joinToCluster(csc, coordinator, zone);
-        }
+        // Instruct new node to join cluster
+        log.info("DefaultZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());
+        joinToCluster(csc, coordinator, zone);
     }
 
     private void joinToCluster(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
         coordinator.sendClusterKey(csc, zone);
-        coordinator.instructClusterJoin(csc, zone);
+        coordinator.instructClusterJoin(csc, zone, true);
 
         coordinator.sleep(1000);
         csc.sendCommand("CLUSTER-EXEC broker list");
