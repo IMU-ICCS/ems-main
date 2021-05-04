@@ -28,6 +28,10 @@ public class ClusterManagerProperties {
 	private NodeProperties localNode = new NodeProperties();
 	private List<String> memberAddresses;
 
+	private boolean useSwim = false;		// ...else the Heartbeat membership protocol will be used
+	private long failureTimeout = 10000;	// The Atomix default failure timeout for both membership protocols
+	private long testInterval = -1;			// Print cluster node status every X millis (negative numbers should turn off feature)
+
 	private boolean logEnabled;
 	private boolean outEnabled = true;
 

@@ -15,6 +15,9 @@ import io.atomix.cluster.MemberId;
 import io.atomix.cluster.Node;
 import io.atomix.cluster.discovery.BootstrapDiscoveryProvider;
 import io.atomix.cluster.discovery.NodeDiscoveryProvider;
+import io.atomix.cluster.protocol.GroupMembershipProtocol;
+import io.atomix.cluster.protocol.HeartbeatMembershipProtocol;
+import io.atomix.cluster.protocol.SwimMembershipProtocol;
 import io.atomix.core.Atomix;
 import io.atomix.core.AtomixBuilder;
 import io.atomix.protocols.backup.partition.PrimaryBackupPartitionGroup;
@@ -25,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -351,6 +355,25 @@ public class ClusterManager extends AbstractLogBase {
 				.withMemberId(localMemberId)
 				.withAddress(localAddress)
 				.withProperties(properties.getLocalNode().getProperties());
+
+		// Configure membership protocol
+		boolean useSwim = properties.isUseSwim();
+		long failureTimeout = Math.max(100L, properties.getFailureTimeout());
+		GroupMembershipProtocol memProto;
+		atomixBuilder
+				.withMembershipProtocol(memProto = useSwim
+						? SwimMembershipProtocol.builder()
+								//.withGossipInterval(Duration.ofMillis(250))
+								//.withGossipFanout(2)
+								.withFailureTimeout(Duration.ofMillis(failureTimeout))
+								.build()
+						: HeartbeatMembershipProtocol.builder()
+								//.withHeartbeatInterval(Duration.ofMillis(1000))
+								.withFailureTimeout(Duration.ofMillis(failureTimeout))
+								//.withFailureThreshold(2)
+								.build()
+				);
+		log_info("CLM: Building Atomix: Membership protocol: {}", memProto.getClass().getSimpleName());
 
 		// Configure Management and Partition groups
 		boolean usePBInMg = properties.isUsePBInMg();

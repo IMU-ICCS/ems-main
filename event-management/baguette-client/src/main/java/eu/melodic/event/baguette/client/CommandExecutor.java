@@ -361,8 +361,11 @@ public class CommandExecutor {
                     log.error("Cluster has not been initialized. Run CLUSTER-JOIN first");
                     return false;
                 }
+                long interval = Math.max(100L, (args.length>=3)
+                        ? Long.parseLong(args[2])
+                        : clusterManagerProperties.getTestInterval());
                 clusterTest = new ClusterTest(clusterManager);
-                clusterTest.startTest();
+                clusterTest.startTest(interval);
             } else if ("STOP".equalsIgnoreCase(args[1])) {
                 if (clusterTest==null) {
                     log.error("Cluster test is not running");
