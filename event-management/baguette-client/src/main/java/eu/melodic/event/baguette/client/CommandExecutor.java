@@ -354,6 +354,14 @@ public class CommandExecutor {
                 log.error("CLUSTERING ERROR: Many Aggregators found! {}", aggregators);
             }
 
+            // Update node status based on current grouping
+            if (activeGrouping==null)
+                clusterManager.getBrokerUtil().setLocalStatus(NODE_STATUS.NOT_SET);
+            else if (activeGrouping.getName().equals(aggregatorGrouping))
+                clusterManager.getBrokerUtil().setLocalStatus(NODE_STATUS.AGGREGATOR);
+            else
+                clusterManager.getBrokerUtil().setLocalStatus(NODE_STATUS.CANDIDATE);
+
         } else if ("CLUSTER-TEST".equals(cmd)) {
 
             if (args.length<2 || "START".equalsIgnoreCase(args[1])) {
