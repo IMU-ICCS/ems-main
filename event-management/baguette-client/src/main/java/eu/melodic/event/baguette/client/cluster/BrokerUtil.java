@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.cluster;
 import io.atomix.cluster.Member;
 import io.atomix.core.Atomix;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -306,15 +307,15 @@ public class BrokerUtil extends AbstractLogBase {
         return getNodeStatus(getLocalMember());
     }
 
-    public void setLocalStatus(NODE_STATUS status) {
+    public void setLocalStatus(@NonNull NODE_STATUS status) {
         setNodeStatus(getLocalMember(), status);
     }
 
-    public NODE_STATUS getNodeStatus(Member member) {
+    public NODE_STATUS getNodeStatus(@NonNull Member member) {
         return NODE_STATUS.valueOf(member.properties().getProperty(STATUS_PROPERTY, NOT_SET.name()));
     }
 
-    public void setNodeStatus(Member member, NODE_STATUS status) {
+    public void setNodeStatus(@NonNull Member member, @NonNull NODE_STATUS status) {
         log_trace("BRU: setNodeStatus: Node properties BEFORE CHANGE: {}", member.properties());
         String oldStatusName = (String) member.properties().setProperty(STATUS_PROPERTY, status.name());
         log_trace("BRU: setNodeStatus: Node properties AFTER CHANGE:  {}", member.properties());
@@ -324,20 +325,20 @@ public class BrokerUtil extends AbstractLogBase {
             callback.statusChanged(oldStatus, status);
     }
 
-    public NODE_STATUS getNodeStatus(String memberId) {
+    public NODE_STATUS getNodeStatus(@NonNull String memberId) {
         Member member = getMemberById(memberId);
         if (member != null)
             return getNodeStatus(member);
         return null;
     }
 
-    public void setNodeStatus(String memberId, NODE_STATUS status) {
+    public void setNodeStatus(@NonNull String memberId, @NonNull NODE_STATUS status) {
         Member member = getMemberById(memberId);
         if (member != null)
             setNodeStatus(member, status);
     }
 
-    private Member getMemberById(String id) {
+    private Member getMemberById(@NonNull String id) {
         return atomix.getMembershipService().getMembers().stream()
                 .filter(m -> m.isActive() && m.isReachable())
                 .filter(m -> m.id().id().equals(id))
