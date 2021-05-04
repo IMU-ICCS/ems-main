@@ -62,19 +62,6 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
         }
     }
 
-    public void backOff() {
-        if ("initializing L2".equals(state)) {
-            state = "L1";
-            log_info("__TestNode at {}: Back off complete", address);
-        } else
-        if ("L2".equals(state)) {
-            log_info("__TestNode at {}: Broker is Stepping down: {}", address, state);
-            stepDown();
-        } else {
-            log_warn("__TestNode at {}: No need to back-off: {}", address, state);
-        }
-    }
-
     public void statusChanged(BrokerUtil.NODE_STATUS oldStatus, BrokerUtil.NODE_STATUS newStatus) {
         log_info("__TestNode at {}: Status changed: {} --> {}", address, oldStatus, newStatus);
     }

@@ -33,11 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static eu.melodic.event.baguette.client.cluster.BrokerUtil.NODE_STATUS.*;
 import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig;
 
 /**
@@ -744,10 +742,14 @@ public class CommandExecutor {
         }
         log.debug("clearActiveGroupingForwards: Clearing forward-to-grouping settings of active grouping: {}", activeGrouping.getName());
         log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
-        for (ClientStatementSubscriber subscriber : groupingsSubscribers.get(activeGrouping.getName())) {
-            log.debug("clearActiveGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
-                    subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
-            subscriber.setForwardToGroupings(Collections.emptySet());
+        List<ClientStatementSubscriber> subscribers = groupingsSubscribers.get(activeGrouping.getName());
+        log.trace("clearActiveGroupingForwards: Clearing subscribers of grouping: {}: {}", activeGrouping.getName(), subscribers);
+        if (subscribers!=null) {
+            for (ClientStatementSubscriber subscriber : subscribers) {
+                log.debug("clearActiveGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
+                        subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
+                subscriber.setForwardToGroupings(Collections.emptySet());
+            }
         }
         log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: AFTER: {}", groupingsSubscribers);
     }
@@ -1066,79 +1068,29 @@ public class CommandExecutor {
     @Data
     protected static class ClusterNodeCallback implements BrokerUtil.NodeCallback {
         @NonNull private final CommandExecutor commandExecutor;
-        private AtomicBoolean backOff = new AtomicBoolean();
+
+        private void printInfo(String methodName, String message) {
+            if (message!=null ) log.debug("{}(): {}", methodName, message);
+            log.trace("{}(): Node properties: {}", methodName, commandExecutor.getClusterManager().getLocalMemberProperties());
+            log.trace("{}(): Back-off flag: {}", methodName, commandExecutor.getClusterManager().getBrokerUtil().isBackOffSet());
+        }
 
         @Override
         public void initialize() {
-            // Check if node is in the right state
-            log.debug("initialize(): INITIALIZE");
-            log.trace("initialize(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
-            log.trace("initialize(): Back-off flag: {}", backOff.get());
-
-            NODE_STATUS state = commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus();
-            if (state!=INITIALIZING) {
-                log.warn("initialize(): Node cannot be initialized as Aggregator. Current state: {}", state);
-                throw new IllegalStateException("Node cannot be initialized as Aggregator. Current state: "+state);
-            }
-            if (backOff.getAndSet(false)) {
-                log.warn("initialize(): Node cannot be initialized as Aggregator. Back off flag is set");
-                return;
-            }
+            printInfo("initialize", "INITIALIZE");
 
             log.info("initialize(): Node starts initializing as Aggregator...");
             commandExecutor.setActiveGrouping(commandExecutor.getAggregatorGrouping());
             log.info("initialize(): Node initialized as Aggregator");
-
-            if (backOff.getAndSet(false)) {
-                log.debug("initialize(): Back-off flag has been set. Stepping down immediately.");
-                stepDown();
-            }
         }
 
         @Override
         public void stepDown() {
-            log.debug("stepDown(): STEP DOWN");
-            log.trace("stepDown(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
-            log.trace("stepDown(): Back-off flag: {}", backOff.get());
+            printInfo("stepDown", "STEP DOWN");
 
-            NODE_STATUS state = commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus();
-            switch (state) {
-                //XXX: TODO: Move these checks to BrokerUtil
-                // ONLY STEPPING_DOWN MUST BE CONSIDERED HERE
-                case CANDIDATE:
-                    log.debug("stepDown(): Node is not Aggregator. Clearing back-off flag");
-                    backOff.set(false); break;
-                case INITIALIZING:
-                    log.debug("stepDown(): Node is initializing. Back-off flag set");
-                    backOff(); break;
-                case AGGREGATOR:
-                    log.info("stepDown(): Node is Aggregator. Start stepping down...");
-                    commandExecutor.setActiveGrouping(commandExecutor.getNodeGrouping());
-                    backOff.set(false);
-                    log.info("stepDown(): Node stepped down");
-                    break;
-                case STEPPING_DOWN:
-                    log.debug("stepDown(): Node is already stepping down. Nothing to do");
-                    backOff.set(false);
-                    break;
-            }
-        }
-
-        @Override
-        public void backOff() {
-            log.debug("backOff(): BACK OFF");
-            log.trace("backOff(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
-            log.trace("backOff(): Back-off flag: {}", backOff.get());
-
-            NODE_STATUS state = commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus();
-            if (state==INITIALIZING) {
-                log.debug("backOff(): Set Back-off flag to step down after initialization");
-                backOff.set(true);
-            } else
-            if (state==AGGREGATOR) {
-                log.debug("backOff(): Stepping down because Back-off flag has been set");
-                stepDown();
-            }
+            log.info("stepDown(): Node is Aggregator. Start stepping down...");
+            commandExecutor.setActiveGrouping(commandExecutor.getNodeGrouping());
+            log.info("stepDown(): Node stepped down");
         }
 
         @Override
@@ -1148,8 +1100,8 @@ public class CommandExecutor {
 
         @Override
         public String getConfiguration(Member local) {
-            log.trace("getConfiguration(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
-            log.trace("getConfiguration(): Back-off flag: {}", backOff.get());
+            printInfo("getConfiguration", null);
+
             String brokerConfig = commandExecutor.getBrokerConfigurationAsString();
             log.trace("getConfiguration(): Config. string: {}", brokerConfig);
             return brokerConfig;
@@ -1157,9 +1109,7 @@ public class CommandExecutor {
 
         @Override
         public void setConfiguration(String newConfig) {
-            log.debug("setConfiguration(): SET CONFIG: {}", newConfig);
-            log.trace("setConfiguration(): Node properties: {}", commandExecutor.getClusterManager().getLocalMemberProperties());
-            log.trace("setConfiguration(): Back-off flag: {}", backOff.get());
+            printInfo("setConfiguration", "SET CONFIG: "+newConfig);
 
             // Update broker connection configuration for aggregator grouping
             commandExecutor.setBrokerConfigurationFromString(newConfig);

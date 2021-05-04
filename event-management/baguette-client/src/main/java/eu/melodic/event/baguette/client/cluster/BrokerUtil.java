@@ -20,18 +20,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static eu.melodic.event.baguette.client.cluster.BrokerUtil.NODE_STATUS.*;
 
 @RequiredArgsConstructor
 public class BrokerUtil extends AbstractLogBase {
-    public enum NODE_STATUS {AGGREGATOR, CANDIDATE, NOT_CANDIDATE, INITIALIZING, STEPPING_DOWN, RETIRING, NOT_SET }
+    public enum NODE_STATUS { AGGREGATOR, CANDIDATE, NOT_CANDIDATE, INITIALIZING, STEPPING_DOWN, RETIRING, NOT_SET }
 
-    protected final static Collection<NODE_STATUS> BROKER_STATUSES = Arrays.asList(
-            NODE_STATUS.AGGREGATOR, NODE_STATUS.RETIRING);
-    protected final static Collection<NODE_STATUS> CANDIDATE_STATUSES = Arrays.asList(
-            NODE_STATUS.CANDIDATE, NODE_STATUS.AGGREGATOR);
-    protected final static Collection<NODE_STATUS> NON_CANDIDATE_STATUSES = Arrays.asList(
-            NODE_STATUS.NOT_CANDIDATE, NODE_STATUS.STEPPING_DOWN);
+    protected final static Collection<NODE_STATUS> BROKER_STATUSES = Arrays.asList(AGGREGATOR, RETIRING);
+    protected final static Collection<NODE_STATUS> CANDIDATE_STATUSES = Arrays.asList(CANDIDATE, AGGREGATOR, INITIALIZING);
+    protected final static Collection<NODE_STATUS> NON_CANDIDATE_STATUSES = Arrays.asList(NOT_CANDIDATE, STEPPING_DOWN, RETIRING, NOT_SET);
 
     public final static String NODE_MESSAGE_TOPIC = "NODE-MESSAGE-TOPIC";
     public final static String STATUS_PROPERTY = "node-status";
@@ -44,6 +44,7 @@ public class BrokerUtil extends AbstractLogBase {
 
     private final Atomix atomix;
     private final ClusterManager clusterManager;
+    private final AtomicBoolean backOff = new AtomicBoolean();
 
     @Getter @Setter
     private NodeCallback callback;
@@ -78,8 +79,7 @@ public class BrokerUtil extends AbstractLogBase {
             String newBrokerId = message.split(" ", 2)[1];
             log_info("BRU: **** BROKER: New Broker initializes: {}", newBrokerId);
             // Back off if i am also initializing but have a lower score or command order
-            if (callback!=null)
-                callback.backOff();
+            backOff();
         } else if (MESSAGE_READY.equalsIgnoreCase(messageType)) {
             String[] part = message.split(" ", 3);
             String brokerId = part[1];
@@ -99,7 +99,7 @@ public class BrokerUtil extends AbstractLogBase {
             if (BROKER_STATUSES.contains(localStatus))
                 if (!local.id().id().equals(brokerId)) {
                     // Temporarily make node unavailable for being elected as Broker, until step down completes
-                    setLocalStatus(NODE_STATUS.STEPPING_DOWN);
+                    setLocalStatus(STEPPING_DOWN);
 
                     // Step down
                     log_info("BRU: Old broker steps down: {}", local.id().id());
@@ -107,10 +107,10 @@ public class BrokerUtil extends AbstractLogBase {
                         callback.stepDown();
 
                     // After step down, and if node hasn't retired, node status changes to 'candidate'
-                    if (NODE_STATUS.RETIRING!=localStatus)
-                        setLocalStatus(NODE_STATUS.CANDIDATE);
+                    if (RETIRING!=localStatus)
+                        setLocalStatus(CANDIDATE);
                     else
-                        setLocalStatus(NODE_STATUS.NOT_CANDIDATE);
+                        setLocalStatus(NOT_CANDIDATE);
                 }
 
             // Pass new configuration to callback
@@ -120,6 +120,57 @@ public class BrokerUtil extends AbstractLogBase {
             }
         } else
             log_warn("BRU:    BROKER: Unknown message received: {}", message);
+    }
+
+    private void aggregatorStepDown() {
+        // Save previous status
+        NODE_STATUS oldStatus = getLocalStatus();
+
+        // Temporarily make node unavailable for being elected as Aggregator, until step down completes
+        setLocalStatus(STEPPING_DOWN);
+
+        switch (oldStatus) {
+            case CANDIDATE:
+                log_debug("BRU: Node is not Aggregator. Clearing back-off flag");
+                backOff.set(false); break;
+            case INITIALIZING:
+                log_debug("BRU: Node is initializing. Back-off flag set");
+                backOff.set(true); break;
+            case AGGREGATOR:
+                // Step down
+                log_info("BRU: Aggregator steps down: {}", getLocalMember().id().id());
+                if (callback!=null)
+                    callback.stepDown();
+                backOff.set(false);
+                log_info("BRU: Old aggregator stepped down");
+                break;
+            case STEPPING_DOWN:
+                log_debug("stepDown(): Node is already stepping down. Nothing to do");
+                backOff.set(false);
+                break;
+        }
+
+        // After step down, and if node hasn't retired, node status changes to 'candidate'
+        if (oldStatus!=RETIRING)
+            setLocalStatus(CANDIDATE);
+        else
+            setLocalStatus(NOT_CANDIDATE);
+    }
+
+    public void backOff() {
+        NODE_STATUS state = getLocalStatus();
+        if (state==INITIALIZING) {
+            log_debug("BRU: Set Back-off flag to step down after initialization");
+            backOff.set(true);
+        } else
+        if (state==AGGREGATOR) {
+            log_debug("BRU: Stepping down because Back-off flag has been set");
+            aggregatorStepDown();
+        }
+    }
+
+    public boolean isBackOffSet() {
+        return backOff.get();
     }
 
     public void startElection() {
@@ -149,7 +200,7 @@ public class BrokerUtil extends AbstractLogBase {
         }
     }
 
-    public void appointment(String appointedNodeId) {
+    private void appointment(String appointedNodeId) {
         // Check i am appointed
         Member local = getLocalMember();
         if (! local.id().id().equals(appointedNodeId)) {
@@ -160,46 +211,61 @@ public class BrokerUtil extends AbstractLogBase {
         // Check if i am already a broker
         NODE_STATUS localStatus = getLocalStatus();
         if (BROKER_STATUSES.contains(localStatus)) {
-            if (NODE_STATUS.RETIRING==localStatus) {
-                log_error("BRU: !!!! BUG: RETIRING BROKER HAS BEEN ELECTED AGAIN !!!!");
+            if (localStatus==RETIRING) {
+                log_error("BRU: !!!! BUG: RETIRING AGGREGATOR HAS BEEN ELECTED AGAIN !!!!");
             } else {
-                log_info("BRU: Broker elected again");
+                log_info("BRU: Aggregator elected again");
             }
         } else {
-            // Notify others that this node starts initializing as Broker
-            log_info("BRU: Node will become Broker. Initializing...");
-            atomix.getCommunicationService().broadcast(NODE_MESSAGE_TOPIC, MESSAGE_INITIALIZE + " " + local.id().id());
-            setLocalStatus(NODE_STATUS.INITIALIZING);
-
             // Start initializing as Broker...
-            if (callback!=null)
-                callback.initialize();
-
-            // Update node status to Broker
-            setLocalStatus(NODE_STATUS.AGGREGATOR);
-            log_info("BRU: Node is ready to act as Broker. Ready");
+            aggregatorInitialize();
         }
 
-        // Notify others that this node is ready to serve as Broker
+        // Notify others that this node is ready to serve as Aggregator
         String brokerId = local.id().id();
         String newConf = MARKER_NEW_CONFIGURATION +
                 (callback!=null ? callback.getConfiguration(local) : "");
         atomix.getCommunicationService().broadcastIncludeSelf(NODE_MESSAGE_TOPIC, MESSAGE_READY + " " + brokerId + " " + newConf);
     }
 
+    private void aggregatorInitialize() {
+        if (backOff.getAndSet(false)) {
+            log_warn("BRU: Node cannot be initialized as Aggregator. Back off flag is set");
+            return;
+        }
+
+        // Notify others that this node starts initializing as Broker
+        log_info("BRU: Node will become Broker. Initializing...");
+        atomix.getCommunicationService().broadcast(NODE_MESSAGE_TOPIC, MESSAGE_INITIALIZE + " " + getLocalMember().id().id());
+        setLocalStatus(INITIALIZING);
+
+        // Start initializing as Aggregator...
+        if (callback!=null)
+            callback.initialize();
+
+        // Update node status to Broker
+        setLocalStatus(AGGREGATOR);
+        log_info("BRU: Node is ready to act as Aggregator. Ready");
+
+        if (backOff.getAndSet(false)) {
+            log_debug("initialize(): Back-off flag has been set. Stepping down immediately.");
+            aggregatorStepDown();
+        }
+    }
+
     public void appoint(String brokerId) {
         // Check if already a broker
         if (getBrokers().stream().anyMatch(m -> m.id().id().equals(brokerId))) {
             log_info("BRU: Node is already a broker: {}", brokerId);
-            if (NODE_STATUS.RETIRING==getNodeStatus(brokerId))
-                setNodeStatus(brokerId, NODE_STATUS.AGGREGATOR);
+            if (getNodeStatus(brokerId)==RETIRING)
+                setNodeStatus(brokerId, AGGREGATOR);
             return;
         }
 
         // Check if not a candidate
         NODE_STATUS brokerStatus = getNodeStatus(brokerId);
         log_debug("BRU: Node status: {}", brokerStatus);
-        if (!CANDIDATE_STATUSES.contains(brokerStatus)) {
+        if (NON_CANDIDATE_STATUSES.contains(brokerStatus)) {
             log_info("BRU: Node is not a broker candidate: {}", brokerId);
             return;
         }
@@ -212,17 +278,17 @@ public class BrokerUtil extends AbstractLogBase {
     public void retire() {
         NODE_STATUS localStatus = getLocalStatus();
         if (BROKER_STATUSES.contains(localStatus)) {
-            if (NODE_STATUS.RETIRING==localStatus) {
+            if (localStatus==RETIRING) {
                 log_info("BRU: Already retiring");
             } else {
-                setLocalStatus(NODE_STATUS.RETIRING);
+                setLocalStatus(RETIRING);
                 log_info("BRU: Broker retires: broadcasting election message...");
                 String localNodeId = getLocalMember().id().id();
                 atomix.getCommunicationService().broadcast(NODE_MESSAGE_TOPIC, MESSAGE_ELECTION + " -" + localNodeId);
-                election(Collections.singletonList(localNodeId));
+                //election(Collections.singletonList(localNodeId));
             }
         } else
-            log_info("BRU: Not a Broker");
+            log_info("BRU: Not an Aggregator");
     }
 
     public List<Member> getBrokers() {
@@ -232,7 +298,7 @@ public class BrokerUtil extends AbstractLogBase {
                 .collect(Collectors.toList());
     }
 
-    private Member getLocalMember() {
+    public Member getLocalMember() {
         return atomix.getMembershipService().getLocalMember();
     }
 
@@ -245,7 +311,7 @@ public class BrokerUtil extends AbstractLogBase {
     }
 
     public NODE_STATUS getNodeStatus(Member member) {
-        return NODE_STATUS.valueOf(member.properties().getProperty(STATUS_PROPERTY, NODE_STATUS.NOT_SET.name()));
+        return NODE_STATUS.valueOf(member.properties().getProperty(STATUS_PROPERTY, NOT_SET.name()));
     }
 
     public void setNodeStatus(Member member, NODE_STATUS status) {
@@ -281,24 +347,32 @@ public class BrokerUtil extends AbstractLogBase {
 
     public void setCandidate() {
         NODE_STATUS localStatus = getLocalStatus();
-        if (!BROKER_STATUSES.contains(localStatus) && !CANDIDATE_STATUSES.contains(localStatus)) {
-            setLocalStatus(NODE_STATUS.CANDIDATE);
-            log_info("BRU: Node becomes Broker candidate");
+        if (localStatus==NOT_CANDIDATE || localStatus==NOT_SET) {
+            setLocalStatus(CANDIDATE);
+            log_info("BRU: Node becomes Aggregator candidate");
         } else
-            log_info("BRU: Node is already Broker candidate");
+            log_info("BRU: Node is already Aggregator candidate");
     }
 
     public void clearCandidate() {
         NODE_STATUS localStatus = getLocalStatus();
         if (BROKER_STATUSES.contains(localStatus)) {
-            log_warn("BRU: Node is the Broker. Select 'retire' instead");
+            log_warn("BRU: Node is the Aggregator. Select 'retire' first");
             return;
         }
-        if (CANDIDATE_STATUSES.contains(localStatus)) {
-            setLocalStatus(NODE_STATUS.NOT_CANDIDATE);
+        if (localStatus==INITIALIZING) {
+            log_warn("BRU: Node is initializing for Aggregator. Step down first");
+            return;
+        }
+        if (localStatus==STEPPING_DOWN) {
+            log_warn("BRU: Node is stepping down. Wait step down complete");
+            return;
+        }
+        if (localStatus==CANDIDATE) {
+            setLocalStatus(NOT_CANDIDATE);
             log_info("BRU: Node removed from Broker candidates");
         } else
-            log_info("BRU: Node is not Broker candidate");
+            log_info("BRU: Node is not Aggregator candidate");
     }
 
     public List<MemberWithScore> getCandidates() {
@@ -323,7 +397,7 @@ public class BrokerUtil extends AbstractLogBase {
         // Check if any node is initializing as broker (then don't start election)
         if (getActiveNodes().stream()
                 .map(MemberWithScore::getMember).map(this::getNodeStatus)
-                .noneMatch(s -> NODE_STATUS.INITIALIZING==s || NODE_STATUS.AGGREGATOR ==s))
+                .noneMatch(s -> INITIALIZING==s || AGGREGATOR ==s))
         {
             startElection();
         }
@@ -332,7 +406,6 @@ public class BrokerUtil extends AbstractLogBase {
     public interface NodeCallback {
         void initialize();
         void stepDown();
-        void backOff();
         void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus);
         String getConfiguration(Member local);
         void setConfiguration(String newConfig);
