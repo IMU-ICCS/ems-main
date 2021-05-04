@@ -118,7 +118,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         sleep(500);
 
         // Set active grouping
-        String grouping = "PER_INSTANCE";
+        String grouping = lastLevelGrouping.name();
         log.info("ClusteringCoordinator: --------------------------------------------------");
         log.info("ClusteringCoordinator: Setting active grouping of client {}: {}", csc.getId(), grouping);
         csc.setActiveGrouping(grouping);
@@ -207,11 +207,12 @@ public class ClusteringCoordinator extends NoopCoordinator {
         log.debug("instructClusterJoin: New cluster node nearby members: addresses={}, hostnames={}", addresses, hostnames);
 
         // Prepare cluster join commands
-        String command =
-                zone.getId()+" "
-                +topLevelGrouping+":"+aggregatorGrouping+":"+lastLevelGrouping+" "
-                +csc.getClientClusterNodeAddress()+":"+csc.getClientClusterNodePort()+" "
-                +String.join(" ", addresses);
+        String command = String.format("%s  %s:%s:%s  %s:%d  %s",
+                zone.getId(),
+                topLevelGrouping, aggregatorGrouping, lastLevelGrouping,
+                csc.getClientClusterNodeAddress(),
+                csc.getClientClusterNodePort(),
+                String.join(" ", addresses));
         /*String command =
                 zone.getId()+" "
                 +topLevelGrouping+":"+aggregatorGrouping+":"+lastLevelGrouping+" "
