@@ -82,13 +82,17 @@ public class CepEvalFunction {
     }
 
     public static EventMap/*MetricEvent*/ newEvent(double metricValue, String... params) {
+        return newEvent(metricValue, 1);
+    }
+
+    public static EventMap/*MetricEvent*/ newEvent(double metricValue, int level, String... params) {
         log.debug(">> ---------------------------------------------------------------------------");
         log.debug(">> newEvent:   metric-value:  {}", metricValue);
         log.debug(">> newEvent:   params-length: {}", params.length);
 
         // Add metric value
-        EventMap event = new EventMap(metricValue, 1, System.currentTimeMillis());
-        //MetricEvent event = new MetricEvent(metricValue, 1, System.currentTimeMillis());
+        EventMap event = new EventMap(metricValue, level, System.currentTimeMillis());
+        //MetricEvent event = new MetricEvent(metricValue, level, System.currentTimeMillis());
 
         // Add extra parameters
         for (int i = 0; i < params.length; i += 2) {
