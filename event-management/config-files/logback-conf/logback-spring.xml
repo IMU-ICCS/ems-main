@@ -43,7 +43,7 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
-    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG" additivity="false">
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
@@ -51,23 +51,23 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
-    <logger name="eu.melodic.event.baguette.client.install" level="DEBUG" additivity="false">
+    <logger name="eu.melodic.event.baguette.client.install" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
-    <logger name="eu.melodic.event.brokercep" level="DEBUG" additivity="false">
+    <logger name="eu.melodic.event.brokercep" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
-    <logger name="eu.melodic.event.brokercep.cep" level="DEBUG" additivity="false">
+    <logger name="eu.melodic.event.brokercep.cep" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
-    <logger name="eu.melodic.event.translate" level="DEBUG" additivity="false">
+    <logger name="eu.melodic.event.translate" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
-    <logger name="eu.melodic.event.util" level="DEBUG" additivity="false">
+    <logger name="eu.melodic.event.util" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="LOG_FILE"/>
     </logger>
