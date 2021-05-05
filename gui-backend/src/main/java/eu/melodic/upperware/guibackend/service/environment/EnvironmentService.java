@@ -29,13 +29,25 @@ public class EnvironmentService {
     }
 
     public void runRestartScript() throws IOException {
-        boolean isWindows = System.getProperty("os.name")
-                .toLowerCase().startsWith("windows");
+        try {
 
-        if (isWindows) {
-            Runtime.getRuntime().exec("cmd.exe");
-        } else {
-            Runtime.getRuntime().exec("./restartscript.sh");
+            ProcessBuilder processBuilder = new ProcessBuilder("sh","restartscript.sh");
+            Process process = processBuilder.start();
+            StringBuilder output = new StringBuilder();
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+            log.info(String.valueOf(output));
+            process.waitFor();
+
+            log.info("restart script executed");
+            } catch (Exception exception){
+            exception.printStackTrace();
         }
     }
 }
