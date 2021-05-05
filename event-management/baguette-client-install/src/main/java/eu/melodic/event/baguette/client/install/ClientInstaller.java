@@ -16,8 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -26,60 +26,34 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @Service
 @NoArgsConstructor
-public class ClientInstaller implements InitializingBean, Runnable {
+public class ClientInstaller implements InitializingBean {
     private static ClientInstaller singleton;
 
     @Autowired
     private ClientInstallationProperties properties;
 
-    private BlockingQueue<ClientInstallationTask> taskQueue = new LinkedBlockingQueue<>();
-    private Thread thread;
-    private boolean running;
-    private AtomicLong taskCounter = new AtomicLong();
+    private final AtomicLong taskCounter = new AtomicLong();
+    private ExecutorService executorService;
 
     @Override
     public void afterPropertiesSet() {
         singleton = this;
-        startThread();
+        executorService = Executors.newFixedThreadPool(properties.getWorkers());
     }
 
     public static ClientInstaller instance() { return singleton; }
 
     public void addTask(@NotNull ClientInstallationTask task) {
-        taskQueue.add(task);
-    }
-
-    public synchronized void startThread() {
-        if (running) return;
-        running = true;
-        thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.start();
-    }
-
-    public synchronized void stopThread() {
-        if (!running) return;
-        running = false;
-        thread.interrupt();
-    }
-
-    public void run() {
-        try {
-            log.info("ClientInstaller: Starting task execution thread");
-            while (running) {
-                ClientInstallationTask task = taskQueue.take();
-                long taskCnt = taskCounter.getAndIncrement();
-                log.info("ClientInstaller: Executing Client installation Task #{}: task-id={}, node-id={}, name={}, type={}, address={}",
-                        taskCnt, task.getId(), task.getNodeId(), task.getName(), task.getType(), task.getAddress());
-                long startTm = System.currentTimeMillis();
-                boolean result = executeTask(task, taskCnt);
-                long endTm = System.currentTimeMillis();
-                log.info("ClientInstaller: Client installation Task #{}: result={}, duration={}ms",
-                        taskCnt, result?"SUCCESS":"FAILED", endTm-startTm);
-            }
-        } catch (InterruptedException ex) {
-            log.warn("ClientInstaller: Stopping task execution thread");
-        }
+        executorService.submit(() -> {
+            long taskCnt = taskCounter.getAndIncrement();
+            log.info("ClientInstaller: Executing Client installation Task #{}: task-id={}, node-id={}, name={}, type={}, address={}",
+                    taskCnt, task.getId(), task.getNodeId(), task.getName(), task.getType(), task.getAddress());
+            long startTm = System.currentTimeMillis();
+            boolean result = executeTask(task, taskCnt);
+            long endTm = System.currentTimeMillis();
+            log.info("ClientInstaller: Client installation Task #{}: result={}, duration={}ms",
+                    taskCnt, result?"SUCCESS":"FAILED", endTm-startTm);
+        });
     }
 
     private boolean executeTask(ClientInstallationTask task, long taskCounter) {

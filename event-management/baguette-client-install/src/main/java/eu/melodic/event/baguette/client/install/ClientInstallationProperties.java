@@ -27,6 +27,8 @@ import java.util.Map;
 public class ClientInstallationProperties {
     private final Map<String, List<String>> osFamilies = new HashMap<>();
 
+    private int workers = 1;
+
     private String baseDir;
     private List<String> mkdirs;
     private List<String> touchFiles;
