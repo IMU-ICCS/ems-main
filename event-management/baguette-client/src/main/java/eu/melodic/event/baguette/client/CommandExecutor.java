@@ -58,6 +58,8 @@ public class CommandExecutor {
     private final static String DEFAULT_KEYSTORE_DIR = DEFAULT_CONF_DIR;
 
     @Autowired
+    private BaguetteClient baguetteClient;
+    @Autowired
     private BrokerCepService brokerCepService;
     @Autowired
     private BrokerClientProperties brokerClientProperties;
@@ -72,6 +74,7 @@ public class CommandExecutor {
     private PrintStream err;
     private String clientId;
 
+    @Getter
     private final Map<String, GroupingConfiguration> groupings = new LinkedHashMap<>();
     private GroupingConfiguration activeGrouping;
 
@@ -627,12 +630,19 @@ public class CommandExecutor {
         // Complete active grouping switch
         activeGrouping = groupings.get(newGroupingName);
         log.info("Active grouping switch completed: {} -> {}", activeGroupingName, newGroupingName);
+        String oldGroupingName = activeGroupingName;
+        activeGroupingName = newGroupingName;
 
         // If Aggregator notify Baguette Server
         if (clusterManager!=null && GROUPING.valueOf(aggregatorGrouping)==GROUPING.valueOf(newGroupingName)) {
             log.info("Notifying Baguette Server i am the new aggregator");
             out.println("CLUSTER AGGREGATOR "+clientId);
         }
+
+        // Notify collectors for the active grouping change
+        final String finalActiveGroupingName = activeGroupingName;
+        baguetteClient.getCollectorsList()
+                .forEach(c -> c.activeGroupingChanged(oldGroupingName, finalActiveGroupingName));
     }
 
     protected synchronized void addGroupingsTill(String newGroupingName) {

@@ -12,6 +12,8 @@ package eu.melodic.event.baguette.client.collector.netdata;
 import eu.melodic.event.baguette.client.Collector;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.util.GROUPING;
+import eu.melodic.event.util.GroupingConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,9 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +57,28 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                 .map(s -> s.split(":", 2))
                 .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
 
+    }
+
+    public synchronized void activeGroupingChanged(String oldGrouping, String newGrouping) {
+        HashSet<String> topics = new HashSet<>();
+        for (String g : GROUPING.getNames()) {
+            GroupingConfiguration grp = commandExecutor.getGroupings().get(g);
+            if (grp!=null)
+                topics.addAll(grp.getEventTypeNames());
+        }
+        log.warn("Collectors::Netdata: activeGroupingChanged: New Allowed Topics for active grouping: {} -- {}", newGrouping, topics);
+        List<String> tmpList = new ArrayList<>(topics);
+        Map<String,String> tmpMap = null;
+        if (properties.getAllowedTopics()!=null) {
+            tmpMap = properties.getAllowedTopics().stream()
+                    .map(s -> s.split(":", 2))
+                    .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
+        }
+        log.warn("Collectors::Netdata: activeGroupingChanged: New Allowed Topics -- Topics Map: {} -- {}", tmpList, tmpMap);
+        synchronized (this) {
+            this.allowedTopics = tmpList;
+            this.topicMap = tmpMap;
+        }
     }
 
     public synchronized void start() {

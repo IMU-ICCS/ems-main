@@ -12,4 +12,5 @@ package eu.melodic.event.baguette.client;
 public interface Collector {
     void start();
     void stop();
+    void activeGroupingChanged(String oldGrouping, String newGrouping);
 }

@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client;
 import edu.emory.mathcs.backport.java.util.Collections;
 import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -39,7 +40,8 @@ public class BaguetteClient implements ApplicationRunner {
     private final ClusterManagerProperties clusterManagerProperties;
     private final ConfigurableApplicationContext applicationContext;
 
-    private List<Collector> collectorsList = new ArrayList<>();
+    @Getter
+    private final List<Collector> collectorsList = new ArrayList<>();
 
     private static int killDelay;
 
