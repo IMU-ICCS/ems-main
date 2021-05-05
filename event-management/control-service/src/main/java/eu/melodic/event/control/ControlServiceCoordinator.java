@@ -16,6 +16,8 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.translate.analyze.Grouping;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
@@ -211,6 +213,28 @@ public class ControlServiceCoordinator {
                     gson.toJson(_copyTC, writer);
                     writer.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
+
+                    /*try (FileOutputStream out = new FileOutputStream("_TC.xml")) {
+                        log.info(">>>>>>>>  _TC.XML:  WRITING...");
+                        XMLEncoder xmlEncoder = new XMLEncoder(out);
+                        xmlEncoder.writeObject(_TC.DAG);
+                        xmlEncoder.writeObject(_TC.SLO);
+                        xmlEncoder.writeObject(_TC.C2S);
+                        xmlEncoder.writeObject(_TC.D2S);
+                        xmlEncoder.writeObject(_TC.MONS);
+                        xmlEncoder.writeObject(_TC.G2R);
+                        xmlEncoder.writeObject(_TC.G2T);
+                        xmlEncoder.writeObject(_TC.M2MC);
+                        xmlEncoder.writeObject(_TC.CMVAR);
+                        xmlEncoder.writeObject(_TC.MVV);
+                        xmlEncoder.writeObject(_TC.MVV_CP);
+                        xmlEncoder.writeObject(_TC.FUNC);
+                        xmlEncoder.writeObject(_TC.getTopicConnections());
+                        xmlEncoder.writeObject(_TC.getMetricConstraints());
+                        xmlEncoder.close();
+                    } catch (Exception e) {
+                        log.error(">>>>>>>>  _TC.XML:  EXCEPTION: ", e);
+                    }*/
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
                 }
@@ -581,6 +605,24 @@ public class ControlServiceCoordinator {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptySet();
         return _tc.getMetricConstraints();
+    }
+
+    public Set<String> getGlobalGroupingMetrics(String camelModelId) {
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptySet();
+
+        final Set<DAGNode> nodes = new HashSet<>();
+        final Deque<DAGNode> q = new ArrayDeque<>(_tc.DAG.getTopLevelNodes());
+        while (!q.isEmpty()) {
+            DAGNode node = q.pop();
+            if (node.getGrouping()==Grouping.GLOBAL) {
+                nodes.add(node);
+                q.addAll(_tc.DAG.getNodeChildren(node));
+            }
+        }
+        return nodes.stream()
+                .map(DAGNode::getElementName)
+                .collect(Collectors.toSet());
     }
 
 

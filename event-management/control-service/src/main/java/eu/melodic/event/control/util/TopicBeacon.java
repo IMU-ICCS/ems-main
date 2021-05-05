@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import java.util.Date;
-import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -47,6 +46,8 @@ public class TopicBeacon implements InitializingBean {
     private Set<String> beaconThresholdTopics;
     @Value("${beacon.topics.instance:}")
     private Set<String> beaconInstanceTopics;
+    @Value("${beacon.topics.prediction:}")
+    private Set<String> beaconPredictionTopics;
 
     @Autowired
     private ControlServiceCoordinator coordinator;
@@ -86,6 +87,7 @@ public class TopicBeacon implements InitializingBean {
         transmitHeartbeat();
         transmitThresholdInfo();
         transmitInstanceInfo();
+        transmitPredictionInfo();
         log.debug("Topic Beacon: Completed transmitting info: {}", new Date());
     }
 
@@ -100,7 +102,6 @@ public class TopicBeacon implements InitializingBean {
             return;
         coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId())
                 .getMetricConstraints()
-                .stream()
                 .forEach(c -> {
                     String message = gson.toJson(c);
                     log.debug("Topic Beacon: Transmitting Metric Constraint threshold info: message={}, topics={}",message, beaconThresholdTopics);
@@ -115,7 +116,7 @@ public class TopicBeacon implements InitializingBean {
 
     public void transmitInstanceInfo() throws JMSException {
         if (coordinator.getBaguetteServer().isServerRunning()) {
-            log.debug("Topic Beacon: Transmitting Instance info: topics={}",beaconInstanceTopics);
+            log.debug("Topic Beacon: Transmitting Instance info: topics={}", beaconInstanceTopics);
             for (NodeRegistryEntry node : coordinator.getBaguetteServer().getNodeRegistry().getNodes()) {
                 String nodeName = node.getPreregistration().getOrDefault("name", "");
                 String nodeIp = node.getIpAddress();
@@ -128,11 +129,33 @@ public class TopicBeacon implements InitializingBean {
         }
     }
 
+    public void transmitPredictionInfo() {
+        String modelId = coordinator.getCurrentCamelModelId();
+        log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
+        Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
+        if (topLevelMetrics==null)
+            return;
+        log.debug("Topic Beacon: transmitPredictionInfo: DAG Top-Level Metrics: {}", topLevelMetrics);
+        EventMap event = new EventMap();
+        event.put("metrics_to_predict", topLevelMetrics);
+
+        log.debug("Topic Beacon: Transmitting Prediction info: event={}, topics={}", event, beaconPredictionTopics);
+        try {
+            sendMessageToTopics(event, beaconPredictionTopics);
+        } catch (JMSException e) {
+            log.error("Topic Beacon: EXCEPTION while transmitting Prediction info: event={}, topics={}, exception: ",
+                    event, beaconPredictionTopics, e);
+        }
+    }
+
     private void sendMessageToTopics(String message, Set<String> topics) throws JMSException {
+        EventMap event = new EventMap(-1);
+        event.put("message", message);
+        sendMessageToTopics(event, topics);
+    }
+
+    private void sendMessageToTopics(EventMap event, Set<String> topics) throws JMSException {
         for (String topicName : topics) {
-            log.debug("Topic Beacon: Sending message to topic: message={}, topic={}", message, topicName);
-            EventMap event = new EventMap(-1);
-            event.put("message", message);
             log.trace("Topic Beacon: Sending event to topic: event={}, topic={}", event, topicName);
             brokerCepService.publishEvent(
                     brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
