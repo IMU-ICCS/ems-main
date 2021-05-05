@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>upperware</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>eu.melodic.visualization</groupId>
@@ -70,6 +70,11 @@
             <groupId>io.github.cloudiator.client</groupId>
             <artifactId>java-rest</artifactId>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -16,7 +16,7 @@ IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
 
 :: Get IP addresses
-set UTIL_FILE=util-3.1.0-SNAPSHOT-jar-with-dependencies.jar
+set UTIL_FILE=util-4.0.0-SNAPSHOT-jar-with-dependencies.jar
 set UTIL_PATH_0=util\target\%UTIL_FILE%
 set UTIL_PATH_1=jars\util\%UTIL_FILE%
 set UTIL_PATH_2=..\util\target\%UTIL_FILE%
@@ -33,7 +33,7 @@ if exist %UTIL_PATH_0% (
 			if exist %UTIL_PATH_3% (
 				set UTIL_JAR=%UTIL_PATH_3%
 			) else (
-				echo ERROR: Couldn't find 'util-3.1.0-SNAPSHOT-jar-with-dependencies.jar'
+				echo ERROR: Couldn't find 'util-4.0.0-SNAPSHOT-jar-with-dependencies.jar'
 				echo ERROR: Skipping keystore initialization
 				goto the_end
 			)

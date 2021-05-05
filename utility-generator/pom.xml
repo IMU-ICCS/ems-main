@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>upperware</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>eu.melodic</groupId>
@@ -127,18 +127,17 @@
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>eu.melodic.dlms</groupId>
-            <artifactId>DLMSUtility</artifactId>
-            <version>${melodic.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>penalty-calculator</artifactId>
             <version>${melodic.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>jwt-commons</artifactId>
+        </dependency>
 
     </dependencies>
+
+
 </project>
