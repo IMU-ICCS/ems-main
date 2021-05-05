@@ -17,6 +17,7 @@ import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.GROUPING;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,6 +74,28 @@ public class ClusteringCoordinator extends NoopCoordinator {
                 ? Integer.parseInt(zoneConfig.get("zone-port-start")) : zoneStartPort;
         zoneEndPort = zoneConfig.containsKey("zone-port-end")
                 ? Integer.parseInt(zoneConfig.get("zone-port-end")) : zoneEndPort;
+    }
+
+    @Override
+    public boolean processClientInput(ClientShellCommand csc, String line) {
+        if (StringUtils.isBlank(line)) return false;
+        String[] args = Arrays.stream(line.trim().split("[ \t\r\n]+")).filter(StringUtils::isNotBlank).map(String::trim).toArray(String[]::new);
+        if (!"CLUSTER".equalsIgnoreCase(args[0])) return false;
+        if ("AGGREGATOR".equalsIgnoreCase(args[1])) {
+            String clientId1 = csc.getId();
+            String clientId2 = csc.getClientId();
+            String clientId3 = args[2];
+            ClusterZone zone = findZone(csc);
+            zone.setAggregator(csc);
+            log.info("Updated aggregator of zone: {} -- New aggregator: {} @ {} ({})",
+                    zone.getId(), clientId1, csc.getClientIpAddress(), clientId2);
+        }
+        return true;
+    }
+
+    private ClusterZone findZone(ClientShellCommand csc) {
+        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        return topologyMap.get(zoneId);
     }
 
     @Override

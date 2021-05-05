@@ -161,6 +161,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     coordinator.register(this);
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
+                } else {
+                    coordinator.processClientInput(this, line);
                 }
             }
 

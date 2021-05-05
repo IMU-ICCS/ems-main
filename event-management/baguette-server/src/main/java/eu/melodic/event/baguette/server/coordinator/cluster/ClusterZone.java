@@ -40,6 +40,8 @@ public class ClusterZone {
     private final File clusterKeystoreFile;
     private final String clusterKeystoreType;
     private final String clusterKeystorePassword;
+    @Getter @Setter
+    private ClientShellCommand aggregator;
 
     @SneakyThrows
     public ClusterZone(@NotBlank String id, int startPort, int endPort) {

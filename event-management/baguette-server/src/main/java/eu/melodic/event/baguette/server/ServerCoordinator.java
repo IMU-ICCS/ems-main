@@ -23,6 +23,8 @@ public interface ServerCoordinator {
 
     default void setProperties(Map<String, String> p) { }
 
+    default boolean processClientInput(ClientShellCommand csc, String line) { return false; }
+
     BaguetteServer getServer();
 
     int getPhase();

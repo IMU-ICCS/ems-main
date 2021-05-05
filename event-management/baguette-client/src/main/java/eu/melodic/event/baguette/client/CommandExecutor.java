@@ -128,6 +128,10 @@ public class CommandExecutor {
         String cmd = args[0].toUpperCase();
         args[0] = "";
 
+        this.in = in;
+        this.out = out;
+        this.err = err;
+
         if ("EXIT".equals(cmd)) {
             boolean canExit = config != null && config.isExitCommandAllowed();
             if (canExit) {
@@ -623,6 +627,12 @@ public class CommandExecutor {
         // Complete active grouping switch
         activeGrouping = groupings.get(newGroupingName);
         log.info("Active grouping switch completed: {} -> {}", activeGroupingName, newGroupingName);
+
+        // If Aggregator notify Baguette Server
+        if (clusterManager!=null && GROUPING.valueOf(aggregatorGrouping)==GROUPING.valueOf(newGroupingName)) {
+            log.info("Notifying Baguette Server i am the new aggregator");
+            out.println("CLUSTER AGGREGATOR "+clientId);
+        }
     }
 
     protected synchronized void addGroupingsTill(String newGroupingName) {
