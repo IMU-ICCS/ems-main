@@ -1,7 +1,7 @@
 package eu.paasage.upperware.profiler.generator.communication.impl;
 
+import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
 import eu.paasage.upperware.profiler.generator.communication.ProactiveClientServiceForGenerator;
-import eu.passage.upperware.commons.proactive.client.ProactiveClientServiceConnector;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.NodeCandidate;

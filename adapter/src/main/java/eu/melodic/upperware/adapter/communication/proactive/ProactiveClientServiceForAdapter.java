@@ -1,6 +1,6 @@
 package eu.melodic.upperware.adapter.communication.proactive;
 
-import eu.passage.upperware.commons.proactive.client.IProactiveClientServiceConnector;
+import cloud.morphemic.connectors.proactive.IProactiveClientServiceConnector;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
