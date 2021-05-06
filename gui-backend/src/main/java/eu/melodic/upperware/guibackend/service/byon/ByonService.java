@@ -5,6 +5,7 @@ import eu.melodic.upperware.guibackend.exception.ByonDefinitionNotFoundException
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import eu.passage.upperware.commons.model.byon.ByonEnums;
 import eu.passage.upperware.commons.model.byon.LoginCredential;
+import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.store.SecureStoreService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
 import io.github.cloudiator.rest.model.*;
@@ -29,6 +30,7 @@ public class ByonService {
     private CloudiatorApi cloudiatorApi;
     private ByonMapper byonMapper;
     private SecureStoreService secureStoreService;
+    private final SecureStoreDBService secureStoreDBService;
 
     public Optional<List<ByonDefinition>> getByonDefList(boolean fillSecureVariables) {
         List<ByonDefinition> byonDefinitions = yamlDataService.getDataFromYaml().getByonDefinitions();
@@ -41,12 +43,14 @@ public class ByonService {
     private void fillCredentials(List<ByonDefinition> byonDefinitions) {
         byonDefinitions.forEach(byonDefinition -> {
             if (fieldIsDefined(byonDefinition.getLoginCredential().getPassword())) {
-                String password = secureStoreService.getValueForSecureVariableLabel(byonDefinition.getLoginCredential().getPassword());
-                byonDefinition.getLoginCredential().setPassword(password);
+                String password2 = secureStoreDBService.getValueForSecureVariableLabel(byonDefinition.getLoginCredential().getPassword());
+                log.info("LSZ DEV[ByonService]: fillCredentials: password2={}", secureStoreDBService.maskSensitiveText(password2));
+                byonDefinition.getLoginCredential().setPassword(password2);
             }
             if (fieldIsDefined(byonDefinition.getLoginCredential().getPrivateKey())) {
-                String privateKey = secureStoreService.getValueForSecureVariableLabel(byonDefinition.getLoginCredential().getPrivateKey());
-                byonDefinition.getLoginCredential().setPrivateKey(privateKey);
+                String privateKey2 = secureStoreDBService.getValueForSecureVariableLabel(byonDefinition.getLoginCredential().getPrivateKey());
+                log.info("LSZ DEV[ByonService]: fillCredentials: privateKey2={}", secureStoreDBService.maskSensitiveText(privateKey2));
+                byonDefinition.getLoginCredential().setPrivateKey(privateKey2);
             }
         });
     }
@@ -65,16 +69,18 @@ public class ByonService {
     private void saveCredentialsInSecureStore(ByonDefinition newByonDefinitionRequest) {
         LoginCredential loginCredential = newByonDefinitionRequest.getLoginCredential();
         if (fieldIsDefined(loginCredential.getPassword())) {
-            Pair<String, String> keyLabelForByonPassword = secureStoreService.createKeyLabelForByonPassword(loginCredential);
-            this.cloudiatorApi.storeSecureVariable(keyLabelForByonPassword.getLeft(), loginCredential.getPassword());
-            loginCredential.setPassword(keyLabelForByonPassword.getRight());
-            log.info("Password saved in secure store under key: {}", keyLabelForByonPassword.getLeft());
+            Pair<String, String> keyLabelForByonPassword2 = secureStoreDBService.createKeyLabelForByonPassword(loginCredential);
+            log.info("LSZ DEV[ByonService]: saveCredentialsInSecureStore: keyLabelForByonPassword2={}", keyLabelForByonPassword2);
+            this.secureStoreDBService.storeSecureVariable(keyLabelForByonPassword2.getLeft(), loginCredential.getPassword());
+            loginCredential.setPassword(keyLabelForByonPassword2.getRight());
+            log.info("Password saved in secure store under key: {}", keyLabelForByonPassword2.getLeft());
         }
         if (fieldIsDefined(loginCredential.getPrivateKey())) {
-            Pair<String, String> keyLabelForByonKey = secureStoreService.createKeyLabelForByonKey(loginCredential);
-            this.cloudiatorApi.storeSecureVariable(keyLabelForByonKey.getLeft(), loginCredential.getPrivateKey());
-            loginCredential.setPrivateKey(keyLabelForByonKey.getRight());
-            log.info("Private key saved in secure store under key: {}", keyLabelForByonKey.getLeft());
+            Pair<String, String> keyLabelForByonKey2 = secureStoreDBService.createKeyLabelForByonKey(loginCredential);
+            log.info("LSZ DEV[ByonService]: saveCredentialsInSecureStore: keyLabelForByonKey2={}", keyLabelForByonKey2);
+            this.secureStoreDBService.storeSecureVariable(keyLabelForByonKey2.getLeft(), loginCredential.getPrivateKey());
+            loginCredential.setPrivateKey(keyLabelForByonKey2.getRight());
+            log.info("Private key saved in secure store under key: {}", keyLabelForByonKey2.getLeft());
         }
     }
 
@@ -113,10 +119,12 @@ public class ByonService {
 
     private void deleteSecureVariables(ByonDefinition byonDefinitionToDelete) {
         if (fieldIsDefined(byonDefinitionToDelete.getLoginCredential().getPassword())) {
-            secureStoreService.deleteSecureVariableByLabel(byonDefinitionToDelete.getLoginCredential().getPassword());
+            log.info("LSZ DEV[ByonService]: deleteSecureVariables: byonDefinitionToDelete.getLoginCredential().getPassword()={}", byonDefinitionToDelete.getLoginCredential().getPassword());
+            secureStoreDBService.deleteSecureVariableByLabel(byonDefinitionToDelete.getLoginCredential().getPassword());
         }
         if (fieldIsDefined(byonDefinitionToDelete.getLoginCredential().getPrivateKey())) {
-            secureStoreService.deleteSecureVariableByLabel(byonDefinitionToDelete.getLoginCredential().getPrivateKey());
+            log.info("LSZ DEV[ByonService]: deleteSecureVariables: byonDefinitionToDelete.getLoginCredential().getPrivateKey()={}", byonDefinitionToDelete.getLoginCredential().getPrivateKey());
+            secureStoreDBService.deleteSecureVariableByLabel(byonDefinitionToDelete.getLoginCredential().getPrivateKey());
         }
     }
 

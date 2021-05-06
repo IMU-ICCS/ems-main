@@ -42,6 +42,7 @@ public class AdapterController {
                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         validator.validate(request);
 
+        log.info("ProActive Dev [applicationDeployment] Header authorization: {}", authorization);
         String resourceName = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
@@ -74,7 +75,7 @@ public class AdapterController {
 
     @GetMapping(value = "/refreshContext", produces = APPLICATION_JSON_VALUE)
     public void refreshContext() {
-        deployCoordinator.refreshContext();
+        log.info("refreshContext - intentionally left for backward compatibility");
     }
 
     @GetMapping(value = "/health")

@@ -13,6 +13,6 @@ import eu.melodic.upperware.adapter.plangenerator.Plan;
 
 public interface PlanExecutor {
 
-  void executePlan(Plan plan);
+  void executePlan(Plan plan, String applicationId, String authorizationBearer);
 
 }

@@ -20,18 +20,14 @@ import org.springframework.stereotype.Service;
 public class CamelModelConverter implements ModelConverter<DeploymentInstanceModel, ComparableModel> {
 
   private JobConverter jobConverter;
-  private ProcessesConverter processesConverter;
   private RequirementsConverter requirementsConverter;
-  private ScheduleConverter scheduleConverter;
   private MonitorConverter monitorConverter;
 
   @Override
   public ComparableModel toComparableModel(DeploymentInstanceModel deploymentModel) {
     return ComparableModel.builder()
       .adapterJob(jobConverter.toComparableModel(deploymentModel))
-      .adapterSchedule(scheduleConverter.toComparableModel(deploymentModel))
       .adapterRequirements(requirementsConverter.toComparableModel(deploymentModel))
-      .adapterProcesses(processesConverter.toComparableModel(deploymentModel))
       .adapterMonitors(monitorConverter.toComparableModel(deploymentModel))
       .build();
   }

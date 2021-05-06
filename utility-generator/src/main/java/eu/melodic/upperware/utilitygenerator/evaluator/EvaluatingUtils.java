@@ -12,7 +12,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;

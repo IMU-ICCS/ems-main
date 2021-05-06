@@ -1,11 +1,10 @@
 package eu.passage.upperware.commons.service.provider;
 
-import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
 import eu.passage.upperware.commons.exception.CloudDefinitionNotFoundException;
 import eu.passage.upperware.commons.model.provider.CloudDefinition;
 import eu.passage.upperware.commons.model.provider.Provider;
 import eu.passage.upperware.commons.model.provider.ProviderEnums;
-import eu.passage.upperware.commons.service.store.SecureStoreService;
+import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
 import io.github.cloudiator.rest.model.CloudType;
 import lombok.AllArgsConstructor;
@@ -28,10 +27,8 @@ public class ProviderService {
 
     private ProviderIdCreatorService providerIdCreatorService;
     private ProviderValidationService providerValidationService;
-    private CloudiatorApi cloudiatorApi;
-    private SecureStoreService secureStoreService;
     private YamlDataService yamlDataService;
-
+    private SecureStoreDBService secureStoreDBService;
 
     // todo get from DB
     public List<CloudDefinition> getCloudDefinitionsForAllProviders() {
@@ -51,11 +48,12 @@ public class ProviderService {
 
     public CloudDefinition fillSecureVariableInCredentials(CloudDefinition cloudDefinition) {
         log.info("Checking secure variables for secret key: {}", cloudDefinition.getCredential().getSecret());
-        List<String> secureVariables = secureStoreService.findSecureVariables(cloudDefinition.getCredential().getSecret());
-        if (secureVariables.size() > 1) {
+        List<String> secureVariables2 = secureStoreDBService.findSecureVariables(cloudDefinition.getCredential().getSecret());
+        log.info("LSZ DEV[ProviderService]: fillSecureVariableInCredentials: secureVariables2={}", secureVariables2);
+        if (secureVariables2.size() > 1) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Invalid format of secret placeholder: %s", cloudDefinition.getCredential().getSecret()));
-        } else if (secureVariables.size() == 1) {
-            cloudDefinition.getCredential().setSecret(cloudiatorApi.getSecureVariable(secureVariables.get(0)));
+        } else if (secureVariables2.size() == 1) {
+            cloudDefinition.getCredential().setSecret(secureStoreDBService.getSecureVariable(secureVariables2.get(0)));
         }
         return cloudDefinition;
     }
@@ -81,10 +79,11 @@ public class ProviderService {
     }
 
     private void saveSecretInSecureStore(CloudDefinition cloudDefinition) {
-        Pair<String, String> keyLabelForSecret = secureStoreService.createKeyLabelForSecret(cloudDefinition);
-        log.info("Saving secret in secure store for user {} under key: {}", cloudDefinition.getCredential().getUser(), keyLabelForSecret.getKey());
-        this.cloudiatorApi.storeSecureVariable(keyLabelForSecret.getKey(), cloudDefinition.getCredential().getSecret());
-        cloudDefinition.getCredential().setSecret(keyLabelForSecret.getValue());
+        Pair<String, String> keyLabelForSecret2 = secureStoreDBService.createKeyLabelForSecret(cloudDefinition);
+        log.info("Saving secret in secure store for user {} under key: {}", cloudDefinition.getCredential().getUser(), keyLabelForSecret2.getKey());
+        log.info("LSZ DEV[ProviderService]: storing securely in db; keyLabelForSecret2={}", keyLabelForSecret2);
+        secureStoreDBService.storeSecureVariable(keyLabelForSecret2.getKey(), cloudDefinition.getCredential().getSecret());
+        cloudDefinition.getCredential().setSecret(keyLabelForSecret2.getValue());
     }
 
     // todo update in DB
@@ -110,12 +109,13 @@ public class ProviderService {
         cloudDefinitionsForAllProviders.remove(oldCloudDefinition);
 
         if (providerUserChanged(oldCloudDefinition, cloudDefinitionToUpdate)) {
-            String oldSecureVariableKey = secureStoreService.createKeyLabelForSecret(oldCloudDefinition).getKey();
+            String oldSecureVariableKey2 = secureStoreDBService.createKeyLabelForSecret(oldCloudDefinition).getKey();
             try {
-                cloudiatorApi.deleteSecureVariable(oldSecureVariableKey);
-                log.info("Provider user changed and secure variable from key {} deleted", oldSecureVariableKey);
+                log.info("LSZ DEV[ProviderService]: deleting from db; oldSecureVariableKey2={}", oldSecureVariableKey2);
+                secureStoreDBService.deleteSecureVariable(oldSecureVariableKey2);
+                log.info("Provider user changed and secure variable from key {} deleted", oldSecureVariableKey2);
             } catch (NotFoundException ex) {
-                log.info("Secure variable with key {} did not exist in secure store.", oldSecureVariableKey);
+                log.info("Secure variable with key {} did not exist in secure store.", oldSecureVariableKey2);
             }
         }
         saveSecretInSecureStore(cloudDefinitionToUpdate);
@@ -141,7 +141,8 @@ public class ProviderService {
                 .orElseThrow(() -> new CloudDefinitionNotFoundException(cloudDefId));
         cloudDefinitionsForAllProviders.remove(cloudDefinitionToDelete);
 
-        cloudiatorApi.deleteSecureVariable(secureStoreService.createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
+        log.info("LSZ DEV[ProviderService]: deleteCloudDefinition(int cloudDefId) - deleting from db; secureStoreDBService.createKeyLabelForSecret(cloudDefinitionToDelete).getKey()={}", secureStoreDBService.createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
+        secureStoreDBService.deleteSecureVariable(secureStoreDBService.createKeyLabelForSecret(cloudDefinitionToDelete).getKey());
         updateCloudDefinitionsInYamlFile(cloudDefinitionsForAllProviders);
     }
 
@@ -149,7 +150,7 @@ public class ProviderService {
         // replace plain text secrets with labels
         cloudDefinitionsForAllProviders = cloudDefinitionsForAllProviders.stream()
                 .peek(cloudDefinition -> cloudDefinition.getCredential()
-                        .setSecret(secureStoreService.createKeyLabelForSecret(cloudDefinition).getValue()))
+                        .setSecret(secureStoreDBService.createKeyLabelForSecret(cloudDefinition).getValue()))
                 .collect(Collectors.toList());
 
         yamlDataService.updateCloudDefinitionInYamlFile(cloudDefinitionsForAllProviders);

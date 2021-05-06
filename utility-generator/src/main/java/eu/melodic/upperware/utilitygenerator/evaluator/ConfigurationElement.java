@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

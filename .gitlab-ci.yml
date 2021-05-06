@@ -80,10 +80,10 @@ stages:
   - build-required-part8
   - build
   - deploy
-  - deploy-solvers-part1
-  - deploy-solvers-part2
-  - deploy-solvers-part3
-  - deploy-solvers-part4
+#  - deploy-solvers-part1
+#  - deploy-solvers-part2
+#  - deploy-solvers-part3
+#  - deploy-solvers-part4
 
 build-basic-dependencies:melodic-upperware:
   stage: build-basic-dependencies
@@ -130,14 +130,14 @@ build-required-part3:melodic-cache:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-cache/
 
-build-required-part3:zpp-solver:
-  stage: build-required-part3
-  image: $MAVEN_IMAGE
-  script:
-    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/zpp-solver/
+#build-required-part3:zpp-solver:
+#  stage: build-required-part3
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $ZPP_SOLVER_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#      - /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/zpp-solver/
 
 
 build-required-part3:ems:
@@ -231,14 +231,14 @@ build-required-part8:ems-baguette-client:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
 
-build:cp-parser:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $CP_PARSER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
+#build:cp-parser:
+#  stage: build
+#  image: $MAVEN_IMAGE
+#  script:
+#    - $CP_PARSER_CLI -Pwithout-docker clean install
+#  artifacts:
+#    paths:
+#      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
 
 build:ems-server:
   stage: build
@@ -355,20 +355,20 @@ deploy:utility-generator:
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
-deploy:zpp-solver:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part3:zpp-solver
-  script:
-    - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
+#deploy:zpp-solver:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build-required-part3:zpp-solver
+#  script:
+#    - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
 
 deploy:adapter:
   stage: deploy
@@ -606,115 +606,115 @@ deploy:gui-backend:
     - docker tag $LOCAL_REPO/melodic/gui-backend:unknown $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
 
-deploy:functionizer-testing-tool:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  script:
-    - $DOCKER_CLI $FUNCTIONIZER_TESTING_TOOL_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
+#deploy:functionizer-testing-tool:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  script:
+#    - $DOCKER_CLI $FUNCTIONIZER_TESTING_TOOL_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
 
-deploy:cp-parser:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build:cp-parser
-    - build-required-part3:zpp-solver
-    - build-required-part6:cp-solver
-  script:
-    - $DOCKER_CLI $CP_PARSER_CLI deploy
-
-deploy-solvers-part1:nc-solver:
-  stage: deploy-solvers-part1
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part6:cp-solver
-    - build:cp-parser
-    - build-required-part3:zpp-solver
-  script:
-    - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/ncsolver:unknown $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
-
-deploy-solvers-part2:pt-solver:
-  stage: deploy-solvers-part2
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part6:cp-solver
-    - build:cp-parser
-    - build-required-part3:zpp-solver
-  script:
-    - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
-
-deploy-solvers-part3:mcts-solver:
-  stage: deploy-solvers-part3
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part6:cp-solver
-    - build:cp-parser
-    - build-required-part3:zpp-solver
-  script:
-    - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
-
-deploy-solvers-part4:gen-solver:
-  stage: deploy-solvers-part4
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part6:cp-solver
-    - build:cp-parser
-    - build-required-part3:zpp-solver
-  script:
-    - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/geneticsolver:unknown $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
-    - docker push $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
+#deploy:cp-parser:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build:cp-parser
+#    - build-required-part3:zpp-solver
+#    - build-required-part6:cp-solver
+#  script:
+#    - $DOCKER_CLI $CP_PARSER_CLI deploy
+#
+#deploy-solvers-part1:nc-solver:
+#  stage: deploy-solvers-part1
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build-required-part6:cp-solver
+#    - build:cp-parser
+#    - build-required-part3:zpp-solver
+#  script:
+#    - $DOCKER_CLI $NC_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/ncsolver:unknown $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
+#
+#deploy-solvers-part2:pt-solver:
+#  stage: deploy-solvers-part2
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build-required-part6:cp-solver
+#    - build:cp-parser
+#    - build-required-part3:zpp-solver
+#  script:
+#    - $DOCKER_CLI $PT_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/ptsolver:unknown $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
+#
+#deploy-solvers-part3:mcts-solver:
+#  stage: deploy-solvers-part3
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build-required-part6:cp-solver
+#    - build:cp-parser
+#    - build-required-part3:zpp-solver
+#  script:
+#    - $DOCKER_CLI $MCTS_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/mctssolver:unknown $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
+#
+#deploy-solvers-part4:gen-solver:
+#  stage: deploy-solvers-part4
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build-required-part6:cp-solver
+#    - build:cp-parser
+#    - build-required-part3:zpp-solver
+#  script:
+#    - $DOCKER_CLI $GEN_SOLVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+#    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+#    - docker tag $LOCAL_REPO/melodic/geneticsolver:unknown $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
+#    - docker push $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH

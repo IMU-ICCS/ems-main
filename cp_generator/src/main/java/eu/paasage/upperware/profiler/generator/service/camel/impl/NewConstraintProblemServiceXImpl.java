@@ -23,7 +23,7 @@ import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
 import eu.paasage.upperware.metamodel.cp.*;
-import eu.paasage.upperware.profiler.generator.communication.CloudiatorServiceX;
+import eu.paasage.upperware.profiler.generator.communication.NodeCandidatesFetchingService;
 import eu.paasage.upperware.profiler.generator.error.GeneratorException;
 import eu.paasage.upperware.profiler.generator.service.camel.*;
 import eu.paasage.upperware.profiler.generator.service.camel.creator.VariableCreator;
@@ -31,12 +31,10 @@ import eu.paasage.upperware.profiler.generator.service.camel.parser.ExpressionSe
 import eu.passage.upperware.commons.model.tools.CPModelTool;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
-import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.model.NodeCandidate;
-import io.github.cloudiator.rest.model.Requirement;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.NodeCandidate;
+import org.activeeon.morphemic.model.Requirement;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.common.util.EList;
@@ -58,7 +56,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     private CpFactory cpFactory;
     private List<GeneratorService> generatorServices;
-    private CloudiatorServiceX cloudiatorServiceX;
+    private NodeCandidatesFetchingService nodeCandidatesFetchingService;
     private CacheService<NodeCandidates> memcacheService;
     private CacheService<NodeCandidates> filecacheService;
     private NodeCandidatesService nodeCandidatesService;
@@ -72,13 +70,13 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
 
     @Autowired
     public NewConstraintProblemServiceXImpl(CpFactory cpFactory, List<GeneratorService> generatorServices,
-                                           CloudiatorServiceX cloudiatorServiceX, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
-                                           @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, NodeCandidatesService nodeCandidatesService,
-                                           ConstantService constantService, ConstraintService constraintService, VariableService variableService,
-                                           MetricService metricService, ExpressionService expressionService, VariableCreatorFactory variableCreatorFactory) {
+                                            NodeCandidatesFetchingService nodeCandidatesFetchingService, @Qualifier("memcacheService") CacheService<NodeCandidates> memcacheService,
+                                            @Qualifier("filecacheService") CacheService<NodeCandidates> filecacheService, NodeCandidatesService nodeCandidatesService,
+                                            ConstantService constantService, ConstraintService constraintService, VariableService variableService,
+                                            MetricService metricService, ExpressionService expressionService, VariableCreatorFactory variableCreatorFactory) {
         this.cpFactory = cpFactory;
         this.generatorServices = generatorServices;
-        this.cloudiatorServiceX = cloudiatorServiceX;
+        this.nodeCandidatesFetchingService = nodeCandidatesFetchingService;
         this.memcacheService = memcacheService;
         this.filecacheService = filecacheService;
         this.nodeCandidatesService = nodeCandidatesService;
@@ -444,20 +442,16 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels) {
-        List<Requirement> requirements = cloudiatorServiceX.createRequirements(globalRequirementSet, localRequirementSet, locationModels);
+        List<Requirement> requirements = nodeCandidatesFetchingService.createRequirements(globalRequirementSet, localRequirementSet, locationModels);
         log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;
         try {
-            nodeCandidates = cloudiatorServiceX.findNodeCandidates(requirements);
-        } catch (ApiException e) {
-            log.error("Error during fetching node candidates. Code: {}, ResponseBody: {}", e.getCode(), e.getResponseBody());
-            log.error("ApiException: ", e);
+            nodeCandidates = nodeCandidatesFetchingService.findNodeCandidates(requirements);
+        } catch (RuntimeException e) {
+            log.error("Error during fetching node candidates. Message: {}", e.getMessage());
+            log.error("RuntimeException: ", e);
 
-            Map<String, List<String>> responseHeaders = MapUtils.emptyIfNull(e.getResponseHeaders());
-            for (String key : responseHeaders.keySet()) {
-                log.error("ResponseHeader: Key: {}, Value: {}", key, responseHeaders.get(key));
-            }
             throw new GeneratorException("Problem during fetching node candidates", e);
         }
 

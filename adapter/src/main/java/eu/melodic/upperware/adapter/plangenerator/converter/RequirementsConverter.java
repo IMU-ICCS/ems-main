@@ -6,9 +6,9 @@ import com.google.gson.Gson;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.service.CamelEnricherService;
 import io.github.cloudiator.rest.model.IdentifierRequirement;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.NodeCandidate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

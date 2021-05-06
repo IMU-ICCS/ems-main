@@ -2,12 +2,13 @@ package eu.melodic.upperware.adapter.extractor;
 
 import camel.deployment.DeploymentInstanceModel;
 import eu.melodic.security.authorization.client.extractor.*;
-import io.github.cloudiator.rest.model.GeoLocation;
-import io.github.cloudiator.rest.model.Location;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import java.util.Set;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.activeeon.morphemic.model.GeoLocation;
+import org.activeeon.morphemic.model.Location;
+import org.activeeon.morphemic.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service

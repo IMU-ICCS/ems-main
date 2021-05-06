@@ -5,7 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class AdapterLanceInterface extends AdapterTaskInterface {
 
