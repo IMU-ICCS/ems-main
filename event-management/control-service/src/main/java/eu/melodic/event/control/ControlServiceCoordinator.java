@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control;
 
+import camel.core.NamedElement;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
@@ -611,6 +612,7 @@ public class ControlServiceCoordinator {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptySet();
 
+        // get all top-level nodes their component metrics
         final Set<DAGNode> nodes = new HashSet<>();
         final Deque<DAGNode> q = new ArrayDeque<>(_tc.DAG.getTopLevelNodes());
         while (!q.isEmpty()) {
@@ -620,9 +622,74 @@ public class ControlServiceCoordinator {
                 q.addAll(_tc.DAG.getNodeChildren(node));
             }
         }
+
+        // return metric names
         return nodes.stream()
                 .map(DAGNode::getElementName)
                 .collect(Collectors.toSet());
+    }
+
+    public List<Object> getSLOMetricDecomposition(String camelModelId) {
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptyList();
+
+        // Get metric and logical constraints
+        Map<String, TranslationContext.MetricConstraint> mcMap = _tc.getMetricConstraints().stream()
+                .collect(Collectors.toMap(TranslationContext.MetricConstraint::getName, mc -> mc));
+        Map<String, TranslationContext.LogicalConstraint> lcMap = _tc.getLogicalConstraints().stream()
+                .collect(Collectors.toMap(TranslationContext.LogicalConstraint::getName, lc -> lc));
+
+        // Create map of top-level element names and instances
+        Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
+        Map<String, DAGNode> topLevelNodesMap = topLevelNodes.stream()
+                .collect(Collectors.toMap(DAGNode::getElementName, x -> x));
+
+        // process each SLO
+        List<Object> sloMetricDecompositions = new ArrayList<>();
+        for (String sloName : _tc.SLO) {
+            DAGNode node = topLevelNodesMap.get(sloName);
+            if (node!=null) {
+                // get SLO constraint
+                Set<DAGNode> sloConstraintSet = _tc.DAG.getNodeChildren(node);
+                // SLO must contain exactly one constraint
+                if (sloConstraintSet.size()==1) {
+                    DAGNode sloConstraintNode = sloConstraintSet.iterator().next();
+                    // decompose constraint
+                    Object decomposition = _decomposeConstraint(_tc, sloConstraintNode, mcMap, lcMap);
+                    // cache decomposition
+                    sloMetricDecompositions.add(decomposition);
+                }
+            }
+        }
+
+        return sloMetricDecompositions;
+    }
+
+    private Object _decomposeConstraint(TranslationContext _tc, DAGNode constraintNode, Map<String, TranslationContext.MetricConstraint> mcMap, Map<String, TranslationContext.LogicalConstraint> lcMap) {
+        NamedElement element = constraintNode.getElement();
+        String elementName = constraintNode.getElementName();
+        if (element instanceof camel.constraint.MetricConstraint) {
+            return mcMap.get(elementName);
+        } else
+        if (element instanceof camel.constraint.LogicalConstraint) {
+            TranslationContext.LogicalConstraint lc = lcMap.get(elementName);
+
+            // decompose child constraints
+            List<Object> list = new ArrayList<>();
+            for (DAGNode node : lc.getConstraintNodes()) {
+                Object o = _decomposeConstraint(_tc, node, mcMap, lcMap);
+                if (o!=null) list.add(o);
+            }
+
+            // create decomposition result
+            Map<String,Object> result = new HashMap<>();
+            result.put("name", lc.getName());
+            result.put("operator", lc.getOperator());
+            result.put("constraints", list);
+            return result;
+        } else
+            log.warn("_decomposeConstraint: Unsupported Constraint type: {} {}", constraintNode.getElementName(), element.getClass().getName());
+        return null;
     }
 
 

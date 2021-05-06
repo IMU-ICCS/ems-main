@@ -211,6 +211,18 @@ public class BrokerCepService {
         _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
     }
 
+    public synchronized void publishSerializable(String connectionString, String destinationName, Serializable event) throws JMSException {
+        if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event))
+            return;
+        _publishEvent(connectionString, destinationName, event);
+    }
+
+    public synchronized void publishSerializable(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
+        if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event))
+            return;
+        _publishEvent(connectionString, username, password, destinationName, event);
+    }
+
     // When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
     private final static java.util.regex.Pattern urlPattern = java.util.regex.Pattern.compile("^([a-z]+://[a-zA-Z0-9_\\.\\-]+:[0-9]+)([/#\\?].*)?$");
 

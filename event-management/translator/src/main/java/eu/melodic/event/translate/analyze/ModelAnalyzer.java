@@ -744,7 +744,12 @@ public class ModelAnalyzer {
         LogicalOperatorType operator = constraint.getLogicalOperator();
         log.info("  _decomposeLogicalConstraint(): {} ==> operator: {}, component-constraints: {}", constraint.getName(), operator.getName(), getListElementNames(componentConstraints));
 
-        componentConstraints.forEach(lc -> _TC.DAG.addNode(constraint, lc).setGrouping(getGrouping(lc)) );
+        List<DAGNode> nodeList = componentConstraints.stream()
+                .map(lc -> _TC.DAG.addNode(constraint, lc).setGrouping(getGrouping(lc)))
+                .collect(Collectors.toList());
+
+        // cache constraint
+        _TC.addLogicalConstraint(constraint, nodeList);
 
         componentConstraints.forEach(lc -> _decomposeConstraint(_TC, lc) );
     }
