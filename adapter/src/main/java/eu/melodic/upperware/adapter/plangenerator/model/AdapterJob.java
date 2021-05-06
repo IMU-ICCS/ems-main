@@ -1,16 +1,15 @@
 package eu.melodic.upperware.adapter.plangenerator.model;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
 @Builder
 @EqualsAndHashCode
+@ToString(callSuper = true)
 public class AdapterJob implements Data {
 
     private String jobName;
@@ -18,6 +17,9 @@ public class AdapterJob implements Data {
     private List<AdapterTask> tasks;
 
     private List<AdapterCommunication> communications;
+
+    @Builder.Default
+    private Optional<AdapterJob> previousJob = Optional.empty();
 
     @Override
     public String getName() {

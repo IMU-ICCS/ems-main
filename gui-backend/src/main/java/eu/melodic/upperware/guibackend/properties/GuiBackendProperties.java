@@ -47,6 +47,10 @@ public class GuiBackendProperties {
     @NotNull
     private ExternalService functionizerTestingTool;
 
+    @Valid
+    @NotNull
+    private SecureStore secureStore;
+
     @Getter
     @Setter
     public static class Mule extends ExternalService {
@@ -69,4 +73,20 @@ public class GuiBackendProperties {
         @NotBlank
         private String url;
     }
+
+    @Getter
+    @Setter
+    public static class SecureStore {
+
+        @NotBlank
+        private String pw;
+        @NotBlank
+        private String dbUrl;
+        @NotBlank
+        private String dbUsername;
+        @NotBlank
+        private String dbPassword;
+
+    }
+
 }

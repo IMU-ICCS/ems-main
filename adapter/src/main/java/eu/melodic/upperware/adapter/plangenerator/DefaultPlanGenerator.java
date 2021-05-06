@@ -48,16 +48,14 @@ public class DefaultPlanGenerator implements PlanGenerator {
     ComparableModel oldCompModel = converter.toComparableModel(oldModel);
     ComparableModel newCompModel = converter.toComparableModel(newModel);
 
-    log.info("Old comparableModel - Requirement: {}, Process: {}, Monitoring: {}",
+    log.info("Old comparableModel - Requirement: {}, Monitoring: {}",
             oldCompModel.getAdapterRequirements().size(),
-            oldCompModel.getAdapterProcesses().size(),
             oldCompModel.getAdapterMonitors().size()
             );
     log.info("Old comparableModel: {}", oldCompModel);
 
-    log.info("New comparableModel - Requirement: {}, Process: {}, Monitoring: {}",
+    log.info("New comparableModel - Requirement: {}, Monitoring: {}",
             newCompModel.getAdapterRequirements().size(),
-            newCompModel.getAdapterProcesses().size(),
             newCompModel.getAdapterMonitors().size()
     );
     log.info("New comparableModel: {}", newCompModel);

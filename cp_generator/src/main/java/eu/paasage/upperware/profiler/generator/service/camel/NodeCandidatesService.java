@@ -1,6 +1,6 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

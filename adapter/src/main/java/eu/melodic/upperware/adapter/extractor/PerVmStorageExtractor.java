@@ -1,6 +1,6 @@
 package eu.melodic.upperware.adapter.extractor;
 
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -16,6 +16,8 @@ import com.google.gson.Gson;
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapterImpl;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -166,5 +168,13 @@ public class ApplicationContext {
     String host = cacheProperties.getCache().getHost();
     Integer port = cacheProperties.getCache().getPort();
     return new MemcachedClient(new BinaryConnectionFactory(), Collections.singletonList(new InetSocketAddress(host, port)));
+  }
+
+  @Bean
+  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter() {
+    return new ProactiveClientServiceForAdapterImpl(adapterProperties.getPaConfig().getRestUrl(),
+            adapterProperties.getPaConfig().getLogin(),
+            adapterProperties.getPaConfig().getPassword(),
+            adapterProperties.getPaConfig().getEncryptorPw());
   }
 }

@@ -1,7 +1,7 @@
 package eu.melodic.upperware.adapter.service;
 
 import camel.deployment.SoftwareComponent;
-import io.github.cloudiator.rest.model.NodeCandidate;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.Builder;
 import lombok.Getter;
 
