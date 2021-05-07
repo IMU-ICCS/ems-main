@@ -352,6 +352,7 @@ deploy:utility-generator:
     - $DOCKER_DIND_SERVICE
   dependencies:
     - build-required-part5:utility-generator
+    - build-required-part3:melodic-cache
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
