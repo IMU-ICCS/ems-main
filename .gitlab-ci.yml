@@ -430,21 +430,21 @@ deploy:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
-#deploy:ems:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#    - morphemic-rc1.5
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build-required-part3:ems
-#  script:
-#    - $DOCKER_CLI $EMS_CLI deploy
-#
+deploy:ems:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc1.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part3:ems
+  script:
+    - $DOCKER_CLI $EMS_CLI deploy
+
 #deploy:ems-util:
 #  stage: deploy
 #  only:
@@ -562,7 +562,7 @@ deploy:ems-server:
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
-    - build-required-part3:ems
+    - deploy:ems
   script:
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
