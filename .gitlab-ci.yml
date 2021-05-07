@@ -76,10 +76,10 @@ stages:
   - build-required-part4
   - build-required-part5
   - build-required-part6
+  - deploy
 #  - build-required-part7
 #  - build-required-part8
 #  - build
-  - deploy
 #  - deploy-solvers-part1
 #  - deploy-solvers-part2
 #  - deploy-solvers-part3
