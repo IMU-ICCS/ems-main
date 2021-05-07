@@ -7,7 +7,7 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-FROM java:8-alpine
+FROM adoptopenjdk:8-jre
 
 ENV BASEDIR /opt/ems-server
 ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
@@ -15,7 +15,7 @@ ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
 ENV JAR_PATH ${BASEDIR}/jars
 
 WORKDIR ${BASEDIR}
-RUN /bin/sh -c "apk add --no-cache bash"
+RUN apt-get update && apt-get install -y dumb-init && rm -rf /var/lib/apt/lists/*
 
 ADD bin ./bin
 ADD jars ./jars
@@ -25,4 +25,8 @@ ADD config ./config
 RUN mkdir logs
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
-ENTRYPOINT ["./bin/run.sh"]
+RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
+RUN chown -R emsuser:emsuser ${BASEDIR}
+USER emsuser
+
+ENTRYPOINT ["dumb-init", "./bin/run.sh"]
