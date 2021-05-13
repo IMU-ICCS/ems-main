@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -24,8 +24,15 @@
 			<groupId>eu.melodic.event</groupId>
 			<artifactId>broker-cep</artifactId>
 			<version>${project.version}</version>
+			<scope>compile</scope>
 		</dependency>
-		
+		<dependency>
+			<groupId>eu.melodic.event</groupId>
+			<artifactId>translator</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
 		<dependency>
 			<groupId>org.apache.sshd</groupId>
@@ -36,6 +43,14 @@
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpg-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpkix-jdk15on</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -72,13 +87,12 @@
 			<version>3.0</version>
 		</dependency>
 
-		<!-- Apache Common text -->
+		<!-- Apache Commons text (for StringSubstitutor) -->
 		<dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.6</version>
-            <scope>compile</scope>
-        </dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
+		</dependency>
 	</dependencies>
 	
 	<repositories>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -12,7 +12,6 @@ package eu.melodic.event.brokercep.broker;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQMessage;
@@ -32,7 +31,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 	@Autowired
 	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
 	@Autowired
-	private ActiveMQConnectionFactory connectionFactory;
+	private ConnectionFactory connectionFactory;
 	@Autowired
 	private BrokerCepService brokerCerService;
 	@Autowired
@@ -95,10 +94,10 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 		if (mesg instanceof TextMessage) {
 			TextMessage txtMesg = (TextMessage) mesg;
 			String topicName = mesg.getDestination().getPhysicalName();
-			log.info("BrokerAdvisoryWatcher.onMessage(): Text Message received: topic={}, message={}", topicName, txtMesg.getText());
+			log.trace("BrokerAdvisoryWatcher.onMessage(): Text Message received: topic={}, message={}", topicName, txtMesg.getText());
 		} else {
 			String topicName = mesg.getDestination().getPhysicalName();
-			log.info("BrokerAdvisoryWatcher.onMessage(): Non-text Message received: topic={}, type={}", topicName, mesg.getClass().getName());
+			log.trace("BrokerAdvisoryWatcher.onMessage(): Non-text Message received: topic={}, type={}", topicName, mesg.getClass().getName());
 		}
 	}
 

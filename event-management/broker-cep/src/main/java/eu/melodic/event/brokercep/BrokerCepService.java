@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -13,7 +13,7 @@ package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
@@ -22,7 +22,6 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.BrokerView;
 import org.apache.commons.lang3.StringUtils;
@@ -30,15 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
-import javax.management.*;
-import java.io.*;
+import javax.management.ObjectName;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 @Service
@@ -46,8 +48,8 @@ import java.util.*;
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;
+    @Getter
     private BrokerService brokerService;
-    private ActiveMQConnectionFactory connectionFactory;
     private PasswordUtil passwordUtil;
 
     //private BrokerAdvisoryWatcher advisoryMessageWatcher;
@@ -177,8 +179,9 @@ public class BrokerCepService {
     }
 
     public void setConstants(Map<String, Double> constants) {
-        log.debug("BrokerCepService.setConstants(): Add/Set constants in map: {}", constants);
+        log.info("BrokerCepService.setConstants(): Add/Set constants: {}", constants);
         cepService.setConstants(constants);
+        log.info("BrokerCepService.setConstants(): Add/Set constants: ok");
     }
 
     public void addFunctionDefinitions(Set<FunctionDefinition> definitions) {
@@ -192,6 +195,10 @@ public class BrokerCepService {
         cepService.addFunctionDefinition(definition);
     }
 
+    public boolean destinationExists(String destination) {
+        return brokerCepBridge.containsDestination(destination);
+    }
+
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
             return;
@@ -202,6 +209,18 @@ public class BrokerCepService {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
             return;
         _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
+    }
+
+    public synchronized void publishSerializable(String connectionString, String destinationName, Serializable event) throws JMSException {
+        if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event))
+            return;
+        _publishEvent(connectionString, destinationName, event);
+    }
+
+    public synchronized void publishSerializable(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
+        if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event))
+            return;
+        _publishEvent(connectionString, username, password, destinationName, event);
     }
 
     // When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
@@ -246,11 +265,10 @@ public class BrokerCepService {
     private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
         // Clone connection factory
         if (connectionString == null) connectionString = properties.getBrokerUrlForConsumer();
-        ActiveMQConnectionFactory connectionFactory = this.connectionFactory.copy();
-        connectionFactory.setBrokerURL(connectionString);
+        ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryFor(connectionString);
 
         // Create a Connection
-        log.debug("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}",
+        log.trace("BrokerCepService._publishEvent(): Connection info: conn-string={}, username={}, password={}",
                 connectionString, username, passwordUtil.encodePassword(password));
         Connection connection = StringUtils.isBlank(username)
                 ? connectionFactory.createConnection()
@@ -265,7 +283,7 @@ public class BrokerCepService {
     }
 
     private synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
-        log.debug("BrokerCepService._publishEvent(): Connection given: {}", connection);
+        log.trace("BrokerCepService._publishEvent(): Connection given: {}", connection);
 
         // Create a Session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -278,10 +296,10 @@ public class BrokerCepService {
     }
 
     private synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
-        log.debug("BrokerCepService._publishEvent(): Session: {}", session);
+        log.trace("BrokerCepService._publishEvent(): Session: {}", session);
 
         // Create the destination (Topic or Queue)
-        log.debug("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
+        log.trace("BrokerCepService._publishEvent(): Destination info: name={}", destinationName);
         //Destination destination = session.createQueue( destinationName );
         Destination destination = session.createTopic(destinationName);
 
@@ -296,10 +314,10 @@ public class BrokerCepService {
         // Tell the producer to send the message
         long hash = message.hashCode();
         //log.info("BrokerCepService.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
-        log.info("BrokerCepService.publishEvent(): Sending message: destination={}, hash={}, payload={}", destinationName, hash, event);
+        log.trace("BrokerCepService.publishEvent(): Sending message: destination={}, hash={}, payload={}", destinationName, hash, event);
         producer.send(message);
         //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
-        log.info("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
+        log.debug("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
     }
 
     private String getAddressFromBrokerUrl(String url) {

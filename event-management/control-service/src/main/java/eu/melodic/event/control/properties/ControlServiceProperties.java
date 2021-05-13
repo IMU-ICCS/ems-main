@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -42,8 +42,14 @@ public class ControlServiceProperties {
         }
     }
 
+    public enum ExecutionWare {
+        CLOUDIATOR, PROACTIVE
+    }
+
     @Value("${IP_SETTING:}")
     private IpSetting ipSetting;
+    @Value("${EXECUTIONWARE:CLOUDIATOR}")
+    private ExecutionWare executionware;
 
     @Value("${control.upperware-grouping}")
     private String upperwareGrouping;
@@ -87,7 +93,7 @@ public class ControlServiceProperties {
     @Value("${static.resource.context:/**}")
     private String staticResourceContext;
 
-    @Value("${control.password-encoder}")
+    @Value("${password-encoder-class}")
     private String passwordEncoderClass;
 
     // control.ssl.** settings

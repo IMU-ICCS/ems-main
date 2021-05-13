@@ -1,0 +1,3 @@
+
+curl -v --request POST "http://localhost:8111/baguette/registerNode" --header "Content-Type: application/json" --data @vm_A_1.json
+curl -v --request POST "http://localhost:8111/baguette/registerNode" --header "Content-Type: application/json" --data @vm_A_2.json

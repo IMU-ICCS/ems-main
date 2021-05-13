@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -270,16 +270,32 @@
                             <directory>${project.basedir}/../config-files/resources</directory>
                         </resource>-->
                         <resource>
-                            <targetPath>/resources</targetPath>
+                            <targetPath>/config/resources</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>baguette-client.tgz</include>
                             <include>baguette-client.tgz.md5</include>
-                            <include>install.sh</include>
+                            <!--<include>install.sh</include>-->
                         </resource>
                         <resource>
-                            <targetPath>/resources</targetPath>
+                            <targetPath>/config/resources</targetPath>
                             <directory>${project.basedir}/src/main/resources/public</directory>
                             <include>*</include>
+                        </resource>
+                        <!-- Add broker-client too -->
+                        <resource>
+                            <targetPath>/jars</targetPath>
+                            <directory>${project.basedir}/../broker-client/target</directory>
+                            <include>broker-client-jar-with-dependencies.jar</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/bin</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>client.sh</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/config</targetPath>
+                            <directory>${project.basedir}/../broker-client</directory>
+                            <include>eu.melodic.event.brokerclient.properties</include>
                         </resource>
                     </resources>
                 </configuration>
@@ -287,6 +303,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
+                <configuration>
+                    <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
+                </configuration>
             </plugin>
         </plugins>
     </build>

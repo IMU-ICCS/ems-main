@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,7 +9,9 @@
 
 package eu.melodic.event.baguette.server.properties;
 
+import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.NetUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,8 +23,9 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Validated
@@ -31,10 +34,32 @@ import javax.validation.constraints.Size;
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-server.properties")
 @Slf4j
 public class BaguetteServerProperties {
-    @NotNull
-    @Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
+
+    /*XXX: TODO: Add combinatorial properties check
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        log.warn("!!!!!!!!!!!!  BaguetteServerProperties: {}", this);
+
+        // Check that either coordinator class or id is provided
+        if (coordinatorClass==null && StringUtils.isBlank(coordinatorId))
+            throw new IllegalArgumentException("Either coordinator class or id must be provided");
+        if (StringUtils.isNotBlank(coordinatorId)) {
+            CoordinatorConfig cc = getCoordinatorConfig().get(coordinatorId);
+            if (cc==null)
+                throw new IllegalArgumentException("Not found coordinator configuration with id: "+coordinatorId);
+            if (cc.getCoordinatorClass()==null)
+                throw new IllegalArgumentException("No coordinator class in configuration with id: "+coordinatorId);
+        }
+    }*/
+
+    //@Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
     @Value("${baguette.server.coordinator.class}")
-    private String coordinatorClass;
+    private Class<ServerCoordinator> coordinatorClass;
+    private Map<String,String> coordinatorParameters = new HashMap<>();
+
+    @Value("${baguette.server.coordinator.id}")
+    private List<String> coordinatorId;
+    private Map<String, CoordinatorConfig> coordinatorConfig = new HashMap<>();
 
     @Value("${baguette.server.registration-window:30000}")
     @Min(-1)
@@ -53,13 +78,21 @@ public class BaguetteServerProperties {
     public String getServerAddress() {
         String oldVal = serverAddress;
         if (StringUtils.isEmpty(serverAddress) || "%{PUBLIC_IP}%".equals(serverAddress.trim())) {
-            serverAddress = eu.melodic.event.util.NetUtil.getPublicIpAddress();
+            serverAddress = NetUtil.getPublicIpAddress();
             log.info("BaguetteServerProperties: Set serverAddress to PUBLIC: {} -> {}", oldVal, serverAddress);
         } else if ("%{DEFAULT_IP}%".equals(serverAddress.trim())) {
             serverAddress = eu.melodic.event.util.NetUtil.getDefaultIpAddress();
             log.info("BaguetteServerProperties: Set serverAddress to DEFAULT: {} -> {}", oldVal, serverAddress);
         }
         return serverAddress;
+    }
+
+    public String getServerHostname() {
+        return NetUtil.getHostname();
+    }
+
+    public String getCanonicalHostName() {
+        return NetUtil.getCanonicalHostName();
     }
 
     @Value("${baguette.server.port:2222}")
@@ -83,4 +116,10 @@ public class BaguetteServerProperties {
     private String clientIdFormatEscape;
 
     private final CredentialsMap credentials = new CredentialsMap();
+
+    @Data
+    public static class CoordinatorConfig {
+        private Class<ServerCoordinator> coordinatorClass;
+        private Map<String,String> parameters;
+    }
 }

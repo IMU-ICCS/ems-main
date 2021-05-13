@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -27,6 +27,8 @@ import java.util.Map;
 public class ClientInstallationProperties {
     private final Map<String, List<String>> osFamilies = new HashMap<>();
 
+    private int workers = 1;
+
     private String baseDir;
     private List<String> mkdirs;
     private List<String> touchFiles;
@@ -49,4 +51,21 @@ public class ClientInstallationProperties {
     private String copyFilesToClientDir;        // location in VM where server files will be copied into
 
     private String clientTmpDir;                // location of temp. directory in VM (typically /tmp)
+    private String serverTmpDir;                // location of temp. directory in EMS server
+    private boolean keepTempFiles;              // keep temporary files in EMS server (during debug)
+
+    // ----------------------------------------------------
+
+    private boolean simulateConnection;
+    private boolean simulateExecution;
+
+    private int maxRetries = 5;
+    private long connectTimeout = 10000;
+    private long authenticateTimeout = 60000;
+    private long heartbeatInterval = 60000;
+    private long commandExecutionTimeout = 60000;
+
+    private final Map<String, List<String>> instructions = new HashMap<>();
+    private final boolean continueOnFail = false;
+    private final String sessionRecordingDir = "logs";
 }

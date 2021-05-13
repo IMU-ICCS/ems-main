@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -128,18 +128,30 @@ public class NetUtil {
         return list;
     }
 
-    public static String getIpAddress() {
+    protected static InetAddress _getIpAddress() {
         try {
             List<InetAddress> list = getIpAddresses();
             if (list.size() == 0) {
                 log_debug("NetUtil.getIpAddress(): Returning 'null' because getIpAddresses() returned an empty list");
                 return null;
             }
-            return list.get(0).getHostAddress();
+            return list.get(0);
         } catch (SocketException se) {
             log_debug("NetUtil.getIpAddress(): Returning 'null' due to exception: ", se);
             return null;
         }
+    }
+
+    public static String getIpAddress() {
+        return _getIpAddress().getHostAddress();
+    }
+
+    public static String getHostname() {
+        return _getIpAddress().getHostName();
+    }
+
+    public static String getCanonicalHostName() {
+        return _getIpAddress().getCanonicalHostName();
     }
 
     // ------------------------------------------------------------------------

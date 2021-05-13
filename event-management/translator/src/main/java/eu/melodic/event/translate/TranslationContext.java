@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -18,8 +18,9 @@ import camel.deployment.Component;
 import camel.metric.*;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.Event;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
 import eu.melodic.event.translate.analyze.DAG;
+import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.models.interfaces.ems.Monitor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,8 @@ public class TranslationContext {
 
     // Metric Constraints
     protected Set<MetricConstraint> metricConstraints;
+    // Logical Constraints
+    protected Set<LogicalConstraint> logicalConstraints;
 
 
     // ====================================================================================================================================================
@@ -119,6 +122,8 @@ public class TranslationContext {
 
         // Metric Constraints
         this.metricConstraints = new HashSet<>();
+        // Logical Constraints
+        this.logicalConstraints = new HashSet<>();
     }
 
     // ====================================================================================================================================================
@@ -126,21 +131,19 @@ public class TranslationContext {
 
     public Map<String, Set<String>> getG2T() {
         HashMap<String, Set<String>> newMap = new HashMap<>();
-        G2T.entrySet().stream().forEach(entry -> {
-            newMap.put(entry.getKey(), new HashSet<String>(entry.getValue()));
-        });
+        G2T.forEach((key, value) -> newMap.put(key, new HashSet<>(value)));
         return newMap;
     }
 
     public Map<String, Map<String, Set<String>>> getG2R() {
         Map<String, Map<String, Set<String>>> newGroupingsMap = new HashMap<>();    // groupings
-        G2R.entrySet().stream().forEach(entry -> {
+        G2R.forEach((key, value) -> {
             Map<String, Set<String>> newTopicsMap = new HashMap<>();            // topics per grouping
-            newGroupingsMap.put(entry.getKey(), newTopicsMap);
-            entry.getValue().entrySet().stream().forEach(entry2 -> {
+            newGroupingsMap.put(key, newTopicsMap);
+            value.forEach((key1, value1) -> {
                 Set<String> newRuleSet = new HashSet<>();                    // rules per topic per grouping
-                newTopicsMap.put(entry2.getKey(), newRuleSet);
-                newRuleSet.addAll(entry2.getValue());
+                newTopicsMap.put(key1, newRuleSet);
+                newRuleSet.addAll(value1);
             });
         });
         return newGroupingsMap;
@@ -156,8 +159,12 @@ public class TranslationContext {
         return false;
     }
 
-    public Set<MetricConstraint> getMetricConstraints() {
+    public Set<TranslationContext.MetricConstraint> getMetricConstraints() {
         return new HashSet<>(metricConstraints);
+    }
+
+    public Set<TranslationContext.LogicalConstraint> getLogicalConstraints() {
+        return new HashSet<>(logicalConstraints);
     }
 
     // ====================================================================================================================================================
@@ -169,7 +176,7 @@ public class TranslationContext {
             valueSet = new HashSet<>();
             map.put(key, valueSet);
         }
-        if (List.class.isInstance(value)) valueSet.addAll((List) value);
+        if (value instanceof List) valueSet.addAll((List) value);
         else valueSet.add(value);
     }
 
@@ -178,7 +185,7 @@ public class TranslationContext {
     }
 
     public void addEventActionPairs(Event event, List<Action> actions) {
-        _addPair(E2A, E2N.get(event), actions.stream().map(action -> E2N.get(action)).collect(Collectors.toList()));
+        _addPair(E2A, E2N.get(event), actions.stream().map(E2N::get).collect(Collectors.toList()));
     }
 
     public void addSLO(ServiceLevelObjective slo) {
@@ -219,21 +226,13 @@ public class TranslationContext {
     }
 
     public void addGroupingRulePair(String grouping, String topic, String rule) {
-        Map<String, Set<String>> topics = G2R.get(grouping);
-        if (topics == null) {
-            topics = new HashMap<String, Set<String>>();
-            G2R.put(grouping, topics);
-        }
-        Set<String> rules = topics.get(topic);
-        if (rules == null) {
-            rules = new HashSet<String>();
-            topics.put(topic, rules);
-        }
+        Map<String, Set<String>> topics = G2R.computeIfAbsent(grouping, k -> new HashMap<>());
+        Set<String> rules = topics.computeIfAbsent(topic, k -> new HashSet<>());
         rules.add(rule);
     }
 
     public void addGroupingRulePairs(String grouping, String topic, List<String> rules) {
-        rules.stream().forEach(rule -> addGroupingRulePair(grouping, topic, rule));
+        rules.forEach(rule -> addGroupingRulePair(grouping, topic, rule));
     }
 
     public void addMetricMetricContextPair(Metric m, MetricContext mc) {
@@ -250,7 +249,7 @@ public class TranslationContext {
     }
 
     public void addCompositeMetricVariables(List<MetricVariable> mvs) {
-        mvs.stream().forEach(this::addCompositeMetricVariable);
+        mvs.forEach(this::addCompositeMetricVariable);
     }
 
     public void addMVV(MetricVariable mvv) {
@@ -258,7 +257,7 @@ public class TranslationContext {
     }
 
     public void addMVVs(List<MetricVariable> mvvs) {
-        mvvs.stream().forEach(this::addMVV);
+        mvvs.forEach(this::addMVV);
     }
 
     public void addFunction(Function f) {
@@ -298,7 +297,23 @@ public class TranslationContext {
             throw new IllegalArgumentException("Invalid Unary Constraint '"+uc.getName()+"' specified. Only metric constraints and metric variable constraints are allowed.");
 
         // Add threshold information
-        metricConstraints.add(new MetricConstraint(metricName, op, uc.getThreshold()));
+        metricConstraints.add(new MetricConstraint(uc.getName(), metricName, op, uc.getThreshold()));
+    }
+
+    public void addLogicalConstraint(camel.constraint.LogicalConstraint logicalConstraint, List<DAGNode> nodeList) {
+        // Get logical operator
+        String opName = logicalConstraint.getLogicalOperator().getName();
+        if (StringUtils.isBlank(opName))
+            throw new IllegalArgumentException("Logical Constraint '"+logicalConstraint.getName()+"' has no operator specified");
+
+        // Get child constraints
+        List<String> childConstraintNames = logicalConstraint.getConstraints()
+                .stream().map(NamedElement::getName).collect(Collectors.toList());
+        if (childConstraintNames.size()==0)
+            throw new IllegalArgumentException("Logical Constraint '"+logicalConstraint.getName()+"' has no child constraints");
+
+        // Add logical constraint information
+        logicalConstraints.add(new LogicalConstraint(logicalConstraint.getName(), opName, childConstraintNames, nodeList));
     }
 
     // ====================================================================================================================================================
@@ -450,12 +465,21 @@ public class TranslationContext {
     }
 
     // ====================================================================================================================================================
-    // Metric Constraint helper class
+    // Metric and Logical Constraint helper class
 
     @lombok.Data
     public static class MetricConstraint {
         private final String name;
+        private final String metric;
         private final String operator;
         private final double threshold;
+    }
+
+    @lombok.Data
+    public static class LogicalConstraint {
+        private final String name;
+        private final String operator;
+        private final List<String> constraints;
+        private final List<DAGNode> constraintNodes;
     }
 }

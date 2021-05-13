@@ -1,6 +1,6 @@
 @echo off
 ::
-:: Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+:: Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
 ::
 :: This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
 :: Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -27,10 +27,11 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-tru
  -Djavax.net.ssl.trustStoreType=pkcs12 ^
  -Djasypt.encryptor.password=%JASYPT_PASSWORD%
 ::set JAVA_OPTS=-Djavax.net.debug=all %JAVA_OPTS%
+::set JAVA_OPTS=-Dlogging.level.eu.melodic.event=TRACE %JAVA_OPTS%
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo Starting baguette client...
-java %JAVA_OPTS% -classpath "%MELODIC_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" eu.melodic.event.baguette.client.BaguetteClient %*
+java %JAVA_OPTS% -classpath "%MELODIC_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" eu.melodic.event.baguette.client.BaguetteClient --logging.config=file:%MELODIC_CONFIG_DIR%\logback-spring.xml %*
 
 cd %PWD%
 endlocal

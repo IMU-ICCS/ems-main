@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,13 +11,16 @@ package eu.melodic.event.brokercep.properties;
 
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Configuration
@@ -77,8 +80,11 @@ public class BrokerCepProperties {
     @Value("${broker-populate-jmsx-user-id:false}")
     private boolean populateJmsxUserId;
 
-    @Value("${message-interceptors:}#{T(java.util.Collections).emptyList()}")
-    private List<String> messageInterceptors;
+    private List<MessageInterceptorConfig> messageInterceptors;
+    private Map<String,MessageInterceptorSpec> messageInterceptorsSpecs = new HashMap<>();
+
+    @Value("${message-forward-destinations:}#{T(java.util.Collections).emptyList()}")
+    private List<ForwardDestinationConfig> messageForwardDestinations;
 
     @Value("${enable-advisory-watcher:true}")
     private boolean enableAdvisoryWatcher;
@@ -87,4 +93,21 @@ public class BrokerCepProperties {
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
+
+    @Data
+    public static class MessageInterceptorSpec {
+        private String className;
+        private List<String> params;
+    }
+    @Data
+    @ToString(callSuper = true)
+    public static class MessageInterceptorConfig extends MessageInterceptorSpec {
+        private String destination;
+    }
+    @Data
+    public static class ForwardDestinationConfig {
+        private String connectionString;
+        private String username;
+        private String password;
+    }
 }

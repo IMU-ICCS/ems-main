@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ClientChannel;
@@ -33,7 +34,6 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.Properties;
 
 //import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 //import org.apache.sshd.client.keyverifier.RequiredServerKeyVerifier;
@@ -45,8 +45,7 @@ import java.util.Properties;
 @Service
 @Slf4j
 public class Sshc {
-    private Properties config;
-    private String idFile;
+    private BaguetteClientProperties config;
     private SshClient client;
     private SimpleClient simple;
     private ClientSession session;
@@ -55,25 +54,24 @@ public class Sshc {
     @Autowired
     private CommandExecutor commandExecutor;
     @Autowired
-    BrokerCepService brokerCepService;
+    private BrokerCepService brokerCepService;
 
     private InputStream in;
     private PrintStream out;
     //private PrintStream err;
     private String clientId;
 
-    public void setConfigAndId(Properties config, String idFile) throws IOException {
+    public void setConfiguration(BaguetteClientProperties config) throws IOException {
         this.config = config;
-        this.idFile = idFile;
-        this.clientId = config.getProperty("client.id", "");
+        this.clientId = config.getClientId();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
-        this.commandExecutor.setConfigAndId(config, idFile);
+        this.commandExecutor.setConfiguration(config);
     }
 
     public synchronized void start(boolean retry) throws IOException {
         if (retry) {
             log.trace("Starting client in retry mode");
-            long retryPeriod = Long.parseLong(config.getProperty("retry.period", "60000"));
+            long retryPeriod = config.getRetryPeriod();
             while (!started) {
                 log.debug("(Re-)trying to start client....");
                 try {
@@ -86,7 +84,7 @@ public class Sshc {
                 try {
                     Thread.sleep(retryPeriod);
                 } catch (InterruptedException ex) {
-                    log.debug("Sleep: {}", ex);
+                    log.debug("Sleep: ", ex);
                 }
             }
         } else {
@@ -99,13 +97,13 @@ public class Sshc {
         if (started) return;
         log.info("Connecting to server...");
 
-        String host = config.getProperty("host");
-        int port = Integer.parseInt(config.getProperty("port", "22"));
-        String serverPubKey = config.getProperty("pubkey");
-        String serverFingerprint = config.getProperty("fingerprint");
-        String username = config.getProperty("username");
-        String password = config.getProperty("password");
-        long authTimeout = Long.parseLong(config.getProperty("auth.timeout", "60000"));
+        String host = config.getServerAddress();
+        int port = config.getServerPort();
+        String serverPubKey = config.getServerPubkey();
+        String serverFingerprint = config.getServerFingerprint();
+        String username = config.getServerUsername();
+        String password = config.getServerPassword();
+        long authTimeout = config.getAuthTimeout();
 
         // Starting client and connecting to server
         this.client = SshClient.setUpDefaultClient();
@@ -141,7 +139,7 @@ public class Sshc {
                             return keyStr.equalsIgnoreCase(serverPubKey);
 
                         } catch (Exception ex) {
-                            log.error("verifyServerKey(): serverKey: EXCEPTION: {}", ex);
+                            log.error("verifyServerKey(): serverKey: EXCEPTION: ", ex);
                             return false;
                         }
                     }
@@ -207,10 +205,12 @@ public class Sshc {
     }
 
     public void run() throws IOException {
+        if (!started) return;
+
         // Start communication protocol with Server
         // Execution waits here until connection is closed
         log.trace("run(): Calling communicateWithServer()...");
-        communicateWithServer(in, out, null);
+        communicateWithServer(in, out, out);
     }
 
     protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
@@ -221,30 +221,32 @@ public class Sshc {
                 .replace(" ","~~")
                 .replace("\r\n","##")
                 .replace("\n","$$");
-        String clientAddress = config.getProperty("debug.fake-ip-address", "");
+        String clientAddress = config.getDebugFakeIpAddress();
         int clientPort = -1;
-        out.println(String.format("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d cert=%s",
+        out.printf("-HELLO FROM CLIENT: id=%s broker=%s address=%s port=%d username=%s password=%s cert=%s%n",
                 clientId.replace(" ", "~~"),
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForClients(),
-                clientAddress,
+                StringUtils.isNotBlank(clientAddress) ? clientAddress : "",
                 clientPort,
-                certOneLine));
+                brokerCepService.getBrokerUsername(),
+                brokerCepService.getBrokerPassword(),
+                certOneLine);
         out.flush();
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
             log.info(line);
             try {
-                boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), reader, out, err);
+                boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), in, out, err);
                 if (exit) break;
             } catch (Exception ex) {
-                log.error("{}", ex);
+                log.error("", ex);
                 // Report exception back to server
-                out.println(ex);
-                ex.printStackTrace(out);
-                out.flush();
+                err.println(ex);
+                ex.printStackTrace(err);
+                err.flush();
             }
         }
-        out.println(String.format("-BYE FROM CLIENT: %s", clientId));
+        out.printf("-BYE FROM CLIENT: %s%n", clientId);
     }
 }
