@@ -41,7 +41,7 @@ public class EnvironmentController {
     }
 
     @PutMapping(value = "/restartDB")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public void restartMelodic() throws IOException {
         log.info("PUT request for restarting databases");
         this.environmentService.restartMelodic();
