@@ -18,14 +18,6 @@ public class EnvironmentController {
     private EnvironmentService environmentService;
 
     // todo
-    @PutMapping(value = "/restart")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void restartMachine() {
-        log.info("PUT request for restarting machine");
-        log.info("Machine successfully restarted");
-    }
-
-    // todo
     @PutMapping(value = "/space")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void prepareSpaceOnMachine() {
@@ -40,9 +32,9 @@ public class EnvironmentController {
         return "Checking components status not implemented";
     }
 
-    @PutMapping(value = "/restartDB")
+    @PutMapping(value = "/restart")
     @ResponseStatus(HttpStatus.OK)
-    public void restartMelodic() throws IOException {
+    public void restartMachine() throws IOException {
         log.info("PUT request for restarting databases");
         this.environmentService.restartMelodic();
         log.info("Databases successfully restarted");
