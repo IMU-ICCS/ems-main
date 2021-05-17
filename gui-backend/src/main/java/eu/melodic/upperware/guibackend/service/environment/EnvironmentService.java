@@ -31,7 +31,7 @@ public class EnvironmentService {
         runRestartScript();
     }
 
-    public void runRestartScript() throws IOException {
+    public void runRestartScript() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("sh", "restartscript.sh");
             Process process = processBuilder.start();
