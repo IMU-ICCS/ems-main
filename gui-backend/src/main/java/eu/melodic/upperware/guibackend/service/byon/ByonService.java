@@ -1,14 +1,17 @@
 package eu.melodic.upperware.guibackend.service.byon;
 
-import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
 import eu.melodic.upperware.guibackend.exception.ByonDefinitionNotFoundException;
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import eu.passage.upperware.commons.model.byon.ByonEnums;
 import eu.passage.upperware.commons.model.byon.LoginCredential;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
-import eu.passage.upperware.commons.service.store.SecureStoreService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
-import io.github.cloudiator.rest.model.*;
+import io.github.cloudiator.rest.model.ByonNode;
+import io.github.cloudiator.rest.model.IpAddressType;
+import io.github.cloudiator.rest.model.IpVersion;
+import io.github.cloudiator.rest.model.NewNode;
+import io.github.cloudiator.rest.model.OperatingSystemArchitecture;
+import io.github.cloudiator.rest.model.OperatingSystemFamily;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -27,9 +30,8 @@ public class ByonService {
 
     private YamlDataService yamlDataService;
     private ByonIdCreatorService byonIdCreatorService;
-    private CloudiatorApi cloudiatorApi;
+    //    private CloudiatorApi cloudiatorApi;
     private ByonMapper byonMapper;
-    private SecureStoreService secureStoreService;
     private final SecureStoreDBService secureStoreDBService;
 
     public Optional<List<ByonDefinition>> getByonDefList(boolean fillSecureVariables) {
@@ -135,7 +137,8 @@ public class ByonService {
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
         NewNode newNode = byonMapper.mapByonDefinitionToNewNode(byonDefinitionForNode);
-        return cloudiatorApi.createNewByonNode(newNode);
+//        return cloudiatorApi.createNewByonNode(newNode);
+        return new ByonNode();
     }
 
     public ByonEnums getByonEnums() {

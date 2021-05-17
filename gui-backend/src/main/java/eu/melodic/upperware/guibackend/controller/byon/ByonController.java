@@ -1,17 +1,25 @@
 package eu.melodic.upperware.guibackend.controller.byon;
 
-import eu.passage.upperware.commons.cloudiator.CloudiatorApi;
+import eu.melodic.upperware.guibackend.service.byon.ByonService;
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import eu.passage.upperware.commons.model.byon.ByonEnums;
-import eu.melodic.upperware.guibackend.service.byon.ByonService;
 import io.github.cloudiator.rest.model.ByonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -21,7 +29,7 @@ import java.util.List;
 public class ByonController {
 
     private ByonService byonService;
-    private CloudiatorApi cloudiatorApi;
+//    private CloudiatorApi cloudiatorApi;
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
@@ -77,15 +85,16 @@ public class ByonController {
     @ResponseStatus(HttpStatus.OK)
     public List<ByonNode> getByonNodeListFromCloudiator() {
         log.info("GET request for byon nodes available in Cloudiator");
-        return cloudiatorApi.getByonsList();
+//        return cloudiatorApi.getByonsList();
+        return Collections.emptyList();
     }
 
     @DeleteMapping("/cloudiator/{byonId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByonNodeFromCloudiator(@PathVariable(value = "byonId") String byonId) {
         log.info("DELETE request for byon Cloudiator node with id {}", byonId);
-        cloudiatorApi.deleteByon(byonId);
-        log.info("Byon with id {} successfully deleted from Cloudiator", byonId);
+//        cloudiatorApi.deleteByon(byonId);
+//        log.info("Byon with id {} successfully deleted from Cloudiator", byonId);
     }
 
     @GetMapping("/enum")
