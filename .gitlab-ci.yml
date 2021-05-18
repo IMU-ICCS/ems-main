@@ -595,9 +595,9 @@ deploy:ems-server:
     - echo "CI_REGISTRY=$CI_REGISTRY"
     - echo "K8S_SECRET_DOCKER_USER=$K8S_SECRET_DOCKER_USER"
     - echo "zz=$CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH"
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ deploy
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:mor-rc1.5
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
 deploy:metasolver:
