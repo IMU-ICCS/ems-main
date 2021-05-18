@@ -160,16 +160,17 @@ build-required-part3:ems:
 #      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/event-management/
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/util/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-cep/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-server/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client-install/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/broker-client/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/translator/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/control-service/
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/event-management/
+      - $CI_PROJECT_DIR/event-management/bin
+      - $CI_PROJECT_DIR/event-management/config-files
+      - $CI_PROJECT_DIR/event-management/util/target
+      - $CI_PROJECT_DIR/event-management/translator/target
+      - $CI_PROJECT_DIR/event-management/broker-client/target
+      - $CI_PROJECT_DIR/event-management/broker-cep/target
+      - $CI_PROJECT_DIR/event-management/baguette-client/target
+      - $CI_PROJECT_DIR/event-management/baguette-client-install/target
+      - $CI_PROJECT_DIR/event-management/baguette-server/target
       - $CI_PROJECT_DIR/event-management/control-service/target
+      - $CI_PROJECT_DIR/event-management/control-service/src/main/resources/public
 
 
 #build-required-part4:ems-util:
