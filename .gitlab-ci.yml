@@ -568,7 +568,6 @@ deploy:ems-server:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - ems/morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -577,8 +576,8 @@ deploy:ems-server:
   script:
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
-    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:test180521
-    - docker push $CI_REGISTRY_IMAGE/ems-server:test180521
+    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
 deploy:metasolver:
   stage: deploy
