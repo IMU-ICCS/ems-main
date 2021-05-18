@@ -87,8 +87,6 @@ stages:
 
 build-basic-dependencies:melodic-upperware:
   stage: build-basic-dependencies
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_UPPERWARE_CLI -Pwithout-docker clean install
@@ -98,8 +96,6 @@ build-basic-dependencies:melodic-upperware:
 
 build-required-part1:upperware-metamodel:
   stage: build-required-part1
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $UPPERWARE_METAMODEL_CLI -Pwithout-docker clean install
@@ -109,8 +105,6 @@ build-required-part1:upperware-metamodel:
 
 build-required-part2:jwt-commons:
   stage: build-required-part2
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $JWT_COMMONS_CLI -Pwithout-docker clean install
@@ -120,8 +114,6 @@ build-required-part2:jwt-commons:
 
 build-required-part2:melodic-commons:
   stage: build-required-part2
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
@@ -131,8 +123,6 @@ build-required-part2:melodic-commons:
 
 build-required-part3:melodic-cache:
   stage: build-required-part3
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_CACHE_CLI -Pwithout-docker clean install
@@ -155,9 +145,6 @@ build-required-part3:ems:
   image: $MAVEN_IMAGE
   script:
     - $EMS_CLI -Pwithout-docker clean install
-#  artifacts:
-#    paths:
-#      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/event-management/
   artifacts:
     paths:
       - $CI_PROJECT_DIR/event-management/bin
@@ -184,8 +171,6 @@ build-required-part3:ems:
 
 build-required-part5:utility-generator:
   stage: build-required-part5
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
@@ -213,8 +198,6 @@ build-required-part5:utility-generator:
 
 build-required-part6:cp-solver:
   stage: build-required-part6
-  only:
-    - master
   image: $MAVEN_IMAGE
   script:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
@@ -592,12 +575,9 @@ deploy:ems-server:
   dependencies:
     - build-required-part3:ems
   script:
-    - echo "CI_REGISTRY=$CI_REGISTRY"
-    - echo "K8S_SECRET_DOCKER_USER=$K8S_SECRET_DOCKER_USER"
-    - echo "zz=$CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH"
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ deploy
-    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:mor-rc1.5
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:test180521
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
 deploy:metasolver:
