@@ -147,7 +147,17 @@ build-required-part3:ems:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
     paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/event-management/
+      - $CI_PROJECT_DIR/event-management/bin
+      - $CI_PROJECT_DIR/event-management/config-files
+      - $CI_PROJECT_DIR/event-management/util/target
+      - $CI_PROJECT_DIR/event-management/translator/target
+      - $CI_PROJECT_DIR/event-management/broker-client/target
+      - $CI_PROJECT_DIR/event-management/broker-cep/target
+      - $CI_PROJECT_DIR/event-management/baguette-client/target
+      - $CI_PROJECT_DIR/event-management/baguette-client-install/target
+      - $CI_PROJECT_DIR/event-management/baguette-server/target
+      - $CI_PROJECT_DIR/event-management/control-service/target
+      - $CI_PROJECT_DIR/event-management/control-service/src/main/resources/public
 
 
 #build-required-part4:ems-util:
@@ -431,20 +441,20 @@ deploy:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
-deploy:ems:
-  stage: deploy
-  only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc1.5
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part3:ems
-  script:
-    - $DOCKER_CLI $EMS_CLI deploy
+#deploy:ems:
+#  stage: deploy
+#  only:
+#    - master
+#    - rc3.0
+#    - rc3.1
+#    - morphemic-rc1.5
+#  image: $DOCKER_DIND_IMAGE
+#  services:
+#    - $DOCKER_DIND_SERVICE
+#  dependencies:
+#    - build-required-part3:ems
+#  script:
+#    - $DOCKER_CLI $EMS_CLI deploy
 
 #deploy:ems-util:
 #  stage: deploy
@@ -562,6 +572,8 @@ deploy:ems-server:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part3:ems
   script:
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
