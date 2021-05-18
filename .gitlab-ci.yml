@@ -558,6 +558,7 @@ deploy:ems-server:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - ems/morphemic-rc1.5
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
