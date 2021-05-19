@@ -1,24 +1,21 @@
 package eu.melodic.upperware.activemqtorest.activemq;
 
-import java.util.Optional;
-import java.util.Set;
-
-import javax.jms.JMSException;
-
+import eu.melodic.event.brokerclient.BrokerClient;
+import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
+import eu.melodic.upperware.activemqtorest.activemq.extraction.IMqDataEntryExtractor;
+import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
+import eu.melodic.upperware.activemqtorest.entry.MqDefaultMetricEntry;
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import eu.melodic.event.brokerclient.BrokerClient;
-import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
-import eu.melodic.upperware.activemqtorest.activemq.extraction.IMqDataEntryExtractor;
-import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
-import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
-import eu.melodic.upperware.activemqtorest.entry.MqDefaultMetricEntry;
-import io.github.cloudiator.rest.api.NodeApi;
-import lombok.extern.slf4j.Slf4j;
+import javax.jms.JMSException;
+import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -35,9 +32,6 @@ public class MqTopicListener {
 
 	@Autowired
 	private Set<IMqDataEntryExtractor> mqDataEntryExtractors;
-
-	@Autowired
-	private NodeApi nodeApi;
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
