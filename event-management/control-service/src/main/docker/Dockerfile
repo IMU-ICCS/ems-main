@@ -15,7 +15,10 @@ ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
 ENV JAR_PATH ${BASEDIR}/jars
 
 WORKDIR ${BASEDIR}
-RUN apt-get update && apt-get install -y dumb-init && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    dumb-init \
+    netcat \
+    && rm -rf /var/lib/apt/lists/*
 
 ADD bin ./bin
 ADD jars ./jars

@@ -571,8 +571,6 @@ deploy:ems-server:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part3:ems
   script:
     - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
