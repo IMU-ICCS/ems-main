@@ -76,7 +76,8 @@ public class ByonController {
     @ResponseStatus(HttpStatus.CREATED)
     public ByonNode createByonNode(@PathVariable(value = "byonDefinitionId") int byonDefinitionId) {
         log.info("POST request for creating new byon node from byon definition with id {}", byonDefinitionId);
-        ByonNode byonNode = byonService.createByonNode(byonDefinitionId);
+        String applicationId = ""; // todo we also need to know applicationId here for Proactive
+        ByonNode byonNode = byonService.createByonNode(byonDefinitionId, applicationId);
         log.info("Byon node with id {} successfully added to Cloudiator", byonNode.getId());
         return byonNode;
     }
@@ -85,6 +86,7 @@ public class ByonController {
     @ResponseStatus(HttpStatus.OK)
     public List<ByonNode> getByonNodeListFromCloudiator() {
         log.info("GET request for byon nodes available in Cloudiator");
+        log.warn("Fetching BYON nodes is not implemented yet.");
 //        return cloudiatorApi.getByonsList();
         return Collections.emptyList();
     }
@@ -93,6 +95,7 @@ public class ByonController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByonNodeFromCloudiator(@PathVariable(value = "byonId") String byonId) {
         log.info("DELETE request for byon Cloudiator node with id {}", byonId);
+        log.warn("Deleting BYON nodes is not implemented yet.");
 //        cloudiatorApi.deleteByon(byonId);
 //        log.info("Byon with id {} successfully deleted from Cloudiator", byonId);
     }

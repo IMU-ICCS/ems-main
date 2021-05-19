@@ -1,7 +1,7 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
 import eu.melodic.models.services.adapter.DifferenceResponse;
-import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceForGUI;
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
@@ -43,7 +43,7 @@ public class ProcessController {
     private ProcessCamundaService processCamundaService;
     //    private CloudiatorApi cloudiatorApi;
     private ProcessService processService;
-    private ProactiveClientServiceForGUI proactiveClientServiceForGUI;
+    private ProactiveClientServiceGUI proactiveClientServiceGUI;
 
     @GetMapping(value = "/{processId}")
     @ResponseStatus(HttpStatus.OK)
@@ -63,13 +63,14 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public Integer getOffersTotalNumber() {
         log.info("GET request for total number of offers");
-        return proactiveClientServiceForGUI.getNumberOfCurrentOffers();
+        return proactiveClientServiceGUI.getNumberOfCurrentOffers();
     }
 
     @GetMapping("/offer/hardware")
     @ResponseStatus(HttpStatus.OK)
     public List<Hardware> getHardwareList() {
         log.info("GET request for hardware list");
+        log.warn("Fetching hardware list is not implemented yet.");
 //        return cloudiatorApi.getHardwareList();
         return Collections.emptyList();
     }
@@ -78,6 +79,7 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public List<Location> getLocationList() {
         log.info("GET request for locations list");
+        log.warn("Fetching locations list is not implemented yet.");
 //        return cloudiatorApi.getLocationList();
         return Collections.emptyList();
     }
@@ -86,6 +88,7 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public List<Image> getImageList() {
         log.info("GET request for images list");
+        log.warn("Fetching images list is not implemented yet.");
 //        return cloudiatorApi.getImageList();
         return Collections.emptyList();
     }
@@ -94,6 +97,7 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public List<Cloud> getCloudList() {
         log.info("GET request for cloud list");
+        log.warn("Fetching clouds list is not implemented yet.");
 //        return cloudiatorApi.getCloudList();
         return Collections.emptyList();
     }
@@ -120,6 +124,7 @@ public class ProcessController {
     @GetMapping("/deployment/node")
     public List<Node> getNodesList() {
         log.info("GET request for nodes list");
+        log.warn("Fetching nodes list is not implemented yet.");
 //        return cloudiatorApi.getNodeList();
         return Collections.emptyList();
     }
@@ -127,6 +132,7 @@ public class ProcessController {
     @DeleteMapping("/deployment/node/{nodeId}")
     public void deleteNode(@PathVariable("nodeId") String nodeId) {
         log.info("DELETE request for node with wid: {}", nodeId);
+        log.warn("Deleting nodes is not implemented yet.");
 //        cloudiatorApi.deleteNode(nodeId);
 //        log.info("Node with id: {} successfully deleted", nodeId);
     }
@@ -134,6 +140,7 @@ public class ProcessController {
     @GetMapping("/deployment/process")
     public List<CloudiatorProcess> getCloudiatorProcessList() {
         log.info("GET Cloudiator processes list");
+        log.warn("Fetching processes list is not implemented yet.");
 //        return cloudiatorApi.getProcessList();
         return Collections.emptyList();
     }
@@ -141,6 +148,7 @@ public class ProcessController {
     @DeleteMapping("/deployment/process/{processId}")
     public void deleteCloudiatorProcess(@PathVariable("processId") String processId) {
         log.info("DELETE request for Cloudiator process with id: {}", processId);
+        log.warn("Deleting processes list is not implemented yet.");
 //        cloudiatorApi.deleteCloudiatorProcess(processId);
 //        log.info("Cloudiator process with id: {} successfully deleted", processId);
     }
@@ -148,6 +156,7 @@ public class ProcessController {
     @GetMapping("/deployment/queue")
     public List<Queue> getCloudiatorQueue() {
         log.info("GET Cloudiator queues list");
+        log.warn("Fetching queues list is not implemented yet.");
 //        return cloudiatorApi.getQueueList();
         return Collections.emptyList();
     }
@@ -155,6 +164,7 @@ public class ProcessController {
     @GetMapping("/deployment/job")
     public List<Job> getJobsList() {
         log.info("GET Cloudiator jobs list");
+        log.warn("Fetching jobs list is not implemented yet.");
 //        return cloudiatorApi.getJobList();
         return Collections.emptyList();
     }
@@ -162,6 +172,7 @@ public class ProcessController {
     @GetMapping("/deployment/schedule")
     public List<Schedule> getSchedulesList() {
         log.info("GET Cloudiator schedules list");
+        log.warn("Fetching schedules list is not implemented yet.");
 //        return cloudiatorApi.getScheduleList();
         return Collections.emptyList();
     }
@@ -169,6 +180,7 @@ public class ProcessController {
     @GetMapping("/deployment/monitor")
     public List<Monitor> getMonitorsList() {
         log.info("GET Cloudiator monitors list");
+        log.warn("Fetching monitors list is not implemented yet.");
 //        return cloudiatorApi.getMonitorList();
         return Collections.emptyList();
     }

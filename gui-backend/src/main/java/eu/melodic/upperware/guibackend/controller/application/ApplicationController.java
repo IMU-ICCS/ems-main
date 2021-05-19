@@ -26,6 +26,7 @@ public class ApplicationController {
     @ResponseStatus(HttpStatus.OK)
     public List<Node> getVMByonNodeList() {
         log.info("GET request for VM and Byon list");
+        log.warn("Fetching VM and Byon list is not implemented yet.");
 //        return cloudiatorApi.getVMByonFromNodeList();
         return Collections.emptyList();
     }
@@ -34,6 +35,7 @@ public class ApplicationController {
     @ResponseStatus(HttpStatus.OK)
     public List<Node> getFaasNodeList() {
         log.info("GET request for FAAS list");
+        log.warn("Fetching FAAS nodes list is not implemented yet.");
 //        return cloudiatorApi.getFaasFromNodeList();
         return Collections.emptyList();
     }
@@ -42,6 +44,7 @@ public class ApplicationController {
     @ResponseStatus(HttpStatus.OK)
     public List<Function> getFunctionList() {
         log.info("GET functions list");
+        log.warn("Fetching functions list is not implemented yet.");
 //        return cloudiatorApi.getFunctionList();
         return Collections.emptyList();
     }

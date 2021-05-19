@@ -1,7 +1,7 @@
 package eu.melodic.upperware.guibackend;
 
-import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceForGUI;
-import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceForGUIImpl;
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUIImpl;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -76,8 +76,8 @@ public class ApplicationContext {
     }
 
     @Bean
-    public ProactiveClientServiceForGUI proactiveClientServiceForGUI(final GuiBackendProperties guiBackendProperties) {
-        return new ProactiveClientServiceForGUIImpl(guiBackendProperties.getPaConfig().getRestUrl(),
+    public ProactiveClientServiceGUI proactiveClientServiceForGUI(final GuiBackendProperties guiBackendProperties) {
+        return new ProactiveClientServiceGUIImpl(guiBackendProperties.getPaConfig().getRestUrl(),
                 guiBackendProperties.getPaConfig().getLogin(),
                 guiBackendProperties.getPaConfig().getPassword(),
                 guiBackendProperties.getPaConfig().getEncryptorPw()) {

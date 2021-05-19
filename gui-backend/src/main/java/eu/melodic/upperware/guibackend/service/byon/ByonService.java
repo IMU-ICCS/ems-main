@@ -130,14 +130,15 @@ public class ByonService {
         }
     }
 
-    public ByonNode createByonNode(int byonDefinitionId) {
+    public ByonNode createByonNode(int byonDefinitionId, String applicationId) {
         ByonDefinition byonDefinitionForNode = getByonDefList(true).orElseGet(ArrayList::new)
                 .stream()
                 .filter(byonDefinition -> byonDefinition.getId() == byonDefinitionId)
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
         NewNode newNode = byonMapper.mapByonDefinitionToNewNode(byonDefinitionForNode);
-//        return cloudiatorApi.createNewByonNode(newNode);
+        log.warn("Creating BYON nodes is not implemented yet.");
+//        return cloudiatorApi.createNewByonNode(newNode, applicationId); // applicationId is required for proactive scheduler
         return new ByonNode();
     }
 
