@@ -18,6 +18,8 @@ WORKDIR ${BASEDIR}
 RUN apt-get update && apt-get install -y \
     dumb-init \
     netcat \
+    vim \
+    iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
 ADD bin ./bin
@@ -28,8 +30,8 @@ ADD config ./config
 RUN mkdir logs
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
-RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
-RUN chown -R emsuser:emsuser ${BASEDIR}
-USER emsuser
+# RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
+# RUN chown -R emsuser:emsuser ${BASEDIR}
+# USER emsuser
 
 ENTRYPOINT ["dumb-init", "./bin/run.sh"]
