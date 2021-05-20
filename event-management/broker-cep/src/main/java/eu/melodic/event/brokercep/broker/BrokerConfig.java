@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.broker;
 
+import eu.melodic.event.brokercep.broker.interceptor.AbstractMessageInterceptor;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
@@ -18,9 +19,9 @@ import org.apache.activemq.ActiveMQSslConnectionFactory;
 import org.apache.activemq.broker.BrokerPlugin;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.SslBrokerService;
-import org.apache.activemq.broker.inteceptor.MessageInterceptor;
 import org.apache.activemq.broker.inteceptor.MessageInterceptorRegistry;
 import org.apache.activemq.broker.jmx.ManagementContext;
+import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.activemq.security.AuthenticationUser;
 import org.apache.activemq.security.SimpleAuthenticationPlugin;
 import org.apache.activemq.usage.MemoryUsage;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -37,16 +39,13 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.jms.ConnectionFactory;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
@@ -69,6 +68,8 @@ public class BrokerConfig implements InitializingBean {
     private BrokerCepProperties properties;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
     private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
@@ -85,6 +86,8 @@ public class BrokerConfig implements InitializingBean {
     private String brokerUrl2;
     @Value("${brokercep.broker-url-3}")
     private String brokerUrl3;
+
+    private HashMap<String, ConnectionFactory> connectionFactoryCache = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -212,8 +215,9 @@ public class BrokerConfig implements InitializingBean {
             brokerUsername = s;
             userList.get(LOCAL_USER_INDEX).setUsername(s);     // 'userList' contains at least 2 items or is null (see '_initializeSecurity()' method)
             brokerAuthenticationPlugin.setUsers(userList);
-        }
-        log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
+            log.debug("BrokerConfig.setBrokerUsername(): username={}", s);
+        } else
+            log.debug("BrokerConfig.setBrokerUsername(): Username not set");
     }
 
     public void setBrokerPassword(String password) {
@@ -221,8 +225,9 @@ public class BrokerConfig implements InitializingBean {
             brokerPassword = password;
             userList.get(LOCAL_USER_INDEX).setPassword(password);
             brokerAuthenticationPlugin.setUsers(userList);
-        }
-        log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordUtil.encodePassword(password));
+            log.debug("BrokerConfig.setBrokerPassword(): password={}", passwordUtil.encodePassword(password));
+        } else
+            log.debug("BrokerConfig.setBrokerPassword(): Password not set");
     }
 
     public BrokerPlugin getBrokerAuthenticationPlugin() {
@@ -340,29 +345,27 @@ public class BrokerConfig implements InitializingBean {
     }
 
     private void registerMessageInterceptors(BrokerService brokerService) {
-        log.info("BrokerConfig: Registering message interceptors...");
-
         // get message interceptor registry
         final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
         log.trace("BrokerConfig: Message interceptor registry: {}", registry);
 
-        // register interceptor for adding source (producer) address to messages
-        properties.getMessageInterceptors()
-                .forEach(bi -> {
-                    log.debug("BrokerConfig: Registering message interceptor: {}", bi);
-                    String part[] = bi.split(":");
-                    String destinationPattern = part[0];
-                    String interceptorClassName = part[1];
-                    try {
-                        Class<MessageInterceptor> interceptorClass = (Class<MessageInterceptor>) Class.forName(interceptorClassName);
-                        MessageInterceptor interceptor = interceptorClass.getDeclaredConstructor(MessageInterceptorRegistry.class).newInstance(registry);
-                        registry.addMessageInterceptorForTopic(destinationPattern, interceptor);
-                        log.info("BrokerConfig: Message interceptor registered: {}", bi);
-                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        log.error("BrokerConfig: Error while registering message interceptor: {}. Exception: {}", bi, e);
-                    }
-                });
+        log.info("BrokerConfig: Message interceptors initializing...");
+        List<BrokerCepProperties.MessageInterceptorSpec> interceptorSpecs = properties.getMessageInterceptors()
+                .stream()
+                .map(c -> (BrokerCepProperties.MessageInterceptorSpec)c)
+                .collect(Collectors.toList());
+        List<AbstractMessageInterceptor> interceptors = InterceptorHelper.newInstance()
+                .initializeInterceptors(registry, applicationContext,
+                        properties.getMessageInterceptorsSpecs(), interceptorSpecs);
+        log.info("BrokerConfig: Message interceptors initialized");
 
+        // register interceptors
+        log.info("BrokerConfig: Registering message interceptors...");
+        interceptors.forEach(i -> {
+            String destinationPattern = ((BrokerCepProperties.MessageInterceptorConfig) i.getInterceptorSpec()).getDestination();
+            registry.addMessageInterceptorForTopic(destinationPattern, i);
+            log.debug("BrokerConfig: - Registered message interceptor with spec.: {}", i.getInterceptorSpec());
+        });
         log.info("BrokerConfig: Registering message interceptors... done");
     }
 
@@ -414,10 +417,15 @@ public class BrokerConfig implements InitializingBean {
      * Creates a new connection factory
      */
     @Bean
-    public ActiveMQConnectionFactory connectionFactory() {
+    public ConnectionFactory connectionFactory() {
+        return connectionFactory(null);
+    }
+
+    public ConnectionFactory connectionFactory(String brokerUrl) {
+        if (brokerUrl==null) brokerUrl = properties.getBrokerUrlForClients();
+
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
-        String brokerUrl = properties.getBrokerUrlForClients();
         if (brokerUrl.startsWith("ssl")) {
             log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
@@ -449,7 +457,17 @@ public class BrokerConfig implements InitializingBean {
         connectionFactory.setTrustAllPackages(true);
         connectionFactory.setWatchTopicAdvisories(true);
 
-        return connectionFactory;
+        // Make pooled connection factory
+        PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory(connectionFactory);
+        pooledConnectionFactory.setMaxConnections(64);
+        log.trace("BrokerConfig: New connection factory created: {}", pooledConnectionFactory);
+
+        return pooledConnectionFactory;
+    }
+
+    public ConnectionFactory getConnectionFactoryFor(String connectionString) {
+        return connectionFactoryCache
+                .computeIfAbsent(connectionString, url -> connectionFactory(url));
     }
 
     /**

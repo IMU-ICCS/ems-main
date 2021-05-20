@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.cep;
 
+import eu.melodic.event.util.FunctionDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.mariuszgromada.math.mxparser.Constant;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class MathUtil {
-    private static Set<Function> functions = new HashSet<>();
+    private static Map<String, Function> functions = new HashMap<>();
     private static Map<String, Constant> constants = new HashMap<>();
 
     // ------------------------------------------------------------------------
@@ -36,7 +37,7 @@ public class MathUtil {
         String defStr = functionDef.getName() + "(" + argsStr + ") = " + functionDef.getExpression();
         log.debug("MathUtil: definition-string: {}", defStr);
         Function func = new Function(defStr);
-        functions.add(func);
+        functions.put(functionDef.getName(), func);
     }
 
     public static void clearFunctionDefinitions() {
@@ -81,7 +82,7 @@ public class MathUtil {
         e.addConstants(new ArrayList(constants.values()));
 
         // Add functions
-        for (Function f : functions) e.addFunctions(f);
+        for (Function f : functions.values()) e.addFunctions(f);
 
         // Get argument names
         boolean lexSyntax = e.checkLexSyntax();
@@ -125,7 +126,7 @@ public class MathUtil {
         e.addConstants(new ArrayList(constants.values()));
 
         // Add functions
-        for (Function f : functions) e.addFunctions(f);
+        for (Function f : functions.values()) e.addFunctions(f);
 
         // Get argument names
         boolean lexSyntax = e.checkLexSyntax();
@@ -210,7 +211,7 @@ public class MathUtil {
         e.addConstants(new ArrayList(constants.values()));
 
         // Add functions
-        for (Function f : functions) e.addFunctions(f);
+        for (Function f : functions.values()) e.addFunctions(f);
 
         // Get argument names
         boolean lexSyntax = e.checkLexSyntax();

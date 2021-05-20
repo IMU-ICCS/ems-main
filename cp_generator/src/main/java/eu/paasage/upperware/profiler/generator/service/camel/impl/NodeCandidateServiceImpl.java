@@ -1,7 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.upperware.profiler.generator.service.camel.NodeCandidatesService;
-import io.github.cloudiator.rest.model.*;
+import org.activeeon.morphemic.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;

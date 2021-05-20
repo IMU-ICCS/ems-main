@@ -1,10 +1,10 @@
 package eu.melodic.cache;
 
-import io.github.cloudiator.rest.model.GeoLocation;
-import io.github.cloudiator.rest.model.Location;
-import io.github.cloudiator.rest.model.NodeCandidate;
-import io.github.cloudiator.rest.model.OperatingSystemFamily;
+import org.activeeon.morphemic.model.GeoLocation;
+import org.activeeon.morphemic.model.Location;
+import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.OperatingSystemFamily;
 
 import java.util.Arrays;
 import java.util.Objects;

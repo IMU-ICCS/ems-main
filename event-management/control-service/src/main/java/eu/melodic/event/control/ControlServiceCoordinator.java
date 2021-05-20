@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control;
 
+import camel.core.NamedElement;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
@@ -16,6 +17,8 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.translate.analyze.Grouping;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
@@ -27,12 +30,13 @@ import eu.melodic.models.interfaces.ems.Monitor;
 import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.*;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -210,6 +214,28 @@ public class ControlServiceCoordinator {
                     gson.toJson(_copyTC, writer);
                     writer.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
+
+                    /*try (FileOutputStream out = new FileOutputStream("_TC.xml")) {
+                        log.info(">>>>>>>>  _TC.XML:  WRITING...");
+                        XMLEncoder xmlEncoder = new XMLEncoder(out);
+                        xmlEncoder.writeObject(_TC.DAG);
+                        xmlEncoder.writeObject(_TC.SLO);
+                        xmlEncoder.writeObject(_TC.C2S);
+                        xmlEncoder.writeObject(_TC.D2S);
+                        xmlEncoder.writeObject(_TC.MONS);
+                        xmlEncoder.writeObject(_TC.G2R);
+                        xmlEncoder.writeObject(_TC.G2T);
+                        xmlEncoder.writeObject(_TC.M2MC);
+                        xmlEncoder.writeObject(_TC.CMVAR);
+                        xmlEncoder.writeObject(_TC.MVV);
+                        xmlEncoder.writeObject(_TC.MVV_CP);
+                        xmlEncoder.writeObject(_TC.FUNC);
+                        xmlEncoder.writeObject(_TC.getTopicConnections());
+                        xmlEncoder.writeObject(_TC.getMetricConstraints());
+                        xmlEncoder.close();
+                    } catch (Exception e) {
+                        log.error(">>>>>>>>  _TC.XML:  EXCEPTION: ", e);
+                    }*/
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
                 }
@@ -334,10 +360,7 @@ public class ControlServiceCoordinator {
         if (!properties.isSkipBaguette()) {
             log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
             try {
-                baguette.setTopologyConfiguration(_TC.getG2T(), _TC.getG2R(), _TC.getTopicConnections(), constants,
-                        _TC.getFunctionDefinitions(), upperwareGrouping,
-                        brokerCep.getBrokerCepProperties().getBrokerUrlForClients(),
-                        brokerCep);
+                baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
             } catch (Exception ex) {
                 log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
             }
@@ -534,14 +557,14 @@ public class ControlServiceCoordinator {
         return map;
     }
 
-    @AllArgsConstructor
+    @RequiredArgsConstructor
     @Getter
     public static class CscStatementSubscriber implements StatementSubscriber {
-        private String name;
-        private String topic;
-        private String statement;
-        private BrokerCepService brokerCep;
-        private PasswordUtil passwordUtil;
+        private final String name;
+        private final String topic;
+        private final String statement;
+        private final BrokerCepService brokerCep;
+        private final PasswordUtil passwordUtil;
 
         public void update(java.util.Map<String, Object> eventMap) {
             try {
@@ -551,10 +574,10 @@ public class ControlServiceCoordinator {
                 String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
                 String username = brokerCep.getBrokerUsername();
                 String password = brokerCep.getBrokerPassword();
-                log.info("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+                log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
                         name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
                 brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
-                log.info("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+                log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
                         name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
 
             } catch (Exception ex) {
@@ -583,6 +606,90 @@ public class ControlServiceCoordinator {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptySet();
         return _tc.getMetricConstraints();
+    }
+
+    public Set<String> getGlobalGroupingMetrics(String camelModelId) {
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptySet();
+
+        // get all top-level nodes their component metrics
+        final Set<DAGNode> nodes = new HashSet<>();
+        final Deque<DAGNode> q = new ArrayDeque<>(_tc.DAG.getTopLevelNodes());
+        while (!q.isEmpty()) {
+            DAGNode node = q.pop();
+            if (node.getGrouping()==Grouping.GLOBAL) {
+                nodes.add(node);
+                q.addAll(_tc.DAG.getNodeChildren(node));
+            }
+        }
+
+        // return metric names
+        return nodes.stream()
+                .map(DAGNode::getElementName)
+                .collect(Collectors.toSet());
+    }
+
+    public List<Object> getSLOMetricDecomposition(String camelModelId) {
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptyList();
+
+        // Get metric and logical constraints
+        Map<String, TranslationContext.MetricConstraint> mcMap = _tc.getMetricConstraints().stream()
+                .collect(Collectors.toMap(TranslationContext.MetricConstraint::getName, mc -> mc));
+        Map<String, TranslationContext.LogicalConstraint> lcMap = _tc.getLogicalConstraints().stream()
+                .collect(Collectors.toMap(TranslationContext.LogicalConstraint::getName, lc -> lc));
+
+        // Create map of top-level element names and instances
+        Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
+        Map<String, DAGNode> topLevelNodesMap = topLevelNodes.stream()
+                .collect(Collectors.toMap(DAGNode::getElementName, x -> x));
+
+        // process each SLO
+        List<Object> sloMetricDecompositions = new ArrayList<>();
+        for (String sloName : _tc.SLO) {
+            DAGNode node = topLevelNodesMap.get(sloName);
+            if (node!=null) {
+                // get SLO constraint
+                Set<DAGNode> sloConstraintSet = _tc.DAG.getNodeChildren(node);
+                // SLO must contain exactly one constraint
+                if (sloConstraintSet.size()==1) {
+                    DAGNode sloConstraintNode = sloConstraintSet.iterator().next();
+                    // decompose constraint
+                    Object decomposition = _decomposeConstraint(_tc, sloConstraintNode, mcMap, lcMap);
+                    // cache decomposition
+                    sloMetricDecompositions.add(decomposition);
+                }
+            }
+        }
+
+        return sloMetricDecompositions;
+    }
+
+    private Object _decomposeConstraint(TranslationContext _tc, DAGNode constraintNode, Map<String, TranslationContext.MetricConstraint> mcMap, Map<String, TranslationContext.LogicalConstraint> lcMap) {
+        NamedElement element = constraintNode.getElement();
+        String elementName = constraintNode.getElementName();
+        if (element instanceof camel.constraint.MetricConstraint) {
+            return mcMap.get(elementName);
+        } else
+        if (element instanceof camel.constraint.LogicalConstraint) {
+            TranslationContext.LogicalConstraint lc = lcMap.get(elementName);
+
+            // decompose child constraints
+            List<Object> list = new ArrayList<>();
+            for (DAGNode node : lc.getConstraintNodes()) {
+                Object o = _decomposeConstraint(_tc, node, mcMap, lcMap);
+                if (o!=null) list.add(o);
+            }
+
+            // create decomposition result
+            Map<String,Object> result = new HashMap<>();
+            result.put("name", lc.getName());
+            result.put("operator", lc.getOperator());
+            result.put("constraints", list);
+            return result;
+        } else
+            log.warn("_decomposeConstraint: Unsupported Constraint type: {} {}", constraintNode.getElementName(), element.getClass().getName());
+        return null;
     }
 
 
@@ -842,8 +949,10 @@ public class ControlServiceCoordinator {
                 // Log error
                 return eventLogEnd(method, EVENT_DEBUG_ERROR);
             }
-        } else if ("*".equals(clientId)) baguette.sendToActiveClients(command);
-        else baguette.sendToClient(clientId, command);
+        } else if ("*".equals(clientId))
+            baguette.sendToActiveClients(command);
+        else
+            baguette.sendToClient("#"+clientId, command);
 
         // Log success
         return eventLogEnd(method, EVENT_DEBUG_OK);
@@ -873,6 +982,23 @@ public class ControlServiceCoordinator {
         log.debug("ControlServiceCoordinator.eventRemoteSend(): BEGIN: client={}, broker-url={}, topic={}, value={}", clientId, brokerUrl, topicName, value);
         String command = String.format(java.util.Locale.ROOT, "SEND-EVENT %s %s %f", brokerUrl, topicName, value);
         return eventSendCommandToClient("eventRemoteSend", clientId, command);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+
+    public List<String> clientList() {
+        log.debug("ControlServiceCoordinator.clientList(): BEGIN:");
+        return baguette.getActiveClients();
+    }
+
+    public Map<String, Map<String, String>> clientMap() {
+        log.debug("ControlServiceCoordinator.clientMap(): BEGIN:");
+        return baguette.getActiveClientsMap();
+    }
+
+    public String clientCommandSend(String clientId, String command) {
+        log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
+        return eventSendCommandToClient("clientCommandSend", clientId, command);
     }
 
     // ------------------------------------------------------------------------------------------------------------

@@ -22,7 +22,6 @@ import eu.melodic.models.services.adapter.Monitor;
 import eu.melodic.upperware.adapter.communication.cdoserver.CdoServerApi;
 import eu.melodic.upperware.adapter.communication.ems.EmsClientApi;
 import eu.melodic.upperware.adapter.exception.AdapterException;
-import eu.melodic.upperware.adapter.executioncontext.ContextOperations;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaver;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CamelToFileSaverImpl;
 import eu.melodic.upperware.adapter.executioncontext.cdoserver.CdoServerUpdater;
@@ -77,7 +76,6 @@ public class DeployCoordinator {
     private PlanExecutor planExecutor;
     private CdoServerUpdater cdoServerUpdater;
 
-    private ContextOperations context;
     private AdapterProperties properties;
 
     private EmsClientApi emsClientApi;
@@ -115,14 +113,6 @@ public class DeployCoordinator {
         log.info("New model deployment process has been finished");
     }
 
-    public void refreshContext() {
-        try {
-            context.refreshContext();
-        } catch (ApiException e) {
-            throw new AdapterException("Problem during refreshing context", e);
-        }
-    }
-
     private void run(String resourceName, String notificationUri, String uuid, String authorization, boolean isSimulation) {
         Plan plan;
         CDOSessionX cdoSessionX = cdoServerApi.openSession();
@@ -152,13 +142,6 @@ public class DeployCoordinator {
             cdoSessionX.closeTransaction(tr);
             cdoSessionX.closeSession();
         }
-        if (!context.isLoaded()) {
-            try {
-                context.refreshContext();
-            } catch (ApiException e) {
-                throw new AdapterException("Problem during refreshing context", e);
-            }
-        }
 
         // pre-authorize target model
         log.info("Authorizing deployment plan with Authorization-Service...");
@@ -166,7 +149,7 @@ public class DeployCoordinator {
             if (isValid) {
                 if (!isSimulation) {
                     log.info("Deployment plan authorized, executing...");
-                    planExecutor.executePlan(plan);
+                    planExecutor.executePlan(plan, resourceName, authorization);
                 } else {
                     log.info("Deployment plan authorized, simulation mode on: execution stopped");
                 }

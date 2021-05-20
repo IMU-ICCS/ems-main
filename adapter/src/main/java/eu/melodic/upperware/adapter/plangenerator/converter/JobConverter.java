@@ -34,6 +34,7 @@ public class JobConverter implements ModelConverter<DeploymentInstanceModel, Ada
                 .jobName(ConverterUtils.getJobName(model))
                 .tasks(toAdapterTasks(model.getType()))
                 .communications(toCommunication(model.getType()))
+                .previousJob(Optional.empty())
                 .build();
     }
 

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -20,11 +20,6 @@
     <name>Upperware - EMS - Utilities</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>melodic-commons</artifactId>
-        </dependency>
-
         <!-- Spring-Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -52,18 +47,23 @@
             <version>1.2.3</version>
         </dependency>
 
-        <!-- Bouncy Castle cryptography -->
+        <!-- Bouncy Castle cryptography used in Baguette Server and Client -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.61</version>
+            <artifactId>bcpg-jdk15on</artifactId>
+            <version>1.68</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.61</version>
+            <version>1.68</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.68</version>
         </dependency>
     </dependencies>
 

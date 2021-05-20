@@ -7,7 +7,7 @@ import java.util.Map;
 @Getter
 @Setter
 @Builder
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class AdapterDockerInterface extends AdapterTaskInterface {
 

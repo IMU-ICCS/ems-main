@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -43,6 +43,20 @@ public class EventMap extends HashMap<String, Object> implements Serializable {
         put("metricValue", metricValue);
         put("level", level);
         put("timestamp", timestamp);
+    }
+
+    public static EventMap parseEventMap(String s) {
+        if (s==null) return null;
+        s = s.trim();
+        if (s.isEmpty()) return null;
+        if (s.startsWith("{") && s.endsWith("}")) s = s.substring(1, s.length()-1).trim();
+        String[] pairs = s.split(",");
+        EventMap eventMap = new EventMap();
+        for (String pair : pairs) {
+            String[] kv = pair.split("[:=]", 2);
+            eventMap.put(kv[0], kv[1]);
+        }
+        return eventMap;
     }
 
     public static String[] getPropertyNames() {

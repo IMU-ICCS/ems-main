@@ -1,0 +1,142 @@
+{
+  "os": "LINUX",
+  "description": "EMS client installation instruction set at VM node",
+  "instructions": [
+    {
+      "description": "Check if 'java' is installed at Node",
+      "taskType": "CHECK",
+      "command": "java -version",
+      "executable": false,
+      "exitCode": 0,
+      "match": false,
+      "message": "Java is not installed at Node"
+    },
+    {
+      "description": "Check if EMS client is already installed at Node",
+      "taskType": "CHECK",
+      "command": "[[ -f /opt/baguette-client/conf/ok.txt ]] && exit 99",
+      "executable": false,
+      "exitCode": 99,
+      "match": true,
+      "message": "EMS client is already installed at Node"
+    },
+    {
+      "description": "-- LIST /opt BEFORE --",
+      "taskType": "CMD",
+      "command": "ls -l /opt ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Log EMS client installation start",
+      "taskType": "LOG",
+      "message": "Starting EMS client installation at Node"
+    },
+    {
+      "description": "Upload EMS client installation package",
+      "taskType": "COPY",
+      "fileName": "/tmp/baguette-client.tgz",
+      "localFileName": "${MELODIC_CONFIG_DIR}/resources/baguette-client.tgz",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Upload installation package MD5 checksum",
+      "taskType": "COPY",
+      "fileName": "/tmp/baguette-client.tgz.md5",
+      "localFileName": "${MELODIC_CONFIG_DIR}/resources/baguette-client.tgz.md5",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Check MD5 checksum of installation package",
+      "taskType": "CHECK",
+      "command": "[[ `cat /tmp/baguette-client.tgz.md5` != `md5sum /tmp/baguette-client.tgz | cut -d ' ' -f 1 ` ]] && exit 99",
+      "executable": false,
+      "exitCode": 99,
+      "match": true
+    },
+    {
+      "description": "Extract installation package to target folder",
+      "taskType": "CMD",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S tar zxvf /tmp/baguette-client.tgz -C /opt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false,
+      "executionTimeout": 120000
+    },
+    {
+      "description": "Change files and folders ownership",
+      "taskType": "CMD",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S chown -R ${NODE_SSH_USERNAME} /opt/baguette-client",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Touch files",
+      "taskType": "CMD",
+      "command": "touch /opt/baguette-client/logs/output.txt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Create conf directory",
+      "taskType": "CMD",
+      "command": "mkdir /opt/baguette-client/conf/",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Copy-and-process configuration to target",
+      "taskType": "FILE",
+      "localFileName": "${MELODIC_CONFIG_DIR}/baguette-client/",
+      "fileName": "/opt/baguette-client",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Clean installation package from /tmp",
+      "taskType": "CMD",
+      "command": "rm -f /tmp/baguette-client.tgz*",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Write success file",
+      "taskType": "CMD",
+      "command": "echo SUCCESS >> /opt/baguette-client/conf/ok.txt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "-- LIST /opt AFTER --",
+      "taskType": "CMD",
+      "command": "ls -l /opt ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "-- LIST baguette-client FILES --",
+      "taskType": "CMD",
+      "command": "ls -lR /opt/baguette-client ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Log installation end",
+      "taskType": "LOG",
+      "message": "EMS client installation completed at Node"
+    }
+  ]
+}

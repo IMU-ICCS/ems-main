@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,8 +9,8 @@
 
 package eu.melodic.event.util;
 
-import eu.passage.upperware.commons.passwords.IdentityPasswordEncoder;
-import eu.passage.upperware.commons.passwords.PasswordEncoder;
+import eu.melodic.event.util.password.IdentityPasswordEncoder;
+import eu.melodic.event.util.password.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 @Service
 @Slf4j
 public class PasswordUtil implements InitializingBean {
-    @Value("${control.password-encoder}")
+    @Value("${password-encoder-class}")
     private String passwordEncoderClassName;
     private PasswordEncoder passwordEncoder;
 

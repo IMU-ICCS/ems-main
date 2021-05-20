@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -60,16 +60,17 @@ public class BrokerClientApp {
             client.receiveEvents(url, topic, new MessageListener() {
                 public void onMessage(Message message) {
                     try {
+                        String destinationName = getDestinationName(message);
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMessage = (ObjectMessage) message;
                             Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - Received object message: {}", obj);
+                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
                         } else if (message instanceof TextMessage) {
                             TextMessage textMessage = (TextMessage) message;
                             String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - Received text message: {}", text);
+                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
                         } else {
-                            log.info("BrokerClientApp:  - Received message: {}", message);
+                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
                         }
                     } catch (JMSException je) {
                         log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
@@ -87,16 +88,17 @@ public class BrokerClientApp {
             client.subscribe(url, topic, listener = new MessageListener() {
                 public void onMessage(Message message) {
                     try {
+                        String destinationName = getDestinationName(message);
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMessage = (ObjectMessage) message;
                             Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - Received object message: {}", obj);
+                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
                         } else if (message instanceof TextMessage) {
                             TextMessage textMessage = (TextMessage) message;
                             String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - Received text message: {}", text);
+                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
                         } else {
-                            log.info("BrokerClientApp:  - Received message: {}", message);
+                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
                         }
                     } catch (JMSException je) {
                         log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
@@ -119,11 +121,11 @@ public class BrokerClientApp {
         if ("generator".equalsIgnoreCase(command)) {
             String url = args[aa++];
             String topic = args[aa++];
-            long interval = Long.parseLong(args[3]);
-            long howmany = Long.parseLong(args[4]);
-            double lowerValue = Double.parseDouble(args[5]);
-            double upperValue = Double.parseDouble(args[6]);
-            int level = Integer.parseInt(args[7]);
+            long interval = Long.parseLong(args[aa++]);
+            long howmany = Long.parseLong(args[aa++]);
+            double lowerValue = Double.parseDouble(args[aa++]);
+            double upperValue = Double.parseDouble(args[aa++]);
+            int level = Integer.parseInt(args[aa++]);
 
             BrokerClient client = BrokerClient.newClient(username, password);
             EventGenerator generator = new EventGenerator();
@@ -142,6 +144,17 @@ public class BrokerClientApp {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage();
         }
+    }
+
+    private static String getDestinationName(Message message) throws JMSException {
+        Destination d = message.getJMSDestination();
+        if (d instanceof Topic) {
+            return ((Topic)d).getTopicName();
+        } else
+        if (d instanceof Queue) {
+            return ((Queue)d).getQueueName();
+        } else
+            throw new IllegalArgumentException("Argument is not a JMS destination: "+d);
     }
 
     protected static void usage() {

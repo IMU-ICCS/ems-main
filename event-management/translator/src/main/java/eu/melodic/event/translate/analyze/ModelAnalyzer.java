@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -744,7 +744,12 @@ public class ModelAnalyzer {
         LogicalOperatorType operator = constraint.getLogicalOperator();
         log.info("  _decomposeLogicalConstraint(): {} ==> operator: {}, component-constraints: {}", constraint.getName(), operator.getName(), getListElementNames(componentConstraints));
 
-        componentConstraints.forEach(lc -> _TC.DAG.addNode(constraint, lc).setGrouping(getGrouping(lc)) );
+        List<DAGNode> nodeList = componentConstraints.stream()
+                .map(lc -> _TC.DAG.addNode(constraint, lc).setGrouping(getGrouping(lc)))
+                .collect(Collectors.toList());
+
+        // cache constraint
+        _TC.addLogicalConstraint(constraint, nodeList);
 
         componentConstraints.forEach(lc -> _decomposeConstraint(_TC, lc) );
     }

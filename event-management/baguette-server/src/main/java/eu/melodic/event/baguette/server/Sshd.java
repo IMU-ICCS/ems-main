@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -26,9 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Custom SSH server
@@ -78,7 +77,7 @@ public class Sshd {
                         return null;
                     }
 
-                    public Factory setCoordinator(ServerCoordinator coordinator) {
+                    public Factory<Command> setCoordinator(ServerCoordinator coordinator) {
                         this.coordinator = coordinator;
                         return this;
                     }
@@ -100,7 +99,7 @@ public class Sshd {
                         return this;
                     }
                 }
-                        .setCredentials(configuration.getCredentials())
+                .setCredentials(configuration.getCredentials())
         );
 
         // Set session timeout
@@ -200,6 +199,29 @@ public class Sshd {
                 csc.sendToClient(command);
             }
         }
+    }
+
+    public List<String> getActiveClients() {
+        return ClientShellCommand.getActive().stream()
+                .map(c -> String.format("%s %s %s:%d", c.getId(),
+                        c.getClientIpAddress(),
+                        c.getClientClusterNodeHostname(),
+                        c.getClientClusterNodePort()))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Map<String, String>> getActiveClientsMap() {
+        return ClientShellCommand.getActive().stream()
+                .sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
+                .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
+                    Map<String,String> properties = new LinkedHashMap<>();
+                    //properties.put("id", c.getId());
+                    properties.put("ip-address", c.getClientIpAddress());
+                    properties.put("node-hostname", c.getClientClusterNodeHostname());
+                    properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
+                    return properties;
+                }));
     }
 
     public void sendConstants(Map<String, Double> constants) {

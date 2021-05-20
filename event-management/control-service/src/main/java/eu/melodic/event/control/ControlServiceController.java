@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,9 +11,12 @@ package eu.melodic.event.control;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.baguette.client.install.ClientInstallationHelper;
-import eu.melodic.event.baguette.client.install.OrchestrationHelper;
+import eu.melodic.event.baguette.client.install.*;
+import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHelper;
+import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
+import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
@@ -30,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -43,6 +47,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ControlServiceController {
 
+    @Autowired
+    private ControlServiceProperties properties;
     @Autowired
     private ControlServiceCoordinator coordinator;
 
@@ -274,11 +280,10 @@ public class ControlServiceController {
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
         // Extract node information from json
-        Type type = new TypeToken<Map<String, String>>(){}.getType();
+        Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
-        log.info("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
         String nodeId = (String) nodeMap.get("id");
-        String nodeOs = (String) nodeMap.get("operatingSystem");
+        log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         // Register node to Baguette server
         BaguetteServer baguette = coordinator.getBaguetteServer();
@@ -296,9 +301,32 @@ public class ControlServiceController {
                         : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
+        // Create context map
+        Map<String,String> contextMap = new HashMap<>();
+        contextMap.put("BASE_URL", baseUrl);
+        contextMap.put("CLIENT_ID", clientId);
+        contextMap.put("IP_SETTING", ipSetting);
+
+        // Continue processing according to ExecutionWare type
+        String response;
+        if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
+            response = getClientInstallationInstructionsFromCloudiator(nodeMap, contextMap, baguette);
+        } else {
+            response = createClientInstallationTask(nodeMap, contextMap, baguette);
+        }
+
+        log.info("ControlServiceController.baguetteRegisterNode(): node-id: {}", nodeId);
+        log.debug("ControlServiceController.baguetteRegisterNode(): node: {}, json: {}", nodeId, response);
+        return response;
+    }
+
+    // Retained for backward compatibility with Cloudiator
+    public String getClientInstallationInstructionsFromCloudiator(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         // Prepare Baguette Client installation instructions for node
-        OrchestrationHelper.InstallationInstructions installationInstructions =
-                ClientInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, baseUrl, clientId, baguette, ipSetting);
+        String nodeId = (String) nodeMap.get("id");
+        String nodeOs = (String) nodeMap.get("operatingSystem");
+        InstallationInstructions installationInstructions =
+                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;
@@ -307,18 +335,30 @@ public class ControlServiceController {
 
         // Convert 'installationInstructions' into json string
         Gson gson = new Gson();
-        String json = gson.toJson(installationInstructions, OrchestrationHelper.InstallationInstructions.class);
+        String json = gson.toJson(installationInstructions, InstallationInstructions.class);
 
-        log.info("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
+        log.trace("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
         return json;
     }
 
+    public String createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception {
+        //log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
+
+        ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
+                .createInstallationHelper(nodeMap)
+                .createClientInstallationTask(nodeMap, contextMap, baguette);
+        ClientInstaller.instance().addTask(installationTask);
+        log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
+
+        return "OK";
+    }
+
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST})
-    public Map<String,Object> baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
+    public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
         log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        Map<String,Object> nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
+        NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
 
         log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): Info for node at: ip-address={}, Node Info:\n{}",
                 ipAddress, nodeInfo);
@@ -331,8 +371,8 @@ public class ControlServiceController {
         log.info("ControlServiceController.baguetteGetNodeNameByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        Map<String,Object> nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
-        String nodeName = (String)nodeInfo.get("name");
+        NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
+        String nodeName = nodeInfo!=null ? nodeInfo.getPreregistration().get("name") : null;
 
         log.info("ControlServiceController.baguetteGetNodeNameByAddress(): Name of node at: ip-address={}, Node name: {}",
                 ipAddress, nodeName);
@@ -359,6 +399,28 @@ public class ControlServiceController {
     public String sendEvent(@PathVariable String clientId, @PathVariable String topicName, @PathVariable double value) {
         log.info("ControlServiceController.sendEvent(): PARAMS: client={}, topic={}, value={}", clientId, topicName, value);
         return coordinator.eventLocalSend(clientId, topicName, value);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/client/list", method = GET)
+    public List<String> listClients() {
+        List<String> clients = coordinator.clientList();
+        log.info("ControlServiceController.listClients(): {}", clients);
+        return clients;
+    }
+
+    @RequestMapping(value = "/client/list/map", method = GET)
+    public Map<String, Map<String, String>> listClientMaps() {
+        Map<String, Map<String, String>> clients = coordinator.clientMap();
+        log.info("ControlServiceController.listClientMaps(): {}", clients);
+        return clients;
+    }
+
+    @RequestMapping(value = "/client/command/{clientId}/{command}", method = GET)
+    public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
+        log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
+        return coordinator.clientCommandSend(clientId, command);
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -391,18 +453,6 @@ public class ControlServiceController {
         log.debug("ControlServiceController.emsTopology(): END");
         return "{}";
     }
-
-    /*@RequestMapping(value = "/test", method = {GET, POST},
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public OrchestrationHelper.InstallationInstructions test(@RequestBody String jsonStr) {
-        log.info(">>>>>>>>>>>>>>>>>>  {}", jsonStr);
-        OrchestrationHelper.InstallationInstructions installationInstructions =
-                new OrchestrationHelper.InstallationInstructions();
-        installationInstructions.appendExec("Exec OK");
-        installationInstructions.appendLog("Log OK");
-        return installationInstructions;
-    }*/
 
     // ------------------------------------------------------------------------------------------------------------
 

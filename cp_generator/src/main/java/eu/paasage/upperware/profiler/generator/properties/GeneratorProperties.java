@@ -3,6 +3,7 @@ package eu.paasage.upperware.profiler.generator.properties;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -28,6 +29,10 @@ public class GeneratorProperties {
     @NotNull
     private CloudiatorV2 cloudiatorV2;
 
+    @Valid
+    @NotNull
+    private ProActive paConfig;
+
     @Getter
     @Setter
     public static class Esb {
@@ -47,5 +52,19 @@ public class GeneratorProperties {
         private String apiKey;
 
         private int httpReadTimeout = 30000;
+    }
+
+    @Getter
+    @Setter
+    @ToString
+    public static class ProActive {
+        @NotNull
+        private String restUrl;
+        @NotNull
+        private String login;
+        @NotNull
+        private String password;
+        @NotNull
+        private String encryptorPw;
     }
 }

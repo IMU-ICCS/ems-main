@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,46 +9,146 @@
 
 package eu.melodic.event.baguette.client;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
+import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
-import java.io.*;
-import java.util.Properties;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Baguette client
  */
-@SpringBootApplication(
-        scanBasePackages = {"eu.melodic.event.baguette.client", "eu.melodic.event.brokercep",
-                "eu.melodic.event.brokerclient", "eu.melodic.event.util"})
 @Slf4j
-public class BaguetteClient {
-    public static void main(String[] args) throws IOException {
-        // Load configuration
-        log.trace("BaguetteClient: Starting");
-        //XXX:TODO: Use SpringBoot to load baguette client properties
-        Properties config = loadConfig("./conf/baguette-client.properties");
-        String idFile = null;
-        if (args.length > 0 && !args[0].trim().isEmpty()) {
-            config.putAll(loadConfig(args[0]));
-            idFile = args[0];
+@SpringBootApplication(scanBasePackages = {
+        "eu.melodic.event.baguette.client", "eu.melodic.event.brokercep",
+        "eu.melodic.event.brokerclient", "eu.melodic.event.util"})
+@RequiredArgsConstructor
+public class BaguetteClient implements ApplicationRunner {
+    private final BaguetteClientProperties baguetteClientProperties;
+    private final ClusterManagerProperties clusterManagerProperties;
+    private final ConfigurableApplicationContext applicationContext;
+
+    @Getter
+    private final List<Collector> collectorsList = new ArrayList<>();
+
+    private static int killDelay;
+
+    public static void main(String[] args) {
+        SpringApplication.run(BaguetteClient.class, args);
+
+        forceExit();
+    }
+
+    @Override
+    public void run(ApplicationArguments args) throws IOException {
+        log.debug("BaguetteClient: Starting");
+
+        // Process command line arguments
+        processCommandLineArgs(args);
+        killDelay = baguetteClientProperties.getKillDelay();
+        log.debug("BaguetteClient: configuration: {}", baguetteClientProperties);
+        log.debug("Cluster: configuration: {}", clusterManagerProperties);
+
+        boolean interactiveMode = args.containsOption("i");
+
+        // Start measurement collectors (but not in interactive mode)
+        if (!interactiveMode) {
+            startCollectors();
         }
-        log.debug("Boot-time config: {}", config);
 
-        // Start Broker-CEP service
-        log.debug("BaguetteClient: Starting the local Broker-CEP service...");
-        ApplicationContext appCtx = SpringApplication.run(BaguetteClient.class, args);
-        log.debug("BaguetteClient: Starting the local Broker-CEP service... ok");
+        if (interactiveMode) {
+            // Run CLI
+            log.debug("BaguetteClient: Enters interactive mode");
+            runCli(applicationContext);
+        } else {
+            // Run SSH client
+            log.debug("BaguetteClient: Enters SSH mode");
+            runSshClient(applicationContext);
+        }
+        log.debug("BaguetteClient: Exiting");
 
-        // Run SSH client
+        // Stop measurement collectors
+        if (!interactiveMode) {
+            stopCollectors();
+        }
+
+        // Stop Baguette Client services
+        applicationContext.close();
+
+        log.info("BaguetteClient: Bye");
+    }
+
+    private void processCommandLineArgs(ApplicationArguments args) {
+        // Get cluster node addresses and properties
+        List<String> addresses = args.getNonOptionArgs();
+        if (addresses!=null && addresses.size()>0) {
+            clusterManagerProperties.getLocalNode().setAddress(addresses.get(0));
+            if (addresses.size()>1) {
+                clusterManagerProperties.setMemberAddresses(addresses.subList(1, addresses.size()));
+            }
+        }
+
+        // Enable/Disable TLS
+        if (args.containsOption("tls"))
+            clusterManagerProperties.getTls().setEnabled(true);
+        if (args.containsOption("notls"))
+            clusterManagerProperties.getTls().setEnabled(false);
+    }
+
+    protected void startCollectors() {
+        if (!collectorsList.isEmpty())
+            throw new IllegalArgumentException("Collectors have already been started");
+
+        log.debug("BaguetteClient: Starting collectors...");
+        if (baguetteClientProperties.getCollectorClasses()==null)
+            baguetteClientProperties.setCollectorClasses(Collections.singletonList(NetdataCollector.class));
+        for (Class<Collector> collectorClass : baguetteClientProperties.getCollectorClasses()) {
+            try {
+                log.debug("BaguetteClient: Starting collector: {}...", collectorClass.getName());
+                Collector collector = applicationContext.getBean(collectorClass);
+                collector.start();
+                collectorsList.add(collector);
+                log.debug("BaguetteClient: Starting collector: {}...ok", collectorClass.getName());
+            } catch (NoSuchBeanDefinitionException e) {
+                log.error("BaguetteClient: Exception while starting collector: {}: ", collectorClass.getName(), e);
+            }
+        }
+        log.debug("BaguetteClient: Starting collectors...ok");
+    }
+
+    protected void stopCollectors() {
+        log.debug("BaguetteClient: Stopping collectors...");
+        for (Collector collector : collectorsList) {
+            try {
+                log.debug("BaguetteClient: Stopping collector: {}...", collector.getClass().getName());
+                collector.stop();
+                log.debug("BaguetteClient: Stopping collector: {}...ok", collector.getClass().getName());
+            } catch (NoSuchBeanDefinitionException e) {
+                log.error("BaguetteClient: Exception while stopping collector: {}: ", collector.getClass().getName(), e);
+            }
+        }
+        collectorsList.clear();
+    }
+
+    protected void runSshClient(ApplicationContext appCtx) {
         boolean retry = true;
         while (true) {
             try {
                 log.trace("BaguetteClient: spring-boot application-context: {}", appCtx);
                 Sshc client = appCtx.getBean(Sshc.class);
-                client.setConfigAndId(config, idFile);
+                client.setConfiguration(baguetteClientProperties);
                 log.trace("BaguetteClient: Sshc instance from application-context: {}", client);
                 log.trace("BaguetteClient: Calling SSHC start()");
                 client.start(retry);
@@ -57,15 +157,20 @@ public class BaguetteClient {
                 log.trace("BaguetteClient: Calling SSHC stop()");
                 client.stop();
             } catch (Exception ex) {
-                log.error("BaguetteClient: EXCEPTION: {}", ex);
+                log.error("BaguetteClient: EXCEPTION: ", ex);
             }
             if (!retry) break;
             log.trace("BaguetteClient: Restarting client...");
         }
-        log.trace("BaguetteClient: Exiting");
     }
 
-    protected static Properties loadConfig(String configFile) throws IOException {
+    protected void runCli(ApplicationContext appCtx) throws IOException {
+        BaguetteClientCLI cli = appCtx.getBean(BaguetteClientCLI.class);
+        cli.setConfiguration(baguetteClientProperties);
+        cli.run();
+    }
+
+    /*protected static Properties loadConfig(String configFile) throws IOException {
         Properties config = new Properties();
         try {
             try (InputStream in = new FileInputStream(new File(configFile))) {
@@ -78,5 +183,29 @@ public class BaguetteClient {
             }
         }
         return config;
+    }*/
+
+    protected static void forceExit() {
+        // Print remaining threads
+        Thread.getAllStackTraces().keySet()
+                .forEach(s -> log.debug("---> {}.{}: {} alive={}, daemon={}, interrupted={}",
+                        s.getThreadGroup().getName(), s.getName(), s.getState(),
+                        s.isAlive(), s.isDaemon(), s.isInterrupted()));
+
+        // Start killer thread
+        if (killDelay>0) {
+            new Thread(() -> {
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) { }
+                log.warn("Waiting JVM to exit for {} more seconds", killDelay);
+                try { Thread.sleep(killDelay * 1000); } catch (InterruptedException ignored) { }
+                log.warn("Forcing JVM to exit");
+                System.exit(0);
+            }) {{
+                setDaemon(true);
+                start();
+            }};
+        } else {
+            log.debug("Killer thread disabled");
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -13,6 +13,7 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,7 +24,7 @@ public class NoopCoordinator implements ServerCoordinator {
     protected boolean started;
 
     @Override
-    public void initialize(BaguetteServer server, Runnable callback) {
+    public void initialize(final TranslationContext TC, String upperwareGrouping, BaguetteServer server, Runnable callback) {
         if (_logInvocation("initialize", null, false)) return;
         this.server = server;
         this.config = server.getConfiguration();
@@ -88,5 +89,9 @@ public class NoopCoordinator implements ServerCoordinator {
             log.info("{}: {}(): Method invoked{}", className, methodName, cscStr);
         }
         return started;
+    }
+
+    public void sleep(long millis) {
+        try { Thread.sleep(millis); } catch (Exception ignored) { }
     }
 }

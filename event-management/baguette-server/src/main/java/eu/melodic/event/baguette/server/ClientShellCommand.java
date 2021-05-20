@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +26,15 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class ClientShellCommand implements Command, Runnable, SessionAware {
 
-    private static Object LOCK = new Object();
-    private static long counter;
-    private static Set<ClientShellCommand> activeCmdList = new HashSet<>();
+    private final static Object LOCK = new Object();
+    private final static AtomicLong counter = new AtomicLong(0);
+    private final static Set<ClientShellCommand> activeCmdList = new HashSet<>();
 
     public static Set<ClientShellCommand> getActive() {
         return Collections.unmodifiableSet(activeCmdList);
@@ -41,7 +44,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private PrintStream out;
     private PrintStream err;
     private ExitCallback callback;
-    private boolean callbackCalled;
+    private final AtomicBoolean callbackCalled = new AtomicBoolean(false);
 
     @Getter @Setter
     private String id;
@@ -50,18 +53,29 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     @Getter private String clientId;
     @Getter private String clientBrokerUrl;
+    @Getter private String clientBrokerUsername;
+    @Getter private String clientBrokerPassword;
     private String clientIpAddress;
+    private String clientHostname;
+    private String clientCanonicalHostname;
     private int clientPort = -1;
-    @Getter private String clientCertificate;
+    @Getter private String clientCertificate;   // Broker certificate of Client
 
-    private ServerCoordinator coordinator;
-    private boolean clientAddressOverrideAllowed;
+    @Getter @Setter private int clientClusterNodePort;
+    @Getter @Setter private String clientClusterNodeAddress;
+    @Getter @Setter private String clientClusterNodeHostname;
+    @Getter @Setter private Object clientZone;
+
+    private final ServerCoordinator coordinator;
+    private final boolean clientAddressOverrideAllowed;
     @Getter
     private ServerSession session;
+    @Getter @Setter
+    private boolean closeConnection = false;
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress) {
         synchronized (LOCK) {
-            id = String.format("#%05d", counter++);
+            id = String.format("#%05d", counter.getAndIncrement());
         }
         this.coordinator = coordinator;
         this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;
@@ -104,6 +118,24 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     public void run() {
+        if (closeConnection) {
+            log.warn("{}--> Exiting immediately because 'closeConnection' flag is set", id);
+            coordinator.unregister(this);
+            if (this.session!=null && this.session.isOpen()) {
+                try {
+                    this.session.close();
+                } catch (IOException e) {
+                    log.warn("Closing session caused on exception: ", e);
+                }
+                this.session = null;
+            }
+            if (!callbackCalled.getAndSet(true)) {
+                callback.onExit(2);
+            }
+            log.info("{}--> Thread stopped immediately", id);
+            return;
+        }
+
         synchronized (activeCmdList) {
             activeCmdList.add(this);
         }
@@ -111,6 +143,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         try {
             log.info("{}==> Thread started", id);
             out.printf("CLIENT (%s) : START\n", id);
+
+            this.clientIpAddress = getClientIpAddress();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line;
@@ -127,6 +161,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     coordinator.register(this);
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
+                } else {
+                    coordinator.processClientInput(this, line);
                 }
             }
 
@@ -141,8 +177,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 activeCmdList.remove(this);
             }
             log.info("{}--> Thread stops", id);
-            if (!callbackCalled) {
-                callbackCalled = true;
+            coordinator.unregister(this);
+            if (!callbackCalled.getAndSet(true)) {
                 callback.onExit(0);
             }
         }
@@ -164,18 +200,33 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             } else
             if (s.startsWith("address=")) {
                 if (clientAddressOverrideAllowed) {
-                    this.clientIpAddress = s.substring("address=".length());
-                    log.info("{}--> Effective IP: {}", id, clientIpAddress);
+                    String addr = s.substring("address=".length());
+                    if (StringUtils.isNotBlank(addr)) {
+                        this.clientIpAddress = addr.trim();
+                        log.info("{}--> Effective IP: {}", id, clientIpAddress);
+                    }
                 }
             } else
             if (s.startsWith("port=")) {
                 if (clientAddressOverrideAllowed) {
                     try {
-                        this.clientPort = Integer.parseInt(s.substring("port=".length()));
-                        log.info("{}--> Effective Port: {}", id, clientPort);
+                        int port = Integer.parseInt(s.substring("port=".length()));
+                        if (port>0 && port<65536) {
+                            this.clientPort = port;
+                            log.info("{}--> Effective Port: {}", id, clientPort);
+                        }
                     } catch (Exception ex) {
+                        log.warn("{}--> Invalid Port value: {}: {}", id, s.substring("port=".length()), ex.getMessage());
                     }
                 }
+            } else
+            if (s.startsWith("username=")) {
+                this.clientBrokerUsername = s.substring("username=".length());
+                log.info("{}--> Broker Username: {}", id, clientBrokerUsername);
+            } else
+            if (s.startsWith("password=")) {
+                this.clientBrokerPassword = s.substring("password=".length());
+                log.info("{}--> Broker Password: {}", id, clientBrokerPassword);
             } else
             if (s.startsWith("cert=")) {
                 this.clientCertificate = s.substring("cert=".length())
@@ -184,10 +235,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         .replace("$$", "\n");
                 log.info("{}--> Broker Cert.: {}", id, clientCertificate);
 
-                // Get certificate alias from client name or IP address
-                String alias = StringUtils.isNotBlank(clientId)
+                // Get certificate alias from client Id or IP address
+                String alias = /*StringUtils.isNotBlank(clientId)
                         ? clientId.trim()
-                        : getClientIpAddress();
+                        :*/ getClientIpAddress();
                 log.info("{}--> Adding/Replacing client certificate in Truststore: alias={}", id, alias);
 
                 if (StringUtils.isNotEmpty(clientCertificate)) {
@@ -210,12 +261,37 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 log.warn("{}--> Unknown HELLO argument will be ignored: {}", id, s);
             }
         }
+
+        if (StringUtils.isBlank(this.clientId) || "null".equalsIgnoreCase(this.clientId))
+            this.clientId = getClientId();
+        if (StringUtils.isBlank(this.clientIpAddress) || "null".equalsIgnoreCase(this.clientIpAddress))
+            this.clientIpAddress = getClientIpAddress();
+        if (this.clientPort<=0 || this.clientPort>65535)
+            this.clientPort = getClientPort();
+    }
+
+    public String getClientId() {
+        if (StringUtils.isNotBlank(clientId)) return clientId;
+        clientId = getId();
+        return clientId;
     }
 
     public String getClientIpAddress() {
-        if (clientIpAddress != null) return clientIpAddress;
+        if (StringUtils.isNotBlank(clientIpAddress)) return clientIpAddress;
         clientIpAddress = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getHostAddress();
         return clientIpAddress;
+    }
+
+    public String getClientHostname() {
+        if (StringUtils.isNotBlank(clientHostname)) return clientHostname;
+        clientHostname = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getHostName();
+        return clientHostname;
+    }
+
+    public String getClientCanonicalHostname() {
+        if (StringUtils.isNotBlank(clientCanonicalHostname)) return clientCanonicalHostname;
+        clientCanonicalHostname = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getAddress().getCanonicalHostName();
+        return clientCanonicalHostname;
     }
 
     public int getClientPort() {
@@ -282,25 +358,21 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         return o;
     }
 
-    public void sendGroupingConfiguration(String grouping, Properties config, BaguetteServer server) {
-        GroupingConfiguration gc = new GroupingConfiguration(grouping, config, server);
-        sendGroupingConfiguration(grouping, gc);
+    public void sendGroupingConfiguration(String grouping, Map<String, GroupingConfiguration.BrokerConnectionConfig> connectionConfigs, BaguetteServer server) {
+        GroupingConfiguration gc = GroupingConfigurationHelper.newGroupingConfiguration(grouping, connectionConfigs, server);
+        sendGroupingConfiguration(gc);
     }
 
-    public void sendGroupingConfiguration(String grouping, GroupingConfiguration gc) {
+    public void sendGroupingConfiguration(GroupingConfiguration gc) {
+        String grouping = gc.getName();
         log.debug("sendGroupingConfiguration: id={}, grouping={}, grouping-config={}", id, grouping, gc);
-        if (grouping != null && !grouping.trim().isEmpty()) {
-            HashMap<String, Object> all = new HashMap<>(gc.getConfigurationMap());
-            log.debug("sendGroupingConfiguration: Grouping configuration for {}: {}", grouping, all);
-
-            try {
-                String allStr = serializeToString(all);
-                log.info("sendGroupingConfiguration: Serialization of Grouping configuration for {}: {}", grouping, allStr);
-                sendToClient("SET-GROUPING-CONFIG " + allStr);
-            } catch (IOException ex) {
-                log.error("sendGroupingConfiguration: Exception while serializing Grouping configuration: ", ex);
-                log.error("sendGroupingConfiguration: SET-GROUPING-CONFIG command *NOT* sent to client");
-            }
+        try {
+            String allStr = serializeToString(gc);
+            log.info("sendGroupingConfiguration: Serialization of Grouping configuration for {}: {}", grouping, allStr);
+            sendToClient("SET-GROUPING-CONFIG " + allStr);
+        } catch (IOException ex) {
+            log.error("sendGroupingConfiguration: Exception while serializing Grouping configuration: ", ex);
+            log.error("sendGroupingConfiguration: SET-GROUPING-CONFIG command *NOT* sent to client");
         }
     }
 
@@ -336,13 +408,16 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public void stop(String msg) {
         log.info("{}==> STOP : {}", id, msg);
         out.println("EXIT " + msg);
-        if (!callbackCalled) {
-            callbackCalled = true;
+        if (!callbackCalled.getAndSet(true)) {
             callback.onExit(1);
         }
     }
 
     public String toString() {
         return "ClientShellCommand_" + id;
+    }
+
+    public String toStringCluster() {
+        return getClientClusterNodeAddress()+":"+getClientClusterNodePort();
     }
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+# Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
 #
 # This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless 
 # Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -8,14 +8,10 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-if [ ! -d "target/dependency" ]; then
-  mvn dependency:copy-dependencies
-fi
-
 MELODIC_CONFIG_DIR=.
 
 JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12 
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 
-java $JAVA_OPTS -classpath "target/classes:target/dependency/*" eu.melodic.event.brokerclient.BrokerClientApp $*
+java $JAVA_OPTS -jar target/broker-client-jar-with-dependencies.jar $*

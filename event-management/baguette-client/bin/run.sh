@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+# Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
 #
 # This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
 # Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -15,6 +15,7 @@ cd ${BASEDIR}
 MELODIC_CONFIG_DIR=${BASEDIR}/conf
 PAASAGE_CONFIG_DIR=${BASEDIR}/conf
 LOG_FILE=${BASEDIR}/logs/output.txt
+TEE_FILE=${BASEDIR}/logs/tee.txt
 JASYPT_PASSWORD=melodic
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD
 
@@ -42,6 +43,7 @@ JAVA_OPTS=-Djavax.net.ssl.trustStore=${MELODIC_CONFIG_DIR}/client-broker-trustst
 JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.ssl.trustStoreType=pkcs12"
 JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
 #JAVA_OPTS="-Djavax.net.debug=all ${JAVA_OPTS}"
+#JAVA_OPTS="-Dlogging.level.eu.melodic.event=TRACE ${JAVA_OPTS}"
 
 echo "Starting baguette client..."
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
@@ -51,9 +53,14 @@ echo "Starting baguette client..." &>> ${LOG_FILE}
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}" &>> ${LOG_FILE}
 echo "LOG_FILE=${LOG_FILE}" &>> ${LOG_FILE}
 
-java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient $* &>> ${LOG_FILE} &
-PID=`jps | grep BaguetteClient | cut -d " " -f 1`
-PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
-echo "Baguette client PID: $PID"
+if [ "$1" == "--i" ]; then
+  echo "Baguette client running in Interactive mode"
+  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient --logging.config=file:${MELODIC_CONFIG_DIR}/logback-spring.xml $* $* 2>&1 | tee ${TEE_FILE}
+else
+  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient --logging.config=file:${MELODIC_CONFIG_DIR}/logback-spring.xml $* &>> ${LOG_FILE} &
+  PID=`jps | grep BaguetteClient | cut -d " " -f 1`
+  PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
+  echo "Baguette client PID: $PID"
+fi
 
 cd $PREVWORKDIR

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,8 +11,10 @@ package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
-import eu.melodic.event.brokercep.cep.FunctionDefinition;
+import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.PasswordUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -101,6 +103,7 @@ public class BaguetteServer {
     public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
         if (server == null) {
             log.info("BaguetteServer.startServer(): Starting SSH server instance...");
+            nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
             server.start(config, coordinator);
             this.server = server;
@@ -115,6 +118,7 @@ public class BaguetteServer {
             log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server...");
             server.stop();
             this.server = null;
+            nodeRegistry.setCoordinator(null);
             log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server... done");
         } else {
             log.warn("BaguetteServer.stop(): No SSH server instance is running");
@@ -132,24 +136,33 @@ public class BaguetteServer {
 
     // Topology configuration methods
     public synchronized void setTopologyConfiguration(
-            Map<String, Set<String>> G2T,
-            Map<String, Map<String, Set<String>>> G2R,
-            Map<String, Map<String, Set<String>>> topicConnections,
+            TranslationContext _TC,
             Map<String, Double> constants,
-            Set<FunctionDefinition> functionDefinitions,
             String upperwareGrouping,
-            String upperwareBrokerUrl,
             BrokerCepService brokerCepService)
-            throws IOException {
+            throws IOException
+    {
         log.info("BaguetteServer.setTopologyConfiguration(): BEGIN");
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Grouping-to-Topics (G2T): {}", G2T);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Grouping-to-Rules (G2R): {}", G2R);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Topic-Connections: {}", topicConnections);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Constants: {}", constants);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Function-Definitions: {}", functionDefinitions);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-grouping: {}", upperwareGrouping);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Upperware-broker-url: {}", upperwareBrokerUrl);
-        log.info("BaguetteServer.setTopologyConfiguration(): ARGS: Broker-credentials: username={}, password={}",
+
+        // Set new configuration
+        this.groupingTopicsMap = _TC.getG2T();
+        this.groupingRulesMap = _TC.getG2R();
+        this.topicConnections = _TC.getTopicConnections();
+        this.constants = constants;
+        this.functionDefinitions = _TC.getFunctionDefinitions();
+        this.upperwareGrouping = upperwareGrouping;
+        this.upperwareBrokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForClients();
+        this.brokerCepService = brokerCepService;
+
+        // Print new configuration
+        log.info("BaguetteServer.setTopologyConfiguration(): Grouping-to-Topics (G2T): {}", groupingTopicsMap);
+        log.info("BaguetteServer.setTopologyConfiguration(): Grouping-to-Rules (G2R): {}", groupingRulesMap);
+        log.info("BaguetteServer.setTopologyConfiguration(): Topic-Connections: {}", topicConnections);
+        log.info("BaguetteServer.setTopologyConfiguration(): Constants: {}", constants);
+        log.info("BaguetteServer.setTopologyConfiguration(): Function-Definitions: {}", functionDefinitions);
+        log.info("BaguetteServer.setTopologyConfiguration(): Upperware-grouping: {}", upperwareGrouping);
+        log.info("BaguetteServer.setTopologyConfiguration(): Upperware-broker-url: {}", upperwareBrokerUrl);
+        log.info("BaguetteServer.setTopologyConfiguration(): Broker-credentials: username={}, password={}",
                 brokerCepService.getBrokerUsername(), passwordUtil.encodePassword(brokerCepService.getBrokerPassword()));
 
         // Stop any running instance of SSH server
@@ -158,32 +171,22 @@ public class BaguetteServer {
         // Clear node registry
         nodeRegistry.clearNodes();
 
-        // Set new configuration
-        this.groupingTopicsMap = G2T;
-        this.groupingRulesMap = G2R;
-        this.topicConnections = topicConnections;
-        this.constants = constants;
-        this.functionDefinitions = functionDefinitions;
-        this.upperwareGrouping = upperwareGrouping;
-        this.upperwareBrokerUrl = upperwareBrokerUrl;
-        this.brokerCepService = brokerCepService;
-
         log.info("BaguetteServer.setTopologyConfiguration(): Baguette server configuration: {}", config);
         log.info("BaguetteServer.setTopologyConfiguration(): Baguette Server credentials: {}", config.getCredentials());
 
         // Initialize server coordinator
         log.info("BaguetteServer.setTopologyConfiguration(): Initializing Baguette protocol coordinator...");
-        ServerCoordinator coordinator = createServerCoordinator(config.getCoordinatorClass());
+        ServerCoordinator coordinator = createServerCoordinator(config, _TC, upperwareGrouping);
         log.info("BaguetteServer.setTopologyConfiguration(): Coordinator: {}", coordinator.getClass().getName());
         coordinator.initialize(
+                _TC,
+                upperwareGrouping,
                 this,
 //XXX: TODO: implement a useful EP Network callback, capable to notify EMS when EPN is ready
-                new Runnable() {
-                    public void run() {
-                        log.info("****************************************");
-                        log.info("****  MONITORING TOPOLOGY IS READY  ****");
-                        log.info("****************************************");
-                    }
+                () -> {
+                    log.info("****************************************");
+                    log.info("****  MONITORING TOPOLOGY IS READY  ****");
+                    log.info("****************************************");
                 }
         );
 
@@ -193,12 +196,64 @@ public class BaguetteServer {
         log.info("BaguetteServer.setTopologyConfiguration(): END");
     }
 
-    protected static ServerCoordinator createServerCoordinator(String classStr) {
-        try {
-            return (ServerCoordinator) Class.forName(classStr).newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+    protected static ServerCoordinator createServerCoordinator(BaguetteServerProperties config, TranslationContext _TC, String upperwareGrouping) {
+        // Initialize coordinator class and parameters for backward compatibility
+        Class<ServerCoordinator> coordinatorClass = config.getCoordinatorClass();
+        Map<String, String> coordinatorParams = config.getCoordinatorParameters();
+
+        // Check if Coordinator Id has been specified (this overrides)
+        for (String id : config.getCoordinatorId()) {
+            if (StringUtils.isBlank(id))
+                throw new IllegalArgumentException("Coordinator Id cannot be null or blank");
+
+            // Get coordinator class and parameters by Id
+            BaguetteServerProperties.CoordinatorConfig coordConfig = config.getCoordinatorConfig().get(id);
+            if (coordConfig == null)
+                throw new IllegalArgumentException("Not found coordinator configuration with id: " + id);
+            coordinatorClass = coordConfig.getCoordinatorClass();
+            if (coordinatorClass == null)
+                throw new IllegalArgumentException("Not found coordinator class in configuration with id: " + id);
+            coordinatorParams = coordConfig.getParameters();
+
+            // Initialize coordinator instance
+            ServerCoordinator coordinator = createServerCoordinator(id, coordinatorClass, coordinatorParams, _TC, upperwareGrouping);
+
+            if (coordinator != null)
+                return coordinator;
+            // else try the next coordinator in configuration
         }
+
+        if (coordinatorClass == null)
+            throw new IllegalArgumentException("Either coordinator class or configuration id must be specified");
+
+        // Initialize coordinator class and parameters for backward compatibility
+        ServerCoordinator coordinator = createServerCoordinator(null, coordinatorClass, coordinatorParams, _TC, upperwareGrouping);
+        if (coordinator == null) {
+            log.error("No configured coordinator supports Translation Context.\nCoordinator Id's: {}\nDefault coordinator: {}\nTranslation Context:\n{}",
+                    config.getCoordinatorId(), coordinatorClass, _TC);
+            throw new IllegalArgumentException("No configured coordinator supports Translation Context");
+        }
+        return coordinator;
+    }
+
+    @SneakyThrows
+    private static ServerCoordinator createServerCoordinator(String id, Class<ServerCoordinator> coordinatorClass, Map<String,String> coordinatorParams, TranslationContext _TC, String upperwareGrouping) {
+        log.debug("createServerCoordinator: Instantiating coordinator with id: {}", id);
+
+        // Initialize coordinator instance
+        ServerCoordinator coordinator = coordinatorClass.newInstance();
+
+        // Set coordinator parameters
+        coordinator.setProperties(coordinatorParams);
+
+        // Check if coordinator supports this Translation Context
+        if (!coordinator.isSupported(_TC)) {
+            log.debug("createServerCoordinator: Coordinator does not support Translation Context: id={}", id);
+            return null;
+        }
+
+        log.debug("createServerCoordinator: Coordinator supports Translation Context: id={}", id);
+        return coordinator;
     }
 
     public void sendToActiveClients(String command) {
@@ -207,6 +262,14 @@ public class BaguetteServer {
 
     public void sendToClient(String clientId, String command) {
         server.sendToClient(clientId, command);
+    }
+
+    public List<String> getActiveClients() {
+        return server.getActiveClients();
+    }
+
+    public Map<String, Map<String, String>> getActiveClientsMap() {
+        return server.getActiveClientsMap();
     }
 
     public void sendConstants(Map<String, Double> constants) {
