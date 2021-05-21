@@ -27,6 +27,8 @@ ADD jars ./jars
 ADD config ./config
 #ADD resources ./resources
 
+RUN ln -s ${BASEDIR}/jars/broker-client-with-dependencies.jar ${MELODIC_CONFIG_DIR}/resources/broker-client.jar
+
 RUN mkdir logs
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
