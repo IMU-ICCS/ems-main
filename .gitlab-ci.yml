@@ -275,7 +275,6 @@ deploy:melodic-upperware:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -321,7 +320,6 @@ deploy:melodic-commons:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -368,7 +366,6 @@ deploy:utility-generator:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -400,7 +397,6 @@ deploy:adapter:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -417,7 +413,6 @@ deploy:cp-generator:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -434,7 +429,6 @@ deploy:cp-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part6:cp-solver
@@ -575,7 +569,6 @@ deploy:ems-server:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -608,7 +601,6 @@ deploy:mq-adapter:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -625,7 +617,6 @@ deploy:gui-backend:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
-    - removing-communication-with-cloudiator
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
