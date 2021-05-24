@@ -26,8 +26,6 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
-import io.github.cloudiator.rest.ApiClient;
-import io.github.cloudiator.rest.api.*;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -117,45 +115,6 @@ public class ApplicationContext {
   @Bean
   public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
     return new JWTServiceImpl(melodicSecurityProperties);
-  }
-
-  @Bean
-  public JobApi jobApi(ApiClient apiClient) {
-    return new JobApi(apiClient);
-  }
-
-  @Bean
-  public NodeApi nodeApi(ApiClient apiClient) {
-    return new NodeApi(apiClient);
-  }
-
-  @Bean
-  public QueueApi queueApi(ApiClient apiClient) {
-    return new QueueApi(apiClient);
-  }
-
-  @Bean
-  public ProcessApi processApi(ApiClient apiClient) {
-    return new ProcessApi(apiClient);
-  }
-
-  @Bean
-  public MonitoringApi monitoringApi(ApiClient apiClient) {
-    return new MonitoringApi(apiClient);
-  }
-
-  @Bean
-  public ScaleApi scaleApi(ApiClient apiClient) {
-    return new ScaleApi(apiClient);
-  }
-
-  @Bean
-  public ApiClient apiClient() {
-    ApiClient apiClient = new ApiClient();
-    apiClient.setBasePath(adapterProperties.getCloudiatorV2().getUrl());
-    apiClient.setApiKey(adapterProperties.getCloudiatorV2().getApiKey());
-    apiClient.setReadTimeout(adapterProperties.getCloudiatorV2().getHttpReadTimeout());
-    return apiClient;
   }
 
   @Bean

@@ -40,7 +40,6 @@ import eu.paasage.mddb.cdo.client.CDOClient;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.types.TypesPackage;
-import io.github.cloudiator.rest.ApiException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;

@@ -18,8 +18,6 @@ import eu.paasage.upperware.profiler.generator.service.camel.impl.IdGeneratorImp
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
-import io.github.cloudiator.rest.ApiClient;
-import io.github.cloudiator.rest.api.MatchmakingApi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.spy.memcached.BinaryConnectionFactory;
@@ -104,20 +102,6 @@ public class GeneratorContext {
     @Bean
     public JWTService jWTService(MelodicSecurityProperties melodicSecurityProperties) {
         return new JWTServiceImpl(melodicSecurityProperties);
-    }
-
-    @Bean
-    public MatchmakingApi matchmakingApi(ApiClient apiClient) {
-        return new MatchmakingApi(apiClient);
-    }
-
-    @Bean
-    public ApiClient apiClient(GeneratorProperties generatorProperties) {
-        ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(generatorProperties.getCloudiatorV2().getUrl());
-        apiClient.setApiKey(generatorProperties.getCloudiatorV2().getApiKey());
-        apiClient.setReadTimeout(generatorProperties.getCloudiatorV2().getHttpReadTimeout());
-        return apiClient;
     }
 
     @Bean
