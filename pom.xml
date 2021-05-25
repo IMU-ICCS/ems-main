@@ -40,7 +40,8 @@
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>zpp-solver</module>
-        <module>functionizer-testing-tool</module>
+        <!--functionizer-testing-tool is to uncomment when proactive will support FAAS-->
+        <!--<module>functionizer-testing-tool</module>-->
     </modules>
 
 

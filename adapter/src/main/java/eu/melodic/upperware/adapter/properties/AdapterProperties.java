@@ -41,10 +41,6 @@ public class AdapterProperties {
 
   @Valid
   @NotNull
-  private CloudiatorV2 cloudiatorV2;
-
-  @Valid
-  @NotNull
   private ProActive paConfig;
 
   @Getter
@@ -71,21 +67,6 @@ public class AdapterProperties {
     private Integer maxPoolSize;
     private Integer queueCapacity;
 
-  }
-
-  @Getter
-  @Setter
-  public static class CloudiatorV2 {
-
-    @NotBlank
-    private String url;
-
-    @NotBlank
-    private String apiKey;
-
-    private int httpReadTimeout = 30000;
-
-    private int delayBetweenQueueCheck = 1000;
   }
 
   @Getter

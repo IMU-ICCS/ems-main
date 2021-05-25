@@ -6,4 +6,7 @@ RUN bash -c 'touch /gui-backend.jar'
 
 COPY ./run.sh .
 RUN bash -c 'chmod +rx run.sh'
+RUN /bin/sh -c "apk update"
+RUN /bin/sh -c "apk add docker"
+RUN /bin/sh -c "apk add curl"
 ENTRYPOINT ["./run.sh"]

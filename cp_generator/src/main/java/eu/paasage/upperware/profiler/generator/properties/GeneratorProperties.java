@@ -27,10 +27,6 @@ public class GeneratorProperties {
 
     @Valid
     @NotNull
-    private CloudiatorV2 cloudiatorV2;
-
-    @Valid
-    @NotNull
     private ProActive paConfig;
 
     @Getter
@@ -39,19 +35,6 @@ public class GeneratorProperties {
 
         @NotBlank
         private String url;
-    }
-
-    @Getter
-    @Setter
-    public static class CloudiatorV2 {
-
-        @NotBlank
-        private String url;
-
-        @NotBlank
-        private String apiKey;
-
-        private int httpReadTimeout = 30000;
     }
 
     @Getter
