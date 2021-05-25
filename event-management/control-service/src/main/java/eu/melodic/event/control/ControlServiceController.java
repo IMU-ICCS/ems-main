@@ -417,7 +417,7 @@ public class ControlServiceController {
         return clients;
     }
 
-    @RequestMapping(value = "/client/command/{clientId}/{command}", method = GET)
+    @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
     public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
         log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);
