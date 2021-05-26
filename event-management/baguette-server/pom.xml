@@ -73,13 +73,6 @@
 			<version>2.0.1.Final</version>
 		</dependency>
 
-		<!-- StatefulJ FSM -->
-		<dependency>
-			<groupId>org.statefulj</groupId>
-			<artifactId>statefulj-fsm</artifactId>
-			<version>3.0</version>
-		</dependency>
-
 		<!-- Apache Commons text (for StringSubstitutor) -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
