@@ -9,10 +9,14 @@
 
 package eu.melodic.event.baguette.client.install.helper;
 
+import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -25,6 +29,9 @@ public class InstallationHelperFactory implements InitializingBean {
 
     public synchronized static InstallationHelperFactory getInstance() { return instance; }
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Override
     public void afterPropertiesSet() {
         InstallationHelperFactory.instance = this;
@@ -36,6 +43,18 @@ public class InstallationHelperFactory implements InitializingBean {
             return createVmInstallationHelper(nodeMap);
         }
         throw new IllegalArgumentException("Unsupported or missing Node type: "+nodeType);
+    }
+
+    public InstallationHelper createInstallationHelperBean(String className, Map<String,Object> nodeMap) throws ClassNotFoundException {
+        Class<?> clzz = Class.forName(className);
+        return (InstallationHelper) applicationContext.getBean(clzz);
+    }
+
+    public InstallationHelper createInstallationHelperInstance(String className, Map<String,Object> nodeMap)
+            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        Class<?> clzz = Class.forName(className);
+        return (InstallationHelper) clzz.getDeclaredMethod("getInstance").invoke(null);
     }
 
     private InstallationHelper createVmInstallationHelper(Map<String, Object> nodeMap) {

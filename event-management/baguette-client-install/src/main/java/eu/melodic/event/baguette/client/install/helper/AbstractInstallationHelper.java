@@ -14,6 +14,8 @@ import eu.melodic.event.baguette.client.install.instruction.InstallationInstruct
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -49,6 +51,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     protected static List<String> WINDOWS_OS_FAMILIES;
 
     @Autowired
+    @Getter @Setter
     protected ClientInstallationProperties properties;
 
     protected String archiveBase64;

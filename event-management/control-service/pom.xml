@@ -329,4 +329,17 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>with-ems-extra</id>
+            <dependencies>
+                <dependency>
+                    <groupId>eu.melodic.event</groupId>
+                    <artifactId>extra</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
 </project>

@@ -48,4 +48,13 @@
         <module>baguette-server</module>
         <module>control-service</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>with-ems-extra</id>
+            <modules>
+                <module>extra</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
