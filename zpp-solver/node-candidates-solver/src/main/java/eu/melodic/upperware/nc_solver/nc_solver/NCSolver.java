@@ -13,15 +13,19 @@ import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_el
 import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_element.VMConfiguration;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
-import io.github.cloudiator.rest.model.NodeCandidate;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.NodeCandidate;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
 import org.jamesframework.core.search.algo.ParallelTempering;
 import org.jamesframework.core.search.stopcriteria.StopCriterion;
 import org.javatuples.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
