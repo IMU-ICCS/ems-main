@@ -73,13 +73,6 @@
 			<version>2.0.1.Final</version>
 		</dependency>
 
-		<!-- Cloudiator -->
-		<dependency>
-			<groupId>io.github.cloudiator</groupId>
-			<artifactId>colosseum-client</artifactId>
-			<version>0.2.0-SNAPSHOT</version>
-		</dependency>
-		
 		<!-- StatefulJ FSM -->
 		<dependency>
 			<groupId>org.statefulj</groupId>
@@ -93,21 +86,13 @@
 			<artifactId>commons-text</artifactId>
 			<version>1.9</version>
 		</dependency>
+
+		<!-- For importing: class org.glassfish.jersey.internal.guava.InetAddresses -->
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>2.27</version>
+		</dependency>
 	</dependencies>
-	
-	<repositories>
-		<!-- Cloudiator -->
-		<repository>
-			<id>ossrh.snapshots</id>
-			<name>OSSRH snapshots repository</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 </project>

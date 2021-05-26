@@ -48,7 +48,7 @@ public class ControlServiceProperties {
 
     @Value("${IP_SETTING:}")
     private IpSetting ipSetting;
-    @Value("${EXECUTIONWARE:CLOUDIATOR}")
+    @Value("${EXECUTIONWARE:PROACTIVE}")
     private ExecutionWare executionware;
 
     @Value("${control.upperware-grouping}")

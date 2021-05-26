@@ -13,6 +13,7 @@ import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -34,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -238,5 +240,12 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
                 .appendExec("sudo mv " + tmpFile + " " + targetFile)
                 .appendExec("sudo chmod u+rw,og-rwx " + targetFile);
         return installationInstructions;
+    }
+
+    protected String _prepareUrl(String urlTemplate, String baseUrl) {
+        return urlTemplate
+                .replace("%{BASE_URL}%", baseUrl)
+                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(""))
+                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(""));
     }
 }

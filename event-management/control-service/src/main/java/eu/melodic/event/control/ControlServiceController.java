@@ -12,7 +12,6 @@ package eu.melodic.event.control;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.*;
-import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHelper;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
@@ -310,7 +309,7 @@ public class ControlServiceController {
         // Continue processing according to ExecutionWare type
         String response;
         if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
-            response = getClientInstallationInstructionsFromCloudiator(nodeMap, contextMap, baguette);
+            response = getClientInstallationInstructions(nodeMap, contextMap, baguette);
         } else {
             response = createClientInstallationTask(nodeMap, contextMap, baguette);
         }
@@ -321,12 +320,12 @@ public class ControlServiceController {
     }
 
     // Retained for backward compatibility with Cloudiator
-    public String getClientInstallationInstructionsFromCloudiator(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public String getClientInstallationInstructions(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         // Prepare Baguette Client installation instructions for node
         String nodeId = (String) nodeMap.get("id");
         String nodeOs = (String) nodeMap.get("operatingSystem");
-        InstallationInstructions installationInstructions =
-                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
+        InstallationInstructions installationInstructions = null;
+//XXX:CLOUDIATOR:                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;

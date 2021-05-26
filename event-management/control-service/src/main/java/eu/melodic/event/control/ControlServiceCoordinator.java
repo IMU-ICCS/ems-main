@@ -265,11 +265,6 @@ public class ControlServiceCoordinator {
             }
         }
 
-        // Signal Event Processing Network and/or User Application to stop/pause
-//XXX: TODO: +++++++++++++++++++++
-// e.g.  cloudiatorHelper.stopApplication();
-// -AND- baguette.signalEPN(STOP);
-
         // Retrieve Metric Variable Values (MVV) from CP model
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
@@ -434,23 +429,9 @@ public class ControlServiceCoordinator {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver setup due to configuration");
         }
 
-        // (Re-)Configure LA Solver
-//XXX: TODO: +++++++++++++++++++++
-// e.g.  metaSolver.unsubscribe(); metaSolver.setConfiguration(...); metaSolver.subscribe();
-		/*if (! properties.isSkipLASolver()) {
-			//log.info("ControlServiceCoordinator.processNewModel(): Re-configuring MetaSolver: ???????????????");
-		} else {
-			//log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver setup due to configuration");
-		}*/
-
         // Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
         log.info("ControlServiceCoordinator.processNewModel(): Cache translation results: camel-model-id={}", camelModelId);
         camelToTcCache.put(camelModelId, _TC);
-
-        // Signal Event Processing Network and/or User Application to start/resume
-//XXX: TODO: +++++++++++++++++++++
-// e.g.  baguette.signalEPN(START);
-// -AND- cloudiatorHelper.startApplication();
 
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
