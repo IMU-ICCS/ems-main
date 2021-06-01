@@ -36,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -54,6 +55,7 @@ public class Coordinator implements ApplicationContextAware {
     private Map<String,String> mvvToCurrentConfigVarsMap;
 
     private Timer updateTimer;
+    private AtomicBoolean updateLocked = new AtomicBoolean(false);
     private String updateAppId;
     private String updatePath;
 
@@ -416,6 +418,10 @@ public class Coordinator implements ApplicationContextAware {
         final Coordinator coordinator = this;
         TimerTask task = new TimerTask() {
             public void run() {
+                if (updateLocked.getAndSet(true)) {
+                    log.warn("CP Model Update Timer: Previous iteration is still running: Updating CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
+                    return;
+                }
                 log.debug("CP Model Update Timer: Updating CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
                 try {
                     if (coordinator.setMetricValuesInCpModel(updateAppId, updatePath)) {
@@ -423,6 +429,8 @@ public class Coordinator implements ApplicationContextAware {
                         return;
                     }
                 } catch (ConcurrentAccessException ignored) {
+                } finally {
+                    updateLocked.set(false);
                 }
                 log.warn("CP Model Update Timer: Failed to update CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
             }
