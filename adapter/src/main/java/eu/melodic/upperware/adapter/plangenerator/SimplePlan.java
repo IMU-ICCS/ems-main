@@ -21,6 +21,7 @@ public class SimplePlan implements Plan {
 
   private String name;
   private SimpleDirectedGraph<Task, DefaultEdge> taskGraph;
+  private PlanType type;
 
   @Override
   public String getName() {
@@ -30,5 +31,10 @@ public class SimplePlan implements Plan {
   @Override
   public SimpleDirectedGraph<Task, DefaultEdge> getTaskGraph() {
     return taskGraph;
+  }
+
+  @Override
+  public PlanType getType() {
+    return type;
   }
 }

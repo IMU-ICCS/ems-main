@@ -37,7 +37,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
     log.info("Building configuration plan");
     ComparableModel compModel = converter.toComparableModel(newModel);
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateGraph(compModel);
-    Plan plan = new SimplePlan(format("%s configuration plan", newModel.getName()), graph);
+    Plan plan = new SimplePlan(format("%s configuration plan", newModel.getName()), graph, PlanType.CONFIGURATION);
     log.info("Built plan: {}", plan);
     return plan;
   }
@@ -51,7 +51,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
     log.info("Old comparableModel - Requirement: {}, Monitoring: {}",
             oldCompModel.getAdapterRequirements().size(),
             oldCompModel.getAdapterMonitors().size()
-            );
+    );
     log.info("Old comparableModel: {}", oldCompModel);
 
     log.info("New comparableModel - Requirement: {}, Monitoring: {}",
@@ -61,7 +61,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
     log.info("New comparableModel: {}", newCompModel);
 
     SimpleDirectedGraph<Task, DefaultEdge> graph = generator.generateGraph(newCompModel, oldCompModel);
-    Plan plan = new SimplePlan(format("%s->%s reconfiguration plan", oldModel.getName(), newModel.getName()), graph);
+    Plan plan = new SimplePlan(format("%s->%s reconfiguration plan", oldModel.getName(), newModel.getName()), graph, PlanType.RECONFIGURATION);
     log.info("Built plan: {}", plan);
     return plan;
   }
