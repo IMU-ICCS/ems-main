@@ -19,4 +19,6 @@ public interface Plan {
 
   DirectedGraph<Task, DefaultEdge> getTaskGraph();
 
+  PlanType getType();
+
 }
