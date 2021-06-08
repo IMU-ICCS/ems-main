@@ -15,6 +15,7 @@ import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.planexecutor.PlanExecutor;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.Plan;
+import eu.melodic.upperware.adapter.plangenerator.PlanType;
 import eu.melodic.upperware.adapter.plangenerator.tasks.Task;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,9 +59,9 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
       Set<Task> dependentTasks = neighbors.predecessorsOf(task);
       Set<Future> dependentFeatures = getDependentFeatures(taskToFutureMap, dependentTasks);
       Future future = submitTask(task, dependentFeatures, applicationId, authorizationBearer);
-      log.debug("Execute Plan: task= {}", task);
-      log.debug("Execute Plan: dependent tasks= {}", dependentTasks);
-      log.debug("Execute Plan: dependent features= {}", dependentFeatures);
+      log.debug("Execute Plan [application id: {}]: task= {}", applicationId, task);
+      log.debug("Execute Plan [application id: {}]: dependent tasks= {}", applicationId, dependentTasks);
+      log.debug("Execute Plan [application id: {}]: dependent features= {}", applicationId, dependentFeatures);
       taskToFutureMap.put(task, future);
     }
 
@@ -72,11 +73,15 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
       }
     }
 
-    log.info("Execute Plan: all tasks (futures) have been completed, now submitting the job");
-    long jobId = proactiveClientServiceForAdapter.submitJob(applicationId);
-    log.info("Execute Plan: ProActive jobId={}", jobId);
-
-    waitForJobFinish(applicationId);
+    if(plan.getType().equals(PlanType.CONFIGURATION)) {
+      log.info("Execute Plan [application id: {}]: all tasks (futures) have been completed, now submitting the job", applicationId);
+      long jobId = proactiveClientServiceForAdapter.submitJob(applicationId);
+      log.info("Execute Plan [application id: {}]: ProActive jobId={}", applicationId, jobId);
+      waitForJobFinish(applicationId);
+    } else {
+      log.info("Execute Plan [application id: {}]: all tasks (futures) have been completed, the plan type is: {} " +
+              "meaning there is no job to submit", applicationId, plan.getType().name());
+    }
   }
 
   private void waitForJobFinish(String applicationId) {
@@ -86,7 +91,8 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
     while(jobStatus.isPresent() && jobStatus.get().isJobAlive()) {
       try {
         if (loops % 6 == 0) {
-          log.info("Execute Plan: job is alive and jobStatus: {} - waiting (waited for {} seconds so far)", jobStatus.get(), loops * TIMEOUT_SECONDS);
+          log.info("Execute Plan [application id: {}]: job is alive and jobStatus: {} - waiting (waited for {} seconds so far)", applicationId
+                  , jobStatus.get(), loops * TIMEOUT_SECONDS);
         }
         TimeUnit.SECONDS.sleep(TIMEOUT_SECONDS);
       } catch (InterruptedException e) {
@@ -96,7 +102,8 @@ public class ColosseumExecutor implements PlanExecutor, InitializingBean {
       jobStatus = proactiveClientServiceForAdapter.getJobStatus(applicationId);
     }
 
-    log.info("Execute Plan: final jobStatus: {} - waited for a total of {} seconds", jobStatus, loops * TIMEOUT_SECONDS);
+    log.info("Execute Plan [application id: {}]: final jobStatus: {} - waited for a total of {} seconds", applicationId
+            , jobStatus, loops * TIMEOUT_SECONDS);
 
     if(jobStatus.isPresent()) {
       if(isJobCompletedSuccessfully(jobStatus)) {
