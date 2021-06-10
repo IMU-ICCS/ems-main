@@ -9,6 +9,8 @@
 
 package eu.melodic.event.brokerclient;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import java.io.Serializable;
@@ -36,6 +38,7 @@ public class BrokerClient {
     private Connection connection;
     private Session session;
     private HashMap<MessageListener,MessageConsumer> listeners = new HashMap<>();
+    private Gson gson = new GsonBuilder().create();
 
     public BrokerClient() {
     }
@@ -160,7 +163,10 @@ public class BrokerClient {
 
         // Create a messages
         //ObjectMessage message = session.createObjectMessage(event);
-        TextMessage message = session.createTextMessage(event.toString());
+        //TextMessage message = session.createTextMessage(event.toString());
+        String payload = gson.toJson(event);
+        TextMessage message = session.createTextMessage(payload);
+        log.debug("BrokerClient.publishEvent(): Message payload: payload={}", payload);
 
         // Tell the producer to send the message
         long hash = message.hashCode();
