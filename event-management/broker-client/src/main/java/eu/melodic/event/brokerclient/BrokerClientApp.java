@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class BrokerClientApp {
 
+    private static boolean filterAMQMessages = true;
+
     public static void main(String args[]) throws java.io.IOException, JMSException {
         if (args.length==0) {
             usage();
@@ -26,6 +28,9 @@ public class BrokerClientApp {
 
         int aa=0;
         String command = args[aa++];
+
+        filterAMQMessages = args.length>aa && args[aa].startsWith("-Q") ? false : true;
+        if (!filterAMQMessages) aa++;
 
         String username = args.length>aa && args[aa].startsWith("-U") ? args[aa++].substring(2) : null;
         String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
@@ -61,6 +66,8 @@ public class BrokerClientApp {
                 public void onMessage(Message message) {
                     try {
                         String destinationName = getDestinationName(message);
+                        if (filterAMQMessages && StringUtils.startsWithIgnoreCase(destinationName, "ActiveMQ."))
+                            return;
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMessage = (ObjectMessage) message;
                             Object obj = objMessage.getObject();
@@ -89,6 +96,8 @@ public class BrokerClientApp {
                 public void onMessage(Message message) {
                     try {
                         String destinationName = getDestinationName(message);
+                        if (filterAMQMessages && StringUtils.startsWithIgnoreCase(destinationName, "ActiveMQ."))
+                            return;
                         if (message instanceof ObjectMessage) {
                             ObjectMessage objMessage = (ObjectMessage) message;
                             Object obj = objMessage.getObject();
