@@ -49,6 +49,8 @@ public class MetaSolverProperties {
     private DesignatedSolverType defaultSolver = DesignatedSolverType.CPSOLVER;
     @Valid
     private String emsUrl;
+    @Valid
+    private long cpModelUpdateInterval = 30000L;
 
     // --------------------------------------------------------------
 
