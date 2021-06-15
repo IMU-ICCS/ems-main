@@ -92,7 +92,7 @@ public class SecureStoreDBService {
     }
 
     // This method checks correctness of secure variable names,
-    // chars: '/' and '\' are not allowed as key of variable for Cloudiator secure store.
+    // chars: '/' and '\' are not allowed as key of variable for secure store.
     public void validateSecureVariables(List<SecureVariable> secureVariablesRequest) {
         String invalidVariables = secureVariablesRequest.stream()
                 .filter(secureVariable -> secureVariable.getName().contains("/") || secureVariable.getName().contains("\\"))

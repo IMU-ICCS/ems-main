@@ -2,11 +2,9 @@ package eu.melodic.upperware.activemqtorest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
-
-import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,9 +13,8 @@ import eu.passage.upperware.commons.cloudiator.CloudiatorProperties;
  * 2019 CAS Software AG
  */
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @EnableScheduling
-@EnableConfigurationProperties({CloudiatorProperties.class})
 @ComponentScan(basePackages = {"eu.melodic.upperware.activemqtorest", "eu.passage.upperware.commons.cloudiator"})
 public class ActiveMqToRestApplication {
 

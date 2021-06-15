@@ -1,23 +1,21 @@
 package eu.melodic.upperware.activemqtorest.plugin;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
+import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
+import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
+import io.github.cloudiator.rest.model.IpAddress;
+import io.github.cloudiator.rest.model.IpAddressType;
+import io.github.cloudiator.rest.model.Node;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.influxdb.dto.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
-import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
-import io.github.cloudiator.rest.ApiException;
-import io.github.cloudiator.rest.api.NodeApi;
-import io.github.cloudiator.rest.model.IpAddress;
-import io.github.cloudiator.rest.model.IpAddressType;
-import io.github.cloudiator.rest.model.Node;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -26,8 +24,8 @@ public class NodesPlugin implements IPlugin {
 	@Autowired
 	private IIpGeoCoder iIpGeoCoder;
 
-	@Autowired
-	private NodeApi nodeApi;
+//	@Autowired
+//	private NodeApi nodeApi;
 
 	@Autowired
 	private InfluxDbConnector influxDbConnector;
@@ -40,12 +38,8 @@ public class NodesPlugin implements IPlugin {
 	@Override
 	public void execute() {
 		List<Node> nodes = null;
-		try {
-			nodes = nodeApi.findNodes();
-			log.debug("Found {} nodes", nodes.size());
-		} catch (ApiException e) {
-			log.error("Error while using node API", e);
-		}
+		nodes = new ArrayList<>(); // todo get from proactive
+		log.debug("Found {} nodes", nodes.size());
 
 		if (nodes == null) {
 			return;
