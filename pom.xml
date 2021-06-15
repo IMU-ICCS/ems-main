@@ -340,11 +340,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>paasage.repo</id>
-            <name>PaaSage repository</name>
-            <url>http://jenkins.paasage.cetic.be/repository/</url>
-        </repository>
-        <repository>
             <id>ossrh.snapshots</id>
             <name>OSSRH snapshots repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
