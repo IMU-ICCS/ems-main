@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/auth/environment")
 @Slf4j
@@ -14,14 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class EnvironmentController {
 
     private EnvironmentService environmentService;
-
-    // todo
-    @PutMapping(value = "/restart")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void restartMachine() {
-        log.info("PUT request for restarting machine");
-        log.info("Machine successfully restarted");
-    }
 
     // todo
     @PutMapping(value = "/space")
@@ -36,5 +30,13 @@ public class EnvironmentController {
     public String checkComponentsStatus() {
         this.environmentService.checkComponentsStatus();
         return "Checking components status not implemented";
+    }
+
+    @PutMapping(value = "/restart")
+    @ResponseStatus(HttpStatus.OK)
+    public void restartMachine() throws IOException {
+        log.info("PUT request for restarting databases");
+        this.environmentService.restartMelodic();
+        log.info("Databases successfully restarted");
     }
 }

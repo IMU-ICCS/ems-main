@@ -22,6 +22,7 @@ import eu.melodic.upperware.metasolver.util.CpModelHelper;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -51,6 +53,11 @@ public class Coordinator implements ApplicationContextAware {
     private String cacheAppId;
     private String cacheCpModelPath;
     private Map<String,String> mvvToCurrentConfigVarsMap;
+
+    private Timer updateTimer;
+    private AtomicBoolean updateLocked = new AtomicBoolean(false);
+    private String updateAppId;
+    private String updatePath;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -400,4 +407,47 @@ public class Coordinator implements ApplicationContextAware {
         return metricNames;
     }
 
+    // --------------------------------------------------------------------------
+    public void startUpdatingCpModel(@NonNull String applicationId, @NonNull String cdoModelsPath) {
+        log.debug("startUpdatingCpModel: INPUT: app-id={}, cdo-path={}", applicationId, cdoModelsPath);
+        if (updateTimer!=null) {
+            log.error("CP Model Update Timer is already running with: app-id={}, cdo-path={}", updateAppId, updatePath);
+            return;
+        }
+
+        final Coordinator coordinator = this;
+        TimerTask task = new TimerTask() {
+            public void run() {
+                if (updateLocked.getAndSet(true)) {
+                    log.warn("CP Model Update Timer: Previous iteration is still running: Updating CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
+                    return;
+                }
+                log.debug("CP Model Update Timer: Updating CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
+                try {
+                    if (coordinator.setMetricValuesInCpModel(updateAppId, updatePath)) {
+                        log.debug("CP Model Update Timer: CP Model updated: app-id={}, cdo-path={}", updateAppId, updatePath);
+                        return;
+                    }
+                } catch (ConcurrentAccessException ignored) {
+                } finally {
+                    updateLocked.set(false);
+                }
+                log.warn("CP Model Update Timer: Failed to update CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
+            }
+        };
+        updateTimer = new Timer("CpModelUpdateTimer");
+        updateAppId = applicationId;
+        updatePath = cdoModelsPath;
+        long rate = metaSolverProperties.getCpModelUpdateInterval();
+        updateTimer.scheduleAtFixedRate(task, rate, rate);
+        log.debug("CP Model Update Timer started with: app-id={}, cdo-path={}", updateAppId, updatePath);
+    }
+
+    public void stopUpdatingCpModel() {
+        log.debug("stopUpdatingCpModel:");
+        if (updateTimer==null) return;
+        updateTimer.cancel();
+        updateTimer = null;
+        log.debug("CP Model Update Timer stopped");
+    }
 }

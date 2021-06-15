@@ -4,15 +4,14 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
 import eu.melodic.upperware.guibackend.communication.mule.MuleApi;
-import eu.passage.upperware.commons.model.SecureVariable;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.melodic.upperware.guibackend.controller.deployment.response.DeploymentResponse;
 import eu.melodic.upperware.guibackend.controller.deployment.response.UploadXmiResponse;
 import eu.melodic.upperware.guibackend.service.cdo.CdoService;
 import eu.melodic.upperware.guibackend.service.cdo.ModelNameGenerator;
+import eu.passage.upperware.commons.model.SecureVariable;
 import eu.passage.upperware.commons.service.provider.ProviderService;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
-import eu.passage.upperware.commons.service.store.SecureStoreService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.net4j.connector.ConnectorException;
@@ -28,7 +27,11 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,7 +43,6 @@ public class DeploymentService {
     private DeploymentMapper deploymentMapper;
     private CdoService cdoService;
     private ProviderService providerService;
-    private SecureStoreService secureStoreService;
     private ModelNameGenerator modelNameGenerator;
     private final SecureStoreDBService secureStoreDBService;
 

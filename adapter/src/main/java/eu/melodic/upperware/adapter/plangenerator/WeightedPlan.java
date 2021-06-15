@@ -21,6 +21,7 @@ public class WeightedPlan implements Plan {
 
   private String name;
   private SimpleDirectedWeightedGraph<Task, DefaultEdge> taskGraph;
+  private PlanType type;
 
   @Override
   public String getName() {
@@ -30,5 +31,10 @@ public class WeightedPlan implements Plan {
   @Override
   public SimpleDirectedWeightedGraph<Task, DefaultEdge> getTaskGraph() {
     return taskGraph;
+  }
+
+  @Override
+  public PlanType getType() {
+    return type;
   }
 }

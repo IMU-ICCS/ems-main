@@ -20,7 +20,7 @@ JASYPT_PASSWORD=melodic
 export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD
 
 # Update path
-#PATH=$PATH:/path/to/jre8/bin/
+PATH=${BASEDIR}/jre8/bin:$PATH
 
 # Check if baguette client is already running
 #PID=`jps | grep BaguetteClient | cut -d " " -f 1`
