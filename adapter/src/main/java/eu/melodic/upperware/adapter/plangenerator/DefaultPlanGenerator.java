@@ -51,7 +51,7 @@ public class DefaultPlanGenerator implements PlanGenerator {
     log.info("Old comparableModel - Requirement: {}, Monitoring: {}",
             oldCompModel.getAdapterRequirements().size(),
             oldCompModel.getAdapterMonitors().size()
-            );
+    );
     log.info("Old comparableModel: {}", oldCompModel);
 
     log.info("New comparableModel - Requirement: {}, Monitoring: {}",
