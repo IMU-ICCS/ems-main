@@ -6,33 +6,24 @@ import eu.melodic.upperware.guibackend.controller.process.response.CpModelRespon
 import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.ProcessVariables;
+import eu.melodic.upperware.guibackend.domain.converter.DomainConverterFactory;
+import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
 import eu.melodic.upperware.guibackend.service.process.ProcessService;
-import io.github.cloudiator.rest.model.Cloud;
-import io.github.cloudiator.rest.model.CloudiatorProcess;
-import io.github.cloudiator.rest.model.Hardware;
-import io.github.cloudiator.rest.model.Image;
-import io.github.cloudiator.rest.model.Job;
-import io.github.cloudiator.rest.model.Location;
-import io.github.cloudiator.rest.model.Monitor;
-import io.github.cloudiator.rest.model.Node;
-import io.github.cloudiator.rest.model.Queue;
-import io.github.cloudiator.rest.model.Schedule;
+import eu.passage.upperware.commons.model.internal.Cloud;
+import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth/process")
@@ -44,6 +35,7 @@ public class ProcessController {
     //    private CloudiatorApi cloudiatorApi;
     private ProcessService processService;
     private ProactiveClientServiceGUI proactiveClientServiceGUI;
+    private final DomainConverterFactory domainConverterFactory;
 
     @GetMapping(value = "/{processId}")
     @ResponseStatus(HttpStatus.OK)
@@ -86,20 +78,29 @@ public class ProcessController {
 
     @GetMapping("/offer/image")
     @ResponseStatus(HttpStatus.OK)
-    public List<Image> getImageList() {
+    public List<eu.passage.upperware.commons.model.internal.Image> getImageList() {
         log.info("GET request for images list");
-        log.warn("Fetching images list is not implemented yet.");
-//        return cloudiatorApi.getImageList();
-        return Collections.emptyList();
+        final List<org.activeeon.morphemic.model.Image> images = proactiveClientServiceGUI.getAllClouds()
+                .stream()
+                .map(paCloud -> {
+                    log.info("ProcessController->getImageList fetching images for cloudID: {}", paCloud.getCloudID());
+                    return proactiveClientServiceGUI.getAllCloudImages(paCloud.getCloudID());
+                })
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+        log.info("ProcessController->getImageList collected images: {}", images);
+        final List<eu.passage.upperware.commons.model.internal.Image> domains = ((GenericConverter<org.activeeon.morphemic.model.Image, eu.passage.upperware.commons.model.internal.Image>) domainConverterFactory.getImageConverter()).createDomains(images);
+        log.info("ProcessController->getImageList converted to internal/domain images: {}", domains);
+        return domains;
     }
 
     @GetMapping("/offer/cloud")
     @ResponseStatus(HttpStatus.OK)
     public List<Cloud> getCloudList() {
         log.info("GET request for cloud list");
-        log.warn("Fetching clouds list is not implemented yet.");
-//        return cloudiatorApi.getCloudList();
-        return Collections.emptyList();
+        final List<Cloud> domains = ((GenericConverter<PACloud, Cloud>) domainConverterFactory.getCloudConverter()).createDomains(proactiveClientServiceGUI.getAllClouds());
+        log.info("ProcessController->getCloudList converted to internal/domain clouds: {}", domains);
+        return domains;
     }
 
     @GetMapping("/cp/model/{processId}")
