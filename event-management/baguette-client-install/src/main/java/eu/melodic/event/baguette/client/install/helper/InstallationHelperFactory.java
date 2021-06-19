@@ -9,7 +9,6 @@
 
 package eu.melodic.event.baguette.client.install.helper;
 
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;

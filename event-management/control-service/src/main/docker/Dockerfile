@@ -14,6 +14,7 @@ ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
 ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
 ENV JAR_PATH ${BASEDIR}/jars
 ENV LOGS_DIR ${BASEDIR}/logs
+ENV RESOURCES_DIR ${MELODIC_CONFIG_DIR}/resources
 
 WORKDIR ${BASEDIR}
 RUN apt-get update && apt-get install -y \
@@ -26,14 +27,14 @@ RUN apt-get update && apt-get install -y \
 ADD bin ./bin
 ADD jars ./jars
 ADD config ./config
-#ADD resources ./resources
+#ADD resources ${RESOURCES_DIR}
 
 RUN mkdir ${LOGS_DIR}
 RUN bash -c 'chmod +rx ./bin/*.sh'
 
-RUN ln -s ${BASEDIR}/jars/broker-client-jar-with-dependencies.jar ${MELODIC_CONFIG_DIR}/resources/broker-client.jar
-RUN ln -s ${MELODIC_CONFIG_DIR}/eu.melodic.event.brokerclient.properties ${MELODIC_CONFIG_DIR}/resources/eu.melodic.event.brokerclient.properties
-RUN ln -s ${LOGS_DIR} ${MELODIC_CONFIG_DIR}/resources/logs
+RUN ln -s ${BASEDIR}/jars/broker-client-jar-with-dependencies.jar ${RESOURCES_DIR}/broker-client.jar
+RUN ln -s ${MELODIC_CONFIG_DIR}/eu.melodic.event.brokerclient.properties ${RESOURCES_DIR}/eu.melodic.event.brokerclient.properties
+RUN ln -s ${LOGS_DIR} ${RESOURCES_DIR}/logs
 
 # RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
 # RUN chown -R emsuser:emsuser ${BASEDIR}
