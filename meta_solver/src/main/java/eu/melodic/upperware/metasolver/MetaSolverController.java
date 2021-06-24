@@ -65,6 +65,7 @@ public class MetaSolverController {
         log.info("Selecting suitable solver: {}", selectedSolver);
 
         // Set metric values in CP model
+        coordinator.stopUpdatingCpModel();
         coordinator.setMetricValuesInCpModel(applicationId, cdoModelsPath);
 
         // Prepare and return response
@@ -96,6 +97,7 @@ public class MetaSolverController {
         // Evaluate new solution
         log.info("Evaluate current solution: ");
         SolutionEvaluationResponse.EvaluationResultType solutionEvaluation = coordinator.evaluateSolution(applicationId, cdoModelsPath);
+        coordinator.startUpdatingCpModel(applicationId, cdoModelsPath);
         log.info("Evaluate current solution: {}", solutionEvaluation);
 
         // Prepare and return response
@@ -156,6 +158,7 @@ public class MetaSolverController {
 
         // Update MetaSolver MVV-map
         Map<String,String> mvvMap = (Map<String,String>) configuration.get("mvv");
+        coordinator.stopUpdatingCpModel();
         coordinator.setMvvMap(mvvMap);
 
         // Update MetaSolver subscriptions
