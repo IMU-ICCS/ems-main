@@ -268,7 +268,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             //simpleClient.close();
             sshClient.stop();
 
-            log.info("SshClientInstaller: Disonnected from remote host: task #{}: host: {}:{}", taskCounter, host, port);
+            log.info("SshClientInstaller: Disconnected from remote host: task #{}: host: {}:{}", taskCounter, host, port);
             return true;
         } catch (Exception ex) {
             log.error("SshClientInstaller: Error while disconnecting from remote host: task #{}: ", taskCounter, ex);
@@ -285,7 +285,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         String address = session.getConnectAddress().toString().replace("/","").replace(":", "-");
         //log.trace("SshClientInstaller: address: {}", address);
-        String logFile = properties.getSessionRecordingDir()+"/"+address+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt";
+        String logFile = StringUtils.isNotBlank(properties.getSessionRecordingDir())
+                ? properties.getSessionRecordingDir()+"/"+address+"-"+ simpleDateFormat.format(new Date())+"-"+taskCounter+".txt"
+                : null;
         log.info("SshClientInstaller: Task #{}: Session will be recorded in file: {}", taskCounter, logFile);
         this.streamLogger = new StreamLogger(logFile, "  Task #"+taskCounter);
     }

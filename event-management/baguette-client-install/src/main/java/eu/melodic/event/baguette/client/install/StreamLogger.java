@@ -11,10 +11,13 @@ package eu.melodic.event.baguette.client.install;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Logs and formats In/Out/Err streams
@@ -39,15 +42,21 @@ public class StreamLogger {
     }
 
     public StreamLogger(String logFile, String prefix) throws IOException {
-        this.fos = new FileOutputStream(logFile);
+        this.fos = StringUtils.isNotBlank(logFile) ? new FileOutputStream(logFile) : null;
         this.pos = new PipedOutputStream();
         this.pis = new PipedInputStream(pos);
         this.mos = new MonitorOutputStream(this);
 
-        this.ncIn = new NoCloseInputStream(new LoggerInputStream(pis, prefix+"  IN", System.out, fos));
+        this.ncIn = new NoCloseInputStream(new LoggerInputStream(pis, prefix+"  IN", toArray(System.out, fos)));
         this.ncInvertedIn = new NoCloseOutputStream(pos);
-        this.ncOut = new NoCloseOutputStream(new LoggerOutputStream(prefix+" OUT", System.out, mos, fos));
-        this.ncErr = new NoCloseOutputStream(new LoggerOutputStream(prefix+" ERR", System.err, fos));
+        this.ncOut = new NoCloseOutputStream(new LoggerOutputStream(prefix+" OUT", toArray(System.out, mos, fos)));
+        this.ncErr = new NoCloseOutputStream(new LoggerOutputStream(prefix+" ERR", toArray(System.err, fos)));
+    }
+
+    private OutputStream[] toArray(OutputStream...streams) {
+        return Arrays.stream(streams)
+                .filter(Objects::nonNull)
+                .toArray(OutputStream[]::new);
     }
 
     public InputStream getIn() { return ncIn; }
@@ -65,12 +74,12 @@ public class StreamLogger {
     }
 
     public void close() throws IOException {
-        fos.close();
+        if (fos!=null) fos.close();
         pos.close();
     }
 
     public void logMessage(String message) throws IOException {
-        fos.write(message.getBytes());
+        if (fos!=null) fos.write(message.getBytes());
     }
 
     private void newLine(String line, long timestamp) {
