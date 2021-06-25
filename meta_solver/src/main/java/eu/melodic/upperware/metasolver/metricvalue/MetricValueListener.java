@@ -10,10 +10,12 @@ package eu.melodic.upperware.metasolver.metricvalue;
 
 import com.google.gson.Gson;
 import eu.melodic.upperware.metasolver.Coordinator;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
 import javax.jms.*;
+import java.util.Map;
 
 @Slf4j
 public class MetricValueListener implements MessageListener {
@@ -21,17 +23,21 @@ public class MetricValueListener implements MessageListener {
     private Topic topic;
     private String topicName;
     private TopicType type;
+    private final boolean isPrediction;
+    private double reconfigurationProbabilityThreshold;
     private MetricValueRegistry<Object> registry;
     private Gson gson;
     private Coordinator coordinator;
 
-    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry) throws JMSException {
+    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry, boolean isPrediction) throws JMSException {
         log.debug("MetricValueListener.<init>: type={}", type);
         this.coordinator = coordinator;
         this.topic = topic;
         this.topicName = topic.getTopicName();
         this.type = type;
         this.registry = registry;
+        this.isPrediction = isPrediction;
+        this.reconfigurationProbabilityThreshold = coordinator.getMetaSolverProperties().getReconfigurationProbabilityThreshold();
         gson = new Gson();
     }
 
@@ -53,7 +59,7 @@ public class MetricValueListener implements MessageListener {
                         break;
                     case SCALE:
                         log.debug("Listener of topic {}: Got a SCALE event: ", topicName);
-                        processScaleEvent(metricName);
+                        processScaleEvent(metricName, payload);
                         break;
                     default:
                         log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
@@ -62,12 +68,12 @@ public class MetricValueListener implements MessageListener {
                 log.warn("Unsupported message type: {}", message.getClass().getName());
             }
         } catch (JMSException e) {
-            log.error("Caught: {}", e);
+            log.error("Caught: ", e);
             //e.printStackTrace();
         }
     }
 
-    protected void processMetricValueEvent(String metricName, String payload) {
+    protected void processMetricValueEvent(@NonNull String metricName, @NonNull String payload) {
         if (!StringUtils.isEmpty(metricName)) {
             // Extract key-value pairs from message payload
             // ...using MetricValueEvent
@@ -75,22 +81,91 @@ public class MetricValueListener implements MessageListener {
             MetricValueEvent event = gson.fromJson(payload, MetricValueEvent.class);
             log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
 
-            // Cache Metric Value in registry
-            log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
-            registry.setMetricValue(metricName, event.getMetricValue());
-            log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetricValue(), topicName);
-            log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
+            if (!isPrediction) {
+                // Cache Metric Value in registry
+                log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
+                registry.setMetricValue(metricName, event.getMetricValue());
+                log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetricValue(), topicName);
+                log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
+            } else {
+                // Get predictionTime
+                long predictionTime = getPredictionTime(event, metricName, payload);
+
+                // Cache Predicted Metric Value in Predictions registry
+                log.debug("Listener of topic {}: Prediction Metric registry prediction times BEFORE update: {}", topicName, registry.getPredictionTimes());
+                log.debug("Listener of topic {}: Prediction Metric registry values BEFORE update: {}", topicName, registry.getPredictedMetricValuesAsMap(predictionTime));
+
+                registry.setPredictedMetricValue(metricName, event.getMetricValue(), predictionTime);
+                log.info("Prediction Metric Value set: name='{}', value='{}', topic={}, predictionTime={}", metricName, event.getMetricValue(), topicName, predictionTime);
+
+                log.debug("Listener of topic {}: Prediction Metric registry prediction times AFTER update: {}", topicName, registry.getPredictionTimes());
+                log.debug("Listener of topic {}: Prediction Metric registry values AFTER update:  {}", topicName, registry.getPredictedMetricValuesAsMap(predictionTime));
+            }
         } else {
             log.warn("Missing property: 'topic_name'");
         }
     }
 
-    protected void processScaleEvent(String metricName) {
+    protected void processScaleEvent(@NonNull String metricName, @NonNull String payload) {
 		try {
 			log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
-			coordinator.requestStartProcessForScaling(false);
+            if (!isPrediction) {
+                // Start reconfiguration with the actual metric values set in CP model
+                coordinator.requestStartProcessForScaling(false);
+            } else {
+                // Extract key-value pairs from message payload
+                // ...using MetricValueEvent
+                log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
+                MetricValueEvent event = gson.fromJson(payload, MetricValueEvent.class);
+                log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
+
+                // Get predictionTime and probability
+                long predictionTime = getPredictionTime(event, metricName, payload);
+                double probability = getProbability(event, metricName, payload);
+
+                // Check if probability is below reconfiguration threshold
+                if (probability < reconfigurationProbabilityThreshold) {
+                    log.warn("Listener of topic {}: Predicted SCALE event probability is below threshold: {} < {}", topicName, probability, reconfigurationProbabilityThreshold);
+                    return;
+                }
+
+                // Get predictionTime frame from prediction registry and convert topicNames to MVVs
+                Map<String, String> metricValues = registry.getPredictedMetricValuesAsMap(predictionTime);
+                log.debug("Listener of topic {}: Predicted metric values (cached): {}", topicName, metricValues);
+                //metricValues = convertToMvv(metricValues);
+                //log.debug("Listener of topic {}: Predicted metric values (as MVs): {}", topicName, metricValues);
+
+                // Start reconfiguration with the given predicted values set in CP model
+                coordinator.requestStartProcessForScaling(false, metricValues);
+
+                // Cleanup older predictionTime frames
+                if (coordinator.getMetaSolverProperties().isPredictionRegistryCleanupAfterScaleEvent())
+                    registry.clearPredictionTimeFramesBefore(predictionTime);
+            }
 		} catch (Exception ex) {
             log.error("processScaleEvent: EXCEPTION: ", ex);
 		}
+    }
+
+    /*private Map<String, String> convertToMvv(Map<String, String> metricValues) {
+        return metricValues.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        k -> coordinator.getPredictionHelper().getTopicNameForPrediction(k.getKey()),
+                        Map.Entry::getValue));
+    }*/
+
+    protected long getPredictionTime(MetricValueEvent event, String metricName, String payload) {
+        Object pt = event.get("predictionTime");
+        if (pt==null || StringUtils.isBlank(pt.toString()))
+            throw new IllegalArgumentException("Received prediction event without 'predictionTime' in Topic: "+metricName+": "+payload);
+        return registry.approximate(Double.parseDouble(pt.toString()));
+    }
+
+    protected double getProbability(MetricValueEvent event, String metricName, String payload) {
+        Object pb = event.get("probability");
+        if (pb==null || StringUtils.isBlank(pb.toString()))
+            throw new IllegalArgumentException("Received prediction event without 'probability' in Topic: "+metricName+": "+payload);
+        return Double.parseDouble(pb.toString());
     }
 }

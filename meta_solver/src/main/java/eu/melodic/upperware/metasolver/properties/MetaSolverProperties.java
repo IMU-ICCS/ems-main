@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Getter
 @Setter
@@ -51,6 +52,13 @@ public class MetaSolverProperties {
     private String emsUrl;
     @Valid
     private long cpModelUpdateInterval = 30000L;
+
+    private boolean predictionMonitoringEnabled = false;
+    private String predictionTopicFormatter = "prediction.%s";
+    private Pattern predictionTopicPattern = Pattern.compile("^prediction\\.(.+)$");
+    private long predictionRegistryCleanupRate = -1L;
+    private boolean predictionRegistryCleanupAfterScaleEvent = true;
+    private double reconfigurationProbabilityThreshold = 0.5;
 
     // --------------------------------------------------------------
 

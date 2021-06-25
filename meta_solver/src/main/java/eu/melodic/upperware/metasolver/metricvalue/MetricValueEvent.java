@@ -11,12 +11,21 @@ package eu.melodic.upperware.metasolver.metricvalue;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.util.HashMap;
+
 @Getter
 @ToString(doNotUseGetters = true)
-public class MetricValueEvent {
-    private String metricValue;
+public class MetricValueEvent extends HashMap<String,Object> {
+    //private String metricValue;
     //private String cloudName;
     //private List<String> componentName;
-    private int level;
-    private long timestamp;
+    //private int level;
+    //private long timestamp;
+
+    public String getMetricValue() { return getAsString("metricValue"); }
+
+    public String getAsString(String key) {
+        Object o = get(key);
+        return o!=null ? o.toString() : null;
+    }
 }

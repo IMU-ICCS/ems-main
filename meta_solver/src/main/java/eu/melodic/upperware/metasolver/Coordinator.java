@@ -19,9 +19,11 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
+import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +46,7 @@ public class Coordinator implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
     private MetaSolverController controller;
+    @Getter
     private MetaSolverProperties metaSolverProperties;
     private JWTService jwtService;
     private MelodicSecurityProperties melodicSecurityProperties;
@@ -59,6 +62,9 @@ public class Coordinator implements ApplicationContextAware {
     private String updateAppId;
     private String updatePath;
 
+    @Getter
+    private PredictionHelper predictionHelper;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -68,6 +74,7 @@ public class Coordinator implements ApplicationContextAware {
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
+        this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
     }
 
@@ -95,6 +102,12 @@ public class Coordinator implements ApplicationContextAware {
         MetricValueMonitorBean monitor = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
         Map<String, String> metricValues = monitor.getMetricValuesRegistry().getMetricValuesAsMap();
         log.debug("MetaSolver.Coordinator: setMetricValuesInCpModel(): Metric values map: {}", metricValues);
+
+        return setMetricValuesInCpModel(applicationId, cpModelPath, metricValues);
+    }
+
+    public boolean setMetricValuesInCpModel(String applicationId, String cpModelPath, @NonNull Map<String, String> metricValues) throws ConcurrentAccessException, NumberFormatException {
+        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}, metricValues={}", applicationId, cpModelPath, metricValues);
 
         // Update CP model with current metric variable values
         CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
@@ -203,6 +216,10 @@ public class Coordinator implements ApplicationContextAware {
     // --------------------------------------------------------------------------
 
     public boolean requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
+        return requestStartProcessForScaling(isSimulation, null);
+    }
+
+    public boolean requestStartProcessForScaling(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
@@ -210,7 +227,10 @@ public class Coordinator implements ApplicationContextAware {
 
         // Set metric values in CP model
         log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
-        if (!setMetricValuesInCpModel(appId, cpModelPath)) {
+        boolean result = (metricValues == null)
+                ? setMetricValuesInCpModel(appId, cpModelPath)
+                : setMetricValuesInCpModel(appId, cpModelPath, metricValues);
+        if (!result) {
             log.debug("MetaSolver.Coordinator: requestStartProcessForScaling():" +
                     " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
             return false;
@@ -372,7 +392,7 @@ public class Coordinator implements ApplicationContextAware {
                     String.format("Wrong application Id: %s", applicationId));
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-            Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
+            Set<String> metricNames = monitor.getMetricValuesRegistry().getMvvMetricNames();
             for (KeyValuePair nameValuePair : metricValues) {
                 if (metricNames.contains(nameValuePair.getKey())) {
                     monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
@@ -399,7 +419,7 @@ public class Coordinator implements ApplicationContextAware {
                     String.format("Wrong application Id: %s", applicationId));
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
+            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getMvvMetricNames());
             if (metricNames.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No metrics defined or net yet received");
             }

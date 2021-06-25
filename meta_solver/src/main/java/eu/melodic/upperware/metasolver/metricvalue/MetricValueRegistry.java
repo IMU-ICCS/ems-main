@@ -8,16 +8,47 @@
 
 package eu.melodic.upperware.metasolver.metricvalue;
 
+import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
+import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class MetricValueRegistry<T> {
-    private HashMap<String, MetricValue<T>> registry = new HashMap<>();
+@Slf4j
+@Service
+@EnableScheduling
+@RequiredArgsConstructor
+public class MetricValueRegistry<T> implements InitializingBean {
+    private final HashMap<String, MetricValue<T>> registry = new HashMap<>();
+    private final LinkedHashMap<Long,HashMap<String, MetricValue<T>>> predictionRegistry = new LinkedHashMap<>();
 
     @Getter
-    private Set<String> possibleMetricNames = new HashSet<>();
+    private final Set<String> mvvMetricNames = new HashSet<>();
+    private final MetaSolverProperties properties;
+    private final PredictionHelper predictionHelper;
+    private final TaskScheduler scheduler;
+
+
+    @Override
+    public void afterPropertiesSet() {
+        // Setup prediction registry cleanup
+        long cleanupRate = properties.getPredictionRegistryCleanupRate();
+        if (cleanupRate>0) {
+            scheduler.scheduleAtFixedRate(this::runPredictionRegistryClean, cleanupRate);
+            log.info("MetricValueRegistry: Prediction Registry cleanup every: {}ms", cleanupRate);
+        } else {
+            log.warn("MetricValueRegistry: Prediction Registry cleanup is deactivated. Set 'predictionRegistryCleanupRate' property to activate cleanup.");
+        }
+        log.info("MetricValueRegistry: Prediction Registry cleanup after SCALE event is {}",
+                properties.isPredictionRegistryCleanupAfterScaleEvent() ? "activated" : "deactivated");
+    }
 
     public T getMetricValue(String metricName) {
         MetricValue<T> mv = registry.get(metricName);
@@ -30,7 +61,7 @@ public class MetricValueRegistry<T> {
     }
 
     public void setMetricValue(String metricName, T metricValue, long timestamp) {
-        registry.put(metricName, new MetricValue(metricValue, timestamp));
+        registry.put(metricName, new MetricValue<>(metricValue, timestamp));
     }
 
     public Map<String, String> getMetricValuesAsMap() {
@@ -44,8 +75,64 @@ public class MetricValueRegistry<T> {
         return mvm;
     }
 
-    public void addPossibleMetricName(String metricName) {
-        this.possibleMetricNames.add(metricName);
+    // ------------------------------------------------------------------------
+
+    public long approximate(double ts) {
+        return predictionHelper.approximatePredictionTime((long)ts);
+    }
+
+    public long approximate(long ts) {
+        return predictionHelper.approximatePredictionTime(ts);
+    }
+
+    public T getPredictedMetricValue(String metricName, long predictionTime) {
+        MetricValue<T> mv = predictionRegistry.get(approximate(predictionTime)).get(metricName);
+        if (mv == null) return null;
+        return mv.getMetricValue();
+    }
+
+    public void setPredictedMetricValue(String metricName, T metricValue, long predictionTime) {
+        setPredictedMetricValue(metricName, metricValue, System.currentTimeMillis(), predictionTime);
+    }
+
+    public void setPredictedMetricValue(String metricName, T metricValue, long timestamp, long predictionTime) {
+        String mvName = predictionHelper.getTopicNameForPrediction(metricName);
+        predictionRegistry
+                .computeIfAbsent(approximate(predictionTime), m->new HashMap<>())
+                .put(mvName, new MetricValue<>(metricValue, timestamp));
+    }
+
+    public Map<String, String> getPredictedMetricValuesAsMap(long predictionTime) {
+        HashMap<String, String> mvm = new HashMap<>();
+        Set<Map.Entry<String, MetricValue<T>>> predictionTimeFrame = predictionRegistry.computeIfAbsent(approximate(predictionTime), s -> new HashMap<>()).entrySet();
+        for (Map.Entry<String, MetricValue<T>> entry : predictionTimeFrame) {
+            String name = entry.getKey();
+            T mv = entry.getValue().getMetricValue();
+            String value = mv != null ? mv.toString() : "";
+            mvm.put(name, value);
+        }
+        return mvm;
+    }
+
+    public List<Long> getPredictionTimes() {
+        return new ArrayList<>(predictionRegistry.keySet());
+    }
+
+    public synchronized void clearPredictionTimeFramesBefore(long timestamp) {
+        log.debug("MetricValueRegistry: Clear predictionTime frames with timestamp before: {}", timestamp);
+        log.debug("MetricValueRegistry: Clear predictionTime frames: Frames BEFORE: {}", predictionRegistry.keySet());
+        predictionRegistry.entrySet().removeIf(e -> e.getKey() < timestamp);
+        log.debug("MetricValueRegistry: Clear predictionTime frames: Frames AFTER: {}", predictionRegistry.keySet());
+    }
+
+    private void runPredictionRegistryClean() {
+        clearPredictionTimeFramesBefore(System.currentTimeMillis());
+    }
+
+    // ------------------------------------------------------------------------
+
+    public void addMvvMetricName(String metricName) {
+        this.mvvMetricNames.add(metricName);
     }
 
     public String toString() {

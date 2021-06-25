@@ -10,7 +10,9 @@ package eu.melodic.upperware.metasolver.metricvalue;
 
 import eu.melodic.upperware.metasolver.Coordinator;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
+import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
@@ -27,16 +29,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class MetricValueMonitorBean implements ApplicationContextAware {
 
     private MetaSolverProperties properties;
     private Coordinator coordinator;
+    private PredictionHelper predictionHelper;
 
-    private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
-    private MetricValueRegistry<Object> registry = new MetricValueRegistry<>();
-	
+    private final HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
+    private final MetricValueRegistry<Object> registry;
+
 	@Value("${ems-broker-username:#{null}}")
 	private String brokerUsername;
 	@Value("${ems-broker-password:#{null}}")
@@ -48,6 +52,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.properties = applicationContext.getBean(MetaSolverProperties.class);
         this.coordinator = applicationContext.getBean(Coordinator.class);
+        this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
     }
@@ -83,11 +88,11 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 if (type == null) type = TopicType.UNKNOWN;
                 log.debug("Topic : {}", pst);
                 if (type==TopicType.MVV) {
-                    registry.addPossibleMetricName(topicName);
+                    registry.addMvvMetricName(topicName);
                 }
 
                 // Subscribe to topic
-                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type);
+                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type, false);
                 i++;
             }
         }
@@ -101,10 +106,15 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             return;
         }
 
-        _do_subscribe(url, username, password, certificate, topicName, clientId, type);
+        _do_subscribe(url, username, password, certificate, topicName, clientId, type, false);
+
+        if (properties.isPredictionMonitoringEnabled()) {
+            String predictionTopicName = predictionHelper.getPredictionTopicNameFor(topicName);
+            _do_subscribe(url, username, password, certificate, predictionTopicName, clientId, type, true);
+        }
     }
 
-    private void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
+    private void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type, boolean isPrediction) {
         try {
             log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Username : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}",
                     url, username, topicName, clientId, type);
@@ -155,7 +165,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             sconf.getTopics().add(tconf);
 
             // Add message listener to receive incoming messages
-            MessageListener lsnr = getListener(topic, type);
+            MessageListener lsnr = getListener(topic, type, isPrediction);
             consumer.setMessageListener(lsnr);
             log.trace("*****   SUBSCRIBE: listener added");
 
@@ -163,11 +173,11 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             cconf.getConnection().start();
             log.trace("*****   SUBSCRIBE: connection started");
 
-            log.info("*****   SUBSCRIBE: ok");
+            log.info("*****   SUBSCRIBE: ok  --  {} / {}", topicName, type);
 
             //saving metricNames
             if (type==TopicType.MVV) {
-                registry.addPossibleMetricName(topicName);
+                registry.addMvvMetricName(topicName);
             }
 
 
@@ -176,8 +186,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         }
     }
 
-    private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
-        MessageListener listener = new MetricValueListener(coordinator, topic, type, registry);
+    private MessageListener getListener(Topic topic, TopicType type, boolean isPrediction) throws JMSException {
+        MessageListener listener = new MetricValueListener(coordinator, topic, type, registry, isPrediction);
         return listener;
     }
 
