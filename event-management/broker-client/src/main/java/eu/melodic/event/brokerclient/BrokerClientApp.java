@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokerclient;
 
+import com.google.gson.Gson;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
 import javax.jms.*;
@@ -47,6 +48,15 @@ public class BrokerClientApp {
             String value = args[aa++];
             String level = args[aa++];
             EventMap event = new EventMap(Double.parseDouble(value), Integer.parseInt(level), System.currentTimeMillis());
+            log.info("BrokerClientApp: Publishing event: {}", event);
+            BrokerClient client = BrokerClient.newClient(username, password);
+            client.publishEvent(url, topic, event);
+        } else
+        if ("publish2".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            String topic = args[aa++];
+            String payload = args[aa++];
+            EventMap event = new Gson().fromJson(payload, EventMap.class);
             log.info("BrokerClientApp: Publishing event: {}", event);
             BrokerClient client = BrokerClient.newClient(username, password);
             client.publishEvent(url, topic, event);
@@ -161,6 +171,7 @@ public class BrokerClientApp {
         log.info("BrokerClientApp: Usage: ");
         log.info("BrokerClientApp: client list [-U<USERNAME> [-P<PASSWORD]] <URL> ");
         log.info("BrokerClientApp: client publish [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <PAYLOAD> ");
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
