@@ -56,10 +56,13 @@ public class BrokerClientApp {
             String url = args[aa++];
             String topic = args[aa++];
             String payload = args[aa++];
+            payload = payload
+                    .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
             EventMap event = new Gson().fromJson(payload, EventMap.class);
             log.info("BrokerClientApp: Publishing event: {}", event);
             BrokerClient client = BrokerClient.newClient(username, password);
             client.publishEvent(url, topic, event);
+            log.info("BrokerClientApp: Event payload: {}", payload);
         } else
         // receive events from topic
         if ("receive".equalsIgnoreCase(command)) {
