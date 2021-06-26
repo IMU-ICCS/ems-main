@@ -19,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class BrokerClientApp {
 
+    private static boolean filterAMQMessages = true;
+
     public static void main(String args[]) throws java.io.IOException, JMSException {
         if (args.length==0) {
             usage();
@@ -27,6 +29,9 @@ public class BrokerClientApp {
 
         int aa=0;
         String command = args[aa++];
+
+        filterAMQMessages = args.length>aa && args[aa].startsWith("-Q") ? false : true;
+        if (!filterAMQMessages) aa++;
 
         String username = args.length>aa && args[aa].startsWith("-U") ? args[aa++].substring(2) : null;
         String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
@@ -70,26 +75,7 @@ public class BrokerClientApp {
             String topic = args[aa++];
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
-            client.receiveEvents(url, topic, new MessageListener() {
-                public void onMessage(Message message) {
-                    try {
-                        String destinationName = getDestinationName(message);
-                        if (message instanceof ObjectMessage) {
-                            ObjectMessage objMessage = (ObjectMessage) message;
-                            Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
-                        } else if (message instanceof TextMessage) {
-                            TextMessage textMessage = (TextMessage) message;
-                            String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
-                        } else {
-                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
-                        }
-                    } catch (JMSException je) {
-                        log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
-                    }
-                }
-            });
+            client.receiveEvents(url, topic, getMessageListener());
         } else
         // subscribe to topic
         if ("subscribe".equalsIgnoreCase(command)) {
@@ -98,26 +84,7 @@ public class BrokerClientApp {
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
             MessageListener listener = null;
-            client.subscribe(url, topic, listener = new MessageListener() {
-                public void onMessage(Message message) {
-                    try {
-                        String destinationName = getDestinationName(message);
-                        if (message instanceof ObjectMessage) {
-                            ObjectMessage objMessage = (ObjectMessage) message;
-                            Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
-                        } else if (message instanceof TextMessage) {
-                            TextMessage textMessage = (TextMessage) message;
-                            String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
-                        } else {
-                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
-                        }
-                    } catch (JMSException je) {
-                        log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
-                    }
-                }
-            });
+            client.subscribe(url, topic, listener = getMessageListener());
 
             log.info("BrokerClientApp: Hit ENTER to exit");
             try {
@@ -157,6 +124,35 @@ public class BrokerClientApp {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage();
         }
+    }
+
+    private static MessageListener getMessageListener() {
+        return message -> {
+            try {
+                String destinationName = getDestinationName(message);
+                if (filterAMQMessages && StringUtils.startsWithIgnoreCase(destinationName, "ActiveMQ.")) {
+                    log.trace("BrokerClientApp:  - {}: ActiveMQ message filtered out: {}", destinationName, message);
+                    log.debug("AMQ: {}:\n{}", destinationName, message);
+                    return;
+                }
+                if (message instanceof ObjectMessage) {
+                    ObjectMessage objMessage = (ObjectMessage) message;
+                    Object obj = objMessage.getObject();
+                    log.trace("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
+                    log.info("OBJ: {}:\n{}", destinationName, obj);
+                } else if (message instanceof TextMessage) {
+                    TextMessage textMessage = (TextMessage) message;
+                    String text = textMessage.getText();
+                    log.trace("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
+                    log.info("TXT: {}:\n{}", destinationName, text);
+                } else {
+                    log.trace("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
+                    log.info("MSG: {}:\n{}", destinationName, message);
+                }
+            } catch (JMSException je) {
+                log.warn("BrokerClientApp: onMessage: EXCEPTION: ", je);
+            }
+        };
     }
 
     private static String getDestinationName(Message message) throws JMSException {
