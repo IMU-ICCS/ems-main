@@ -12,16 +12,22 @@ package eu.melodic.event.brokerclient;
 import com.google.gson.Gson;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
-import javax.jms.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.jms.*;
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.util.ArrayList;
 
 @Slf4j
 public class BrokerClientApp {
 
     private static boolean filterAMQMessages = true;
 
-    public static void main(String args[]) throws java.io.IOException, JMSException {
+    public static void main(String args[]) throws java.io.IOException, JMSException, ScriptException {
         if (args.length==0) {
             usage();
             return;
@@ -119,6 +125,42 @@ public class BrokerClientApp {
             generator.setLevel(level);
             generator.run();
         } else
+        // Run JS script
+        if ("js".equalsIgnoreCase(command)) {
+            ScriptEngineManager manager = new ScriptEngineManager();
+            String engineName = "nashorn";
+            if (aa<args.length && args[aa].startsWith("-E")) {
+                String tmp = args[aa].substring(2).trim();
+                if (StringUtils.isNotBlank(tmp)) engineName = tmp;
+                else {
+                    log.info("Available Script engines:");
+                    manager.getEngineFactories().forEach(s->{
+                        log.info("  Engine: {} {}, {}, Language: {} {}, Mime: {}, Ext: {}",
+                            s.getEngineName(), s.getEngineVersion(), s.getNames(),
+                            s.getLanguageName(), s.getLanguageVersion(),
+                            s.getMimeTypes(), s.getExtensions());
+                    });
+                }
+                aa++;
+            }
+
+            ScriptEngine engine = manager.getEngineByName(engineName);
+            Bindings bindings = engine.createBindings();
+            String scriptFile = args[aa++];
+
+            ArrayList<String> jsArgs = new ArrayList<>();
+            for (; aa<args.length; aa++) jsArgs.add(args[aa]);
+            bindings.put("args", jsArgs);
+
+            engine.eval(
+                    "var BrokerClient = Java.type('eu.melodic.event.brokerclient.BrokerClient');\n" +
+                    "var EventMap = Java.type('eu.melodic.event.brokerclient.event.EventMap');\n" +
+                    "var System = Java.type('java.lang.System');\n" +
+                    "load('"+scriptFile+"')",
+                    bindings
+            );
+
+        } else
         // error
         {
             log.error("BrokerClientApp: Unknown command: {}", command);
@@ -174,5 +216,6 @@ public class BrokerClientApp {
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client js [-E<engine-name>] <JS-file> ");
     }
 }
