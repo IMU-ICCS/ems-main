@@ -12,14 +12,22 @@ package eu.melodic.event.brokerclient;
 import com.google.gson.Gson;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
-import javax.jms.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.jms.*;
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.util.ArrayList;
 
 @Slf4j
 public class BrokerClientApp {
 
-    public static void main(String args[]) throws java.io.IOException, JMSException {
+    private static boolean filterAMQMessages = true;
+
+    public static void main(String args[]) throws java.io.IOException, JMSException, ScriptException {
         if (args.length==0) {
             usage();
             return;
@@ -27,6 +35,9 @@ public class BrokerClientApp {
 
         int aa=0;
         String command = args[aa++];
+
+        filterAMQMessages = args.length>aa && args[aa].startsWith("-Q") ? false : true;
+        if (!filterAMQMessages) aa++;
 
         String username = args.length>aa && args[aa].startsWith("-U") ? args[aa++].substring(2) : null;
         String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
@@ -70,26 +81,7 @@ public class BrokerClientApp {
             String topic = args[aa++];
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
-            client.receiveEvents(url, topic, new MessageListener() {
-                public void onMessage(Message message) {
-                    try {
-                        String destinationName = getDestinationName(message);
-                        if (message instanceof ObjectMessage) {
-                            ObjectMessage objMessage = (ObjectMessage) message;
-                            Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
-                        } else if (message instanceof TextMessage) {
-                            TextMessage textMessage = (TextMessage) message;
-                            String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
-                        } else {
-                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
-                        }
-                    } catch (JMSException je) {
-                        log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
-                    }
-                }
-            });
+            client.receiveEvents(url, topic, getMessageListener());
         } else
         // subscribe to topic
         if ("subscribe".equalsIgnoreCase(command)) {
@@ -98,26 +90,7 @@ public class BrokerClientApp {
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
             MessageListener listener = null;
-            client.subscribe(url, topic, listener = new MessageListener() {
-                public void onMessage(Message message) {
-                    try {
-                        String destinationName = getDestinationName(message);
-                        if (message instanceof ObjectMessage) {
-                            ObjectMessage objMessage = (ObjectMessage) message;
-                            Object obj = objMessage.getObject();
-                            log.info("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
-                        } else if (message instanceof TextMessage) {
-                            TextMessage textMessage = (TextMessage) message;
-                            String text = textMessage.getText();
-                            log.info("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
-                        } else {
-                            log.info("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
-                        }
-                    } catch (JMSException je) {
-                        log.info("BrokerClientApp: onMessage: EXCEPTION: ", je);
-                    }
-                }
-            });
+            client.subscribe(url, topic, listener = getMessageListener());
 
             log.info("BrokerClientApp: Hit ENTER to exit");
             try {
@@ -152,11 +125,76 @@ public class BrokerClientApp {
             generator.setLevel(level);
             generator.run();
         } else
+        // Run JS script
+        if ("js".equalsIgnoreCase(command)) {
+            ScriptEngineManager manager = new ScriptEngineManager();
+            String engineName = "nashorn";
+            if (aa<args.length && args[aa].startsWith("-E")) {
+                String tmp = args[aa].substring(2).trim();
+                if (StringUtils.isNotBlank(tmp)) engineName = tmp;
+                else {
+                    log.info("Available Script engines:");
+                    manager.getEngineFactories().forEach(s->{
+                        log.info("  Engine: {} {}, {}, Language: {} {}, Mime: {}, Ext: {}",
+                            s.getEngineName(), s.getEngineVersion(), s.getNames(),
+                            s.getLanguageName(), s.getLanguageVersion(),
+                            s.getMimeTypes(), s.getExtensions());
+                    });
+                }
+                aa++;
+            }
+
+            ScriptEngine engine = manager.getEngineByName(engineName);
+            Bindings bindings = engine.createBindings();
+            String scriptFile = args[aa++];
+
+            ArrayList<String> jsArgs = new ArrayList<>();
+            for (; aa<args.length; aa++) jsArgs.add(args[aa]);
+            bindings.put("args", jsArgs);
+
+            engine.eval(
+                    "var BrokerClient = Java.type('eu.melodic.event.brokerclient.BrokerClient');\n" +
+                    "var EventMap = Java.type('eu.melodic.event.brokerclient.event.EventMap');\n" +
+                    "var System = Java.type('java.lang.System');\n" +
+                    "load('"+scriptFile+"')",
+                    bindings
+            );
+
+        } else
         // error
         {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage();
         }
+    }
+
+    private static MessageListener getMessageListener() {
+        return message -> {
+            try {
+                String destinationName = getDestinationName(message);
+                if (filterAMQMessages && StringUtils.startsWithIgnoreCase(destinationName, "ActiveMQ.")) {
+                    log.trace("BrokerClientApp:  - {}: ActiveMQ message filtered out: {}", destinationName, message);
+                    log.debug("AMQ: {}:\n{}", destinationName, message);
+                    return;
+                }
+                if (message instanceof ObjectMessage) {
+                    ObjectMessage objMessage = (ObjectMessage) message;
+                    Object obj = objMessage.getObject();
+                    log.trace("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
+                    log.info("OBJ: {}:\n{}", destinationName, obj);
+                } else if (message instanceof TextMessage) {
+                    TextMessage textMessage = (TextMessage) message;
+                    String text = textMessage.getText();
+                    log.trace("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
+                    log.info("TXT: {}:\n{}", destinationName, text);
+                } else {
+                    log.trace("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
+                    log.info("MSG: {}:\n{}", destinationName, message);
+                }
+            } catch (JMSException je) {
+                log.warn("BrokerClientApp: onMessage: EXCEPTION: ", je);
+            }
+        };
     }
 
     private static String getDestinationName(Message message) throws JMSException {
@@ -178,5 +216,6 @@ public class BrokerClientApp {
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client js [-E<engine-name>] <JS-file> ");
     }
 }
