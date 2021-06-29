@@ -3,22 +3,15 @@ package eu.melodic.upperware.guibackend.controller.byon;
 import eu.melodic.upperware.guibackend.service.byon.ByonService;
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import eu.passage.upperware.commons.model.byon.ByonEnums;
-import io.github.cloudiator.rest.model.ByonNode;
+import eu.passage.upperware.commons.model.byon.ByonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -72,23 +65,20 @@ public class ByonController {
         return byonDefinition;
     }
 
-    @PostMapping("/cloudiator/{byonDefinitionId}")
+    @PostMapping("/proactive/{byonDefinitionId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ByonNode createByonNode(@PathVariable(value = "byonDefinitionId") int byonDefinitionId) {
-        log.info("POST request for creating new byon node from byon definition with id {}", byonDefinitionId);
-        String applicationId = ""; // todo we also need to know applicationId here for Proactive
-        ByonNode byonNode = byonService.createByonNode(byonDefinitionId, applicationId);
-        log.info("Byon node with id {} successfully added to Cloudiator", byonNode.getId());
+    public eu.passage.upperware.commons.model.byon.ByonNode createByonNode(@PathVariable(value = "byonDefinitionId") int byonDefinitionId, @RequestParam(value = "applicationId") String applicationId) {
+        log.info("POST request for creating new byon node from byon definition with id {} and for application id {}", byonDefinitionId, applicationId);
+        final eu.passage.upperware.commons.model.byon.ByonNode byonNode = byonService.createByonNode(byonDefinitionId, applicationId);
+        log.info("Byon node with id {} successfully added to Proactive", byonNode.getId());
         return byonNode;
     }
 
-    @GetMapping("/cloudiator")
+    @GetMapping("/cloudiator") // TODO: change to "proactive", but also in frontend
     @ResponseStatus(HttpStatus.OK)
-    public List<ByonNode> getByonNodeListFromCloudiator() {
-        log.info("GET request for byon nodes available in Cloudiator");
-        log.warn("Fetching BYON nodes is not implemented yet.");
-//        return cloudiatorApi.getByonsList();
-        return Collections.emptyList();
+    public List<ByonNode> getByonNodesListFromProactive() {
+        log.info("GET request for byon nodes available in Proactive");
+        return byonService.getAllByonNodesList();
     }
 
     @DeleteMapping("/cloudiator/{byonId}")

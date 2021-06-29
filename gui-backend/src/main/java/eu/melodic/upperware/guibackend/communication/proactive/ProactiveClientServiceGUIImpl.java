@@ -3,8 +3,7 @@ package eu.melodic.upperware.guibackend.communication.proactive;
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.PAGateway;
-import org.activeeon.morphemic.model.Image;
-import org.activeeon.morphemic.model.PACloud;
+import org.activeeon.morphemic.model.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,5 +28,20 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     @Override
     public List<Image> getAllCloudImages(String cloudID) {
         return getPAGateway().map(paGateway -> paGateway.getAllCloudImages(cloudID)).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.registerNewByonNode(byonNodeDefinition, jobId)).orElse(null);
+    }
+
+    @Override
+    public List<ByonNode> getByonNodeList(String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(null);
+    }
+
+    @Override
+    public List<Job> getAllJobs() {
+        return getPAGateway().map(PAGateway::getAllJobs).orElse(null);
     }
 }

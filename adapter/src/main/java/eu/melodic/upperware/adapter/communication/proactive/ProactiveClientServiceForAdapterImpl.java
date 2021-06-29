@@ -8,6 +8,7 @@ import org.ow2.proactive.scheduler.common.job.JobState;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -72,5 +73,10 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
     @Override
     public int addMonitors(List<String> nodeNames, String authorizationBearer) {
         return getPAGateway().map(paGateway -> paGateway.addEmsDeployment(nodeNames, authorizationBearer)).orElse(-1);
+    }
+
+    @Override
+    public int addByonNodes(Map<String, String> byonIdPerComponent, String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.addByonNodes(byonIdPerComponent, jobId)).orElse(-1);
     }
 }

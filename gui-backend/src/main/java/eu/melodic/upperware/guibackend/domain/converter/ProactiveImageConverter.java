@@ -1,10 +1,12 @@
 package eu.melodic.upperware.guibackend.domain.converter;
 
 import eu.passage.upperware.commons.model.internal.*;
+import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.Image;
 
 import java.util.Objects;
 
+@Slf4j
 public class ProactiveImageConverter implements GenericConverter<Image, eu.passage.upperware.commons.model.internal.Image> {
     @Override
     public eu.passage.upperware.commons.model.internal.Image createDomain(Image external) {
@@ -49,6 +51,7 @@ public class ProactiveImageConverter implements GenericConverter<Image, eu.passa
 
     @Override
     public Image createExternal(eu.passage.upperware.commons.model.internal.Image domain) {
+        log.warn("ProactiveImageConverter.createExternal is not implemented yet.");
         return null;
     }
 }

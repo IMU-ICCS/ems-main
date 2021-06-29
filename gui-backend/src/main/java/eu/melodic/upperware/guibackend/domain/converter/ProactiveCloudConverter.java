@@ -1,9 +1,11 @@
 package eu.melodic.upperware.guibackend.domain.converter;
 
 import eu.passage.upperware.commons.model.internal.*;
+import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.PACloud;
 import org.springframework.lang.NonNull;
 
+@Slf4j
 public class ProactiveCloudConverter implements GenericConverter<PACloud, Cloud> {
     @Override
     public Cloud createDomain(@NonNull PACloud external) {
@@ -22,6 +24,7 @@ public class ProactiveCloudConverter implements GenericConverter<PACloud, Cloud>
 
     @Override
     public PACloud createExternal(@NonNull Cloud domain) {
+        log.warn("ProactiveCloudConverter.createExternal is not implemented yet.");
         return null;
     }
 }

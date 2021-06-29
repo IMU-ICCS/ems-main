@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @SuperBuilder
 @ToString(callSuper = true)
 public class OperatingSystem implements Serializable {
+    @JsonProperty("id")
+    private long id;
     @JsonProperty("operatingSystemFamily")
     private OperatingSystemFamily operatingSystemFamily;
     @JsonProperty("operatingSystemArchitecture")
