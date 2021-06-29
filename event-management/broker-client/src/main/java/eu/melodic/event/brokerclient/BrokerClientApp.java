@@ -264,6 +264,11 @@ public class BrokerClientApp {
         csvPrinter = new CSVPrinter(new FileWriter(file), CSVFormat.DEFAULT
                 .withHeader("Timestamp", "Destination", "Mime", "Contents", "Properties"));
 
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try { csvPrinter.close(true); } catch (IOException e) { log.error("BrokerClientApp: EXCEPTION while closing record file: ", e); }
+            log.info("Recording stopped");
+        }));
+
         return aa;
     }
 
