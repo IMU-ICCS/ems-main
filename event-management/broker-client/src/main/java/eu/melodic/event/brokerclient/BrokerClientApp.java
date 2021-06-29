@@ -113,7 +113,8 @@ public class BrokerClientApp {
             double upperValue = Double.parseDouble(args[aa++]);
             int level = Integer.parseInt(args[aa++]);
 
-            BrokerClient client = BrokerClient.newClient(username, password);
+            BrokerClient client = BrokerClient.newClient();
+            client.openConnection(url, username, password, true);
             EventGenerator generator = new EventGenerator();
             generator.setClient(client);
             generator.setBrokerUrl(url);
@@ -124,6 +125,7 @@ public class BrokerClientApp {
             generator.setUpperValue(upperValue);
             generator.setLevel(level);
             generator.run();
+            client.closeConnection();
         } else
         // Run JS script
         if ("js".equalsIgnoreCase(command)) {
