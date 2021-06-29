@@ -141,10 +141,22 @@ public class BrokerClient {
     // ------------------------------------------------------------------------
 
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
-        _publishEvent(connectionString, destinationName, new EventMap(eventMap));
+        _publishEvent(connectionString, destinationName, new EventMap(eventMap), null);
     }
 
-    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+    public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, destinationName, new EventMap(eventMap), propertiesMap);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String eventContents) throws JMSException {
+        _publishEvent(connectionString, destinationName, eventContents, null);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String eventContents, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, destinationName, eventContents, propertiesMap);
+    }
+
+    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event, Map<String,String> propertiesMap) throws JMSException {
         // open or reuse connection
         checkProperties();
         boolean _closeConn = false;
@@ -164,9 +176,15 @@ public class BrokerClient {
         // Create a messages
         //ObjectMessage message = session.createObjectMessage(event);
         //TextMessage message = session.createTextMessage(event.toString());
-        String payload = gson.toJson(event);
+        String payload = event instanceof String
+                ? (String)event
+                : gson.toJson(event);
         TextMessage message = session.createTextMessage(payload);
         log.debug("BrokerClient.publishEvent(): Message payload: payload={}", payload);
+
+        if (propertiesMap!=null)
+            for (Map.Entry<String,String> e : propertiesMap.entrySet())
+                message.setStringProperty(e.getKey(), e.getValue());
 
         // Tell the producer to send the message
         long hash = message.hashCode();

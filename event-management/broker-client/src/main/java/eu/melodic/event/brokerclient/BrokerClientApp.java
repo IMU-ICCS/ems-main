@@ -13,6 +13,12 @@ import com.google.gson.Gson;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.command.ActiveMQMapMessage;
+import org.apache.activemq.command.ActiveMQMessage;
+import org.apache.activemq.command.ActiveMQObjectMessage;
+import org.apache.activemq.command.ActiveMQTextMessage;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.jms.*;
@@ -20,12 +26,24 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.io.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class BrokerClientApp {
 
     private static boolean filterAMQMessages = true;
+    private static boolean isRecording = false;
+    private static CSVPrinter csvPrinter;
+    private static File csvFile;
+    private static String csvFormat;
+    private static long playbackInterval;
+    private static long playbackDelay;
 
     public static void main(String args[]) throws java.io.IOException, JMSException, ScriptException {
         if (args.length==0) {
@@ -43,6 +61,11 @@ public class BrokerClientApp {
         String password = username!=null && args.length>aa && args[aa].startsWith("-P") ? args[aa++].substring(2) : null;
         if (StringUtils.isNotBlank(username) && password == null) {
             password = new String(System.console().readPassword("Enter broker password: "));
+        }
+
+        if ("record".equalsIgnoreCase(command)) {
+            isRecording = true;
+            command = "receive";
         }
 
         // list destinations
@@ -79,9 +102,19 @@ public class BrokerClientApp {
         if ("receive".equalsIgnoreCase(command)) {
             String url = args[aa++];
             String topic = args[aa++];
+
+            if (isRecording)
+                initRecording(args, aa);
+
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
             client.receiveEvents(url, topic, getMessageListener());
+        } else
+        // playback events
+        if ("playback".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            initPlayback(args, aa);
+            playbackEvents(url, username, password);
         } else
         // subscribe to topic
         if ("subscribe".equalsIgnoreCase(command)) {
@@ -193,10 +226,211 @@ public class BrokerClientApp {
                     log.trace("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
                     log.info("MSG: {}:\n{}", destinationName, message);
                 }
+
+                recordEvent(message);
+
             } catch (JMSException je) {
                 log.warn("BrokerClientApp: onMessage: EXCEPTION: ", je);
             }
         };
+    }
+
+    private static int initRecording(String[] args, int aa) throws IOException {
+        // Process recording command line arguments
+        String format = null;
+        if (args[aa].startsWith("-M"))
+            format = args[aa++].substring(2).toLowerCase();
+        String fileName = args[aa++];
+        File file = Paths.get(fileName).toFile();
+        csvFile = file;
+        String ext = StringUtils.substringAfterLast(file.getName(), ".");
+        if (StringUtils.isNotBlank(format)) {
+            if (!("csv".equalsIgnoreCase(format) || "json".equalsIgnoreCase(format)))
+                throw new IllegalArgumentException("Unsupported recording format: "+format);
+        }
+        else if ("csv".equalsIgnoreCase(ext)) format = "csv";
+        else if ("txt".equalsIgnoreCase(ext)) format = "csv";
+        else if ("json".equalsIgnoreCase(ext)) format = "json";
+        else {
+            log.warn("Unknown file extension. Assuming CSV");
+            format = "csv";
+        }
+        csvFormat = format;
+
+        // Initialize recording
+        log.info("Record format: {}", format);
+        log.info("Record file:   {}", file);
+        log.info("Start recording...");
+        csvPrinter = new CSVPrinter(new FileWriter(file), CSVFormat.DEFAULT
+                .withHeader("Timestamp", "Destination", "Mime", "Contents", "Properties"));
+
+        return aa;
+    }
+
+    private static void recordEvent(Message message) {
+        if (!isRecording) return;
+
+        try {
+            ActiveMQMessage amqMessage = (ActiveMQMessage) message;
+            long timestamp = message.getJMSTimestamp();
+            String destinationName = getDestinationName(message);
+            String mime = amqMessage.getJMSXMimeType();
+
+            String content;
+            if (amqMessage instanceof ActiveMQTextMessage) {
+                content = ((ActiveMQTextMessage)amqMessage).getText();
+            } else
+            if (amqMessage instanceof ActiveMQMapMessage) {
+                content = ((ActiveMQMapMessage)amqMessage).getContentMap()
+                        .entrySet().stream()
+                        .map(x -> x.getKey() + "=" + x.getValue())
+                        .collect(Collectors.joining(",", "{", "}"));
+            } else
+            if (amqMessage instanceof ActiveMQObjectMessage) {
+                content = ((ActiveMQObjectMessage)amqMessage).getObject().toString();
+            } else
+                throw new IllegalArgumentException("Unsupported Message type: "+amqMessage.getClass().getName());
+
+            String properties = amqMessage.getProperties()
+                    .entrySet().stream()
+                    .map(x -> x.getKey() + "=" + x.getValue())
+                    .collect(Collectors.joining(",", "{", "}"));
+
+            log.trace("REC> timestamp={}, topic={}, mime={}, contents={}, properties={}", timestamp, destinationName, mime, content, properties);
+            csvPrinter.printRecord(timestamp, destinationName, mime, content, properties);
+            csvPrinter.flush();
+
+        } catch (Exception e) {
+            log.error("BrokerClientApp: EXCEPTION during RECORDING: ", e);
+        }
+    }
+
+    private static int initPlayback(String[] args, int aa) throws IOException {
+        // Process recording command line arguments
+        playbackInterval = -1L;
+        playbackDelay = -1L;
+        String str2 = null;
+        if (args[aa].startsWith("-I"))
+            playbackInterval = Long.parseLong(args[aa++].substring(2).toLowerCase());
+        if (args[aa].startsWith("-D"))
+            playbackDelay = Long.parseLong(args[aa++].substring(2).toLowerCase());
+        if (playbackInterval>0 && playbackDelay>0)
+            throw new IllegalArgumentException("You can use either -I to specify or -D switch but not both");
+
+        String format = null;
+        if (args[aa].startsWith("-M"))
+            format = args[aa++].substring(2).toLowerCase();
+        String fileName = args[aa++];
+        File file = Paths.get(fileName).toFile();
+        csvFile = file;
+        String ext = StringUtils.substringAfterLast(file.getName(), ".");
+        if (StringUtils.isNotBlank(format)) {
+            if (!("csv".equalsIgnoreCase(format) || "json".equalsIgnoreCase(format)))
+                throw new IllegalArgumentException("Unsupported recording format: "+format);
+        }
+        else if ("csv".equalsIgnoreCase(ext)) format = "csv";
+        else if ("txt".equalsIgnoreCase(ext)) format = "csv";
+        else if ("json".equalsIgnoreCase(ext)) format = "json";
+        else {
+            log.warn("Unknown file extension. Assuming CSV");
+            format = "csv";
+        }
+        csvFormat = format;
+
+        // Initialize recording
+        log.info("Playback format: {}", format);
+        log.info("Playback file:   {}", file);
+
+        return aa;
+    }
+
+    private static long playbackEvents(String url, String username, String password) throws IOException, JMSException {
+        AtomicLong countSuccess = new AtomicLong();
+        AtomicLong countFail = new AtomicLong();
+
+        BrokerClient client = BrokerClient.newClient();
+        client.openConnection(url, username, password, true);
+
+        boolean useInterval = (playbackInterval>0);
+        boolean useDelay = (playbackDelay>0);
+
+        log.info("Start playback...");
+        long startTm = System.currentTimeMillis();
+        final long[] prevValues = {-1L, -1L, -1L};   // Previous Event Timestamp, Previous System time, Last sleep time
+        CSVFormat.DEFAULT
+                .withFirstRecordAsHeader()
+                .parse(new BufferedReader(new FileReader(csvFile)))
+                .forEach(rec -> {
+                    // read event data
+                    long timestamp = Long.parseLong(rec.get("Timestamp"));
+                    String destinationName = rec.get("Destination");
+                    //String mime = rec.get("Mime");
+                    String contents = rec.get("Contents");
+                    String properties = rec.get("Properties");
+
+                    Map<String, String> propertiesMap = Arrays.stream(properties.split(","))
+                            .map(p -> p.split("=",2))
+                            .collect(Collectors.toMap(p->p[0], p->p[1]));
+
+                    if (prevValues[1]>0) {
+                        // calculate wait time
+                        long sleepTime = 0;
+                        long now = System.currentTimeMillis();
+                        if (useInterval) {
+                            log.trace("REPLAY> Interval: now={}, prev={}, playback={}", now, prevValues[1], playbackInterval);
+                            prevValues[1] = prevValues[1] + playbackInterval;
+                            sleepTime = prevValues[1] - now;
+                            log.trace("REPLAY>         : sleep={}, new-prev={}", sleepTime, prevValues[1]);
+                        } else if (useDelay) {
+                            log.trace("REPLAY> Delay: now={}, playback={}", now, playbackDelay);
+                            sleepTime = playbackDelay;
+                        } else {
+                            long diff = timestamp - prevValues[0];
+                            log.trace("REPLAY> Recorded: diff={}, now={}, prev={}", diff, now, prevValues[1]);
+                            prevValues[0] = timestamp;
+                            prevValues[1] += diff;
+                            sleepTime = prevValues[1] - now;
+                            log.trace("REPLAY>         : sleep={}, new-prev={}", sleepTime, prevValues[1]);
+                        }
+                        prevValues[2] = sleepTime;
+                        // wait to send
+                        try {
+                            log.debug("REPLAY>  sleep={}", sleepTime);
+                            if (sleepTime > 1)
+                                Thread.sleep(sleepTime);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException("Playback interrupted");
+                        }
+                    } else {
+                        prevValues[0] = Long.parseLong(rec.get("Timestamp"));
+                        prevValues[1] = System.currentTimeMillis();
+                    }
+
+                    // send event
+                    try {
+                        log.info("BrokerClientApp: Replay event #{}", rec.getRecordNumber());
+                        log.trace("BrokerClientApp: Publishing event: {}", contents);
+                        client.publishEvent(url, destinationName, contents, propertiesMap);
+                        log.info("BrokerClientApp: Event payload: {}", contents);
+                        countSuccess.getAndIncrement();
+                    } catch (Exception e) {
+                        log.error("BrokerClientApp: EXCEPTION while playing back event #{}: ", countSuccess.get() + countFail.get(), e);
+                        countFail.getAndIncrement();
+                    }
+                });
+
+        long endTm = System.currentTimeMillis();
+        long count = countSuccess.get() + countFail.get();
+        log.info("Playback completed in {}ms", endTm - startTm);
+        log.info("        Sent: {}", countSuccess.get());
+        log.info("      Failed: {}", countFail.get());
+        log.info("       Total: {}", count);
+        log.info("   Send Rate: {}e/s", 1000d * count / (endTm-startTm));
+        log.info("  Mean Delay: {}s", count<=1 ? "N/A" : (endTm-startTm) / 1000d / (count-1) );
+
+        client.closeConnection();
+
+        return count;
     }
 
     private static String getDestinationName(Message message) throws JMSException {
@@ -218,6 +452,8 @@ public class BrokerClientApp {
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client record [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-Mcsv|-Mjson] <REC-FILE> ");
+        log.info("BrokerClientApp: client playback [-U<USERNAME> [-P<PASSWORD]] <URL> [-Innn|-Dnnn] [-Mcsv|-Mjson] <REC-FILE> ");
         log.info("BrokerClientApp: client js [-E<engine-name>] <JS-file> ");
     }
 }
