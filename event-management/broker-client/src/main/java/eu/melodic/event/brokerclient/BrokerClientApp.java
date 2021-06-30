@@ -55,6 +55,7 @@ public class BrokerClientApp {
     private enum RECORD_FORMAT { CSV, JSON }
 
     public static void main(String args[]) throws java.io.IOException, JMSException, ScriptException {
+        log.info("Broker Client for EMS, v.{}", BrokerClientApp.class.getPackage().getImplementationVersion());
         if (args.length==0) {
             usage();
             return;
