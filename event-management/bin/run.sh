@@ -14,7 +14,9 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
 if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; export MELODIC_CONFIG_DIR; fi
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
-if [[ -z $JAR_PATH ]]; then JAR_PATH=$BASEDIR/control-service/target; export JAR_PATH; fi
+if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JARS_DIR; fi
+if [[ -z $LOGS_DIR ]]; then LOGS_DIR=$BASEDIR/logs; export LOGS_DIR; fi
+if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/config-files/resources; export PUBLIC_DIR; fi
 
 # Import MULE certificate
 #MULE_CERT=$MELODIC_CONFIG_DIR/mule-server.crt
@@ -46,6 +48,14 @@ export JASYPT_PASSWORD
 if [[ -z "$LOG_CONFIG_FILE" ]]; then
     LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-conf/logback-spring.xml
 fi
+if [[ -z "$LOG_FILE" ]]; then
+    LOG_FILE=$LOGS_DIR/ems.log
+    export LOG_FILE
+fi
+
+# create symbolic link to ems.log
+mkdir $PUBLIC_DIR/logs/
+ln -s $LOG_FILE $PUBLIC_DIR/logs/ems.log
 
 # Waiting CDO to come up...
 if [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
@@ -61,10 +71,10 @@ fi
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
 # Use when Esper is packaged in control-service.jar
-# java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar $JAR_PATH/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
+# java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
 # Use when Esper is NOT packaged in control-service.jar
-java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp ${JAR_PATH}/control-service.jar -Dloader.path=${JAR_PATH}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
+java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
 
 # Extra parameters
 # e.g. --spring.config.location=$MELODIC_CONFIG_DIR

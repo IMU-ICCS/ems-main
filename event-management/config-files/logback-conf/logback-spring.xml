@@ -1,78 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017 7bulls.com
   ~
-  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
-  ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
-  ~ If a copy of the MPL was not distributed with this file, you can obtain one at
-  ~ https://www.mozilla.org/en-US/MPL/2.0/
+  ~ This Source Code Form is subject to the terms of the
+  ~ Mozilla Public License, v. 2.0. If a copy of the MPL
+  ~ was not distributed with this file, You can obtain one at
+  ~ http://mozilla.org/MPL/2.0/.
   -->
 
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <!--<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</Pattern>-->
-            <Pattern>EMS> %msg%n</Pattern>
-        </layout>
-    </appender>
-    <appender name="LOG_FILE" class="ch.qos.logback.core.FileAppender">
-        <!--<file>${user.home}/ems.log</file>-->
-        <file>logs/ems.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M - %msg%n</pattern>
-        </encoder>
-    </appender>
-    <!--<appender name="NOOP_APPENDER" class="ch.qos.logback.core.helpers.NOPAppender"></appender>-->
+    <logger name="eu.melodic.upperware.adapter" level="INFO"/>
 
-    <logger name="root" level="ERROR" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="org.springframework" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.control" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.baguette.server" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.baguette.client.install" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.brokercep" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.brokercep.cep" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.translate" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.util" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
-    <logger name="eu.melodic.event.util.NetUtil" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="LOG_FILE"/>
-    </logger>
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
+
+    <logger name="eu.melodic.upperware.zppsolver" level = "INFO"/>
+    <logger name="eu.melodic.upperware.cpsolver" level="INFO"/>
+    <!-- choco solver begin -->
+    <logger name="choco" level="WARN"/>
+    <logger name="choco.util" level="INFO"/>
+    <logger name="bench" level="info"/>
+    <logger name="solver" level="info"/>
+    <logger name="fzn" level="info"/>
+    <logger name="explainer" level="info"/>
+    <logger name="configuration" level="info"/>
+    <logger name="tree" level="info"/>
+    <logger name="visualization" level="info"/>
+    <!-- choco solver end -->
+
+    <logger name="eu.melodic.upperware.metasolver" level="INFO"/>
+
+    <!-- from generator -->
+    <logger name="eu.paasage.upperware.profiler" level="INFO"/>
+
+    <logger name="eu.paasage.upperware.security" level="INFO"/>
+    <logger name="eu.melodic.security.authorization" level="INFO"/>
+
+    <logger name="eu.paasage.mddb.cdo.server" level="DEBUG"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type" level="TRACE"/>
+
+    <logger name="eu.paasage.upperware.profiler.generator.service.camel" level="DEBUG"/>
+
+    <!-- ems -->
+    <logger name="eu.melodic.event" level="INFO"/>
+    <logger name="eu.melodic.event.control" level="INFO"/>
+    <logger name="eu.melodic.event.baguette.server" level="INFO"/>
+    <logger name="eu.melodic.event.baguette.client.install" level="DEBUG"/>
+    <logger name="eu.melodic.event.brokercep" level="DEBUG"/>
+    <logger name="eu.melodic.event.brokerclient" level="DEBUG"/>
+    <logger name="eu.melodic.event.translate" level="DEBUG"/>
+    <logger name="eu.melodic.event.util" level="DEBUG"/>
+    <logger name="eu.melodic.event.util.NetUtil" level="INFO"/>
+
+    <!-- functionizer testing tool -->
+    <logger name="eu.functionizer.functionizertestingtool" level="DEBUG"/>
+
+    <!-- activeeon proactive -->
+    <logger name="org.activeeon" level="DEBUG"/>
 </configuration>

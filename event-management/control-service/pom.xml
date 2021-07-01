@@ -291,34 +291,55 @@
                             <targetPath>/resources</targetPath>
                             <directory>${project.basedir}/../config-files/resources</directory>
                         </resource>-->
+
+                        <!-- Add baguette-client resources to '/public' -->
                         <resource>
-                            <targetPath>/config/resources</targetPath>
+                            <targetPath>/public</targetPath>
                             <directory>${project.build.directory}</directory>
                             <include>baguette-client.tgz</include>
                             <include>baguette-client.tgz.md5</include>
                             <!--<include>install.sh</include>-->
                         </resource>
                         <resource>
-                            <targetPath>/config/resources</targetPath>
+                            <targetPath>/public</targetPath>
                             <directory>${project.basedir}/src/main/resources/public</directory>
                             <include>*</include>
                         </resource>
+
                         <!-- Add broker-client too -->
                         <resource>
                             <targetPath>/jars</targetPath>
                             <directory>${project.basedir}/../broker-client/target</directory>
                             <include>broker-client-jar-with-dependencies.jar</include>
                         </resource>
+                        <!--<resource>
+                            <targetPath>/public</targetPath>
+                            <directory>${project.basedir}/../broker-client/target</directory>
+                            <include>broker-client-jar-with-dependencies.jar</include>
+                        </resource>-->
+                        <!--
+                          "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
+                        -->
+                        <!--<resource>
+                            <targetPath>/config</targetPath>
+                            <directory>${project.basedir}/../broker-client</directory>
+                            <include>eu.melodic.event.brokerclient.properties</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/public</targetPath>
+                            <directory>${project.basedir}/../broker-client</directory>
+                            <include>eu.melodic.event.brokerclient.properties</include>
+                        </resource>-->
                         <resource>
                             <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>client.sh</include>
                         </resource>
-                        <resource>
-                            <targetPath>/config</targetPath>
-                            <directory>${project.basedir}/../broker-client</directory>
-                            <include>eu.melodic.event.brokerclient.properties</include>
-                        </resource>
+                        <!--<resource>
+                            <targetPath>/public</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>client.sh</include>
+                        </resource>-->
                     </resources>
                 </configuration>
             </plugin>
