@@ -16,7 +16,7 @@ if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; 
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JARS_DIR; fi
 if [[ -z $LOGS_DIR ]]; then LOGS_DIR=$BASEDIR/logs; export LOGS_DIR; fi
-if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/config-files/resources; export PUBLIC_DIR; fi
+if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public; export PUBLIC_DIR; fi
 
 # Import MULE certificate
 #MULE_CERT=$MELODIC_CONFIG_DIR/mule-server.crt

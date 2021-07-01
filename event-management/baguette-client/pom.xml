@@ -214,15 +214,15 @@
 							<fileSets>
 								<fileSet>
 									<sourceFile>target/baguette-client-installation-package.tgz</sourceFile>
-									<destinationFile>../config-files/resources/baguette-client.tgz</destinationFile>
+									<destinationFile>../public/baguette-client.tgz</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>target/baguette-client-installation-package.tgz.md5</sourceFile>
-									<destinationFile>../config-files/resources/baguette-client.tgz.md5</destinationFile>
+									<destinationFile>../public/baguette-client.tgz.md5</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>bin/install.sh</sourceFile>
-                                    <destinationFile>../config-files/resources/install.sh</destinationFile>
+                                    <destinationFile>../public/install.sh</destinationFile>
 								</fileSet>
 							</fileSets>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>

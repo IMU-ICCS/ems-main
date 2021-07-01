@@ -35,9 +35,9 @@ ADD public ${PUBLIC_DIR}
 RUN mkdir ${LOGS_DIR}
 RUN bash -c 'chmod +rx ${BIN_DIR}/*.sh'
 
-RUN ln -s ${JARS_DIR}/broker-client-jar-with-dependencies.jar ${PUBLIC_DIR}/broker-client.jar
+# RUN ln -s ${JARS_DIR}/broker-client-jar-with-dependencies.jar ${PUBLIC_DIR}/broker-client.jar
 # RUN ln -s ${CONFIG_DIR}/eu.melodic.event.brokerclient.properties ${PUBLIC_DIR}/eu.melodic.event.brokerclient.properties
-RUN ln -s ${BIN_DIR}/client.sh ${PUBLIC_DIR}/client.sh
+# RUN ln -s ${BIN_DIR}/client.sh ${PUBLIC_DIR}/client.sh
 # RUN ln -s ${LOGS_DIR} ${PUBLIC_DIR}/logs
 
 # RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
