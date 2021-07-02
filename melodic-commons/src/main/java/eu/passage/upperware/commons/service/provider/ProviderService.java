@@ -108,17 +108,18 @@ public class ProviderService {
 
         cloudDefinitionsForAllProviders.remove(oldCloudDefinition);
 
-        if (providerUserChanged(oldCloudDefinition, cloudDefinitionToUpdate)) {
+        if (providerUserSecretChanged(oldCloudDefinition, cloudDefinitionToUpdate)) {
             String oldSecureVariableKey2 = secureStoreDBService.createKeyLabelForSecret(oldCloudDefinition).getKey();
             try {
-                log.info("LSZ DEV[ProviderService]: deleting from db; oldSecureVariableKey2={}", oldSecureVariableKey2);
+                log.info("Provider user's secret has changed and secure variable with key: {} will be deleted", oldSecureVariableKey2);
                 secureStoreDBService.deleteSecureVariable(oldSecureVariableKey2);
-                log.info("Provider user changed and secure variable from key {} deleted", oldSecureVariableKey2);
+                log.info("New provider user's secret will be securely saved with key: {}", oldSecureVariableKey2);
+                saveSecretInSecureStore(cloudDefinitionToUpdate);
+                log.info("New provider user's secret with key: {} has been successfully saved", oldSecureVariableKey2);
             } catch (NotFoundException ex) {
                 log.info("Secure variable with key {} did not exist in secure store.", oldSecureVariableKey2);
             }
         }
-        saveSecretInSecureStore(cloudDefinitionToUpdate);
 
         cloudDefinitionsForAllProviders.add(cloudDefinitionToUpdate);
 
@@ -127,9 +128,9 @@ public class ProviderService {
         return cloudDefinitionToUpdate;
     }
 
-    private boolean providerUserChanged(CloudDefinition oldCloudDefinition, CloudDefinition cloudDefinitionToUpdate) {
-        return !oldCloudDefinition.getCredential().getUser()
-                .equals(cloudDefinitionToUpdate.getCredential().getUser());
+    private boolean providerUserSecretChanged(CloudDefinition oldCloudDefinition, CloudDefinition cloudDefinitionToUpdate) {
+        return !oldCloudDefinition.getCredential().getSecret()
+                .equals(cloudDefinitionToUpdate.getCredential().getSecret());
     }
 
     // todo delete from db
