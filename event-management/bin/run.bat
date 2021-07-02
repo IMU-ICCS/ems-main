@@ -50,10 +50,6 @@ if "%LOG_FILE%"=="" (
     set LOG_FILE=%LOGS_DIR%\ems.log
 )
 
-:: create symbolic link to ems.log
-mkdir %PUBLIC_DIR%\logs
-::ln -s $LOG_FILE $PUBLIC_DIR/logs/ems.log
-
 :: Waiting CDO to come up...
 if exist %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
     echo "Waiting CDO server to start..."
