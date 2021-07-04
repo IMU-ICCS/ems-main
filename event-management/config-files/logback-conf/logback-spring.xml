@@ -54,6 +54,7 @@
     <logger name="eu.melodic.event.translate" level="DEBUG"/>
     <logger name="eu.melodic.event.util" level="DEBUG"/>
     <logger name="eu.melodic.event.util.NetUtil" level="INFO"/>
+    <logger name="com.ulisesbocchio.jasyptspringboot" level="WARN"/>
 
     <!-- functionizer testing tool -->
     <logger name="eu.functionizer.functionizertestingtool" level="DEBUG"/>
