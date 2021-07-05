@@ -13,9 +13,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
-import java.io.Serializable;
-import java.util.*;
-import javax.jms.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -28,6 +25,12 @@ import org.apache.activemq.command.ActiveMQTopic;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.jms.*;
+import java.io.File;
+import java.io.Serializable;
+import java.nio.file.Paths;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -58,23 +61,31 @@ public class BrokerClient {
 
         // get properties file
         String configDir = System.getenv("MELODIC_CONFIG_DIR");
-        if (configDir == null || configDir.trim().isEmpty()) configDir = ".";
-        log.info("BrokerClient: config-dir: {}", configDir);
+        if (StringUtils.isBlank(configDir)) configDir = ".";
+        log.debug("BrokerClient: config-dir:  {}", configDir);
         String configPropFile = configDir + "/" + "eu.melodic.event.brokerclient.properties";
-        log.info("BrokerClient: config-file: {}", configPropFile);
+        log.debug("BrokerClient: config-file: {}", configPropFile);
 
         // load properties
         Properties p = new Properties();
-        //ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        //try (java.io.InputStream in = loader.getClass().getResourceAsStream(configPropFile)) { p.load(in); }
-        try (java.io.InputStream in = new java.io.FileInputStream(configPropFile)) {
-            p.load(in);
+        File cfgFile = Paths.get(configPropFile).toFile();
+        if (cfgFile.exists() && cfgFile.isFile()) {
+            //ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            //try (java.io.InputStream in = loader.getClass().getResourceAsStream(configPropFile)) { p.load(in); }
+            try (java.io.InputStream in = new java.io.FileInputStream(configPropFile)) {
+                log.debug("BrokerClient: Loading config-properties from file: {}", configPropFile);
+                p.load(in);
+            }
+            log.debug("BrokerClient: config-properties: {}", p);
+            log.info("BrokerClient: Configuration loaded from file: {}", configPropFile);
+        } else {
+            log.debug("BrokerClient: Config file not found or is not a file: {}", configPropFile);
+            log.info("BrokerClient: No configuration file found");
         }
-        log.info("BrokerClient: config-properties: {}", p);
 
         // initialize broker client
         BrokerClient client = new BrokerClient(p);
-        log.info("BrokerClient: Configuration:\n{}", client.properties);
+        log.info("BrokerClient: Default Configuration:\n{}", client.properties);
 
         return client;
     }
@@ -141,10 +152,22 @@ public class BrokerClient {
     // ------------------------------------------------------------------------
 
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
-        _publishEvent(connectionString, destinationName, new EventMap(eventMap));
+        _publishEvent(connectionString, destinationName, new EventMap(eventMap), null);
     }
 
-    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+    public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, destinationName, new EventMap(eventMap), propertiesMap);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String eventContents) throws JMSException {
+        _publishEvent(connectionString, destinationName, eventContents, null);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String eventContents, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, destinationName, eventContents, propertiesMap);
+    }
+
+    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event, Map<String,String> propertiesMap) throws JMSException {
         // open or reuse connection
         checkProperties();
         boolean _closeConn = false;
@@ -164,13 +187,19 @@ public class BrokerClient {
         // Create a messages
         //ObjectMessage message = session.createObjectMessage(event);
         //TextMessage message = session.createTextMessage(event.toString());
-        String payload = gson.toJson(event);
+        String payload = event instanceof String
+                ? (String)event
+                : gson.toJson(event);
         TextMessage message = session.createTextMessage(payload);
         log.debug("BrokerClient.publishEvent(): Message payload: payload={}", payload);
 
+        if (propertiesMap!=null)
+            for (Map.Entry<String,String> e : propertiesMap.entrySet())
+                message.setStringProperty(e.getKey(), e.getValue());
+
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.info("BrokerClient.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
+        log.debug("BrokerClient.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
         producer.send(message);
         log.info("BrokerClient.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
 
@@ -253,7 +282,7 @@ public class BrokerClient {
         final ActiveMQConnectionFactory connectionFactory;
         String brokerUrl = properties.getBrokerUrl();
         if (brokerUrl.startsWith("ssl")) {
-            log.info("BrokerClient.createConnectionFactory(): Creating new SSL connection factory instance: url={}", brokerUrl);
+            log.debug("BrokerClient.createConnectionFactory(): Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
             try {
                 sslConnectionFactory.setTrustStore(properties.getTruststoreFile());
@@ -269,7 +298,7 @@ public class BrokerClient {
                 throw new Error(theException);
             }
         } else {
-            log.info("BrokerClient.createConnectionFactory(): Creating new non-SSL connection factory instance: url={}", brokerUrl);
+            log.debug("BrokerClient.createConnectionFactory(): Creating new non-SSL connection factory instance: url={}", brokerUrl);
             connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
         }
 

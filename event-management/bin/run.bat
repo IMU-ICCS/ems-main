@@ -14,7 +14,9 @@ cd %PWD%..
 set BASEDIR=%cd%
 IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
-IF NOT DEFINED JAR_PATH set JAR_PATH=%BASEDIR%\control-service\target
+IF NOT DEFINED JARS_DIR set JARS_DIR=%BASEDIR%\control-service\target
+IF NOT DEFINED LOGS_DIR set LOGS_DIR=%BASEDIR%\logs
+IF NOT DEFINED PUBLIC_DIR set PUBLIC_DIR=%BASEDIR%\public
 
 :: Import MULE certificate
 set MULE_CERT=%MELODIC_CONFIG_DIR%\mule-server.crt
@@ -44,6 +46,9 @@ if "%LOG_CONFIG_FILE%"=="" (
     set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-conf\logback-spring.xml
 )
 echo Using logback config.: %LOG_CONFIG_FILE%
+if "%LOG_FILE%"=="" (
+    set LOG_FILE=%LOGS_DIR%\ems.log
+)
 
 :: Waiting CDO to come up...
 if exist %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
@@ -58,10 +63,10 @@ rem set JAVA_OPTS=-Djavax.net.debug=all
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo Starting EMS server...
 rem Use when Esper is packaged in control-service.jar
-rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar %JAR_PATH%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
+rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
 
 rem Use when Esper is NOT packaged in control-service.jar
-java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp %JAR_PATH%\control-service.jar -Dloader.path=%JAR_PATH%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE%
+java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE%
 
 rem e.g. --spring.config.location=%MELODIC_CONFIG_DIR%\
 rem e.g. --spring.config.name=application.properties

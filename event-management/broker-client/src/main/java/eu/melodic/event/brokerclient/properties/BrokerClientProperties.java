@@ -21,12 +21,12 @@ import org.springframework.context.annotation.PropertySource;
 @ToString(exclude = {"truststorePassword", "keystorePassword", "brokerPassword"})
 @Configuration
 @ConfigurationProperties(prefix = "brokerclient")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokerclient.properties")
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokerclient.properties")
 @Slf4j
 public class BrokerClientProperties {
     @Value("${broker-name:broker}")
     private String brokerName;
-    @Value("${broker-url:ssl://localhost:61616}")
+    @Value("${broker-url:tcp://localhost:61616}")
     private String brokerUrl;
     @Value("${broker-url-properties:}")
     private String brokerUrlProperties;
@@ -57,10 +57,10 @@ public class BrokerClientProperties {
 
     public BrokerClientProperties() {
         brokerName = "broker";
-        brokerUrl = "ssl://localhost:61616";
+        brokerUrl = "tcp://localhost:61616";
         brokerUrlProperties = "";
         connectorPort = -1;
-        preserveConnection = true;
+        preserveConnection = false;
 
         truststoreFile = "";
         truststoreType = "";
@@ -76,10 +76,10 @@ public class BrokerClientProperties {
 
     public BrokerClientProperties(java.util.Properties p) {
         brokerName = p.getProperty("brokerclient.broker-name", "broker");
-        brokerUrl = p.getProperty("brokerclient.broker-url", "ssl://localhost:61616}");
+        brokerUrl = p.getProperty("brokerclient.broker-url", "tcp://localhost:61616");
         brokerUrlProperties = p.getProperty("brokerclient.broker-url-properties", "");
         connectorPort = Integer.parseInt(p.getProperty("brokerclient.connector-port", "-1"));
-        preserveConnection = Boolean.parseBoolean(p.getProperty("brokerclient.preserve-connection", "true"));
+        preserveConnection = Boolean.parseBoolean(p.getProperty("brokerclient.preserve-connection", "false"));
 
         truststoreFile = p.getProperty("brokerclient.ssl.truststore.file", "");
         truststoreType = p.getProperty("brokerclient.ssl.truststore.type", "");
