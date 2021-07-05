@@ -6,6 +6,7 @@ import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterScale;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScaleTask;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.SubmittedJobType;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
@@ -31,7 +32,9 @@ public class ScaleTaskExecutor extends RunnableTaskExecutor<AdapterScale> {
             log.info("ScaleTaskExecutor->create: [application id: {}] ScaleDirection->OUT AdapterScale= {}", applicationId, taskBody);
             int status = proactiveClientServiceForAdapter.addScaleOutTask(taskBody.getNodeNames(), applicationId, taskBody.getTaskName());
             log.info("ScaleTaskExecutor->create: [application id: {}] addScaleOutTask status= {}", applicationId, status);
-
+            log.info("ScaleTaskExecutor->create: [application id: {}] addScaleOutTask - now waiting for ScaleDirection->OUT job to finish", applicationId);
+            proactiveClientServiceForAdapter.waitForJobFinish(applicationId, SubmittedJobType.SCALE_OUT);
+            log.info("ScaleTaskExecutor->create: [application id: {}] addScaleOutTask - ScaleDirection->OUT job finished", applicationId);
         }
         catch (RuntimeException e) {
             log.error("ScaleTaskExecutor->create: [application id: {}] Could not scale OUT. Error: {}", applicationId, e.getMessage());
@@ -46,6 +49,9 @@ public class ScaleTaskExecutor extends RunnableTaskExecutor<AdapterScale> {
             log.info("ScaleTaskExecutor->delete: [application id: {}] ScaleDirection->IN AdapterScale= {}", applicationId, taskBody);
             int status = proactiveClientServiceForAdapter.addScaleInTask(taskBody.getNodeNames(), applicationId, taskBody.getTaskName());
             log.info("ScaleTaskExecutor->delete: [application id: {}] addScaleInTask status= {}", applicationId, status);
+            log.info("ScaleTaskExecutor->create: [application id: {}] addScaleOutTask - now waiting for ScaleDirection->IN job to finish", applicationId);
+            proactiveClientServiceForAdapter.waitForJobFinish(applicationId, SubmittedJobType.SCALE_IN);
+            log.info("ScaleTaskExecutor->create: [application id: {}] addScaleOutTask - ScaleDirection->IN job finished", applicationId);
         }
         catch (RuntimeException e) {
             log.error("ScaleTaskExecutor->delete: [application id: {}] Could not scale IN. Error: {}", applicationId, e.getMessage());
