@@ -216,27 +216,50 @@ public class BrokerClientApp {
     private static MessageListener getMessageListener() {
         return message -> {
             try {
+                // get message destination
                 String destinationName = getDestinationName(message);
+
+                // filter out Advisory messages
                 if (filterAMQMessages && StringUtils.startsWithIgnoreCase(destinationName, "ActiveMQ.")) {
                     log.trace("BrokerClientApp:  - {}: ActiveMQ message filtered out: {}", destinationName, message);
                     log.debug("AMQ: {}:\n{}", destinationName, message);
                     return;
                 }
+
+                // get properties as string
+                String properties;
+                if (message instanceof  ActiveMQMessage) {
+                    try {
+                        ActiveMQMessage amqMessage = (ActiveMQMessage) message;
+                        properties = amqMessage.getProperties()
+                                .entrySet().stream()
+                                .map(x -> x.getKey() + "=" + x.getValue())
+                                .collect(Collectors.joining(",", "{", "}"));
+                    } catch (Exception e) {
+                        properties = "ERROR "+e.getMessage();
+                        log.error("BrokerClientApp:  - {}: ERROR while reading properties: ", destinationName, e);
+                    }
+                } else {
+                    properties = "Not an ActiveMQ message";
+                }
+
+                // print message body and info
                 if (message instanceof ObjectMessage) {
                     ObjectMessage objMessage = (ObjectMessage) message;
                     Object obj = objMessage.getObject();
                     log.trace("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
-                    log.info("OBJ: {}:\n{}", destinationName, obj);
+                    log.info("OBJ: {}: properties: {}\n{}", destinationName, properties, obj);
                 } else if (message instanceof TextMessage) {
                     TextMessage textMessage = (TextMessage) message;
                     String text = textMessage.getText();
                     log.trace("BrokerClientApp:  - {}: Received text message: {}", destinationName, text);
-                    log.info("TXT: {}:\n{}", destinationName, text);
+                    log.info("TXT: {}: properties: {}\n{}", destinationName, properties, text);
                 } else {
                     log.trace("BrokerClientApp:  - {}: Received message: {}", destinationName, message);
-                    log.info("MSG: {}:\n{}", destinationName, message);
+                    log.info("MSG: {}: properties: {}\n{}", destinationName, properties, message);
                 }
 
+                // record message to file
                 recordEvent(message);
 
             } catch (JMSException je) {
@@ -435,9 +458,12 @@ public class BrokerClientApp {
                     String contents = rec.get("Contents");
                     String properties = rec.get("Properties");
 
+                    if (properties.startsWith("{") && properties.endsWith("}"))
+                        properties = properties.substring(1, properties.length()-1);
                     Map<String, String> propertiesMap = Arrays.stream(properties.split(","))
+                            .filter(StringUtils::isNotBlank)
                             .map(p -> p.split("=",2))
-                            .collect(Collectors.toMap(p->p[0], p->p[1]));
+                            .collect(Collectors.toMap(p->p[0], p->p.length>1 ? p[1] : ""));
 
                     waitAndSend(client, prevValues, useInterval, useDelay, url,
                             timestamp, destinationName, contents, propertiesMap, countSuccess, countFail);

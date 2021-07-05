@@ -195,13 +195,14 @@ public class BrokerClient {
 
         if (propertiesMap!=null)
             for (Map.Entry<String,String> e : propertiesMap.entrySet())
-                message.setStringProperty(e.getKey(), e.getValue());
+                if (StringUtils.isNotBlank(e.getKey()))
+                    message.setStringProperty(e.getKey(), e.getValue());
 
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.debug("BrokerClient.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
+        log.debug("BrokerClient.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
         producer.send(message);
-        log.info("BrokerClient.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
+        log.info("BrokerClient.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
 
         // close connection
         if (_closeConn) {
