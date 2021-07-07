@@ -18,24 +18,23 @@ import com.google.gson.Gson;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.command.ActiveMQMapMessage;
-import org.apache.activemq.command.ActiveMQMessage;
-import org.apache.activemq.command.ActiveMQObjectMessage;
-import org.apache.activemq.command.ActiveMQTextMessage;
+import org.apache.activemq.command.*;
+import org.apache.activemq.util.ByteSequence;
+import org.apache.activemq.util.ByteSequenceData;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.jms.*;
+import javax.jms.Message;
+import javax.jms.Queue;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -51,6 +50,7 @@ public class BrokerClientApp {
     private static JsonGenerator jsonGenerator;
     private static long playbackInterval;
     private static long playbackDelay;
+    private static Gson gson = new Gson();
 
     private enum RECORD_FORMAT { CSV, JSON }
 
@@ -89,24 +89,35 @@ public class BrokerClientApp {
         if ("publish".equalsIgnoreCase(command)) {
             String url = args[aa++];
             String topic = args[aa++];
+            String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String value = args[aa++];
             String level = args[aa++];
             EventMap event = new EventMap(Double.parseDouble(value), Integer.parseInt(level), System.currentTimeMillis());
-            log.info("BrokerClientApp: Publishing event: {}", event);
-            BrokerClient client = BrokerClient.newClient(username, password);
-            client.publishEvent(url, topic, event);
+            sendEvent(url, username, password, topic, type, event);
         } else
         if ("publish2".equalsIgnoreCase(command)) {
             String url = args[aa++];
             String topic = args[aa++];
+            String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String payload = args[aa++];
             payload = payload
                     .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
-            EventMap event = new Gson().fromJson(payload, EventMap.class);
-            log.info("BrokerClientApp: Publishing event: {}", event);
-            BrokerClient client = BrokerClient.newClient(username, password);
-            client.publishEvent(url, topic, event);
-            log.info("BrokerClientApp: Event payload: {}", payload);
+            EventMap event = gson.fromJson(payload, EventMap.class);
+            sendEvent(url, username, password, topic, type, event);
+        } else
+        if ("publish3".equalsIgnoreCase(command)) {
+            String url = args[aa++];
+            String topic = args[aa++];
+            String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
+            String payload = args[aa++];
+            if ("map".equalsIgnoreCase(type)) {
+                payload = payload
+                        .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
+                EventMap event = gson.fromJson(payload, EventMap.class);
+                sendEvent(url, username, password, topic, type, event);
+            } else {
+                sendEvent(url, username, password, topic, type, payload);
+            }
         } else
         // receive events from topic
         if ("receive".equalsIgnoreCase(command)) {
@@ -213,6 +224,13 @@ public class BrokerClientApp {
         }
     }
 
+    private static void sendEvent(String url, String username, String password, String topic, String type, Serializable payload) throws JMSException, IOException {
+        log.info("BrokerClientApp: Publishing event: {}", payload);
+        BrokerClient client = BrokerClient.newClient(username, password);
+        client.publishEvent(url, topic, type, payload, null);
+        log.info("BrokerClientApp: Event payload: {}", payload);
+    }
+
     private static MessageListener getMessageListener() {
         return message -> {
             try {
@@ -240,15 +258,52 @@ public class BrokerClientApp {
                         log.error("BrokerClientApp:  - {}: ERROR while reading properties: ", destinationName, e);
                     }
                 } else {
-                    properties = "Not an ActiveMQ message";
+                    //properties = "Not an ActiveMQ message";
+                    Enumeration en = message.getPropertyNames();
+                    Map<String,String> pMap = new HashMap<>();
+                    while (en.hasMoreElements()) {
+                        String pName = en.nextElement().toString();
+                        Object pVal = message.getObjectProperty(pName);
+                        if (pVal!=null)
+                            pMap.put(pName, pVal.toString());
+                        else
+                            pMap.put(pName, null);
+                    }
+                    properties = pMap.toString();
                 }
 
                 // print message body and info
                 if (message instanceof ObjectMessage) {
                     ObjectMessage objMessage = (ObjectMessage) message;
                     Object obj = objMessage.getObject();
-                    log.trace("BrokerClientApp:  - {}: Received object message: {}", destinationName, obj);
-                    log.info("OBJ: {}: properties: {}\n{}", destinationName, properties, obj);
+                    String objClass = obj!=null ? obj.getClass().getName() : null;
+                    log.trace("BrokerClientApp:  - {}: Received object message: {}: {}", destinationName, objClass, obj);
+                    log.info("OBJ: {}: properties: {}\n{}: {}", destinationName, properties, objClass, obj);
+                } else if (message instanceof MapMessage) {
+                    MapMessage mapMessage = (MapMessage) message;
+                    Enumeration en = mapMessage.getMapNames();
+                    Map<Object,Object> map = new HashMap<>();
+                    while (en.hasMoreElements()) {
+                        String k = en.nextElement().toString();
+                        map.put(k, mapMessage.getObject(k));
+                    }
+                    log.trace("BrokerClientApp:  - {}: Received map message: {}", destinationName, map);
+                    log.info("MAP: {}: properties: {}\n{}", destinationName, properties, map);
+                } else if (message instanceof BytesMessage) {
+                    BytesMessage bytesMessage = (BytesMessage) message;
+                    byte[] bytes = new byte[(int)bytesMessage.getBodyLength()];
+                    bytesMessage.readBytes(bytes);
+                    //String str = new String(bytes);
+                    Object obj;
+                    try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                         ObjectInputStream is = new ObjectInputStream(bis))
+                    {
+                        obj = is.readObject();
+                    } catch (Exception e) {
+                        obj = bytes;
+                    }
+                    log.trace("BrokerClientApp:  - {}: Received bytes message: {}", destinationName, bytes);
+                    log.info("BYTES: {}: properties: {}\n{}\n{}", destinationName, properties, bytes, obj);
                 } else if (message instanceof TextMessage) {
                     TextMessage textMessage = (TextMessage) message;
                     String text = textMessage.getText();
@@ -299,7 +354,7 @@ public class BrokerClientApp {
         recordWriter = new BufferedWriter(new FileWriter(file));
         if (recordFormat==RECORD_FORMAT.CSV) {
             csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT
-                    .withHeader("Timestamp", "Destination", "Mime", "Contents", "Properties"));
+                    .withHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties"));
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try { csvPrinter.close(true); recordWriter.close(); } catch (IOException e) { log.error("BrokerClientApp: EXCEPTION while closing record file: ", e); }
@@ -326,34 +381,60 @@ public class BrokerClientApp {
         if (!isRecording) return;
 
         try {
+            if (!(message instanceof ActiveMQMessage)) {
+                throw new IllegalArgumentException("Unsupported Message type: "+message.getClass().getName());
+            }
+
             ActiveMQMessage amqMessage = (ActiveMQMessage) message;
             long timestamp = message.getJMSTimestamp();
             String destinationName = getDestinationName(message);
             String mime = amqMessage.getJMSXMimeType();
+            String type;
 
             String content;
             if (amqMessage instanceof ActiveMQTextMessage) {
+                type = BrokerClient.MESSAGE_TYPE.TEXT.name();
                 content = ((ActiveMQTextMessage)amqMessage).getText();
             } else
+            if (amqMessage instanceof ActiveMQObjectMessage) {
+                type = BrokerClient.MESSAGE_TYPE.OBJECT.name();
+                Object obj = ((ActiveMQObjectMessage)amqMessage).getObject();
+                /*String objClass = obj!=null ? obj.getClass().getName() : null;
+                content = objClass + ":" + obj.toString();*/
+                try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                     ObjectOutputStream oos = new ObjectOutputStream(baos))
+                {
+                    oos.writeObject(obj);
+                    byte[] bytes = baos.toByteArray();
+                    content = Base64.getEncoder().encodeToString(bytes);
+                }
+            } else
             if (amqMessage instanceof ActiveMQMapMessage) {
-                content = ((ActiveMQMapMessage)amqMessage).getContentMap()
+                type = BrokerClient.MESSAGE_TYPE.MAP.name();
+                /*content = ((ActiveMQMapMessage)amqMessage).getContentMap()
                         .entrySet().stream()
                         .map(x -> x.getKey() + "=" + x.getValue())
-                        .collect(Collectors.joining(",", "{", "}"));
+                        .collect(Collectors.joining(",", "{", "}"));*/
+                content = gson.toJson(((ActiveMQMapMessage)amqMessage).getContentMap());
             } else
-            if (amqMessage instanceof ActiveMQObjectMessage) {
-                content = ((ActiveMQObjectMessage)amqMessage).getObject().toString();
-            } else
-                throw new IllegalArgumentException("Unsupported Message type: "+amqMessage.getClass().getName());
+            if (amqMessage instanceof ActiveMQBytesMessage) {
+                type = BrokerClient.MESSAGE_TYPE.BYTES.name();
+                byte[] bytes = amqMessage.getContent().getData();
+                content = Base64.getEncoder().encodeToString(bytes);
+            } else {
+                type = BrokerClient.MESSAGE_TYPE.BYTES.name();
+                byte[] bytes = amqMessage.getContent().getData();
+                content = Base64.getEncoder().encodeToString(bytes);
+            }
 
             String properties = amqMessage.getProperties()
                     .entrySet().stream()
                     .map(x -> x.getKey() + "=" + x.getValue())
                     .collect(Collectors.joining(",", "{", "}"));
 
-            log.trace("REC> timestamp={}, topic={}, mime={}, contents={}, properties={}", timestamp, destinationName, mime, content, properties);
+            log.trace("REC> timestamp={}, topic={}, mime={}, type={}, contents={}, properties={}", timestamp, destinationName, mime, type, content, properties);
             if (recordFormat==RECORD_FORMAT.CSV) {
-                csvPrinter.printRecord(timestamp, destinationName, mime, content, properties);
+                csvPrinter.printRecord(timestamp, destinationName, mime, type, content, properties);
                 csvPrinter.flush();
             } else
             if (recordFormat==RECORD_FORMAT.JSON) {
@@ -361,6 +442,7 @@ public class BrokerClientApp {
                 jsonGenerator.writeNumberField("timestamp", timestamp);
                 jsonGenerator.writeStringField("destination", destinationName);
                 jsonGenerator.writeStringField("mime", mime);
+                jsonGenerator.writeStringField("type", type);
                 jsonGenerator.writeStringField("content", content);
                 jsonGenerator.writeStringField("properties", properties);
                 jsonGenerator.writeEndObject();
@@ -454,10 +536,15 @@ public class BrokerClientApp {
                     // read event data
                     long timestamp = Long.parseLong(rec.get("Timestamp"));
                     String destinationName = rec.get("Destination");
-                    //String mime = rec.get("Mime");
+                    String mime = rec.get("Mime");
+                    String type = rec.get("Type");
                     String contents = rec.get("Contents");
                     String properties = rec.get("Properties");
 
+                    log.trace("REPLAY> Event data: timestamp={}, destination={}, mime={}, type={}, content={}, properties={}",
+                            timestamp, destinationName, mime, type, contents, properties);
+
+                    // read event properties
                     if (properties.startsWith("{") && properties.endsWith("}"))
                         properties = properties.substring(1, properties.length()-1);
                     Map<String, String> propertiesMap = Arrays.stream(properties.split(","))
@@ -465,8 +552,14 @@ public class BrokerClientApp {
                             .map(p -> p.split("=",2))
                             .collect(Collectors.toMap(p->p[0], p->p.length>1 ? p[1] : ""));
 
-                    waitAndSend(client, prevValues, useInterval, useDelay, url,
-                            timestamp, destinationName, contents, propertiesMap, countSuccess, countFail);
+                    // wait and send
+                    try {
+                        waitAndSend(client, prevValues, useInterval, useDelay, url,
+                                timestamp, destinationName, type, contents, propertiesMap, countSuccess, countFail);
+                    } catch (Exception e) {
+                        log.error("REPLAY> EXCEPTION: Ignoring record entry: timestamp={}, destination={}, mime={}, type={}, content={}, properties={}\n",
+                                timestamp, destinationName, mime, type, contents, properties, e);
+                    }
                 });
     }
 
@@ -483,6 +576,7 @@ public class BrokerClientApp {
                 long timestamp = -1L;
                 String destinationName = null;
                 String mime = null;
+                String type = null;
                 String contents = null;
                 String properties = "";
 
@@ -492,21 +586,31 @@ public class BrokerClientApp {
                     if ("timestamp".equals(fieldName)) timestamp = jsonParser.getLongValue();
                     else if ("destination".equals(fieldName)) destinationName = jsonParser.getText();
                     else if ("mime".equals(fieldName)) mime = jsonParser.getText();
+                    else if ("type".equals(fieldName)) type = jsonParser.getText();
                     else if ("content".equals(fieldName)) contents = jsonParser.getText();
                     else if ("properties".equals(fieldName)) properties = jsonParser.getText();
                     else
                         log.warn("REPLAY> UNKNOWN JSON field at event #{}: {}", countSuccess.get()+countFail.get()+1, fieldName);
                 }
 
-                log.trace("REPLAY> Event data: timestamp={}, destination={}, mime={}, content={}, properties={}",
-                        timestamp, destinationName, mime, contents, properties);
+                log.trace("REPLAY> Event data: timestamp={}, destination={}, mime={}, type={}, content={}, properties={}",
+                        timestamp, destinationName, mime, type, contents, properties);
 
+                // read event properties
+                if (properties.startsWith("{") && properties.endsWith("}"))
+                    properties = properties.substring(1, properties.length()-1);
                 Map<String, String> propertiesMap = Arrays.stream(properties.split(","))
                         .map(p -> p.split("=",2))
                         .collect(Collectors.toMap(p->p[0], p->p[1]));
 
-                waitAndSend(client, prevValues, useInterval, useDelay, url,
-                        timestamp, destinationName, contents, propertiesMap, countSuccess, countFail);
+                // wait and send
+                try {
+                    waitAndSend(client, prevValues, useInterval, useDelay, url,
+                            timestamp, destinationName, type, contents, propertiesMap, countSuccess, countFail);
+                } catch (Exception e) {
+                    log.error("REPLAY> EXCEPTION: Ignoring record entry: timestamp={}, destination={}, mime={}, type={}, content={}, properties={}\n",
+                            timestamp, destinationName, mime, type, contents, properties, e);
+                }
             }
         }
 
@@ -514,10 +618,37 @@ public class BrokerClientApp {
         playbackReader.close();
     }
 
-    private static long waitAndSend(BrokerClient client, long[] prevValues, boolean useInterval, boolean useDelay, String url,
-                               long timestamp, String destinationName, String contents, Map<String,String> propertiesMap,
-                               AtomicLong countSuccess, AtomicLong countFail)
+    private static void waitAndSend(BrokerClient client, long[] prevValues, boolean useInterval, boolean useDelay, String url,
+                                    long timestamp, String destinationName, String type, String contents, Map<String,String> propertiesMap,
+                                    AtomicLong countSuccess, AtomicLong countFail)
+            throws IOException, ClassNotFoundException
     {
+        // prepare event payload
+        Serializable payload;
+        if ("TEXT".equalsIgnoreCase(type)) {
+            payload = contents;
+        } else
+        if ("OBJECT".equalsIgnoreCase(type)) {
+            /*String[] part = contents.split(":",2);
+            payload = part[1];*/
+            byte[] bytes = Base64.getDecoder().decode(contents);
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                 ObjectInputStream ois = new ObjectInputStream(bais))
+            {
+                payload = (Serializable) ois.readObject();
+            }
+        } else
+        if ("MAP".equalsIgnoreCase(type)) {
+            payload = gson.fromJson(contents, EventMap.class);
+        } else
+        if ("BYTES".equalsIgnoreCase(type)) {
+            payload = Base64.getDecoder().decode(contents);
+        } else {
+            //payload = contents;
+            payload = Base64.getDecoder().decode(contents);
+        }
+
+        // calculate wait time and sleep
         if (prevValues[1]>0) {
             // calculate wait time
             long sleepTime = 0;
@@ -556,15 +687,14 @@ public class BrokerClientApp {
         long counter = countSuccess.get()+countFail.get()+1;
         try {
             log.info("BrokerClientApp: Replay event #{}", counter);
-            log.trace("BrokerClientApp: Publishing event: {}", contents);
-            client.publishEvent(url, destinationName, contents, propertiesMap);
-            log.info("BrokerClientApp: Event payload: {}", contents);
+            log.trace("BrokerClientApp: Publishing {} event: {}", type, payload);
+            client.publishEvent(url, destinationName, type, payload, propertiesMap);
+            log.info("BrokerClientApp: Event payload: {}", payload);
             countSuccess.getAndIncrement();
         } catch (Exception e) {
             log.error("BrokerClientApp: EXCEPTION while playing back event #{}: ", counter, e);
             countFail.getAndIncrement();
         }
-        return counter;
     }
 
     private static void printPlaybackStatistics(long duration, AtomicLong countSuccess, AtomicLong countFail) {
@@ -591,8 +721,10 @@ public class BrokerClientApp {
     protected static void usage() {
         log.info("BrokerClientApp: Usage: ");
         log.info("BrokerClientApp: client list [-U<USERNAME> [-P<PASSWORD]] <URL> ");
-        log.info("BrokerClientApp: client publish [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <VALUE> <LEVEL> ");
-        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <PAYLOAD> ");
+        log.info("BrokerClientApp: client publish [ -U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <VALUE> <LEVEL> ");
+        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <JSON-PAYLOAD> ");
+        log.info("BrokerClientApp: client publish3 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <TEXT-PAYLOAD> ");
+        log.info("BrokerClientApp:     <MSG-TYPE>: text, object, bytes, map");
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
