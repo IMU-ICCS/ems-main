@@ -1,6 +1,8 @@
 package eu.melodic.upperware.adapter.communication.proactive;
 
 import cloud.morphemic.connectors.proactive.IProactiveClientServiceConnector;
+import org.activeeon.morphemic.model.SubmittedJobType;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
@@ -15,6 +17,7 @@ public interface ProactiveClientServiceForAdapter extends IProactiveClientServic
     long submitJob(String jobId);
     int addScaleOutTask(List<String> nodeNames, String jobId, String taskName);
     int addScaleInTask(List<String> nodeNames, String jobId, String taskName);
-    Optional<JobStatus> getJobStatus(String jobId);
+    Optional<Pair<SubmittedJobType, JobStatus>> getJobStatus(String jobId);
     int addMonitors(List<String> nodeNames, String authorizationBearer);
+    void waitForJobFinish(String jobId, SubmittedJobType expectedJobType);
 }
