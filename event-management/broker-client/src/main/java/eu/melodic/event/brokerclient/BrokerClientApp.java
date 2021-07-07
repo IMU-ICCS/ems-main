@@ -19,15 +19,13 @@ import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.*;
-import org.apache.activemq.util.ByteSequence;
-import org.apache.activemq.util.ByteSequenceData;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.jms.*;
 import javax.jms.Message;
 import javax.jms.Queue;
+import javax.jms.*;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
