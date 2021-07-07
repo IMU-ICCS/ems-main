@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -27,7 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.jms.*;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Paths;
 import java.util.*;
@@ -151,23 +154,33 @@ public class BrokerClient {
 
     // ------------------------------------------------------------------------
 
+    public enum MESSAGE_TYPE { TEXT, OBJECT, BYTES, MAP };
+
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
-        _publishEvent(connectionString, destinationName, new EventMap(eventMap), null);
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, new EventMap(eventMap), null);
     }
 
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap, Map<String,String> propertiesMap) throws JMSException {
-        _publishEvent(connectionString, destinationName, new EventMap(eventMap), propertiesMap);
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, new EventMap(eventMap), propertiesMap);
     }
 
     public synchronized void publishEvent(String connectionString, String destinationName, String eventContents) throws JMSException {
-        _publishEvent(connectionString, destinationName, eventContents, null);
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, eventContents, null);
     }
 
     public synchronized void publishEvent(String connectionString, String destinationName, String eventContents, Map<String,String> propertiesMap) throws JMSException {
-        _publishEvent(connectionString, destinationName, eventContents, propertiesMap);
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, eventContents, propertiesMap);
     }
 
-    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event, Map<String,String> propertiesMap) throws JMSException {
+    public synchronized void publishEvent(String connectionString, String destinationName, String type, Serializable eventContents, Map<String,String> propertiesMap) throws JMSException {
+        MESSAGE_TYPE messageType = StringUtils.isNotBlank(type)
+                ? MESSAGE_TYPE.valueOf(type.trim().toUpperCase())
+                : MESSAGE_TYPE.TEXT;
+        _publishEvent(connectionString, destinationName, messageType, eventContents, propertiesMap);
+    }
+
+    @SneakyThrows
+    protected synchronized void _publishEvent(String connectionString, String destinationName, MESSAGE_TYPE messageType, Serializable event, Map<String,String> propertiesMap) throws JMSException {
         // open or reuse connection
         checkProperties();
         boolean _closeConn = false;
@@ -185,13 +198,55 @@ public class BrokerClient {
         producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
 
         // Create a messages
-        //ObjectMessage message = session.createObjectMessage(event);
-        //TextMessage message = session.createTextMessage(event.toString());
-        String payload = event instanceof String
-                ? (String)event
-                : gson.toJson(event);
-        TextMessage message = session.createTextMessage(payload);
-        log.debug("BrokerClient.publishEvent(): Message payload: payload={}", payload);
+        String payloadText = null;
+        Message message;
+        switch (messageType) {
+            case MAP:
+                if (event instanceof Map) {
+                    final MapMessage mapMsg = session.createMapMessage();
+                    for (Object key : ((Map) event).keySet()) {
+                        Object val = ((Map) event).get(key);
+                        String k = key != null ? key.toString() : null;
+                        mapMsg.setObject(k, val);
+                    }
+                    payloadText = event.toString();
+                    message = mapMsg;
+                    break;
+                } else {
+                    log.warn("BrokerClient.publishEvent(): Payload is not a Map: {}", event.getClass().getName());
+                    log.warn("BrokerClient.publishEvent(): Will send an Object message");
+                    messageType = MESSAGE_TYPE.OBJECT;
+                }
+            case OBJECT:
+                payloadText = event.toString();
+                message = session.createObjectMessage(event);
+                break;
+            case BYTES:
+                byte[] bytesArr;
+                if (event instanceof byte[]) {
+                    bytesArr = (byte[]) event;
+                } else {
+                    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                         ObjectOutputStream out = new ObjectOutputStream(bos))
+                    {
+                        out.writeObject(event);
+                        bytesArr = bos.toByteArray();
+                    }
+                }
+                BytesMessage bytesMsg = session.createBytesMessage();
+                bytesMsg.writeBytes(bytesArr);
+                payloadText = new String(bytesArr);
+                message = bytesMsg;
+                break;
+            case TEXT:
+            default:
+                payloadText = event instanceof String
+                        ? (String)event
+                        : event.toString();
+                message = session.createTextMessage(payloadText);
+                break;
+        }
+        log.debug("BrokerClient.publishEvent(): Message payload: payload={}", payloadText);
 
         if (propertiesMap!=null)
             for (Map.Entry<String,String> e : propertiesMap.entrySet())
@@ -200,9 +255,9 @@ public class BrokerClient {
 
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.debug("BrokerClient.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
+        log.debug("BrokerClient.publishEvent(): Sending {} message: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
         producer.send(message);
-        log.info("BrokerClient.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
+        log.info("BrokerClient.publishEvent(): {} message sent: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
 
         // close connection
         if (_closeConn) {
