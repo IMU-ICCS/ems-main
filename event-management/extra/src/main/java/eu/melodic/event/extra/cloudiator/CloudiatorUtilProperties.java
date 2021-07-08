@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.server.properties;
+package eu.melodic.event.extra.cloudiator;
 
 import lombok.Getter;
 import lombok.Setter;

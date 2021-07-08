@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.server.util;
+package eu.melodic.event.extra.cloudiator;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
@@ -15,7 +15,6 @@ import de.uniulm.omi.cloudiator.colosseum.client.entities.Cloud;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.IpAddress;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.Location;
 import de.uniulm.omi.cloudiator.colosseum.client.entities.VirtualMachine;
-import eu.melodic.event.baguette.server.properties.CloudiatorUtilProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
