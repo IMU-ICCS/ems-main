@@ -79,14 +79,14 @@ public class BrokerClientApp {
 
         // list destinations
         if ("list".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             log.info("BrokerClientApp: Listing destinations:");
             BrokerClient client = BrokerClient.newClient(username, password);
             client.getDestinationNames(url).stream().forEach(d -> log.info("    {}", d));
         } else
         // send an event
         if ("publish".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String value = args[aa++];
@@ -95,7 +95,7 @@ public class BrokerClientApp {
             sendEvent(url, username, password, topic, type, event);
         } else
         if ("publish2".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String payload = args[aa++];
@@ -105,7 +105,7 @@ public class BrokerClientApp {
             sendEvent(url, username, password, topic, type, event);
         } else
         if ("publish3".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String payload = args[aa++];
@@ -120,7 +120,7 @@ public class BrokerClientApp {
         } else
         // receive events from topic
         if ("receive".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
 
             if (isRecording)
@@ -132,13 +132,13 @@ public class BrokerClientApp {
         } else
         // playback events
         if ("playback".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             initPlayback(args, aa);
             playbackEvents(url, username, password);
         } else
         // subscribe to topic
         if ("subscribe".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
@@ -158,7 +158,7 @@ public class BrokerClientApp {
         } else
         // start event generator
         if ("generator".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             long interval = Long.parseLong(args[aa++]);
             long howmany = Long.parseLong(args[aa++]);
@@ -221,6 +221,12 @@ public class BrokerClientApp {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage();
         }
+    }
+
+    private static String processUrlArg(String url) {
+        url = url.replace("%KAP%", "daemon=true&trace=false&useInactivityMonitor=false&connectionTimeout=0&keepAlive=true");
+        log.debug("BrokerClientApp: Effective URL: {}", url);
+        return url;
     }
 
     private static void sendEvent(String url, String username, String password, String topic, String type, Serializable payload) throws JMSException, IOException {
@@ -738,5 +744,6 @@ public class BrokerClientApp {
         log.info("BrokerClientApp: client record [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-Mcsv|-Mjson] <REC-FILE> ");
         log.info("BrokerClientApp: client playback [-U<USERNAME> [-P<PASSWORD]] <URL> [-Innn|-Dnnn|-Sd[.d]] [-Mcsv|-Mjson] <REC-FILE> ");
         log.info("BrokerClientApp: client js [-E<engine-name>] <JS-file> ");
+        log.info("BrokerClientApp:     <URL>: (tcp:|ssl:)//<ADDRESS>:<PORT>[?[%KAP%][&...additional properties]*]   KAP: Keep-Alive Properties ");
     }
 }
