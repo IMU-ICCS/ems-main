@@ -59,6 +59,9 @@ public class MetaSolverProperties {
     private long predictionRegistryCleanupRate = -1L;
     private boolean predictionRegistryCleanupAfterScaleEvent = true;
     private double reconfigurationProbabilityThreshold = 0.5;
+    private boolean debugEventsEnabled = false;
+    private String debugEventsTopic = "metasolver_debug";
+    private boolean cpModelUpdateEnabled = true;
 
     // --------------------------------------------------------------
 

@@ -109,11 +109,26 @@ public class Coordinator implements ApplicationContextAware {
     public boolean setMetricValuesInCpModel(String applicationId, String cpModelPath, @NonNull Map<String, String> metricValues) throws ConcurrentAccessException, NumberFormatException {
         log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}, metricValues={}", applicationId, cpModelPath, metricValues);
 
-        // Update CP model with current metric variable values
-        CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
-        boolean succeeded = helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+        // Send MetaSolver debug event
+        if (metaSolverProperties.isDebugEventsEnabled()) {
+            try {
+                log.info("setMetricValuesInCpModel: Sending DEBUG event: metricValues={}", metricValues);
+                applicationContext.getBean(MetricValueMonitorBean.class).sendDebugEvent(metaSolverProperties.getDebugEventsTopic(), metricValues);
+                log.info("setMetricValuesInCpModel: DEBUG event sent: metricValues={}", metricValues);
+            } catch (Exception e) {
+                log.error("setMetricValuesInCpModel: EXCEPTION while sending debug event: ", e);
+            }
+        }
 
-        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model update with current MVV's finished");
+        // Update CP model with current metric variable values
+        boolean succeeded = true;
+        if (metaSolverProperties.isCpModelUpdateEnabled()) {
+            CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
+            succeeded = helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+            log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model update with current MVV's finished");
+        } else
+            log.warn("MetaSolver.Coordinator: setMetricValuesInCpModel: CP model update is DISABLED");
+
         return succeeded;
     }
 

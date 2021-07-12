@@ -17,6 +17,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.command.ActiveMQMapMessage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import javax.jms.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -37,6 +39,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     private MetaSolverProperties properties;
     private Coordinator coordinator;
     private PredictionHelper predictionHelper;
+    private MessageProducer debugEventProducer = null;
 
     private final HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
     private final MetricValueRegistry<Object> registry;
@@ -241,7 +244,22 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             log.error("*****   SUBSCRIBE: ERROR: ", e);
         } finally {
             connectionCache.clear();
+            debugEventProducer = null;
         }
+    }
+
+    public void sendDebugEvent(String topicName, Map<String, String> metricValues) throws JMSException {
+        ActiveMQMapMessage message = new ActiveMQMapMessage();
+        message.setObject("metricValues", metricValues);
+        message.setLong("timestamp", System.currentTimeMillis());
+
+        if (debugEventProducer==null) {
+            //XXX: TODO: Improve connection and session selection
+            Session session = connectionCache.values().stream().findFirst().get().getSessions().get(0).getSession();
+            Topic topic = session.createTopic(topicName);
+            debugEventProducer = session.createProducer(topic);
+        }
+        debugEventProducer.send(message);
     }
 
     public void setMetricValueInRegistry(String name, String value) {
