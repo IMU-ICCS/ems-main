@@ -78,6 +78,7 @@ public class MetaSolverProperties {
     public static class Esb {
         @NotBlank
         private String url;
+        private boolean enabled = true;
     }
 
     @Getter

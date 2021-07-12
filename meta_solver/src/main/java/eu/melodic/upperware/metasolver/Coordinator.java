@@ -261,6 +261,11 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     private void sendNotification(DeploymentProcessRequest notification) {
+        if (!metaSolverProperties.getEsb().isEnabled()) {
+            log.warn("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): ESB notification is DISABLED");
+            return;
+        }
+
         String esbUrl = metaSolverProperties.getEsb().getUrl();
         if (esbUrl.endsWith("/")) {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
@@ -438,7 +443,7 @@ public class Coordinator implements ApplicationContextAware {
         final Coordinator coordinator = this;
         TimerTask task = new TimerTask() {
             public void run() {
-                if (updateLocked.getAndSet(true)) {
+                if (!updateLocked.compareAndSet(false, true)) {
                     log.warn("CP Model Update Timer: Previous iteration is still running: Updating CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
                     return;
                 }
