@@ -46,8 +46,9 @@ public class BrokerClientApp {
     private static RECORD_FORMAT recordFormat;
     private static CSVPrinter csvPrinter;
     private static JsonGenerator jsonGenerator;
-    private static long playbackInterval;
-    private static long playbackDelay;
+    private static long playbackInterval = -1;
+    private static long playbackDelay = -1;
+    private static double playbackSpeed = 1.0;
     private static Gson gson = new Gson();
 
     private enum RECORD_FORMAT { CSV, JSON }
@@ -78,14 +79,14 @@ public class BrokerClientApp {
 
         // list destinations
         if ("list".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             log.info("BrokerClientApp: Listing destinations:");
             BrokerClient client = BrokerClient.newClient(username, password);
             client.getDestinationNames(url).stream().forEach(d -> log.info("    {}", d));
         } else
         // send an event
         if ("publish".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String value = args[aa++];
@@ -94,7 +95,7 @@ public class BrokerClientApp {
             sendEvent(url, username, password, topic, type, event);
         } else
         if ("publish2".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String payload = args[aa++];
@@ -104,7 +105,7 @@ public class BrokerClientApp {
             sendEvent(url, username, password, topic, type, event);
         } else
         if ("publish3".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String payload = args[aa++];
@@ -119,7 +120,7 @@ public class BrokerClientApp {
         } else
         // receive events from topic
         if ("receive".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
 
             if (isRecording)
@@ -131,13 +132,13 @@ public class BrokerClientApp {
         } else
         // playback events
         if ("playback".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             initPlayback(args, aa);
             playbackEvents(url, username, password);
         } else
         // subscribe to topic
         if ("subscribe".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             log.info("BrokerClientApp: Subscribing to topic: {}", topic);
             BrokerClient client = BrokerClient.newClient(username, password);
@@ -157,7 +158,7 @@ public class BrokerClientApp {
         } else
         // start event generator
         if ("generator".equalsIgnoreCase(command)) {
-            String url = args[aa++];
+            String url = processUrlArg( args[aa++] );
             String topic = args[aa++];
             long interval = Long.parseLong(args[aa++]);
             long howmany = Long.parseLong(args[aa++]);
@@ -220,6 +221,12 @@ public class BrokerClientApp {
             log.error("BrokerClientApp: Unknown command: {}", command);
             usage();
         }
+    }
+
+    private static String processUrlArg(String url) {
+        url = url.replace("%KAP%", "daemon=true&trace=false&useInactivityMonitor=false&connectionTimeout=0&keepAlive=true");
+        log.debug("BrokerClientApp: Effective URL: {}", url);
+        return url;
     }
 
     private static void sendEvent(String url, String username, String password, String topic, String type, Serializable payload) throws JMSException, IOException {
@@ -456,13 +463,21 @@ public class BrokerClientApp {
         // Process recording command line arguments
         playbackInterval = -1L;
         playbackDelay = -1L;
-        String str2 = null;
-        if (args[aa].startsWith("-I"))
+        int startAa = aa;
+        if (args[aa].startsWith("-I")) {
             playbackInterval = Long.parseLong(args[aa++].substring(2).toLowerCase());
-        if (args[aa].startsWith("-D"))
+            if (playbackInterval<0) throw new IllegalArgumentException("Playback Interval cannot be negative: "+playbackInterval);
+        }
+        if (args[aa].startsWith("-D")) {
             playbackDelay = Long.parseLong(args[aa++].substring(2).toLowerCase());
-        if (playbackInterval>0 && playbackDelay>0)
-            throw new IllegalArgumentException("You can use either -I to specify or -D switch but not both");
+            if (playbackDelay<0) throw new IllegalArgumentException("Playback Delay cannot be negative: "+playbackDelay);
+        }
+        if (args[aa].startsWith("-S")) {
+            playbackSpeed = Double.parseDouble(args[aa++].substring(2).toLowerCase());
+            if (playbackSpeed<=0) throw new IllegalArgumentException("Playback Speed cannot be negative or zero: "+playbackSpeed);
+        }
+        if (aa-startAa>1)
+            throw new IllegalArgumentException("You cannot use -I, -D, -S switches at the same time");
 
         String format = null;
         if (args[aa].startsWith("-M"))
@@ -499,8 +514,8 @@ public class BrokerClientApp {
         BrokerClient client = BrokerClient.newClient();
         client.openConnection(url, username, password, true);
 
-        boolean useInterval = (playbackInterval>0);
-        boolean useDelay = (playbackDelay>0);
+        boolean useInterval = (playbackInterval>=0);
+        boolean useDelay = (playbackDelay>=0);
 
         log.info("Start playback...");
         long startTm = System.currentTimeMillis();
@@ -660,7 +675,7 @@ public class BrokerClientApp {
                 log.trace("REPLAY> Delay: now={}, playback={}", now, playbackDelay);
                 sleepTime = playbackDelay;
             } else {
-                long diff = timestamp - prevValues[0];
+                long diff = (long)((timestamp - prevValues[0]) / playbackSpeed);
                 log.trace("REPLAY> Recorded: diff={}, now={}, prev={}", diff, now, prevValues[1]);
                 prevValues[0] = timestamp;
                 prevValues[1] += diff;
@@ -727,7 +742,8 @@ public class BrokerClientApp {
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
         log.info("BrokerClientApp: client record [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-Mcsv|-Mjson] <REC-FILE> ");
-        log.info("BrokerClientApp: client playback [-U<USERNAME> [-P<PASSWORD]] <URL> [-Innn|-Dnnn] [-Mcsv|-Mjson] <REC-FILE> ");
+        log.info("BrokerClientApp: client playback [-U<USERNAME> [-P<PASSWORD]] <URL> [-Innn|-Dnnn|-Sd[.d]] [-Mcsv|-Mjson] <REC-FILE> ");
         log.info("BrokerClientApp: client js [-E<engine-name>] <JS-file> ");
+        log.info("BrokerClientApp:     <URL>: (tcp:|ssl:)//<ADDRESS>:<PORT>[?[%KAP%][&...additional properties]*]   KAP: Keep-Alive Properties ");
     }
 }
