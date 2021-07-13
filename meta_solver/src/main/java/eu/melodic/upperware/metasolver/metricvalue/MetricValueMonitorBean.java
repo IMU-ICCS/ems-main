@@ -58,10 +58,29 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
+
+        initDebugEventTopic();
     }
 
     public MetricValueRegistry<Object> getMetricValuesRegistry() {
         return registry;
+    }
+
+    protected void initDebugEventTopic() {
+        MetaSolverProperties.DebugEvent deCfg = properties.getDebugEvents();
+        if (deCfg!=null && deCfg.isEnabled() && debugEventProducer==null) {
+            log.info("MetaSolver.MetricValueMonitorBean: Subscribing to Debug Event topic: {}", deCfg.getTopicName());
+            try {
+                subscribe(deCfg.getUrl(), deCfg.getUsername(), deCfg.getPassword(), deCfg.getCertificate(),
+                        deCfg.getTopicName(), deCfg.getClientId(), TopicType.DEBUG_EVENT);
+                Session session = connectionCache.remove(deCfg.getUrl()).getSessions().get(0).getSession();
+                Topic topic = session.createTopic(deCfg.getTopicName());
+                debugEventProducer = session.createProducer(topic);
+                log.info("MetaSolver.MetricValueMonitorBean: Subscribed to Debug Event topic: {}", deCfg.getTopicName());
+            } catch (Exception e) {
+                log.error("MetaSolver.MetricValueMonitorBean: EXCEPTION while subscribing to Debug Event topic: {}. Exception: ", deCfg.getTopicName(), e);
+            }
+        }
     }
 
     public void subscribe() {
@@ -130,8 +149,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 //Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
                 Connection connection = connectionFactory.createConnection(username, password);
                 log.trace("*****   SUBSCRIBE: connection created");
-                if (!clientId.isEmpty()) {
-                    connection.setClientID(clientId);
+                if (StringUtils.isNotBlank(clientId)) {
+                    connection.setClientID(clientId.trim());
                     log.trace("*****   SUBSCRIBE: client id set: {}", clientId);
                 }
 
@@ -244,7 +263,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             log.error("*****   SUBSCRIBE: ERROR: ", e);
         } finally {
             connectionCache.clear();
-            debugEventProducer = null;
         }
     }
 
@@ -253,13 +271,10 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         message.setObject("metricValues", metricValues);
         message.setLong("timestamp", System.currentTimeMillis());
 
-        if (debugEventProducer==null) {
-            //XXX: TODO: Improve connection and session selection
-            Session session = connectionCache.values().stream().findFirst().get().getSessions().get(0).getSession();
-            Topic topic = session.createTopic(topicName);
-            debugEventProducer = session.createProducer(topic);
-        }
-        debugEventProducer.send(message);
+        if (debugEventProducer==null)
+            log.warn("MetaSolver.MetricValueMonitorBean.sendDebugEvent: Debug Event producer has not been initialized");
+        else
+            debugEventProducer.send(message);
     }
 
     public void setMetricValueInRegistry(String name, String value) {

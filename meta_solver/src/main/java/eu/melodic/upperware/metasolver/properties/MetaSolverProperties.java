@@ -10,6 +10,7 @@ package eu.melodic.upperware.metasolver.properties;
 
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse.DesignatedSolverType;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -59,8 +60,7 @@ public class MetaSolverProperties {
     private long predictionRegistryCleanupRate = -1L;
     private boolean predictionRegistryCleanupAfterScaleEvent = true;
     private double reconfigurationProbabilityThreshold = 0.5;
-    private boolean debugEventsEnabled = false;
-    private String debugEventsTopic = "metasolver_debug";
+    private DebugEvent debugEvents;
     private boolean cpModelUpdateEnabled = true;
 
     // --------------------------------------------------------------
@@ -107,5 +107,18 @@ public class MetaSolverProperties {
             private String clientId;
             private TopicType type;
         }
+    }
+
+    @Data
+    public static class DebugEvent {
+        private boolean enabled = false;
+        private String topicName = "metasolver_debug";
+        private String url;
+        private String username;
+        @ToString.Exclude
+        private String password;
+        @ToString.Exclude
+        private String certificate;
+        private String clientId;
     }
 }

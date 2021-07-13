@@ -61,6 +61,9 @@ public class MetricValueListener implements MessageListener {
                         log.debug("Listener of topic {}: Got a SCALE event: ", topicName);
                         processScaleEvent(metricName, payload);
                         break;
+                    case DEBUG_EVENT:
+                        log.debug("Listener of topic {}: Got a DEBUG event: ", topicName);
+                        break;
                     default:
                         log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
                 }
