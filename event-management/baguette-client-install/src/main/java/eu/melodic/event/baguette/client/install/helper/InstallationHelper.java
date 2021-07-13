@@ -12,12 +12,10 @@ package eu.melodic.event.baguette.client.install.helper;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
-import eu.melodic.event.util.NetUtil;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface InstallationHelper {
     List<InstallationInstructions> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
@@ -25,12 +23,4 @@ public interface InstallationHelper {
     List<InstallationInstructions> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
 
     ClientInstallationTask createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception;
-
-    //XXX: TODO: Move to AbstractInstallationHelper when CloudiatorInstallationHelper is fixed to extend AbstractInstallationHelper
-    default String _prepareUrl(String urlTemplate, String baseUrl) {
-        return urlTemplate
-                .replace("%{BASE_URL}%", baseUrl)
-                .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(""))
-                .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(""));
-    }
 }

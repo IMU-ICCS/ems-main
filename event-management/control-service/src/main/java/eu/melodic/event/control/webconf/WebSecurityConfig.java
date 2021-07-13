@@ -65,13 +65,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             log.warn("WebSecurityConfig: JWT-based authentication is disabled");
         }
 
-        if (StringUtils.isBlank(principalRequestValue)) {
-            log.warn("WebSecurityConfig: No API-KEY specified in configuration. API-Key-based authentication will be disabled");
-        }
-
         if ("generate".equalsIgnoreCase(principalRequestValue)) {
             principalRequestValue = RandomStringUtils.randomAlphanumeric(30);
             log.info("WebSecurityConfig: API key generated: {}", principalRequestValue);
+        }
+
+        if (StringUtils.isBlank(principalRequestValue)) {
+            log.warn("WebSecurityConfig: No API-KEY specified in configuration. API-Key-based authentication will be disabled");
         }
 
         // Initialize API-Key authentication filter, if configured

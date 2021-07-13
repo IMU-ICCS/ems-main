@@ -12,7 +12,6 @@ package eu.melodic.event.control;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.*;
-import eu.melodic.event.baguette.client.install.helper.CloudiatorInstallationHelper;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
@@ -22,6 +21,7 @@ import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
@@ -309,8 +309,9 @@ public class ControlServiceController {
 
         // Continue processing according to ExecutionWare type
         String response;
+        log.info("ControlServiceController.baguetteRegisterNode(): ExecutionWare: {}", properties.getExecutionware());
         if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
-            response = getClientInstallationInstructionsFromCloudiator(nodeMap, contextMap, baguette);
+            response = getClientInstallationInstructions(nodeMap, contextMap, baguette);
         } else {
             response = createClientInstallationTask(nodeMap, contextMap, baguette);
         }
@@ -321,12 +322,17 @@ public class ControlServiceController {
     }
 
     // Retained for backward compatibility with Cloudiator
-    public String getClientInstallationInstructionsFromCloudiator(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    @SneakyThrows
+    public String getClientInstallationInstructions(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         // Prepare Baguette Client installation instructions for node
         String nodeId = (String) nodeMap.get("id");
         String nodeOs = (String) nodeMap.get("operatingSystem");
+        final String CLOUDIATOR_HELPER_CLASS = "eu.melodic.event.extra.cloudiator.CloudiatorInstallationHelper";
+        List<InstallationInstructions> list = InstallationHelperFactory.getInstance()
+                .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, nodeMap)
+                .prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
         InstallationInstructions installationInstructions =
-                CloudiatorInstallationHelper.getInstance().prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
+                (list!=null && list.size()>0) ? list.get(0) : null;
         if (installationInstructions==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;
@@ -417,7 +423,7 @@ public class ControlServiceController {
         return clients;
     }
 
-    @RequestMapping(value = "/client/command/{clientId}/{command}", method = GET)
+    @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
     public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
         log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);

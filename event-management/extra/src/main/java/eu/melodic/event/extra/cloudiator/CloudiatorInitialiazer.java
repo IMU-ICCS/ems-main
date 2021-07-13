@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.server.util;
+package eu.melodic.event.extra.cloudiator;
 
 import de.uniulm.omi.cloudiator.colosseum.client.Client;
 import de.uniulm.omi.cloudiator.colosseum.client.ClientBuilder;
@@ -204,7 +204,7 @@ public class CloudiatorInitialiazer {
 
         String startStr = configDomain + "[";
         int startPos = startStr.length();
-        List<Integer> indexes = ((java.util.Collection<String>) java.util.Collections.list(config.propertyNames()))
+        List<Integer> indexes = ((Collection<String>) Collections.list(config.propertyNames()))
                 .stream()
                 .filter(name -> name.startsWith(startStr))
                 .map(name -> name.substring(startPos, name.indexOf(']', startPos)))
