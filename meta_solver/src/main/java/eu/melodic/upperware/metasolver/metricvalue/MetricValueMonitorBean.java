@@ -17,7 +17,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.command.ActiveMQMapMessage;
+import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -267,9 +267,15 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     }
 
     public void sendDebugEvent(String topicName, Map<String, String> metricValues) throws JMSException {
-        ActiveMQMapMessage message = new ActiveMQMapMessage();
+        /*ActiveMQMapMessage message = new ActiveMQMapMessage();
         message.setObject("metricValues", metricValues);
         message.setLong("timestamp", System.currentTimeMillis());
+        */
+        Map<String,Object> map = new HashMap<>();
+        map.put("metricValues", metricValues);
+        map.put("timestamp", System.currentTimeMillis());
+        ActiveMQTextMessage message = new ActiveMQTextMessage();
+        message.setText(map.toString());
 
         if (debugEventProducer==null)
             log.warn("MetaSolver.MetricValueMonitorBean.sendDebugEvent: Debug Event producer has not been initialized");

@@ -112,9 +112,9 @@ public class Coordinator implements ApplicationContextAware {
         // Send MetaSolver debug event
         if (metaSolverProperties.getDebugEvents().isEnabled()) {
             try {
-                log.info("setMetricValuesInCpModel: Sending DEBUG event: metricValues={}", metricValues);
+                log.debug("setMetricValuesInCpModel: Sending DEBUG event: metricValues={}", metricValues);
                 applicationContext.getBean(MetricValueMonitorBean.class).sendDebugEvent(metaSolverProperties.getDebugEvents().getTopicName(), metricValues);
-                log.info("setMetricValuesInCpModel: DEBUG event sent: metricValues={}", metricValues);
+                log.debug("setMetricValuesInCpModel: DEBUG event sent: metricValues={}", metricValues);
             } catch (Exception e) {
                 log.error("setMetricValuesInCpModel: EXCEPTION while sending debug event: ", e);
             }

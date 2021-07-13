@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
 import javax.jms.*;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -44,39 +46,56 @@ public class MetricValueListener implements MessageListener {
     public void onMessage(Message message) {
         try {
             log.debug("Listener of topic {}: Received message: {}", topic.getTopicName(), message);
-            if (message instanceof TextMessage) {
-                // Extract Topic name and payload from message
-                TextMessage textMessage = (TextMessage) message;
-                //String metricName = textMessage.getStringProperty("topic_name");
-                String metricName = topicName;
-                String payload = textMessage.getText();
-                log.debug("Listener of topic {}: metric={}, type={}, payload={}", topicName, metricName, type, payload);
+            String metricName = topicName;
+            String payload = getPayload(message);
+            log.debug("Listener of topic {}: metric={}, type={}, payload={}", topicName, metricName, type, payload);
 
-                switch (type) {
-                    case MVV:
-                        log.debug("Listener of topic {}: Got an MVV event: ", topicName);
-                        processMetricValueEvent(metricName, payload);
-                        break;
-                    case SCALE:
-                        log.debug("Listener of topic {}: Got a SCALE event: ", topicName);
-                        processScaleEvent(metricName, payload);
-                        break;
-                    case DEBUG_EVENT:
-                        log.debug("Listener of topic {}: Got a DEBUG event: ", topicName);
-                        break;
-                    default:
-                        log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
-                }
-            } else {
-                if (type==TopicType.DEBUG_EVENT)
-                    log.info("Listener of topic {}: Got a DEBUG event: ", topicName);
-                else
-                    log.warn("Unsupported message type: {}", message.getClass().getName());
+            switch (type) {
+                case MVV:
+                    log.debug("Listener of topic {}: Got an MVV event: {}", topicName, payload);
+                    processMetricValueEvent(metricName, payload);
+                    break;
+                case SCALE:
+                    log.debug("Listener of topic {}: Got a SCALE event: {}", topicName, payload);
+                    processScaleEvent(metricName, payload);
+                    break;
+                case DEBUG_EVENT:
+                    log.debug("Listener of topic {}: Got a DEBUG event: {}", topicName, payload);
+                    break;
+                default:
+                    log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it: {}", topicName, message);
             }
+
         } catch (JMSException e) {
-            log.error("Caught: ", e);
-            //e.printStackTrace();
+            log.error("Listener of topic {}: EXCEPTION caught: ", topicName, e);
         }
+    }
+
+    protected String getPayload(@NonNull Message message) throws JMSException {
+        if (message instanceof TextMessage) {
+            return ((TextMessage) message).getText();
+        } else if (message instanceof ObjectMessage) {
+            Object o = ((ObjectMessage) message).getObject();
+            return o != null ? o.toString() : null;
+        } else if (message instanceof BytesMessage) {
+            long len = ((BytesMessage)message).getBodyLength();
+            byte[] bytes = new byte[(int)len];
+            int n = ((BytesMessage)message).readBytes(bytes);
+            return new String(bytes);
+        } else if (message instanceof MapMessage) {
+            MapMessage mapMesg = (MapMessage)message;
+            Enumeration en = mapMesg.getMapNames();
+            Map<String,String> map = new HashMap<>();
+            while (en.hasMoreElements()) {
+                Object key = en.nextElement();
+                if (key==null) continue;
+                Object val = mapMesg.getObject(key.toString());
+                map.put(key.toString(), val!=null ? val.toString() : null);
+            }
+            return map.toString();
+        }
+        log.error("getPayload: Unsupported message type: class={}, message={}", message.getClass().getName(), message);
+        throw new IllegalArgumentException("Unsupported message type: "+message.getClass().getName());
     }
 
     protected void processMetricValueEvent(@NonNull String metricName, @NonNull String payload) {
