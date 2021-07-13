@@ -3,7 +3,9 @@ package eu.melodic.upperware.guibackend.communication.proactive;
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.PAGateway;
+import org.activeeon.morphemic.model.Hardware;
 import org.activeeon.morphemic.model.Image;
+import org.activeeon.morphemic.model.Location;
 import org.activeeon.morphemic.model.PACloud;
 
 import java.util.Collections;
@@ -29,5 +31,15 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     @Override
     public List<Image> getAllCloudImages(String cloudID) {
         return getPAGateway().map(paGateway -> paGateway.getAllCloudImages(cloudID)).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<Hardware> getAllHardware() {
+        return getPAGateway().map(PAGateway::getHardwareList).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<Location> getAllLocation() {
+        return getPAGateway().map(PAGateway::getLocationList).orElse(Collections.emptyList());
     }
 }
