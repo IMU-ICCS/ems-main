@@ -68,7 +68,10 @@ public class MetricValueListener implements MessageListener {
                         log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it", topicName);
                 }
             } else {
-                log.warn("Unsupported message type: {}", message.getClass().getName());
+                if (type==TopicType.DEBUG_EVENT)
+                    log.info("Listener of topic {}: Got a DEBUG event: ", topicName);
+                else
+                    log.warn("Unsupported message type: {}", message.getClass().getName());
             }
         } catch (JMSException e) {
             log.error("Caught: ", e);
