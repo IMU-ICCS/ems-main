@@ -267,6 +267,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     }
 
     public void sendDebugEvent(String topicName, Map<String, String> metricValues) throws JMSException {
+        initDebugEventTopic();
+
         /*ActiveMQMapMessage message = new ActiveMQMapMessage();
         message.setObject("metricValues", metricValues);
         message.setLong("timestamp", System.currentTimeMillis());
