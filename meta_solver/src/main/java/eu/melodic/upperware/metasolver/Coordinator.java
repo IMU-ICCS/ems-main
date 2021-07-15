@@ -62,6 +62,8 @@ public class Coordinator implements ApplicationContextAware {
     private String updateAppId;
     private String updatePath;
 
+    private long previousReconfigurationTimestamp = 0;
+
     @Getter
     private PredictionHelper predictionHelper;
 
@@ -234,7 +236,14 @@ public class Coordinator implements ApplicationContextAware {
         return requestStartProcessForScaling(isSimulation, null);
     }
 
-    public boolean requestStartProcessForScaling(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
+    public synchronized boolean requestStartProcessForScaling(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
+        // Check if we are in reconfiguration blocking period
+        if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
+            log.warn("MetaSolver.Coordinator: requestStartProcessForScaling(): Cannot request a new reconfiguration during reconfiguration blocking period");
+            return false;
+        }
+        previousReconfigurationTimestamp = System.currentTimeMillis();
+
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
