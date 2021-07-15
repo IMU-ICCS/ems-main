@@ -11,47 +11,36 @@ package eu.melodic.upperware.metasolver.properties;
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse.DesignatedSolverType;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.regex.Pattern;
 
-@Getter
-@Setter
-@ToString
+@Slf4j
+@Data
 @Validated
 @Configuration
 @ConfigurationProperties
-@Slf4j
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.metaSolver.properties")
 public class MetaSolverProperties {
 
-    @Valid
     @NotNull
     private Esb esb;
-    @Valid
     @NotNull
     private Pubsub pubsub;
-    @Valid
     @NotNull
     private double utilityThresholdFactor;
-    @Valid
     private DesignatedSolverType defaultSolver = DesignatedSolverType.CPSOLVER;
-    @Valid
     private String emsUrl;
-    @Valid
+
+    private boolean cpModelUpdateEnabled = true;
     private long cpModelUpdateInterval = 30000L;
 
     private boolean predictionMonitoringEnabled = false;
@@ -61,44 +50,22 @@ public class MetaSolverProperties {
     private boolean predictionRegistryCleanupAfterScaleEvent = true;
     private double reconfigurationProbabilityThreshold = 0.5;
     private DebugEvent debugEvents;
-    private boolean cpModelUpdateEnabled = true;
 
     // --------------------------------------------------------------
 
-    private static boolean booleanValue(String str) {
-        return booleanValue(str, false);
-    }
-
-    private static boolean booleanValue(String str, boolean defVal) {
-        if (StringUtils.isBlank(str)) return defVal;
-        return BooleanUtils.toBoolean(str);
-    }
-
-    // --------------------------------------------------------------
-
-    @Getter
-    @Setter
+    @Data
     public static class Esb {
         @NotBlank
         private String url;
         private boolean enabled = true;
     }
 
-    @Getter
-    @Setter
-    @ToString
+    @Data
     public static class Pubsub {
-        private String on;
-
+        private boolean on;
         private List<Topic> topics;
 
-        public boolean isOn() {
-            return booleanValue(on);
-        }
-
-        @Getter
-        @Setter
-        @ToString
+        @Data
         public static class Topic {
             @NotBlank
             private String name;

@@ -33,10 +33,10 @@ public class MetaSolverApplicationListener implements ApplicationListener<Applic
 
         log.trace("** Application Event Received : " + event.getClass().getName());
 		
-		/*if (event instanceof org.springframework.context.event.ContextRefreshedEvent) {
+		if (event instanceof org.springframework.context.event.ContextRefreshedEvent) {
 			log.debug("** Application Event Received : Context Refreshed");
 			metricValueMonitorBean.subscribe();
-		} else*/
+		} else
         if (event instanceof org.springframework.context.event.ContextClosedEvent) {
             log.debug("** Application Event Received : Context Closed");
             metricValueMonitorBean.unsubscribe();
