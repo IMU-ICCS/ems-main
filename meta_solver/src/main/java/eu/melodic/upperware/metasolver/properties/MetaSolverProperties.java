@@ -13,11 +13,13 @@ import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -48,6 +50,9 @@ public class MetaSolverProperties {
     private Pattern predictionTopicPattern = Pattern.compile("^prediction\\.(.+)$");
     private long predictionRegistryCleanupRate = -1L;
     private boolean predictionRegistryCleanupAfterScaleEvent = true;
+    @Min(0)
+    private long reconfigurationBlockingPeriod = 0;
+    @Range(min=0, max=1)
     private double reconfigurationProbabilityThreshold = 0.5;
     private DebugEvent debugEvents;
 
