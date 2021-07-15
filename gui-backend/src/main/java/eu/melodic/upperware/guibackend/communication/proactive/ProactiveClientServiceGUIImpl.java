@@ -37,11 +37,16 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
 
     @Override
     public List<ByonNode> getByonNodeList(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(null);
+        return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(Collections.emptyList());
     }
 
     @Override
     public List<Job> getAllJobs() {
-        return getPAGateway().map(PAGateway::getAllJobs).orElse(null);
+        return getPAGateway().map(PAGateway::getAllJobs).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<Deployment> getAllNodes() {
+        return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
     }
 }

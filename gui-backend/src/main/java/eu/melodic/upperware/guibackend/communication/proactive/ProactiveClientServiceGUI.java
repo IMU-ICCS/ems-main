@@ -18,4 +18,6 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
     List<ByonNode> getByonNodeList(String jobId);
 
     List<Job> getAllJobs();
+
+    List<Deployment> getAllNodes();
 }

@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 public class DomainConverterFactory {
     private final GenericConverter<?, ?> cloudConverter;
     private final GenericConverter<?, ?> imageConverter;
+    private final GenericConverter<?, ?> nodeConverter;
 
     public DomainConverterFactory(@Qualifier("cloudConverter") GenericConverter<?, ?> cloudConverter,
-                                  @Qualifier("imageConverter") GenericConverter<?, ?> imageConverter) {
+                                  @Qualifier("imageConverter") GenericConverter<?, ?> imageConverter,
+                                  @Qualifier("nodeConverter") GenericConverter<?, ?> nodeConverter) {
         this.cloudConverter = cloudConverter;
         this.imageConverter = imageConverter;
+        this.nodeConverter = nodeConverter;
     }
 
     public GenericConverter<?, ?> getCloudConverter() {
@@ -20,5 +23,9 @@ public class DomainConverterFactory {
 
     public GenericConverter<?, ?> getImageConverter() {
         return this.imageConverter;
+    }
+
+    public GenericConverter<?, ?> getNodeConverter() {
+        return this.nodeConverter;
     }
 }

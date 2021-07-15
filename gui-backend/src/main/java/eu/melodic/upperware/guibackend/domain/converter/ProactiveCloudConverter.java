@@ -5,17 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.PACloud;
 import org.springframework.lang.NonNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
 public class ProactiveCloudConverter implements GenericConverter<PACloud, Cloud> {
     @Override
     public Cloud createDomain(@NonNull PACloud external) {
+        Map<String, String> props = new HashMap<>();
+        props.put("CloudID", external.getCloudID());
+
         return Cloud.builder()
                 .endpoint(external.getEndpoint())
                 .cloudType(CloudType.valueOf(external.getCloudType().name()))
                 .api(Api.builder().providerName(external.getCloudProviderName()).build())
                 .credential(CloudCredential.builder().user(external.getCredentials().getUserName()).secret(external.getCredentials().getPassword()).build())
-                .cloudConfiguration(CloudConfiguration.builder().nodeGroup(external.getNodeSourceNamePrefix()).build())
-                .id(external.getCloudID())
+                .cloudConfiguration(CloudConfiguration.builder().nodeGroup(external.getNodeSourceNamePrefix()).properties(props).build())
+                .id(external.getCloudProviderName())
                 .state(CloudState.NOT_AVAILABLE)
                 .owner("NOT_AVAILABLE")
                 .diagnostics("NOT_AVAILABLE")

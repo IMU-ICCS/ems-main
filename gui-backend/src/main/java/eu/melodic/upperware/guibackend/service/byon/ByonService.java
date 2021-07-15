@@ -138,9 +138,12 @@ public class ByonService {
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
         final org.activeeon.morphemic.model.ByonDefinition byonDefinitionProactive = byonMapper.mapByonDefinitionToProactive(byonDefinitionForNode);
         log.info("LSZ DEV[ByonService]: createByonNode: byonDefinitionProactive={}", byonDefinitionProactive);
-        final org.activeeon.morphemic.model.ByonNode byonNodeProactive = proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId);
+        final Optional<org.activeeon.morphemic.model.ByonNode> byonNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId));
         log.info("LSZ DEV[ByonService]: createByonNode: byonNodeProactive={}", byonNodeProactive);
-        final ByonNode byonNode = byonMapper.mapProactiveByonNodeToInternal(byonNodeProactive);
+        ByonNode byonNode = null;
+        if(byonNodeProactive.isPresent()) {
+            byonNode = byonMapper.mapProactiveByonNodeToInternal(byonNodeProactive.get());
+        }
         log.info("LSZ DEV[ByonService]: createByonNode: internal byonNode={}", byonNode);
         return byonNode;
     }

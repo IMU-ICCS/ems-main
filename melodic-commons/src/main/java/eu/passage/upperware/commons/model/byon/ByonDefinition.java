@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import eu.passage.upperware.commons.model.internal.IpAddress;
 import eu.passage.upperware.commons.model.internal.LoginCredential;
+import eu.passage.upperware.commons.model.internal.NodeProperties;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 

@@ -2,7 +2,6 @@ package eu.melodic.upperware.guibackend.service.byon;
 
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import eu.passage.upperware.commons.model.byon.ByonNode;
-import eu.passage.upperware.commons.model.byon.NodeProperties;
 import eu.passage.upperware.commons.model.internal.*;
 import org.springframework.stereotype.Service;
 

@@ -5,17 +5,16 @@ import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientSe
 import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import eu.melodic.upperware.guibackend.domain.converter.ProactiveCloudConverter;
 import eu.melodic.upperware.guibackend.domain.converter.ProactiveImageConverter;
+import eu.melodic.upperware.guibackend.domain.converter.ProactiveNodeConverter;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
-import eu.passage.upperware.commons.model.internal.Cloud;
 import eu.passage.upperware.commons.service.provider.ProviderIdCreatorService;
 import eu.passage.upperware.commons.service.provider.ProviderService;
 import eu.passage.upperware.commons.service.provider.ProviderValidationService;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
-import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -100,5 +99,11 @@ public class ApplicationContext {
     @Qualifier("imageConverter")
     public GenericConverter<?, ?> getImageConverter() {
         return new ProactiveImageConverter();
+    }
+
+    @Bean
+    @Qualifier("nodeConverter")
+    public GenericConverter<?, ?> getNodeConverter() {
+        return new ProactiveNodeConverter();
     }
 }

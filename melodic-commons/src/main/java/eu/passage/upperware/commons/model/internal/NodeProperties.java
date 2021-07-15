@@ -1,12 +1,12 @@
-package eu.passage.upperware.commons.model.byon;
+package eu.passage.upperware.commons.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import eu.passage.upperware.commons.model.internal.GeoLocation;
-import eu.passage.upperware.commons.model.internal.OperatingSystem;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
