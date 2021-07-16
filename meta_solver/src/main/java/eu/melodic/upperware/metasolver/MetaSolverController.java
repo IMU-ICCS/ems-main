@@ -20,10 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import javax.ws.rs.QueryParam;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -164,6 +162,20 @@ public class MetaSolverController {
         // Update MetaSolver subscriptions
         Set<Map> subscriptions = new HashSet<>( (Collection<Map>)configuration.get("subscriptions") );
         coordinator.updateSubscriptions(subscriptions);
+
+        return "OK";
+    }
+
+    @RequestMapping(value = "/clearReconfigurationRunning", method = {GET,POST})
+    public String clearReconfigurationRunning(@QueryParam("alsoClearBlockingPeriod") Optional<Boolean> alsoClearBlockingPeriod,
+                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        setAuthenticationToken(jwtToken);
+
+        log.info("clearReconfigurationRunning: alsoClearBlockingPeriod={}", alsoClearBlockingPeriod);
+
+        // Clear ReconfigurationRunning state
+        coordinator.enableReconfigurationRunning( alsoClearBlockingPeriod.orElse(false) );
 
         return "OK";
     }

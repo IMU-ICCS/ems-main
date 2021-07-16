@@ -30,14 +30,18 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.*;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -63,6 +67,10 @@ public class Coordinator implements ApplicationContextAware {
     private String updatePath;
 
     private long previousReconfigurationTimestamp = 0;
+    private Semaphore reconfigurationRunning = new Semaphore(1);
+    private ScheduledFuture<?> reconfigurationRunningTimeoutFuture;
+    @Autowired
+    private TaskScheduler taskScheduler;
 
     @Getter
     private PredictionHelper predictionHelper;
@@ -141,6 +149,15 @@ public class Coordinator implements ApplicationContextAware {
      * than deployed solution's utility value, at least 'uvThresholdFactor' times
      */
     public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        SolutionEvaluationResponse.EvaluationResultType result = _evaluateSolution(applicationId, cpModelPath);
+        if (result==SolutionEvaluationResponse.EvaluationResultType.NEGATIVE) {
+            // Enable reconfiguration running
+            enableReconfigurationRunning();
+        }
+        return result;
+    }
+
+    protected SolutionEvaluationResponse.EvaluationResultType _evaluateSolution(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.info("MetaSolver.Coordinator: evaluateSolution(): appId={}, model={}", applicationId, cpModelPath);
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
@@ -222,7 +239,12 @@ public class Coordinator implements ApplicationContextAware {
             helper.copyVarValuesFromDeployedSolution(cacheAppId, cacheCpModelPath, mvvToCurrentConfigVarsMap);
         }
 
-		// Notify EMS about new solution acceptance
+        // Enable reconfiguration running
+        /*XXX: TODO: Probably not the right place to re-enable reconf.
+                BETTER ALTERNATIVE: Adapter should notify us re-enabling reconf.*/
+        enableReconfigurationRunning();
+
+        // Notify EMS about new solution acceptance
 		notifyEMS(cpModelPath);
 		
         log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): Solution Ids have been updated in CP model: deployed-solution-id={}, candidate-solution-id={}",
@@ -237,12 +259,25 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     public synchronized boolean requestReconfigurationStart(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
-        // Check if we are in reconfiguration blocking period
+        // Check if a (previous) reconfiguration process is still running
+        if (metaSolverProperties.isPreventConcurrentReconfigurations() && ! reconfigurationRunning.tryAcquire()) {
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): A previous Reconfiguration instance is still running. Ignoring requests");
+            return false;
+        }
+
+        // Check if we are in the reconfiguration blocking period
         if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
             log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Cannot request a new reconfiguration during reconfiguration blocking period");
+            enableReconfigurationRunning();
             return false;
         }
         previousReconfigurationTimestamp = System.currentTimeMillis();
+
+        // Schedule reconfiguration running timeout
+        if (metaSolverProperties.isPreventConcurrentReconfigurations() && getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()>0) {
+            reconfigurationRunningTimeoutFuture = taskScheduler.schedule(() -> enableReconfigurationRunning(false),
+                    new Date(System.currentTimeMillis() + getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()));
+        }
 
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
@@ -257,6 +292,7 @@ public class Coordinator implements ApplicationContextAware {
         if (!result) {
             log.debug("MetaSolver.Coordinator: requestReconfigurationStart():" +
                     " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
+            enableReconfigurationRunning();
             return false;
         }
         log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Metric values updated in CP model: {}", cpModelPath);
@@ -267,6 +303,24 @@ public class Coordinator implements ApplicationContextAware {
         sendNotification(notification);
         log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Deployment process request sent: {}", notification);
         return true;
+    }
+
+    protected void enableReconfigurationRunning() {
+        // Enable reconfiguration running
+        if (metaSolverProperties.isPreventConcurrentReconfigurations()) {
+            if (reconfigurationRunningTimeoutFuture!=null) {
+                reconfigurationRunningTimeoutFuture.cancel(false);
+                reconfigurationRunningTimeoutFuture = null;
+            }
+            if (reconfigurationRunning.availablePermits()==0)
+                reconfigurationRunning.release();
+        }
+    }
+
+    public void enableReconfigurationRunning(boolean alsoClearBlockingPeriod) {
+        enableReconfigurationRunning();
+        if (alsoClearBlockingPeriod)
+            previousReconfigurationTimestamp = 0;
     }
 
     private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath, boolean isSimulation) {

@@ -50,10 +50,14 @@ public class MetaSolverProperties {
     private Pattern predictionTopicPattern = Pattern.compile("^prediction\\.(.+)$");
     private long predictionRegistryCleanupRate = -1L;
     private boolean predictionRegistryCleanupAfterScaleEvent = true;
-    @Min(0)
-    private long reconfigurationBlockingPeriod = 0;
+
     @Range(min=0, max=1)
     private double reconfigurationProbabilityThreshold = 0.5;
+    @Min(0)
+    private long reconfigurationBlockingPeriod = 0;     // reconfiguration cool down period
+    private boolean preventConcurrentReconfigurations = false;
+    private long preventConcurrentReconfigurationsTimeout = -1L;
+
     private DebugEvent debugEvents;
 
     // --------------------------------------------------------------
