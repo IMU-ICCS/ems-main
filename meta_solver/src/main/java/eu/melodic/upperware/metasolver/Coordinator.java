@@ -239,7 +239,7 @@ public class Coordinator implements ApplicationContextAware {
     public synchronized boolean requestReconfigurationStart(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
         // Check if we are in reconfiguration blocking period
         if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
-            log.warn("MetaSolver.Coordinator: requestStartProcessForScaling(): Cannot request a new reconfiguration during reconfiguration blocking period");
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Cannot request a new reconfiguration during reconfiguration blocking period");
             return false;
         }
         previousReconfigurationTimestamp = System.currentTimeMillis();
@@ -247,25 +247,25 @@ public class Coordinator implements ApplicationContextAware {
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
-        log.info("MetaSolver.Coordinator: requestStartProcessForScaling(): Cached appId={}, Cached cp-model={}", appId, cpModelPath);
+        log.info("MetaSolver.Coordinator: requestReconfigurationStart(): Cached appId={}, Cached cp-model={}", appId, cpModelPath);
 
         // Set metric values in CP model
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Updating metric values in CP model: {}", cpModelPath);
         boolean result = (metricValues == null)
                 ? setMetricValuesInCpModel(appId, cpModelPath)
                 : setMetricValuesInCpModel(appId, cpModelPath, metricValues);
         if (!result) {
-            log.debug("MetaSolver.Coordinator: requestStartProcessForScaling():" +
+            log.debug("MetaSolver.Coordinator: requestReconfigurationStart():" +
                     " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
             return false;
         }
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Metric values updated in CP model: {}", cpModelPath);
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath, isSimulation);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Sending deployment process request: {}", notification);
         sendNotification(notification);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Deployment process request sent: {}", notification);
         return true;
     }
 
