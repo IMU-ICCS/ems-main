@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
@@ -276,7 +277,7 @@ public class Coordinator implements ApplicationContextAware {
         // Schedule reconfiguration running timeout
         if (metaSolverProperties.isPreventConcurrentReconfigurations() && getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()>0) {
             reconfigurationRunningTimeoutFuture = taskScheduler.schedule(() -> enableReconfigurationRunning(false),
-                    new Date(System.currentTimeMillis() + getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()));
+                    Date.from(Instant.now().plusMillis(getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout())));
         }
 
         // Use previously cached 'application id' and 'CP model'
