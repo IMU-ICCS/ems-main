@@ -52,6 +52,9 @@ public class MelodicConfiguration {
 	@Value("${mq.topic.instanceinfo.name:_ui_instance_info}")
 	private String mqTopicInstanceInfoName;
 
+	@Value("${mq.topic.prediction}")
+	private String mqTopicPrediction;
+
 	@Value("${mq.recentmetrics.expiry.interval:120}")
 	private long mqRecentMetricsExpiryInterval;
 }
