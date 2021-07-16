@@ -136,7 +136,7 @@ public class MetricValueListener implements MessageListener {
 			log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
             if (!isPrediction) {
                 // Start reconfiguration with the actual metric values set in CP model
-                coordinator.requestStartProcessForScaling(false);
+                coordinator.requestReconfigurationStart(false);
             } else {
                 // Extract key-value pairs from message payload
                 // ...using MetricValueEvent
@@ -161,7 +161,7 @@ public class MetricValueListener implements MessageListener {
                 //log.debug("Listener of topic {}: Predicted metric values (as MVs): {}", topicName, metricValues);
 
                 // Start reconfiguration with the given predicted values set in CP model
-                coordinator.requestStartProcessForScaling(false, metricValues);
+                coordinator.requestReconfigurationStart(false, metricValues);
 
                 // Cleanup older predictionTime frames
                 if (coordinator.getMetaSolverProperties().isPredictionRegistryCleanupAfterScaleEvent())

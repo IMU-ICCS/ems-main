@@ -232,11 +232,11 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
 
-    public boolean requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
-        return requestStartProcessForScaling(isSimulation, null);
+    public boolean requestReconfigurationStart(boolean isSimulation) throws ConcurrentAccessException {
+        return requestReconfigurationStart(isSimulation, null);
     }
 
-    public synchronized boolean requestStartProcessForScaling(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
+    public synchronized boolean requestReconfigurationStart(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
         // Check if we are in reconfiguration blocking period
         if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
             log.warn("MetaSolver.Coordinator: requestStartProcessForScaling(): Cannot request a new reconfiguration during reconfiguration blocking period");
@@ -434,7 +434,7 @@ public class Coordinator implements ApplicationContextAware {
             log.info("Simulated metrics set");
 
             log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
-            if(!requestStartProcessForScaling(true)) {
+            if(!requestReconfigurationStart(true)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Received metric value in invalid format");
             }
         }
