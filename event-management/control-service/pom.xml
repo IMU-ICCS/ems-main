@@ -164,6 +164,12 @@
                         <goals>
                             <goal>build-info</goal>
                         </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <timestamp>${timestamp}</timestamp>
+                                <buildNumber>${buildNumber}</buildNumber>
+                            </additionalProperties>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -357,6 +363,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
                 <configuration>
+                    <timestampFormat>{0,date,yyyy-MM-dd HH:mm:ss'Z'}</timestampFormat>
                     <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
                 </configuration>
             </plugin>
