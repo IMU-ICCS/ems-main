@@ -16,7 +16,7 @@ if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; 
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JARS_DIR; fi
 if [[ -z $LOGS_DIR ]]; then LOGS_DIR=$BASEDIR/logs; export LOGS_DIR; fi
-if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public; export PUBLIC_DIR; fi
+if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLIC_DIR; fi
 
 # Import MULE certificate
 #MULE_CERT=$MELODIC_CONFIG_DIR/mule-server.crt
@@ -70,7 +70,7 @@ echo "Starting EMS server..."
 # java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
 # Use when Esper is NOT packaged in control-service.jar
-java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE
+java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE $*
 
 # Extra parameters
 # e.g. --spring.config.location=$MELODIC_CONFIG_DIR

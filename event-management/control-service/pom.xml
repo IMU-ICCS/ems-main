@@ -22,6 +22,7 @@
     <properties>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <hawtio.version>2.4.0</hawtio.version>
         <!--DOCKER plugin properties-->
         <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
@@ -123,7 +124,7 @@
         <dependency>
             <groupId>io.hawt</groupId>
             <artifactId>hawtio-springboot</artifactId>
-            <version>2.4.0</version>
+            <version>${hawtio.version}</version>
         </dependency>
     </dependencies>
 
@@ -252,30 +253,45 @@
                         </goals>
                         <configuration>
                             <fileSets>
-                                <!-- Copy index.html and favicon.ico to /public -->
+                                <!-- Copy index.html and favicon.ico to /public_resources -->
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/index.html</sourceFile>
-                                    <destinationFile>../public/index.html</destinationFile>
+                                    <destinationFile>../public_resources/index.html</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/favicon.ico</sourceFile>
-                                    <destinationFile>../public/favicon.ico</destinationFile>
+                                    <destinationFile>../public_resources/favicon.ico</destinationFile>
                                 </fileSet>
-                                <!-- Copy broker-client files to /public -->
+
+                                <!-- Copy broker-client files to /public_resources -->
                                 <fileSet>
                                     <sourceFile>../broker-client/target/broker-client-jar-with-dependencies.jar</sourceFile>
-                                    <destinationFile>../public/broker-client.jar</destinationFile>
+                                    <destinationFile>../public_resources/broker-client.jar</destinationFile>
                                 </fileSet>
                                 <!--
                                   "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
                                 -->
                                 <!--<fileSet>
                                     <sourceFile>../broker-client/eu.melodic.event.brokerclient.properties</sourceFile>
-                                    <destinationFile>../public/eu.melodic.event.brokerclient.properties</destinationFile>
+                                    <destinationFile>../public_resources/eu.melodic.event.brokerclient.properties</destinationFile>
                                 </fileSet>-->
                                 <fileSet>
                                     <sourceFile>../bin/client.sh</sourceFile>
-                                    <destinationFile>../public/client.sh</destinationFile>
+                                    <destinationFile>../public_resources/client.sh</destinationFile>
+                                </fileSet>
+
+                                <!-- Copy baguette-client files to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz</sourceFile>
+                                    <destinationFile>../public_resources/baguette-client.tgz</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz.md5</sourceFile>
+                                    <destinationFile>../public_resources/baguette-client.tgz.md5</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/bin/install.sh</sourceFile>
+                                    <destinationFile>../public_resources/install.sh</destinationFile>
                                 </fileSet>
                             </fileSets>
                             <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
@@ -309,10 +325,10 @@
                             </excludes>-->
                         </resource>
 
-                        <!-- Add public/ folder resources to '/public' -->
+                        <!-- Add public_resources/ folder resources to '/public_resources' -->
                         <resource>
-                            <targetPath>/public</targetPath>
-                            <directory>${project.basedir}/../public</directory>
+                            <targetPath>/public_resources</targetPath>
+                            <directory>${project.basedir}/../public_resources</directory>
                         </resource>
 
                         <!-- Add broker-client too -->
