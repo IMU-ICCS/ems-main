@@ -119,15 +119,20 @@ public class ControlServiceApplication implements ApplicationContextAware {
         if (!log.isInfoEnabled()) return;
 
         // Print build info from 'BuildProperties'
+        log.info("--------------------------------------------------------------------------------");
         log.info("Build Info:");
         StreamSupport.stream(Spliterators.spliteratorUnknownSize(buildProperties.iterator(), Spliterator.ORDERED), false)
                 .sorted(Comparator.comparing(InfoProperties.Entry::getKey))
                 .forEach(e->log.info(" - {} = {}", e.getKey(), e.getValue()));
+        log.info("--------------------------------------------------------------------------------");
 
         // Print info from bundled files
         printInfoFromFile(applicationContext, "Version Info", "classpath:/version.txt");
+        log.info("--------------------------------------------------------------------------------");
         printInfoFromFile(applicationContext, "Git Info", "classpath:/git.properties");
+        log.info("--------------------------------------------------------------------------------");
         printInfoFromFile(applicationContext, "Build Info", "classpath:/META-INF/build-info.properties");
+        log.info("--------------------------------------------------------------------------------");
     }
 
     protected void printInfoFromFile(ApplicationContext applicationContext, String title, String resourceStr) throws IOException {
