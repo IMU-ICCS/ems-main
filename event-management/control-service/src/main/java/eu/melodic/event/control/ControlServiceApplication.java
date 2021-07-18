@@ -116,6 +116,7 @@ public class ControlServiceApplication implements ApplicationContextAware {
     @SneakyThrows
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         if (!properties.isPrintBuildInfo()) return;
+        if (!log.isInfoEnabled()) return;
 
         // Print build info from 'BuildProperties'
         log.info("Build Info:");
