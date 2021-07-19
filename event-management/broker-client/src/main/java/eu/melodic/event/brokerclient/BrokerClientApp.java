@@ -109,9 +109,9 @@ public class BrokerClientApp {
             String topic = args[aa++];
             String type = args[aa].startsWith("-T") ? args[aa++].substring(2) : "text";
             String payload = args[aa++];
+            payload = payload
+                    .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
             if ("map".equalsIgnoreCase(type)) {
-                payload = payload
-                        .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
                 EventMap event = gson.fromJson(payload, EventMap.class);
                 sendEvent(url, username, password, topic, type, event);
             } else {

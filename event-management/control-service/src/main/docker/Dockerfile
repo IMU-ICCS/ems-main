@@ -17,7 +17,7 @@ ENV BIN_DIR ${BASEDIR}/bin
 ENV CONFIG_DIR ${BASEDIR}/config
 ENV JARS_DIR ${BASEDIR}/jars
 ENV LOGS_DIR ${BASEDIR}/logs
-ENV PUBLIC_DIR ${BASEDIR}/public
+ENV PUBLIC_DIR ${BASEDIR}/public_resources
 
 WORKDIR ${BASEDIR}
 RUN apt-get update && apt-get install -y \
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 ADD bin ${BIN_DIR}
 ADD jars ${JARS_DIR}
 ADD config ${CONFIG_DIR}
-ADD public ${PUBLIC_DIR}
+ADD public_resources ${PUBLIC_DIR}
 
 RUN mkdir ${LOGS_DIR}
 RUN bash -c 'chmod +rx ${BIN_DIR}/*.sh'
