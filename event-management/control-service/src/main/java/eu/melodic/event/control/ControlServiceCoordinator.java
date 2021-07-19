@@ -12,7 +12,7 @@ package eu.melodic.event.control;
 import camel.core.NamedElement;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
-import eu.melodic.event.brokercep.cep.StatementSubscriber;
+import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
@@ -31,7 +31,6 @@ import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -325,7 +324,7 @@ public class ControlServiceCoordinator {
                         String topicName = topicRules.getKey();
                         for (String rule : topicRules.getValue()) {
                             brokerCep.getCepService().addStatementSubscriber(
-                                    new CscStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
+                                    new BrokerCepStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
                             );
                         }
                     }
@@ -538,7 +537,7 @@ public class ControlServiceCoordinator {
         return map;
     }
 
-    @RequiredArgsConstructor
+    /*@RequiredArgsConstructor
     @Getter
     public static class CscStatementSubscriber implements StatementSubscriber {
         private final String name;
@@ -565,7 +564,7 @@ public class ControlServiceCoordinator {
                 log.error("- New event: ERROR: subscriber={}, topic={}, exception=", name, topic, ex);
             }
         }
-    }
+    }*/
 
 
     // ------------------------------------------------------------------------------------------------------------

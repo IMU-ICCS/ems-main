@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.baguette.client.cluster.BrokerUtil.NODE_STATUS;
 import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.cep.CepService;
-import eu.melodic.event.brokercep.cep.StatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
@@ -79,7 +79,7 @@ public class CommandExecutor {
     private GroupingConfiguration activeGrouping;
 
     private final AtomicLong subscriberCount = new AtomicLong(0);
-    private final Map<String,List<ClientStatementSubscriber>> groupingsSubscribers = new LinkedHashMap<>();
+    private final Map<String,List<BrokerCepStatementSubscriber>> groupingsSubscribers = new LinkedHashMap<>();
 
     private final Map<String, EventGenerator> eventGenerators = new HashMap<>();
 
@@ -755,9 +755,10 @@ public class CommandExecutor {
                         // Add EPL statement subscriber
                         String subscriberName = "Subscriber_" + subscriberCount.getAndIncrement();
                         log.info("addGroupingsTill: + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}", subscriberName, topic, rule);
-                        ClientStatementSubscriber statementSubscriber = new ClientStatementSubscriber();
+                        BrokerCepStatementSubscriber statementSubscriber =
+                                new BrokerCepStatementSubscriber(subscriberName, topic, rule, brokerCepService, passwordUtil, Collections.emptySet());
                         brokerCepService.getCepService().addStatementSubscriber(
-                                statementSubscriber.setNameAndStatement(subscriberName, topic, rule, Collections.emptySet(), brokerCepService)
+                                statementSubscriber
                         );
                         groupingsSubscribers.computeIfAbsent(groupingName, s -> new LinkedList<>()).add(statementSubscriber);
                     }
@@ -819,10 +820,10 @@ public class CommandExecutor {
         }
         log.debug("clearActiveGroupingForwards: Clearing forward-to-grouping settings of active grouping: {}", activeGrouping.getName());
         log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
-        List<ClientStatementSubscriber> subscribers = groupingsSubscribers.get(activeGrouping.getName());
+        List<BrokerCepStatementSubscriber> subscribers = groupingsSubscribers.get(activeGrouping.getName());
         log.trace("clearActiveGroupingForwards: Clearing subscribers of grouping: {}: {}", activeGrouping.getName(), subscribers);
         if (subscribers!=null) {
-            for (ClientStatementSubscriber subscriber : subscribers) {
+            for (BrokerCepStatementSubscriber subscriber : subscribers) {
                 log.debug("clearActiveGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
                         subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
                 subscriber.setForwardToGroupings(Collections.emptySet());
@@ -1080,7 +1081,7 @@ public class CommandExecutor {
         }
     }*/
 
-    @Getter
+    /*@Getter
     @ToString
     public static class ClientStatementSubscriber implements StatementSubscriber {
         private String name;
@@ -1129,7 +1130,7 @@ public class CommandExecutor {
                         name, forwardToGroupings, eventMap, ex);
             }
         }
-    }
+    }*/
 
     @Data
     @Builder
