@@ -5,6 +5,6 @@ import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 
 public interface NewConstraintProblemServiceX {
 
-    ConstraintProblem createConstraintProblem(CamelModel camelModel, String cpName);
+    ConstraintProblem createConstraintProblem(CamelModel camelModel, String cpName, String resourceName);
 
 }

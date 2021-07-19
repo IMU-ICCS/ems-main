@@ -7,7 +7,6 @@ import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
-import eu.passage.upperware.commons.model.internal.Cloud;
 import eu.passage.upperware.commons.service.provider.ProviderIdCreatorService;
 import eu.passage.upperware.commons.service.provider.ProviderService;
 import eu.passage.upperware.commons.service.provider.ProviderValidationService;

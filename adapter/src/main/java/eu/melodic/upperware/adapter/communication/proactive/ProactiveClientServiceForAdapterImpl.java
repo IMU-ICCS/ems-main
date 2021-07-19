@@ -12,6 +12,7 @@ import org.ow2.proactive.scheduler.common.job.JobStatus;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -139,5 +140,10 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
                 return false;
             }
         }
+    }
+
+    @Override
+    public int addByonNodes(Map<String, String> byonIdPerComponent, String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.addByonNodes(byonIdPerComponent, jobId)).orElse(-1);
     }
 }

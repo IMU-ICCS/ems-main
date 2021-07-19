@@ -57,7 +57,7 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>public</directory>
+                            <directory>public_resources</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>

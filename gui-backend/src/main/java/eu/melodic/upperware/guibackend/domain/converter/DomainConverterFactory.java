@@ -10,6 +10,7 @@ public class DomainConverterFactory {
     private final GenericConverter<?, ?> imageConverter;
     private final GenericConverter<?, ?> hardwareConverter;
     private final GenericConverter<?, ?> locationConverter;
+    private final GenericConverter<?, ?> nodeConverter;
 
     public DomainConverterFactory() {
         cloudConverter = new ProactiveCloudConverter();
@@ -32,5 +33,9 @@ public class DomainConverterFactory {
 
     public GenericConverter<?, ?> getLocationConverter() {
         return this.locationConverter;
+    }
+
+    public GenericConverter<?, ?> getNodeConverter() {
+        return this.nodeConverter;
     }
 }

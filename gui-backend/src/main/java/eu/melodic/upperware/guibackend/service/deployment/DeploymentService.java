@@ -54,6 +54,7 @@ public class DeploymentService {
         DeploymentProcessRequest deploymentProcessRequest = deploymentMapper
                 .mapDeploymentRequestToDeploymentProcessRequest(deploymentRequest, createWatermark(deploymentRequest.getUsername()));
         try {
+            log.info("LSZ DEV[DeploymentService]: createDeploymentProcess-> \nDeploymentProcessRequest: {}", deploymentProcessRequest);
             return muleClientApi.createDeploymentProcess(deploymentProcessRequest, token, refreshToken);
         } catch (MalformedURLException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Problem with communication with Mule by creating deployment process: %s", e.getMessage()));
