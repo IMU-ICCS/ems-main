@@ -28,7 +28,8 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 	public boolean isApplicable(ActiveMQMessage activeMQMessage) {
 		//ToDo This is wrong!!!
 		return !activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicInstanceInfoName()) &&
-				!activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicThresholdName());
+				!activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicThresholdName()) &&
+				!activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicPrediction());
 	}
 
 	@Override
