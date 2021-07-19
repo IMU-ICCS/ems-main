@@ -20,9 +20,12 @@
     <name>Upperware - EMS - Control Service</name>
 
     <properties>
+        <hawtio.version>2.4.0</hawtio.version>
+        <spring.boot.admin.version>2.3.1</spring.boot.admin.version>
+        <jasypt.starter.version>2.1.0</jasypt.starter.version>
+        <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-        <hawtio.version>2.4.0</hawtio.version>
         <!--DOCKER plugin properties-->
         <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
@@ -101,12 +104,12 @@
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
-            <version>2.3.1</version>
+            <version>${spring.boot.admin.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
-            <version>2.1.0</version>
+            <version>${jasypt.starter.version}</version>
         </dependency>
 
         <!-- Lombok project -->
