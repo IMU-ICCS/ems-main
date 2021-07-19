@@ -16,7 +16,7 @@ public class ProactiveNodeConverter implements GenericConverter<Deployment, Node
         log.info("ProactiveNodeConverter->createDomain Deployment external: {}", external);
         return Node.builder()
                 .name(external.getNodeName())
-                .id("-")
+                .id(external.getInstanceId())
                 .nodeProperties(NodeProperties.builder().providerId(external.getPaCloud().getCloudProviderName()).build())
                 .originId(external.getLocationName()+"/"+external.getPaCloud().getCloudProviderName())
                 .state(decideOnNodeState(external))
