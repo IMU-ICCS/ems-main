@@ -46,6 +46,8 @@ public class ControlServiceProperties {
         CLOUDIATOR, PROACTIVE
     }
 
+    @Value("${dontPrintBuildInfo:true}")
+    private boolean printBuildInfo;
     @Value("${IP_SETTING:}")
     private IpSetting ipSetting;
     @Value("${EXECUTIONWARE:PROACTIVE}")

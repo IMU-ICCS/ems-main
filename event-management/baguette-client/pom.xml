@@ -204,7 +204,7 @@
 			</plugin>
 
 			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
-			<plugin>
+			<!--<plugin>
 				<groupId>com.coderplus.maven.plugins</groupId>
 				<artifactId>copy-rename-maven-plugin</artifactId>
 				<version>1.0</version>
@@ -219,15 +219,15 @@
 							<fileSets>
 								<fileSet>
 									<sourceFile>target/baguette-client-installation-package.tgz</sourceFile>
-									<destinationFile>../public/baguette-client.tgz</destinationFile>
+									<destinationFile>../public_resources/baguette-client.tgz</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>target/baguette-client-installation-package.tgz.md5</sourceFile>
-									<destinationFile>../public/baguette-client.tgz.md5</destinationFile>
+									<destinationFile>../public_resources/baguette-client.tgz.md5</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>bin/install.sh</sourceFile>
-                                    <destinationFile>../public/install.sh</destinationFile>
+                                    <destinationFile>../public_resources/install.sh</destinationFile>
 								</fileSet>
 							</fileSets>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
@@ -235,7 +235,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 
 		</plugins>
 	</build>
