@@ -35,6 +35,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private final static Object LOCK = new Object();
     private final static AtomicLong counter = new AtomicLong(0);
     private final static Set<ClientShellCommand> activeCmdList = new HashSet<>();
+    private final static long INPUT_CHECK_DELAY = 100;
 
     public static Set<ClientShellCommand> getActive() {
         return Collections.unmodifiableSet(activeCmdList);
@@ -342,7 +343,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         log.trace("ClientShellCommand.readFromClient: uuid={}, Command sent to client", uuid);
         while (!inputsMap.containsKey(uuid)) {
             log.trace("ClientShellCommand.readFromClient: uuid={}, No input, waiting 500ms", uuid);
-            try { Thread.sleep(500); } catch (InterruptedException e) { }
+            try { Thread.sleep(INPUT_CHECK_DELAY); } catch (InterruptedException e) { }
         }
         log.trace("ClientShellCommand.readFromClient: uuid={}, inputMap-BEFORE={}", uuid, inputsMap);
         Object input = inputsMap.remove(uuid);
