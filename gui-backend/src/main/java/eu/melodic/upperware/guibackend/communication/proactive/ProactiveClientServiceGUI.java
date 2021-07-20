@@ -13,6 +13,10 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
 
     List<Image> getAllCloudImages(String cloudID);
 
+    List<Hardware> getAllHardware();
+
+    List<Location> getAllLocation();
+
     ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId);
 
     List<ByonNode> getByonNodeList(String jobId);

@@ -31,6 +31,16 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     }
 
     @Override
+    public List<Hardware> getAllHardware() {
+        return getPAGateway().map(PAGateway::getHardwareList).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<Location> getAllLocation() {
+        return getPAGateway().map(PAGateway::getLocationList).orElse(Collections.emptyList());
+    }
+
+    @Override
     public ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId) {
         return getPAGateway().map(paGateway -> paGateway.registerNewByonNode(byonNodeDefinition, jobId)).orElse(null);
     }
