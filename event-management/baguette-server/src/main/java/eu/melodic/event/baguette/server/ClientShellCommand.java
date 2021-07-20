@@ -73,6 +73,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter
     private boolean closeConnection = false;
 
+    private Map<String,Object> inputsMap = new HashMap<>();
+
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress) {
         synchronized (LOCK) {
             id = String.format("#%05d", counter.getAndIncrement());
@@ -159,6 +161,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 if (line.startsWith("-HELLO FROM CLIENT:")) {
                     getClientInfoFromGreeting(line.substring("-HELLO FROM CLIENT:".length()));
                     coordinator.register(this);
+                } else if (line.startsWith("-INPUT:")) {
+                    String input = line.substring("-INPUT:".length());
+                    String[] part = input.split(":",2 );
+                    inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
                 } else {
@@ -181,6 +187,18 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             if (!callbackCalled.getAndSet(true)) {
                 callback.onExit(0);
             }
+        }
+    }
+
+    protected Object deserializeFromString(String s) {
+        try {
+            byte[] data = Base64.getDecoder().decode(s);
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+            Object o = ois.readObject();
+            ois.close();
+            return o;
+        } catch (Exception ex) {
+            return ex;
         }
     }
 
@@ -312,6 +330,24 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     public void sendCommand(String[] cmd) {
         sendToClient(String.join(" ", cmd));
+    }
+
+    public Object readFromClient(String cmd) {
+        String uuid = UUID.randomUUID().toString();
+        log.trace("ClientShellCommand.readFromClient: uuid={}, cmd={}", uuid, cmd);
+        Object oldValue = inputsMap.remove(uuid);
+        log.trace("ClientShellCommand.readFromClient: uuid={}, old-inputMap-value={}", uuid, oldValue);
+        log.trace("ClientShellCommand.readFromClient: uuid={}, inputMap-BEFORE={}", uuid, inputsMap);
+        sendCommand(cmd+" "+uuid);
+        log.trace("ClientShellCommand.readFromClient: uuid={}, Command sent to client", uuid);
+        while (!inputsMap.containsKey(uuid)) {
+            log.trace("ClientShellCommand.readFromClient: uuid={}, No input, waiting 500ms", uuid);
+            try { Thread.sleep(500); } catch (InterruptedException e) { }
+        }
+        log.trace("ClientShellCommand.readFromClient: uuid={}, inputMap-BEFORE={}", uuid, inputsMap);
+        Object input = inputsMap.remove(uuid);
+        log.trace("ClientShellCommand.readFromClient: uuid={}, Input found: {}", uuid, input);
+        return input;
     }
 
     protected String _propertiesToBase64(Properties params) {
