@@ -5,13 +5,9 @@ import eu.passage.upperware.commons.model.internal.OperatingSystem;
 import eu.passage.upperware.commons.model.internal.OperatingSystemArchitecture;
 import eu.passage.upperware.commons.model.internal.OperatingSystemFamily;
 import lombok.AllArgsConstructor;
-import eu.passage.upperware.commons.model.internal.*;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.Image;
 import org.springframework.lang.NonNull;
-
-
-import java.util.Objects;
 
 @Slf4j
 @AllArgsConstructor
@@ -40,4 +36,6 @@ public class ProactiveImageConverter implements GenericConverter<Image, eu.passa
     public Image createExternal(@NonNull eu.passage.upperware.commons.model.internal.Image domain) {
         log.warn("ProactiveImageConverter.createExternal is not implemented yet.");
         return null;
+    }
+
 }

@@ -1,7 +1,5 @@
 package eu.melodic.upperware.guibackend.domain.converter;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +15,7 @@ public class DomainConverterFactory {
         locationConverter = new ProactiveLocationConverter();
         imageConverter = new ProactiveImageConverter((ProactiveLocationConverter) locationConverter);
         hardwareConverter = new ProactiveHardwareConverter((ProactiveLocationConverter) locationConverter);
+        nodeConverter = new ProactiveNodeConverter();
     }
 
     public GenericConverter<?, ?> getCloudConverter() {

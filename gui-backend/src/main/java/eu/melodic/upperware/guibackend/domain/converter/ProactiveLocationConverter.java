@@ -3,12 +3,15 @@ package eu.melodic.upperware.guibackend.domain.converter;
 import eu.passage.upperware.commons.model.internal.DiscoveryItemState;
 import eu.passage.upperware.commons.model.internal.GeoLocation;
 import eu.passage.upperware.commons.model.internal.LocationScope;
+import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.Location;
 import org.springframework.lang.NonNull;
 
 import java.util.Objects;
 
+@Slf4j
 public class ProactiveLocationConverter implements GenericConverter<Location, eu.passage.upperware.commons.model.internal.Location> {
+
     @Override
     public eu.passage.upperware.commons.model.internal.Location createDomain(@NonNull Location external) {
         return createDomainRecursive(external);
@@ -39,6 +42,7 @@ public class ProactiveLocationConverter implements GenericConverter<Location, eu
     
     @Override
     public Location createExternal(@NonNull eu.passage.upperware.commons.model.internal.Location domain) {
+        log.warn("ProactiveLocationConverter.createExternal is not implemented yet.");
         return null;
     }
 }
