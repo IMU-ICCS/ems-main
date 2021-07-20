@@ -25,10 +25,17 @@ import org.springframework.stereotype.Service;
 import javax.jms.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @Slf4j
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
+    private static AtomicLong eventCounter = new AtomicLong(0);
+    private static AtomicLong textEventCounter = new AtomicLong(0);
+    private static AtomicLong objectEventCounter = new AtomicLong(0);
+    private static AtomicLong otherEventCounter = new AtomicLong(0);
+    private static AtomicLong eventFailuresCounter = new AtomicLong(0);
+
     @Autowired
     private BrokerCepProperties properties;
     @Autowired
@@ -153,6 +160,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
                 } else {
                     cepService.handleEvent(mesg.getObject());
                 }
+                objectEventCounter.incrementAndGet();
             } else if (message instanceof ActiveMQTextMessage) {
                 ActiveMQTextMessage mesg = (ActiveMQTextMessage) message;
                 ActiveMQDestination messageDestination = mesg.getDestination();
@@ -161,11 +169,28 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
                 // Send message to Esper
                 cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
+                textEventCounter.incrementAndGet();
             } else {
+                otherEventCounter.incrementAndGet();
                 log.warn("BrokerCepConsumer.onMessage(): Message ignored: type={}", message.getClass().getName());
             }
+            eventCounter.incrementAndGet();
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
+            eventFailuresCounter.incrementAndGet();
         }
+    }
+
+    public static long getEventCounter() { return eventCounter.get(); }
+    public static long getTextEventCounter() { return textEventCounter.get(); }
+    public static long getObjectEventCounter() { return objectEventCounter.get(); }
+    public static long getOtherEventCounter() { return otherEventCounter.get(); }
+    public static long getEventFailuresCounter() { return eventFailuresCounter.get(); }
+    public static synchronized void clearCounters() {
+        eventCounter.set(0L);
+        textEventCounter.set(0L);
+        objectEventCounter.set(0L);
+        otherEventCounter.set(0L);
+        eventFailuresCounter.set(0L);
     }
 }

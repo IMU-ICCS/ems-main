@@ -39,6 +39,7 @@ import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -395,5 +396,28 @@ public class BrokerCepService {
         log.debug("BrokerCepService.deleteCertificateFromTruststore(): Deleted certificate with alias: {}", alias);
         log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
                 KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
+    }
+
+    public Map<String,Object> getBrokerCepStatistics() {
+        Map<String,Long> bcepStats = new HashMap<>();
+        bcepStats.put("count-event-local-publish-success", BrokerCepStatementSubscriber.getLocalPublishSuccessCounter());
+        bcepStats.put("count-event-local-publish-failure", BrokerCepStatementSubscriber.getLocalPublishFailureCounter());
+        bcepStats.put("count-event-forwards-success", BrokerCepStatementSubscriber.getForwardSuccessCounter());
+        bcepStats.put("count-event-forwards-failure", BrokerCepStatementSubscriber.getForwardFailureCounter());
+        bcepStats.put("count-total-events", BrokerCepConsumer.getEventCounter());
+        bcepStats.put("count-total-events-text", BrokerCepConsumer.getTextEventCounter());
+        bcepStats.put("count-total-events-object", BrokerCepConsumer.getObjectEventCounter());
+        bcepStats.put("count-total-events-other", BrokerCepConsumer.getOtherEventCounter());
+        bcepStats.put("count-total-events-failures", BrokerCepConsumer.getEventFailuresCounter());
+
+        Map<String,Object> statsMap = new HashMap<>();
+        statsMap.put("broker-cep", bcepStats);
+        return statsMap;
+    }
+
+    public void clearBrokerCepStatistics() {
+        BrokerCepStatementSubscriber.clearCounters();
+        BrokerCepConsumer.clearCounters();
+        log.debug("BrokerCepService.clearBrokerCepStatistics(): broker-CEP statistics cleared");
     }
 }

@@ -101,8 +101,14 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
         else counterForwardFailure.incrementAndGet();
     }
 
-    public long getLocalPublishSuccessCounter() { return counterLocalPublishSuccess.get(); }
-    public long getLocalPublishFailureCounter() { return counterLocalPublishFailure.get(); }
-    public long getForwardSuccessCounter() { return counterForwardSuccess.get(); }
-    public long getForwardFailureCounter() { return counterForwardFailure.get(); }
+    public static long getLocalPublishSuccessCounter() { return counterLocalPublishSuccess.get(); }
+    public static long getLocalPublishFailureCounter() { return counterLocalPublishFailure.get(); }
+    public static long getForwardSuccessCounter() { return counterForwardSuccess.get(); }
+    public static long getForwardFailureCounter() { return counterForwardFailure.get(); }
+    public static synchronized void clearCounters() {
+        counterLocalPublishSuccess.set(0L);
+        counterLocalPublishFailure.set(0L);
+        counterForwardSuccess.set(0L);
+        counterForwardFailure.set(0L);
+    }
 }
