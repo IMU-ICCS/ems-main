@@ -166,6 +166,7 @@ public class ProcessController {
     public List<Job> getJobsList() {
         log.info("GET Cloudiator jobs list");
         log.warn("Fetching jobs list is not implemented yet.");
+        final List<org.activeeon.morphemic.model.Job> allJobs = proactiveClientServiceGUI.getAllJobs();
 //        return cloudiatorApi.getJobList();
         return Collections.emptyList();
     }
