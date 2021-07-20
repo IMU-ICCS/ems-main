@@ -479,17 +479,19 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/ems/stats/clear", method = {GET, POST})
-    public void emsServerStatisticsClear() {
+    public String emsServerStatisticsClear() {
         log.debug("ControlServiceController.emsServerStatisticsClear(): BEGIN");
         coordinator.emsServerStatisticsClear();
         log.debug("ControlServiceController.emsServerStatisticsClear(): END");
+        return "OK";
     }
 
     @RequestMapping(value = "/ems/stats/overall/clear", method = {GET, POST})
-    public void emsOverallStatisticsClear() {
+    public String emsOverallStatisticsClear() {
         log.debug("ControlServiceController.emsOverallStatisticsClear(): BEGIN");
         coordinator.emsOverallStatisticsClear();
         log.debug("ControlServiceController.emsOverallStatisticsClear(): END");
+        return "OK";
     }
 
     // ------------------------------------------------------------------------------------------------------------
