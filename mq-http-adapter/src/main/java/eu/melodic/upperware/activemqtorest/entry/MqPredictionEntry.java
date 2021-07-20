@@ -18,8 +18,7 @@ import java.util.concurrent.TimeUnit;
 @NoArgsConstructor
 @Component
 public class MqPredictionEntry extends MqBaseEntry{
-    private String name;
-    private String topic;
+    private String metricName;
 
     private double metricValue;
     private long timestamp;
@@ -34,8 +33,8 @@ public class MqPredictionEntry extends MqBaseEntry{
 
     @Override
     public Point getInfluxDbDataPoint(IIpGeoCoder ipGeoCoder) {
-        Point point = Point.measurement(getTopic())
-                .time(Long.valueOf(getPredictionTime()), TimeUnit.SECONDS)
+        return Point.measurement(getMetricName())
+                .time(getPredictionTime(), TimeUnit.SECONDS)
                 .addField("metricValue", Double.valueOf(getMetricValue()))
                 .tag("probability", Double.toString(getProbability()))
                 .tag("timestamp", Long.toString(getTimestamp()))
@@ -44,6 +43,5 @@ public class MqPredictionEntry extends MqBaseEntry{
                 .tag("cloud", Strings.nullToEmpty(getCloud()))
                 .tag("provider", Strings.nullToEmpty(getProvider()))
                 .build();
-        return point;
     }
 }
