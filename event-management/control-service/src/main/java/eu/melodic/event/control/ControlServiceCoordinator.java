@@ -982,4 +982,51 @@ public class ControlServiceCoordinator {
     }
 
     // ------------------------------------------------------------------------------------------------------------
+
+    public Map<String,Object> emsServerStatistics() {
+        log.debug("ControlServiceCoordinator.emsServerStatistics(): BEGIN");
+        Map<String,Object> statsMap = brokerCep.getBrokerCepStatistics();
+        log.debug("ControlServiceCoordinator.emsServerStatistics(): END: {}", statsMap);
+        return statsMap;
+    }
+
+    public Map<String,Object> emsOverallStatistics() {
+        log.debug("ControlServiceCoordinator.emsOverallStatistics(): BEGIN");
+
+        // Collecting EMS server statistics
+        Map<String, Object> serverStats = emsServerStatistics();
+        Map<String,Object> statsMap = new HashMap<>();
+        statsMap.put("server", serverStats);
+
+        // Collecting EMS clients' statistics
+        log.trace("ControlServiceCoordinator.emsOverallStatistics(): clients: {}", clientList());
+        for (String clientId : clientList().stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
+            log.trace("ControlServiceCoordinator.emsOverallStatistics(): Requesting statistics from client: {}", clientId);
+            Object o = baguette.readFromClient(clientId, "SHOW-STATS");
+            log.trace("ControlServiceCoordinator.emsOverallStatistics(): Statistics from client: {}, stats: {}", clientId, o);
+            if (o instanceof Map) {
+                statsMap.put(clientId, o);
+            }
+        }
+
+        log.debug("ControlServiceCoordinator.emsOverallStatistics(): END: {}", statsMap);
+        return statsMap;
+    }
+
+    public void emsServerStatisticsClear() {
+        log.debug("ControlServiceCoordinator.emsServerStatisticsClear(): BEGIN");
+        brokerCep.clearBrokerCepStatistics();
+        log.info("ControlServiceCoordinator.emsServerStatisticsClear(): EMS server statistics cleared");
+        log.debug("ControlServiceCoordinator.emsServerStatisticsClear(): END");
+    }
+
+    public void emsOverallStatisticsClear() {
+        log.debug("ControlServiceCoordinator.emsOverallStatisticsClear(): BEGIN");
+        emsServerStatisticsClear();
+        clientCommandSend("*", "CLEAR-STATS");
+        log.info("ControlServiceCoordinator.emsOverallStatisticsClear(): All EMS statistics cleared");
+        log.debug("ControlServiceCoordinator.emsOverallStatisticsClear(): END");
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
 }

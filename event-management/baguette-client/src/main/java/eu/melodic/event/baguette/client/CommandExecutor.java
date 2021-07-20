@@ -532,6 +532,10 @@ public class CommandExecutor {
         } else if ("SHOW-CONFIG".equals(cmd)) {
             log.info("BaguetteClient: configuration:\n{}", config);
             log.info("Cluster: configuration:\n{}", clusterManagerProperties);
+        } else if ("SHOW-STATS".equals(cmd)) {
+            sendStatistics(args[1]);
+        } else if ("CLEAR-STATS".equals(cmd)) {
+            clearStatistics();
         } else {
             args[0] = cmd;
             String line = String.join(" ", args);
@@ -586,6 +590,17 @@ public class CommandExecutor {
         Object o = ois.readObject();
         ois.close();
         return o;
+    }
+
+    /**
+     * Write the object to Base64 string.
+     */
+    protected String serializeToString(Object o) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream( baos );
+        oos.writeObject( o );
+        oos.close();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     protected synchronized void setGroupingConfiguration(String configStr) {
@@ -1061,6 +1076,19 @@ public class CommandExecutor {
         setGroupingForwards(activeGrouping.getName());
         // Update truststore certificates from active grouping settings
         updateCertificates(activeGrouping);
+    }
+
+    @SneakyThrows
+    private void sendStatistics(String inputUuid) {
+        Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
+        log.info("Statistics: {}", statsMap);
+        if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
+    }
+
+    private void clearStatistics() {
+        brokerCepService.clearBrokerCepStatistics();
+        log.info("Statistics cleared");
+        if (out!=null) out.println("STATISTICS CLEARED");
     }
 
     /*private static class StreamGobbler implements Runnable {
