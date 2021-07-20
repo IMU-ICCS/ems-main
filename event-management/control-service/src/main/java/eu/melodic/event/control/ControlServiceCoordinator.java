@@ -537,36 +537,6 @@ public class ControlServiceCoordinator {
         return map;
     }
 
-    /*@RequiredArgsConstructor
-    @Getter
-    public static class CscStatementSubscriber implements StatementSubscriber {
-        private final String name;
-        private final String topic;
-        private final String statement;
-        private final BrokerCepService brokerCep;
-        private final PasswordUtil passwordUtil;
-
-        public void update(java.util.Map<String, Object> eventMap) {
-            try {
-                log.info("- New event: subscriber={}, topic={}, payload={}", name, topic, eventMap);
-
-                // Publish new event to Local Broker topic
-                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
-                String username = brokerCep.getBrokerUsername();
-                String password = brokerCep.getBrokerPassword();
-                log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                        name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
-                brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
-                log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                        name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
-
-            } catch (Exception ex) {
-                log.error("- New event: ERROR: subscriber={}, topic={}, exception=", name, topic, ex);
-            }
-        }
-    }*/
-
-
     // ------------------------------------------------------------------------------------------------------------
     // Translation information query methods
     // ------------------------------------------------------------------------------------------------------------

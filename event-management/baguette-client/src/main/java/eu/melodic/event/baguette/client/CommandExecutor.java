@@ -1109,57 +1109,6 @@ public class CommandExecutor {
         }
     }*/
 
-    /*@Getter
-    @ToString
-    public static class ClientStatementSubscriber implements StatementSubscriber {
-        private String name;
-        private String topic;
-        private String statement;
-        @Setter
-        private Set<BrokerConnectionConfig> forwardToGroupings;
-        private BrokerCepService brokerCep;
-
-        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<BrokerConnectionConfig> f, BrokerCepService bc) {
-            name = n;
-            topic = t;
-            statement = s;
-            forwardToGroupings = f;
-            brokerCep = bc;
-            return this;
-        }
-
-        public void update(Map<String, Object> eventMap) {
-            log.info("- New event received: subscriber={}, topic={}, payload={}", name, topic, eventMap);
-
-            try {
-                // Publish new event to Local Broker topic
-                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
-                log.info("- Publishing event to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
-                        name, localBrokerUrl, topic, eventMap);
-                brokerCep.publishEvent(localBrokerUrl, topic, eventMap);
-                log.trace("- Event published to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
-                        name, localBrokerUrl, topic, eventMap);
-
-                // Send new event to the next grouping(s)
-                log.trace("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
-                        name, forwardToGroupings, eventMap);
-                for (BrokerConnectionConfig fwdToGrouping : forwardToGroupings) {
-                    String brokerUrl = fwdToGrouping.getUrl();
-                    String username = fwdToGrouping.getUsername();
-                    String password = fwdToGrouping.getPassword();
-                    log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, payload={}",
-                            name, fwdToGrouping, brokerUrl, username, topic, eventMap);
-                    brokerCep.publishEvent(brokerUrl, username, password, topic, eventMap);
-                    log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, url={}, username={}, topic={}, payload={}",
-                            name, fwdToGrouping, brokerUrl, username, topic, eventMap);
-                }
-            } catch (Exception ex) {
-                log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, payload={}, exception: ",
-                        name, forwardToGroupings, eventMap, ex);
-            }
-        }
-    }*/
-
     @Data
     @Builder
     @NoArgsConstructor
