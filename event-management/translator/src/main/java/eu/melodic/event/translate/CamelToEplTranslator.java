@@ -22,6 +22,7 @@ import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service("CamelToEplTranslator")
+@NoArgsConstructor
 public class CamelToEplTranslator implements Translator {
 	
 	@Autowired
@@ -48,21 +50,23 @@ public class CamelToEplTranslator implements Translator {
 	
 	private CDOClientX cdoClient;
 	
-	public CamelToEplTranslator() {
-        this.cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE, CpPackage.eINSTANCE));
-		log.debug("CamelToEplTranslator.<init>():  Initialized cdo-client");
-	}
-	
 	public CamelToEplTranslator(CDOClientX client) {
 		this.cdoClient = Objects.requireNonNull(client, "CamelToEplTranslator(CDOClientX) : Argument cannot be null");
 		log.debug("CamelToEplTranslator.<init>():  Set cdo-client");
 	}
-	
+
+	private void initCdoClient() {
+		if (cdoClient==null) return;
+		this.cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE, CpPackage.eINSTANCE));
+		log.debug("CamelToEplTranslator.initCdoClient():  Initialized cdo-client");
+	}
+
 	// ================================================================================================================
 	// Public API
-	
+
 	public TranslationContext translate(String camelId) {
 		log.debug("CamelToEplTranslator.translate():  BEGIN: camel-model-id={}", camelId);
+		initCdoClient();
 		CDOSessionX session = null;
 		CDOView view = null;
 		try {
