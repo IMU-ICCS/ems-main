@@ -497,7 +497,8 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/health", method = GET)
-    public void health() {
+    public String health() {
+        return "OK";
     }
 
     @ExceptionHandler

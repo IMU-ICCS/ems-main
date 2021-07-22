@@ -12,211 +12,160 @@ package eu.melodic.event.control.webconf;
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 
+@Slf4j
+@Order(1)
 @Configuration
 @EnableWebSecurity
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@Order(1)
-@Slf4j
+@RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    // JWT authentication fields
-    private final JWTService jwtService;
+    private final MelodicSecurityProperties melodicSecurityProperties;
 
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
 
+    // JWT Token authentication fields
+    @Value("${web.jwt-token-authentication.enabled:true}")
+    private boolean jwtTokenAuthEnabled;
+
     // API-Key authentication fields
     @Value("${web.api-key.header:EMS-API-KEY}")
-    private String principalRequestHeader;
+    private String apiKeyRequestHeader;
     @Value("${web.api-key.parameter:ems-api-key}")
-    private String principalRequestParam;
+    private String apiKeyRequestParam;
     @Value("${web.api-key.value:#{null}}")
-    private String principalRequestValue;
+    private String apiKeyValue;
+
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void applicationReady() {
+        log.warn("====> afterPropertiesSet: Sample JWT Token: \nBearer {}", jwtService(melodicSecurityProperties).create("USER"));
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring()
+                // Spring Security should completely ignore URLs starting with /resources/
+                .antMatchers("/favicon.ico")
+                .antMatchers("/health");
+    }
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        if (! securityEnabled) {
-            log.warn("WebSecurityConfig: JWT-based authentication is disabled");
+        // Disable CSRF and sessions (it's a REST API)
+        httpSecurity
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        // No security at all
+        boolean apiKeyAuthEnabled = StringUtils.isNotBlank(apiKeyValue);
+        log.debug("WebSecurityConfig: security-enabled={}, jwt-auth-enabled={}, api-key-auth-enabled={}",
+                securityEnabled, jwtTokenAuthEnabled, apiKeyAuthEnabled);
+        if (!securityEnabled || !jwtTokenAuthEnabled && !apiKeyAuthEnabled) {
+            log.warn("WebSecurityConfig: Authentication is disabled");
+            // Authorize all requests
+            httpSecurity
+                    .authorizeRequests()
+                    .antMatchers("/**").permitAll();
+            return;
         }
 
-        if ("generate".equalsIgnoreCase(principalRequestValue)) {
-            principalRequestValue = RandomStringUtils.randomAlphanumeric(30);
-            log.info("WebSecurityConfig: API key generated: {}", principalRequestValue);
+        // Add configured authentication filters
+        if (apiKeyAuthEnabled) {
+            log.debug("WebSecurityConfig: Adding API-Key filter");
+            httpSecurity
+                    .addFilterBefore(apiKeyAuthenticationFilter(), BasicAuthenticationFilter.class);
+        }
+        if (jwtTokenAuthEnabled) {
+            log.debug("WebSecurityConfig: Adding JWT-Token filter");
+            httpSecurity
+                    .addFilterAfter(new JWTAuthorizationFilter(authenticationManager(), jwtService(melodicSecurityProperties)),
+                            BasicAuthenticationFilter.class);
         }
 
-        if (StringUtils.isBlank(principalRequestValue)) {
-            log.warn("WebSecurityConfig: No API-KEY specified in configuration. API-Key-based authentication will be disabled");
-        }
-
-        // Initialize API-Key authentication filter, if configured
-        APIKeyAuthFilter apiKeyFilter = null;
-        if (! StringUtils.isBlank(principalRequestValue)) {
-            // initialize API-Key authentication filter
-            apiKeyFilter = new APIKeyAuthFilter(principalRequestHeader, principalRequestParam);
-            apiKeyFilter.setAuthenticationManager(authenticationManager());
-        }
-
-        // Add JWT-based authentication, if configured
-        if (securityEnabled) {
-            log.info("WebSecurityConfig: Running WITH JWT security");
-
-            if (apiKeyFilter!=null) {
-                log.info("WebSecurityConfig: Registering API-Key authentication");
-                httpSecurity
-                        .cors()
-                        .and()
-                        .csrf().disable()
-                        .authorizeRequests()
-                        .anyRequest().authenticated()
-                        .and()
-                        .addFilter(apiKeyFilter)
-                        .addFilter(new JWTAuthorizationFilter(authenticationManager(), jwtService))
-                        // this disables session creation on Spring Security
-                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-            } else {
-                log.info("WebSecurityConfig: API-Key authentication NOT used");
-                httpSecurity
-                        .cors()
-                        .and()
-                        .csrf().disable()
-                        .authorizeRequests()
-                        .anyRequest().authenticated()
-                        .and()
-                        .addFilter(new JWTAuthorizationFilter(authenticationManager(), jwtService))
-                        // this disables session creation on Spring Security
-                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-            }
-        } else {
-            log.info("WebSecurityConfig: Running WITHOUT JWT security");
-
-            if (apiKeyFilter!=null) {
-                log.info("WebSecurityConfig: Registering API-Key authentication");
-                httpSecurity
-                        .csrf().disable()
-                        .antMatcher("/**")
-                        .addFilter(apiKeyFilter)
-                        .authorizeRequests().anyRequest().authenticated()
-                        .and()
-                        // this disables session creation on Spring Security
-                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-            } else {
-                log.info("WebSecurityConfig: API-Key authentication NOT used");
-                httpSecurity
-                        .csrf().disable()
-                        .authorizeRequests()
-                        .antMatchers("/**").permitAll()
-                        .anyRequest().authenticated()
-                        .and()
-                        // this disables session creation on Spring Security
-                        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-            }
-        }
-
+        // Apply authentication to all URLs
+        httpSecurity
+                .authorizeRequests()
+                .antMatchers("/**").authenticated();
     }
 
-    @Override
-    public void configure(WebSecurity webSecurity) throws Exception {
-        webSecurity
-                .ignoring()
-                .antMatchers("/baguette/registerNode")
-                .antMatchers("/resources/**")
-                .antMatchers("/event/**")
-                .antMatchers("/event-debug/**")
-                .antMatchers("/favicon.ico")
-                .antMatchers("/health")
-                .antMatchers("/")
-        ;
-    }
-
-    // Cors configuration
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        if (securityEnabled) {
-            final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-            source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-            return source;
-        }
-        return null;
-    }
-
-    // JWT authentication manager
     @Bean
     protected AuthenticationManager authenticationManager() {
-        return authentication -> {
-            log.debug("APIKeyAuthFilter.authenticate(): Authenticating request: {}", authentication);
-            if (StringUtils.isNotBlank(principalRequestValue)) {
-                String principal = (String) authentication.getPrincipal();
-                log.debug("APIKeyAuthFilter.authenticate(): Comparing configured api-key to request principal: api-key={}, principal={}", principalRequestValue, principal);
-                if (!principalRequestValue.equals(principal)) {
-                    throw new BadCredentialsException("The API key was not found or not the expected value.");
-                }
-            }
-            authentication.setAuthenticated(true);
-            log.debug("APIKeyAuthFilter.authenticate(): Authenticated");
-            return authentication;
-        };
+        return authentication -> authentication;
     }
 
-    // API Key authentication filter
-    @Slf4j
-    public static class APIKeyAuthFilter extends AbstractPreAuthenticatedProcessingFilter {
+    public JWTService jwtService(MelodicSecurityProperties melodicSecurityProperties) {
+        return new JWTServiceImpl(melodicSecurityProperties);
+    }
 
-        private String principalRequestHeader;
-        private String principalRequestParameter;
-
-        public APIKeyAuthFilter(String principalRequestHeader, String principalRequestParam) {
-            this.principalRequestHeader = StringUtils.stripToNull(principalRequestHeader);
-            this.principalRequestParameter = StringUtils.stripToNull(principalRequestParam);
-            log.debug("APIKeyAuthFilter: API-KEY Header: {}", principalRequestHeader);
-            log.debug("APIKeyAuthFilter: API-KEY Parameter: {}", principalRequestParam);
-        }
-
-        @Override
-        protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-            String headerApiKey = null;
-            if (principalRequestHeader!=null) {
-                headerApiKey = request.getHeader(principalRequestHeader);
-                log.debug("APIKeyAuthFilter: Api-Key Header '{}' value: {}", principalRequestHeader, headerApiKey);
+    public Filter apiKeyAuthenticationFilter() {
+        return (servletRequest, servletResponse, filterChain) -> {
+            log.trace("apiKeyAuthenticationFilter: BEGIN: request={}", servletRequest);
+            if (StringUtils.isNotBlank(apiKeyValue)) {
+                if (servletRequest instanceof HttpServletRequest && servletResponse instanceof HttpServletResponse) {
+                    HttpServletRequest request = (HttpServletRequest) servletRequest;
+                    log.trace("apiKeyAuthenticationFilter: http-request={}", request);
+                    String apiKey = request.getHeader(apiKeyRequestHeader);
+                    log.debug("apiKeyAuthenticationFilter: Request Header API Key: {}={}", apiKeyRequestHeader, apiKey);
+                    if (StringUtils.isBlank(apiKey)) {
+                        apiKey = request.getParameter(apiKeyRequestParam);
+                        log.debug("apiKeyAuthenticationFilter: Request Parameter API Key: {}={}", apiKeyRequestParam, apiKey);
+                    }
+                    if (StringUtils.isBlank(apiKey) || StringUtils.isNotBlank(apiKey) && ! apiKey.equals(apiKeyValue)) {
+                        log.debug("apiKeyAuthenticationFilter: API Key: No Match");
+                        ((HttpServletResponse) servletResponse).setStatus(401);
+                        filterChain.doFilter(servletRequest, servletResponse);
+                        return;
+                    }
+                    log.debug("apiKeyAuthenticationFilter: API Key: Matched");
+                } else {
+                    throw new IllegalArgumentException("API Key Authentication filter does not support non-HTTP requests and responses. Req-class: "
+                            +servletRequest.getClass().getName()+"  Resp-class: "+servletResponse.getClass().getName());
+                }
+            } else {
+                log.warn("apiKeyAuthenticationFilter: No API-Key specified. Access is granted");
             }
-            String paramApiKey = null;
-            if (principalRequestParameter!=null) {
-                paramApiKey = request.getParameter(principalRequestParameter);
-                log.debug("APIKeyAuthFilter: Api-Key Parameter '{}' value: {}", principalRequestParameter, paramApiKey);
-            }
-            String effectiveApiKey = Optional.ofNullable(headerApiKey).orElse(paramApiKey);
-            log.debug("APIKeyAuthFilter: Effective Api-Key: {}", effectiveApiKey);
-            return Optional.ofNullable(effectiveApiKey).orElse("");
-        }
 
-        @Override
-        protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-            return "N/A";
-        }
+            try {
+                // construct one of Spring's auth tokens
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken("API-KEY", apiKeyValue, Collections.singletonList(
+                                new SimpleGrantedAuthority("USER-ROLE")));
+                // store completed authentication in security context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                // continue down the chain.
+                filterChain.doFilter(servletRequest, servletResponse);
+            } catch (Exception e) {
+                log.error("apiKeyAuthenticationFilter: EXCEPTION: ", e);
+            }
+        };
     }
 }

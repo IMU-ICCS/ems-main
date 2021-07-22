@@ -9,9 +9,6 @@
 
 package eu.melodic.event.control;
 
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.paasage.upperware.security.authapi.token.JWTService;
-import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,10 +21,5 @@ public class ApplicationContext {
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
-    }
-
-    @Bean
-    public JWTService JWTService(MelodicSecurityProperties melodicSecurityProperties) {
-        return new JWTServiceImpl(melodicSecurityProperties);
     }
 }
