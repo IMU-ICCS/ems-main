@@ -17,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -165,12 +164,13 @@ public class ProcessController {
     }
 
     @GetMapping("/deployment/job")
-    public List<Job> getJobsList() {
+    public List<eu.passage.upperware.commons.model.internal.Job> getJobsList() {
         log.info("GET Cloudiator jobs list");
-        log.warn("Fetching jobs list is not implemented yet.");
         final List<org.activeeon.morphemic.model.Job> allJobs = proactiveClientServiceGUI.getAllJobs();
-//        return cloudiatorApi.getJobList();
-        return Collections.emptyList();
+        log.info("ProcessController->getJobsList collected jobs: {}", allJobs);
+        final List<eu.passage.upperware.commons.model.internal.Job> domains = ((GenericConverter<org.activeeon.morphemic.model.Job, eu.passage.upperware.commons.model.internal.Job>) domainConverterFactory.getJobConverter()).createDomains(allJobs);
+        log.info("ProcessController->getJobsList converted to internal/domain jobs: {}", domains);
+        return domains;
     }
 
     @GetMapping("/deployment/schedule")
