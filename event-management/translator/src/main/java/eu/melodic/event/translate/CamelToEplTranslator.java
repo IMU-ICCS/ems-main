@@ -56,7 +56,7 @@ public class CamelToEplTranslator implements Translator {
 	}
 
 	private void initCdoClient() {
-		if (cdoClient==null) return;
+		if (cdoClient!=null) return;
 		this.cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE, CpPackage.eINSTANCE));
 		log.debug("CamelToEplTranslator.initCdoClient():  Initialized cdo-client");
 	}
