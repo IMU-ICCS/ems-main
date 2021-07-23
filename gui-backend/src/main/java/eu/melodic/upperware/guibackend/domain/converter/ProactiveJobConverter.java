@@ -65,13 +65,23 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
 
     }
 
-    // TODO: currently no getters are available in activeeon's EmsDeploymentRequest
     private EmsDeploymentRequest createEmsDeploymentRequest(org.activeeon.morphemic.model.EmsDeploymentRequest emsDeployment) {
         if(Objects.isNull(emsDeployment)){
             return null;
         }
 
         return EmsDeploymentRequest.builder()
+                .id(emsDeployment.getId())
+                .authorizationBearer(emsDeployment.getAuthorizationBearer())
+                .baguetteIp(emsDeployment.getBaguetteIp())
+                .baguettePort(emsDeployment.getBaguette_port())
+                .isUsingHttps(emsDeployment.isUsingHttps())
+                .location(emsDeployment.getLocation())
+                .nodeId(emsDeployment.getNodeId())
+                .targetName(emsDeployment.getTargetName())
+                .targetOs(OperatingSystemFamily.valueOf(emsDeployment.getTargetOs().name()))
+                .targetProvider(EmsDeploymentTargetProvider.valueOf(emsDeployment.getTargetProvider().name()))
+                .targetType(EmsDeploymentTargetType.valueOf(emsDeployment.getTargetType().name()))
                 .build();
     }
 
