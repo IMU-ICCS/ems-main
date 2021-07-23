@@ -142,7 +142,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     if (StringUtils.isBlank(apiKey) || StringUtils.isNotBlank(apiKey) && ! apiKey.equals(apiKeyValue)) {
                         log.debug("apiKeyAuthenticationFilter: API Key: No Match");
                         ((HttpServletResponse) servletResponse).setStatus(401);
-                        filterChain.doFilter(servletRequest, servletResponse);
                         return;
                     }
                     log.debug("apiKeyAuthenticationFilter: API Key: Matched");
@@ -157,7 +156,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             try {
                 // construct one of Spring's auth tokens
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken("API-KEY", apiKeyValue, Collections.singletonList(
+                        new UsernamePasswordAuthenticationToken(apiKeyRequestHeader, apiKeyValue, Collections.singletonList(
                                 new SimpleGrantedAuthority("USER-ROLE")));
                 // store completed authentication in security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
