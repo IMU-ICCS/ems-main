@@ -1,35 +1,37 @@
-package eu.passage.upperware.commons.model.byon;
+package eu.passage.upperware.commons.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import eu.passage.upperware.commons.model.internal.IpAddress;
-import eu.passage.upperware.commons.model.internal.LoginCredential;
-import eu.passage.upperware.commons.model.internal.NodeProperties;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @SuperBuilder
 @ToString(callSuper = true)
-public class ByonDefinition implements Serializable {
+public class NodeProperties implements Serializable {
     @JsonProperty("id")
     private long id;
-    @JsonProperty("name")
-    private String name;
-    @JsonProperty("loginCredential")
-    private LoginCredential loginCredential;
-    @JsonProperty("ipAddresses")
-    private List<IpAddress> ipAddresses;
-    @JsonProperty("nodeProperties")
-    private NodeProperties nodeProperties;
+    @JsonProperty("providerId")
+    private String providerId;
+    @JsonProperty("numberOfCores")
+    private Integer numberOfCores;
+    @JsonProperty("memory")
+    private Long memory;
+    @JsonProperty("disk")
+    private Float disk;
+    @JsonProperty("operatingSystem")
+    private OperatingSystem operatingSystem;
+    @JsonProperty("geoLocation")
+    private GeoLocation geoLocation;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap();
 

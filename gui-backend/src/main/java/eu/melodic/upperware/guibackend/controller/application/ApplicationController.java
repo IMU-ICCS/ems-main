@@ -1,9 +1,13 @@
 package eu.melodic.upperware.guibackend.controller.application;
 
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
+import eu.melodic.upperware.guibackend.domain.converter.DomainConverterFactory;
+import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import io.github.cloudiator.rest.model.Function;
 import io.github.cloudiator.rest.model.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,14 +25,16 @@ import java.util.List;
 public class ApplicationController {
 
 //    private CloudiatorApi cloudiatorApi;
+    private ProactiveClientServiceGUI proactiveClientServiceGUI;
+    private final DomainConverterFactory domainConverterFactory;
 
     @GetMapping("/node/vm")
     @ResponseStatus(HttpStatus.OK)
-    public List<Node> getVMByonNodeList() {
+    public List<eu.passage.upperware.commons.model.internal.Node> getVMByonNodeList() {
         log.info("GET request for VM and Byon list");
-        log.warn("Fetching VM and Byon list is not implemented yet.");
-//        return cloudiatorApi.getVMByonFromNodeList();
-        return Collections.emptyList();
+        final List<eu.passage.upperware.commons.model.internal.Node> domains = ((GenericConverter<Deployment, eu.passage.upperware.commons.model.internal.Node>) domainConverterFactory.getNodeConverter()).createDomains(proactiveClientServiceGUI.getAllNodes());
+        log.info("ApplicationController->getVMByonNodeList converted to internal/domain nodes: {}", domains);
+        return domains;
     }
 
     @GetMapping("/node/faas")

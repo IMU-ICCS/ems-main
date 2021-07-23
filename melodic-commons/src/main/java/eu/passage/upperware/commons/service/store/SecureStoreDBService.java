@@ -2,7 +2,7 @@ package eu.passage.upperware.commons.service.store;
 
 import eu.passage.upperware.commons.exception.ValidationException;
 import eu.passage.upperware.commons.model.SecureVariable;
-import eu.passage.upperware.commons.model.byon.LoginCredential;
+import eu.passage.upperware.commons.model.internal.LoginCredential;
 import eu.passage.upperware.commons.model.provider.CloudDefinition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;

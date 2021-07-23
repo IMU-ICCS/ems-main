@@ -11,10 +11,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -64,7 +61,9 @@ public class NodeCandidates implements Serializable {
             return Optional.empty();
         }
 
-        boolean iaasOrByonOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS) || checkIfOnlyVmTypes(nodeCandidates, BYON);
+        //boolean iaasOrByonOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS) || checkIfOnlyVmTypes(nodeCandidates, BYON);
+        boolean iaasOrByonOnly = checkIfOnlyNodeCandidateTypes(nodeCandidates, Arrays.asList(IAAS, BYON));
+        log.info("NodeCandidates->getCheapest: iaasOrByonOnly: {}", iaasOrByonOnly);
         boolean faasOnly = checkIfOnlyVmTypes(nodeCandidates, FAAS);
 
         BinaryOperator<NodeCandidate> nodeCandidateSortOperator;
@@ -88,6 +87,12 @@ public class NodeCandidates implements Serializable {
 
     private boolean checkIfOnlyVmTypes(List<NodeCandidate> nodeCandidates, NodeCandidate.NodeCandidateTypeEnum ncType) {
         return nodeCandidates.stream().allMatch(nodeCandidate -> ncType.equals(nodeCandidate.getNodeCandidateType()));
+    }
+
+    private boolean checkIfOnlyNodeCandidateTypes(List<NodeCandidate> nodeCandidates, List<NodeCandidate.NodeCandidateTypeEnum> ncTypes) {
+        log.info("NodeCandidates->checkIfOnlyNodeCandidateTypes: nodeCandidates: {}, ncTypes: {}", nodeCandidates, ncTypes);
+        return nodeCandidates.stream().allMatch(nodeCandidate -> ncTypes.stream()
+                .anyMatch(nodeCandidateTypeEnum -> nodeCandidateTypeEnum.equals(nodeCandidate.getNodeCandidateType())));
     }
 
     private Predicate<NodeCandidate> createComposedPredicate(Predicate<NodeCandidate>... predicates) {

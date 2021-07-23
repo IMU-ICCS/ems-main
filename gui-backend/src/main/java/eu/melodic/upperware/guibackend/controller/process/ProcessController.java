@@ -11,11 +11,13 @@ import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
 import eu.melodic.upperware.guibackend.service.process.ProcessService;
 import eu.passage.upperware.commons.model.internal.Cloud;
+import eu.passage.upperware.commons.model.internal.Location;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -60,20 +62,20 @@ public class ProcessController {
 
     @GetMapping("/offer/hardware")
     @ResponseStatus(HttpStatus.OK)
-    public List<Hardware> getHardwareList() {
+    public List<eu.passage.upperware.commons.model.internal.Hardware> getHardwareList() {
         log.info("GET request for hardware list");
-        log.warn("Fetching hardware list is not implemented yet.");
-//        return cloudiatorApi.getHardwareList();
-        return Collections.emptyList();
+        final List<eu.passage.upperware.commons.model.internal.Hardware> domains = ((GenericConverter<org.activeeon.morphemic.model.Hardware, eu.passage.upperware.commons.model.internal.Hardware>) domainConverterFactory.getHardwareConverter()).createDomains(proactiveClientServiceGUI.getAllHardware());
+        log.info("ProcessController->getHardwareList converted to internal/domain hardware list: {}", domains);
+        return domains;
     }
 
     @GetMapping("/offer/location")
     @ResponseStatus(HttpStatus.OK)
     public List<Location> getLocationList() {
         log.info("GET request for locations list");
-        log.warn("Fetching locations list is not implemented yet.");
-//        return cloudiatorApi.getLocationList();
-        return Collections.emptyList();
+        final List<Location> domains = ((GenericConverter<org.activeeon.morphemic.model.Location, Location>) domainConverterFactory.getLocationConverter()).createDomains(proactiveClientServiceGUI.getAllLocation());
+        log.info("ProcessController->getLocationList converted to internal/domain location list: {}", domains);
+        return domains;
     }
 
     @GetMapping("/offer/image")
