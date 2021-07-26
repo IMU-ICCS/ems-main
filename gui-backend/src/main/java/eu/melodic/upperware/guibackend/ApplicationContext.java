@@ -12,12 +12,9 @@ import eu.passage.upperware.commons.service.provider.ProviderService;
 import eu.passage.upperware.commons.service.provider.ProviderValidationService;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
-import org.activeeon.morphemic.model.Location;
-import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -87,5 +84,35 @@ public class ApplicationContext {
                 guiBackendProperties.getPaConfig().getPassword(),
                 guiBackendProperties.getPaConfig().getEncryptorPw()) {
         };
+    }
+
+    @Bean(name = "locationConverter")
+    public GenericConverter<?, ?> getLocationConverter() {
+        return new ProactiveLocationConverter();
+    }
+
+    @Bean(name = "hardwareConverter")
+    public GenericConverter<?, ?> getHardwareConverter(@Qualifier("locationConverter") GenericConverter<?, ?> locationConverter) {
+        return new ProactiveHardwareConverter((ProactiveLocationConverter) locationConverter);
+    }
+
+    @Bean(name = "imageConverter")
+    public GenericConverter<?, ?> getImageConverter(@Qualifier("locationConverter") GenericConverter<?, ?> locationConverter) {
+        return new ProactiveImageConverter((ProactiveLocationConverter) locationConverter);
+    }
+
+    @Bean(name = "cloudConverter")
+    public GenericConverter<?, ?> getCloudConverter() {
+        return new ProactiveCloudConverter();
+    }
+
+    @Bean(name = "nodeConverter")
+    public GenericConverter<?, ?> getNodeConverter() {
+        return new ProactiveNodeConverter();
+    }
+
+    @Bean(name = "jobConverter")
+    public GenericConverter<?, ?> getJobConverter() {
+        return new ProactiveJobConverter();
     }
 }
