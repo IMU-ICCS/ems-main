@@ -45,7 +45,7 @@ variables:
 
   METASOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f meta_solver/pom.xml"
   MQ_ADAPTER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f mq-http-adapter/pom.xml"
-  GUI_BACKEND_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f gui-backend/pom.xml"
+  GUI_BACKEND_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -U -f gui-backend/pom.xml"
 
   FUNCTIONIZER_TESTING_TOOL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f functionizer-testing-tool/pom.xml"
 
