@@ -59,4 +59,9 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     public List<Deployment> getAllNodes() {
         return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
     }
+
+    @Override
+    public List<EmsDeploymentRequest> getAllMonitors() {
+        return getPAGateway().map(PAGateway::getMonitorsList).orElse(Collections.emptyList());
+    }
 }

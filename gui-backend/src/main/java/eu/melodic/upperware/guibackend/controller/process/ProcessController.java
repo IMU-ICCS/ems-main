@@ -15,6 +15,7 @@ import eu.passage.upperware.commons.model.internal.Location;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.EmsDeploymentRequest;
 import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -182,10 +183,12 @@ public class ProcessController {
     }
 
     @GetMapping("/deployment/monitor")
-    public List<Monitor> getMonitorsList() {
+    public List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> getMonitorsList() {
         log.info("GET Cloudiator monitors list");
-        log.warn("Fetching monitors list is not implemented yet.");
-//        return cloudiatorApi.getMonitorList();
-        return Collections.emptyList();
+        final List<EmsDeploymentRequest> allMonitors = proactiveClientServiceGUI.getAllMonitors();
+        log.info("ProcessController->getMonitorsList collected monitors: {}", allMonitors);
+        final List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> domains = ((GenericConverter<EmsDeploymentRequest, eu.passage.upperware.commons.model.internal.EmsDeploymentRequest>) domainConverterFactory.getMonitorConverter()).createDomains(allMonitors);
+        log.info("ProcessController->getMonitorsList converted to internal/domain monitors: {}", domains);
+        return domains;
     }
 }
