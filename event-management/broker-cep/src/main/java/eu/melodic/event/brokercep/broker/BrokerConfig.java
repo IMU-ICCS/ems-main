@@ -467,7 +467,7 @@ public class BrokerConfig implements InitializingBean {
 
     public ConnectionFactory getConnectionFactoryFor(String connectionString) {
         return connectionFactoryCache
-                .computeIfAbsent(connectionString, url -> connectionFactory(url));
+                .computeIfAbsent(connectionString, this::connectionFactory);
     }
 
     /**

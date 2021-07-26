@@ -58,18 +58,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
         log.debug("BrokerCepConsumer.initialize(): Initializing Broker-CEP consumer instance...");
         try {
             // close previous session and connection
-            if (session!=null) {
-                session.close();
-                session = null;
-                log.debug("BrokerCepConsumer.initialize(): Closed pre-existing sessions");
-            }
-            if (connection!=null) {
-                connection.close();
-                connection = null;
-                log.debug("BrokerCepConsumer.initialize(): Closed pre-existing connection");
-            }
+            closeConnection();
 
-            // If an alternative Broker URL is provided for consumer, it will be use
+            // If an alternative Broker URL is provided for consumer, it will be used
             ConnectionFactory connectionFactory;
             if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
                 log.debug("BrokerCepConsumer.initialize(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
@@ -83,12 +74,38 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             connection = (brokerConfig.getBrokerLocalAdminUsername() != null)
                     ? connectionFactory.createConnection(brokerConfig.getBrokerLocalAdminUsername(), brokerConfig.getBrokerLocalAdminPassword())
                     : connectionFactory.createConnection();
+            connection.setExceptionListener(e -> {
+                log.warn("BrokerCepConsumer: Connection exception listener: Exception caught: ", e);
+                initialize();
+            });
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             log.debug("BrokerCepConsumer.initialize(): Initializing Broker-CEP consumer instance... done");
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.initialize(): EXCEPTION: ", ex);
         }
+    }
+
+    private void closeConnection() {
+        // close previous session and connection
+        try {
+            if (session != null) {
+                session.close();
+                log.debug("BrokerCepConsumer.closeConnection(): Closed pre-existing sessions");
+            }
+        } catch (Exception e) {
+            log.warn("BrokerCepConsumer.closeConnection(): Exception while closing old session: ", e);
+        }
+        try {
+            if (connection != null) {
+                connection.close();
+                log.debug("BrokerCepConsumer.closeConnection(): Closed pre-existing connection");
+            }
+        } catch (Exception e) {
+            log.warn("BrokerCepConsumer.closeConnection(): Exception while closing old connection: ", e);
+        }
+        session = null;
+        connection = null;
     }
 
     public synchronized void addQueue(String queueName) {
