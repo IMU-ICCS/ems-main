@@ -111,8 +111,13 @@ public class ApplicationContext {
         return new ProactiveNodeConverter();
     }
 
+    @Bean(name = "monitorConverter")
+    public GenericConverter<?, ?> getMonitorConverter() {
+        return new ProactiveMonitorConverter();
+    }
+
     @Bean(name = "jobConverter")
-    public GenericConverter<?, ?> getJobConverter() {
-        return new ProactiveJobConverter();
+    public GenericConverter<?, ?> getJobConverter(@Qualifier("monitorConverter") GenericConverter<?, ?> monitorConverter) {
+        return new ProactiveJobConverter((ProactiveMonitorConverter) monitorConverter);
     }
 }
