@@ -1,5 +1,6 @@
 package eu.passage.upperware.commons.model.internal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.math.BigDecimal;
 @SuperBuilder
 @ToString(callSuper = true)
 public class OperatingSystem implements Serializable {
-    @JsonProperty("id")
+    @JsonIgnore
     private long id;
     @JsonProperty("operatingSystemFamily")
     private OperatingSystemFamily operatingSystemFamily;
