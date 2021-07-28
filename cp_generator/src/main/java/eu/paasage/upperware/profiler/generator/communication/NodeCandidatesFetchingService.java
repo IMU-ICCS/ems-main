@@ -11,6 +11,6 @@ public interface NodeCandidatesFetchingService {
 
     List<NodeCandidate> findNodeCandidates(List<Requirement> requirements);
 
-    List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels);
+    List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String resourceName);
 
 }

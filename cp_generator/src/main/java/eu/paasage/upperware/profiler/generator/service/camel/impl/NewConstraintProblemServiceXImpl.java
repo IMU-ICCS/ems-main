@@ -89,7 +89,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
     }
 
     @Override
-    public ConstraintProblem createConstraintProblem(CamelModel camelModel, String cpName) {
+    public ConstraintProblem createConstraintProblem(CamelModel camelModel, String cpName, String resourceName) {
         resetServices();
 
         //CP creation
@@ -100,7 +100,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         cp.getConstants().add(constantService.createIntegerConstant(0, String.valueOf(0)));
         cp.getConstants().add(constantService.createIntegerConstant(1, String.valueOf(1)));
 
-        Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel);
+        Map<String, Map<Integer, List<NodeCandidate>>> nodeCandidatesMap =  loadProviders(camelModel, resourceName);
         try {
             memcacheService.store(cpName, NodeCandidates.of(nodeCandidatesMap));
             String nodeCandidatesFilePath = "/logs/node_candidates_"+ CDO_SERVER_PATH + cp.getId();
@@ -418,7 +418,7 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return metricVariable.getMetricTemplate().getValueType().getPrimitiveType();
     }
 
-    private Map<String, Map<Integer, List<NodeCandidate>>> loadProviders(CamelModel camelModel) {
+    private Map<String, Map<Integer, List<NodeCandidate>>> loadProviders(CamelModel camelModel, String resourceName) {
         Map<String, Map<Integer, List<NodeCandidate>>> result = new HashMap<>();
 
         DeploymentTypeModelImpl deploymentTypeModel = getDeploymentModel(camelModel);
@@ -427,8 +427,10 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
             List<NodeCandidate> nodeCandidates = loadProviders(
                     deploymentTypeModel.getGlobalRequirementSet(),
                     softwareComponent.getRequirementSet(),
-                    camelModel.getLocationModels()
+                    camelModel.getLocationModels(),
+                    resourceName
                     );
+            log.info("NewConstraintProblemServiceXImpl->loadProviders softwareComponent name: {}, nodeCandidates: {}", softwareComponent.getName(), nodeCandidates);
             Map<String, List<NodeCandidate>> nodeCandidatesByProvider = nodeCandidatesService.groupByProviders(nodeCandidates);
             Map<Integer, List<NodeCandidate>> nodeCandidatesByProviderIndex = getAsIndexMap(nodeCandidatesByProvider);
             result.put(softwareComponent.getName(), nodeCandidatesByProviderIndex);
@@ -441,8 +443,8 @@ public class NewConstraintProblemServiceXImpl implements NewConstraintProblemSer
         return (DeploymentTypeModelImpl) camelModel.getDeploymentModels().get(0);
     }
 
-    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels) {
-        List<Requirement> requirements = nodeCandidatesFetchingService.createRequirements(globalRequirementSet, localRequirementSet, locationModels);
+    private List<NodeCandidate> loadProviders(RequirementSet globalRequirementSet, RequirementSet localRequirementSet, List<LocationModel> locationModels, String resourceName) {
+        List<Requirement> requirements = nodeCandidatesFetchingService.createRequirements(globalRequirementSet, localRequirementSet, locationModels, resourceName);
         log.info("Requirements: {}", requirements);
 
         List<NodeCandidate> nodeCandidates;

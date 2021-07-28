@@ -188,7 +188,7 @@
     <dependency>
       <groupId>cloud.morphemic.connectors</groupId>
       <artifactId>proactive_client</artifactId>
-      <version>1.3-SNAPSHOT</version>
+      <version>1.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>

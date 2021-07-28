@@ -75,6 +75,7 @@ public class DeploymentController {
                                                 @RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                 @RequestHeader(MelodicHeaders.REFRESH) String refreshToken) {
         log.info("POST request for deployment new process");
+        log.info("LSZ DEV[DeploymentController]: deployApplication-> \nDeploymentRequest: {}, \ntoken: {}\nrefreshToken: {}", deploymentRequest, token, refreshToken);
         return deploymentService.createDeploymentProcess(deploymentRequest, token, refreshToken);
     }
 

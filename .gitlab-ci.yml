@@ -24,7 +24,7 @@ variables:
   ZPP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f zpp-solver/pom.xml"
 
   ADAPTER_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f adapter/pom.xml"
-  CP_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp_generator/pom.xml"
+  CP_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -U -f cp_generator/pom.xml"
 
   CP_PARSER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/cp-parser/pom.xml"
   CP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp-solver/pom.xml"
@@ -45,7 +45,7 @@ variables:
 
   METASOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f meta_solver/pom.xml"
   MQ_ADAPTER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f mq-http-adapter/pom.xml"
-  GUI_BACKEND_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f gui-backend/pom.xml"
+  GUI_BACKEND_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -U -f gui-backend/pom.xml"
 
   FUNCTIONIZER_TESTING_TOOL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f functionizer-testing-tool/pom.xml"
 
@@ -585,7 +585,7 @@ deploy:ems-server:
   services:
     - $DOCKER_DIND_SERVICE
   script:
-    - $DOCKER_CLI $EMS_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - $DOCKER_CLI $EMS_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH

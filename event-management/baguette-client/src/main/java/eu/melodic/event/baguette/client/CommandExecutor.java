@@ -485,6 +485,50 @@ public class CommandExecutor {
                 log.error("Exception while updating truststore: ", e);
             }
 
+        } else if ("COLLECTOR".equals(cmd)) {
+            if (args.length < 2) {
+                log.warn("Too few arguments");
+                out.println("Too few arguments");
+                return false;
+            }
+            String operation = args[1];
+            String target = args.length==3 ? args[2] : null;
+            boolean all = ("*".equalsIgnoreCase(target) || "ALL".equalsIgnoreCase(target));
+            if ("LIST".equalsIgnoreCase(operation)) {
+                String list = baguetteClient.getCollectorsList().stream()
+                        .map(c->" - "+c.getClass().getName())
+                        .collect(Collectors.joining("\n"));
+                log.info("BaguetteClient: Listing Collectors:\n{}", list);
+                out.printf("Listing Collectors:\n%s\n", list);
+            } else
+            if ("START".equalsIgnoreCase(operation)) {
+                if (target==null) {
+                    log.warn("Too few arguments");
+                    out.println("Too few arguments");
+                    return false;
+                }
+                log.info("BaguetteClient: Starting Collector: {}...", target);
+                baguetteClient.getCollectorsList().stream()
+                        .filter(c -> all || c.getClass().getName().equals(target))
+                        .peek(c -> log.debug(" - Starting collector: {}...", c.getClass().getName()))
+                        .forEach(Collector::start);
+                log.info("BaguetteClient: Starting Collector: {}... done", target);
+            } else
+            if ("STOP".equalsIgnoreCase(operation)) {
+                if (target==null) {
+                    log.warn("Too few arguments");
+                    out.println("Too few arguments");
+                    return false;
+                }
+                log.info("BaguetteClient: Stopping Collector: {}...", target);
+                baguetteClient.getCollectorsList().stream()
+                        .filter(c -> all || c.getClass().getName().equals(target))
+                        .peek(c -> log.debug(" - Stopping collector: {}...", c.getClass().getName()))
+                        .forEach(Collector::stop);
+                log.info("BaguetteClient: Stopping Collector: {}... done", target);
+            } else
+                log.error("BaguetteClient: Unknown Collector operation: {}", operation);
+
         } else if ("SHOW-CONFIG".equals(cmd)) {
             log.info("BaguetteClient: configuration:\n{}", config);
             log.info("Cluster: configuration:\n{}", clusterManagerProperties);

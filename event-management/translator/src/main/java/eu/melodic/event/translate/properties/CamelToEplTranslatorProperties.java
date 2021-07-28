@@ -62,7 +62,7 @@ public class CamelToEplTranslatorProperties {
     private int exportImageWidth;
 
     // Active sink types
-    @Value("${active-sinks}")
+    @Value("${active-sinks:}")
     private List<String> sinks;
 
     // Sink type configurations

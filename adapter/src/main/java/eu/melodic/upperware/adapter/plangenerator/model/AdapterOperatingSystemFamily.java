@@ -2,7 +2,7 @@ package eu.melodic.upperware.adapter.plangenerator.model;
 
 public enum AdapterOperatingSystemFamily {
     UBUNTU,
-    UNKOWN_OS_FAMILY,
+    UNKNOWN_OS_FAMILY,
     AIX,
     ARCH,
     CENTOS,
