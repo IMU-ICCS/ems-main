@@ -37,7 +37,7 @@
       "description": "Upload EMS client installation package",
       "taskType": "COPY",
       "fileName": "/tmp/baguette-client.tgz",
-      "localFileName": "/opt/ems-server/config/resources/baguette-client.tgz",
+      "localFileName": "${EMS_PUBLIC_DIR}/baguette-client.tgz",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -46,7 +46,7 @@
       "description": "Upload installation package MD5 checksum",
       "taskType": "COPY",
       "fileName": "/tmp/baguette-client.tgz.md5",
-      "localFileName": "/opt/ems-server/config/resources/baguette-client.tgz.md5",
+      "localFileName": "${EMS_PUBLIC_DIR}/baguette-client.tgz.md5",
       "executable": false,
       "exitCode": 0,
       "match": false

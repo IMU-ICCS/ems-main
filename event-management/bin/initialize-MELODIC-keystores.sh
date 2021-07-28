@@ -129,7 +129,7 @@ create_keystore_for "authserver"
 create_keystore_for "ems"
 create_keystore_for "gui-backend"
 create_keystore_for "gui-frontend"
-create_keystore_for "cloudiator"
+#create_keystore_for "cloudiator"
 
 echo Key stores, certificate and Melodic common truststores are ready.
 cd $PREVWORKDIR

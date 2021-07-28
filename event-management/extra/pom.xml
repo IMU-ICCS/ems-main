@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+  ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+  ~ If a copy of the MPL was not distributed with this file, you can obtain one at
+  ~ https://www.mozilla.org/en-US/MPL/2.0/
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>event-management</artifactId>
+        <groupId>eu.melodic.event</groupId>
+        <version>4.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>extra</artifactId>
+    <name>Upperware - EMS - Extras (optional modules)</name>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>baguette-client-install</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.16</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.9</version>
+        </dependency>
+
+        <!-- Cloudiator -->
+        <dependency>
+            <groupId>io.github.cloudiator</groupId>
+            <artifactId>colosseum-client</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <!-- Cloudiator -->
+        <repository>
+            <id>ossrh.snapshots</id>
+            <name>OSSRH snapshots repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+</project>

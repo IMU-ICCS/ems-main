@@ -9,11 +9,11 @@
 
 package eu.melodic.event.brokerclient;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
-import java.io.Serializable;
-import java.util.*;
-import javax.jms.*;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -27,6 +27,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.jms.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.file.Paths;
+import java.util.*;
+
 @Slf4j
 @Component
 public class BrokerClient {
@@ -36,6 +44,7 @@ public class BrokerClient {
     private Connection connection;
     private Session session;
     private HashMap<MessageListener,MessageConsumer> listeners = new HashMap<>();
+    private Gson gson = new GsonBuilder().create();
 
     public BrokerClient() {
     }
@@ -55,23 +64,31 @@ public class BrokerClient {
 
         // get properties file
         String configDir = System.getenv("MELODIC_CONFIG_DIR");
-        if (configDir == null || configDir.trim().isEmpty()) configDir = ".";
-        log.info("BrokerClient: config-dir: {}", configDir);
+        if (StringUtils.isBlank(configDir)) configDir = ".";
+        log.debug("BrokerClient: config-dir:  {}", configDir);
         String configPropFile = configDir + "/" + "eu.melodic.event.brokerclient.properties";
-        log.info("BrokerClient: config-file: {}", configPropFile);
+        log.debug("BrokerClient: config-file: {}", configPropFile);
 
         // load properties
         Properties p = new Properties();
-        //ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        //try (java.io.InputStream in = loader.getClass().getResourceAsStream(configPropFile)) { p.load(in); }
-        try (java.io.InputStream in = new java.io.FileInputStream(configPropFile)) {
-            p.load(in);
+        File cfgFile = Paths.get(configPropFile).toFile();
+        if (cfgFile.exists() && cfgFile.isFile()) {
+            //ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            //try (java.io.InputStream in = loader.getClass().getResourceAsStream(configPropFile)) { p.load(in); }
+            try (java.io.InputStream in = new java.io.FileInputStream(configPropFile)) {
+                log.debug("BrokerClient: Loading config-properties from file: {}", configPropFile);
+                p.load(in);
+            }
+            log.debug("BrokerClient: config-properties: {}", p);
+            log.info("BrokerClient: Configuration loaded from file: {}", configPropFile);
+        } else {
+            log.debug("BrokerClient: Config file not found or is not a file: {}", configPropFile);
+            log.info("BrokerClient: No configuration file found");
         }
-        log.info("BrokerClient: config-properties: {}", p);
 
         // initialize broker client
         BrokerClient client = new BrokerClient(p);
-        log.info("BrokerClient: Configuration:\n{}", client.properties);
+        log.info("BrokerClient: Default Configuration:\n{}", client.properties);
 
         return client;
     }
@@ -137,11 +154,33 @@ public class BrokerClient {
 
     // ------------------------------------------------------------------------
 
+    public enum MESSAGE_TYPE { TEXT, OBJECT, BYTES, MAP };
+
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
-        _publishEvent(connectionString, destinationName, new EventMap(eventMap));
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, new EventMap(eventMap), null);
     }
 
-    protected synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+    public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, new EventMap(eventMap), propertiesMap);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String eventContents) throws JMSException {
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, eventContents, null);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String eventContents, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, destinationName, MESSAGE_TYPE.TEXT, eventContents, propertiesMap);
+    }
+
+    public synchronized void publishEvent(String connectionString, String destinationName, String type, Serializable eventContents, Map<String,String> propertiesMap) throws JMSException {
+        MESSAGE_TYPE messageType = StringUtils.isNotBlank(type)
+                ? MESSAGE_TYPE.valueOf(type.trim().toUpperCase())
+                : MESSAGE_TYPE.TEXT;
+        _publishEvent(connectionString, destinationName, messageType, eventContents, propertiesMap);
+    }
+
+    @SneakyThrows
+    protected synchronized void _publishEvent(String connectionString, String destinationName, MESSAGE_TYPE messageType, Serializable event, Map<String,String> propertiesMap) throws JMSException {
         // open or reuse connection
         checkProperties();
         boolean _closeConn = false;
@@ -159,14 +198,66 @@ public class BrokerClient {
         producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
 
         // Create a messages
-        //ObjectMessage message = session.createObjectMessage(event);
-        TextMessage message = session.createTextMessage(event.toString());
+        String payloadText = null;
+        Message message;
+        switch (messageType) {
+            case MAP:
+                if (event instanceof Map) {
+                    final MapMessage mapMsg = session.createMapMessage();
+                    for (Object key : ((Map) event).keySet()) {
+                        Object val = ((Map) event).get(key);
+                        String k = key != null ? key.toString() : null;
+                        mapMsg.setObject(k, val);
+                    }
+                    payloadText = event.toString();
+                    message = mapMsg;
+                    break;
+                } else {
+                    log.warn("BrokerClient.publishEvent(): Payload is not a Map: {}", event.getClass().getName());
+                    log.warn("BrokerClient.publishEvent(): Will send an Object message");
+                    messageType = MESSAGE_TYPE.OBJECT;
+                }
+            case OBJECT:
+                payloadText = event.toString();
+                message = session.createObjectMessage(event);
+                break;
+            case BYTES:
+                byte[] bytesArr;
+                if (event instanceof byte[]) {
+                    bytesArr = (byte[]) event;
+                } else {
+                    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                         ObjectOutputStream out = new ObjectOutputStream(bos))
+                    {
+                        out.writeObject(event);
+                        bytesArr = bos.toByteArray();
+                    }
+                }
+                BytesMessage bytesMsg = session.createBytesMessage();
+                bytesMsg.writeBytes(bytesArr);
+                payloadText = new String(bytesArr);
+                message = bytesMsg;
+                break;
+            case TEXT:
+            default:
+                payloadText = event instanceof String
+                        ? (String)event
+                        : event.toString();
+                message = session.createTextMessage(payloadText);
+                break;
+        }
+        log.debug("BrokerClient.publishEvent(): Message payload: payload={}", payloadText);
+
+        if (propertiesMap!=null)
+            for (Map.Entry<String,String> e : propertiesMap.entrySet())
+                if (StringUtils.isNotBlank(e.getKey()))
+                    message.setStringProperty(e.getKey(), e.getValue());
 
         // Tell the producer to send the message
         long hash = message.hashCode();
-        log.info("BrokerClient.publishEvent(): Sending message: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
+        log.debug("BrokerClient.publishEvent(): Sending {} message: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
         producer.send(message);
-        log.info("BrokerClient.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, properties.getBrokerUsername(), destinationName, hash, event);
+        log.info("BrokerClient.publishEvent(): {} message sent: connection={}, username={}, destination={}, hash={}, payload={}, properties={}", messageType, connectionString, properties.getBrokerUsername(), destinationName, hash, event, propertiesMap);
 
         // close connection
         if (_closeConn) {
@@ -247,7 +338,7 @@ public class BrokerClient {
         final ActiveMQConnectionFactory connectionFactory;
         String brokerUrl = properties.getBrokerUrl();
         if (brokerUrl.startsWith("ssl")) {
-            log.info("BrokerClient.createConnectionFactory(): Creating new SSL connection factory instance: url={}", brokerUrl);
+            log.debug("BrokerClient.createConnectionFactory(): Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
             try {
                 sslConnectionFactory.setTrustStore(properties.getTruststoreFile());
@@ -263,7 +354,7 @@ public class BrokerClient {
                 throw new Error(theException);
             }
         } else {
-            log.info("BrokerClient.createConnectionFactory(): Creating new non-SSL connection factory instance: url={}", brokerUrl);
+            log.debug("BrokerClient.createConnectionFactory(): Creating new non-SSL connection factory instance: url={}", brokerUrl);
             connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
         }
 

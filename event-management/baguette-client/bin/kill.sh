@@ -12,7 +12,7 @@
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 
 # Update path
-PATH=$PATH:/opt/cloudiator/jre8/bin/
+#PATH=$PATH:/path/to/jre8/bin/
 
 # Kill Baguette client
 #PID=`jps | grep BaguetteClient | cut -d " " -f 1`

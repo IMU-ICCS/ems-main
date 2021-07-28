@@ -44,6 +44,11 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.github.ulisesbocchio</groupId>
+			<artifactId>jasypt-spring-boot-starter</artifactId>
+			<version>2.1.0</version>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
 		<dependency>
@@ -199,7 +204,7 @@
 			</plugin>
 
 			<!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
-			<plugin>
+			<!--<plugin>
 				<groupId>com.coderplus.maven.plugins</groupId>
 				<artifactId>copy-rename-maven-plugin</artifactId>
 				<version>1.0</version>
@@ -214,15 +219,15 @@
 							<fileSets>
 								<fileSet>
 									<sourceFile>target/baguette-client-installation-package.tgz</sourceFile>
-									<destinationFile>../config-files/resources/baguette-client.tgz</destinationFile>
+									<destinationFile>../public_resources/baguette-client.tgz</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>target/baguette-client-installation-package.tgz.md5</sourceFile>
-									<destinationFile>../config-files/resources/baguette-client.tgz.md5</destinationFile>
+									<destinationFile>../public_resources/baguette-client.tgz.md5</destinationFile>
 								</fileSet>
 								<fileSet>
 									<sourceFile>bin/install.sh</sourceFile>
-                                    <destinationFile>../config-files/resources/install.sh</destinationFile>
+                                    <destinationFile>../public_resources/install.sh</destinationFile>
 								</fileSet>
 							</fileSets>
 							<ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
@@ -230,7 +235,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 
 		</plugins>
 	</build>

@@ -11,6 +11,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @ToString(callSuper = true)
 public class GeoLocation {
+    @JsonProperty("id")
+    private long id;
     @JsonProperty("city")
     private String city;
     @JsonProperty("country")

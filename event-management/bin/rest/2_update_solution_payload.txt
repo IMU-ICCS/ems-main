@@ -1,0 +1,14 @@
+{
+  "applicationId": "dummy-app-id",
+  "cdoModelsPath": "/FCRnew_cpModelTest",
+  "deploymentResult": {
+      "status": "SUCCESS",
+      "errorCode": "",
+      "errorDescription": ""
+  },
+  "watermark": {
+      "user": "mprusinski",
+      "system": "mule",
+      "uuid": "9d65b0b6-40a8-11e7-a919-92ebcb67fe33"
+  }
+}

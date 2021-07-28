@@ -18,6 +18,7 @@
 
     <artifactId>broker-client</artifactId>
     <name>Upperware - EMS - Broker Client library</name>
+    <url>https://gitlab.ow2.org/melodic/melodic-upperware/-/tree/master/event-management/broker-client</url>
 
     <dependencies>
         <!-- Spring-boot dependencies -->
@@ -37,11 +38,25 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+
         <!-- Apache Commons Lang -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
+        </dependency>
+
+        <!-- Apache Commons CSV -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.7</version>
         </dependency>
     </dependencies>
 
@@ -60,6 +75,8 @@
                     <archive>
                         <manifest>
                             <mainClass>eu.melodic.event.brokerclient.BrokerClientApp</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>

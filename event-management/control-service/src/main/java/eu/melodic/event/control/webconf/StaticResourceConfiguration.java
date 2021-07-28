@@ -10,6 +10,7 @@
 package eu.melodic.event.control.webconf;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -28,12 +29,18 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     private String faviconContext;
     @Value("${static.favicon.path:#{null}}")
     private String faviconPath;
+
     @Value("${static.resource.context:/**}")
     private String staticResourceContext;
     @Value("${static.resource.path:#{null}}")
     private String[] staticResourcePath;
     @Value("${static.resource.redirect:#{null}}")
     private String staticResourceRedirect;
+
+    @Value("${static.logs.context:/logs/**}")
+    private String staticLogsContext;
+    @Value("${static.logs.path:#{null}}")
+    private String[] staticLogsPath;
 
     @Value("${event-debug.resource.context:/event-debug/**}")
     private String eventDebugResourceContext;
@@ -44,20 +51,26 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        if(faviconPath != null) {
+        if(StringUtils.isNotBlank(faviconPath)) {
             log.info("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
             registry
                     .addResourceHandler(faviconContext)
                     .addResourceLocations(faviconPath);
         }
-        if(staticResourcePath != null) {
+        if(staticResourcePath != null && staticResourcePath.length > 0) {
             log.info("Serving static content from: {} --> {}", staticResourceContext, staticResourcePath);
             registry
                     .addResourceHandler(staticResourceContext)
                     .addResourceLocations(staticResourcePath);
         }
+        if(staticLogsPath != null && staticLogsPath.length > 0) {
+            log.info("Serving logs from: {} --> {}", staticLogsContext, staticLogsPath);
+            registry
+                    .addResourceHandler(staticLogsContext)
+                    .addResourceLocations(staticLogsPath);
+        }
 
-        if(eventDebugEnabled && eventDebugResourcePath != null) {
+        if(eventDebugEnabled && eventDebugResourcePath != null && eventDebugResourcePath.length > 0) {
             log.info("Serving event-debug content from: {} --> {}", eventDebugResourceContext, eventDebugResourcePath);
             registry
                     .addResourceHandler(eventDebugResourceContext)
@@ -71,7 +84,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        if (staticResourceRedirect != null) {
+        if (StringUtils.isNotBlank(staticResourceRedirect)) {
             log.info("Redirecting / to: {}", staticResourceRedirect);
             registry
                     .addViewController("/")

@@ -53,7 +53,8 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         log.info("Trying to get Node candidates for requirements: {}", requirements);
         List<NodeCandidate> candidates = proactiveClientServiceForGenerator.findNodeCandidates(requirements);
         if (candidates.size() > 0) {
-            fillByonCloudProvider(candidates);
+            //fillByonCloudProvider(candidates); // TODO: this should not be needed, as ProActive will return Node Candidates with cloud object
+            // (fake cloud, one for all BYONs in the database)
             log.info("Successfully fetched {} NodeCandidates", candidates.size());
             log.debug("NodeCandidatesFetchingServiceImpl->findNodeCandidates: list of NodeCandidates: {}", candidates);
             return candidates;
@@ -66,7 +67,8 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         CollectionUtils.emptyIfNull(nodeCandidates)
                 .stream()
                 .filter(nodeCandidate -> NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType()))
-                .forEach(this::setCloudId);
+                .forEach(this::setCloudId); // TODO: here byon node gets cloud id assigned from image, how was image created in cloudiator ?
+        // NewNode class has only OperatingSystem object (part of NodeProperties class), so probably from this info Image class object was created with custom id and name
     }
 
     private void setCloudId(NodeCandidate nodeCandidate) {
@@ -86,9 +88,9 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
 
     @Override
     public List<Requirement> createRequirements(RequirementSet globalRequirementSet, RequirementSet localRequirementSet,
-            List<LocationModel> locationModels) {
+                                                List<LocationModel> locationModels, String resourceName) {
         List<Requirement> requirements = new ArrayList<>();
-        requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet)));
+        requirements.addAll(createResourceRequirement(getResourceRequirement(globalRequirementSet, localRequirementSet), resourceName));
         requirements.addAll(createLocationRequirement(getLocationRequirement(globalRequirementSet, localRequirementSet), locationModels));
         requirements.addAll(createImageRequirement(getImageRequirement(globalRequirementSet, localRequirementSet)));
         requirements.addAll(createOSRequirement(getOSRequirement(globalRequirementSet, localRequirementSet)));
@@ -97,13 +99,18 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         return requirements;
     }
 
-    private Requirement createNodeTypeRequirement(NodeType nodeType) {
-        NodeTypeRequirement requirement = new NodeTypeRequirement();
-        requirement.setNodeType(org.activeeon.morphemic.model.NodeType.getByName(nodeType.name()));
-        return requirement;
+    private Requirement createNodeTypeRequirement(List<NodeType> nodeTypes, String resourceName) {
+        log.info("NodeCandidatesFetchingServiceImpl->createNodeTypeRequirement: list of NodeType: {}", nodeTypes);
+        NodeTypeRequirement nodeTypeRequirement = new NodeTypeRequirement();
+        List<org.activeeon.morphemic.model.NodeType> nodeTypesProactive = new ArrayList<>();
+        nodeTypes.forEach(nodeType -> nodeTypesProactive.add(org.activeeon.morphemic.model.NodeType.getByName(nodeType.name())));
+        nodeTypeRequirement.setNodeTypes(nodeTypesProactive);
+        nodeTypeRequirement.setJobIdForBYON(resourceName);
+        log.info("NodeCandidatesFetchingServiceImpl->createNodeTypeRequirement: created nodeTypeRequirement: {}", nodeTypeRequirement);
+        return nodeTypeRequirement;
     }
 
-    private Collection<? extends Requirement> createResourceRequirement(ResourceRequirement resourceRequirement) {
+    private Collection<? extends Requirement> createResourceRequirement(ResourceRequirement resourceRequirement, String resourceName) {
         if (resourceRequirement == null) {
             return Collections.emptyList();
         }
@@ -114,9 +121,9 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
 
         final Optional<Attribute> nodeType = getAttribute(requirementsMap, "placementType");
         if (nodeType.isPresent()) {
-            result.add(createNodeTypeRequirement(NodeType.valueOf(getValueAsString(nodeType.get().getValue()))));
+            result.add(createNodeTypeRequirement(Collections.singletonList(NodeType.valueOf(getValueAsString(nodeType.get().getValue()))), resourceName));
         } else {
-            result.add(createNodeTypeRequirement(NodeType.IAAS));
+            result.add(createNodeTypeRequirement(Arrays.asList(NodeType.IAAS, NodeType.BYON), resourceName));
         }
 
         getAttribute(requirementsMap, "totalMemoryHasMin").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
