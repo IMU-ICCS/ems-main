@@ -9,8 +9,7 @@
 
 package eu.melodic.event.brokercep;
 
-//import eu.melodic.event.brokercep.broker.BrokerAdvisoryWatcher;
-
+import com.google.gson.Gson;
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.util.FunctionDefinition;
@@ -53,11 +52,12 @@ public class BrokerCepService {
     private BrokerService brokerService;
     private PasswordUtil passwordUtil;
 
-    //private BrokerAdvisoryWatcher advisoryMessageWatcher;
     @Getter
     private BrokerCepConsumer brokerCepBridge;
     @Getter
     private CepService cepService;
+
+    private Gson gson;
 
     public BrokerCepProperties getBrokerCepProperties() {
         return properties;
@@ -310,7 +310,7 @@ public class BrokerCepService {
 
         // Create a messages
         //ObjectMessage message = session.createObjectMessage(event);
-        TextMessage message = session.createTextMessage(event.toString());
+        TextMessage message = session.createTextMessage(gson.toJson(event));
 
         // Tell the producer to send the message
         long hash = message.hashCode();
