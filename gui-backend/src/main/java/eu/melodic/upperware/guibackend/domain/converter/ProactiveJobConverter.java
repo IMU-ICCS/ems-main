@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.domain.converter;
 
 import eu.passage.upperware.commons.model.internal.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.Job;
 import org.springframework.lang.NonNull;
@@ -12,7 +13,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
+@AllArgsConstructor
 public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.upperware.commons.model.internal.Job> {
+
+    private ProactiveMonitorConverter proactiveMonitorConverter;
+
     @Override
     public eu.passage.upperware.commons.model.internal.Job createDomain(@NonNull Job external) {
         return eu.passage.upperware.commons.model.internal.Job.builder()
@@ -58,31 +63,11 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
                         .locationName(deployment.getLocationName())
                         .imageProviderId(deployment.getImageProviderId())
                         .hardwareProviderId(deployment.getHardwareProviderId())
-                        .emsDeployment(createEmsDeploymentRequest(deployment.getEmsDeployment()))
+                        .emsDeployment(proactiveMonitorConverter.createDomain(deployment.getEmsDeployment()))
                         .build()
                 )
                 .collect(Collectors.toList());
 
-    }
-
-    private EmsDeploymentRequest createEmsDeploymentRequest(org.activeeon.morphemic.model.EmsDeploymentRequest emsDeployment) {
-        if(Objects.isNull(emsDeployment)){
-            return null;
-        }
-
-        return EmsDeploymentRequest.builder()
-                .id(emsDeployment.getId())
-                .authorizationBearer(emsDeployment.getAuthorizationBearer())
-                .baguetteIp(emsDeployment.getBaguetteIp())
-                .baguettePort(emsDeployment.getBaguette_port())
-                .isUsingHttps(emsDeployment.isUsingHttps())
-                .location(emsDeployment.getLocation())
-                .nodeId(emsDeployment.getNodeId())
-                .targetName(emsDeployment.getTargetName())
-                .targetOs(OperatingSystemFamily.valueOf(emsDeployment.getTargetOs().name()))
-                .targetProvider(EmsDeploymentTargetProvider.valueOf(emsDeployment.getTargetProvider().name()))
-                .targetType(EmsDeploymentTargetType.valueOf(emsDeployment.getTargetType().name()))
-                .build();
     }
 
     private DockerEnvironment createDockerEnvironment(org.activeeon.morphemic.model.DockerEnvironment environment) {

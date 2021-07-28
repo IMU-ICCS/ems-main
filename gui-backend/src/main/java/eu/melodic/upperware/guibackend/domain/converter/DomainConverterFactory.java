@@ -11,19 +11,22 @@ public class DomainConverterFactory {
     private final GenericConverter<?, ?> locationConverter;
     private final GenericConverter<?, ?> nodeConverter;
     private final GenericConverter<?, ?> jobConverter;
+    private final GenericConverter<?, ?> monitorConverter;
 
     public DomainConverterFactory(@Qualifier("locationConverter") GenericConverter<?, ?> locationConverter,
                                   @Qualifier("hardwareConverter") GenericConverter<?, ?> hardwareConverter,
                                   @Qualifier("imageConverter") GenericConverter<?, ?> imageConverter,
                                   @Qualifier("cloudConverter") GenericConverter<?, ?> cloudConverter,
                                   @Qualifier("nodeConverter") GenericConverter<?, ?> nodeConverter,
-                                  @Qualifier("jobConverter") GenericConverter<?, ?> jobConverter) {
+                                  @Qualifier("jobConverter") GenericConverter<?, ?> jobConverter,
+                                  @Qualifier("monitorConverter") GenericConverter<?, ?> monitorConverter) {
         this.cloudConverter = cloudConverter;
         this.locationConverter = locationConverter;
         this.imageConverter = imageConverter;
         this.hardwareConverter = hardwareConverter;
         this.nodeConverter = nodeConverter;
         this.jobConverter =jobConverter;
+        this.monitorConverter = monitorConverter;
     }
 
     public GenericConverter<?, ?> getCloudConverter() {
@@ -48,5 +51,9 @@ public class DomainConverterFactory {
 
     public GenericConverter<?, ?> getJobConverter() {
         return this.jobConverter;
+    }
+
+    public GenericConverter<?, ?> getMonitorConverter() {
+        return this.monitorConverter;
     }
 }

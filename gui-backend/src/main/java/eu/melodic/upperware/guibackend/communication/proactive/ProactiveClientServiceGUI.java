@@ -24,4 +24,6 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
     List<Job> getAllJobs();
 
     List<Deployment> getAllNodes();
+
+    List<EmsDeploymentRequest> getAllMonitors();
 }
