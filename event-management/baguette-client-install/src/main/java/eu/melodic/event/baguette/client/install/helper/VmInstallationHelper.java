@@ -170,6 +170,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         valueMap.put("API_KEY", apiKey);
         valueMap.put("SERVER_CERT_FILE", serverCertFile);
         valueMap.put("REMOTE_TMP_DIR", clientTmpDir);
+
+        valueMap.put("EMS_PUBLIC_DIR", System.getProperty("PUBLIC_DIR", System.getenv("PUBLIC_DIR")));
         log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
 
 /*        // Clear EMS server certificate (PEM) file, if not secure

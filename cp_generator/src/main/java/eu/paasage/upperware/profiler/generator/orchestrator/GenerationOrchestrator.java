@@ -113,7 +113,7 @@ public class GenerationOrchestrator {
         String cpName = getCpName(camelModel);
 
         log.info("** Calling CPModelDerivator");
-        ConstraintProblem cp = newConstraintProblemServiceX.createConstraintProblem(camelModel, cpName);
+        ConstraintProblem cp = newConstraintProblemServiceX.createConstraintProblem(camelModel, cpName, resourceName);
 
         String cpId = CDO_SERVER_PATH + cpName;
         log.debug("** Calling DatabseProxy ");

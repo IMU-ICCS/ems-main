@@ -1,27 +1,26 @@
 package eu.melodic.upperware.guibackend.service.byon;
 
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
 import eu.melodic.upperware.guibackend.exception.ByonDefinitionNotFoundException;
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
 import eu.passage.upperware.commons.model.byon.ByonEnums;
-import eu.passage.upperware.commons.model.byon.LoginCredential;
+import eu.passage.upperware.commons.model.byon.ByonNode;
+import eu.passage.upperware.commons.model.internal.*;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
-import io.github.cloudiator.rest.model.ByonNode;
-import io.github.cloudiator.rest.model.IpAddressType;
-import io.github.cloudiator.rest.model.IpVersion;
-import io.github.cloudiator.rest.model.NewNode;
-import io.github.cloudiator.rest.model.OperatingSystemArchitecture;
-import io.github.cloudiator.rest.model.OperatingSystemFamily;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.Job;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -33,6 +32,7 @@ public class ByonService {
     //    private CloudiatorApi cloudiatorApi;
     private ByonMapper byonMapper;
     private final SecureStoreDBService secureStoreDBService;
+    private ProactiveClientServiceGUI proactiveClientServiceGUI;
 
     public Optional<List<ByonDefinition>> getByonDefList(boolean fillSecureVariables) {
         List<ByonDefinition> byonDefinitions = yamlDataService.getDataFromYaml().getByonDefinitions();
@@ -136,10 +136,16 @@ public class ByonService {
                 .filter(byonDefinition -> byonDefinition.getId() == byonDefinitionId)
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
-        NewNode newNode = byonMapper.mapByonDefinitionToNewNode(byonDefinitionForNode);
-        log.warn("Creating BYON nodes is not implemented yet.");
-//        return cloudiatorApi.createNewByonNode(newNode, applicationId); // applicationId is required for proactive scheduler
-        return new ByonNode();
+        final org.activeeon.morphemic.model.ByonDefinition byonDefinitionProactive = byonMapper.mapByonDefinitionToProactive(byonDefinitionForNode);
+        log.info("LSZ DEV[ByonService]: createByonNode: byonDefinitionProactive={}", byonDefinitionProactive);
+        final Optional<org.activeeon.morphemic.model.ByonNode> byonNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId));
+        log.info("LSZ DEV[ByonService]: createByonNode: byonNodeProactive={}", byonNodeProactive);
+        ByonNode byonNode = null;
+        if(byonNodeProactive.isPresent()) {
+            byonNode = byonMapper.mapProactiveByonNodeToInternal(byonNodeProactive.get());
+        }
+        log.info("LSZ DEV[ByonService]: createByonNode: internal byonNode={}", byonNode);
+        return byonNode;
     }
 
     public ByonEnums getByonEnums() {
@@ -148,16 +154,16 @@ public class ByonService {
         List<String> osFamilies = new ArrayList<>();
         List<String> osArchitecture = new ArrayList<>();
         for (IpAddressType value : IpAddressType.values()) {
-            ipAddressesTypes.add(value.getValue());
+            ipAddressesTypes.add(value.name());
         }
         for (IpVersion value : IpVersion.values()) {
-            ipVersions.add(value.getValue());
+            ipVersions.add(value.name());
         }
         for (OperatingSystemFamily value : OperatingSystemFamily.values()) {
-            osFamilies.add(value.getValue());
+            osFamilies.add(value.name());
         }
         for (OperatingSystemArchitecture value : OperatingSystemArchitecture.values()) {
-            osArchitecture.add(value.getValue());
+            osArchitecture.add(value.name());
         }
         return ByonEnums.builder()
                 .ipAddressTypes(ipAddressesTypes)
@@ -169,5 +175,29 @@ public class ByonService {
 
     private boolean fieldIsDefined(String fieldValue) {
         return fieldValue != null && !StringUtils.isEmpty(fieldValue);
+    }
+
+    public List<ByonNode> getByonNodesList(String applicationId) {
+        log.info("LSZ DEV[ByonService]: getByonNodesList: applicationId={}", applicationId);
+        final List<org.activeeon.morphemic.model.ByonNode> byonNodeList = proactiveClientServiceGUI.getByonNodeList(applicationId);
+        log.info("LSZ DEV[ByonService]: getByonNodesList: byonNodeList={}", byonNodeList);
+        return byonNodeList.stream()
+                .map(byonMapper::mapProactiveByonNodeToInternal)
+                .collect(Collectors.toList());
+    }
+
+    public List<ByonNode> getAllByonNodesList() {
+        log.info("LSZ DEV[ByonService]: getAllByonNodesList starting");
+        final List<Job> allJobs = proactiveClientServiceGUI.getAllJobs();
+        log.info("LSZ DEV[ByonService]: getAllByonNodesList: allJobs={}", allJobs);
+
+        final List<ByonNode> byonNodes = allJobs.stream()
+                .map(job -> this.getByonNodesList(job.getJobId()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        log.info("LSZ DEV[ByonService]: getAllByonNodesList: byonNodes={}", byonNodes);
+
+        return byonNodes;
     }
 }
