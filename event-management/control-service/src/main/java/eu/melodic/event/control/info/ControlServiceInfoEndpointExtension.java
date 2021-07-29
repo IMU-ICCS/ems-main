@@ -34,7 +34,7 @@ public class ControlServiceInfoEndpointExtension {
     public WebEndpointResponse<Map> info() {
         Map<String, Object> info = new HashMap<>(this.delegate.info());
         info.put("ems-build-info", applicationContext.getBean(ControlServiceBuildInfoEndpoint.class).infoMap());
-        info.put("ems-live-info", "ToDo");
+        info.put("ems-live-info", applicationContext.getBean(ControlServiceLiveInfoEndpoint.class).infoMap());
         return new WebEndpointResponse<>(info, 200);
     }
 }

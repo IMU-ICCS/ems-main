@@ -1,0 +1,43 @@
+/*
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
+ */
+
+package eu.melodic.event.control.info;
+
+import eu.melodic.event.brokercep.BrokerCepService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
+import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+import org.springframework.boot.actuate.endpoint.annotation.Selector;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
+@Component
+@Endpoint(id = "emsLiveInfo")
+public class ControlServiceLiveInfoEndpoint {
+    @Autowired
+    private BrokerCepService brokerCepService;
+
+    @ReadOperation
+    public Map<String,Object> infoMap() {
+        Map<String,Object> infoMap = new HashMap<>();
+        brokerCepService.getBrokerCepStatistics().forEach(infoMap::put);
+        return infoMap;
+    }
+
+    @ReadOperation
+    public Map<String,Object> info(@Selector String s) {
+        if ("broker-cep".equals(s))
+            return brokerCepService.getBrokerCepStatistics();
+        throw new IllegalArgumentException("Unknown EMS info provider: "+s);
+    }
+}

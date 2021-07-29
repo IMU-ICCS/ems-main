@@ -13,6 +13,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import io.micrometer.core.lang.NonNullApi;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
@@ -60,7 +61,7 @@ public class ControlServiceBuildInfoEndpoint implements ApplicationContextAware 
     protected void collectBuildInfo(ApplicationContext applicationContext, Map<String, Map<String, Object>> infoMap) {
         // Collect info from 'BuildProperties'
         print("\n--------------------------------------------------------------------------------");
-        print("Build Info:");
+        print("===== Build Properties =====");
         final Map<String,Object> map = new LinkedHashMap<>();
         StreamSupport.stream(Spliterators.spliteratorUnknownSize(buildProperties.iterator(), Spliterator.ORDERED), false)
                 .sorted(Comparator.comparing(InfoProperties.Entry::getKey))
@@ -89,7 +90,8 @@ public class ControlServiceBuildInfoEndpoint implements ApplicationContextAware 
         if (resources.length>0) {
             Resource r = resources[0];
             String linesStr = StreamUtils.copyToString(r.getInputStream(), StandardCharsets.UTF_8);
-            print("** {} **\nFile: {}\nURL:  {}\n\n{}\n", title, r.getFilename(), r.getURL(), linesStr);
+            String s = StringUtils.repeat("=", title.length()+12);
+            print("\n{}\n===== {} =====\n{}\n=== File: {}\n=== URL:  {}\n\n{}\n", s, title, s, r.getFilename(), r.getURL(), linesStr);
             Properties p;
             try (StringReader sr = new StringReader(linesStr)) {
                 p = new Properties();

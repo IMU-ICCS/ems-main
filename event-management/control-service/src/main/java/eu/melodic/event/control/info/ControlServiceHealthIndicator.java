@@ -19,7 +19,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component("EMS-control-service")
+@Component("ems-control-service")
 @ConditionalOnEnabledHealthIndicator("controlService")
 public class ControlServiceHealthIndicator implements HealthIndicator, ApplicationContextAware {
 
