@@ -137,21 +137,7 @@ public final class NodeCandidatePredicates {
                 .orElseThrow(() -> new RuntimeException("Could not find value for " + ordinal));
     }
 
-    public static Predicate<NodeCandidate> getCardinalityPredicate(Integer value) {
-        Objects.requireNonNull(value);
-        return new Predicate<NodeCandidate>() {
-            @Override
-            public boolean test(NodeCandidate nodeCandidate) {
-                if (value > 1) {
-                    return nodeCandidate.getNodeCandidateType().equals(NodeCandidate.NodeCandidateTypeEnum.IAAS);
-                }
-                return true;
-            }
-
-            @Override
-            public String toString() {
-                return "{Cardinality Predicate with value: " + value + "}";
-            }
-        };
+    public static Predicate<NodeCandidate> getIAASNodeCandidateTypePredicate() {
+        return nodeCandidate -> nodeCandidate.getNodeCandidateType().equals(NodeCandidate.NodeCandidateTypeEnum.IAAS);
     }
 }

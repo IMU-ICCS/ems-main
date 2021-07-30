@@ -126,8 +126,10 @@ public class EvaluatingUtils {
                     break;
                 case LOCATION:
                 case CARDINALITY:
-                    log.debug("Creating getCardinalityPredicate for value {}", var.getValue());
-                    predicates.add(getCardinalityPredicate((int) var.getValue()));
+                    log.debug("Creating getIAASNodeCandidateTypePredicate for value {}", var.getValue());
+                    if((Integer) var.getValue() > 1) {
+                        predicates.add(getIAASNodeCandidateTypePredicate());
+                    }
                     break;
                 case PROVIDER:
                 case CPU:
