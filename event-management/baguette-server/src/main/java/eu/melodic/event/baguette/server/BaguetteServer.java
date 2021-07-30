@@ -264,6 +264,10 @@ public class BaguetteServer {
         server.sendToClient(clientId, command);
     }
 
+    public Object readFromClient(String clientId, String command) {
+        return server.readFromClient(clientId, command);
+    }
+
     public List<String> getActiveClients() {
         return server.getActiveClients();
     }

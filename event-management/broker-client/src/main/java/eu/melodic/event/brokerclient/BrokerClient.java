@@ -209,7 +209,7 @@ public class BrokerClient {
                         String k = key != null ? key.toString() : null;
                         mapMsg.setObject(k, val);
                     }
-                    payloadText = event.toString();
+                    payloadText = gson.toJson(event);
                     message = mapMsg;
                     break;
                 } else {
@@ -218,7 +218,9 @@ public class BrokerClient {
                     messageType = MESSAGE_TYPE.OBJECT;
                 }
             case OBJECT:
-                payloadText = event.toString();
+                payloadText = (event instanceof Map)
+                        ? gson.toJson(event)
+                        : event.toString();
                 message = session.createObjectMessage(event);
                 break;
             case BYTES:
@@ -240,8 +242,8 @@ public class BrokerClient {
                 break;
             case TEXT:
             default:
-                payloadText = event instanceof String
-                        ? (String)event
+                payloadText = event instanceof Map
+                        ? gson.toJson(event)
                         : event.toString();
                 message = session.createTextMessage(payloadText);
                 break;

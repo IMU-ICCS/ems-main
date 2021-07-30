@@ -48,6 +48,10 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 	protected void initialize() {
 		log.debug("BrokerAdvisoryWatcher.init(): Initializing instance...");
 		try {
+			// close previous session and connection
+			closeConnection();
+
+			// If an alternative Broker URL is provided for consumer, it will be used
 			boolean usesAuthentication = brokerCerService.getBrokerCepProperties().isAuthenticationEnabled();
 			String username = brokerCerService.getBrokerUsername();
 			String password = brokerCerService.getBrokerPassword();
@@ -57,6 +61,10 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 			this.connection = usesAuthentication
 					? connectionFactory.createConnection(username, password)
 					: connectionFactory.createConnection();
+			connection.setExceptionListener(e -> {
+				log.warn("BrokerAdvisoryWatcher: Connection exception listener: Exception caught: ", e);
+				initialize();
+			});
 			this.connection.start();
 			this.session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			Topic topic = session.createTopic("ActiveMQ.Advisory.>");
@@ -67,7 +75,29 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 			log.error("BrokerAdvisoryWatcher.init(): EXCEPTION: ", ex);
 		}
 	}
-	
+
+	private void closeConnection() {
+		// close previous session and connection
+		try {
+			if (session != null) {
+				session.close();
+				log.debug("BrokerCepConsumer.closeConnection(): Closed pre-existing sessions");
+			}
+		} catch (Exception e) {
+			log.warn("BrokerCepConsumer.closeConnection(): Exception while closing old session: ", e);
+		}
+		try {
+			if (connection != null) {
+				connection.close();
+				log.debug("BrokerCepConsumer.closeConnection(): Closed pre-existing connection");
+			}
+		} catch (Exception e) {
+			log.warn("BrokerCepConsumer.closeConnection(): Exception while closing old connection: ", e);
+		}
+		session = null;
+		connection = null;
+	}
+
 	@Override
 	public void onMessage(Message message) {
 		try {

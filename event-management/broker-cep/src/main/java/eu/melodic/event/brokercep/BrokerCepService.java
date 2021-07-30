@@ -9,8 +9,7 @@
 
 package eu.melodic.event.brokercep;
 
-//import eu.melodic.event.brokercep.broker.BrokerAdvisoryWatcher;
-
+import com.google.gson.Gson;
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.util.FunctionDefinition;
@@ -39,6 +38,7 @@ import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,11 +52,12 @@ public class BrokerCepService {
     private BrokerService brokerService;
     private PasswordUtil passwordUtil;
 
-    //private BrokerAdvisoryWatcher advisoryMessageWatcher;
     @Getter
     private BrokerCepConsumer brokerCepBridge;
     @Getter
     private CepService cepService;
+
+    private Gson gson;
 
     public BrokerCepProperties getBrokerCepProperties() {
         return properties;
@@ -309,7 +310,7 @@ public class BrokerCepService {
 
         // Create a messages
         //ObjectMessage message = session.createObjectMessage(event);
-        TextMessage message = session.createTextMessage(event.toString());
+        TextMessage message = session.createTextMessage(gson.toJson(event));
 
         // Tell the producer to send the message
         long hash = message.hashCode();
@@ -395,5 +396,28 @@ public class BrokerCepService {
         log.debug("BrokerCepService.deleteCertificateFromTruststore(): Deleted certificate with alias: {}", alias);
         log.debug("BrokerCepService.addOrReplaceCertificateInTruststore(): New Truststore certificates: {}",
                 KeystoreUtil.getCertificateAliases(brokerConfig.getBrokerTruststore()));
+    }
+
+    public Map<String,Object> getBrokerCepStatistics() {
+        Map<String,Long> bcepStats = new HashMap<>();
+        bcepStats.put("count-event-local-publish-success", BrokerCepStatementSubscriber.getLocalPublishSuccessCounter());
+        bcepStats.put("count-event-local-publish-failure", BrokerCepStatementSubscriber.getLocalPublishFailureCounter());
+        bcepStats.put("count-event-forwards-success", BrokerCepStatementSubscriber.getForwardSuccessCounter());
+        bcepStats.put("count-event-forwards-failure", BrokerCepStatementSubscriber.getForwardFailureCounter());
+        bcepStats.put("count-total-events", BrokerCepConsumer.getEventCounter());
+        bcepStats.put("count-total-events-text", BrokerCepConsumer.getTextEventCounter());
+        bcepStats.put("count-total-events-object", BrokerCepConsumer.getObjectEventCounter());
+        bcepStats.put("count-total-events-other", BrokerCepConsumer.getOtherEventCounter());
+        bcepStats.put("count-total-events-failures", BrokerCepConsumer.getEventFailuresCounter());
+
+        Map<String,Object> statsMap = new HashMap<>();
+        statsMap.put("broker-cep", bcepStats);
+        return statsMap;
+    }
+
+    public void clearBrokerCepStatistics() {
+        BrokerCepStatementSubscriber.clearCounters();
+        BrokerCepConsumer.clearCounters();
+        log.debug("BrokerCepService.clearBrokerCepStatistics(): broker-CEP statistics cleared");
     }
 }
