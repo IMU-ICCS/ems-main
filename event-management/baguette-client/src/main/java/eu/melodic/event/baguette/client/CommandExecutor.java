@@ -13,8 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.melodic.event.baguette.client.cluster.*;
 import eu.melodic.event.baguette.client.cluster.BrokerUtil.NODE_STATUS;
 import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.cep.CepService;
-import eu.melodic.event.brokercep.cep.StatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
@@ -79,7 +79,7 @@ public class CommandExecutor {
     private GroupingConfiguration activeGrouping;
 
     private final AtomicLong subscriberCount = new AtomicLong(0);
-    private final Map<String,List<ClientStatementSubscriber>> groupingsSubscribers = new LinkedHashMap<>();
+    private final Map<String,List<BrokerCepStatementSubscriber>> groupingsSubscribers = new LinkedHashMap<>();
 
     private final Map<String, EventGenerator> eventGenerators = new HashMap<>();
 
@@ -532,6 +532,10 @@ public class CommandExecutor {
         } else if ("SHOW-CONFIG".equals(cmd)) {
             log.info("BaguetteClient: configuration:\n{}", config);
             log.info("Cluster: configuration:\n{}", clusterManagerProperties);
+        } else if ("SHOW-STATS".equals(cmd)) {
+            sendStatistics(args[1]);
+        } else if ("CLEAR-STATS".equals(cmd)) {
+            clearStatistics();
         } else {
             args[0] = cmd;
             String line = String.join(" ", args);
@@ -586,6 +590,17 @@ public class CommandExecutor {
         Object o = ois.readObject();
         ois.close();
         return o;
+    }
+
+    /**
+     * Write the object to Base64 string.
+     */
+    protected String serializeToString(Object o) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream( baos );
+        oos.writeObject( o );
+        oos.close();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     protected synchronized void setGroupingConfiguration(String configStr) {
@@ -755,9 +770,10 @@ public class CommandExecutor {
                         // Add EPL statement subscriber
                         String subscriberName = "Subscriber_" + subscriberCount.getAndIncrement();
                         log.info("addGroupingsTill: + Adding subscriber for EPL statement: subscriber-name={}, topic={}, rule={}", subscriberName, topic, rule);
-                        ClientStatementSubscriber statementSubscriber = new ClientStatementSubscriber();
+                        BrokerCepStatementSubscriber statementSubscriber =
+                                new BrokerCepStatementSubscriber(subscriberName, topic, rule, brokerCepService, passwordUtil, Collections.emptySet());
                         brokerCepService.getCepService().addStatementSubscriber(
-                                statementSubscriber.setNameAndStatement(subscriberName, topic, rule, Collections.emptySet(), brokerCepService)
+                                statementSubscriber
                         );
                         groupingsSubscribers.computeIfAbsent(groupingName, s -> new LinkedList<>()).add(statementSubscriber);
                     }
@@ -819,10 +835,10 @@ public class CommandExecutor {
         }
         log.debug("clearActiveGroupingForwards: Clearing forward-to-grouping settings of active grouping: {}", activeGrouping.getName());
         log.trace("clearActiveGroupingForwards: Clearing groupingsSubscribers: BEFORE: {}", groupingsSubscribers);
-        List<ClientStatementSubscriber> subscribers = groupingsSubscribers.get(activeGrouping.getName());
+        List<BrokerCepStatementSubscriber> subscribers = groupingsSubscribers.get(activeGrouping.getName());
         log.trace("clearActiveGroupingForwards: Clearing subscribers of grouping: {}: {}", activeGrouping.getName(), subscribers);
         if (subscribers!=null) {
-            for (ClientStatementSubscriber subscriber : subscribers) {
+            for (BrokerCepStatementSubscriber subscriber : subscribers) {
                 log.debug("clearActiveGroupingForwards: - Clearing forward-to-grouping settings for: subscriber={}, topic={}, forwards={}",
                         subscriber.getName(), subscriber.getTopic(), subscriber.getForwardToGroupings());
                 subscriber.setForwardToGroupings(Collections.emptySet());
@@ -1062,6 +1078,19 @@ public class CommandExecutor {
         updateCertificates(activeGrouping);
     }
 
+    @SneakyThrows
+    private void sendStatistics(String inputUuid) {
+        Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
+        log.info("Statistics: {}", statsMap);
+        if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
+    }
+
+    private void clearStatistics() {
+        brokerCepService.clearBrokerCepStatistics();
+        log.info("Statistics cleared");
+        if (out!=null) out.println("STATISTICS CLEARED");
+    }
+
     /*private static class StreamGobbler implements Runnable {
         private InputStream inputStream1;
         private InputStream inputStream2;
@@ -1079,57 +1108,6 @@ public class CommandExecutor {
             new BufferedReader(new InputStreamReader(inputStream2)).lines().forEach(consumer);
         }
     }*/
-
-    @Getter
-    @ToString
-    public static class ClientStatementSubscriber implements StatementSubscriber {
-        private String name;
-        private String topic;
-        private String statement;
-        @Setter
-        private Set<BrokerConnectionConfig> forwardToGroupings;
-        private BrokerCepService brokerCep;
-
-        public StatementSubscriber setNameAndStatement(String n, String t, String s, Set<BrokerConnectionConfig> f, BrokerCepService bc) {
-            name = n;
-            topic = t;
-            statement = s;
-            forwardToGroupings = f;
-            brokerCep = bc;
-            return this;
-        }
-
-        public void update(Map<String, Object> eventMap) {
-            log.info("- New event received: subscriber={}, topic={}, payload={}", name, topic, eventMap);
-
-            try {
-                // Publish new event to Local Broker topic
-                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
-                log.info("- Publishing event to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
-                        name, localBrokerUrl, topic, eventMap);
-                brokerCep.publishEvent(localBrokerUrl, topic, eventMap);
-                log.trace("- Event published to local broker: subscriber={}, local-broker={}, topic={}, payload={}",
-                        name, localBrokerUrl, topic, eventMap);
-
-                // Send new event to the next grouping(s)
-                log.trace("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
-                        name, forwardToGroupings, eventMap);
-                for (BrokerConnectionConfig fwdToGrouping : forwardToGroupings) {
-                    String brokerUrl = fwdToGrouping.getUrl();
-                    String username = fwdToGrouping.getUsername();
-                    String password = fwdToGrouping.getPassword();
-                    log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, payload={}",
-                            name, fwdToGrouping, brokerUrl, username, topic, eventMap);
-                    brokerCep.publishEvent(brokerUrl, username, password, topic, eventMap);
-                    log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, url={}, username={}, topic={}, payload={}",
-                            name, fwdToGrouping, brokerUrl, username, topic, eventMap);
-                }
-            } catch (Exception ex) {
-                log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, payload={}, exception: ",
-                        name, forwardToGroupings, eventMap, ex);
-            }
-        }
-    }
 
     @Data
     @Builder
