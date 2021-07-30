@@ -1,11 +1,9 @@
 package eu.melodic.upperware.activemqtorest;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import lombok.Getter;
 
 
 @Configuration
@@ -57,4 +55,13 @@ public class MelodicConfiguration {
 
 	@Value("${mq.recentmetrics.expiry.interval:120}")
 	private long mqRecentMetricsExpiryInterval;
+
+	@Value("${pa-config.rest-url}")
+	private String restUrl;
+	@Value("${pa-config.login}")
+	private String login;
+	@Value("${pa-config.password}")
+	private String password;
+	@Value("${pa-config.encryptor-pw}")
+	private String encryptorPw;
 }
