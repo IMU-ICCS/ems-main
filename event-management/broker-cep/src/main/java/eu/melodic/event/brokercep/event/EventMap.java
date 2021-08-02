@@ -21,6 +21,9 @@ import java.util.Map;
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
 public class EventMap extends HashMap<String, Object> implements Serializable {
+    public final static String[] PROPERTY_NAMES_ARRAY = new String[]{"metricValue", "level", "timestamp"};
+    public final static Class[] PROPERTY_CLASSES_ARRAY = new Class[]{Double.class, Integer.class, Long.class};
+
     public EventMap() {
         super();
     }
@@ -45,6 +48,32 @@ public class EventMap extends HashMap<String, Object> implements Serializable {
         put("timestamp", timestamp);
     }
 
+    @Override
+    public Object put(String key, Object value) {
+        log.info("Event.put: BEGIN: key={}, value={}, value-class={}", key, value, value.getClass().getName());
+        if ("metricValue".equals(key) && !(value instanceof Double)) {
+            log.info("Event.put: Key={}, Value-class IS NOT DOUBLE: {}", key, value.getClass().getName());
+            Double newVal;
+            if (value instanceof Number) {
+                log.info("Event.put: Key={}, Value-class IS NUMBER: {}", key, value.getClass().getName());
+                newVal = ((Number) value).doubleValue();
+            } else {
+                log.info("Event.put: Key={}, Value-class IS NOT NUMBER: {}", key, value.getClass().getName());
+                String s = value.toString();
+                log.info("Event.put: Key={}, Value-STR: {}", key, s);
+                if (s.charAt(0)=='"' && s.charAt(s.length()-1)=='"'
+                        || s.charAt(0)=='\'' && s.charAt(s.length()-1)=='\'')
+                    s = s.substring(1, s.length()-1);
+                log.info("Event.put: Key={}, Value-STR-without-quotes: {}", key, s);
+                newVal = Double.parseDouble(s);
+            }
+            log.info("Event.put: Key={}, New-Value={}", key, newVal);
+            return super.put(key, newVal);
+        }
+        log.info("Event.put: Key={}, Value-AS-IS={}", key, value);
+        return super.put(key, value);
+    }
+
     public static EventMap parseEventMap(String s) {
         if (s==null) return null;
         s = s.trim();
@@ -60,11 +89,11 @@ public class EventMap extends HashMap<String, Object> implements Serializable {
     }
 
     public static String[] getPropertyNames() {
-        return new String[]{"metricValue", "level", "timestamp"};
+        return PROPERTY_NAMES_ARRAY;
     }
 
     public static Class[] getPropertyClasses() {
-        return new Class[]{Double.class, Integer.class, Long.class};
+        return PROPERTY_CLASSES_ARRAY;
     }
 
     public String toString() {
