@@ -29,9 +29,7 @@ public class ControlServiceLiveInfoEndpoint {
 
     @ReadOperation
     public Map<String,Object> infoMap() {
-        Map<String,Object> infoMap = new HashMap<>();
-        brokerCepService.getBrokerCepStatistics().forEach(infoMap::put);
-        return infoMap;
+        return new HashMap<>(brokerCepService.getBrokerCepStatistics());
     }
 
     @ReadOperation
