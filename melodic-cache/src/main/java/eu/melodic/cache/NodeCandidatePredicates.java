@@ -136,4 +136,8 @@ public final class NodeCandidatePredicates {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Could not find value for " + ordinal));
     }
+
+    public static Predicate<NodeCandidate> getIAASNodeCandidateTypePredicate() {
+        return nodeCandidate -> nodeCandidate.getNodeCandidateType().equals(NodeCandidate.NodeCandidateTypeEnum.IAAS);
+    }
 }

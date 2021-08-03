@@ -99,6 +99,7 @@ public class EvaluatingUtils {
         for (VariableValueDTO var : variablesForComponent) {
             VariableType type = getVariableType(var.getName(), variables);
 
+            log.info("EvaluatingUtils->makePredicatesFromSolution: type={}, var={}", type, var);
             switch (type) {
                 case RAM:
                     log.debug("Creating getRamPredicate for value {}", var.getValue());
@@ -125,6 +126,11 @@ public class EvaluatingUtils {
                     break;
                 case LOCATION:
                 case CARDINALITY:
+                    log.debug("Creating getIAASNodeCandidateTypePredicate for value {}", var.getValue());
+                    if((Integer) var.getValue() > 1) {
+                        predicates.add(getIAASNodeCandidateTypePredicate());
+                    }
+                    break;
                 case PROVIDER:
                 case CPU:
                     break;
