@@ -132,15 +132,16 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
                 log.trace("EventMap.put(): AFTER DEFAULT: key={}, default={}", key, value);
             }
             Class<?> c = field.getType();
-            log.trace("EventMap.put(): VALUE TYPE: key={}, value={}, value-type={}", key, value, value.getClass());
-            if (!c.isAssignableFrom(value.getClass())) {
-                log.trace("EventMap.put(): NOT ASSIGNABLE VALUE TYPE: key={}, field-type={}, value-type={}", key, c, value.getClass());
+            Class<?> vc = value.getClass();
+            log.trace("EventMap.put(): VALUE TYPE: key={}, value={}, value-type={}", key, value, vc);
+            if (!c.isAssignableFrom(vc) && value instanceof Double) {
+                log.trace("EventMap.put(): NOT ASSIGNABLE VALUE TYPE: key={}, field-type={}, value-type={}", key, c, vc);
                 if (c==String.class)
                     value = value.toString();
                 else if (c==Integer.class)
-                    value = Integer.parseInt(removeQuotes(value));
+                    value = (int) Double.parseDouble(removeQuotes(value));
                 else if (c==Long.class)
-                    value = Long.parseLong(removeQuotes(value));
+                    value = (long) Double.parseDouble(removeQuotes(value));
                 else if (c==Double.class)
                     value = Double.parseDouble(removeQuotes(value));
                 else
