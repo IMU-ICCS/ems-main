@@ -9,11 +9,13 @@
 
 package eu.melodic.event.control.info;
 
+import lombok.NonNull;
+
 import java.util.Map;
 
 public interface IEmsInfoService {
     String SYSTEM_INFO_PROVIDER = "system-info";
-    String EMS_INFO_PROVIDER = "ems-info";
+    String BUILD_INFO_PROVIDER = "build-info";
     String CONTROL_INFO_PROVIDER = "control";
     String BROKER_CEP_INFO_PROVIDER = "broker-cep";
     String BAGUETTE_SERVER_INFO_PROVIDER = "baguette-server";
@@ -21,6 +23,10 @@ public interface IEmsInfoService {
     String TRANSLATOR_INFO_PROVIDER = "translator";
     String MISC_INFO_PROVIDER = "misc-info";
 
+    void clearMetricValues();
+    void clearClientMetricValues();
     Map<String,Object> getMetricValues();
     Map<String,Object> getMetricValuesFor(String key);
+    Map<String,Object> getClientMetricValues();
+    Map<String,Object> getClientMetricValues(@NonNull String clientId);
 }

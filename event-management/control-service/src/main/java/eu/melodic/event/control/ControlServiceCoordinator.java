@@ -938,12 +938,12 @@ public class ControlServiceCoordinator {
 
     public List<String> clientList() {
         log.debug("ControlServiceCoordinator.clientList(): BEGIN:");
-        return baguette.getActiveClients();
+        return baguette.isServerRunning() ? baguette.getActiveClients() : Collections.emptyList();
     }
 
     public Map<String, Map<String, String>> clientMap() {
         log.debug("ControlServiceCoordinator.clientMap(): BEGIN:");
-        return baguette.getActiveClientsMap();
+        return baguette.isServerRunning() ? baguette.getActiveClientsMap() : Collections.emptyMap();
     }
 
     public String clientCommandSend(String clientId, String command) {

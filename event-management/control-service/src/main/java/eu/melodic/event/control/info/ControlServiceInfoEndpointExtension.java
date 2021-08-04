@@ -33,7 +33,7 @@ public class ControlServiceInfoEndpointExtension {
     @ReadOperation
     public WebEndpointResponse<Map> info() {
         Map<String, Object> info = new HashMap<>(this.delegate.info());
-        info.put("ems-build-info", applicationContext.getBean(ControlServiceBuildInfoEndpoint.class).infoMap());
+        info.put("ems-build-info", applicationContext.getBean(BuildInfoProvider.class).getMetricValues());
         info.put("ems-live-info", applicationContext.getBean(IEmsInfoService.class).getMetricValues());
         return new WebEndpointResponse<>(info, 200);
     }

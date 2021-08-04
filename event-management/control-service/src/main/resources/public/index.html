@@ -350,10 +350,11 @@
                     </style>
                 <script>
                             var liveMetricsEventSource = null;
+                            var clientsParam = "clients=*";
 
                             function liveMetricsStart() {
                                 if (liveMetricsEventSource!=null) return;
-                                liveMetricsEventSource = new EventSource("/info/metrics/stream?interval=2");
+                                liveMetricsEventSource = new EventSource("/info/metrics/stream?interval=2&" + clientsParam);
                                 liveMetricsEventSource.onopen = (e) => console.log('live-metrics: open: ', e);
                                 liveMetricsEventSource.onerror = (e) => console.log('live-metrics: error: ', e);
                                 liveMetricsEventSource.onmessage = (e) => console.log('live-metrics: data: ', e.data);
@@ -383,7 +384,7 @@
                                                 '<span class="lastUpdate">Last Update: ' + new Date().toLocaleString() + '</span>';
                                     }
                                 };
-                                xhr.open("GET", "/info/metrics/get", true);
+                                xhr.open("GET", "/info/metrics/get?" + clientsParam, true);
                                 xhr.send();
                             }
 

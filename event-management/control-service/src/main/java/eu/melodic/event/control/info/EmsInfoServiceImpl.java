@@ -9,33 +9,57 @@
 
 package eu.melodic.event.control.info;
 
+import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.lang.management.*;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmsInfoServiceImpl implements IEmsInfoService {
 
-    private static final long METRICS_UPDATE_INTERVAL = 1000;
+    private final AtomicLong currentMetricsVersion = new AtomicLong(0);
+    private final AtomicLong currentClientMetricsVersion = new AtomicLong(0);
+    private Map<String,Object> currentMetrics;
+    private Map<String,Object> currentClientMetrics;
 
     private final ApplicationContext applicationContext;
     private final ControlServiceProperties properties;
+    private final ControlServiceCoordinator controlServiceCoordinator;
+    private final BaguetteServer baguetteServer;
+
+    private final BuildInfoProvider buildInfoProvider;
+    private final SystemInfoProvider systemInfoProvider;
     private final BrokerCepService brokerCepService;
 
-    private final AtomicLong currentMetricsVersion = new AtomicLong(0);
-    private final File root = new File("/");
-    private Map<String,Object> currentMetrics;
+    @Override
+    public synchronized void clearMetricValues() {
+        log.debug("clearMetricValues(): BEGIN");
+        systemInfoProvider.clearMetricValues();
+        brokerCepService.clearBrokerCepStatistics();
+        currentMetrics = null;
+        log.debug("clearMetricValues(): END");
+    }
+
+    @Override
+    public synchronized void clearClientMetricValues() {
+        log.debug("clearClientMetricValues(): BEGIN");
+        currentClientMetrics = null;
+        controlServiceCoordinator.clientCommandSend("*", "CLEAR-STATS");
+        log.debug("clearClientMetricValues(): END");
+    }
 
     @Override
     public Map<String, Object> getMetricValues() {
@@ -47,10 +71,23 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         return (Map<String,Object>) getMetricValues().get(key);
     }
 
+    @Override
+    public Map<String,Object> getClientMetricValues() {
+        updateClientMetricValues();
+        return currentClientMetrics;
+    }
+
+    @Override
+    public Map<String,Object> getClientMetricValues(@NonNull String clientId) {
+        return (Map<String,Object>) getClientMetricValues().get(clientId);
+    }
+
+    // ------------------------------------------------------------------------
+
     protected void updateMetricValues(boolean includeStaticInfo) {
         if (currentMetrics!=null) {
             long timestamp = (long) currentMetrics.get(".timestamp");
-            if (System.currentTimeMillis() - timestamp < METRICS_UPDATE_INTERVAL)
+            if (System.currentTimeMillis() - timestamp < properties.getMetricsUpdateInterval())
                 return;
         }
 
@@ -59,11 +96,11 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         Map<String,Object> metrics = new LinkedHashMap<>();
 
         // Collect System and JVM metrics
-        metrics.put(SYSTEM_INFO_PROVIDER, getSystemAndJvmMetrics());
+        metrics.put(SYSTEM_INFO_PROVIDER, systemInfoProvider.getMetricValues());
 
         // Collect EMS build info
         if (includeStaticInfo)
-            metrics.put(EMS_INFO_PROVIDER, applicationContext.getBean(ControlServiceBuildInfoEndpoint.class).infoMap());
+            metrics.put(BUILD_INFO_PROVIDER, buildInfoProvider.getMetricValues());
 
         // Collect Broker-CEP metrics
         metrics.put(BROKER_CEP_INFO_PROVIDER, brokerCepService.getBrokerCepStatistics());
@@ -78,39 +115,37 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         }
     }
 
-    protected Map<String, Object> getSystemAndJvmMetrics() {
-        Map<String,Object> sysInfo = new LinkedHashMap<>();
-        sysInfo.put("jvm-memory-total", Runtime.getRuntime().totalMemory());
-        sysInfo.put("jvm-memory-max", Runtime.getRuntime().freeMemory());
-        sysInfo.put("jvm-memory-free", Runtime.getRuntime().maxMemory());
+    protected void updateClientMetricValues() {
+        if (currentClientMetrics!=null) {
+            long timestamp = (long) currentClientMetrics.get(".timestamp");
+            if (System.currentTimeMillis() - timestamp < properties.getMetricsClientUpdateInterval())
+                return;
+        }
 
-        MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
-        String heapInfo = memBean.getHeapMemoryUsage().toString();
-        String nonHeapInfo = memBean.getNonHeapMemoryUsage().toString();
-        sysInfo.put("jvm-memory-heap", heapInfo);
-        sysInfo.put("jvm-memory-non-heap", nonHeapInfo);
+        long timestamp = System.currentTimeMillis();
 
-        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-        sysInfo.put("jvm-thread-count", threadBean.getThreadCount());
-        sysInfo.put("jvm-thread-daemon-count", threadBean.getDaemonThreadCount());
-        sysInfo.put("jvm-thread-peak-count", threadBean.getPeakThreadCount());
-        sysInfo.put("jvm-thread-total-started-count", threadBean.getTotalStartedThreadCount());
+        Map<String,Object> clientMetrics = new LinkedHashMap<>();
 
-        RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
-        long uptime = runtimeBean.getUptime() / 1000;
-        String vmInfo = String.format("%s, ver.%s, by %s", runtimeBean.getVmName(), runtimeBean.getVmVersion(), runtimeBean.getVmVendor());
-        sysInfo.put("jvm-info", vmInfo);
-        sysInfo.put("jvm-uptime", uptime);
+        // Collecting EMS clients' metrics
+        List<String> clientIds = controlServiceCoordinator.clientList();
+        log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
+        for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
+            log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
+            Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS");
+            log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
+            if (o instanceof Map) {
+                clientMetrics.put(clientId, o);
+            }
+        }
+        log.debug("updateClientMetricValues(): client-metrics: {}", clientIds);
 
-        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-        String osInfo = String.format("OS %s, %s, v.%s, processors: %d, avg. load: %.02f", osBean.getName(), osBean.getArch(), osBean.getVersion(),
-                osBean.getAvailableProcessors(), osBean.getSystemLoadAverage());
-        sysInfo.put("os-info", osInfo);
-
-        sysInfo.put("os-disk-total", root.getTotalSpace());
-        sysInfo.put("os-disk-free", root.getFreeSpace());
-        sysInfo.put("os-disk-usable", root.getUsableSpace());
-
-        return sysInfo;
+        synchronized (currentClientMetricsVersion) {
+            if (currentClientMetrics==null || (long)currentClientMetrics.get(".timestamp") < timestamp) {
+                long version = currentClientMetricsVersion.getAndIncrement();
+                clientMetrics.put(".version", version);
+                clientMetrics.put(".timestamp", timestamp);
+                this.currentClientMetrics = clientMetrics;
+            }
+        }
     }
 }
