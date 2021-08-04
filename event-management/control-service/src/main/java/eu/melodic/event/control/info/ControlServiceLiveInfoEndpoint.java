@@ -9,33 +9,33 @@
 
 package eu.melodic.event.control.info;
 
-import eu.melodic.event.brokercep.BrokerCepService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
 @Component
 @Endpoint(id = "emsLiveInfo")
+@RequiredArgsConstructor
 public class ControlServiceLiveInfoEndpoint {
-    @Autowired
-    private BrokerCepService brokerCepService;
+
+    private final IEmsInfoService emsInfoService;
 
     @ReadOperation
     public Map<String,Object> infoMap() {
-        return new HashMap<>(brokerCepService.getBrokerCepStatistics());
+        return emsInfoService.getMetricValues();
     }
 
     @ReadOperation
     public Map<String,Object> info(@Selector String s) {
-        if ("broker-cep".equals(s))
-            return brokerCepService.getBrokerCepStatistics();
+        Map<String, Object> v = emsInfoService.getMetricValuesFor(s);
+        if (v!=null)
+            return v;
         throw new IllegalArgumentException("Unknown EMS info provider: "+s);
     }
 }

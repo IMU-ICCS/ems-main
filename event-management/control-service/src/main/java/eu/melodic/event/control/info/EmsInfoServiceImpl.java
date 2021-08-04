@@ -9,10 +9,108 @@
 
 package eu.melodic.event.control.info;
 
+import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.control.properties.ControlServiceProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.lang.management.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EmsInfoServiceImpl implements IEmsInfoService {
+
+    private static final long METRICS_UPDATE_INTERVAL = 1000;
+
+    private final ApplicationContext applicationContext;
+    private final ControlServiceProperties properties;
+    private final BrokerCepService brokerCepService;
+
+    private final AtomicLong currentMetricsVersion = new AtomicLong(0);
+    private final File root = new File("/");
+    private Map<String,Object> currentMetrics;
+
+    @Override
+    public Map<String, Object> getMetricValues() {
+        updateMetricValues(false);
+        return currentMetrics;
+    }
+
+    public Map<String,Object> getMetricValuesFor(String key) {
+        return (Map<String,Object>) getMetricValues().get(key);
+    }
+
+    protected void updateMetricValues(boolean includeStaticInfo) {
+        if (currentMetrics!=null) {
+            long timestamp = (long) currentMetrics.get(".timestamp");
+            if (System.currentTimeMillis() - timestamp < METRICS_UPDATE_INTERVAL)
+                return;
+        }
+
+        long timestamp = System.currentTimeMillis();
+
+        Map<String,Object> metrics = new LinkedHashMap<>();
+
+        // Collect System and JVM metrics
+        metrics.put(SYSTEM_INFO_PROVIDER, getSystemAndJvmMetrics());
+
+        // Collect EMS build info
+        if (includeStaticInfo)
+            metrics.put(EMS_INFO_PROVIDER, applicationContext.getBean(ControlServiceBuildInfoEndpoint.class).infoMap());
+
+        // Collect Broker-CEP metrics
+        metrics.put(BROKER_CEP_INFO_PROVIDER, brokerCepService.getBrokerCepStatistics());
+
+        synchronized (currentMetricsVersion) {
+            if (currentMetrics==null || (long)currentMetrics.get(".timestamp") < timestamp) {
+                long version = currentMetricsVersion.getAndIncrement();
+                metrics.put(".version", version);
+                metrics.put(".timestamp", timestamp);
+                this.currentMetrics = metrics;
+            }
+        }
+    }
+
+    protected Map<String, Object> getSystemAndJvmMetrics() {
+        Map<String,Object> sysInfo = new LinkedHashMap<>();
+        sysInfo.put("jvm-memory-total", Runtime.getRuntime().totalMemory());
+        sysInfo.put("jvm-memory-max", Runtime.getRuntime().freeMemory());
+        sysInfo.put("jvm-memory-free", Runtime.getRuntime().maxMemory());
+
+        MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
+        String heapInfo = memBean.getHeapMemoryUsage().toString();
+        String nonHeapInfo = memBean.getNonHeapMemoryUsage().toString();
+        sysInfo.put("jvm-memory-heap", heapInfo);
+        sysInfo.put("jvm-memory-non-heap", nonHeapInfo);
+
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+        sysInfo.put("jvm-thread-count", threadBean.getThreadCount());
+        sysInfo.put("jvm-thread-daemon-count", threadBean.getDaemonThreadCount());
+        sysInfo.put("jvm-thread-peak-count", threadBean.getPeakThreadCount());
+        sysInfo.put("jvm-thread-total-started-count", threadBean.getTotalStartedThreadCount());
+
+        RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
+        long uptime = runtimeBean.getUptime() / 1000;
+        String vmInfo = String.format("%s, ver.%s, by %s", runtimeBean.getVmName(), runtimeBean.getVmVersion(), runtimeBean.getVmVendor());
+        sysInfo.put("jvm-info", vmInfo);
+        sysInfo.put("jvm-uptime", uptime);
+
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        String osInfo = String.format("OS %s, %s, v.%s, processors: %d, avg. load: %.02f", osBean.getName(), osBean.getArch(), osBean.getVersion(),
+                osBean.getAvailableProcessors(), osBean.getSystemLoadAverage());
+        sysInfo.put("os-info", osInfo);
+
+        sysInfo.put("os-disk-total", root.getTotalSpace());
+        sysInfo.put("os-disk-free", root.getFreeSpace());
+        sysInfo.put("os-disk-usable", root.getUsableSpace());
+
+        return sysInfo;
+    }
 }

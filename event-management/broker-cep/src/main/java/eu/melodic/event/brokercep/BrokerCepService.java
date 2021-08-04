@@ -399,7 +399,7 @@ public class BrokerCepService {
     }
 
     public Map<String,Object> getBrokerCepStatistics() {
-        Map<String,Long> bcepStats = new HashMap<>();
+        Map<String,Object> bcepStats = new HashMap<>();
         bcepStats.put("count-event-local-publish-success", BrokerCepStatementSubscriber.getLocalPublishSuccessCounter());
         bcepStats.put("count-event-local-publish-failure", BrokerCepStatementSubscriber.getLocalPublishFailureCounter());
         bcepStats.put("count-event-forwards-success", BrokerCepStatementSubscriber.getForwardSuccessCounter());
@@ -410,9 +410,7 @@ public class BrokerCepService {
         bcepStats.put("count-total-events-other", BrokerCepConsumer.getOtherEventCounter());
         bcepStats.put("count-total-events-failures", BrokerCepConsumer.getEventFailuresCounter());
 
-        Map<String,Object> statsMap = new HashMap<>();
-        statsMap.put("broker-cep", bcepStats);
-        return statsMap;
+        return bcepStats;
     }
 
     public void clearBrokerCepStatistics() {
