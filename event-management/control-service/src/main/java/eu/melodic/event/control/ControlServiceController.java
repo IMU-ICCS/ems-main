@@ -11,7 +11,8 @@ package eu.melodic.event.control;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.baguette.client.install.*;
+import eu.melodic.event.baguette.client.install.ClientInstallationTask;
+import eu.melodic.event.baguette.client.install.ClientInstaller;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
@@ -458,40 +459,6 @@ public class ControlServiceController {
 
         log.debug("ControlServiceController.emsTopology(): END");
         return "{}";
-    }
-
-    @RequestMapping(value = "/ems/stats", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Map<String,Object> emsServerStatistics() {
-        log.debug("ControlServiceController.emsServerStatistics(): BEGIN");
-        Map<String,Object> statsMap = coordinator.emsServerStatistics();
-        log.debug("ControlServiceController.emsServerStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    @RequestMapping(value = "/ems/stats/overall", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Map<String,Object> emsOverallStatistics() {
-        log.debug("ControlServiceController.emsOverallStatistics(): BEGIN");
-        Map<String,Object> statsMap = coordinator.emsOverallStatistics();
-        log.debug("ControlServiceController.emsOverallStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    @RequestMapping(value = "/ems/stats/clear", method = {GET, POST})
-    public String emsServerStatisticsClear() {
-        log.debug("ControlServiceController.emsServerStatisticsClear(): BEGIN");
-        coordinator.emsServerStatisticsClear();
-        log.debug("ControlServiceController.emsServerStatisticsClear(): END");
-        return "OK";
-    }
-
-    @RequestMapping(value = "/ems/stats/overall/clear", method = {GET, POST})
-    public String emsOverallStatisticsClear() {
-        log.debug("ControlServiceController.emsOverallStatisticsClear(): BEGIN");
-        coordinator.emsOverallStatisticsClear();
-        log.debug("ControlServiceController.emsOverallStatisticsClear(): END");
-        return "OK";
     }
 
     // ------------------------------------------------------------------------------------------------------------
