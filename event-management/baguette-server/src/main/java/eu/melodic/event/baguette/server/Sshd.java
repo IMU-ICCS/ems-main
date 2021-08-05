@@ -206,7 +206,7 @@ public class Sshd {
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {
             log.trace("SSH server: Check CSC: csc-id={}, client={}", csc.getId(), clientId);
             if (csc.getId().equals(clientId)) {
-                log.info("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
+                log.debug("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
                 return csc.readFromClient(command);
             }
         }

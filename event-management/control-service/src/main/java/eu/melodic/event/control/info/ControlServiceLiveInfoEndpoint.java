@@ -28,12 +28,12 @@ public class ControlServiceLiveInfoEndpoint {
 
     @ReadOperation
     public Map<String,Object> infoMap() {
-        return emsInfoService.getMetricValues();
+        return emsInfoService.getServerMetricValues();
     }
 
     @ReadOperation
     public Map<String,Object> info(@Selector String s) {
-        Map<String, Object> v = emsInfoService.getMetricValuesFor(s);
+        Map<String, Object> v = emsInfoService.getServerMetricValuesFor(s);
         if (v!=null)
             return v;
         throw new IllegalArgumentException("Unknown EMS info provider: "+s);

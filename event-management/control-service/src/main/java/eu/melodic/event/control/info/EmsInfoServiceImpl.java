@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +31,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EmsInfoServiceImpl implements IEmsInfoService {
 
-    private final AtomicLong currentMetricsVersion = new AtomicLong(0);
+    private final AtomicLong currentServerMetricsVersion = new AtomicLong(0);
     private final AtomicLong currentClientMetricsVersion = new AtomicLong(0);
-    private Map<String,Object> currentMetrics;
+    private Map<String,Object> currentServerMetrics;
     private Map<String,Object> currentClientMetrics;
 
     private final ApplicationContext applicationContext;
@@ -45,53 +46,71 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final BrokerCepService brokerCepService;
 
     @Override
-    public synchronized void clearMetricValues() {
-        log.debug("clearMetricValues(): BEGIN");
-        systemInfoProvider.clearMetricValues();
-        brokerCepService.clearBrokerCepStatistics();
-        currentMetrics = null;
-        log.debug("clearMetricValues(): END");
+    public void clearServerMetricValues() {
+        log.debug("clearServerMetricValues(): BEGIN");
+        synchronized (currentServerMetricsVersion) {
+            systemInfoProvider.clearMetricValues();
+            brokerCepService.clearBrokerCepStatistics();
+            currentServerMetrics = null;
+        }
+        log.debug("clearServerMetricValues(): END");
     }
 
     @Override
-    public synchronized void clearClientMetricValues() {
+    public Map<String, Object> getServerMetricValues() {
+        log.debug("getServerMetricValues(): BEGIN");
+        updateServerMetricValues(false);
+        log.debug("getServerMetricValues(): END: {}", currentServerMetrics);
+        return currentServerMetrics;
+    }
+
+    public Map<String,Object> getServerMetricValuesFor(@NonNull String key) {
+        log.debug("getServerMetricValuesFor(): BEGIN: key={}", key);
+        return (Map<String,Object>) getServerMetricValues().get(key);
+    }
+
+    // ------------------------------------------------------------------------
+
+    @Override
+    public void clearClientMetricValues() {
         log.debug("clearClientMetricValues(): BEGIN");
-        currentClientMetrics = null;
-        controlServiceCoordinator.clientCommandSend("*", "CLEAR-STATS");
+        synchronized (currentClientMetricsVersion) {
+            currentClientMetrics = null;
+            controlServiceCoordinator.clientCommandSend("*", "CLEAR-STATS");
+        }
         log.debug("clearClientMetricValues(): END");
     }
 
     @Override
-    public Map<String, Object> getMetricValues() {
-        updateMetricValues(false);
-        return currentMetrics;
-    }
-
-    public Map<String,Object> getMetricValuesFor(String key) {
-        return (Map<String,Object>) getMetricValues().get(key);
-    }
-
-    @Override
     public Map<String,Object> getClientMetricValues() {
+        log.debug("getClientMetricValues(): BEGIN");
         updateClientMetricValues();
+        log.debug("getClientMetricValues(): END: {}", currentClientMetrics);
         return currentClientMetrics;
     }
 
     @Override
     public Map<String,Object> getClientMetricValues(@NonNull String clientId) {
+        log.debug("getClientMetricValues(): BEGIN: clientId={}", clientId);
         return (Map<String,Object>) getClientMetricValues().get(clientId);
     }
 
     // ------------------------------------------------------------------------
 
-    protected void updateMetricValues(boolean includeStaticInfo) {
-        if (currentMetrics!=null) {
-            long timestamp = (long) currentMetrics.get(".timestamp");
-            if (System.currentTimeMillis() - timestamp < properties.getMetricsUpdateInterval())
+    protected void updateServerMetricValues(boolean includeStaticInfo) {
+        log.debug("updateServerMetricValues(): BEGIN: includeStaticInfo={}", includeStaticInfo);
+        if (currentServerMetrics!=null) {
+            long timestamp = (long) currentServerMetrics.get(".timestamp");
+            log.trace("updateServerMetricValues(): stored-timestamp: {}", timestamp);
+            if (System.currentTimeMillis() - timestamp < properties.getMetricsUpdateInterval()) {
+                log.debug("updateServerMetricValues(): STOP: Retry in {}ms",
+                        timestamp+properties.getMetricsUpdateInterval()-System.currentTimeMillis());
                 return;
+            }
         }
 
         long timestamp = System.currentTimeMillis();
+        log.trace("updateServerMetricValues(): new-timestamp: {}", timestamp);
 
         Map<String,Object> metrics = new LinkedHashMap<>();
 
@@ -105,24 +124,36 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         // Collect Broker-CEP metrics
         metrics.put(BROKER_CEP_INFO_PROVIDER, brokerCepService.getBrokerCepStatistics());
 
-        synchronized (currentMetricsVersion) {
-            if (currentMetrics==null || (long)currentMetrics.get(".timestamp") < timestamp) {
-                long version = currentMetricsVersion.getAndIncrement();
+        log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);
+
+        synchronized (currentServerMetricsVersion) {
+            log.trace("updateServerMetricValues(): IN-SYNC-BLOCK");
+            if (currentServerMetrics==null || (long)currentServerMetrics.get(".timestamp") < timestamp) {
+                long version = currentServerMetricsVersion.getAndIncrement();
+                log.trace("updateServerMetricValues(): NEW-VERSION: {}", version);
                 metrics.put(".version", version);
                 metrics.put(".timestamp", timestamp);
-                this.currentMetrics = metrics;
+                this.currentServerMetrics = Collections.unmodifiableMap(metrics);
+                log.trace("updateServerMetricValues(): NEW currentServerMetrics: {}", currentServerMetrics);
             }
+            log.debug("updateServerMetricValues(): END");
         }
     }
 
     protected void updateClientMetricValues() {
+        log.debug("updateClientMetricValues(): BEGIN");
         if (currentClientMetrics!=null) {
             long timestamp = (long) currentClientMetrics.get(".timestamp");
-            if (System.currentTimeMillis() - timestamp < properties.getMetricsClientUpdateInterval())
+            log.trace("updateClientMetricValues(): stored-timestamp: {}", timestamp);
+            if (System.currentTimeMillis() - timestamp < properties.getMetricsClientUpdateInterval()) {
+                log.debug("updateClientMetricValues(): STOP: Retry in {}ms",
+                        timestamp+properties.getMetricsClientUpdateInterval()-System.currentTimeMillis());
                 return;
+            }
         }
 
         long timestamp = System.currentTimeMillis();
+        log.trace("updateClientMetricValues(): new-timestamp: {}", timestamp);
 
         Map<String,Object> clientMetrics = new LinkedHashMap<>();
 
@@ -135,17 +166,22 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
             if (o instanceof Map) {
                 clientMetrics.put(clientId, o);
+                log.trace("updateClientMetricValues(): client-metrics: id={}, Client metrics ADDED in results map", clientId);
             }
         }
-        log.debug("updateClientMetricValues(): client-metrics: {}", clientIds);
+        log.debug("updateClientMetricValues(): Collected client metrics: {}", clientMetrics);
 
         synchronized (currentClientMetricsVersion) {
+            log.trace("updateClientMetricValues(): IN-SYNC-BLOCK");
             if (currentClientMetrics==null || (long)currentClientMetrics.get(".timestamp") < timestamp) {
                 long version = currentClientMetricsVersion.getAndIncrement();
+                log.trace("updateClientMetricValues(): NEW-VERSION: {}", version);
                 clientMetrics.put(".version", version);
                 clientMetrics.put(".timestamp", timestamp);
-                this.currentClientMetrics = clientMetrics;
+                this.currentClientMetrics = Collections.unmodifiableMap(clientMetrics);
+                log.trace("updateServerMetricValues(): NEW currentClientMetrics: {}", currentClientMetrics);
             }
+            log.debug("updateClientMetricValues(): END");
         }
     }
 }

@@ -23,10 +23,11 @@ public interface IEmsInfoService {
     String TRANSLATOR_INFO_PROVIDER = "translator";
     String MISC_INFO_PROVIDER = "misc-info";
 
-    void clearMetricValues();
+    void clearServerMetricValues();
+    Map<String,Object> getServerMetricValues();
+    Map<String,Object> getServerMetricValuesFor(@NonNull String key);
+
     void clearClientMetricValues();
-    Map<String,Object> getMetricValues();
-    Map<String,Object> getMetricValuesFor(String key);
     Map<String,Object> getClientMetricValues();
     Map<String,Object> getClientMetricValues(@NonNull String clientId);
 }
