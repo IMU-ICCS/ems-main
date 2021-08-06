@@ -99,7 +99,8 @@ public class CepEvalAggregator implements AggregationMethod {
             List<List<Double>> dataLists = new ArrayList<>();
             for (int i = 0, n = lists.size(); i < n; i++) {
                 log.trace("CepEvalAggregator.getValue(): event-list-{}: {}", i, lists.get(i));
-                List<Double> data = lists.get(i).stream().map(event -> (Double) event.get("metricValue")).collect(Collectors.toList());
+                //List<Double> data = lists.get(i).stream().map(event -> (Double) event.get("metricValue")).collect(Collectors.toList());
+                List<Double> data = lists.get(i).stream().map(EventMap::getMetricValue).collect(Collectors.toList());
                 log.trace("CepEvalAggregator.getValue(): data-list-{}: {}", i, data);
                 dataLists.add(data);
             }
@@ -114,7 +115,7 @@ public class CepEvalAggregator implements AggregationMethod {
             // use MathParser to evaluate formula using stream data lists
             double result = MathUtil.evalAgg(formula, args);
             log.debug("CepEvalAggregator.getValue(): END: aggregator-hash={}, result={}", hashCode(), result);
-            return new Double(result);
+            return result;
         }
     }
 }
