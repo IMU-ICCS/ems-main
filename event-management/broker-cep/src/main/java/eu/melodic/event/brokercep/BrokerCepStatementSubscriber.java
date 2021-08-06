@@ -27,10 +27,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class BrokerCepStatementSubscriber implements StatementSubscriber {
-    private static AtomicLong counterLocalPublishSuccess = new AtomicLong(0);
-    private static AtomicLong counterLocalPublishFailure = new AtomicLong(0);
-    private static AtomicLong counterForwardSuccess = new AtomicLong(0);
-    private static AtomicLong counterForwardFailure = new AtomicLong(0);
+    private final static AtomicLong counterLocalPublishSuccess = new AtomicLong(0);
+    private final static AtomicLong counterLocalPublishFailure = new AtomicLong(0);
+    private final static AtomicLong counterForwardSuccess = new AtomicLong(0);
+    private final static AtomicLong counterForwardFailure = new AtomicLong(0);
 
     private final String name;
     private final String topic;
@@ -41,6 +41,7 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
     private Set<GroupingConfiguration.BrokerConnectionConfig> forwardToGroupings;
 
     public void update(Map<String, Object> eventMap) {
+        log.trace("BrokerCepStatementSubscriber.update(): INPUT: {}", eventMap);
         publishToLocalBroker(eventMap);
         forwardToGroupings(eventMap);
     }

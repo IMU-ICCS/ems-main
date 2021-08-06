@@ -12,9 +12,9 @@ package eu.melodic.event.brokercep;
 import com.google.gson.Gson;
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
-import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
@@ -310,7 +310,9 @@ public class BrokerCepService {
 
         // Create a messages
         //ObjectMessage message = session.createObjectMessage(event);
-        TextMessage message = session.createTextMessage(gson.toJson(event));
+        String payload = gson.toJson(event);
+        log.trace("BrokerCepService.publishEvent(): Message payload: topic={}, payload={}", destination, payload);
+        TextMessage message = session.createTextMessage(payload);
 
         // Tell the producer to send the message
         long hash = message.hashCode();

@@ -33,7 +33,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         private final String name;
         private final Class<?> type;
         private final boolean nullable;
-        private final boolean skillIfNull;
+        private final boolean skipIfNull;
         private final Function<EventMap,Object> defaultValue;
     }
 
@@ -70,7 +70,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public EventMap(Map<String, Object> map) {
-        super(map);
+        map.forEach((k, v) -> this.put(k, v));
     }
 
     public EventMap(double metricValue) {
@@ -117,15 +117,16 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         log.trace("EventMap.put(): BEGIN: key={}, value={}", key, value);
         key = removeQuotes(key);
         log.trace("EventMap.put(): KEY with Quotes Stripped: key={}", key);
-        EventField field = STANDARD_EVENT_FIELDS_MAP.get(key);
+
+        /*EventField field = STANDARD_EVENT_FIELDS_MAP.get(key);
         if (field!=null) {
             log.trace("EventMap.put(): STANDARD_EVENT_FIELD: key={}, value={}", key, value);
             if (value==null) {
                 log.trace("EventMap.put(): NULL VALUE: key={}, field-is-nullable={}", key, field.isNullable());
                 if (!field.isNullable())
                     throw new NullPointerException("Event field cannot be null: " + key);
-                log.trace("EventMap.put(): NULL VALUE: key={}, skip-if-null={}", key, field.isSkillIfNull());
-                if (field.isSkillIfNull())
+                log.trace("EventMap.put(): NULL VALUE: key={}, skip-if-null={}", key, field.isSkipIfNull());
+                if (field.isSkipIfNull())
                     return null;
                 log.trace("EventMap.put(): BEFORE DEFAULT: key={}, this={}", key, this);
                 value = field.getDefaultValue().apply(this);
@@ -150,8 +151,18 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
                                     c.getName(), value.getClass().getName(), value));
                 log.trace("EventMap.put(): VALUE AFTER CONVERSION: key={}, value={}, value-type={}", key, value, value.getClass());
             }
-        }
+        }*/
+
+        // Process known (standard) event fields
+        log.debug("EventMap.put(): BEFORE-PUT: Key={}, Value={}", key, value);
+        if ("metricValue".equals(key))
+            value = Double.parseDouble(removeQuotes(value));
+        if ("level".equals(key))
+            value = (int) Double.parseDouble(removeQuotes(value));
+        if ("timestamp".equals(key))
+            value = (long) Double.parseDouble(removeQuotes(value));
         log.debug("EventMap.put(): PUTTING: Key={}, Value={}", key, value);
+
         return super.put(key, value);
     }
 
@@ -162,6 +173,24 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
                 ? s.substring(1, l) : s;
         log.trace("EventMap.removeQuotes(): INPUT={}, RESULT={}", o, s);
         return s;
+    }
+
+    public double getMetricValue() {
+        Object v = get("metricValue");
+        if (v==null)
+            throw new NullPointerException("No 'metricValue' found in EventMap: "+this);
+        if (v instanceof Double) return (Double) v;
+        if (v instanceof Number) return ((Number)v).doubleValue();
+        return Double.parseDouble(removeQuotes(v));
+    }
+
+    public long getTimestamp() {
+        Object v = get("timestamp");
+        if (v==null)
+            throw new NullPointerException("No 'timestamp' found in EventMap: "+this);
+        if (v instanceof Long) return (Long) v;
+        if (v instanceof Number) return ((Number)v).longValue();
+        return Long.parseLong(removeQuotes(v));
     }
 
     public String toString() {
