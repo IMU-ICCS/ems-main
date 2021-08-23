@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.info;
 
+import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class InfoServiceController {
 
     private final ControlServiceProperties properties;
+    private final ControlServiceCoordinator coordinator;
     private final IEmsInfoService emsInfoService;
 
     @GetMapping("/info/metrics/get")
@@ -123,6 +125,61 @@ public class InfoServiceController {
 
     // ------------------------------------------------------------------------
 
+    @GetMapping("/info/all-metrics/get/{clientIds}")
+    public Mono<Map<String,Object>> allMetricsGet(
+            @PathVariable("clientIds") List<String> clientIds, HttpServletRequest request)
+    {
+        log.info("allMetricsGet(): baguette-client-ids={} --- client: {}:{}", clientIds, request.getRemoteAddr(), request.getRemotePort());
+        Map<String,Object> message1 = createServerMetricsResult(null, -1L);
+        Map<String,Object> message2 = createClientMetricsResult(null, -1L, clientIds);
+        Map<String,Object> message = new LinkedHashMap<>();
+        message.put("ems", message1);
+        message.put("clients", message2);
+        log.debug("allMetricsGet(): message={}", message);
+        return Mono.just(message);
+    }
+
+    @GetMapping("/info/all-metrics/stream/{clientIds}")
+    public Flux<ServerSentEvent<Map<String,Object>>> allMetricsStream(
+            @PathVariable("clientIds") List<String> clientIds,
+            @QueryParam("interval") Optional<Integer> interval,
+            HttpServletRequest request)
+    {
+        String sid = UUID.randomUUID().toString();
+        log.info("allMetricsStream(): interval={}, baguette-client-ids={} --- client: {}:{}, Stream-Id: {}",
+                interval, clientIds, request.getRemoteAddr(), request.getRemotePort(), sid);
+        int intervalInSeconds = interval.orElse(-1);
+        if (intervalInSeconds<1) intervalInSeconds = properties.getMetricsStreamUpdateInterval();
+        log.debug("allMetricsStream(): effective-interval={}", intervalInSeconds);
+
+        return Flux.interval(Duration.ofSeconds(intervalInSeconds))
+                .onBackpressureDrop()
+                .map(sequence -> {
+                    Map<String,Object> message1 = createServerMetricsResult(sid, sequence);
+                    Map<String,Object> message2 = createClientMetricsResult(sid, sequence, clientIds);
+                    Map<String,Object> message = new LinkedHashMap<>();
+                    message.put("ems", message1);
+                    message.put("clients", message2);
+                    log.debug("allMetricsStream(): seq={}, id={}, message={}", sequence, sid, message);
+                    return ServerSentEvent.<Map<String,Object>> builder()
+                            .id(String.valueOf(sequence))
+                            .event(properties.getMetricsStreamEventName())
+                            .data(message)
+                            .build();
+                });
+    }
+
+    @GetMapping("/info/all-metrics/clear")
+    public String allMetricsClear(HttpServletRequest request) {
+        log.info("allMetricsClear(): client: {}:{}",
+                request.getRemoteAddr(), request.getRemotePort());
+        emsInfoService.clearServerMetricValues();
+        emsInfoService.clearClientMetricValues();
+        return "CLEARED-ALL-METRICS";
+    }
+
+    // ------------------------------------------------------------------------
+
     public Map<String,Object> createServerMetricsResult(String sid, long sequence) {
         log.trace("createServerMetricsResult: BEGIN: sid={}, seq={}", sid, sequence);
         Map<String, Object> metrics = new LinkedHashMap<>(emsInfoService.getServerMetricValues());
@@ -148,6 +205,17 @@ public class InfoServiceController {
             metrics.keySet().retainAll(clientIds);
             log.trace("createClientMetricsResult(): CLIENT-FILTER: AFTER: metrics: {}", metrics);
         }
+
+        // Add client info in results
+        Map<String, Map<String, String>> clientsInfo = coordinator.clientMap();
+        for (Map.Entry<String, Object> entry : metrics.entrySet()) {
+            Map<String, String> info = clientsInfo.get(entry.getKey());
+            Object o = entry.getValue();
+            if (o instanceof Map) {
+                ((Map)o).put("client-info", info);
+            }
+        }
+
         Map<String,Object> clientMetrics = new LinkedHashMap<>();
         clientMetrics.put("client-metrics", metrics);
         clientMetrics.put(".stream-id", sid);
