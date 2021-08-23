@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
 import eu.melodic.models.services.adapter.DifferenceResponse;
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
 import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
 import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
@@ -10,6 +11,7 @@ import eu.melodic.upperware.guibackend.domain.converter.DomainConverterFactory;
 import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
 import eu.melodic.upperware.guibackend.service.process.ProcessService;
+import eu.passage.upperware.commons.model.SecureVariable;
 import eu.passage.upperware.commons.model.internal.Cloud;
 import eu.passage.upperware.commons.model.internal.Location;
 import io.github.cloudiator.rest.model.*;
@@ -37,6 +39,7 @@ public class ProcessController {
     //    private CloudiatorApi cloudiatorApi;
     private ProcessService processService;
     private ProactiveClientServiceGUI proactiveClientServiceGUI;
+    private ProactiveClientService proactiveClientService;
     private final DomainConverterFactory domainConverterFactory;
 
     @GetMapping(value = "/{processId}")
@@ -190,5 +193,13 @@ public class ProcessController {
         final List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> domains = ((GenericConverter<EmsDeploymentRequest, eu.passage.upperware.commons.model.internal.EmsDeploymentRequest>) domainConverterFactory.getMonitorConverter()).createDomains(allMonitors);
         log.info("ProcessController->getMonitorsList converted to internal/domain monitors: {}", domains);
         return domains;
+    }
+
+    @PostMapping(value = "/undeploy")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void undeployApplication(@RequestParam String applicationId) {
+        log.info("POST request for undeploy of application");
+        proactiveClientService.stopJob(applicationId);
+        log.info("application with id:" + applicationId + " stopped");
     }
 }
