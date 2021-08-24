@@ -80,7 +80,10 @@ stages:
   #  - build-required-part8
   - build
   - deploy
-#
+  - deploy-solvers-part1
+  - deploy-solvers-part2
+  - deploy-solvers-part3
+  - deploy-solvers-part4
 
 build-basic-dependencies:melodic-upperware:
   stage: build-basic-dependencies
