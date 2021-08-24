@@ -69,7 +69,7 @@ after_script:
   - echo '=========================================================================='
 
 stages:
-  - build-basic-dependencies
+#  - build-basic-dependencies
   #- build-required-part1
   #- build-required-part2
   #- build-required-part3
@@ -241,14 +241,7 @@ build-required-part6:cp-solver:
 #    paths:
 #      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/baguette-client/
 
-build:cp-parser:
-  stage: build
-  image: $MAVEN_IMAGE
-  script:
-    - $CP_PARSER_CLI -Pwithout-docker clean install
-  artifacts:
-    paths:
-      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
+#
 
 #build:ems-server:
 #  stage: build
