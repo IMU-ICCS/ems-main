@@ -3,10 +3,9 @@ package eu.melodic.upperware.guibackend.controller.process;
 import eu.melodic.models.services.adapter.DifferenceResponse;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
-import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
-import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
-import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
-import eu.melodic.upperware.guibackend.controller.process.response.ProcessVariables;
+import eu.melodic.upperware.guibackend.controller.common.ProcessState;
+import eu.melodic.upperware.guibackend.controller.common.UndeployState;
+import eu.melodic.upperware.guibackend.controller.process.response.*;
 import eu.melodic.upperware.guibackend.domain.converter.DomainConverterFactory;
 import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
@@ -197,11 +196,10 @@ public class ProcessController {
     }
 
     @PostMapping(value = "/undeploy")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> undeployApplication(@RequestBody String applicationId) {
+    public UndeployResponse undeployApplication(@RequestBody String applicationId) {
         log.info("POST request for undeploy of application");
         proactiveClientService.stopJob(applicationId);
         log.info("application with id:" + applicationId + " stopped");
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new UndeployResponse(UndeployState.FINISHED);
     }
 }
