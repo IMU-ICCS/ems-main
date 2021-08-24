@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
+import com.google.gson.JsonObject;
 import eu.melodic.models.services.adapter.DifferenceResponse;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
@@ -195,7 +196,7 @@ public class ProcessController {
         return domains;
     }
 
-    @PostMapping(value = "/undeploy")
+    @PostMapping(value = "/deployment/undeploy")
     public UndeployResponse undeployApplication(@RequestBody String applicationId) {
         log.info("POST request for undeploy of application");
         proactiveClientService.stopJob(applicationId);

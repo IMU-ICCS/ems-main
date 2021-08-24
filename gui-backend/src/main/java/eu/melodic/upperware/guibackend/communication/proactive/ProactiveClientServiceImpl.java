@@ -10,6 +10,6 @@ public class ProactiveClientServiceImpl extends ProactiveClientServiceConnector 
 
     @Override
     public Long stopJob(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.stopJob(jobId)).orElseThrow(() -> new IllegalArgumentException("Unsupported value: " + jobId));
+         return getPAGateway().map(paGateway -> paGateway.stopJob(jobId)).orElse(0L);
     }
 }
