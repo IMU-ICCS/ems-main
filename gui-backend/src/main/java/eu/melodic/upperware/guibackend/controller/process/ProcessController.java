@@ -197,7 +197,7 @@ public class ProcessController {
 
     @PostMapping(value = "/undeploy")
     @ResponseStatus(HttpStatus.CREATED)
-    public void undeployApplication(@RequestParam String applicationId) {
+    public void undeployApplication(@RequestBody String applicationId) {
         log.info("POST request for undeploy of application");
         proactiveClientService.stopJob(applicationId);
         log.info("application with id:" + applicationId + " stopped");
