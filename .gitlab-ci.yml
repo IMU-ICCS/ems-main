@@ -69,7 +69,13 @@ after_script:
   - echo '=========================================================================='
 
 stages:
-#
+  - build-basic-dependencies
+  - build-required-part1
+  - build-required-part2
+  - build-required-part3
+  - build-required-part4
+  - build-required-part5
+  - build-required-part6
   #  - build-required-part7
   #  - build-required-part8
   - build
