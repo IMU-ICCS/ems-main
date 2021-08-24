@@ -1,6 +1,8 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
+import eu.melodic.upperware.guibackend.controller.common.UndeployState;
+import eu.melodic.upperware.guibackend.controller.process.response.UndeployResponse;
 
 public class ProactiveClientServiceImpl extends ProactiveClientServiceConnector implements ProactiveClientService {
 

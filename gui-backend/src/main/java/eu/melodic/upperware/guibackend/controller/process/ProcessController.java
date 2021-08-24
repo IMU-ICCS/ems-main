@@ -197,10 +197,10 @@ public class ProcessController {
     }
 
     @PostMapping(value = "/deployment/undeploy")
-    public UndeployResponse undeployApplication(@RequestBody String applicationId) {
+    public UndeployResponse undeployApplication(@RequestBody ProcessVariables processVariables) {
         log.info("POST request for undeploy of application");
-        proactiveClientService.stopJob(applicationId);
-        log.info("application with id:" + applicationId + " stopped");
+        proactiveClientService.stopJob(processVariables.getApplicationId());
+        log.info("application with id:" + processVariables.getApplicationId() + " stopped");
         return new UndeployResponse(UndeployState.FINISHED);
     }
 }
