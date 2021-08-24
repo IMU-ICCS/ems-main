@@ -22,6 +22,7 @@ import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -196,10 +197,11 @@ public class ProcessController {
     }
 
     @PostMapping(value = "/undeploy")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void undeployApplication(@RequestBody String applicationId) {
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> undeployApplication(@RequestBody String applicationId) {
         log.info("POST request for undeploy of application");
         proactiveClientService.stopJob(applicationId);
         log.info("application with id:" + applicationId + " stopped");
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
