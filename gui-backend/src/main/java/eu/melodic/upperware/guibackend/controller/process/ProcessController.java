@@ -1,15 +1,17 @@
 package eu.melodic.upperware.guibackend.controller.process;
 
+import com.google.gson.JsonObject;
 import eu.melodic.models.services.adapter.DifferenceResponse;
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
-import eu.melodic.upperware.guibackend.controller.process.response.CpModelResponse;
-import eu.melodic.upperware.guibackend.controller.process.response.CpSolutionResponse;
-import eu.melodic.upperware.guibackend.controller.process.response.ProcessInstanceResponse;
-import eu.melodic.upperware.guibackend.controller.process.response.ProcessVariables;
+import eu.melodic.upperware.guibackend.controller.common.ProcessState;
+import eu.melodic.upperware.guibackend.controller.common.UndeployState;
+import eu.melodic.upperware.guibackend.controller.process.response.*;
 import eu.melodic.upperware.guibackend.domain.converter.DomainConverterFactory;
 import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
 import eu.melodic.upperware.guibackend.service.process.ProcessCamundaService;
 import eu.melodic.upperware.guibackend.service.process.ProcessService;
+import eu.passage.upperware.commons.model.SecureVariable;
 import eu.passage.upperware.commons.model.internal.Cloud;
 import eu.passage.upperware.commons.model.internal.Location;
 import io.github.cloudiator.rest.model.*;
@@ -20,6 +22,7 @@ import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -37,6 +40,7 @@ public class ProcessController {
     //    private CloudiatorApi cloudiatorApi;
     private ProcessService processService;
     private ProactiveClientServiceGUI proactiveClientServiceGUI;
+    private ProactiveClientService proactiveClientService;
     private final DomainConverterFactory domainConverterFactory;
 
     @GetMapping(value = "/{processId}")
@@ -190,5 +194,13 @@ public class ProcessController {
         final List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> domains = ((GenericConverter<EmsDeploymentRequest, eu.passage.upperware.commons.model.internal.EmsDeploymentRequest>) domainConverterFactory.getMonitorConverter()).createDomains(allMonitors);
         log.info("ProcessController->getMonitorsList converted to internal/domain monitors: {}", domains);
         return domains;
+    }
+
+    @PostMapping(value = "/deployment/undeploy")
+    public UndeployResponse undeployApplication(@RequestBody ProcessVariables processVariables) {
+        log.info("POST request for undeploy of application");
+        proactiveClientService.stopJob(processVariables.getApplicationId());
+        log.info("application with id:" + processVariables.getApplicationId() + " stopped");
+        return new UndeployResponse(UndeployState.FINISHED);
     }
 }
