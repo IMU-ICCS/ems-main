@@ -6,11 +6,4 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-# JWT authentication configuration for MetaSolver
-jwt.secret=mE1odiCl0ud
-jwt.expirationTime=86400000
-jwt.refreshTokenExpirationTime=86400000
-
-#melodic user
-user.username=myUsername
-user.password=myPassword
+*.sh text eol=lf

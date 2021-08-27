@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -19,23 +19,30 @@ import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
+import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.*;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -44,6 +51,7 @@ public class Coordinator implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
     private MetaSolverController controller;
+    @Getter
     private MetaSolverProperties metaSolverProperties;
     private JWTService jwtService;
     private MelodicSecurityProperties melodicSecurityProperties;
@@ -59,6 +67,15 @@ public class Coordinator implements ApplicationContextAware {
     private String updateAppId;
     private String updatePath;
 
+    private long previousReconfigurationTimestamp = 0;
+    private Semaphore reconfigurationRunning = new Semaphore(1);
+    private ScheduledFuture<?> reconfigurationRunningTimeoutFuture;
+    @Autowired
+    private TaskScheduler taskScheduler;
+
+    @Getter
+    private PredictionHelper predictionHelper;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -68,6 +85,7 @@ public class Coordinator implements ApplicationContextAware {
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.restTemplate = new RestTemplate();
+        this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
     }
 
@@ -96,11 +114,32 @@ public class Coordinator implements ApplicationContextAware {
         Map<String, String> metricValues = monitor.getMetricValuesRegistry().getMetricValuesAsMap();
         log.debug("MetaSolver.Coordinator: setMetricValuesInCpModel(): Metric values map: {}", metricValues);
 
-        // Update CP model with current metric variable values
-        CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
-        boolean succeeded = helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+        return setMetricValuesInCpModel(applicationId, cpModelPath, metricValues);
+    }
 
-        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model update with current MVV's finished");
+    public boolean setMetricValuesInCpModel(String applicationId, String cpModelPath, @NonNull Map<String, String> metricValues) throws ConcurrentAccessException, NumberFormatException {
+        log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}, metricValues={}", applicationId, cpModelPath, metricValues);
+
+        // Send MetaSolver debug event
+        if (metaSolverProperties.getDebugEvents().isEnabled()) {
+            try {
+                log.debug("setMetricValuesInCpModel: Sending DEBUG event: metricValues={}", metricValues);
+                applicationContext.getBean(MetricValueMonitorBean.class).sendDebugEvent(metaSolverProperties.getDebugEvents().getTopicName(), metricValues);
+                log.debug("setMetricValuesInCpModel: DEBUG event sent: metricValues={}", metricValues);
+            } catch (Exception e) {
+                log.error("setMetricValuesInCpModel: EXCEPTION while sending debug event: ", e);
+            }
+        }
+
+        // Update CP model with current metric variable values
+        boolean succeeded = true;
+        if (metaSolverProperties.isCpModelUpdateEnabled()) {
+            CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
+            succeeded = helper.updateCpModelWithMetricValues(applicationId, cpModelPath, metricValues);
+            log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): CP model update with current MVV's finished");
+        } else
+            log.warn("MetaSolver.Coordinator: setMetricValuesInCpModel: CP model update is DISABLED");
+
         return succeeded;
     }
 
@@ -111,6 +150,15 @@ public class Coordinator implements ApplicationContextAware {
      * than deployed solution's utility value, at least 'uvThresholdFactor' times
      */
     public SolutionEvaluationResponse.EvaluationResultType evaluateSolution(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        SolutionEvaluationResponse.EvaluationResultType result = _evaluateSolution(applicationId, cpModelPath);
+        if (result==SolutionEvaluationResponse.EvaluationResultType.NEGATIVE) {
+            // Enable reconfiguration running
+            enableReconfigurationRunning();
+        }
+        return result;
+    }
+
+    protected SolutionEvaluationResponse.EvaluationResultType _evaluateSolution(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.info("MetaSolver.Coordinator: evaluateSolution(): appId={}, model={}", applicationId, cpModelPath);
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
@@ -192,7 +240,12 @@ public class Coordinator implements ApplicationContextAware {
             helper.copyVarValuesFromDeployedSolution(cacheAppId, cacheCpModelPath, mvvToCurrentConfigVarsMap);
         }
 
-		// Notify EMS about new solution acceptance
+        // Enable reconfiguration running
+        /*XXX: TODO: Probably not the right place to re-enable reconf.
+                BETTER ALTERNATIVE: Adapter should notify us re-enabling reconf.*/
+        enableReconfigurationRunning();
+
+        // Notify EMS about new solution acceptance
 		notifyEMS(cpModelPath);
 		
         log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): Solution Ids have been updated in CP model: deployed-solution-id={}, candidate-solution-id={}",
@@ -202,27 +255,73 @@ public class Coordinator implements ApplicationContextAware {
 
     // --------------------------------------------------------------------------
 
-    public boolean requestStartProcessForScaling(boolean isSimulation) throws ConcurrentAccessException {
+    public boolean requestReconfigurationStart(boolean isSimulation) throws ConcurrentAccessException {
+        return requestReconfigurationStart(isSimulation, null);
+    }
+
+    public synchronized boolean requestReconfigurationStart(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
+        // Check if a (previous) reconfiguration process is still running
+        if (metaSolverProperties.isPreventConcurrentReconfigurations() && ! reconfigurationRunning.tryAcquire()) {
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): A previous Reconfiguration instance is still running. Ignoring requests");
+            return false;
+        }
+
+        // Check if we are in the reconfiguration blocking period
+        if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Cannot request a new reconfiguration during reconfiguration blocking period");
+            enableReconfigurationRunning();
+            return false;
+        }
+        previousReconfigurationTimestamp = System.currentTimeMillis();
+
+        // Schedule reconfiguration running timeout
+        if (metaSolverProperties.isPreventConcurrentReconfigurations() && getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()>0) {
+            reconfigurationRunningTimeoutFuture = taskScheduler.schedule(() -> enableReconfigurationRunning(false),
+                    Date.from(Instant.now().plusMillis(getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout())));
+        }
+
         // Use previously cached 'application id' and 'CP model'
         String appId = this.cacheAppId;
         String cpModelPath = this.cacheCpModelPath;
-        log.info("MetaSolver.Coordinator: requestStartProcessForScaling(): Cached appId={}, Cached cp-model={}", appId, cpModelPath);
+        log.info("MetaSolver.Coordinator: requestReconfigurationStart(): Cached appId={}, Cached cp-model={}", appId, cpModelPath);
 
         // Set metric values in CP model
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Updating metric values in CP model: {}", cpModelPath);
-        if (!setMetricValuesInCpModel(appId, cpModelPath)) {
-            log.debug("MetaSolver.Coordinator: requestStartProcessForScaling():" +
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Updating metric values in CP model: {}", cpModelPath);
+        boolean result = (metricValues == null)
+                ? setMetricValuesInCpModel(appId, cpModelPath)
+                : setMetricValuesInCpModel(appId, cpModelPath, metricValues);
+        if (!result) {
+            log.debug("MetaSolver.Coordinator: requestReconfigurationStart():" +
                     " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
+            enableReconfigurationRunning();
             return false;
         }
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Metric values updated in CP model: {}", cpModelPath);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Metric values updated in CP model: {}", cpModelPath);
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath, isSimulation);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Sending deployment process request: {}", notification);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Sending deployment process request: {}", notification);
         sendNotification(notification);
-        log.debug("MetaSolver.Coordinator: requestStartProcessForScaling(): Deployment process request sent: {}", notification);
+        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Deployment process request sent: {}", notification);
         return true;
+    }
+
+    protected void enableReconfigurationRunning() {
+        // Enable reconfiguration running
+        if (metaSolverProperties.isPreventConcurrentReconfigurations()) {
+            if (reconfigurationRunningTimeoutFuture!=null) {
+                reconfigurationRunningTimeoutFuture.cancel(false);
+                reconfigurationRunningTimeoutFuture = null;
+            }
+            if (reconfigurationRunning.availablePermits()==0)
+                reconfigurationRunning.release();
+        }
+    }
+
+    public void enableReconfigurationRunning(boolean alsoClearBlockingPeriod) {
+        enableReconfigurationRunning();
+        if (alsoClearBlockingPeriod)
+            previousReconfigurationTimestamp = 0;
     }
 
     private DeploymentProcessRequest prepareDeploymentProcessRequest(String appId, String cpModelPath, boolean isSimulation) {
@@ -241,6 +340,11 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     private void sendNotification(DeploymentProcessRequest notification) {
+        if (!metaSolverProperties.getEsb().isEnabled()) {
+            log.warn("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): ESB notification is DISABLED");
+            return;
+        }
+
         String esbUrl = metaSolverProperties.getEsb().getUrl();
         if (esbUrl.endsWith("/")) {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
@@ -372,7 +476,7 @@ public class Coordinator implements ApplicationContextAware {
                     String.format("Wrong application Id: %s", applicationId));
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-            Set<String> metricNames = monitor.getMetricValuesRegistry().getPossibleMetricNames();
+            Set<String> metricNames = monitor.getMetricValuesRegistry().getMvvMetricNames();
             for (KeyValuePair nameValuePair : metricValues) {
                 if (metricNames.contains(nameValuePair.getKey())) {
                     monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
@@ -385,7 +489,7 @@ public class Coordinator implements ApplicationContextAware {
             log.info("Simulated metrics set");
 
             log.info("Simulating Reconfiguration: Calling coordinator to start Scaling process...");
-            if(!requestStartProcessForScaling(true)) {
+            if(!requestReconfigurationStart(true)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Received metric value in invalid format");
             }
         }
@@ -399,7 +503,7 @@ public class Coordinator implements ApplicationContextAware {
                     String.format("Wrong application Id: %s", applicationId));
         } else {
             MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getPossibleMetricNames());
+            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getMvvMetricNames());
             if (metricNames.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No metrics defined or net yet received");
             }
@@ -418,7 +522,7 @@ public class Coordinator implements ApplicationContextAware {
         final Coordinator coordinator = this;
         TimerTask task = new TimerTask() {
             public void run() {
-                if (updateLocked.getAndSet(true)) {
+                if (!updateLocked.compareAndSet(false, true)) {
                     log.warn("CP Model Update Timer: Previous iteration is still running: Updating CP Model: app-id={}, cdo-path={}", updateAppId, updatePath);
                     return;
                 }
