@@ -2,6 +2,7 @@ package eu.melodic.upperware.activemqtorest.activemq.extraction;
 
 import java.util.Optional;
 
+import eu.melodic.upperware.activemqtorest.MorphemicTopicsMatcher;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MqThresholdExtractor extends MqDataEntryBaseExtractor implements IMqDataEntryExtractor {
 	@Override
 	public boolean isApplicable(ActiveMQMessage activeMQMessage) {
-		return activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicThresholdName());
+		return MorphemicTopicsMatcher.isThresholdTopic(activeMQMessage.getJMSDestination().toString());
 	}
 
 	@Override

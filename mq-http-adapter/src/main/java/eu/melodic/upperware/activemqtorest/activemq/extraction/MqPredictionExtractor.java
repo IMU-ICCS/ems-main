@@ -2,6 +2,7 @@ package eu.melodic.upperware.activemqtorest.activemq.extraction;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import eu.melodic.upperware.activemqtorest.MorphemicTopicsMatcher;
 import eu.melodic.upperware.activemqtorest.activemq.MqConstants;
 import eu.melodic.upperware.activemqtorest.entry.ExtractedMetricsDescriptions;
 import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
@@ -20,7 +21,7 @@ public class MqPredictionExtractor extends MqDataEntryBaseExtractor implements I
 
     @Override
     public boolean isApplicable(ActiveMQMessage activeMQMessage) {
-        return activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicPrediction());
+        return MorphemicTopicsMatcher.isPredictionTopic(activeMQMessage.getJMSDestination().toString());
     }
 
     @Override

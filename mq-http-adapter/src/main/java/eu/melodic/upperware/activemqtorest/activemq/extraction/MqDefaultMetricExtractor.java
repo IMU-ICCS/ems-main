@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.jms.JMSException;
 
+import eu.melodic.upperware.activemqtorest.MorphemicTopicsMatcher;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -26,18 +27,8 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 
 	@Override
 	public boolean isApplicable(ActiveMQMessage activeMQMessage) {
-		//ToDo Initial version would not work with the Forecast module!!! Initial version would return true based on exclusion which means
-		// that this extractor would be found fitting for ANY topic except those mentioned.
-		// As in the forecasting module there are dozens of new topics this would crash
-		// Current version should work with new prediction.[metric] topic but would still throw null error
-		// with other, new topics. I narrowed down the number of them with specyfing the pattern inside MQ_CONSTANTS.ALL_DESTINATIONS property
-		// But this need further testing (it is not yet tested to the end) and does not solve the problem totally
-		// To fix this one should probably think about creating the specific pool of topics that this extractor
-		// should accept
-		return !activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicInstanceInfoName()) &&
-				!activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicThresholdName()) &&
-				!activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicPrediction());
-	}
+		return MorphemicTopicsMatcher.isMetricTopic(activeMQMessage.getJMSDestination().toString());
+    }
 
 	@Override
 	public Optional<MqBaseEntry> extractMqDataEntry(ActiveMQMessage activeMQMessage) {

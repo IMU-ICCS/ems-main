@@ -44,15 +44,6 @@ public class MelodicConfiguration {
 	@Value("${influxdb.write.timeout:10}")
 	private long influxWriteTimeout;
 
-	@Value("${mq.topic.threshold.name:_ui_threshold_info}")
-	private String mqTopicThresholdName;
-
-	@Value("${mq.topic.instanceinfo.name:_ui_instance_info}")
-	private String mqTopicInstanceInfoName;
-
-	@Value("${mq.topic.prediction:prediction.}")
-	private String mqTopicPrediction;
-
 	@Value("${mq.recentmetrics.expiry.interval:120}")
 	private long mqRecentMetricsExpiryInterval;
 
