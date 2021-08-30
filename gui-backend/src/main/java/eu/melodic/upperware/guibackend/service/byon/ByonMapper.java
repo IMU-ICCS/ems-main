@@ -73,7 +73,7 @@ public class ByonMapper {
         byonNode.setId(byonNodeProactive.getId());
         byonNode.setAllocated(byonNodeProactive.isAllocated());
         byonNode.setName(byonNodeProactive.getName());
-        byonNode.setNodeCandidate(byonNodeProactive.getNodeCandidate());
+        byonNode.setNodeCandidate(byonNodeProactive.getNodeCandidate().toString());
         byonNode.setReason(byonNodeProactive.getReason());
         byonNode.setDiagnostic(byonNodeProactive.getDiagnostic());
         byonNode.setUserId(byonNodeProactive.getUserId());
