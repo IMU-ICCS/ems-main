@@ -5,8 +5,12 @@ import java.util.regex.Pattern;
 public class MorphemicTopicsMatcher {
 
     public static boolean isPredictionTopic(String topic) {
-        Pattern pattern = Pattern.compile("prediction\\.(?!\\bslo_severity_value\\b$)\\D*");
+        Pattern pattern = Pattern.compile("topic://prediction\\.(?!\\bslo_severity_value\\b$)\\D*");
         return pattern.matcher(topic).matches();
+    }
+
+    public static boolean isMetricsToPredict(String topic) {
+        return "topic://metrics_to_predict".equals(topic);
     }
 
     public static boolean isThresholdTopic(String topic) {
@@ -18,7 +22,7 @@ public class MorphemicTopicsMatcher {
     }
 
     public static boolean isMetricTopic(String topic) {
-        Pattern pattern = Pattern.compile("\\w+");
-        return pattern.matcher(topic).matches();
+        Pattern pattern = Pattern.compile("topic://\\w+");
+        return (!isMetricsToPredict(topic)) && pattern.matcher(topic).matches();
     }
 }
