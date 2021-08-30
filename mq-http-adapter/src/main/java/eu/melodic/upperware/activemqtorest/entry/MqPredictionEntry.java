@@ -33,7 +33,7 @@ public class MqPredictionEntry extends MqBaseEntry{
 
     @Override
     public Point getInfluxDbDataPoint(IIpGeoCoder ipGeoCoder) {
-        return Point.measurement(getMetricName())
+        return Point.measurement("Predicted"+getMetricName())
                 .time(getPredictionTime(), TimeUnit.SECONDS)
                 .addField("metricValue", Double.valueOf(getMetricValue()))
                 .tag("probability", Double.toString(getProbability()))
