@@ -9,6 +9,14 @@ public class MorphemicTopicsMatcher {
         return pattern.matcher(topic).matches();
     }
 
+    public static boolean isSloSeverityValueTopic(String topic) {
+        return "topic://prediction.slo_severity_value".equals(topic);
+    }
+
+    public static boolean isTrainingModels(String topic) {
+        return "topic://training_models".equals(topic);
+    }
+
     public static boolean isMetricsToPredict(String topic) {
         return "topic://metrics_to_predict".equals(topic);
     }
@@ -23,6 +31,6 @@ public class MorphemicTopicsMatcher {
 
     public static boolean isMetricTopic(String topic) {
         Pattern pattern = Pattern.compile("topic://\\w+");
-        return (!isMetricsToPredict(topic)) && pattern.matcher(topic).matches();
+        return (!isTrainingModels(topic)) && (!isMetricsToPredict(topic)) && pattern.matcher(topic).matches();
     }
 }
