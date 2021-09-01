@@ -10,16 +10,16 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-public class MqTrainingModelsExtractor extends  MqDataEntryBaseExtractor implements IMqDataEntryExtractor {
+public class MqMetricsToPredictExtractor extends  MqDataEntryBaseExtractor implements IMqDataEntryExtractor {
 
     @Override
     public boolean isApplicable(ActiveMQMessage activeMQMessage) {
-        return MorphemicTopicsMatcher.isTrainingModels(activeMQMessage.getJMSDestination().toString());
+        return MorphemicTopicsMatcher.isMetricsToPredict(activeMQMessage.getJMSDestination().toString());
     }
 
     @Override
     public Optional<MqBaseEntry> extractMqDataEntry(ActiveMQMessage activeMQMessage) {
-        log.warn("Saving training models messages to InfluxDb is not supported");
+        log.warn("Saving metrics to predict messages to InfluxDv=b is not supported");
         return Optional.empty();
     }
 }

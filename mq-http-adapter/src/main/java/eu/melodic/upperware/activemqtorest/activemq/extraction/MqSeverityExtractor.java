@@ -19,7 +19,7 @@ public class MqSeverityExtractor extends MqDataEntryBaseExtractor implements IMq
 
     @Override
     public Optional<MqBaseEntry> extractMqDataEntry(ActiveMQMessage activeMQMessage) {
-        log.warn("Saving Slo severity values to InfluxDv is not supported");
+        log.warn("Saving Slo severity values to InfluxDb is not supported");
         return Optional.empty();
     }
 }
