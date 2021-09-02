@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 public class MorphemicTopicsMatcher {
 
     public static boolean isPredictionTopic(String topic) {
-        Pattern pattern = Pattern.compile("topic://prediction\\.(?!\\bslo_severity_value\\b$)\\D*");
+        Pattern pattern = Pattern.compile("topic://(intermediate_)?prediction\\.(?!\\bslo_severity_value\\b$)\\D*");
         return pattern.matcher(topic).matches();
     }
 

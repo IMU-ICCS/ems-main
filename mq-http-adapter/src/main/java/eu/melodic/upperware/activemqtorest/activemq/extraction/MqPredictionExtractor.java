@@ -31,7 +31,10 @@ public class MqPredictionExtractor extends MqDataEntryBaseExtractor implements I
         JsonObject jsonObject = new JsonParser().parse(rawMqContent).getAsJsonObject();
         log.info("Received Prediction for predictionTime: {}", jsonObject.get("probability").getAsDouble());
         MqPredictionEntry mqPredictionEntry = new MqPredictionEntry();
-        String metricName = activeMQMessage.getJMSDestination().toString().replace(MqConstants.TOPIC_PREFIX + "prediction.", StringUtils.EMPTY);
+        String metricName = activeMQMessage.getJMSDestination().toString()
+                .replace(MqConstants.TOPIC_PREFIX, StringUtils.EMPTY)
+                .replace("intermediate_", StringUtils.EMPTY)
+                .replace("prediction.", StringUtils.EMPTY);
         mqPredictionEntry.setMetricName(metricName);
         mqPredictionEntry.setMetricValue(jsonObject.get("metricValue").getAsInt());
         mqPredictionEntry.setProbability(jsonObject.get("probability").getAsDouble());
