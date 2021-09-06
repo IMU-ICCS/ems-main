@@ -3,6 +3,7 @@ package eu.melodic.upperware.adapter.communication.proactive;
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.ByonNode;
 import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -11,9 +12,7 @@ import org.ow2.proactive.scheduler.common.job.JobState;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
 import org.springframework.lang.NonNull;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -140,4 +139,15 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
             }
         }
     }
+
+    @Override
+    public int addByonNodes(Map<String, String> byonIdPerComponent, String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.addByonNodes(byonIdPerComponent, jobId)).orElse(-1);
+    }
+
+    @Override
+    public List<ByonNode> getByonNodeList(String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(Collections.emptyList());
+    }
+
 }

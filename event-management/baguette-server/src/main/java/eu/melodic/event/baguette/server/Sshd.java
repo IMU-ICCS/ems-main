@@ -201,6 +201,18 @@ public class Sshd {
         }
     }
 
+    public Object readFromClient(String clientId, String command) {
+        log.trace("SSH server: Sending and Reading to/from client {}: {}", clientId, command);
+        for (ClientShellCommand csc : ClientShellCommand.getActive()) {
+            log.trace("SSH server: Check CSC: csc-id={}, client={}", csc.getId(), clientId);
+            if (csc.getId().equals(clientId)) {
+                log.info("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
+                return csc.readFromClient(command);
+            }
+        }
+        return null;
+    }
+
     public List<String> getActiveClients() {
         return ClientShellCommand.getActive().stream()
                 .map(c -> String.format("%s %s %s:%d", c.getId(),
@@ -213,7 +225,7 @@ public class Sshd {
 
     public Map<String, Map<String, String>> getActiveClientsMap() {
         return ClientShellCommand.getActive().stream()
-                .sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
+                //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
                 .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
                     Map<String,String> properties = new LinkedHashMap<>();
                     //properties.put("id", c.getId());

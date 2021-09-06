@@ -10,8 +10,10 @@
 package eu.melodic.event.brokercep.cep;
 
 import com.espertech.esper.client.*;
+import com.google.gson.Gson;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.util.FunctionDefinition;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
@@ -21,9 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class CepService implements InitializingBean {
+
+    private final Gson gson;
 
     /**
      * Esper service
@@ -127,13 +132,13 @@ public class CepService implements InitializingBean {
      */
     public void handleEvent(String event, String eventType) {
         log.debug("CepService.handleEvent(): type={}, event={}", eventType, event);
-        EventMap eventMap = new com.google.gson.Gson().fromJson(event, EventMap.class);
+        EventMap eventMap = gson.fromJson(event, EventMap.class);
         log.trace("CepService.handleEvent(): event-map={}", eventMap);
         epService.getEPRuntime().sendEvent(eventMap, eventType);
     }
 
     /**
-     * Handle the incoming event a Object
+     * Handle the incoming event as Object
      */
     public void handleEvent(Object event) {
         log.debug("CepService.handleEvent(): event={}", event);

@@ -447,11 +447,13 @@ public class BrokerConfig implements InitializingBean {
             connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
         }
 
-        // Other connection factory settings
-		/*if (getBrokerLocalUserUsername()!=null) {
+        // Set credentials, if using local broker URL
+		if (brokerUrl.equals(properties.getBrokerUrlForClients()) && getBrokerLocalUserUsername()!=null) {
 			connectionFactory.setUserName(getBrokerLocalUserUsername());
 			connectionFactory.setPassword(getBrokerLocalUserPassword());
-		}*/
+		}
+
+        // Other connection factory settings
         //connectionFactory.setSendTimeout(....5000L);
         //connectionFactory.setTrustedPackages(Arrays.asList("eu.melodic.event"));
         connectionFactory.setTrustAllPackages(true);
@@ -467,7 +469,7 @@ public class BrokerConfig implements InitializingBean {
 
     public ConnectionFactory getConnectionFactoryFor(String connectionString) {
         return connectionFactoryCache
-                .computeIfAbsent(connectionString, url -> connectionFactory(url));
+                .computeIfAbsent(connectionString, this::connectionFactory);
     }
 
     /**

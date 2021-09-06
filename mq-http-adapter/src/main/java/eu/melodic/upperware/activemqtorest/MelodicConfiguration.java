@@ -1,11 +1,9 @@
 package eu.melodic.upperware.activemqtorest;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import lombok.Getter;
 
 
 @Configuration
@@ -46,12 +44,15 @@ public class MelodicConfiguration {
 	@Value("${influxdb.write.timeout:10}")
 	private long influxWriteTimeout;
 
-	@Value("${mq.topic.threshold.name:_ui_threshold_info}")
-	private String mqTopicThresholdName;
-
-	@Value("${mq.topic.instanceinfo.name:_ui_instance_info}")
-	private String mqTopicInstanceInfoName;
-
 	@Value("${mq.recentmetrics.expiry.interval:120}")
 	private long mqRecentMetricsExpiryInterval;
+
+	@Value("${pa-config.rest-url}")
+	private String restUrl;
+	@Value("${pa-config.login}")
+	private String login;
+	@Value("${pa-config.password}")
+	private String password;
+	@Value("${pa-config.encryptor-pw}")
+	private String encryptorPw;
 }

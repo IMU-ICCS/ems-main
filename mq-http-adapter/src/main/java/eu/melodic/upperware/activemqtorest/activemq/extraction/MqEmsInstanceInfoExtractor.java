@@ -2,6 +2,7 @@ package eu.melodic.upperware.activemqtorest.activemq.extraction;
 
 import java.util.Optional;
 
+import eu.melodic.upperware.activemqtorest.MorphemicTopicsMatcher;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MqEmsInstanceInfoExtractor extends MqDataEntryBaseExtractor implements IMqDataEntryExtractor {
 	@Override
 	public boolean isApplicable(ActiveMQMessage activeMQMessage) {
-		return activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicInstanceInfoName());
+		return MorphemicTopicsMatcher.isInstanceInfoTopic(activeMQMessage.getJMSDestination().toString());
 	}
 
 	@Override

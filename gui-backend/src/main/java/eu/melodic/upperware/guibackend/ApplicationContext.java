@@ -1,21 +1,19 @@
 package eu.melodic.upperware.guibackend;
 
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUIImpl;
-import eu.melodic.upperware.guibackend.domain.converter.GenericConverter;
-import eu.melodic.upperware.guibackend.domain.converter.ProactiveCloudConverter;
-import eu.melodic.upperware.guibackend.domain.converter.ProactiveImageConverter;
+import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceImpl;
+import eu.melodic.upperware.guibackend.domain.converter.*;
 import eu.melodic.upperware.guibackend.properties.GuiBackendProperties;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
-import eu.passage.upperware.commons.model.internal.Cloud;
 import eu.passage.upperware.commons.service.provider.ProviderIdCreatorService;
 import eu.passage.upperware.commons.service.provider.ProviderService;
 import eu.passage.upperware.commons.service.provider.ProviderValidationService;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
-import org.activeeon.morphemic.model.PACloud;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -91,14 +89,46 @@ public class ApplicationContext {
     }
 
     @Bean
-    @Qualifier("cloudConverter")
+    public ProactiveClientService proactiveClientService(final GuiBackendProperties guiBackendProperties) {
+        return new ProactiveClientServiceImpl(guiBackendProperties.getPaConfig().getRestUrl(),
+                guiBackendProperties.getPaConfig().getLogin(),
+                guiBackendProperties.getPaConfig().getPassword(),
+                guiBackendProperties.getPaConfig().getEncryptorPw()) {
+        };
+    }
+
+    @Bean(name = "locationConverter")
+    public GenericConverter<?, ?> getLocationConverter() {
+        return new ProactiveLocationConverter();
+    }
+
+    @Bean(name = "hardwareConverter")
+    public GenericConverter<?, ?> getHardwareConverter(@Qualifier("locationConverter") GenericConverter<?, ?> locationConverter) {
+        return new ProactiveHardwareConverter((ProactiveLocationConverter) locationConverter);
+    }
+
+    @Bean(name = "imageConverter")
+    public GenericConverter<?, ?> getImageConverter(@Qualifier("locationConverter") GenericConverter<?, ?> locationConverter) {
+        return new ProactiveImageConverter((ProactiveLocationConverter) locationConverter);
+    }
+
+    @Bean(name = "cloudConverter")
     public GenericConverter<?, ?> getCloudConverter() {
         return new ProactiveCloudConverter();
     }
 
-    @Bean
-    @Qualifier("imageConverter")
-    public GenericConverter<?, ?> getImageConverter() {
-        return new ProactiveImageConverter();
+    @Bean(name = "nodeConverter")
+    public GenericConverter<?, ?> getNodeConverter() {
+        return new ProactiveNodeConverter();
+    }
+
+    @Bean(name = "monitorConverter")
+    public GenericConverter<?, ?> getMonitorConverter() {
+        return new ProactiveMonitorConverter();
+    }
+
+    @Bean(name = "jobConverter")
+    public GenericConverter<?, ?> getJobConverter(@Qualifier("monitorConverter") GenericConverter<?, ?> monitorConverter) {
+        return new ProactiveJobConverter((ProactiveMonitorConverter) monitorConverter);
     }
 }

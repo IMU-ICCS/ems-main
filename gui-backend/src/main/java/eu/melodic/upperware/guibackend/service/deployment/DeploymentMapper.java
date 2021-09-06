@@ -37,7 +37,7 @@ public class DeploymentMapper {
                 .api(mapApiToRequest(cloudDefinition.getApi()))
                 .credential(mapCredentialToRequest(cloudDefinition.getCredential()))
                 .endpoint(StringUtils.isBlank(cloudDefinition.getEndpoint().trim()) ? null : cloudDefinition.getEndpoint())
-                .id(RandomStringUtils.random(32, true, true))
+                .id(RandomStringUtils.random(16, true, true))
                 .build()).collect(Collectors.toList());
     }
 
