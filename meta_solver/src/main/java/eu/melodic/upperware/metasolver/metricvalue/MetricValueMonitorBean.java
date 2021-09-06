@@ -85,26 +85,45 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
     public void subscribe() {
         // Check if Pub/Sub should be activated
-        if (properties.getPubsub().isOn() == false) {
-            log.info("*****   Pub/Sub is SWITCHED OFF");
+        log.info("*****   Pub/Sub is SWITCHED {}", properties.getPubsub().isOn() ? "ON" : "OFF");
+        if (!properties.getPubsub().isOn()) {
             return;
         }
 
         // Subscribe to configured topics
-        log.debug("Subscribing to topics: ");
-        if (properties.getPubsub() != null && properties.getPubsub().getTopics() != null) {
+        log.debug("Subscribing to STARTUP topics: ");
+        if (properties.getPubsub() != null && properties.getPubsub().getStartupTopics() != null) {
+            subscribeToTopicsList(properties.getPubsub().getStartupTopics());
+        }
+        log.debug("Subscribing to topics: ok");
+    }
+
+    public void subscribeToCommonTopics() {
+        if (properties.getPubsub() != null) {
+            List<MetaSolverProperties.Pubsub.Topic> topicsList = properties.getPubsub().getCommonTopics();
+            if (topicsList!=null && topicsList.size()>0) {
+                log.debug("Subscribing to COMMON topics: ");
+                subscribeToTopicsList(properties.getPubsub().getCommonTopics());
+            }
+        }
+    }
+
+    private void subscribeToTopicsList(List<MetaSolverProperties.Pubsub.Topic> topicsList) {
+        log.debug("subscribeToTopicsList: topicsLists: {}", topicsList);
+        if (topicsList != null) {
             int i = 1;
-            for (MetaSolverProperties.Pubsub.Topic pst : properties.getPubsub().getTopics()) {
+            for (MetaSolverProperties.Pubsub.Topic pst : topicsList) {
+                log.debug("subscribeToTopicsList: Processing #{} entry: {}", i, pst);
                 // Get topic configuration
                 String url = pst.getUrl();
                 String topicName = pst.getName();
                 String clientId = pst.getClientId();
                 TopicType type = pst.getType();
-                if (StringUtils.isEmpty(url) || url.trim().equalsIgnoreCase("DEFAULT_BROKER_URL"))
-                    url = ActiveMQConnection.DEFAULT_BROKER_URL;
+                if (StringUtils.isBlank(url) || url.trim().equalsIgnoreCase("DEFAULT_BROKER_URL"))
+                    url = ActiveMQConnection.DEFAULT_BROKER_URL + "?daemon=true&trace=false&useInactivityMonitor=false&connectionTimeout=0&keepAlive=true";
                 else url = url.trim();
-                if (StringUtils.isEmpty(topicName))
-                    throw new IllegalArgumentException("Topic name not set: #"+i+" pubsub setting");
+                if (StringUtils.isBlank(topicName))
+                    throw new IllegalArgumentException("Topic name not set: #"+i+" pubsub settings");
                 if (StringUtils.isEmpty(clientId)) clientId = "";
                 else clientId = clientId.trim();
                 if (type == null) type = TopicType.UNKNOWN;
@@ -118,7 +137,6 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 i++;
             }
         }
-        log.debug("Subscribing to topics: ok");
     }
 
     public void subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {

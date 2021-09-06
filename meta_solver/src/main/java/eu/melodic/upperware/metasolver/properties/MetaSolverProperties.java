@@ -58,7 +58,7 @@ public class MetaSolverProperties {
     private boolean preventConcurrentReconfigurations = false;
     private long preventConcurrentReconfigurationsTimeout = -1L;
 
-    private DebugEvent debugEvents;
+    private DebugEvent debugEvents = new DebugEvent();
 
     // --------------------------------------------------------------
 
@@ -72,7 +72,8 @@ public class MetaSolverProperties {
     @Data
     public static class Pubsub {
         private boolean on;
-        private List<Topic> topics;
+        private List<Topic> startupTopics;
+        private List<Topic> commonTopics;
 
         @Data
         public static class Topic {
