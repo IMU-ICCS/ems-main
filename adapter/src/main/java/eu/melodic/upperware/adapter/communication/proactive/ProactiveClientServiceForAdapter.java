@@ -1,6 +1,7 @@
 package eu.melodic.upperware.adapter.communication.proactive;
 
 import cloud.morphemic.connectors.proactive.IProactiveClientServiceConnector;
+import org.activeeon.morphemic.model.ByonNode;
 import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -22,4 +23,5 @@ public interface ProactiveClientServiceForAdapter extends IProactiveClientServic
     int addMonitors(List<String> nodeNames, String authorizationBearer);
     int addByonNodes(Map<String, String> byonIdPerComponent, String jobId);
     void waitForJobFinish(String jobId, SubmittedJobType expectedJobType);
+    List<ByonNode> getByonNodeList(String jobId);
 }

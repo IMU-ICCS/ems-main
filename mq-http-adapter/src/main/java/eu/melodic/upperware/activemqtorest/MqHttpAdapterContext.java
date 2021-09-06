@@ -1,5 +1,9 @@
 package eu.melodic.upperware.activemqtorest;
 
+import eu.melodic.upperware.activemqtorest.proactive.ProactiveClientServiceForMqHttpAdapter;
+import eu.melodic.upperware.activemqtorest.proactive.ProactiveClientServiceForMqHttpAdapterImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,4 +16,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MqHttpAdapterContext {
 
+    @Bean
+    public ProactiveClientServiceForMqHttpAdapter proactiveClientServiceForMqHttpAdapter(MelodicConfiguration melodicConfiguration) {
+        return new ProactiveClientServiceForMqHttpAdapterImpl(melodicConfiguration.getRestUrl(),
+                melodicConfiguration.getLogin(),
+                melodicConfiguration.getPassword(),
+                melodicConfiguration.getEncryptorPw());
+    }
 }

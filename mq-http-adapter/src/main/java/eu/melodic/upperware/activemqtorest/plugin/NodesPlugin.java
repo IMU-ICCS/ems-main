@@ -2,16 +2,17 @@ package eu.melodic.upperware.activemqtorest.plugin;
 
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
 import eu.melodic.upperware.activemqtorest.influxdb.geolocation.IIpGeoCoder;
-import io.github.cloudiator.rest.model.IpAddress;
-import io.github.cloudiator.rest.model.IpAddressType;
-import io.github.cloudiator.rest.model.Node;
+import eu.melodic.upperware.activemqtorest.proactive.ProactiveClientServiceForMqHttpAdapter;
+import eu.melodic.upperware.activemqtorest.proactive.ProactiveNodeConverter;
+import eu.passage.upperware.commons.model.internal.IpAddress;
+import eu.passage.upperware.commons.model.internal.IpAddressType;
+import eu.passage.upperware.commons.model.internal.Node;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.influxdb.dto.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,11 @@ public class NodesPlugin implements IPlugin {
 
 //	@Autowired
 //	private NodeApi nodeApi;
+	@Autowired
+	private ProactiveClientServiceForMqHttpAdapter proactiveClientServiceForMqHttpAdapter;
+
+	@Autowired
+	private ProactiveNodeConverter proactiveNodeConverter;
 
 	@Autowired
 	private InfluxDbConnector influxDbConnector;
@@ -37,11 +43,10 @@ public class NodesPlugin implements IPlugin {
 
 	@Override
 	public void execute() {
-		List<Node> nodes = null;
-		nodes = new ArrayList<>(); // todo get from proactive
+		List<eu.passage.upperware.commons.model.internal.Node> nodes = proactiveNodeConverter.createNodes(proactiveClientServiceForMqHttpAdapter.getAllNodes());
 		log.debug("Found {} nodes", nodes.size());
 
-		if (nodes == null) {
+		if (nodes.size() == 0) {
 			return;
 		}
 
@@ -61,9 +66,8 @@ public class NodesPlugin implements IPlugin {
 				.time(new Date().getTime(), TimeUnit.MILLISECONDS)
 				.addField("name", node.getName())
 				.addField("id", node.getId())
-				.addField("state", node.getState().getValue())
-				.tag("state", node.getState().getValue())
-				.addField("user", node.getUserId())
+				.addField("state", node.getState().name())
+				.tag("state", node.getState().name())
 				.addField("privateIp", privateIpAddress.orElse(StringUtils.EMPTY))
 				.addField("publicIp", publicIpAddress.orElse(StringUtils.EMPTY))
 				.addField("countryCode", countryCode.orElse(StringUtils.EMPTY))
