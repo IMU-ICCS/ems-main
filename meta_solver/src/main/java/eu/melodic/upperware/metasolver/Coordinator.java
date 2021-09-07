@@ -384,6 +384,11 @@ public class Coordinator implements ApplicationContextAware {
         metricValueMonitorBean.unsubscribe();
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Unsubscribing from old topics... ok");
 
+        // subscribe to common topics
+        log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to Common topics...");
+        metricValueMonitorBean.subscribeToCommonTopics();
+        log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to Common topics... ok");
+
         // subscribe to new topics
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics...");
         for (Map p : subscriptions) {
