@@ -169,7 +169,7 @@ public class ProcessController {
     }
 
     @GetMapping("/deployment/job")
-    public List<org.activeeon.morphemic.model.Job> getJobsList() {
+    public List<eu.passage.upperware.commons.model.internal.Job> getJobsList() {
         log.info("GET Cloudiator jobs list");
         final List<org.activeeon.morphemic.model.Job> allJobs = proactiveClientServiceGUI.getAllJobs();
         log.info("ProcessController->getJobsList collected jobs: {}", allJobs);
