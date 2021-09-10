@@ -9,65 +9,178 @@
 
 package eu.melodic.event.brokercep.event;
 
+import com.google.gson.Gson;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Data
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
-public class EventMap extends HashMap<String, Object> implements Serializable {
+public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
+
+    private static Gson gson;
+
+    // Standard/Known Event fields configuration
+    @Data
+    public static class EventField {
+        private final String name;
+        private final Class<?> type;
+        private final boolean nullable;
+        private final boolean skipIfNull;
+        private final Function<String,Object> parser;
+        private final Function<EventMap,Object> defaultValue;
+    }
+
+    public final static String METRIC_VALUE_NAME = "metricValue";
+    public final static String LEVEL_NAME = "level";
+    public final static String TIMESTAMP_NAME = "timestamp";
+
+    public final static List<EventField> STANDARD_EVENT_FIELDS = Collections.unmodifiableList(Arrays.asList(
+            new EventField(METRIC_VALUE_NAME, Double.class, false, false, Double::parseDouble, null),
+            new EventField(LEVEL_NAME, Integer.class, true, true, (v)->(int)Double.parseDouble(v), null),
+            new EventField(TIMESTAMP_NAME, Long.class, true, true, v->(long)Double.parseDouble(v), (f)->System.currentTimeMillis())
+    ));
+
+    public final static Map<String,EventField> STANDARD_EVENT_FIELDS_MAP = Collections.unmodifiableMap(
+            STANDARD_EVENT_FIELDS.stream().collect(Collectors.toMap(EventField::getName, x->x)));
+
+    public final static String[] PROPERTY_NAMES_ARRAY = STANDARD_EVENT_FIELDS.stream()
+            .map(EventField::getName).collect(Collectors.toList()).toArray(new String[0]);
+    public final static Class<?>[] PROPERTY_CLASSES_ARRAY = STANDARD_EVENT_FIELDS.stream()
+            .map(EventField::getType).collect(Collectors.toList()).toArray(new Class[0]);
+
+    public static String[] getPropertyNames() {
+        return PROPERTY_NAMES_ARRAY;
+    }
+
+    public static Class<?>[] getPropertyClasses() {
+        return PROPERTY_CLASSES_ARRAY;
+    }
+
+
+    // Constructors
     public EventMap() {
         super();
     }
 
-    public EventMap(Map<String, Object> map) {
-        super(map);
+    public EventMap(Map<String, ?> map) {
+        map.forEach((k, v) -> {
+            log.trace("EventMap.<init>: key={}, value={}", k, v);
+            this.put(k, v);
+        });
     }
 
     public EventMap(double metricValue) {
-        put("metricValue", metricValue);
-        put("timestamp", System.currentTimeMillis());
+        put(METRIC_VALUE_NAME, metricValue);
+        put(TIMESTAMP_NAME, System.currentTimeMillis());
     }
 
     public EventMap(double metricValue, long timestamp) {
-        put("metricValue", metricValue);
-        put("timestamp", timestamp);
+        put(METRIC_VALUE_NAME, metricValue);
+        put(TIMESTAMP_NAME, timestamp);
     }
 
     public EventMap(double metricValue, int level, long timestamp) {
-        put("metricValue", metricValue);
-        put("level", level);
-        put("timestamp", timestamp);
+        put(METRIC_VALUE_NAME, metricValue);
+        put(LEVEL_NAME, level);
+        put(TIMESTAMP_NAME, timestamp);
     }
 
-    public static EventMap parseEventMap(String s) {
-        if (s==null) return null;
+
+    // Parse from string
+    public static EventMap parseEventMap(@NonNull String s) {
+        /*if (s==null) return null;
         s = s.trim();
         if (s.isEmpty()) return null;
         if (s.startsWith("{") && s.endsWith("}")) s = s.substring(1, s.length()-1).trim();
         String[] pairs = s.split(",");
         EventMap eventMap = new EventMap();
         for (String pair : pairs) {
+            if (StringUtils.isBlank(pair))
+                continue;
             String[] kv = pair.split("[:=]", 2);
-            eventMap.put(kv[0], kv[1]);
+            if (kv.length==2)
+                eventMap.put(kv[0], kv[1]);
+            else
+                eventMap.put(kv[0], null);
         }
         return eventMap;
+        */
+        return gson.fromJson(s, EventMap.class);
     }
 
-    public static String[] getPropertyNames() {
-        return new String[]{"metricValue", "level", "timestamp"};
+
+    // Methods overridden
+    @Override
+    public Object put(String key, Object value) {
+        log.trace("EventMap.put(): BEGIN: key={}, value={}", key, value);
+        key = removeQuotes(key);
+        log.trace("EventMap.put(): KEY with Quotes Stripped: key={}", key);
+
+        // Process known (standard) event fields
+        EventField field = STANDARD_EVENT_FIELDS_MAP.get(key);
+        if (field!=null) {
+            log.trace("EventMap.put(): STANDARD_EVENT_FIELD: key={}, value={}", key, value);
+            if (value==null) {
+                if (!field.isNullable())
+                    throw new NullPointerException("Event field cannot be null: " + key);
+                if (field.isSkipIfNull()) return null;
+                value = field.getDefaultValue().apply(this);
+                log.debug("EventMap.put(): Assigned default value to: key={}, value={}", key, value);
+            }
+            if (!field.getType().isInstance(value)) {
+                log.trace("EventMap.put(): Value type is different than Event field type: key={}, value={}, value-type={}, field-type={}",
+                        key, value, value.getClass().getName(), field.getType().getName());
+                value = field.getParser().apply(removeQuotes(value));
+                log.debug("EventMap.put(): Value after parsing: key={}, value={}, value-type={}, field-type={}",
+                        key, value, value.getClass().getName(), field.getType().getName());
+            }
+        }
+
+        log.trace("EventMap.put(): Putting in EventMap: key={}, value={}", key, value);
+        return super.put(key, value);
     }
 
-    public static Class[] getPropertyClasses() {
-        return new Class[]{Double.class, Integer.class, Long.class};
+    protected static String removeQuotes(@NonNull Object o) {
+        String s = o.toString();
+        int l = s.length()-1;
+        s = (s.charAt(0)=='"' && s.charAt(l)=='"' || s.charAt(0)=='\'' && s.charAt(l)=='\'')
+                ? s.substring(1, l) : s;
+        log.trace("EventMap.removeQuotes(): INPUT={}, RESULT={}", o, s);
+        return s;
+    }
+
+    // Getters for standard event fields
+    public double getMetricValue() {
+        Object v = get(METRIC_VALUE_NAME);
+        if (v==null)
+            throw new NullPointerException("No '"+METRIC_VALUE_NAME+"' found in EventMap: "+this);
+        if (v instanceof Double) return (Double) v;
+        if (v instanceof Number) return ((Number)v).doubleValue();
+        return Double.parseDouble(removeQuotes(v));
+    }
+
+    public long getTimestamp() {
+        Object v = get(TIMESTAMP_NAME);
+        if (v==null)
+            throw new NullPointerException("No '"+TIMESTAMP_NAME+"' found in EventMap: "+this);
+        if (v instanceof Long) return (Long) v;
+        if (v instanceof Number) return ((Number)v).longValue();
+        return Long.parseLong(removeQuotes(v));
     }
 
     public String toString() {
         return super.toString();
+    }
+
+    public String toJsonString() {
+        return gson.toJson(this);
     }
 }

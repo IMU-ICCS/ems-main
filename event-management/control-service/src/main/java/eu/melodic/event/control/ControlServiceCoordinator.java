@@ -12,7 +12,7 @@ package eu.melodic.event.control;
 import camel.core.NamedElement;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
-import eu.melodic.event.brokercep.cep.StatementSubscriber;
+import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
@@ -31,7 +31,6 @@ import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -325,7 +324,7 @@ public class ControlServiceCoordinator {
                         String topicName = topicRules.getKey();
                         for (String rule : topicRules.getValue()) {
                             brokerCep.getCepService().addStatementSubscriber(
-                                    new CscStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
+                                    new BrokerCepStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
                             );
                         }
                     }
@@ -537,36 +536,6 @@ public class ControlServiceCoordinator {
         map.put("type", type);
         return map;
     }
-
-    @RequiredArgsConstructor
-    @Getter
-    public static class CscStatementSubscriber implements StatementSubscriber {
-        private final String name;
-        private final String topic;
-        private final String statement;
-        private final BrokerCepService brokerCep;
-        private final PasswordUtil passwordUtil;
-
-        public void update(java.util.Map<String, Object> eventMap) {
-            try {
-                log.info("- New event: subscriber={}, topic={}, payload={}", name, topic, eventMap);
-
-                // Publish new event to Local Broker topic
-                String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
-                String username = brokerCep.getBrokerUsername();
-                String password = brokerCep.getBrokerPassword();
-                log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                        name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
-                brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
-                log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                        name, localBrokerUrl, username, passwordUtil.getPasswordEncoder().encode(password), topic, eventMap);
-
-            } catch (Exception ex) {
-                log.error("- New event: ERROR: subscriber={}, topic={}, exception=", name, topic, ex);
-            }
-        }
-    }
-
 
     // ------------------------------------------------------------------------------------------------------------
     // Translation information query methods
@@ -980,6 +949,53 @@ public class ControlServiceCoordinator {
     public String clientCommandSend(String clientId, String command) {
         log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
         return eventSendCommandToClient("clientCommandSend", clientId, command);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+
+    public Map<String,Object> emsServerStatistics() {
+        log.debug("ControlServiceCoordinator.emsServerStatistics(): BEGIN");
+        Map<String,Object> statsMap = brokerCep.getBrokerCepStatistics();
+        log.debug("ControlServiceCoordinator.emsServerStatistics(): END: {}", statsMap);
+        return statsMap;
+    }
+
+    public Map<String,Object> emsOverallStatistics() {
+        log.debug("ControlServiceCoordinator.emsOverallStatistics(): BEGIN");
+
+        // Collecting EMS server statistics
+        Map<String, Object> serverStats = emsServerStatistics();
+        Map<String,Object> statsMap = new HashMap<>();
+        statsMap.put("server", serverStats);
+
+        // Collecting EMS clients' statistics
+        log.trace("ControlServiceCoordinator.emsOverallStatistics(): clients: {}", clientList());
+        for (String clientId : clientList().stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
+            log.trace("ControlServiceCoordinator.emsOverallStatistics(): Requesting statistics from client: {}", clientId);
+            Object o = baguette.readFromClient(clientId, "SHOW-STATS");
+            log.trace("ControlServiceCoordinator.emsOverallStatistics(): Statistics from client: {}, stats: {}", clientId, o);
+            if (o instanceof Map) {
+                statsMap.put(clientId, o);
+            }
+        }
+
+        log.debug("ControlServiceCoordinator.emsOverallStatistics(): END: {}", statsMap);
+        return statsMap;
+    }
+
+    public void emsServerStatisticsClear() {
+        log.debug("ControlServiceCoordinator.emsServerStatisticsClear(): BEGIN");
+        brokerCep.clearBrokerCepStatistics();
+        log.info("ControlServiceCoordinator.emsServerStatisticsClear(): EMS server statistics cleared");
+        log.debug("ControlServiceCoordinator.emsServerStatisticsClear(): END");
+    }
+
+    public void emsOverallStatisticsClear() {
+        log.debug("ControlServiceCoordinator.emsOverallStatisticsClear(): BEGIN");
+        emsServerStatisticsClear();
+        clientCommandSend("*", "CLEAR-STATS");
+        log.info("ControlServiceCoordinator.emsOverallStatisticsClear(): All EMS statistics cleared");
+        log.debug("ControlServiceCoordinator.emsOverallStatisticsClear(): END");
     }
 
     // ------------------------------------------------------------------------------------------------------------

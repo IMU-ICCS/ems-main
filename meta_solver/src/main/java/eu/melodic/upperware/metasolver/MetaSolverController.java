@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -20,10 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.BadRequestException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import javax.ws.rs.QueryParam;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -164,6 +162,20 @@ public class MetaSolverController {
         // Update MetaSolver subscriptions
         Set<Map> subscriptions = new HashSet<>( (Collection<Map>)configuration.get("subscriptions") );
         coordinator.updateSubscriptions(subscriptions);
+
+        return "OK";
+    }
+
+    @RequestMapping(value = "/clearReconfigurationRunning", method = {GET,POST})
+    public String clearReconfigurationRunning(@QueryParam("alsoClearBlockingPeriod") Optional<Boolean> alsoClearBlockingPeriod,
+                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        setAuthenticationToken(jwtToken);
+
+        log.info("clearReconfigurationRunning: alsoClearBlockingPeriod={}", alsoClearBlockingPeriod);
+
+        // Clear ReconfigurationRunning state
+        coordinator.enableReconfigurationRunning( alsoClearBlockingPeriod.orElse(false) );
 
         return "OK";
     }

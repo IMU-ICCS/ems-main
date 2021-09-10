@@ -97,10 +97,12 @@ public class NodeCandidatesConverter implements ArgumentConverter {
     }
 
     private Number getAttributeValue(NodeCandidate nodeCandidate, CamelMetadata type) {
+        log.info("NodeCandidatesConverter->getAttributeValue: CamelMetadata type={}, NodeCandidate type()={}", type, nodeCandidate.getNodeCandidateType());
         if (PRICE.equals(type)) {
             if (NodeCandidate.NodeCandidateTypeEnum.FAAS.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPricePerInvocation();
-            } else if (NodeCandidate.NodeCandidateTypeEnum.IAAS.equals(nodeCandidate.getNodeCandidateType())) {
+            } else if (NodeCandidate.NodeCandidateTypeEnum.IAAS.equals(nodeCandidate.getNodeCandidateType()) ||
+                    NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPrice();
             } else {
                 throw new IllegalStateException("Type of Node Candidate: " + nodeCandidate.getNodeCandidateType() + "is not supported");

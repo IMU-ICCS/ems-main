@@ -37,8 +37,12 @@ public class CpModelHelper {
 
     public CpModelHelper() {
         id = ++counter;
-        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
         //log.debug("CpModelHelper.<init>():  ** NEW HELPER INSTANCE #{} **", id);
+    }
+
+    private void initCdoClient() {
+        if (cdoClient!=null) return;
+        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
     }
 
     public Map<String, Double> getMatchingMetricVariableValues(String cpModelPath, TranslationContext _TC) throws ConcurrentAccessException {
@@ -70,6 +74,7 @@ public class CpModelHelper {
         Map<String, Double> results = new HashMap<>();
         try {
             // retrieve CP model (open transaction)
+            initCdoClient();
             session = cdoClient.getSession();
             transaction = session.openTransaction();
             CDOResource resource = transaction.getResource(cpModelPath);
@@ -166,6 +171,7 @@ public class CpModelHelper {
 
     //XXX:DEL??: after development
     public void loadCpModel(String pathName, String cpModelPath) {
+        initCdoClient();
         CDOSessionX session = null;
         CDOTransaction transaction = null;
         try {
