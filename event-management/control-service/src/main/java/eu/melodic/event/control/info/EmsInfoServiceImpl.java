@@ -126,8 +126,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
         // Collect Baguette-Client metrics and topology
         Map<String,Object> baguetteServerInfo = new LinkedHashMap<>();
-        baguetteServerInfo.put("active-clients-list", baguetteServer.getActiveClients());
-        baguetteServerInfo.put("active-clients-map", baguetteServer.getActiveClientsMap());
+        baguetteServerInfo.put("active-clients-list", controlServiceCoordinator.clientList());
+        baguetteServerInfo.put("active-clients-map", controlServiceCoordinator.clientMap());
         metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
 
         log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);

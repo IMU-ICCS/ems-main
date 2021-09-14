@@ -269,11 +269,11 @@ public class BaguetteServer {
     }
 
     public List<String> getActiveClients() {
-        return server.getActiveClients();
+        return server!=null ? server.getActiveClients() : null;
     }
 
     public Map<String, Map<String, String>> getActiveClientsMap() {
-        return server.getActiveClientsMap();
+        return server!=null ? server.getActiveClientsMap() : null;
     }
 
     public void sendConstants(Map<String, Double> constants) {
