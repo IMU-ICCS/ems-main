@@ -25,6 +25,8 @@ PUBLIC_IP=`curl https://diagnostic.opendns.com/myip 2> /dev/null`
 
 # or set IP address manually
 #PUBLIC_IP='1.2.3.4'
+#PUBLIC_IP=`hostname --all-ip-addresses`
+echo $PUBLIC_IP
 
 if [[ "${PUBLIC_IP}" == "" ]]; then
     PUBLIC_IP=127.0.0.1
@@ -68,7 +70,9 @@ KEY_SIZE=2048
 START_DATE=-1d
 VALIDITY=3650
 DN_FMT="CN=%s,OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR"
-EXT_SAN_FMT="SAN=dns:%s,dns:localhost,ip:127.0.0.1,ip:${PUBLIC_IP}"
+PUBLIC_IP_FOR_SAN=${PUBLIC_IP// /,ip:}
+EXT_SAN_FMT="SAN=dns:%s,dns:localhost,ip:127.0.0.1,ip:${PUBLIC_IP_FOR_SAN}"
+
 KEYSTORE_TYPE=PKCS12
 KEYSTORE_PASS=melodic
 
