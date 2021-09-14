@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
 import lombok.Setter;
@@ -65,7 +66,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter private int clientClusterNodePort;
     @Getter @Setter private String clientClusterNodeAddress;
     @Getter @Setter private String clientClusterNodeHostname;
-    @Getter @Setter private Object clientZone;
+    @Getter @Setter private IClusterZone clientZone;
+    @Getter private String clientNodeStatus;
 
     private final ServerCoordinator coordinator;
     private final boolean clientAddressOverrideAllowed;
@@ -166,6 +168,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     String input = line.substring("-INPUT:".length());
                     String[] part = input.split(":",2 );
                     inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
+                } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
+                    String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();
+                    log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
+                    if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
+                        this.clientNodeStatus = newNodeStatus;
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
                 } else {

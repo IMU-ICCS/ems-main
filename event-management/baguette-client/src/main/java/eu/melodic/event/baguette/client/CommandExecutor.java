@@ -1078,6 +1078,11 @@ public class CommandExecutor {
         updateCertificates(activeGrouping);
     }
 
+    private void nodeStatusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
+        log.info("NOTIFY-STATUS-CHANGE: {}", newStatus.toString());
+        out.println("-NOTIFY-STATUS-CHANGE: "+newStatus);
+    }
+
     @SneakyThrows
     private void sendStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
@@ -1151,6 +1156,7 @@ public class CommandExecutor {
         @Override
         public void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
             log.debug("statusChanged(): Status changed: {} --> {}", oldStatus, newStatus);
+            commandExecutor.nodeStatusChanged(oldStatus, newStatus);
         }
 
         @Override

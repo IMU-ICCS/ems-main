@@ -124,6 +124,12 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         // Collect Broker-CEP metrics
         metrics.put(BROKER_CEP_INFO_PROVIDER, brokerCepService.getBrokerCepStatistics());
 
+        // Collect Baguette-Client metrics and topology
+        Map<String,Object> baguetteServerInfo = new LinkedHashMap<>();
+        baguetteServerInfo.put("active-clients-list", baguetteServer.getActiveClients());
+        baguetteServerInfo.put("active-clients-map", baguetteServer.getActiveClientsMap());
+        metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
+
         log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);
 
         synchronized (currentServerMetricsVersion) {
