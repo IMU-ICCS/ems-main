@@ -27,6 +27,10 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
+# XXX: TODO: Remove after tests and update url at 'config-files/baguette-client-install/jre8.json'
+RUN mkdir ${PUBLIC_DIR}
+RUN curl https://cdn.azul.com/zulu/bin/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz --output ${PUBLIC_DIR}/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz
+
 ADD bin ${BIN_DIR}
 ADD jars ${JARS_DIR}
 ADD config ${CONFIG_DIR}
