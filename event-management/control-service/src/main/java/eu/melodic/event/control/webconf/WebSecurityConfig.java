@@ -93,9 +93,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         if (!securityEnabled || !jwtTokenAuthEnabled && !apiKeyAuthEnabled) {
             log.warn("WebSecurityConfig: Authentication is disabled");
             // Authorize all requests
-            httpSecurity
+            /*httpSecurity
                     .authorizeRequests()
-                    .antMatchers("/**").permitAll();
+                    .antMatchers("/**").permitAll();*/
             return;
         }
 

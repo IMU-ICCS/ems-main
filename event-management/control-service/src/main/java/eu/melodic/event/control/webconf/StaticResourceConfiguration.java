@@ -16,21 +16,19 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
-@EnableWebMvc
 @Slf4j
+@Configuration
 public class StaticResourceConfiguration implements WebMvcConfigurer {
     @Value("${static.favicon.context:/favicon.ico}")
     private String faviconContext;
     @Value("${static.favicon.path:#{null}}")
     private String faviconPath;
 
-    @Value("${static.resource.context:/**}")
+    @Value("${static.resource.context:/resources/**}")
     private String staticResourceContext;
     @Value("${static.resource.path:#{null}}")
     private String[] staticResourcePath;
