@@ -692,6 +692,10 @@ public class CommandExecutor {
         String oldGroupingName = activeGroupingName;
         activeGroupingName = newGroupingName;
 
+        // Notify Baguette Server about grouping change
+        log.info("NOTIFY-GROUPING-CHANGE: {}", newGroupingName);
+        out.println("-NOTIFY-GROUPING-CHANGE: "+newGroupingName);
+
         // If Aggregator notify Baguette Server
         if (clusterManager!=null && GROUPING.valueOf(aggregatorGrouping)==GROUPING.valueOf(newGroupingName)) {
             log.info("Notifying Baguette Server i am the new aggregator");

@@ -68,6 +68,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter private String clientClusterNodeHostname;
     @Getter @Setter private IClusterZone clientZone;
     @Getter private String clientNodeStatus;
+    @Getter private String clientGrouping;
 
     private final ServerCoordinator coordinator;
     private final boolean clientAddressOverrideAllowed;
@@ -168,6 +169,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     String input = line.substring("-INPUT:".length());
                     String[] part = input.split(":",2 );
                     inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
+                } else if (line.startsWith("-NOTIFY-GROUPING-CHANGE:")) {
+                    String newGrouping = line.substring("-NOTIFY-GROUPING-CHANGE:".length()).trim();
+                    log.info("{}--> Client grouping changed: {} --> {}", getId(), clientGrouping, newGrouping);
+                    if (StringUtils.isNotBlank(newGrouping) && ! StringUtils.equals(clientGrouping, newGrouping))
+                        this.clientGrouping = newGrouping;
                 } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
                     String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();
                     log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);

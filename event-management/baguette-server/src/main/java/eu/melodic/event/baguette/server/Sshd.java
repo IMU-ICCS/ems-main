@@ -215,12 +215,13 @@ public class Sshd {
 
     public List<String> getActiveClients() {
         return ClientShellCommand.getActive().stream()
-                .map(c -> String.format("%s %s %s:%d %s %s", c.getId(),
+                .map(c -> String.format("%s %s %s:%d %s %s %s", c.getId(),
                         c.getClientIpAddress(),
                         c.getClientClusterNodeHostname(),
                         c.getClientClusterNodePort(),
                         c.getClientNodeStatus(),
-                        c.getClientZone()!=null ? c.getClientZone().getId() : null
+                        c.getClientZone()!=null ? c.getClientZone().getId() : null,
+                        c.getClientGrouping()
                 ))
                 .sorted()
                 .collect(Collectors.toList());
@@ -237,6 +238,7 @@ public class Sshd {
                     properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
                     properties.put("node-status", c.getClientNodeStatus());
                     properties.put("node-zone", c.getClientZone()!=null ? c.getClientZone().getId() : null);
+                    properties.put("grouping", c.getClientGrouping());
                     return properties;
                 }));
     }
