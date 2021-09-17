@@ -13,16 +13,17 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.FunctionDefinition;
+import eu.melodic.event.util.GROUPING;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -129,6 +130,34 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         baguetteServerInfo.put("active-clients-list", controlServiceCoordinator.clientList());
         baguetteServerInfo.put("active-clients-map", controlServiceCoordinator.clientMap());
         metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
+
+        // Destinations per grouping and min/max grouping
+        Map<String,Object> translatorInfo = new LinkedHashMap<>();
+        metrics.put(TRANSLATOR_INFO_PROVIDER, translatorInfo);
+        String camelModelId = controlServiceCoordinator.getCurrentCamelModelId();
+        if (StringUtils.isNotBlank(camelModelId)) {
+            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelId);
+            Set<String> groupings = _TC.G2T.keySet();
+            ArrayList<String> orderedGroupings = new ArrayList<>(groupings);
+            orderedGroupings.sort((o1, o2) -> {
+                GROUPING g1 = GROUPING.valueOf(o1);
+                GROUPING g2 = GROUPING.valueOf(o2);
+                return g1.compareTo(g2);
+            });
+            translatorInfo.put("camel-model-id", camelModelId);
+            translatorInfo.put("groupings", orderedGroupings);
+            translatorInfo.put("actions-per-event", _TC.E2A);
+            translatorInfo.put("slo", _TC.SLO);
+            translatorInfo.put("monitors", _TC.MONS);
+            translatorInfo.put("rules-per-grouping", _TC.G2R);
+            translatorInfo.put("destinations-per-grouping", _TC.G2T);
+            translatorInfo.put("composite-metric-variables", _TC.CMVAR);
+            translatorInfo.put("metric-variable-values", _TC.MVV);
+            translatorInfo.put("metric-variable-values-for-CP", _TC.MVV_CP);
+            translatorInfo.put("destination-connections", _TC.getTopicConnections());
+            translatorInfo.put("function-definitions", _TC.FUNC.stream()
+                    .map(FunctionDefinition::toString).collect(Collectors.toList()));
+        }
 
         log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);
 
