@@ -71,7 +71,7 @@
 			var lValue  = document.getElementById("g-fld-"+fid+"-lower-value").value;
 			var uValue  = document.getElementById("g-fld-"+fid+"-upper-value").value;
 			if (start)
-				var url = baseUrl+'/event/generate-start/'+client+'/'+sensor+'/'+interval+'/'+lValue+'-'+uValue;
+				var url = baseUrl+'/event/generate-start/'+client+'/'+sensor+'/'+interval+'/'+lValue+'/'+uValue;
 			else
 				var url = baseUrl+'/event/generate-stop/'+client+'/'+sensor;
 			console.log('generation: url='+url);

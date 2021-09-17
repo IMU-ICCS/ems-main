@@ -390,7 +390,7 @@ public class ControlServiceController {
     // Event Generation and Debugging methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}-{upperValue}", method = GET)
+    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}/{upperValue}", method = GET)
     public String startEventGeneration(@PathVariable String clientId, @PathVariable String topicName, @PathVariable long interval, @PathVariable double lowerValue, @PathVariable double upperValue) {
         log.info("ControlServiceController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
         return coordinator.eventGenerationStart(clientId, topicName, interval, lowerValue, upperValue);
