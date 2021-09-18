@@ -18,6 +18,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -264,8 +265,8 @@ public class BaguetteServer {
         server.sendToClient(clientId, command);
     }
 
-    public Object readFromClient(String clientId, String command) {
-        return server.readFromClient(clientId, command);
+    public Object readFromClient(String clientId, String command, Level logLevel) {
+        return server.readFromClient(clientId, command, logLevel);
     }
 
     public List<String> getActiveClients() {

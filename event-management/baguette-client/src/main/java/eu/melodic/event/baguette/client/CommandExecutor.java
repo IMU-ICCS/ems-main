@@ -1090,7 +1090,7 @@ public class CommandExecutor {
     @SneakyThrows
     private void sendStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
-        log.info("Statistics: {}", statsMap);
+        log.debug("Statistics: {}", statsMap);
         if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
     }
 

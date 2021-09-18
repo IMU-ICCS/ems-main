@@ -89,8 +89,8 @@ public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy
 
         coordinator.sleep(1000);
         csc.sendCommand("CLUSTER-EXEC broker list");
-        coordinator.sleep(1000);
-        csc.sendCommand("CLUSTER-TEST");
+        //coordinator.sleep(1000);
+        //csc.sendCommand("CLUSTER-TEST");
     }
 
     @Override

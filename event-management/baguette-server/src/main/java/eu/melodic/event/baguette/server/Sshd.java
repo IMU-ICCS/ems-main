@@ -21,6 +21,7 @@ import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
@@ -157,7 +158,7 @@ public class Sshd {
                             String msg = String.format("Heartbeat %d", System.currentTimeMillis());
                             log.debug("--> Heartbeat: {}", msg);
                             for (ClientShellCommand csc : ClientShellCommand.getActive()) {
-                                csc.sendToClient(msg);
+                                csc.sendToClient(msg, Level.DEBUG);
                             }
                         }
                         log.info("--> Heartbeat: Stopped");
@@ -201,13 +202,13 @@ public class Sshd {
         }
     }
 
-    public Object readFromClient(String clientId, String command) {
+    public Object readFromClient(String clientId, String command, Level logLevel) {
         log.trace("SSH server: Sending and Reading to/from client {}: {}", clientId, command);
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {
             log.trace("SSH server: Check CSC: csc-id={}, client={}", csc.getId(), clientId);
             if (csc.getId().equals(clientId)) {
                 log.debug("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
-                return csc.readFromClient(command);
+                return csc.readFromClient(command, logLevel);
             }
         }
         return null;

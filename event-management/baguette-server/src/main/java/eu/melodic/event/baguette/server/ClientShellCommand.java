@@ -21,6 +21,7 @@ import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
 import org.cryptacular.util.CertUtil;
+import org.slf4j.event.Level;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -156,7 +157,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                log.info("{}--> {}", id, line);
+                log.debug("{}--> {}", id, line);
 
                 //if (echoOn) out.printf("CLIENT (%s) : ECHO : %s\n", id, line);
                 if (echoOn) out.printf("ECHO %s\n", line);
@@ -333,8 +334,18 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     public void sendToClient(String msg) {
+        sendToClient(msg, Level.INFO);
+    }
+
+    public void sendToClient(String msg, Level logLevel) {
         if (msg == null || (msg = msg.trim()).isEmpty()) return;
-        log.info("{}==> PUSH : {}", id, msg);
+        switch (logLevel) {
+            case TRACE: log.trace("{}==> PUSH : {}", id, msg); break;
+            case DEBUG: log.debug("{}==> PUSH : {}", id, msg); break;
+            case WARN:  log.warn("{}==> PUSH : {}", id, msg); break;
+            case ERROR:  log.error("{}==> PUSH : {}", id, msg); break;
+            default: log.info("{}==> PUSH : {}", id, msg);
+        }
         out.println(msg);
     }
 
@@ -342,17 +353,25 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         sendToClient(cmd);
     }
 
+    public void sendCommand(String cmd, Level logLevel) {
+        sendToClient(cmd, logLevel);
+    }
+
     public void sendCommand(String[] cmd) {
         sendToClient(String.join(" ", cmd));
     }
 
-    public Object readFromClient(String cmd) {
+    public void sendCommand(String[] cmd, Level logLevel) {
+        sendToClient(String.join(" ", cmd), logLevel);
+    }
+
+    public Object readFromClient(String cmd, Level logLevel) {
         String uuid = UUID.randomUUID().toString();
         log.trace("ClientShellCommand.readFromClient: uuid={}, cmd={}", uuid, cmd);
         Object oldValue = inputsMap.remove(uuid);
         log.trace("ClientShellCommand.readFromClient: uuid={}, old-inputMap-value={}", uuid, oldValue);
         log.trace("ClientShellCommand.readFromClient: uuid={}, inputMap-BEFORE={}", uuid, inputsMap);
-        sendCommand(cmd+" "+uuid);
+        sendCommand(cmd+" "+uuid, logLevel);
         log.trace("ClientShellCommand.readFromClient: uuid={}, Command sent to client", uuid);
         while (!inputsMap.containsKey(uuid)) {
             log.trace("ClientShellCommand.readFromClient: uuid={}, No input, waiting 500ms", uuid);

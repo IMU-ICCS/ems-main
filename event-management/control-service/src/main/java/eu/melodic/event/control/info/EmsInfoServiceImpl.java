@@ -20,6 +20,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.event.Level;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -197,7 +198,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
         for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
             log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
-            Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS");
+            Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS", Level.DEBUG);
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
             if (o instanceof Map) {
                 clientMetrics.put(clientId, o);
