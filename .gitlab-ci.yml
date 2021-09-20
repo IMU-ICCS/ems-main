@@ -632,6 +632,7 @@ deploy:gui-backend:
     - rc3.1
     - morphemic-rc1.5
     - proactive-dev
+    - jira_112_bug_fix
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -746,7 +747,6 @@ deploy-solvers-part4:gen-solver:
     - rc3.1
     - morphemic-rc1.5
     - proactive-dev
-    - jira_112_bug_fix
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
