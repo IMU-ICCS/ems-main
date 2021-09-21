@@ -214,6 +214,7 @@ public class Sshd {
         return null;
     }
 
+    /*// MOVED to BaguetteServer class
     public List<String> getActiveClients() {
         return ClientShellCommand.getActive().stream()
                 .map(c -> String.format("%s %s %s:%d %s %s %s", c.getId(),
@@ -228,6 +229,7 @@ public class Sshd {
                 .collect(Collectors.toList());
     }
 
+    // MOVED to BaguetteServer class
     public Map<String, Map<String, String>> getActiveClientsMap() {
         return ClientShellCommand.getActive().stream()
                 //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
@@ -242,7 +244,7 @@ public class Sshd {
                     properties.put("grouping", c.getClientGrouping());
                     return properties;
                 }));
-    }
+    }*/
 
     public void sendConstants(Map<String, Double> constants) {
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {

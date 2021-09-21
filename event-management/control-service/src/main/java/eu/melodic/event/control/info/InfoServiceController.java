@@ -183,6 +183,7 @@ public class InfoServiceController {
     public Map<String,Object> createServerMetricsResult(String sid, long sequence) {
         log.trace("createServerMetricsResult: BEGIN: sid={}, seq={}", sid, sequence);
         Map<String, Object> metrics = new LinkedHashMap<>(emsInfoService.getServerMetricValues());
+        metrics.put("WEBSSH-BASE-URL", System.getenv("WEBSSH_BASE_URL"));
         metrics.put(".stream-id", sid);
         metrics.put(".sequence", sequence);
         log.trace("createMetricsResult: {}", metrics);

@@ -257,6 +257,37 @@ public class ControlServiceController {
         return entity;
     }
 
+    @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
+                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("ControlServiceController.getNodeCredentials(): BEGIN: ref={}", optRef);
+        log.trace("ControlServiceController.getNodeCredentials(): JWT token: {}", jwtToken);
+
+        if (StringUtils.isBlank(optRef.orElse(null)))
+            throw new IllegalArgumentException("The 'ref' parameter is mandatory");
+
+        // Retrieve node credentials
+        NodeRegistryEntry entry = coordinator.getBaguetteServer().getNodeRegistry().getNodeByReference(optRef.get());
+        if (entry==null) {
+            throw new IllegalArgumentException("Not found Node with reference: "+optRef.get());
+        }
+        log.debug("ControlServiceController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef.get());
+
+        // Prepare response
+        Map<String,String> response = new HashMap<>();
+        response.put("hostname", entry.getIpAddress());
+        response.put("port", entry.getPreregistration().getOrDefault("ssh.port", "22"));
+        response.put("username", entry.getPreregistration().get("ssh.username"));
+        response.put("password", entry.getPreregistration().get("ssh.password"));
+        response.put("private-key", entry.getPreregistration().get("ssh.key"));
+        HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+        log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+
+        return entity;
+    }
+
     // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
@@ -288,7 +319,8 @@ public class ControlServiceController {
 
         // Register node to Baguette server
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        String clientId = baguette.registerClient(nodeMap);
+        NodeRegistryEntry entry = baguette.registerClient(nodeMap);
+        String clientId = entry.getClientId();
 
         // Get web server base URL
         String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
