@@ -277,9 +277,9 @@ public class BaguetteServer {
                     log.debug("getActiveClients: CSC ip-address: {}", c.getClientIpAddress());
                     log.debug("getActiveClients: CSC NR entry: {}", entry!=null?entry.getPreregistration():null);
                     if (entry==null) {
-                        log.warn("getActiveClients: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
+                        log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
                         entry = getNodeRegistry().getNodeByClientId(c.getClientId());
-                        log.warn("getActiveClients: ** NOT SECURE ** CSC NR entry: {}", entry.getPreregistration());
+                        log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     }
                     return String.format("%s %s %s:%d %s %s %s %s", c.getId(),
                             c.getClientIpAddress(),
@@ -303,9 +303,9 @@ public class BaguetteServer {
                     log.debug("getActiveClientsMap: CSC ip-address: {}", c.getClientIpAddress());
                     log.debug("getActiveClientsMap: CSC NR entry: {}", entry!=null?entry.getPreregistration():null);
                     if (entry==null) {
-                        log.warn("getActiveClientsMap: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
+                        log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
                         entry = getNodeRegistry().getNodeByClientId(c.getClientId());
-                        log.warn("getActiveClientsMap: ** NOT SECURE ** CSC NR entry: {}", entry.getPreregistration());
+                        log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     }
                     Map<String,String> properties = new LinkedHashMap<>();
                     //properties.put("id", c.getId());
