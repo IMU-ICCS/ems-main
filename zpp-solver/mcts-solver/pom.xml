@@ -21,6 +21,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>cp-parser</artifactId>
             <version>${melodic.version}</version>
