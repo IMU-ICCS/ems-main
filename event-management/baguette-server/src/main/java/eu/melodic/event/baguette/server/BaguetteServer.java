@@ -288,7 +288,7 @@ public class BaguetteServer {
                             c.getClientNodeStatus(),
                             c.getClientZone()!=null ? c.getClientZone().getId() : null,
                             c.getClientGrouping(),
-                            entry.getReference()
+                            entry!=null ? entry.getReference() : null
                     );
                 })
                 .sorted()
@@ -315,7 +315,7 @@ public class BaguetteServer {
                     properties.put("node-status", c.getClientNodeStatus());
                     properties.put("node-zone", c.getClientZone()!=null ? c.getClientZone().getId() : null);
                     properties.put("grouping", c.getClientGrouping());
-                    properties.put("reference", entry.getReference());
+                    properties.put("reference", entry!=null ? entry.getReference() : null);
                     return properties;
                 }));
     }
