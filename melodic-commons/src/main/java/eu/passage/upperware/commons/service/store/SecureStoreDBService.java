@@ -85,11 +85,13 @@ public class SecureStoreDBService {
         List<String> secureVariablesKeys = new ArrayList<>();
         Matcher matcher = SECURE_VARIABLE_PATTERN.matcher(text);
         while (matcher.find()) {
-            if(!secureVariablesKeys.contains(matcher.group(1)))
+            if(!secureVariablesKeys.contains(matcher.group(1))) {
                 secureVariablesKeys.add(matcher.group(1));
-            log.info("Found secure variables: {}", secureVariablesKeys);
+                log.info("Found secure variables: {}", secureVariablesKeys);
+            }else
+                log.info("Found secure variable which already exists in database");
         }
-        return new ArrayList<>(secureVariablesKeys);
+        return secureVariablesKeys;
     }
 
     // This method checks correctness of secure variable names,
