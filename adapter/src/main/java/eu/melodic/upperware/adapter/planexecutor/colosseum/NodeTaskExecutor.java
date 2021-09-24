@@ -74,7 +74,13 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
     }
 
     private void addBYONNode(AdapterRequirement taskBody) {
-        final Map<String, String> byonIdPerComponent = Collections.singletonMap(taskBody.getNodeCandidate().getId(),
+        String byonId = proactiveClientServiceForAdapter.getByonNodeList(applicationId).stream()
+                .filter(byonNode -> byonNode.getNodeCandidate().getId().equals(taskBody.getNodeCandidate().getId()))
+                .findFirst()
+                .orElseThrow(() -> new AdapterException(String.format("Could not find BYON with associated NodeCandidate id=%s", taskBody.getNodeCandidate().getId())))
+                .getId();
+
+        final Map<String, String> byonIdPerComponent = Collections.singletonMap(byonId,
                 taskBody.getTaskName());
         log.info("NodeTaskExecutor->addBYONNode: [application id: {}] ProActive byonIdPerComponent= {}", applicationId, byonIdPerComponent);
 

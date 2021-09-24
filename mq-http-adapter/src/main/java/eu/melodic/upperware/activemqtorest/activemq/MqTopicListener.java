@@ -64,7 +64,8 @@ public class MqTopicListener {
 	private Optional<MqBaseEntry> createDataEntry(ActiveMQMessage activeMQMessage) {
 		return mqDataEntryExtractors.stream().filter(iMqDataEntryExtractor -> iMqDataEntryExtractor.isApplicable(activeMQMessage))
 				.findFirst().map(iMqDataEntryExtractor -> iMqDataEntryExtractor.extractMqDataEntry(activeMQMessage))
-				.orElse(Optional.of(new MqDefaultMetricEntry()));
+				.orElseThrow(() ->
+						new IllegalStateException("No extractor found for topic: " + activeMQMessage.getJMSDestination().toString()));
 	}
 
 	private void restartAfterMqFailure() {

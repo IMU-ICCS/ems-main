@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.jms.JMSException;
 
+import eu.melodic.upperware.activemqtorest.MorphemicTopicsMatcher;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -26,9 +27,8 @@ public class MqDefaultMetricExtractor extends MqDataEntryBaseExtractor implement
 
 	@Override
 	public boolean isApplicable(ActiveMQMessage activeMQMessage) {
-		return !activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicInstanceInfoName()) &&
-				!activeMQMessage.getJMSDestination().toString().contains(melodicConfiguration.getMqTopicThresholdName());
-	}
+		return MorphemicTopicsMatcher.isMetricTopic(activeMQMessage.getJMSDestination().toString());
+    }
 
 	@Override
 	public Optional<MqBaseEntry> extractMqDataEntry(ActiveMQMessage activeMQMessage) {

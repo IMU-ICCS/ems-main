@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -10,11 +10,14 @@ package eu.melodic.upperware.metasolver.metricvalue;
 
 import eu.melodic.upperware.metasolver.Coordinator;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
+import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,17 +29,21 @@ import javax.jms.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class MetricValueMonitorBean implements ApplicationContextAware {
 
     private MetaSolverProperties properties;
     private Coordinator coordinator;
+    private PredictionHelper predictionHelper;
+    private MessageProducer debugEventProducer = null;
 
-    private HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
-    private MetricValueRegistry<Object> registry = new MetricValueRegistry<>();
-	
+    private final HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
+    private final MetricValueRegistry<Object> registry;
+
 	@Value("${ems-broker-username:#{null}}")
 	private String brokerUsername;
 	@Value("${ems-broker-password:#{null}}")
@@ -48,50 +55,88 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.properties = applicationContext.getBean(MetaSolverProperties.class);
         this.coordinator = applicationContext.getBean(Coordinator.class);
+        this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
+
+        initDebugEventTopic();
     }
 
     public MetricValueRegistry<Object> getMetricValuesRegistry() {
         return registry;
     }
 
+    protected void initDebugEventTopic() {
+        MetaSolverProperties.DebugEvent deCfg = properties.getDebugEvents();
+        if (deCfg!=null && deCfg.isEnabled() && debugEventProducer==null) {
+            log.info("MetaSolver.MetricValueMonitorBean: Subscribing to Debug Event topic: {}", deCfg.getTopicName());
+            try {
+                subscribe(deCfg.getUrl(), deCfg.getUsername(), deCfg.getPassword(), deCfg.getCertificate(),
+                        deCfg.getTopicName(), deCfg.getClientId(), TopicType.DEBUG_EVENT);
+                Session session = connectionCache.remove(deCfg.getUrl()).getSessions().get(0).getSession();
+                Topic topic = session.createTopic(deCfg.getTopicName());
+                debugEventProducer = session.createProducer(topic);
+                log.info("MetaSolver.MetricValueMonitorBean: Subscribed to Debug Event topic: {}", deCfg.getTopicName());
+            } catch (Exception e) {
+                log.error("MetaSolver.MetricValueMonitorBean: EXCEPTION while subscribing to Debug Event topic: {}. Exception: ", deCfg.getTopicName(), e);
+            }
+        }
+    }
+
     public void subscribe() {
         // Check if Pub/Sub should be activated
-        if (properties.getPubsub().isOn() == false) {
-            log.info("*****   Pub/Sub is SWITCHED OFF");
+        log.info("*****   Pub/Sub is SWITCHED {}", properties.getPubsub().isOn() ? "ON" : "OFF");
+        if (!properties.getPubsub().isOn()) {
             return;
         }
 
         // Subscribe to configured topics
-        log.debug("Subscribing to topics: ");
-        if (properties.getPubsub() != null && properties.getPubsub().getTopics() != null) {
+        log.debug("Subscribing to STARTUP topics: ");
+        if (properties.getPubsub() != null && properties.getPubsub().getStartupTopics() != null) {
+            subscribeToTopicsList(properties.getPubsub().getStartupTopics());
+        }
+        log.debug("Subscribing to topics: ok");
+    }
+
+    public void subscribeToCommonTopics() {
+        if (properties.getPubsub() != null) {
+            List<MetaSolverProperties.Pubsub.Topic> topicsList = properties.getPubsub().getCommonTopics();
+            if (topicsList!=null && topicsList.size()>0) {
+                log.debug("Subscribing to COMMON topics: ");
+                subscribeToTopicsList(properties.getPubsub().getCommonTopics());
+            }
+        }
+    }
+
+    private void subscribeToTopicsList(List<MetaSolverProperties.Pubsub.Topic> topicsList) {
+        log.debug("subscribeToTopicsList: topicsLists: {}", topicsList);
+        if (topicsList != null) {
             int i = 1;
-            for (MetaSolverProperties.Pubsub.Topic pst : properties.getPubsub().getTopics()) {
+            for (MetaSolverProperties.Pubsub.Topic pst : topicsList) {
+                log.debug("subscribeToTopicsList: Processing #{} entry: {}", i, pst);
                 // Get topic configuration
                 String url = pst.getUrl();
                 String topicName = pst.getName();
                 String clientId = pst.getClientId();
                 TopicType type = pst.getType();
-                if (StringUtils.isEmpty(url) || url.trim().equalsIgnoreCase("DEFAULT_BROKER_URL"))
-                    url = ActiveMQConnection.DEFAULT_BROKER_URL;
+                if (StringUtils.isBlank(url) || url.trim().equalsIgnoreCase("DEFAULT_BROKER_URL"))
+                    url = ActiveMQConnection.DEFAULT_BROKER_URL + "?daemon=true&trace=false&useInactivityMonitor=false&connectionTimeout=0&keepAlive=true";
                 else url = url.trim();
-                if (StringUtils.isEmpty(topicName))
-                    throw new IllegalArgumentException("Topic name not set: #"+i+" pubsub setting");
+                if (StringUtils.isBlank(topicName))
+                    throw new IllegalArgumentException("Topic name not set: #"+i+" pubsub settings");
                 if (StringUtils.isEmpty(clientId)) clientId = "";
                 else clientId = clientId.trim();
                 if (type == null) type = TopicType.UNKNOWN;
                 log.debug("Topic : {}", pst);
                 if (type==TopicType.MVV) {
-                    registry.addPossibleMetricName(topicName);
+                    registry.addMvvMetricName(topicName);
                 }
 
                 // Subscribe to topic
-                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type);
+                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type, false);
                 i++;
             }
         }
-        log.debug("Subscribing to topics: ok");
     }
 
     public void subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
@@ -101,10 +146,15 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             return;
         }
 
-        _do_subscribe(url, username, password, certificate, topicName, clientId, type);
+        _do_subscribe(url, username, password, certificate, topicName, clientId, type, false);
+
+        if (properties.isPredictionMonitoringEnabled()) {
+            String predictionTopicName = predictionHelper.getPredictionTopicNameFor(topicName);
+            _do_subscribe(url, username, password, certificate, predictionTopicName, clientId, type, true);
+        }
     }
 
-    private void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
+    private void _do_subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type, boolean isPrediction) {
         try {
             log.debug("*****   SUBSCRIBE:\n  URL      : {}\n  Username : {}\n  Topic    : {}\n  Client-Id: {}\n  Type     : {}",
                     url, username, topicName, clientId, type);
@@ -117,8 +167,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 //Connection connection = connectionFactory.createConnection(brokerUsername, brokerPassword);
                 Connection connection = connectionFactory.createConnection(username, password);
                 log.trace("*****   SUBSCRIBE: connection created");
-                if (!clientId.isEmpty()) {
-                    connection.setClientID(clientId);
+                if (StringUtils.isNotBlank(clientId)) {
+                    connection.setClientID(clientId.trim());
                     log.trace("*****   SUBSCRIBE: client id set: {}", clientId);
                 }
 
@@ -155,7 +205,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             sconf.getTopics().add(tconf);
 
             // Add message listener to receive incoming messages
-            MessageListener lsnr = getListener(topic, type);
+            MessageListener lsnr = getListener(topic, type, isPrediction);
             consumer.setMessageListener(lsnr);
             log.trace("*****   SUBSCRIBE: listener added");
 
@@ -163,11 +213,11 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             cconf.getConnection().start();
             log.trace("*****   SUBSCRIBE: connection started");
 
-            log.info("*****   SUBSCRIBE: ok");
+            log.info("*****   SUBSCRIBE: ok  --  {} / {}", topicName, type);
 
             //saving metricNames
             if (type==TopicType.MVV) {
-                registry.addPossibleMetricName(topicName);
+                registry.addMvvMetricName(topicName);
             }
 
 
@@ -176,8 +226,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         }
     }
 
-    private MessageListener getListener(Topic topic, TopicType type) throws JMSException {
-        MessageListener listener = new MetricValueListener(coordinator, topic, type, registry);
+    private MessageListener getListener(Topic topic, TopicType type, boolean isPrediction) throws JMSException {
+        MessageListener listener = new MetricValueListener(coordinator, topic, type, registry, isPrediction);
         return listener;
     }
 
@@ -232,6 +282,25 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         } finally {
             connectionCache.clear();
         }
+    }
+
+    public void sendDebugEvent(String topicName, Map<String, String> metricValues) throws JMSException {
+        initDebugEventTopic();
+
+        /*ActiveMQMapMessage message = new ActiveMQMapMessage();
+        message.setObject("metricValues", metricValues);
+        message.setLong("timestamp", System.currentTimeMillis());
+        */
+        Map<String,Object> map = new HashMap<>();
+        map.put("metricValues", metricValues);
+        map.put("timestamp", System.currentTimeMillis());
+        ActiveMQTextMessage message = new ActiveMQTextMessage();
+        message.setText(map.toString());
+
+        if (debugEventProducer==null)
+            log.warn("MetaSolver.MetricValueMonitorBean.sendDebugEvent: Debug Event producer has not been initialized");
+        else
+            debugEventProducer.send(message);
     }
 
     public void setMetricValueInRegistry(String name, String value) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -10,83 +10,72 @@ package eu.melodic.upperware.metasolver.properties;
 
 import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse.DesignatedSolverType;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.regex.Pattern;
 
-@Getter
-@Setter
-@ToString
+@Slf4j
+@Data
 @Validated
 @Configuration
 @ConfigurationProperties
-@Slf4j
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.metaSolver.properties")
 public class MetaSolverProperties {
 
-    @Valid
     @NotNull
     private Esb esb;
-    @Valid
     @NotNull
     private Pubsub pubsub;
-    @Valid
     @NotNull
     private double utilityThresholdFactor;
-    @Valid
     private DesignatedSolverType defaultSolver = DesignatedSolverType.CPSOLVER;
-    @Valid
     private String emsUrl;
-    @Valid
+
+    private boolean cpModelUpdateEnabled = true;
     private long cpModelUpdateInterval = 30000L;
 
+    private boolean predictionMonitoringEnabled = false;
+    private String predictionTopicFormatter = "prediction.%s";
+    private Pattern predictionTopicPattern = Pattern.compile("^prediction\\.(.+)$");
+    private long predictionRegistryCleanupRate = -1L;
+    private boolean predictionRegistryCleanupAfterScaleEvent = true;
+
+    @Range(min=0, max=1)
+    private double reconfigurationProbabilityThreshold = 0.5;
+    @Min(0)
+    private long reconfigurationBlockingPeriod = 0;     // reconfiguration cool down period
+    private boolean preventConcurrentReconfigurations = false;
+    private long preventConcurrentReconfigurationsTimeout = -1L;
+
+    private DebugEvent debugEvents = new DebugEvent();
+
     // --------------------------------------------------------------
 
-    private static boolean booleanValue(String str) {
-        return booleanValue(str, false);
-    }
-
-    private static boolean booleanValue(String str, boolean defVal) {
-        if (StringUtils.isBlank(str)) return defVal;
-        return BooleanUtils.toBoolean(str);
-    }
-
-    // --------------------------------------------------------------
-
-    @Getter
-    @Setter
+    @Data
     public static class Esb {
         @NotBlank
         private String url;
+        private boolean enabled = true;
     }
 
-    @Getter
-    @Setter
-    @ToString
+    @Data
     public static class Pubsub {
-        private String on;
+        private boolean on;
+        private List<Topic> startupTopics;
+        private List<Topic> commonTopics;
 
-        private List<Topic> topics;
-
-        public boolean isOn() {
-            return booleanValue(on);
-        }
-
-        @Getter
-        @Setter
-        @ToString
+        @Data
         public static class Topic {
             @NotBlank
             private String name;
@@ -95,5 +84,18 @@ public class MetaSolverProperties {
             private String clientId;
             private TopicType type;
         }
+    }
+
+    @Data
+    public static class DebugEvent {
+        private boolean enabled = false;
+        private String topicName = "metasolver_debug";
+        private String url;
+        private String username;
+        @ToString.Exclude
+        private String password;
+        @ToString.Exclude
+        private String certificate;
+        private String clientId;
     }
 }
