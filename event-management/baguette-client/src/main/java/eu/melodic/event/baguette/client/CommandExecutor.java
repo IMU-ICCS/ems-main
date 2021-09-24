@@ -536,6 +536,15 @@ public class CommandExecutor {
             sendStatistics(args[1]);
         } else if ("CLEAR-STATS".equals(cmd)) {
             clearStatistics();
+        } else if ("SEND-CLIENT-PROPERTY".equals(cmd)) {
+            if (args.length < 2) {
+                log.warn("Too few arguments");
+                out.println("Too few arguments");
+                return false;
+            }
+            String propName = args[1];
+            String propValue = args.length==3 ? args[2] : null;
+            sendClientProperty(propName, propValue);
         } else {
             args[0] = cmd;
             String line = String.join(" ", args);

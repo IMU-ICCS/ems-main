@@ -186,7 +186,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
                     String propertyName = part[0];
                     String propertyValue = part.length>1 ? part[1] : null;
-                    String oldValue = null;
+                    String oldValue = clientProperties.getProperty(propertyName);
                     if (StringUtils.isNotBlank(propertyName)) {
                         log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
                         clientProperties.put(propertyName.trim(), propertyValue);
