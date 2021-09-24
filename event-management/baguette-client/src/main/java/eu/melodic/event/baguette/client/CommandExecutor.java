@@ -1087,6 +1087,11 @@ public class CommandExecutor {
         out.println("-NOTIFY-STATUS-CHANGE: "+newStatus);
     }
 
+    private void sendClientProperty(String propertyName, String propertyValue) {
+        log.info("CLIENT-PROPERTY-CHANGE: {} = {}", propertyName, propertyValue);
+        out.printf("-CLIENT-PROPERTY-CHANGE: %s %s%n", propertyName, propertyValue);
+    }
+
     @SneakyThrows
     private void sendStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();

@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +71,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter private IClusterZone clientZone;
     @Getter private String clientNodeStatus;
     @Getter private String clientGrouping;
+    private final Properties clientProperties = new Properties();
 
     private final ServerCoordinator coordinator;
     private final boolean clientAddressOverrideAllowed;
@@ -180,6 +182,17 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
                     if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
                         this.clientNodeStatus = newNodeStatus;
+                } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
+                    String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
+                    String propertyName = part[0];
+                    String propertyValue = part.length>1 ? part[1] : null;
+                    String oldValue = null;
+                    if (StringUtils.isNotBlank(propertyName)) {
+                        log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
+                        clientProperties.put(propertyName.trim(), propertyValue);
+                    } else {
+                        log.warn("{}--> Invalid Client property: input line: ", line);
+                    }
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
                 } else {
@@ -332,6 +345,9 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         clientPort = ((InetSocketAddress) getSession().getIoSession().getRemoteAddress()).getPort();
         return clientPort;
     }
+
+    public String getClientProperty(@NonNull String propertyName) { return clientProperties.getProperty(propertyName); }
+    public String getClientProperty(@NonNull String propertyName, String defaultValue) { return clientProperties.getProperty(propertyName, defaultValue); }
 
     public void sendToClient(String msg) {
         sendToClient(msg, Level.INFO);
