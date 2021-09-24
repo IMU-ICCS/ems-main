@@ -20,6 +20,9 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
         address = localAddress.toString();
     }
 
+    public void joinedCluster() { }
+    public void leftCluster() { }
+
     public void initialize() {
         if ("L2".equals(state)) {
             log_warn("__TestNode at {}: Already initialized: {}", address, state);

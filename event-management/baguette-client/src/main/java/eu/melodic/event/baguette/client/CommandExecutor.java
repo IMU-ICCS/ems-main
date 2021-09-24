@@ -1140,6 +1140,19 @@ public class CommandExecutor {
         }
 
         @Override
+        public void joinedCluster() {
+            String nodeId = commandExecutor.getClusterManager().getLocalMember().id().id();
+            log.info("joinedCluster(): Node joined cluster: {}", nodeId);
+            commandExecutor.sendClientProperty("node-id", nodeId);
+        }
+
+        @Override
+        public void leftCluster() {
+            log.info("joinedCluster(): Node left cluster");
+            commandExecutor.sendClientProperty("node-id", "");
+        }
+
+        @Override
         public void initialize() {
             printInfo("initialize", "INITIALIZE");
 
