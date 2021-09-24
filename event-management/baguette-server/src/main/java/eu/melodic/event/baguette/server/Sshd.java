@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.baguette.server.coordinator.cluster.ClusteringCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.Factory;
@@ -27,8 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Custom SSH server
@@ -200,6 +202,22 @@ public class Sshd {
                 csc.sendToClient(command);
             }
         }
+    }
+
+    public void sendToActiveClusters(String command) {
+        if (!(coordinator instanceof ClusteringCoordinator)) return;
+        ((ClusteringCoordinator)coordinator).getClusters().forEach(cluster -> {
+            log.info("SSH server: Sending to cluster {} : {}", cluster.getId(), command);
+            sendToCluster(cluster.getId(), command);
+        });
+    }
+
+    public void sendToCluster(String clusterId, String command) {
+        if (!(coordinator instanceof ClusteringCoordinator)) return;
+        ((ClusteringCoordinator)coordinator).getCluster(clusterId).getNodes().forEach(csc -> {
+            log.info("SSH server: Sending to client {} : {}", csc.getId(), command);
+            csc.sendToClient(command);
+        });
     }
 
     public Object readFromClient(String clientId, String command, Level logLevel) {

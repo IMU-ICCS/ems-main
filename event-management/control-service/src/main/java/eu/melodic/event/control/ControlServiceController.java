@@ -462,6 +462,12 @@ public class ControlServiceController {
         return coordinator.clientCommandSend(clientId, command);
     }
 
+    @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
+    public String sendClusterCommand(@PathVariable String clusterId, @PathVariable String command) {
+        log.info("ControlServiceController.sendClusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
+        return coordinator.clusterCommandSend(clusterId, command);
+    }
+
     // ------------------------------------------------------------------------------------------------------------
     // EMS status and information query methods
     // ------------------------------------------------------------------------------------------------------------

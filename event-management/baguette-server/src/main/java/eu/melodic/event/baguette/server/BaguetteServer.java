@@ -266,6 +266,14 @@ public class BaguetteServer {
         server.sendToClient(clientId, command);
     }
 
+    public void sendToActiveClusters(String command) {
+        server.sendToActiveClusters(command);
+    }
+
+    public void sendToCluster(String clusterId, String command) {
+        server.sendToCluster(clusterId, command);
+    }
+
     public Object readFromClient(String clientId, String command, Level logLevel) {
         return server.readFromClient(clientId, command, logLevel);
     }

@@ -951,5 +951,26 @@ public class ControlServiceCoordinator {
         return eventSendCommandToClient("clientCommandSend", clientId, command);
     }
 
+    public String clusterCommandSend(String clusterId, String command) {
+        log.debug("ControlServiceCoordinator.clusterCommandSend(): BEGIN: cluster={}, command={}", clusterId, command);
+        return sendCommandToCluster("clusterCommandSend", clusterId, command);
+    }
+
+    private String sendCommandToCluster(String method, String clusterId, String command) {
+        // Check status
+        //if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
+        if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
+        if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
+
+        // Send command
+        if ("*".equals(clusterId))
+            baguette.sendToActiveClusters(command);
+        else
+            baguette.sendToCluster(clusterId, command);
+
+        // Log success
+        return eventLogEnd(method, EVENT_DEBUG_OK);
+    }
+
     // ------------------------------------------------------------------------------------------------------------
 }

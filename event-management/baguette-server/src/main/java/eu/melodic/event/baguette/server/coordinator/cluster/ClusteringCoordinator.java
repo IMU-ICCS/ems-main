@@ -38,6 +38,10 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private GROUPING aggregatorGrouping;
     private GROUPING lastLevelGrouping;
 
+    public Collection<String> getClusterIdSet() { return topologyMap.keySet(); }
+    public Collection<IClusterZone> getClusters() { return topologyMap.values().stream().map(c->(IClusterZone)c).collect(Collectors.toList()); }
+    public IClusterZone getCluster(String id) { return topologyMap.get(id); }
+
     @Override
     public boolean isSupported(final TranslationContext _TC) {
         // Check if it is a 3-level architecture

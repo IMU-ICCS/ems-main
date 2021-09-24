@@ -9,6 +9,15 @@
 
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
+import eu.melodic.event.baguette.server.ClientShellCommand;
+import lombok.NonNull;
+
+import java.util.List;
+
 public interface IClusterZone {
     String getId();
+    void addNode(@NonNull ClientShellCommand csc);
+    void removeNode(@NonNull ClientShellCommand csc);
+    List<ClientShellCommand> getNodes();
+    ClientShellCommand getNodeByAddress(String address);
 }
