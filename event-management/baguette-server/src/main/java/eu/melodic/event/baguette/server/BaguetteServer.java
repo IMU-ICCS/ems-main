@@ -281,14 +281,15 @@ public class BaguetteServer {
                         entry = getNodeRegistry().getNodeByClientId(c.getClientId());
                         log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     }
-                    return String.format("%s %s %s:%d %s %s %s %s", c.getId(),
+                    return String.format("%s %s %s:%d %s %s %s %s %s", c.getId(),
                             c.getClientIpAddress(),
                             c.getClientClusterNodeHostname(),
                             c.getClientClusterNodePort(),
                             c.getClientNodeStatus(),
                             c.getClientZone()!=null ? c.getClientZone().getId() : null,
                             c.getClientGrouping(),
-                            entry!=null ? entry.getReference() : null
+                            entry!=null ? entry.getReference() : null,
+                            c.getClientProperty("node-id")
                     );
                 })
                 .sorted()
@@ -316,6 +317,7 @@ public class BaguetteServer {
                     properties.put("node-zone", c.getClientZone()!=null ? c.getClientZone().getId() : null);
                     properties.put("grouping", c.getClientGrouping());
                     properties.put("reference", entry!=null ? entry.getReference() : null);
+                    properties.put("node-id", c.getClientProperty("node-id"));
                     return properties;
                 }));
     }
