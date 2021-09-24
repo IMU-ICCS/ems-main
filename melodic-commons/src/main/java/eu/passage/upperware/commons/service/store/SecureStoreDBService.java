@@ -89,7 +89,7 @@ public class SecureStoreDBService {
                 secureVariablesKeys.add(matcher.group(1));
                 log.info("Found secure variables: {}", secureVariablesKeys);
             }else
-                log.info("Found secure variable which already exists in database");
+                log.info("Found secure variable which already exists in database", matcher.group(1));
         }
         return secureVariablesKeys;
     }
