@@ -958,7 +958,7 @@ public class ControlServiceCoordinator {
 
     private String sendCommandToCluster(String method, String clusterId, String command) {
         // Check status
-        //if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
+        if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
         if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
         if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
 

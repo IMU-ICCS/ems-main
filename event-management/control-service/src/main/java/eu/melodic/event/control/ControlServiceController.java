@@ -457,14 +457,14 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
-    public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
-        log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
+    public String clientCommand(@PathVariable String clientId, @PathVariable String command) {
+        log.info("ControlServiceController.clientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);
     }
 
     @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
-    public String sendClusterCommand(@PathVariable String clusterId, @PathVariable String command) {
-        log.info("ControlServiceController.sendClusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
+    public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
+        log.info("ControlServiceController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
         return coordinator.clusterCommandSend(clusterId, command);
     }
 
