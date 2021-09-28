@@ -64,7 +64,7 @@ public class ClientInstaller implements InitializingBean {
         if ("VM".equalsIgnoreCase(task.getType())) {
             NodeRegistryEntry entry = baguetteServer.getNodeRegistry().getNodeByAddress(task.getAddress());
             if (entry==null)
-                throw new IllegalStateException("Node entry has been removed for Node Registry before installation: Node IP address: "+task.getAddress());
+                throw new IllegalStateException("Node entry has been removed from Node Registry before installation: Node IP address: "+task.getAddress());
                 //baguetteServer.handleNodeSituation(task.getAddress(), INTERNAL_ERROR);
             entry.nodeInstalling(task);
 
