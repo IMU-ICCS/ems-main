@@ -2,7 +2,7 @@ package eu.passage.upperware.commons.model.provider;
 
 public enum Provider {
     AWS_EC2("aws-ec2"),
-    OPEN_STACK("openstack4j"),
+    OPEN_STACK("openstack"),
     GOOGLE("google-compute-engine"),
     AZURE("azure"),
     OKTAWAVE("oktawave");

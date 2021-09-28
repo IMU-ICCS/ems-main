@@ -68,7 +68,8 @@ public class SecureStoreDBService {
     public void storeSecureVariable(String sKey, String sValue) {
         log.info("Storing: sKey={}, sValue={}", sKey, maskSensitiveText(sValue));
 
-        int affected = jdbcTemplate.update("insert into secure_kv (skey, svalue) values (?, ?)", sKey, encryptor.encrypt(sValue));
+        String encryptedValue = encryptor.encrypt(sValue);
+        int affected = jdbcTemplate.update("insert into secure_kv (skey, svalue) values (?, ?)  on duplicate key update svalue=?", sKey, encryptedValue, encryptedValue);
 
         log.info("Storing: sKey={}, affected={}", sKey, affected);
     }
@@ -77,7 +78,6 @@ public class SecureStoreDBService {
         log.info("Deleting: sKey={}", sKey);
 
         int affected = jdbcTemplate.update("delete from secure_kv where skey=?", sKey);
-
         log.info("Deleting: sKey={}, affected={}", sKey, affected);
     }
 
@@ -85,8 +85,11 @@ public class SecureStoreDBService {
         List<String> secureVariablesKeys = new ArrayList<>();
         Matcher matcher = SECURE_VARIABLE_PATTERN.matcher(text);
         while (matcher.find()) {
-            secureVariablesKeys.add(matcher.group(1));
-            log.info("Found secure variables: {}", matcher.group(1));
+            if(!secureVariablesKeys.contains(matcher.group(1))) {
+                secureVariablesKeys.add(matcher.group(1));
+                log.info("Found secure variables: {}", secureVariablesKeys);
+            }else
+                log.info("Found secure variable which already exists in database", matcher.group(1));
         }
         return secureVariablesKeys;
     }

@@ -95,7 +95,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         if (properties.getPubsub() != null && properties.getPubsub().getStartupTopics() != null) {
             subscribeToTopicsList(properties.getPubsub().getStartupTopics());
         }
-        log.debug("Subscribing to topics: ok");
+        log.debug("Subscribing to STARTUP topics: ok");
     }
 
     public void subscribeToCommonTopics() {
@@ -103,7 +103,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             List<MetaSolverProperties.Pubsub.Topic> topicsList = properties.getPubsub().getCommonTopics();
             if (topicsList!=null && topicsList.size()>0) {
                 log.debug("Subscribing to COMMON topics: ");
-                subscribeToTopicsList(properties.getPubsub().getCommonTopics());
+                subscribeToTopicsList(topicsList);
+                log.debug("Subscribing to COMMON topics: ok");
             }
         }
     }
