@@ -285,6 +285,7 @@ deploy:melodic-upperware:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -301,6 +302,7 @@ deploy:upperware-metamodel:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -317,6 +319,7 @@ deploy:jwt-commons:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -333,6 +336,7 @@ deploy:melodic-commons:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -349,6 +353,7 @@ deploy:melodic-cache:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -365,6 +370,7 @@ deploy:jwt-server:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -382,6 +388,7 @@ deploy:utility-generator:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -399,6 +406,7 @@ deploy:zpp-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -415,6 +423,7 @@ deploy:adapter:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -432,6 +441,7 @@ deploy:cp-generator:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -449,6 +459,7 @@ deploy:cp-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   dependencies:
@@ -590,6 +601,7 @@ deploy:ems-server:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -607,6 +619,7 @@ deploy:metasolver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -624,6 +637,7 @@ deploy:mq-adapter:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -641,6 +655,7 @@ deploy:gui-backend:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
     - undeploy_application
   image: $DOCKER_DIND_IMAGE
@@ -675,6 +690,7 @@ deploy:cp-parser:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -693,6 +709,7 @@ deploy-solvers-part1:nc-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -714,6 +731,7 @@ deploy-solvers-part2:pt-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -735,6 +753,7 @@ deploy-solvers-part3:mcts-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
@@ -756,6 +775,7 @@ deploy-solvers-part4:gen-solver:
     - rc3.0
     - rc3.1
     - morphemic-rc1.5
+    - morphemic-rc2.0
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   services:
