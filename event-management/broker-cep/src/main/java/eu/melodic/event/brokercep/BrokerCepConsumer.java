@@ -60,6 +60,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             // close previous session and connection
             closeConnection();
 
+            // clear added destinations list
+            addedDestinations.clear();
+
             // If an alternative Broker URL is provided for consumer, it will be used
             ConnectionFactory connectionFactory;
             if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
