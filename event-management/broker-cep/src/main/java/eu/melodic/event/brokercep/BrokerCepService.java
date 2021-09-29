@@ -86,7 +86,7 @@ public class BrokerCepService {
             }
             for (ObjectName t : topics) {
                 String name = t.getCanonicalName();
-                bv.removeQueue(name);
+                bv.removeTopic(name);
                 log.info("BrokerCepService.clearState(): Topic removed: {}", name);
             }
 
