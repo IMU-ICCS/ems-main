@@ -68,6 +68,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     // Constructors
     public EventMap() {
         super();
+        put(TIMESTAMP_NAME, System.currentTimeMillis());
     }
 
     public EventMap(Map<String, ?> map) {
