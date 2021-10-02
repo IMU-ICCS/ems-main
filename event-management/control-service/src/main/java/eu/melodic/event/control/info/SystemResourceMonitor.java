@@ -26,6 +26,8 @@ import javax.validation.constraints.NotBlank;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
@@ -33,7 +35,8 @@ import java.util.concurrent.ScheduledFuture;
 @RequiredArgsConstructor
 public class SystemResourceMonitor implements Runnable, InitializingBean {
     @Getter @Setter @Min(1000)
-    private long period = 30*1000;
+    private long period = Math.max(1000L,Long.parseLong(
+            System.getenv().getOrDefault("EMS_SYSMON_PERIOD", "30000")));
     @Getter @Setter @NotBlank
     private String commandStr = System.getenv("EMS_SYSMON_COMMAND");
     @Getter @Setter @NotBlank
@@ -43,7 +46,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
     private final TaskScheduler scheduler;
     private ScheduledFuture<?> future;
     @Getter
-    private EventMap lastEvent;
+    private Map<String, Object> latestMeasurements;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -103,11 +106,16 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
             double metricValue= Double.parseDouble(part[1].trim());
             event.put(metricName, metricValue);
         }
+        this.latestMeasurements = Collections.unmodifiableMap(event);
         log.info("SystemResourceMonitor: processOutput: Metrics: {}", event);
-        if (StringUtils.isBlank(systemResourceMetricsTopic))
-            systemResourceMetricsTopic = "EMS_SYSMON_TOPIC";
+
+        if (StringUtils.isBlank(systemResourceMetricsTopic)) {
+            log.debug("SystemResourceMonitor: processOutput: END: No metrics topic has been not set. Will not publish metrics event");
+            return;
+        }
+
+        log.trace("SystemResourceMonitor: processOutput: Will publish metrics event to topic: {}", systemResourceMetricsTopic);
         brokerCepService.publishEvent(null, systemResourceMetricsTopic, event);
-        log.debug("SystemResourceMonitor: processOutput: END: Metrics published to topic: {}", systemResourceMetricsTopic);
-        this.lastEvent = event;
+        log.debug("SystemResourceMonitor: processOutput: END: Metrics event published to topic: {}", systemResourceMetricsTopic);
     }
 }

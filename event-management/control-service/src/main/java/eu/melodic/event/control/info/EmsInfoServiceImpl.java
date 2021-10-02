@@ -46,6 +46,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final BuildInfoProvider buildInfoProvider;
     private final SystemInfoProvider systemInfoProvider;
     private final BrokerCepService brokerCepService;
+    private final SystemResourceMonitor systemResourceMonitor;
 
     @Override
     public void clearServerMetricValues() {
@@ -116,8 +117,11 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
         Map<String,Object> metrics = new LinkedHashMap<>();
 
-        // Collect System and JVM metrics
-        metrics.put(SYSTEM_INFO_PROVIDER, systemInfoProvider.getMetricValues());
+        // Collect JVM and System resource metrics for EMS server
+        Map<String,Object> systemInfo = new LinkedHashMap<>();
+        systemInfo.put("jmx-resource-metrics", systemInfoProvider.getMetricValues());
+        systemInfo.put("system-resource-metrics", systemResourceMonitor.getLatestMeasurements());
+        metrics.put(SYSTEM_INFO_PROVIDER, systemInfo);
 
         // Collect EMS build info
         if (includeStaticInfo)
