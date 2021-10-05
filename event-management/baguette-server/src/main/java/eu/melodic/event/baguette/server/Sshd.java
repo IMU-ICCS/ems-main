@@ -232,38 +232,6 @@ public class Sshd {
         return null;
     }
 
-    /*// MOVED to BaguetteServer class
-    public List<String> getActiveClients() {
-        return ClientShellCommand.getActive().stream()
-                .map(c -> String.format("%s %s %s:%d %s %s %s", c.getId(),
-                        c.getClientIpAddress(),
-                        c.getClientClusterNodeHostname(),
-                        c.getClientClusterNodePort(),
-                        c.getClientNodeStatus(),
-                        c.getClientZone()!=null ? c.getClientZone().getId() : null,
-                        c.getClientGrouping()
-                ))
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    // MOVED to BaguetteServer class
-    public Map<String, Map<String, String>> getActiveClientsMap() {
-        return ClientShellCommand.getActive().stream()
-                //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
-                .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
-                    Map<String,String> properties = new LinkedHashMap<>();
-                    //properties.put("id", c.getId());
-                    properties.put("ip-address", c.getClientIpAddress());
-                    properties.put("node-hostname", c.getClientClusterNodeHostname());
-                    properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
-                    properties.put("node-status", c.getClientNodeStatus());
-                    properties.put("node-zone", c.getClientZone()!=null ? c.getClientZone().getId() : null);
-                    properties.put("grouping", c.getClientGrouping());
-                    return properties;
-                }));
-    }*/
-
     public void sendConstants(Map<String, Double> constants) {
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {
             log.info("SSH server: Sending constants to client {} : {}", csc.getId(), constants);
