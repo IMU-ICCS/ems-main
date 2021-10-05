@@ -107,7 +107,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
             event.put(metricName, metricValue);
         }
         this.latestMeasurements = Collections.unmodifiableMap(event);
-        log.info("SystemResourceMonitor: processOutput: Metrics: {}", event);
+        log.debug("SystemResourceMonitor: processOutput: Metrics: {}", event);
 
         if (StringUtils.isBlank(systemResourceMetricsTopic)) {
             log.debug("SystemResourceMonitor: processOutput: END: No metrics topic has been not set. Will not publish metrics event");
