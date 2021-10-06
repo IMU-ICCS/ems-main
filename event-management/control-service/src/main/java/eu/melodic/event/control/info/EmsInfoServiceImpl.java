@@ -16,6 +16,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.GROUPING;
+import eu.melodic.event.util.NetUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -116,6 +117,13 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         log.trace("updateServerMetricValues(): new-timestamp: {}", timestamp);
 
         Map<String,Object> metrics = new LinkedHashMap<>();
+
+        metrics.put("ip-address",
+                controlServiceCoordinator.getControlServiceProperties().getIpSetting()==ControlServiceProperties.IpSetting.PUBLIC_IP
+                        ? NetUtil.getPublicIpAddress()
+                        : NetUtil.getDefaultIpAddress());
+        metrics.put("public-ip-address", NetUtil.getPublicIpAddress());
+        metrics.put("default-ip-address", NetUtil.getDefaultIpAddress());
 
         // Collect JVM and System resource metrics for EMS server
         Map<String,Object> systemInfo = new LinkedHashMap<>();
