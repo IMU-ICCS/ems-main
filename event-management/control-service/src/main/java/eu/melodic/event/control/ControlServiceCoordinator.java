@@ -31,6 +31,7 @@ import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -86,11 +87,28 @@ public class ControlServiceCoordinator {
     private String currentCpModelId;
     private TranslationContext currentTC;
 
+    public enum EMS_STATE {
+        IDLE, INITIALIZING, RECONFIGURING, READY, ERROR
+    }
+
+    @Getter
+    private EMS_STATE currentEmsState = EMS_STATE.IDLE;
+    @Getter
+    private String currentEmsStateMessage;
+    @Getter
+    private long currentEmsStateChangeTimestamp;
+
 
     // ------------------------------------------------------------------------------------------------------------
 
     public ControlServiceProperties getControlServiceProperties() {
         return properties;
+    }
+
+    public void setCurrentEmsState(@NonNull EMS_STATE newState, String message) {
+        this.currentEmsState = newState;
+        this.currentEmsStateMessage = message;
+        this.currentEmsStateChangeTimestamp = System.currentTimeMillis();
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -138,6 +156,8 @@ public class ControlServiceCoordinator {
             this.currentCamelModelId = camelModelId;
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
+            setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
+
             String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
@@ -170,6 +190,8 @@ public class ControlServiceCoordinator {
             _processCpModel(cpModelId, notificationUri, requestUuid, jwtToken);
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
+            setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
+
             String mesg = "ControlServiceCoordinator.processCpModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
@@ -193,6 +215,8 @@ public class ControlServiceCoordinator {
         // Translate models into EPL rules etc
         TranslationContext _TC = null;
         if (!properties.isSkipTranslation()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
+
             log.info("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: camel-model-id={}", camelModelId);
             CamelToEplTranslator translator =
                     applicationContext.getBean(CamelToEplTranslator.class);
@@ -203,6 +227,8 @@ public class ControlServiceCoordinator {
             String fileName = properties.getTcSaveFile();
             if (StringUtils.isNotBlank(fileName)) {
                 try {
+                    setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
+
                     log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
                     java.io.Writer writer = new java.io.FileWriter(fileName);
                     com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
@@ -247,6 +273,8 @@ public class ControlServiceCoordinator {
             // unserialize 'TranslationContext' from file
             String fileName = properties.getTcLoadFile();
             if (StringUtils.isNotBlank(fileName)) {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
+
                 try {
                     log.info("ControlServiceCoordinator.processNewModel(): Start unserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
@@ -268,6 +296,8 @@ public class ControlServiceCoordinator {
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
             if (StringUtils.isNotBlank(cpModelId)) {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving MVVs from CP model");
+
                 try {
                     log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
@@ -290,6 +320,8 @@ public class ControlServiceCoordinator {
         // (Re-)Configure Broker and CEP
         String upperwareGrouping = properties.getUpperwareGrouping();
         if (!properties.isSkipBrokerCep()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "initializing Broker-CEP");
+
             try {
                 // Initializing Broker-CEP module if necessary
                 if (brokerCep == null) {
@@ -352,6 +384,8 @@ public class ControlServiceCoordinator {
 
         // (Re-)Configure Baguette server
         if (!properties.isSkipBaguette()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Initializing Baguette Server");
+
             log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
             try {
                 baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
@@ -364,6 +398,8 @@ public class ControlServiceCoordinator {
 
         // (Re-)Configure MetaSolver
         if (!properties.isSkipMetasolver()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Sending configuration to MetaSolver");
+
             // Get scaling event and SLO topics from _TC
             Set<String> scalingTopics = new HashSet<>();
             scalingTopics.addAll(_TC.E2A.keySet());
@@ -435,6 +471,8 @@ public class ControlServiceCoordinator {
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
             if (StringUtils.isNotBlank(notificationUri)) {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Notifying ESB");
+
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
                 sendSuccessNotification(camelModelId, notificationUri, requestUuid, jwtToken);
@@ -446,6 +484,8 @@ public class ControlServiceCoordinator {
 
         this.currentTC = _TC;
         log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
     protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
@@ -457,6 +497,8 @@ public class ControlServiceCoordinator {
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
             if (StringUtils.isNotBlank(cpModelId)) {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Retrieving MVVs from CP model");
+
                 try {
                     log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
@@ -480,6 +522,8 @@ public class ControlServiceCoordinator {
         // (Re-)Configure Broker and CEP
         if (!properties.isSkipBrokerCep()) {
             try {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Broker-CEP");
+
                 // Initializing Broker-CEP module if necessary
                 if (brokerCep == null) {
                     log.info("ControlServiceCoordinator._processCpModel(): Broker-CEP: Initializing...");
@@ -498,6 +542,8 @@ public class ControlServiceCoordinator {
 
         // (Re-)Configure Baguette server
         if (!properties.isSkipBaguette()) {
+            setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
+
             log.info("ControlServiceCoordinator._processCpModel(): Re-configuring Baguette Server with constants: {}", constants);
             try {
                 baguette.sendConstants(constants);
@@ -511,6 +557,8 @@ public class ControlServiceCoordinator {
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
             if (StringUtils.isNotBlank(notificationUri)) {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Notifying ESB");
+
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
                 sendSuccessNotification(null, notificationUri, requestUuid, jwtToken);
@@ -521,6 +569,8 @@ public class ControlServiceCoordinator {
         }
 
         log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
     // ------------------------------------------------------------------------------------------------------------

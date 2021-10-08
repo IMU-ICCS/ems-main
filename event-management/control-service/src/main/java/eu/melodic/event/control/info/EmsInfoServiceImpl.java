@@ -135,6 +135,43 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         if (includeStaticInfo)
             metrics.put(BUILD_INFO_PROVIDER, buildInfoProvider.getMetricValues());
 
+        // Collect Control Service metrics
+        Map<String,Object> controlServiceInfo = new LinkedHashMap<>();
+        controlServiceInfo.put("current-ems-state", controlServiceCoordinator.getCurrentEmsState());
+        controlServiceInfo.put("current-ems-state-message", controlServiceCoordinator.getCurrentEmsStateMessage());
+        controlServiceInfo.put("current-ems-state-change-timestamp", controlServiceCoordinator.getCurrentEmsStateChangeTimestamp());
+        controlServiceInfo.put("current-camel-model-id", controlServiceCoordinator.getCurrentCamelModelId());
+        controlServiceInfo.put("current-cp-model-id", controlServiceCoordinator.getCurrentCpModelId());
+        if (controlServiceCoordinator.getControlServiceProperties()!=null) {
+            controlServiceInfo.put("prop-ip-setting", controlServiceCoordinator.getControlServiceProperties().getIpSetting());
+            controlServiceInfo.put("prop-esb-url", controlServiceCoordinator.getControlServiceProperties().getEsbUrl());
+            controlServiceInfo.put("prop-metasolver-config-url", controlServiceCoordinator.getControlServiceProperties().getMetasolverConfigurationUrl());
+            controlServiceInfo.put("prop-metrics-update-interval", controlServiceCoordinator.getControlServiceProperties().getMetricsUpdateInterval());
+            controlServiceInfo.put("prop-metrics-client-update-interval", controlServiceCoordinator.getControlServiceProperties().getMetricsClientUpdateInterval());
+            controlServiceInfo.put("prop-metrics-stream-event-name", controlServiceCoordinator.getControlServiceProperties().getMetricsStreamEventName());
+            controlServiceInfo.put("prop-metrics-stream-update-interval", controlServiceCoordinator.getControlServiceProperties().getMetricsStreamUpdateInterval());
+            controlServiceInfo.put("prop-executionware", controlServiceCoordinator.getControlServiceProperties().getExecutionware().toString());
+            controlServiceInfo.put("prop-preload-camel-model", controlServiceCoordinator.getControlServiceProperties().getPreloadCamelModel());
+            controlServiceInfo.put("prop-preload-cp-model", controlServiceCoordinator.getControlServiceProperties().getPreloadCpModel());
+            controlServiceInfo.put("prop-static-resource-context", controlServiceCoordinator.getControlServiceProperties().getStaticResourceContext());
+            controlServiceInfo.put("prop-upperware-grouping", controlServiceCoordinator.getControlServiceProperties().getUpperwareGrouping());
+            controlServiceInfo.put("prop-tc-load-file", controlServiceCoordinator.getControlServiceProperties().getTcLoadFile());
+            controlServiceInfo.put("prop-tc-save-file", controlServiceCoordinator.getControlServiceProperties().getTcSaveFile());
+
+            Map<String,Object> debugFlags = new LinkedHashMap<>();
+            debugFlags.put("event-debug-enabled",  controlServiceCoordinator.getControlServiceProperties().isEventDebugEnabled());
+            debugFlags.put("exit-allowed",  controlServiceCoordinator.getControlServiceProperties().isExitAllowed());
+            debugFlags.put("print-build-info",  controlServiceCoordinator.getControlServiceProperties().isPrintBuildInfo());
+            debugFlags.put("skip-translation",  controlServiceCoordinator.getControlServiceProperties().isSkipTranslation());
+            debugFlags.put("skip-broker-cep-init",  controlServiceCoordinator.getControlServiceProperties().isSkipBrokerCep());
+            debugFlags.put("skip-baguette-server-init",  controlServiceCoordinator.getControlServiceProperties().isSkipBaguette());
+            debugFlags.put("skip-mvv-retrieve",  controlServiceCoordinator.getControlServiceProperties().isSkipMvvRetrieve());
+            debugFlags.put("skip-metasolver-configuration",  controlServiceCoordinator.getControlServiceProperties().isSkipMetasolver());
+            debugFlags.put("skip-esb-notification",  controlServiceCoordinator.getControlServiceProperties().isSkipEsbNotification());
+            controlServiceInfo.put("prop-debug-flags",debugFlags);
+        }
+        metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
+
         // Collect Broker-CEP metrics
         metrics.put(BROKER_CEP_INFO_PROVIDER, brokerCepService.getBrokerCepStatistics());
 
