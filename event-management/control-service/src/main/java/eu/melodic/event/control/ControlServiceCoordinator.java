@@ -19,6 +19,7 @@ import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.translate.analyze.Grouping;
+import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
@@ -100,6 +101,9 @@ public class ControlServiceCoordinator {
         log.debug("ControlServiceCoordinator.applicationReady(): invoked");
         log.info("ControlServiceCoordinator.applicationReady(): IP setting: {}", properties.getIpSetting());
         preloadModels();
+
+        EventBus.getDefault().subscribePattern("^CSC_",
+                (message,sender) -> log.warn(">>>>> EBUS: message={}, sender={}", message, sender));
     }
 
     @Async
