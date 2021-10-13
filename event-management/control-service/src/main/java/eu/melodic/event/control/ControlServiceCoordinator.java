@@ -102,8 +102,8 @@ public class ControlServiceCoordinator {
         log.info("ControlServiceCoordinator.applicationReady(): IP setting: {}", properties.getIpSetting());
         preloadModels();
 
-        EventBus.getDefault().subscribePattern("^CSC_",
-                (message,sender) -> log.warn(">>>>> EBUS: message={}, sender={}", message, sender));
+        EventBus.getDefault().subscribePattern("^CSC_.*",
+                (topic,message,sender) -> log.warn(">>>>>>>>>>>>>> EVENT_BUS: topic={}, message={}, sender={}", topic, message, sender));
     }
 
     @Async
