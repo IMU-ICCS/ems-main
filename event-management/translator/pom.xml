@@ -65,16 +65,17 @@
         <dependency>
             <groupId>camel</groupId>
             <artifactId>camel</artifactId>
-            <version>${melodic.version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>camel</groupId>
             <artifactId>camel.dsl</artifactId>
-            <version>${melodic.version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
+            <!--<version>${interfaces.version}</version>-->
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>

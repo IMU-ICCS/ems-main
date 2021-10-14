@@ -36,6 +36,7 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
+            <!--<version>${interfaces.version}</version>-->
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
@@ -44,7 +45,7 @@
         <dependency>
             <groupId>eu.melodic.security.authorization</groupId>
             <artifactId>authorization-service-client</artifactId>
-            <version>${melodic.version}</version>
+            <version>${authorization.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
