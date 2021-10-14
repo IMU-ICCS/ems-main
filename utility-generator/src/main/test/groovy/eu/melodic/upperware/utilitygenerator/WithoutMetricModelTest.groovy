@@ -6,7 +6,7 @@ import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
-import io.github.cloudiator.rest.model.NodeCandidate
+import org.activeeon.morphemic.model.NodeCandidate
 import spock.lang.Specification
 
 class WithoutMetricModelTest extends Specification{

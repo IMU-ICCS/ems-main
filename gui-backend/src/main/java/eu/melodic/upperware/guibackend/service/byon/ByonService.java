@@ -29,7 +29,6 @@ public class ByonService {
 
     private YamlDataService yamlDataService;
     private ByonIdCreatorService byonIdCreatorService;
-    //    private CloudiatorApi cloudiatorApi;
     private ByonMapper byonMapper;
     private final SecureStoreDBService secureStoreDBService;
     private ProactiveClientServiceGUI proactiveClientServiceGUI;
