@@ -44,23 +44,23 @@ public class EventBus<T,M,S> {  // Topic,Message,Sender
     }
 
     public void sendSync(@NonNull final T topic, @NonNull final M message, final S sender) {
-        log.warn("EventBus: sendSync: BEGIN: topic={}, sender={}, message={}", topic, sender, message);
+        log.debug("EventBus: sendSync: BEGIN: topic={}, sender={}, message={}", topic, sender, message);
         checkTopic(topic);
         checkSender(sender);
-        log.warn("EventBus: sendSync: PRE-CHECKED: topicsAndConsumers={}, consumerPatternMap={}", topicsAndConsumers, consumerPatternMap);
+        log.trace("EventBus: sendSync: CHECKED: topicsAndConsumers={}, consumerPatternMap={}", topicsAndConsumers, consumerPatternMap);
         Set<EventConsumer<T,M,S>> topicConsumers = topicsAndConsumers.get(topic);
-        log.warn("EventBus: sendSync: CHECKED: topic={}, sender={}, message={}, consumers={}", topic, sender, message, topicConsumers);
+        log.debug("EventBus: sendSync: CHECKED: topic={}, sender={}, message={}, consumers={}", topic, sender, message, topicConsumers);
         if (topicConsumers!=null) {
             topicConsumers.forEach(consumer -> {
-                log.warn("EventBus: sendSync: ....SENDING-TO-CONSUMER: topic={}, sender={}, consumer={}, message={}", topic, sender, consumer, message);
+                log.debug("EventBus: sendSync: ....SENDING-TO-CONSUMER: topic={}, sender={}, consumer={}, message={}", topic, sender, consumer, message);
                 consumer.onMessage(topic, message, sender);
             });
         }
         final String topicString = topic.toString();
         consumerPatternMap.forEach((consumer, patternSet) -> patternSet.forEach(pattern -> {
-            log.warn("EventBus: sendSync: ....CHECKING PATTERN: topic={}, sender={}, consumer={}, pattern={}, message={}", topic, sender, consumer, pattern.pattern(), message);
+            log.debug("EventBus: sendSync: ....CHECKING PATTERN: topic={}, sender={}, consumer={}, pattern={}, message={}", topic, sender, consumer, pattern.pattern(), message);
             if (pattern.matcher(topicString).matches()) {
-                log.warn("EventBus: sendSync: ....SENDING-TO-PATTERN-CONSUMER: topic={}, sender={}, consumer={}, pattern={}, message={}", topic, sender, consumer, pattern.pattern(), message);
+                log.debug("EventBus: sendSync: ....SENDING-TO-PATTERN-CONSUMER: topic={}, sender={}, consumer={}, pattern={}, message={}", topic, sender, consumer, pattern.pattern(), message);
                 consumer.onMessage(topic, message, sender);
             }
         }));
