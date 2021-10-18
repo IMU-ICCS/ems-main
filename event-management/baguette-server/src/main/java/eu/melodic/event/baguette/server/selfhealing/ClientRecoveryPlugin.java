@@ -10,23 +10,25 @@
 package eu.melodic.event.baguette.server.selfhealing;
 
 import eu.melodic.event.util.EventBus;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@AllArgsConstructor
-public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventConsumer<Object, Object, Object> {
+@RequiredArgsConstructor
+public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventConsumer<String,Object,Object> {
+    private final EventBus<String,Object,Object> eventBus;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        EventBus.getDefault().subscribe("BAGUETTE_SERVER_CLIENT_EXITED", this);
+        eventBus.subscribe("BAGUETTE_SERVER_CLIENT_EXITED", this);
         log.warn(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
     }
 
     @Override
-    public void onMessage(Object topic, Object message, Object sender) {
+    public void onMessage(String topic, Object message, Object sender) {
         log.warn(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: CLIENT EXITED: message={}", message);
     }
 }

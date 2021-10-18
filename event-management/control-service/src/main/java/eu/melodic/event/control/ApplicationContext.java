@@ -9,10 +9,13 @@
 
 package eu.melodic.event.control;
 
+import eu.melodic.event.util.EventBus;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -21,5 +24,11 @@ public class ApplicationContext {
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public EventBus<String,Object,Object> eventBus() {
+        return EventBus.<String,Object,Object>builder().build();
     }
 }

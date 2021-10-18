@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.util.EventBus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.PropertyResolverUtils;
@@ -43,10 +44,13 @@ public class Sshd {
     private boolean heartbeatOn;
     private long heartbeatPeriod;
 
-    public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator) throws IOException {
+    private EventBus<String,Object,Object> eventBus;
+
+    public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator, EventBus<String,Object,Object> eventBus) throws IOException {
         log.info("** SSH server **");
         this.coordinator = coordinator;
         this.configuration = configuration;
+        this.eventBus = eventBus;
 
         // Configure SSH server
         int port = configuration.getServerPort();
@@ -66,7 +70,7 @@ public class Sshd {
                     private ServerCoordinator coordinator;
 
                     public Command create() {
-                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed());
+                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus);
                         //msc.setId( "#-"+System.currentTimeMillis() );
                         log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", msc.getId());
                         return msc;

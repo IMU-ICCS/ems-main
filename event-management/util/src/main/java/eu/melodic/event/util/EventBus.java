@@ -21,14 +21,14 @@ import java.util.regex.Pattern;
 public class EventBus<T,M,S> {  // Topic,Message,Sender
     //enum STANDARD_EVENT_TOPICS { CONTROL_EVENT, TRANSLATOR_EVENT, BAGUETTE_SERVER_EVENT, BROKER_CEP_EVENT, CLIENT_INSTALLER_EVENT }
 
-    private static EventBus<Object,Object,Object> _DEFAULT;
+    /*private static EventBus<Object,Object,Object> _DEFAULT;
     private static void initDefault() {
         _DEFAULT = EventBus.builder()
                 //.allowedTopics(Arrays.stream(STANDARD_EVENT_TOPICS.values()).map(Enum::name).collect(Collectors.toSet()))
                 .build();
     }
     public static EventBus<Object,Object,Object> getDefault() { initDefault(); return _DEFAULT; }
-    public static void setDefault(EventBus<Object,Object,Object> eventBus) { _DEFAULT = eventBus; }
+    public static void setDefault(EventBus<Object,Object,Object> eventBus) { _DEFAULT = eventBus; }*/
 
     private final Set<T> allowedTopics;
     private final Set<S> allowedSenders;

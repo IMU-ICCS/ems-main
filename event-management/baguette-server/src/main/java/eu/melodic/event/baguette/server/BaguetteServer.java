@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.SneakyThrows;
@@ -36,6 +37,8 @@ public class BaguetteServer {
     private PasswordUtil passwordUtil;
     @Autowired
     private NodeRegistry nodeRegistry;
+    @Autowired
+    private EventBus<String,Object,Object> eventBus;
 
     private Sshd server;
 
@@ -105,7 +108,7 @@ public class BaguetteServer {
             log.info("BaguetteServer.startServer(): Starting SSH server instance...");
             nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
-            server.start(config, coordinator);
+            server.start(config, coordinator, eventBus);
             this.server = server;
             log.info("BaguetteServer.startServer(): Starting SSH server instance... done");
         } else {
