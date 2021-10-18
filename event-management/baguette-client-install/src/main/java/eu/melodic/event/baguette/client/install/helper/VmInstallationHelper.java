@@ -198,7 +198,17 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         try {
             // Read installation instructions from JSON file
-            List<String> jsonFiles = properties.getInstructions().get("LINUX");
+            List<String> jsonFiles = null;
+            if (contextMap.containsKey("instruction-files")) {
+                jsonFiles = Arrays.stream(contextMap.getOrDefault("instruction-files", "").split(","))
+                        .filter(StringUtils::isNotBlank)
+                        .map(String::trim)
+                        .collect(Collectors.toList());
+                if (jsonFiles.size()==0)
+                    log.warn("VmInstallationHelper.prepareInstallationInstructionsForLinux: Context map contains 'instruction-files' entry with no contents");
+            } else {
+                jsonFiles = properties.getInstructions().get("LINUX");
+            }
             for (String jsonFile : jsonFiles) {
                 log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", jsonFile);
                 byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());

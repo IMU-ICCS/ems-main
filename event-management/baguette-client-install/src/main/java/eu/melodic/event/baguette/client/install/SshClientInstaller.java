@@ -525,6 +525,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         int cnt = 0;
         int insCount = installationInstructions.getInstructions().size();
         for (Instruction ins : installationInstructions.getInstructions()) {
+            if (ins==null) continue;
             cnt++;
             log.trace("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());

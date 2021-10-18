@@ -247,7 +247,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
 
     protected String _prepareUrl(String urlTemplate, String baseUrl) {
         return urlTemplate
-                .replace("%{BASE_URL}%", baseUrl)
+                .replace("%{BASE_URL}%", Optional.ofNullable(baseUrl).orElse(""))
                 .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(""))
                 .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(""));
     }

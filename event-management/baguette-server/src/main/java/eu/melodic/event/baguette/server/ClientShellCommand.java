@@ -77,6 +77,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     private Map<String,Object> inputsMap = new HashMap<>();
     private EventBus<String,Object,Object> eventBus;
+    @Getter
+    private Exception lastException;
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus) {
         synchronized (LOCK) {
@@ -90,7 +92,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public void setSession(ServerSession session) {
         log.info("{}--> Got session : {}", id, session);
         this.session = session;
-        eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_STARTED", session.getClientAddress().toString());
+        eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_STARTED", this);
 		
 		/*try {
 			String clientIpAddr = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getAddress().getHostAddress();
@@ -127,8 +129,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public void run() {
         if (closeConnection) {
             log.warn("{}--> Exiting immediately because 'closeConnection' flag is set", id);
-            String clientAddress = session.getClientAddress().toString();
-            eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSING_IMMEDIATELY", clientAddress);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSING_IMMEDIATELY", this);
             coordinator.unregister(this);
             if (this.session!=null && this.session.isOpen()) {
                 try {
@@ -142,14 +143,14 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 callback.onExit(2);
             }
             log.info("{}--> Thread stopped immediately", id);
-            eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSED_IMMEDIATELY", clientAddress);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSED_IMMEDIATELY", this);
             return;
         }
 
         synchronized (activeCmdList) {
             activeCmdList.add(this);
         }
-        eventBus.send("BAGUETTE_SERVER_CLIENT_STARTING", id);
+        eventBus.send("BAGUETTE_SERVER_CLIENT_STARTING", this);
 
         try {
             log.info("{}==> Thread started", id);
@@ -170,7 +171,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 if (line.startsWith("-HELLO FROM CLIENT:")) {
                     getClientInfoFromGreeting(line.substring("-HELLO FROM CLIENT:".length()));
                     coordinator.register(this);
-                    eventBus.send("BAGUETTE_SERVER_CLIENT_REGISTERED", id);
+                    eventBus.send("BAGUETTE_SERVER_CLIENT_REGISTERED", this);
                 } else if (line.startsWith("-INPUT:")) {
                     String input = line.substring("-INPUT:".length());
                     String[] part = input.split(":",2 );
@@ -181,7 +182,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     coordinator.processClientInput(this, line);
                 }
             }
-            eventBus.send("BAGUETTE_SERVER_CLIENT_EXITING", id);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_EXITING", this);
 
             log.info("{}==> Signaling client to exit", id);
             out.println("EXIT");
@@ -189,17 +190,19 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         } catch (IOException ex) {
             log.warn("{}==> EXCEPTION : {}", id, ex);
             out.printf("EXCEPTION %s\n", ex);
+            this.lastException = ex;
+            eventBus.send("BAGUETTE_SERVER_CLIENT_EXCEPTION", this);
         } finally {
             synchronized (activeCmdList) {
                 activeCmdList.remove(this);
             }
             log.info("{}--> Thread stops", id);
             coordinator.unregister(this);
-            eventBus.send("BAGUETTE_SERVER_CLIENT_UNREGISTERED", id);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_UNREGISTERED", this);
             if (!callbackCalled.getAndSet(true)) {
                 callback.onExit(0);
             }
-            eventBus.send("BAGUETTE_SERVER_CLIENT_EXITED", id);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_EXITED", this);
         }
     }
 

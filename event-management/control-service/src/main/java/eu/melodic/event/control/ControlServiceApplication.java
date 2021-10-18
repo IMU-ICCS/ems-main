@@ -44,8 +44,8 @@ import java.util.stream.StreamSupport;
 
 @SpringBootApplication(
         scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
-                "eu.melodic.event.brokercep", "eu.melodic.event.control", "eu.melodic.event.translate",
-                "eu.melodic.event.util"},
+                "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep", "eu.melodic.event.control",
+                "eu.melodic.event.translate", "eu.melodic.event.util"},
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
 @EnableAsync
 @Configuration
