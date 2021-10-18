@@ -1,14 +1,12 @@
 package eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
-import io.github.cloudiator.rest.model.Hardware
-import io.github.cloudiator.rest.model.NodeCandidate
-import java.util.AbstractMap;
+import org.activeeon.morphemic.model.Hardware
+import org.activeeon.morphemic.model.NodeCandidate
 import lombok.extern.slf4j.Slf4j
 import spock.lang.Specification
 @Slf4j

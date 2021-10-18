@@ -9,7 +9,7 @@
 //import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
 //import eu.melodic.upperware.utilitygenerator.properties.UtilityGeneratorProperties
 //import eu.paasage.upperware.metamodel.cp.VariableType
-//import io.github.cloudiator.rest.model.NodeCandidate
+//import org.activeeon.morphemic.model.NodeCandidate
 //import spock.lang.Specification
 //
 //class UtilityGeneratorCRMTest extends Specification {

@@ -22,7 +22,6 @@ import java.util.List;
 public class ByonController {
 
     private ByonService byonService;
-//    private CloudiatorApi cloudiatorApi;
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
