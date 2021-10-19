@@ -17,27 +17,34 @@ public class ProactiveLocationConverter implements GenericConverter<Location, eu
         return createDomainRecursive(external);
     }
 
+
     private eu.passage.upperware.commons.model.internal.Location createDomainRecursive(Location location) {
-        if(Objects.isNull(location)) {
+        if (Objects.isNull(location)) {
             return null;
         }
 
-        return eu.passage.upperware.commons.model.internal.Location.builder()
+        eu.passage.upperware.commons.model.internal.Location locationResult = eu.passage.upperware.commons.model.internal.Location.builder()
                 .id(location.getId())
                 .name(location.getName())
                 .providerId(location.getProviderId())
                 .locationScope(LocationScope.valueOf(location.getLocationScope().name()))
                 .isAssignable(location.isIsAssignable())
-                .geoLocation(GeoLocation.builder()
-                        .city(location.getGeoLocation().getCity())
-                        .country(location.getGeoLocation().getCountry())
-                        .latitude(location.getGeoLocation().getLatitude())
-                        .longitude(location.getGeoLocation().getLongitude())
-                        .build())
-                .parent(createDomainRecursive(location.getParent()))
                 .state(DiscoveryItemState.NOT_AVAILABLE)
                 .owner("NOT_AVAILABLE")
                 .build();
+
+        if (location.getGeoLocation() != null) {
+            locationResult.setGeoLocation((GeoLocation.builder()
+                    .city(location.getGeoLocation().getCity())
+                    .country(location.getGeoLocation().getCountry())
+                    .latitude(location.getGeoLocation().getLatitude())
+                    .longitude(location.getGeoLocation().getLongitude()))
+                    .build());
+        }
+        if (location.getParent() != null) {
+            locationResult.setParent(createDomainRecursive(location.getParent()));
+        }
+        return locationResult;
     }
     
     @Override

@@ -1,12 +1,12 @@
 package eu.passage.upperware.commons.service.provider;
 
 import eu.passage.upperware.commons.exception.CloudDefinitionNotFoundException;
+import eu.passage.upperware.commons.model.internal.CloudType;
 import eu.passage.upperware.commons.model.provider.CloudDefinition;
 import eu.passage.upperware.commons.model.provider.Provider;
 import eu.passage.upperware.commons.model.provider.ProviderEnums;
 import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
-import org.activeeon.morphemic.model.CloudType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
