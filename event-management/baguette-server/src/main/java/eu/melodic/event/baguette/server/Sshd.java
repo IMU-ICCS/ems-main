@@ -45,12 +45,14 @@ public class Sshd {
     private long heartbeatPeriod;
 
     private EventBus<String,Object,Object> eventBus;
+    private NodeRegistry nodeRegistry;
 
-    public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator, EventBus<String,Object,Object> eventBus) throws IOException {
+    public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator, EventBus<String,Object,Object> eventBus, NodeRegistry registry) throws IOException {
         log.info("** SSH server **");
         this.coordinator = coordinator;
         this.configuration = configuration;
         this.eventBus = eventBus;
+        this.nodeRegistry = registry;
 
         // Configure SSH server
         int port = configuration.getServerPort();
@@ -68,9 +70,10 @@ public class Sshd {
         sshd.setShellFactory(
                 new Factory<Command>() {
                     private ServerCoordinator coordinator;
+                    private NodeRegistry nodeRegistry;
 
                     public Command create() {
-                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus);
+                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus, nodeRegistry);
                         //msc.setId( "#-"+System.currentTimeMillis() );
                         log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", msc.getId());
                         return msc;
@@ -81,12 +84,13 @@ public class Sshd {
                         return null;
                     }
 
-                    public Factory<Command> setCoordinator(ServerCoordinator coordinator) {
+                    public Factory<Command> setCoordinatorAndNodeRegistry(ServerCoordinator coordinator, NodeRegistry registry) {
                         this.coordinator = coordinator;
+                        this.nodeRegistry = registry;
                         return this;
                     }
                 }
-                .setCoordinator(coordinator)
+                .setCoordinatorAndNodeRegistry(coordinator, nodeRegistry)
         );
 
         sshd.setPasswordAuthenticator(

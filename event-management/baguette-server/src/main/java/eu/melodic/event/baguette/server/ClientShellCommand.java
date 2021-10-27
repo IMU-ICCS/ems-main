@@ -79,14 +79,16 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private EventBus<String,Object,Object> eventBus;
     @Getter
     private Exception lastException;
+    private NodeRegistry nodeRegistry;
 
-    public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus) {
+    public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus, NodeRegistry registry) {
         synchronized (LOCK) {
             id = String.format("#%05d", counter.getAndIncrement());
         }
         this.coordinator = coordinator;
         this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;
         this.eventBus = eventBus;
+        this.nodeRegistry = registry;
     }
 
     public void setSession(ServerSession session) {
@@ -176,6 +178,16 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     String input = line.substring("-INPUT:".length());
                     String[] part = input.split(":",2 );
                     inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
+                } else if (StringUtils.startsWithIgnoreCase(line, "SERVER-")) {
+                    String[] lineArgs = line.split(" ", 2);
+                    if ("SERVER-GET-NODE-SSH-CREDENTIALS".equalsIgnoreCase(lineArgs[0].trim()) && lineArgs.length>1) {
+                        String nodeAddress = lineArgs[1].trim();
+                        if (!nodeAddress.isEmpty()) {
+                            NodeRegistryEntry entry = nodeRegistry.getNodeByAddress(nodeAddress);
+                            Map<String, String> preregInfo = entry.getPreregistration();
+                            log.warn(">>>>>>>>>>>>>>>>>>>>>>   NODE PREREG INFO: address={}\n{}", nodeAddress, preregInfo);
+                        }
+                    }
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
                 } else {

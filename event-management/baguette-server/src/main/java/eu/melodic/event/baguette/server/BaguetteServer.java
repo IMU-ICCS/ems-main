@@ -108,7 +108,7 @@ public class BaguetteServer {
             log.info("BaguetteServer.startServer(): Starting SSH server instance...");
             nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
-            server.start(config, coordinator, eventBus);
+            server.start(config, coordinator, eventBus, nodeRegistry);
             this.server = server;
             log.info("BaguetteServer.startServer(): Starting SSH server instance... done");
         } else {
