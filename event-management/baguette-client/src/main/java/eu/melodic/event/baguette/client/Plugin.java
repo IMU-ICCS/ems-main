@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
-public interface Collector extends Plugin {
-    void activeGroupingChanged(String oldGrouping, String newGrouping);
+public interface Plugin {
+    void start();
+    void stop();
 }
