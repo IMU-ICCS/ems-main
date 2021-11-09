@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.ClientFactoryManager;
@@ -56,9 +57,13 @@ public class Sshc {
     @Autowired
     private BrokerCepService brokerCepService;
 
+    @Getter
     private InputStream in;
+    @Getter
     private PrintStream out;
+    //@Getter
     //private PrintStream err;
+    @Getter
     private String clientId;
 
     public void setConfiguration(BaguetteClientProperties config) throws IOException {
@@ -204,17 +209,8 @@ public class Sshc {
         log.info("SSH client stopped");
     }
 
-    public void run() throws IOException {
+    public synchronized void greeting() {
         if (!started) return;
-
-        // Start communication protocol with Server
-        // Execution waits here until connection is closed
-        log.trace("run(): Calling communicateWithServer()...");
-        communicateWithServer(in, out, out);
-    }
-
-    protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String certOneLine = Optional
                 .ofNullable(brokerCepService.getBrokerCertificate())
                 .orElse("")
@@ -232,6 +228,19 @@ public class Sshc {
                 brokerCepService.getBrokerPassword(),
                 certOneLine);
         out.flush();
+    }
+
+    public void run() throws IOException {
+        if (!started) return;
+
+        // Start communication protocol with Server
+        // Execution waits here until connection is closed
+        log.trace("run(): Calling communicateWithServer()...");
+        communicateWithServer(in, out, out);
+    }
+
+    protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();

@@ -20,7 +20,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.IOException;
@@ -44,6 +43,9 @@ public class BaguetteClient implements ApplicationRunner {
     private final List<Collector> collectorsList = new ArrayList<>();
 
     private static int killDelay;
+
+    @Getter
+    private Sshc client;
 
     public static void main(String[] args) {
         SpringApplication.run(BaguetteClient.class, args);
@@ -71,11 +73,11 @@ public class BaguetteClient implements ApplicationRunner {
         if (interactiveMode) {
             // Run CLI
             log.debug("BaguetteClient: Enters interactive mode");
-            runCli(applicationContext);
+            runCli();
         } else {
             // Run SSH client
             log.debug("BaguetteClient: Enters SSH mode");
-            runSshClient(applicationContext);
+            runSshClient();
         }
         log.debug("BaguetteClient: Exiting");
 
@@ -142,20 +144,16 @@ public class BaguetteClient implements ApplicationRunner {
         collectorsList.clear();
     }
 
-    protected void runSshClient(ApplicationContext appCtx) {
+    protected void runSshClient() {
         boolean retry = true;
         while (true) {
             try {
-                log.trace("BaguetteClient: spring-boot application-context: {}", appCtx);
-                Sshc client = appCtx.getBean(Sshc.class);
-                client.setConfiguration(baguetteClientProperties);
-                log.trace("BaguetteClient: Sshc instance from application-context: {}", client);
-                log.trace("BaguetteClient: Calling SSHC start()");
-                client.start(retry);
+                startSshClient(retry);
+
                 log.trace("BaguetteClient: Calling SSHC run()");
                 client.run();
-                log.trace("BaguetteClient: Calling SSHC stop()");
-                client.stop();
+
+                stopSshClient();
             } catch (Exception ex) {
                 log.error("BaguetteClient: EXCEPTION: ", ex);
             }
@@ -164,10 +162,28 @@ public class BaguetteClient implements ApplicationRunner {
         }
     }
 
-    protected void runCli(ApplicationContext appCtx) throws IOException {
-        BaguetteClientCLI cli = appCtx.getBean(BaguetteClientCLI.class);
+    protected void runCli() throws IOException {
+        BaguetteClientCLI cli = applicationContext.getBean(BaguetteClientCLI.class);
         cli.setConfiguration(baguetteClientProperties);
         cli.run();
+    }
+
+    public synchronized void startSshClient(boolean retry) throws IOException {
+        log.trace("BaguetteClient: spring-boot application-context: {}", applicationContext);
+        client = applicationContext.getBean(Sshc.class);
+        client.setConfiguration(baguetteClientProperties);
+
+        log.trace("BaguetteClient: Sshc instance from application-context: {}", client);
+        log.trace("BaguetteClient: Calling SSHC start()");
+        client.start(retry);
+        client.greeting();
+    }
+
+    public synchronized void stopSshClient() throws IOException {
+        log.trace("BaguetteClient: Calling SSHC stop()");
+        Sshc tmp = client;
+        client = null;
+        tmp.stop();
     }
 
     /*protected static Properties loadConfig(String configFile) throws IOException {

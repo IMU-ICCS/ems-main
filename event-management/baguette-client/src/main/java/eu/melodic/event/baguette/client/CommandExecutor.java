@@ -97,6 +97,8 @@ public class CommandExecutor {
     @Getter private String aggregatorGrouping;
     @Getter private String nodeGrouping;
 
+    private Thread serverWatcherThread;
+
 
     public CommandExecutor() {
         initializeClientId();
@@ -146,6 +148,44 @@ public class CommandExecutor {
                 log.warn(mesg);
                 out.println(mesg);
             }
+        } else if ("CONNECT".equals(cmd)) {
+            if (serverWatcherThread!=null) {
+                log.warn("Already connected");
+                return false;
+            }
+            baguetteClient.startSshClient(false);
+            serverWatcherThread = new Thread(() -> {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(baguetteClient.getClient().getIn())));
+                String line;
+                try {
+                    while ((line = reader.readLine()) != null) {
+                        log.info(line);
+                    }
+                } catch (Exception ex) {
+                    if (baguetteClient.getClient()!=null)
+                        log.warn("Exception in serverWatcherThread: ", ex);
+                    else
+                        log.debug("serverWatcherThread has exited");
+                }
+                serverWatcherThread = null;
+            });
+            serverWatcherThread.start();
+        } else if ("DISCONNECT".equals(cmd)) {
+            if (serverWatcherThread==null) {
+                log.warn("Not connected");
+                return false;
+            }
+            baguetteClient.stopSshClient();
+            serverWatcherThread = null;
+
+        } else if ("SEND".equals(cmd)) {
+            StringBuilder sb = new StringBuilder();
+            for (int i=1; i<args.length; i++)
+                sb.append(args[i]).append(" ");
+            String cmdLine = sb.toString();
+            log.info("SEND: {}", cmdLine);
+            baguetteClient.getClient().getOut().println(cmdLine);
+
         } else if ("CLIENT".equals(cmd)) {
             // Information from server. Don't do anything
         } else if ("ECHO".equals(cmd)) {
