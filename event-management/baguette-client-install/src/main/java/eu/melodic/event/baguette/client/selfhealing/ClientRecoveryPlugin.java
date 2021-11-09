@@ -87,7 +87,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
                 try {
                     runClientRecovery(nodeInfo);
                 } catch (Exception e) {
-                    log.error(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): EXCEPTION: while recoverying node: node-info={} -- Exception: ", nodeInfo, e);
+                    log.error(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): EXCEPTION: while recovering node: node-info={} -- Exception: ", nodeInfo, e);
                 }
             }, Instant.now().plusMillis(clientRecoveryDelay));
         } else {
