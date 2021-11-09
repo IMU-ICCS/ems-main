@@ -20,6 +20,7 @@ import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import eu.melodic.event.util.*;
+import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -1191,6 +1192,16 @@ public class CommandExecutor {
         @Override
         public void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
             log.debug("statusChanged(): Status changed: {} --> {}", oldStatus, newStatus);
+        }
+
+        @Override
+        public void clusterChanged(ClusterMembershipEvent event) {
+            log.debug("clusterChanged(): Cluster changed: {} --> {}", event.type(), event.subject().id().id());
+            if (commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus()==NODE_STATUS.AGGREGATOR) {
+                if (event.type() == ClusterMembershipEvent.Type.MEMBER_REMOVED) {
+                    log.warn("clusterChanged(): Notify SELF-HEALING plugin: {}", event.subject().id().id());
+                }
+            }
         }
 
         @Override

@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.cluster;
 
+import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
 import io.atomix.core.Atomix;
 import lombok.Getter;
@@ -408,6 +409,7 @@ public class BrokerUtil extends AbstractLogBase {
         void initialize();
         void stepDown();
         void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus);
+        void clusterChanged(ClusterMembershipEvent event);
         String getConfiguration(Member local);
         void setConfiguration(String newConfig);
     }

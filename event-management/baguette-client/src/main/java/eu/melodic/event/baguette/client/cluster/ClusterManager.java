@@ -184,6 +184,8 @@ public class ClusterManager extends AbstractLogBase {
 					log_info("CLM: {}: node={}", event.type(), event.subject().id().id());
 					brokerUtil.checkBroker();
 				}
+				if (callback!=null)
+					callback.clusterChanged(event);
 			}
 		});
 
