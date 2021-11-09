@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import com.google.gson.Gson;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
@@ -184,8 +185,22 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         String nodeAddress = lineArgs[1].trim();
                         if (!nodeAddress.isEmpty()) {
                             NodeRegistryEntry entry = nodeRegistry.getNodeByAddress(nodeAddress);
-                            Map<String, String> preregInfo = entry.getPreregistration();
-                            log.warn(">>>>>>>>>>>>>>>>>>>>>>   NODE PREREG INFO: address={}\n{}", nodeAddress, preregInfo);
+                            if (entry!=null) {
+                                Map<String, String> preregInfo = entry.getPreregistration();
+                                log.warn(">>>>>>>>>>>>>>>>>>>>>>   NODE PREREG INFO: address={}\n{}", nodeAddress, preregInfo);
+
+                                if (preregInfo!=null) {
+                                    String preregInfoStr = new Gson().toJson(preregInfo);
+                                    log.warn(">>>>>>>>>>>>>>>>>>>>>>   NODE PREREG INFO: STR={}\n{}", nodeAddress, preregInfoStr);
+                                    sendToClient(preregInfoStr);
+                                } else {
+                                    log.warn(">>>>>>>>>>>>>>>>>>>>>>   NO PRE-REGISTRATION INFO FOR NODE: {}", nodeAddress);
+                                    sendToClient("{}");
+                                }
+                            } else {
+                                log.warn(">>>>>>>>>>>>>>>>>>>>>>   UNKNOWN NODE: {}", nodeAddress);
+                                sendToClient("{}");
+                            }
                         }
                     }
                 } else if (line.equalsIgnoreCase("READY")) {
