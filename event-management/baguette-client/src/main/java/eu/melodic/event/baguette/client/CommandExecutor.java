@@ -58,6 +58,9 @@ public class CommandExecutor {
     private static final int DEFAULT_ID_LENGTH = 32;
     private final static String DEFAULT_KEYSTORE_DIR = DEFAULT_CONF_DIR;
 
+    public final static String EVENT_CLUSTER_NODE_ADDED = "CLUSTER_NODE_ADDED";
+    public final static String EVENT_CLUSTER_NODE_REMOVED = "CLUSTER_NODE_REMOVED";
+
     @Autowired
     private BaguetteClient baguetteClient;
     @Autowired
@@ -66,6 +69,9 @@ public class CommandExecutor {
     private BrokerClientProperties brokerClientProperties;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    @Getter
+    private EventBus<String,Object,Object> eventBus;
 
     private BaguetteClientProperties config;
     private String idFile;
@@ -99,6 +105,8 @@ public class CommandExecutor {
     @Getter private String nodeGrouping;
 
     private Thread serverWatcherThread;
+    private boolean captureInputLine;
+    @Getter private String lastInputLine;
 
 
     public CommandExecutor() {
@@ -123,6 +131,42 @@ public class CommandExecutor {
             this.clientId = RandomStringUtils.randomAlphanumeric(DEFAULT_ID_LENGTH);
             saveClientId(clientId);
         }
+    }
+
+    void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (captureInputLine) {
+                lastInputLine = line;
+                captureInputLine = false;
+                continue;
+            }
+            line = line.trim();
+            log.info(line);
+            try {
+                boolean exit = execCmd(line.split("[ \t]+"), in, out, err);
+                if (exit) break;
+            } catch (Exception ex) {
+                log.error("", ex);
+                // Report exception back to server
+                err.println(ex);
+                ex.printStackTrace(err);
+                err.flush();
+            }
+        }
+    }
+
+    public void executeCommand(String command) throws IOException, InterruptedException {
+        String[] args = command.split(" ");
+        execCmd(args, baguetteClient.getClient().getIn(), baguetteClient.getClient().getOut(), baguetteClient.getClient().getOut());
+
+        // Wait for server response/input if needed
+        while (captureInputLine) {
+            log.trace("Waiting for server input...");
+            try { Thread.sleep(100); } catch (InterruptedException e) {}
+        }
+        log.trace("Server input: {}", lastInputLine);
     }
 
     boolean executeCommand(String line, InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
@@ -185,6 +229,8 @@ public class CommandExecutor {
                 sb.append(args[i]).append(" ");
             String cmdLine = sb.toString();
             log.info("SEND: {}", cmdLine);
+            lastInputLine = null;
+            captureInputLine = true;
             baguetteClient.getClient().getOut().println(cmdLine);
 
         } else if ("CLIENT".equals(cmd)) {
@@ -1198,8 +1244,13 @@ public class CommandExecutor {
         public void clusterChanged(ClusterMembershipEvent event) {
             log.debug("clusterChanged(): Cluster changed: {} --> {}", event.type(), event.subject().id().id());
             if (commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus()==NODE_STATUS.AGGREGATOR) {
+                if (event.type() == ClusterMembershipEvent.Type.MEMBER_ADDED) {
+                    log.debug("clusterChanged(): Broadcast MEMBER_ADDED in event bus: {}", event.subject().id().id());
+                    commandExecutor.getEventBus().send(EVENT_CLUSTER_NODE_ADDED, event);
+                } else
                 if (event.type() == ClusterMembershipEvent.Type.MEMBER_REMOVED) {
-                    log.warn("clusterChanged(): Notify SELF-HEALING plugin: {}", event.subject().id().id());
+                    log.debug("clusterChanged(): Broadcast MEMBER_REMOVED in event bus: {}", event.subject().id().id());
+                    commandExecutor.getEventBus().send(EVENT_CLUSTER_NODE_REMOVED, event);
                 }
             }
         }

@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.ClientFactoryManager;
@@ -66,11 +67,14 @@ public class Sshc {
     @Getter
     private String clientId;
 
+    @Getter @Setter
+    private boolean useServerKeyVerifier = true;
+
     public void setConfiguration(BaguetteClientProperties config) throws IOException {
         this.config = config;
         this.clientId = config.getClientId();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
-        this.commandExecutor.setConfiguration(config);
+        if (this.commandExecutor!=null) this.commandExecutor.setConfiguration(config);
     }
 
     public synchronized void start(boolean retry) throws IOException {
@@ -117,46 +121,47 @@ public class Sshc {
 
         //client.setServerKeyVerifier(AcceptAllServerKeyVerifier.INSTANCE);
         //client.setServerKeyVerifier(new RequiredServerKeyVerifier(....));
-        client.setServerKeyVerifier(new ServerKeyVerifier()
-                {
-                    private String serverFingerprint;
-                    private String serverPubKey;
+        if (useServerKeyVerifier) {
+            client.setServerKeyVerifier(new ServerKeyVerifier() {
+                        private String serverFingerprint;
+                        private String serverPubKey;
 
-                    public boolean verifyServerKey(ClientSession sshClientSession, SocketAddress remoteAddress, PublicKey serverKey) {
+                        public boolean verifyServerKey(ClientSession sshClientSession, SocketAddress remoteAddress, PublicKey serverKey) {
 
-                        // Print server address info
-                        log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
+                            // Print server address info
+                            log.info("verifyServerKey(): remoteAddress: {}", remoteAddress.toString());
 
-                        // Check that server public key fingerprint matches with the one in configuration
-                        String fingerprint = KeyUtils.getFingerPrint(serverKey);
-                        log.info("verifyServerKey(): serverKey: fingerprint: {}", fingerprint);
-                        //if ( fingerprint!=null && KeyUtils.checkFingerPrint(serverFingerprint, serverKey).getFirst() ) log.info("verifyServerKey(): serverKey: fingerprint: MATCH");
-                        //else log.warn("verifyServerKey(): serverKey: fingerprint: NO MATCH");
+                            // Check that server public key fingerprint matches with the one in configuration
+                            String fingerprint = KeyUtils.getFingerPrint(serverKey);
+                            log.info("verifyServerKey(): serverKey: fingerprint: {}", fingerprint);
+                            //if ( fingerprint!=null && KeyUtils.checkFingerPrint(serverFingerprint, serverKey).getFirst() ) log.info("verifyServerKey(): serverKey: fingerprint: MATCH");
+                            //else log.warn("verifyServerKey(): serverKey: fingerprint: NO MATCH");
 
-                        // Check that server public key matches with the one in configuration
-                        try {
-                            log.debug("verifyServerKey(): serverKey: decoder: {}", KeyUtils.getPublicKeyEntryDecoder(serverKey).getClass());
-                            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-                            ((RSAPublicKeyDecoder) KeyUtils.getPublicKeyEntryDecoder(serverKey)).encodePublicKey(baos, (RSAPublicKey) serverKey);
-                            String keyStr = new String(Base64.getEncoder().encode(baos.toByteArray()));
-                            log.debug("verifyServerKey(): serverKey: server public key: \n{}", keyStr);
+                            // Check that server public key matches with the one in configuration
+                            try {
+                                log.debug("verifyServerKey(): serverKey: decoder: {}", KeyUtils.getPublicKeyEntryDecoder(serverKey).getClass());
+                                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                                ((RSAPublicKeyDecoder) KeyUtils.getPublicKeyEntryDecoder(serverKey)).encodePublicKey(baos, (RSAPublicKey) serverKey);
+                                String keyStr = new String(Base64.getEncoder().encode(baos.toByteArray()));
+                                log.debug("verifyServerKey(): serverKey: server public key: \n{}", keyStr);
 
-                            return keyStr.equalsIgnoreCase(serverPubKey);
+                                return keyStr.equalsIgnoreCase(serverPubKey);
 
-                        } catch (Exception ex) {
-                            log.error("verifyServerKey(): serverKey: EXCEPTION: ", ex);
-                            return false;
+                            } catch (Exception ex) {
+                                log.error("verifyServerKey(): serverKey: EXCEPTION: ", ex);
+                                return false;
+                            }
+                        }
+
+                        public ServerKeyVerifier setServerPubKey(String pubkey, String fingerprint) {
+                            this.serverFingerprint = fingerprint;
+                            this.serverPubKey = pubkey;
+                            return this;
                         }
                     }
-
-                    public ServerKeyVerifier setServerPubKey(String pubkey, String fingerprint) {
-                        this.serverFingerprint = fingerprint;
-                        this.serverPubKey = pubkey;
-                        return this;
-                    }
-                }
-                .setServerPubKey(serverPubKey, serverFingerprint)
-        );
+                    .setServerPubKey(serverPubKey, serverFingerprint)
+            );
+        }
 
         this.simple = SshClient.wrapAsSimpleClient(client);
         //simple.setConnectTimeout(...CONNECT_TIMEOUT...);
@@ -236,26 +241,7 @@ public class Sshc {
         // Start communication protocol with Server
         // Execution waits here until connection is closed
         log.trace("run(): Calling communicateWithServer()...");
-        communicateWithServer(in, out, out);
-    }
-
-    protected void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            log.info(line);
-            try {
-                boolean exit = commandExecutor.execCmd(line.split("[ \t]+"), in, out, err);
-                if (exit) break;
-            } catch (Exception ex) {
-                log.error("", ex);
-                // Report exception back to server
-                err.println(ex);
-                ex.printStackTrace(err);
-                err.flush();
-            }
-        }
+        commandExecutor.communicateWithServer(in, out, out);
         out.printf("-BYE FROM CLIENT: %s%n", clientId);
     }
 }

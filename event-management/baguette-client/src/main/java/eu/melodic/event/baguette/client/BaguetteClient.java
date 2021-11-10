@@ -12,15 +12,21 @@ package eu.melodic.event.baguette.client;
 import edu.emory.mathcs.backport.java.util.Collections;
 import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
+import eu.melodic.event.baguette.client.plugin.SelfHealingPlugin;
+import eu.melodic.event.util.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +36,7 @@ import java.util.List;
  * Baguette client
  */
 @Slf4j
+@EnableScheduling
 @SpringBootApplication(scanBasePackages = {
         "eu.melodic.event.baguette.client", "eu.melodic.event.brokercep",
         "eu.melodic.event.brokerclient", "eu.melodic.event.util"})
@@ -53,6 +60,12 @@ public class BaguetteClient implements ApplicationRunner {
         forceExit();
     }
 
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public EventBus<String,Object,Object> eventBus() {
+        return EventBus.<String,Object,Object>builder().build();
+    }
+
     @Override
     public void run(ApplicationArguments args) throws IOException {
         log.debug("BaguetteClient: Starting");
@@ -68,6 +81,7 @@ public class BaguetteClient implements ApplicationRunner {
         // Start measurement collectors (but not in interactive mode)
         if (!interactiveMode) {
             startCollectors();
+            applicationContext.getBean(SelfHealingPlugin.class).start();
         }
 
         if (interactiveMode) {
@@ -83,6 +97,7 @@ public class BaguetteClient implements ApplicationRunner {
 
         // Stop measurement collectors
         if (!interactiveMode) {
+            applicationContext.getBean(SelfHealingPlugin.class).stop();
             stopCollectors();
         }
 
