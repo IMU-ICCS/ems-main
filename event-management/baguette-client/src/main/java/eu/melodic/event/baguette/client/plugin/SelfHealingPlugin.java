@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Client-side Self-Healing plugin
@@ -70,6 +71,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                     "/opt/baguette-client/bin/kill.sh",0, 2000),
             new RECOVERY_COMMAND("Sending baguette client start command...",
                     "/opt/baguette-client/bin/run.sh",0, 2000),
+            new RECOVERY_COMMAND("Exiting...",
+                    "exit",0, 0),
     };
 
     @Value("${self.healing.enabled:true}")
@@ -152,6 +155,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                     if (StringUtils.isNotBlank(response)) {
                         nodeInfo = new Gson().fromJson(response, Map.class);
                     }
+                    //XXX:TODO: credentialsCache.put(nodeAddress, nodeInfo);
                 } catch (Exception ex) {
                     log.error("Exception while querying for node VM credentials: node-address={}\n", nodeAddress, ex);
                     return;
@@ -228,11 +232,16 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         log.debug("SelfHealingPlugin: runNodeRecovery(): Connected to node: address={}, port={}, username={}", address, port, username);
 
         // Redirect SSH output to standard output
+        final AtomicBoolean closed = new AtomicBoolean(false);
         taskScheduler.schedule(() -> {
                     try {
                         IoUtils.copy(sshc.getIn(), System.out);
                     } catch (IOException e) {
-                        log.error("SelfHealingPlugin: runNodeRecovery(): Exception while copying SSH IN stream: ", e);
+                        if (closed.get()) {
+                            log.info("SelfHealingPlugin: runNodeRecovery(): Connection closed");
+                        } else {
+                            log.error("SelfHealingPlugin: runNodeRecovery(): Exception while copying SSH IN stream: ", e);
+                        }
                     }
                 },
                 Instant.now()
@@ -241,29 +250,18 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         // Carrying out recovery commands
         log.info("SelfHealingPlugin: runNodeRecovery(): Executing {} recovery commands", recoveryCommands.length);
         for (RECOVERY_COMMAND command : recoveryCommands) {
-            if (command==null) continue;
+            if (command==null || StringUtils.isBlank(command.getCommand())) continue;
 
-            long wait = command.getWaitBefore();
-            if (wait>0) {
-                log.warn("##############  Waiting for {}ms before {}...", wait, command.getName());
-                try { Thread.sleep(wait); } catch (InterruptedException e) {
-                }
-            }
-
+            waitFor(command.getWaitBefore(), command.getName());
             log.warn("##############  {}...", command.getName());
             sshc.getOut().println(command.getCommand());
-
-            wait = command.getWaitAfter();
-            if (wait>0) {
-                log.warn("##############  Waiting for {}ms after {}...", wait, command.getName());
-                try { Thread.sleep(wait); } catch (InterruptedException e) {
-                }
-            }
+            waitFor(command.getWaitAfter(), command.getName());
         }
         log.info("SelfHealingPlugin: runNodeRecovery(): Executed {} recovery commands", recoveryCommands.length);
 
         // Disconnect from node
         log.info("SelfHealingPlugin: runNodeRecovery(): Disconnecting from node: address={}, port={}, username={}", address, port, username);
+        closed.set(true);
         sshc.stop();
         log.debug("SelfHealingPlugin: runNodeRecovery(): Disconnected from node: address={}, port={}, username={}", address, port, username);
 
@@ -274,6 +272,13 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     private String str(Object o) {
         if (o==null) return "";
         return o.toString();
+    }
+
+    private void waitFor(long millis, String description) {
+        if (millis>0) {
+            log.warn("##############  Waiting for {}ms after {}...", millis, description);
+            try { Thread.sleep(millis); } catch (InterruptedException e) { }
+        }
     }
 
     private void processClusterNodeAddedEvent(Object message) {
@@ -292,6 +297,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
             // Cancel any waiting recovery task
             ScheduledFuture<?> future = waitingTasks.remove(nodeAddress);
             future.cancel(true);
+            //XXX:TODO: credentialsCache.remove(nodeAddress);
         } else {
             log.warn("SelfHealingPlugin: processClusterNodeAddedEvent(): Message is not a {} object. Will ignore it.", ClusterMembershipEvent.class.getSimpleName());
         }
