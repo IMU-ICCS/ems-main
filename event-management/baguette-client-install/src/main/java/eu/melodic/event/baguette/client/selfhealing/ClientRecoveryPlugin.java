@@ -53,50 +53,50 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
     @Override
     public void afterPropertiesSet() throws Exception {
         eventBus.subscribe(CLIENT_EXIT_TOPIC, this);
-        log.info(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
+        log.info("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
 
-        log.trace(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: clientInstallationProperties: {}", clientInstallationProperties);
-        log.trace(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: baguetteServer: {}", baguetteServer);
+        log.trace("ClientRecoveryPlugin: clientInstallationProperties: {}", clientInstallationProperties);
+        log.trace("ClientRecoveryPlugin: baguetteServer: {}", baguetteServer);
 
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: Recovery Delay: {}", clientRecoveryDelay);
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: Recovery Instructions File: {}", recoveryInstructionsFile);
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: IP Setting: {}", ipSetting);
+        log.debug("ClientRecoveryPlugin: Recovery Delay: {}", clientRecoveryDelay);
+        log.debug("ClientRecoveryPlugin: Recovery Instructions File: {}", recoveryInstructionsFile);
+        log.debug("ClientRecoveryPlugin: IP Setting: {}", ipSetting);
     }
 
     @Override
     public void onMessage(String topic, Object message, Object sender) {
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: onMessage(): BEGIN: topic={}, message={}, sender={}", topic, message, sender);
+        log.debug("ClientRecoveryPlugin: onMessage(): BEGIN: topic={}, message={}, sender={}", topic, message, sender);
         if (CLIENT_EXIT_TOPIC.equals(topic)) {
-            log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: onMessage(): CLIENT EXITED: message={}", message);
+            log.debug("ClientRecoveryPlugin: onMessage(): CLIENT EXITED: message={}", message);
             processExitEvent(message, sender);
         }
     }
 
     private void processExitEvent(Object message, Object sender) {
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): BEGIN: message={}", message);
+        log.debug("ClientRecoveryPlugin: processExitEvent(): BEGIN: message={}", message);
         if (message instanceof ClientShellCommand) {
             ClientShellCommand csc = (ClientShellCommand)message;
             String clientId = csc.getId();
             String address = csc.getClientIpAddress();
-            log.warn(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): client-id={}, client-address={}", clientId, address);
+            log.warn("ClientRecoveryPlugin: processExitEvent(): client-id={}, client-address={}", clientId, address);
             NodeRegistryEntry nodeInfo = nodeRegistry.getNodeByAddress(address);
-            log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): client-node-info={}", nodeInfo);
-            log.trace(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): node-registry.node-addresses={}", nodeRegistry.getNodeAddresses());
-            log.trace(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): node-registry.nodes={}", nodeRegistry.getNodes());
+            log.debug("ClientRecoveryPlugin: processExitEvent(): client-node-info={}", nodeInfo);
+            log.trace("ClientRecoveryPlugin: processExitEvent(): node-registry.node-addresses={}", nodeRegistry.getNodeAddresses());
+            log.trace("ClientRecoveryPlugin: processExitEvent(): node-registry.nodes={}", nodeRegistry.getNodes());
             taskScheduler.schedule(() -> {
                 try {
                     runClientRecovery(nodeInfo);
                 } catch (Exception e) {
-                    log.error(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): EXCEPTION: while recovering node: node-info={} -- Exception: ", nodeInfo, e);
+                    log.error("ClientRecoveryPlugin: processExitEvent(): EXCEPTION: while recovering node: node-info={} -- Exception: ", nodeInfo, e);
                 }
             }, Instant.now().plusMillis(clientRecoveryDelay));
         } else {
-            log.warn(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: processExitEvent(): Message is not a {} object. Will ignore it.", ClientShellCommand.class.getSimpleName());
+            log.warn("ClientRecoveryPlugin: processExitEvent(): Message is not a {} object. Will ignore it.", ClientShellCommand.class.getSimpleName());
         }
     }
 
     public void runClientRecovery(NodeRegistryEntry nodeInfo) throws Exception {
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: runClientRecovery(): node-info={}", nodeInfo);
+        log.debug("ClientRecoveryPlugin: runClientRecovery(): node-info={}", nodeInfo);
         if (nodeInfo==null) return;
 
         Map<String, String> nodeMap1 = nodeInfo.getPreregistration();
@@ -120,20 +120,13 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
         ClientInstallationTask task = InstallationHelperFactory.getInstance()
                 .createInstallationHelper(nodeMap)
                 .createClientInstallationTask(nodeMap, contextMap, baguetteServer);
-        log.debug(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: runClientRecovery(): Client recovery task: {}", task);
+        log.debug("ClientRecoveryPlugin: runClientRecovery(): Client recovery task: {}", task);
         SshClientInstaller installer = SshClientInstaller.builder()
                 .task(task)
-                /*.maxRetries(properties.getMaxRetries())
-                .authenticationTimeout(properties.getAuthenticateTimeout())
-                .connectTimeout(properties.getConnectTimeout())
-                .heartbeatInterval(properties.getHeartbeatInterval())
-                .simulateConnection(properties.isSimulateConnection())
-                .simulateExecution(properties.isSimulateExecution())
-                .commandExecutionTimeout(properties.getCommandExecutionTimeout())*/
                 .properties(clientInstallationProperties)
                 .build();
-        log.warn(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", nodeInfo);
+        log.warn("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", nodeInfo);
         boolean result = installer.execute();
-        log.warn(">>>>>>>>>>>>>>>>>>>  ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, nodeInfo);
+        log.warn("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, nodeInfo);
     }
 }
