@@ -14,7 +14,6 @@ import eu.melodic.event.baguette.client.BaguetteClientProperties;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.baguette.client.Plugin;
 import eu.melodic.event.baguette.client.Sshc;
-import eu.melodic.event.baguette.client.collector.netdata.NetdataCollectorProperties;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import io.atomix.cluster.ClusterMembershipEvent;
@@ -42,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @RequiredArgsConstructor
 public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.EventConsumer<String,Object,Object> {
-    private final NetdataCollectorProperties properties;
+    private final BaguetteClientProperties properties;
     private final CommandExecutor commandExecutor;
     private final EventBus<String,Object,Object> eventBus;
     private final PasswordUtil passwordUtil;
