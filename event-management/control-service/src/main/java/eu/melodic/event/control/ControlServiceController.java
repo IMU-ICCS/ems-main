@@ -433,13 +433,25 @@ public class ControlServiceController {
     // EMS status and information query methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = { "/ems/shutdown", "/ems/shutdown/{exitApp}" }, method = {GET, POST})
-    public String emsShutdown(@PathVariable Optional<Boolean> exitApp) {
-        boolean _exitApp = exitApp.orElse(false);
-        log.info("ControlServiceController.emsShutdown(): exitApp={}", _exitApp);
+    @RequestMapping(value = "/ems/shutdown", method = {GET, POST})
+    public String emsShutdown() {
+        log.info("ControlServiceController.emsShutdown(): ");
         coordinator.emsShutdown();
-        if (_exitApp) coordinator.emsExit();
         return "OK";
+    }
+
+    @RequestMapping(value = { "/ems/exit", "/ems/exit/{exitCode}" }, method = {GET, POST})
+    public String emsExit(@PathVariable Optional<Integer> exitCode) {
+        if (properties.isExitAllowed()) {
+            int _exitCode = exitCode.orElse(properties.getExitCode());
+            log.info("ControlServiceController.emsExit(): exitCode={}", _exitCode);
+            coordinator.emsShutdown();
+            coordinator.emsExit(_exitCode);
+            return "OK";
+        } else {
+            log.info("ControlServiceController.emsExit(): Exiting EMS is not allowed");
+            return "NOT ALLOWED";
+        }
     }
 
     @RequestMapping(value = "/ems/status", method = {GET, POST},
