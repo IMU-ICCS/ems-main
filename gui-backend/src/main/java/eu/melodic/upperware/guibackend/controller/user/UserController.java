@@ -8,8 +8,7 @@ import eu.melodic.upperware.guibackend.controller.user.request.NewUserRequest;
 import eu.melodic.upperware.guibackend.controller.user.response.LoginResponse;
 import eu.melodic.upperware.guibackend.controller.user.response.UserResponse;
 import eu.melodic.upperware.guibackend.controller.user.response.UserWithPasswordResponse;
-import eu.melodic.upperware.guibackend.model.user.User;
-import eu.melodic.upperware.guibackend.model.user.UserRole;
+import eu.melodic.upperware.guibackend.model.user.*;
 import eu.melodic.upperware.guibackend.service.user.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +28,28 @@ public class UserController {
 
     private JwtServerApi jwtServerApi;
     private UserService userService;
+
+
+    @PostMapping("/user/userProfile")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserProfile getUserProfile() {
+        UserProfile userProfile = new UserProfile();
+        return userProfile;
+    }
+
+    @PostMapping("/user/resources")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Resources getResources() {
+        Resources resources = new Resources();
+        return resources;
+    }
+
+    @PostMapping("/user/activities")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Activities getActivities() {
+        Activities activities = new Activities();
+        return activities;
+    }
 
     @PostMapping("/user/login")
     @ResponseStatus(HttpStatus.CREATED)
