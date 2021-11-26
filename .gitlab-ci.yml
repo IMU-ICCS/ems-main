@@ -678,12 +678,11 @@ deploy:gui-backend:
     - morphemic-rc1.5
     - morphemic-rc2.0
     - proactive-dev
-    - undeploy_application
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   script:
-    - $DOCKER_CLI $GUI_BACKEND_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - $DOCKER_CLI $GUI_BACKEND_CLI -Ddocker.imagePrefix=melodic/ clean install -U
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/gui-backend:unknown $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
