@@ -91,22 +91,28 @@ public class ControlServiceApplication implements ApplicationContextAware {
 
     synchronized static void exitApp(int exitCode, long gracePeriod) {
         if (exitTimer==null) {
-            // Close SpringBoot application
-            log.info("ControlServiceApplication.exitApp(): Closing application context...");
-            ExitCodeGenerator exitCodeGenerator = () -> exitCode;
-            SpringApplication.exit(applicationContext, exitCodeGenerator);
-
-            // Wait for 'gracePeriod' seconds before force JVM to exit
+            // Wait for 'gracePeriod' seconds before forcing JVM to exit
             log.info("ControlServiceApplication.exitApp(): Wait for {}sec before exit", gracePeriod);
-            exitTimer = new Timer("exit-app-grace-period-timer", true);
+            exitTimer = new Timer("exit-timer", true);
             exitTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    log.info("ControlServiceApplication.exitApp(): Exiting...");
+                    log.info("ControlServiceApplication.exitApp(): exit-timer: Exiting with code: {}", exitCode);
                     System.exit(exitCode);
-                    log.info("ControlServiceApplication.exitApp(): Bye");
+                    log.info("ControlServiceApplication.exitApp(): exit-timer: Bye");
                 }
             }, gracePeriod * 1000);
+
+            // Close SpringBoot application
+            log.info("ControlServiceApplication.exitApp(): Closing application context...");
+            ExitCodeGenerator exitCodeGenerator = () -> {
+                log.info("ControlServiceApplication.exitApp(): exitCodeGenerator: Exit code: {}", exitCode);
+                return exitCode;
+            };
+            SpringApplication.exit(applicationContext, exitCodeGenerator);
+            log.info("ControlServiceApplication.exitApp(): Exiting with code: {}", exitCode);
+            System.exit(exitCode);
+
         } else {
             log.warn("ControlServiceApplication.exitApp(): Exit timer has already started: {}", exitTimer);
         }
