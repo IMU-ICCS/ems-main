@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client;
+package eu.melodic.event.util;
 
 public interface Plugin {
     void start();
