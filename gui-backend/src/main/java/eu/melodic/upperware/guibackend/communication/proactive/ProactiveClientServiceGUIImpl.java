@@ -64,4 +64,9 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     public List<EmsDeploymentRequest> getAllMonitors() {
         return getPAGateway().map(PAGateway::getMonitorsList).orElse(Collections.emptyList());
     }
+
+    @Override
+    public boolean deleteByonNode(String byonId) {
+        return getPAGateway().map(paGateway -> paGateway.deleteByonNode(byonId)).orElse(false);
+    }
 }

@@ -59,11 +59,16 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
         nodeJSON.put("taskName", taskBody.getTaskName());
         nodeJSON.put("nodeName", taskBody.getNodeName());
         JSONObject nodeCandidateInformationJSON = new JSONObject();
+        if(taskBody.getNodeCandidate().getCloud().getApi().getProviderName().equals("openstack")){
+            nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId().substring(4), "hardwareProviderId"));
+        }else{
+            nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
+        }
+        nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
         nodeCandidateInformationJSON.put("ID", checkEmptiness(taskBody.getNodeCandidate().getId(), "ID"));
         nodeCandidateInformationJSON.put("cloudID", checkEmptiness(taskBody.getNodeCandidate().getCloud().getId(), "cloudID"));
         nodeCandidateInformationJSON.put("locationName", checkEmptiness(taskBody.getNodeCandidate().getLocation().getName(), "locationName"));
         nodeCandidateInformationJSON.put("imageProviderId", checkEmptiness(taskBody.getNodeCandidate().getImage().getProviderId(), "imageProviderId"));
-        nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
         nodeJSON.put("nodeCandidateInformation", nodeCandidateInformationJSON);
         nodesJSONArray.put(nodeJSON);
         log.info("NodeTaskExecutor->addIAASNode: [application id: {}] ProActive node(s) (JSONArray): \n{}", applicationId, nodesJSONArray);

@@ -26,4 +26,6 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
     List<Deployment> getAllNodes();
 
     List<EmsDeploymentRequest> getAllMonitors();
+
+    boolean deleteByonNode(String byonId);
 }

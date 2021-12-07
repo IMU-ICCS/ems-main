@@ -16,4 +16,6 @@ public class Credential {
     private String user;
 
     private String secret;
+
+    private String domain;
 }

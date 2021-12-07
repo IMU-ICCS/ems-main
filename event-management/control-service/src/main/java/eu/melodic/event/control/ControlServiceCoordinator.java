@@ -735,10 +735,15 @@ public class ControlServiceCoordinator {
 
     @Async
     synchronized void emsExit() {
+        emsExit(properties.getExitCode());
+    }
+
+    @Async
+    synchronized void emsExit(int exitCode) {
         if (properties.isExitAllowed()) {
             // Signal SpringBootApp to exit
             log.info("ControlServiceCoordinator.emsExit(): Signaling exit...");
-            ControlServiceApplication.exitApp(properties.getExitCode(), properties.getExitGracePeriod());
+            ControlServiceApplication.exitApp(exitCode, properties.getExitGracePeriod());
             log.info("ControlServiceCoordinator.emsExit(): Signaling exit... done");
         } else {
             log.warn("ControlServiceCoordinator.emsExit(): Exit is not allowed");

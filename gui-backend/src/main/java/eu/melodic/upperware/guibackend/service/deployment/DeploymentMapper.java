@@ -45,6 +45,7 @@ public class DeploymentMapper {
         return CredentialRequest.builder()
                 .user(credential.getUser())
                 .secret(credential.getSecret())
+                .domain(credential.getDomain())
                 .build();
     }
 
@@ -56,6 +57,9 @@ public class DeploymentMapper {
 
     private CloudConfigurationRequest mapCloudConfigurationToRequest(CloudConfiguration cloudConfiguration) {
         return CloudConfigurationRequest.builder()
+                .scopePrefix(cloudConfiguration.getScopePrefix())
+                .scopeValue(cloudConfiguration.getScopeValue())
+                .identityVersion(cloudConfiguration.getIdentityVersion())
                 .nodeGroup(cloudConfiguration.getNodeGroup())
                 .properties(mapCloudPropertiesToMap(cloudConfiguration.getProperties()))
                 .build();
