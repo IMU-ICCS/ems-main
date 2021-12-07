@@ -29,7 +29,6 @@ public class ByonService {
 
     private YamlDataService yamlDataService;
     private ByonIdCreatorService byonIdCreatorService;
-    //    private CloudiatorApi cloudiatorApi;
     private ByonMapper byonMapper;
     private final SecureStoreDBService secureStoreDBService;
     private ProactiveClientServiceGUI proactiveClientServiceGUI;
@@ -199,5 +198,15 @@ public class ByonService {
         log.info("LSZ DEV[ByonService]: getAllByonNodesList: byonNodes={}", byonNodes);
 
         return byonNodes;
+    }
+
+    public void cleanByon() {
+        log.info("[ByonService]: cleanByon starting");
+        List<ByonNode> byonNodeList = getAllByonNodesList();
+        for(ByonNode byonNode : byonNodeList) {
+            String byonId = byonNode.getId();
+            log.info("[ByonService]: deletingByon for id: {}", byonId);
+            proactiveClientServiceGUI.deleteByonNode(byonId);
+        }
     }
 }

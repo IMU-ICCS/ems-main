@@ -12,4 +12,11 @@ public class CloudConfigurationRequest {
     private String nodeGroup;
 
     private Map<String, String> properties;
+
+    private String scopePrefix;
+
+    private String scopeValue;
+
+    private String identityVersion;
+
 }

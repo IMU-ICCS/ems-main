@@ -2,7 +2,7 @@ package groovy.eu.melodic.upperware.utilitygenerator.model
 
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement
 import eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunction
-import io.github.cloudiator.rest.model.NodeCandidate
+import org.activeeon.morphemic.model.NodeCandidate
 import spock.lang.Specification
 
 class ConfigurationElementTest extends Specification {

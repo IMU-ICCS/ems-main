@@ -35,7 +35,7 @@ public class UtilityFunctionUtils {
                 .forEach(v -> componentCosts.add(v.getId() + "*"
                         + createAttributeName(v.getComponentId(), CamelMetadata.PRICE)));
 
-        return "1/(" + String.join("+", componentCosts) + ")";
+        return "1/(1+" + String.join("+", componentCosts) + ")";
     }
 
     public static boolean isInFormula(String formula, String name) {

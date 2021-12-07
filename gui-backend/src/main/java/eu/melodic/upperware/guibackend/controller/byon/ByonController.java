@@ -22,7 +22,6 @@ import java.util.List;
 public class ByonController {
 
     private ByonService byonService;
-//    private CloudiatorApi cloudiatorApi;
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
@@ -95,5 +94,13 @@ public class ByonController {
     public ByonEnums getByonEnums() {
         log.info("GET request for byon enums");
         return byonService.getByonEnums();
+    }
+
+    @PutMapping("/cleanByon")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cleanByonNodes() {
+        log.info("Put request for byon nodes purging");
+        byonService.cleanByon();
+        log.info("Put request for byon nodes purging finished");
     }
 }

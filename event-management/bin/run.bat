@@ -62,11 +62,20 @@ rem set JAVA_OPTS=-Djavax.net.debug=all
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo Starting EMS server...
+IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
+:_restart_ems
+
 rem Use when Esper is packaged in control-service.jar
 rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
 
 rem Use when Esper is NOT packaged in control-service.jar
 java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE% %*
+
+if errorlevel %RESTART_EXIT_CODE% (
+    echo Restarting EMS server...
+    goto :_restart_ems
+)
+echo EMS server exited
 
 rem e.g. --spring.config.location=%MELODIC_CONFIG_DIR%\
 rem e.g. --spring.config.name=application.properties

@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 public class ProcessController {
 
     private ProcessCamundaService processCamundaService;
-    //    private CloudiatorApi cloudiatorApi;
     private ProcessService processService;
     private ProactiveClientServiceGUI proactiveClientServiceGUI;
     private ProactiveClientService proactiveClientService;

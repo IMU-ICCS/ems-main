@@ -34,13 +34,20 @@ variables:
   MCTS_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/mcts-solver/pom.xml"
 
   EMS_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/pom.xml"
-  #  EMS_UTIL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/util/pom.xml"
-  #  EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
-  #  EMS_BROKER_CEP_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-cep/pom.xml"
-  #  EMS_BAGUETTE_CLIENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/baguette-client/pom.xml"
-  #  EMS_BAGUETTE_CLIENT_INSTALL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/baguette-client-install/pom.xml"
-  #  EMS_BAGUETTE_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/baguette-server/pom.xml"
-  #  EMS_TRANSLATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/translator/pom.xml"
+  # 
+  EMS_UTIL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/util/pom.xml"
+  # 
+  EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
+  # 
+  EMS_BROKER_CEP_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-cep/pom.xml"
+  # 
+  EMS_BAGUETTE_CLIENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/baguette-client/pom.xml"
+  # 
+  EMS_BAGUETTE_CLIENT_INSTALL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/baguette-client-install/pom.xml"
+  # 
+  EMS_BAGUETTE_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/baguette-server/pom.xml"
+  #
+  EMS_TRANSLATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/translator/pom.xml"
   EMS_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/control-service/pom.xml"
 
   METASOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f meta_solver/pom.xml"
@@ -473,20 +480,34 @@ deploy:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
-#deploy:ems:
-#  stage: deploy
-#  only:
-#    - master
-#    - rc3.0
-#    - rc3.1
-#    - morphemic-rc1.5
-#  image: $DOCKER_DIND_IMAGE
-#  services:
-#    - $DOCKER_DIND_SERVICE
-#  dependencies:
-#    - build-required-part3:ems
-#  script:
-#    - $DOCKER_CLI $EMS_CLI deploy
+#
+deploy:ems:
+  stage: deploy
+#
+  only:
+#
+    - master
+#
+    - rc3.0
+#
+    - rc3.1
+#
+    - morphemic-rc1.5
+    - morphemic-rc2.0
+#
+  image: $DOCKER_DIND_IMAGE
+#
+  services:
+#
+    - $DOCKER_DIND_SERVICE
+#
+  dependencies:
+#
+    - build-required-part3:ems
+#
+  script:
+#
+    - $DOCKER_CLI $EMS_CLI deploy
 
 #deploy:ems-util:
 #  stage: deploy
@@ -657,12 +678,11 @@ deploy:gui-backend:
     - morphemic-rc1.5
     - morphemic-rc2.0
     - proactive-dev
-    - undeploy_application
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
   script:
-    - $DOCKER_CLI $GUI_BACKEND_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - $DOCKER_CLI $GUI_BACKEND_CLI -Ddocker.imagePrefix=melodic/ clean install -U
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/gui-backend:unknown $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH

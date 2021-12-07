@@ -1,7 +1,6 @@
 package eu.passage.upperware.commons.model.internal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.github.cloudiator.rest.model.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
