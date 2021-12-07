@@ -26,20 +26,21 @@ PUBLIC_IP=`curl https://diagnostic.opendns.com/myip 2> /dev/null`
 # or get IP address with 'hostname'
 if [[ "${PUBLIC_IP}" == "" ]]; then
     PUBLIC_IP=`hostname --all-ip-addresses`
-    echo "PUBLIC_IP \(hostname -I\): $PUBLIC_IP"
+    echo "PUBLIC_IP (hostname -I): $PUBLIC_IP"
 fi
 
 # or set IP address manually
 if [[ "${PUBLIC_IP}" == "" ]]; then
     PUBLIC_IP=1.2.3.4
-    echo "PUBLIC_IP \(manually\): $PUBLIC_IP"
+    echo "PUBLIC_IP (manually): $PUBLIC_IP"
 fi
 
 # or use loopback
 if [[ "${PUBLIC_IP}" == "" ]]; then
     PUBLIC_IP=127.0.0.1
-    echo "PUBLIC_IP \(loopback\): $PUBLIC_IP"
+    echo "PUBLIC_IP (loopback): $PUBLIC_IP"
 fi
+PUBLIC_IP=`echo ${PUBLIC_IP} | sed 's/ *$//g'`
 echo PUBLIC_IP=${PUBLIC_IP}
 
 
