@@ -10,10 +10,12 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.guava.InetAddresses;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -43,6 +45,20 @@ public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy
         log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
         log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
         String zoneName = null;
+        NodeRegistryEntry entry = c.getNodeRegistryEntry();
+        if (entry!=null) {
+            log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> NRE: {}", c.getId(), entry);
+            Map<String, String> preregInfo = entry.getPreregistration();
+            log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Prereg-Info: {}", c.getId(), preregInfo);
+            if (preregInfo!=null) {
+                String zoneId = preregInfo.get("zone-id");
+                log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Zone-Id: {}", c.getId(), zoneId);
+                if (StringUtils.isNotBlank(zoneId)) {
+                    log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Found Zone-Id in Prereg-Info: {}", c.getId(), zoneId);
+                    return zoneId;
+                }
+            }
+        }
         if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
             int p = hostname.indexOf(".");
             if (p>0)

@@ -86,6 +86,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private EventBus<String,Object,Object> eventBus;
     @Getter
     private Exception lastException;
+    @Getter
     private NodeRegistry nodeRegistry;
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus, NodeRegistry registry) {
@@ -390,6 +391,14 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
     public String getClientProperty(@NonNull String propertyName) { return clientProperties.getProperty(propertyName); }
     public String getClientProperty(@NonNull String propertyName, String defaultValue) { return clientProperties.getProperty(propertyName, defaultValue); }
+
+    public NodeRegistryEntry getNodeRegistryEntry() {
+        String clientId = getClientId();
+        if (StringUtils.isNotBlank(clientId)) {
+            return nodeRegistry.getNodeByClientId(clientId);
+        }
+        return null;
+    }
 
     public void sendToClient(String msg) {
         sendToClient(msg, Level.INFO);

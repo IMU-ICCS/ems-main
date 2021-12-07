@@ -12,6 +12,8 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.coordinator.cluster.ClusteringCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.util.EventBus;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.PropertyResolverUtils;
@@ -47,6 +49,7 @@ public class Sshd {
     private long heartbeatPeriod;
 
     private EventBus<String,Object,Object> eventBus;
+    @Getter @Setter
     private NodeRegistry nodeRegistry;
 
     public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator, EventBus<String,Object,Object> eventBus, NodeRegistry registry) throws IOException {
@@ -86,9 +89,9 @@ public class Sshd {
                         return null;
                     }
 
-                    public Factory<Command> setCoordinatorAndNodeRegistry(ServerCoordinator coordinator, NodeRegistry registry) {
+                    public Factory<Command> setCoordinatorAndNodeRegistry(ServerCoordinator coordinator, NodeRegistry nodeRegistry) {
                         this.coordinator = coordinator;
-                        this.nodeRegistry = registry;
+                        this.nodeRegistry = nodeRegistry;
                         return this;
                     }
                 }
