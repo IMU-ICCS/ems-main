@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Node Registry
@@ -29,7 +30,7 @@ public class NodeRegistry {
     @Getter @Setter
     private ServerCoordinator coordinator;
 
-    public synchronized void addNode(Map<String,Object> nodeInfo) {
+    public synchronized NodeRegistryEntry addNode(Map<String,Object> nodeInfo, String clientId) {
         String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
 
         NodeRegistryEntry entry = registry.get(ipAddress);
@@ -46,9 +47,11 @@ public class NodeRegistry {
             }
         }
 
-        entry = new NodeRegistryEntry(ipAddress).nodePreregistration(nodeInfo);
+        entry = new NodeRegistryEntry(ipAddress, clientId).nodePreregistration(nodeInfo);
+        nodeInfo.put("baguette-client-id", clientId);
         registry.put(ipAddress, entry);
         log.debug("NodeRegistry.addNode(): Added info for node at address: {}\nNode info: {}", ipAddress, nodeInfo);
+        return entry;
     }
 
     public synchronized void removeNode(NodeRegistryEntry nodeEntry) {
@@ -85,6 +88,18 @@ public class NodeRegistry {
         return entry;
     }
 
+    public NodeRegistryEntry getNodeByReference(String ref) {
+        return registry.values().stream()
+                .filter(n->n.getReference().equals(ref))
+                .findAny().orElse(null);
+    }
+
+    public NodeRegistryEntry getNodeByClientId(String clientId) {
+        return registry.values().stream()
+                .filter(n->n.getClientId().equals(clientId))
+                .findAny().orElse(null);
+    }
+
     public Collection<String> getNodeAddresses() {
         return registry.keySet();
     }
@@ -92,4 +107,6 @@ public class NodeRegistry {
     public Collection<NodeRegistryEntry> getNodes() {
         return registry.values();
     }
+
+    public Collection<String> getNodeReferences() { return registry.values().stream().map(NodeRegistryEntry::getReference).collect(Collectors.toList()); }
 }

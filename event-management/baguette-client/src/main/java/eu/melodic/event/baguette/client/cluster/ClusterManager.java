@@ -206,6 +206,8 @@ public class ClusterManager extends AbstractLogBase {
 			if (isInitialized() && isRunning()) break;
 			try { Thread.sleep(500); } catch (InterruptedException e) { break; }
 		}
+		if (callback!=null)
+			callback.joinedCluster();
 	}
 
 	public void waitToJoin(long waitForMillis) {
@@ -216,6 +218,8 @@ public class ClusterManager extends AbstractLogBase {
 			long waitFor = Math.min(500, endTm-System.currentTimeMillis());
 			try { Thread.sleep(waitFor); } catch (InterruptedException e) { break; }
 		}
+		if (callback!=null)
+			callback.joinedCluster();
 	}
 
 	public void leaveCluster() {
@@ -228,6 +232,8 @@ public class ClusterManager extends AbstractLogBase {
 		log_debug("CLM: Left cluster in {}ms", endTm-startTm);
 		atomix = null;
 		brokerUtil = null;
+		if (callback!=null)
+			callback.leftCluster();
 	}
 
 	// ------------------------------------------------------------------------

@@ -9,24 +9,29 @@
 
 package eu.melodic.event.baguette.server;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class NodeRegistryEntry {
-    public enum STATE { PREREGISTERED, INSTALLED, REGISTERED };
-    private final String ipAddress;
+    public enum STATE { PREREGISTERED, INSTALLING, INSTALLED, INSTALL_ERROR,
+        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR,
+        DISCONNECTED
+    };
+    @Getter private final String ipAddress;
+    @Getter private final String clientId;
     @Getter private STATE state = null;
+    @Getter private String reference = UUID.randomUUID().toString();
     @Getter private Map<String, String> preregistration = new LinkedHashMap<>();
     @Getter private Map<String, String> installation = new LinkedHashMap<>();
     @Getter private Map<String, String> registration = new LinkedHashMap<>();
+
+    public void refreshReference() { reference = UUID.randomUUID().toString(); }
 
     public NodeRegistryEntry nodePreregistration(Map<String,Object> nodeInfo) {
         preregistration.clear();
@@ -36,10 +41,22 @@ public class NodeRegistryEntry {
         return this;
     }
 
-    public NodeRegistryEntry nodeInstallation(Map<String,Object> nodeInfo) {
+    public NodeRegistryEntry nodeInstalling(Object nodeInfo) {
         installation.clear();
-        installation.putAll(processMap("", nodeInfo));
+        installation.put("installation-task", nodeInfo.toString());
+        state = STATE.INSTALLING;
+        return this;
+    }
+
+    public NodeRegistryEntry nodeInstallationComplete(Object nodeInfo) {
+        installation.put("installation-task-result", "SUCCESS");
         state = STATE.INSTALLED;
+        return this;
+    }
+
+    public NodeRegistryEntry nodeInstallationError(Object nodeInfo) {
+        installation.put("installation-task-result", "ERROR");
+        state = STATE.INSTALL_ERROR;
         return this;
     }
 

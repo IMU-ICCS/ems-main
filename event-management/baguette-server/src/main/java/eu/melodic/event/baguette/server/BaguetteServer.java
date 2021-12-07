@@ -19,11 +19,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Baguette Server
@@ -267,24 +269,75 @@ public class BaguetteServer {
         server.sendToClient(clientId, command);
     }
 
-    public Object readFromClient(String clientId, String command) {
-        return server.readFromClient(clientId, command);
+    public void sendToActiveClusters(String command) {
+        server.sendToActiveClusters(command);
+    }
+
+    public void sendToCluster(String clusterId, String command) {
+        server.sendToCluster(clusterId, command);
+    }
+
+    public Object readFromClient(String clientId, String command, Level logLevel) {
+        return server.readFromClient(clientId, command, logLevel);
     }
 
     public List<String> getActiveClients() {
-        return server.getActiveClients();
+        return ClientShellCommand.getActive().stream()
+                .map(c -> {
+                    NodeRegistryEntry entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
+                    log.debug("getActiveClients: CSC ip-address: {}", c.getClientIpAddress());
+                    log.debug("getActiveClients: CSC NR entry: {}", entry!=null?entry.getPreregistration():null);
+                    if (entry==null) {
+                        log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
+                        entry = getNodeRegistry().getNodeByClientId(c.getClientId());
+                        log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
+                    }
+                    return String.format("%s %s %s:%d %s %s %s %s %s", c.getId(),
+                            c.getClientIpAddress(),
+                            c.getClientClusterNodeHostname(),
+                            c.getClientClusterNodePort(),
+                            c.getClientNodeStatus(),
+                            c.getClientZone()!=null ? c.getClientZone().getId() : null,
+                            c.getClientGrouping(),
+                            entry!=null ? entry.getReference() : null,
+                            c.getClientProperty("node-id")
+                    );
+                })
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public Map<String, Map<String, String>> getActiveClientsMap() {
-        return server.getActiveClientsMap();
+        return ClientShellCommand.getActive().stream()
+                //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
+                .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
+                    NodeRegistryEntry entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
+                    log.debug("getActiveClientsMap: CSC ip-address: {}", c.getClientIpAddress());
+                    log.debug("getActiveClientsMap: CSC NR entry: {}", entry!=null?entry.getPreregistration():null);
+                    if (entry==null) {
+                        log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
+                        entry = getNodeRegistry().getNodeByClientId(c.getClientId());
+                        log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
+                    }
+                    Map<String,String> properties = new LinkedHashMap<>();
+                    //properties.put("id", c.getId());
+                    properties.put("ip-address", c.getClientIpAddress());
+                    properties.put("node-hostname", c.getClientClusterNodeHostname());
+                    properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
+                    properties.put("node-status", c.getClientNodeStatus());
+                    properties.put("node-zone", c.getClientZone()!=null ? c.getClientZone().getId() : null);
+                    properties.put("grouping", c.getClientGrouping());
+                    properties.put("reference", entry!=null ? entry.getReference() : null);
+                    properties.put("node-id", c.getClientProperty("node-id"));
+                    return properties;
+                }));
     }
 
     public void sendConstants(Map<String, Double> constants) {
         server.sendConstants(constants);
     }
 
-    //XXX: TODO: do actual node registration with Server coordinator. More information might be needed or returned.
-    public String registerClient(Map<String,Object> nodeInfoMap) {
+    public NodeRegistryEntry registerClient(Map<String,Object> nodeInfoMap) {
         log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
 
         Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);
@@ -305,9 +358,6 @@ public class BaguetteServer {
         log.debug("BaguetteServer.registerClient(): client-id={}", clientId);
 
         // Add node info into node registry
-        nodeInfo.put("baguette-client-id", clientId);
-        nodeRegistry.addNode(nodeInfo);
-
-        return clientId;
+        return nodeRegistry.addNode(nodeInfo, clientId);
     }
 }

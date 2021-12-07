@@ -12,10 +12,8 @@ package eu.melodic.event.control;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.ExitCodeGenerator;
@@ -24,23 +22,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.ApplicationPidFileWriter;
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.boot.info.InfoProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.util.StreamUtils;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.StreamSupport;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @SpringBootApplication(
         scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
@@ -50,7 +40,7 @@ import java.util.stream.StreamSupport;
 @EnableAsync
 @Configuration
 @Slf4j
-public class ControlServiceApplication implements ApplicationContextAware {
+public class ControlServiceApplication /*implements ApplicationContextAware*/ {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
 
@@ -58,8 +48,6 @@ public class ControlServiceApplication implements ApplicationContextAware {
     private ControlServiceProperties properties;
     @Autowired
     private PasswordUtil passwordUtil;
-    @Autowired
-    private BuildProperties buildProperties;;
 
     public static void main(String[] args) {
         // Start EMS server
@@ -115,38 +103,6 @@ public class ControlServiceApplication implements ApplicationContextAware {
 
         } else {
             log.warn("ControlServiceApplication.exitApp(): Exit timer has already started: {}", exitTimer);
-        }
-    }
-
-    @Override
-    @SneakyThrows
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if (!properties.isPrintBuildInfo()) return;
-        if (!log.isInfoEnabled()) return;
-
-        // Print build info from 'BuildProperties'
-        log.info("--------------------------------------------------------------------------------");
-        log.info("Build Info:");
-        StreamSupport.stream(Spliterators.spliteratorUnknownSize(buildProperties.iterator(), Spliterator.ORDERED), false)
-                .sorted(Comparator.comparing(InfoProperties.Entry::getKey))
-                .forEach(e->log.info(" - {} = {}", e.getKey(), e.getValue()));
-        log.info("--------------------------------------------------------------------------------");
-
-        // Print info from bundled files
-        printInfoFromFile(applicationContext, "Version Info", "classpath:/version.txt");
-        log.info("--------------------------------------------------------------------------------");
-        printInfoFromFile(applicationContext, "Git Info", "classpath:/git.properties");
-        log.info("--------------------------------------------------------------------------------");
-        printInfoFromFile(applicationContext, "Build Info", "classpath:/META-INF/build-info.properties");
-        log.info("--------------------------------------------------------------------------------");
-    }
-
-    protected void printInfoFromFile(ApplicationContext applicationContext, String title, String resourceStr) throws IOException {
-        Resource[] resources = applicationContext.getResources(resourceStr);
-        if (resources.length>0) {
-            Resource r = resources[0];
-            log.info("** {} **\nFile: {}\nURL:  {}\n{}\n", title, r.getFilename(), r.getURL(),
-                    StreamUtils.copyToString(r.getInputStream(), StandardCharsets.UTF_8));
         }
     }
 }

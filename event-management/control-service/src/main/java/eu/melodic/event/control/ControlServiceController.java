@@ -11,7 +11,8 @@ package eu.melodic.event.control;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.baguette.client.install.*;
+import eu.melodic.event.baguette.client.install.ClientInstallationTask;
+import eu.melodic.event.baguette.client.install.ClientInstaller;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
@@ -256,6 +257,37 @@ public class ControlServiceController {
         return entity;
     }
 
+    @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
+                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("ControlServiceController.getNodeCredentials(): BEGIN: ref={}", optRef);
+        log.trace("ControlServiceController.getNodeCredentials(): JWT token: {}", jwtToken);
+
+        if (StringUtils.isBlank(optRef.orElse(null)))
+            throw new IllegalArgumentException("The 'ref' parameter is mandatory");
+
+        // Retrieve node credentials
+        NodeRegistryEntry entry = coordinator.getBaguetteServer().getNodeRegistry().getNodeByReference(optRef.get());
+        if (entry==null) {
+            throw new IllegalArgumentException("Not found Node with reference: "+optRef.get());
+        }
+        log.debug("ControlServiceController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef.get());
+
+        // Prepare response
+        Map<String,String> response = new HashMap<>();
+        response.put("hostname", entry.getIpAddress());
+        response.put("port", entry.getPreregistration().getOrDefault("ssh.port", "22"));
+        response.put("username", entry.getPreregistration().get("ssh.username"));
+        response.put("password", entry.getPreregistration().get("ssh.password"));
+        response.put("private-key", entry.getPreregistration().get("ssh.key"));
+        HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+        log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+
+        return entity;
+    }
+
     // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
@@ -287,7 +319,8 @@ public class ControlServiceController {
 
         // Register node to Baguette server
         BaguetteServer baguette = coordinator.getBaguetteServer();
-        String clientId = baguette.registerClient(nodeMap);
+        NodeRegistryEntry entry = baguette.registerClient(nodeMap);
+        String clientId = entry.getClientId();
 
         // Get web server base URL
         String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
@@ -389,7 +422,7 @@ public class ControlServiceController {
     // Event Generation and Debugging methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}-{upperValue}", method = GET)
+    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}/{upperValue}", method = GET)
     public String startEventGeneration(@PathVariable String clientId, @PathVariable String topicName, @PathVariable long interval, @PathVariable double lowerValue, @PathVariable double upperValue) {
         log.info("ControlServiceController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
         return coordinator.eventGenerationStart(clientId, topicName, interval, lowerValue, upperValue);
@@ -424,9 +457,15 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
-    public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
-        log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
+    public String clientCommand(@PathVariable String clientId, @PathVariable String command) {
+        log.info("ControlServiceController.clientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);
+    }
+
+    @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
+    public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
+        log.info("ControlServiceController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
+        return coordinator.clusterCommandSend(clusterId, command);
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -470,40 +509,6 @@ public class ControlServiceController {
 
         log.debug("ControlServiceController.emsTopology(): END");
         return "{}";
-    }
-
-    @RequestMapping(value = "/ems/stats", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Map<String,Object> emsServerStatistics() {
-        log.debug("ControlServiceController.emsServerStatistics(): BEGIN");
-        Map<String,Object> statsMap = coordinator.emsServerStatistics();
-        log.debug("ControlServiceController.emsServerStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    @RequestMapping(value = "/ems/stats/overall", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Map<String,Object> emsOverallStatistics() {
-        log.debug("ControlServiceController.emsOverallStatistics(): BEGIN");
-        Map<String,Object> statsMap = coordinator.emsOverallStatistics();
-        log.debug("ControlServiceController.emsOverallStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    @RequestMapping(value = "/ems/stats/clear", method = {GET, POST})
-    public String emsServerStatisticsClear() {
-        log.debug("ControlServiceController.emsServerStatisticsClear(): BEGIN");
-        coordinator.emsServerStatisticsClear();
-        log.debug("ControlServiceController.emsServerStatisticsClear(): END");
-        return "OK";
-    }
-
-    @RequestMapping(value = "/ems/stats/overall/clear", method = {GET, POST})
-    public String emsOverallStatisticsClear() {
-        log.debug("ControlServiceController.emsOverallStatisticsClear(): BEGIN");
-        coordinator.emsOverallStatisticsClear();
-        log.debug("ControlServiceController.emsOverallStatisticsClear(): END");
-        return "OK";
     }
 
     // ------------------------------------------------------------------------------------------------------------

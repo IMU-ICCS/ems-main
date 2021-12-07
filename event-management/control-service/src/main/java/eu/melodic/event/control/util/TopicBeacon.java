@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @EnableScheduling
-@Slf4j
 public class TopicBeacon implements InitializingBean {
     // Topic Beacon settings
     @Value("${beacon.enable:true}")

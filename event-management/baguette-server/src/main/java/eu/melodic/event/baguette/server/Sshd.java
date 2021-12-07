@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.baguette.server.coordinator.cluster.ClusteringCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.util.EventBus;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +23,15 @@ import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Custom SSH server
@@ -165,7 +168,7 @@ public class Sshd {
                             String msg = String.format("Heartbeat %d", System.currentTimeMillis());
                             log.debug("--> Heartbeat: {}", msg);
                             for (ClientShellCommand csc : ClientShellCommand.getActive()) {
-                                csc.sendToClient(msg);
+                                csc.sendToClient(msg, Level.DEBUG);
                             }
                         }
                         log.info("--> Heartbeat: Stopped");
@@ -209,39 +212,32 @@ public class Sshd {
         }
     }
 
-    public Object readFromClient(String clientId, String command) {
+    public void sendToActiveClusters(String command) {
+        if (!(coordinator instanceof ClusteringCoordinator)) return;
+        ((ClusteringCoordinator)coordinator).getClusters().forEach(cluster -> {
+            log.info("SSH server: Sending to cluster {} : {}", cluster.getId(), command);
+            sendToCluster(cluster.getId(), command);
+        });
+    }
+
+    public void sendToCluster(String clusterId, String command) {
+        if (!(coordinator instanceof ClusteringCoordinator)) return;
+        ((ClusteringCoordinator)coordinator).getCluster(clusterId).getNodes().forEach(csc -> {
+            log.info("SSH server: Sending to client {} : {}", csc.getId(), command);
+            csc.sendToClient(command);
+        });
+    }
+
+    public Object readFromClient(String clientId, String command, Level logLevel) {
         log.trace("SSH server: Sending and Reading to/from client {}: {}", clientId, command);
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {
             log.trace("SSH server: Check CSC: csc-id={}, client={}", csc.getId(), clientId);
             if (csc.getId().equals(clientId)) {
-                log.info("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
-                return csc.readFromClient(command);
+                log.debug("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
+                return csc.readFromClient(command, logLevel);
             }
         }
         return null;
-    }
-
-    public List<String> getActiveClients() {
-        return ClientShellCommand.getActive().stream()
-                .map(c -> String.format("%s %s %s:%d", c.getId(),
-                        c.getClientIpAddress(),
-                        c.getClientClusterNodeHostname(),
-                        c.getClientClusterNodePort()))
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    public Map<String, Map<String, String>> getActiveClientsMap() {
-        return ClientShellCommand.getActive().stream()
-                //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
-                .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
-                    Map<String,String> properties = new LinkedHashMap<>();
-                    //properties.put("id", c.getId());
-                    properties.put("ip-address", c.getClientIpAddress());
-                    properties.put("node-hostname", c.getClientClusterNodeHostname());
-                    properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
-                    return properties;
-                }));
     }
 
     public void sendConstants(Map<String, Double> constants) {

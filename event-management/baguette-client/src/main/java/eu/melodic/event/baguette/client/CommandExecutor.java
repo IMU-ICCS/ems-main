@@ -623,6 +623,15 @@ public class CommandExecutor {
             sendStatistics(args[1]);
         } else if ("CLEAR-STATS".equals(cmd)) {
             clearStatistics();
+        } else if ("SEND-CLIENT-PROPERTY".equals(cmd)) {
+            if (args.length < 2) {
+                log.warn("Too few arguments");
+                out.println("Too few arguments");
+                return false;
+            }
+            String propName = args[1];
+            String propValue = args.length==3 ? args[2] : null;
+            sendClientProperty(propName, propValue);
         } else {
             args[0] = cmd;
             String line = String.join(" ", args);
@@ -778,6 +787,10 @@ public class CommandExecutor {
         log.info("Active grouping switch completed: {} -> {}", activeGroupingName, newGroupingName);
         String oldGroupingName = activeGroupingName;
         activeGroupingName = newGroupingName;
+
+        // Notify Baguette Server about grouping change
+        log.info("NOTIFY-GROUPING-CHANGE: {}", newGroupingName);
+        out.println("-NOTIFY-GROUPING-CHANGE: "+newGroupingName);
 
         // If Aggregator notify Baguette Server
         if (clusterManager!=null && GROUPING.valueOf(aggregatorGrouping)==GROUPING.valueOf(newGroupingName)) {
@@ -1165,10 +1178,20 @@ public class CommandExecutor {
         updateCertificates(activeGrouping);
     }
 
+    private void nodeStatusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
+        log.info("NOTIFY-STATUS-CHANGE: {}", newStatus.toString());
+        out.println("-NOTIFY-STATUS-CHANGE: "+newStatus);
+    }
+
+    private void sendClientProperty(String propertyName, String propertyValue) {
+        log.info("CLIENT-PROPERTY-CHANGE: {} = {}", propertyName, propertyValue);
+        out.printf("-CLIENT-PROPERTY-CHANGE: %s %s%n", propertyName, propertyValue);
+    }
+
     @SneakyThrows
     private void sendStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
-        log.info("Statistics: {}", statsMap);
+        log.debug("Statistics: {}", statsMap);
         if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
     }
 
@@ -1218,6 +1241,19 @@ public class CommandExecutor {
         }
 
         @Override
+        public void joinedCluster() {
+            String nodeId = commandExecutor.getClusterManager().getLocalMember().id().id();
+            log.info("joinedCluster(): Node joined cluster: {}", nodeId);
+            commandExecutor.sendClientProperty("node-id", nodeId);
+        }
+
+        @Override
+        public void leftCluster() {
+            log.info("joinedCluster(): Node left cluster");
+            commandExecutor.sendClientProperty("node-id", "");
+        }
+
+        @Override
         public void initialize() {
             printInfo("initialize", "INITIALIZE");
 
@@ -1238,6 +1274,7 @@ public class CommandExecutor {
         @Override
         public void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
             log.debug("statusChanged(): Status changed: {} --> {}", oldStatus, newStatus);
+            commandExecutor.nodeStatusChanged(oldStatus, newStatus);
         }
 
         @Override

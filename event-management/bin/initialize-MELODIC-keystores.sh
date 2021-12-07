@@ -23,11 +23,22 @@ echo Resolving Public IP addresses...
 PUBLIC_IP=`curl https://diagnostic.opendns.com/myip 2> /dev/null`
 #PUBLIC_IP=`curl http://checkip.amazonaws.com 2> /dev/null`
 
-# or set IP address manually
-#PUBLIC_IP='1.2.3.4'
+# or get IP address with 'hostname'
+if [[ "${PUBLIC_IP}" == "" ]]; then
+    PUBLIC_IP=`hostname --all-ip-addresses`
+    echo "PUBLIC_IP \(hostname -I\): $PUBLIC_IP"
+fi
 
+# or set IP address manually
+if [[ "${PUBLIC_IP}" == "" ]]; then
+    PUBLIC_IP=1.2.3.4
+    echo "PUBLIC_IP \(manually\): $PUBLIC_IP"
+fi
+
+# or use loopback
 if [[ "${PUBLIC_IP}" == "" ]]; then
     PUBLIC_IP=127.0.0.1
+    echo "PUBLIC_IP \(loopback\): $PUBLIC_IP"
 fi
 echo PUBLIC_IP=${PUBLIC_IP}
 
@@ -68,7 +79,9 @@ KEY_SIZE=2048
 START_DATE=-1d
 VALIDITY=3650
 DN_FMT="CN=%s,OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR"
-EXT_SAN_FMT="SAN=dns:%s,dns:localhost,ip:127.0.0.1,ip:${PUBLIC_IP}"
+PUBLIC_IP_FOR_SAN=${PUBLIC_IP// /,ip:}
+EXT_SAN_FMT="SAN=dns:%s,dns:localhost,ip:127.0.0.1,ip:${PUBLIC_IP_FOR_SAN}"
+
 KEYSTORE_TYPE=PKCS12
 KEYSTORE_PASS=melodic
 

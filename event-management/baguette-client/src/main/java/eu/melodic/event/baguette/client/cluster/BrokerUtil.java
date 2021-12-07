@@ -406,6 +406,9 @@ public class BrokerUtil extends AbstractLogBase {
     }
 
     public interface NodeCallback {
+        void joinedCluster();
+        void leftCluster();
+
         void initialize();
         void stepDown();
         void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus);

@@ -11,8 +11,10 @@ package eu.melodic.event.baguette.server;
 
 import com.google.gson.Gson;
 import eu.melodic.event.util.EventBus;
+import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +24,7 @@ import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
 import org.cryptacular.util.CertUtil;
+import org.slf4j.event.Level;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -67,7 +70,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter private int clientClusterNodePort;
     @Getter @Setter private String clientClusterNodeAddress;
     @Getter @Setter private String clientClusterNodeHostname;
-    @Getter @Setter private Object clientZone;
+    @Getter @Setter private IClusterZone clientZone;
+    @Getter private String clientNodeStatus;
+    @Getter private String clientGrouping;
+    private final Properties clientProperties = new Properties();
 
     private final ServerCoordinator coordinator;
     private final boolean clientAddressOverrideAllowed;
@@ -96,7 +102,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         log.info("{}--> Got session : {}", id, session);
         this.session = session;
         eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_STARTED", this);
-		
+
 		/*try {
 			String clientIpAddr = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getAddress().getHostAddress();
 			int clientPort = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getPort();
@@ -165,7 +171,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                log.info("{}--> {}", id, line);
+                log.debug("{}--> {}", id, line);
 
                 //if (echoOn) out.printf("CLIENT (%s) : ECHO : %s\n", id, line);
                 if (echoOn) out.printf("ECHO %s\n", line);
@@ -202,6 +208,27 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                                 sendToClient("{}");
                             }
                         }
+                    }
+                } else if (line.startsWith("-NOTIFY-GROUPING-CHANGE:")) {
+                    String newGrouping = line.substring("-NOTIFY-GROUPING-CHANGE:".length()).trim();
+                    log.info("{}--> Client grouping changed: {} --> {}", getId(), clientGrouping, newGrouping);
+                    if (StringUtils.isNotBlank(newGrouping) && ! StringUtils.equals(clientGrouping, newGrouping))
+                        this.clientGrouping = newGrouping;
+                } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
+                    String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();
+                    log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
+                    if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
+                        this.clientNodeStatus = newNodeStatus;
+                } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
+                    String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
+                    String propertyName = part[0];
+                    String propertyValue = part.length>1 ? part[1] : null;
+                    String oldValue = clientProperties.getProperty(propertyName);
+                    if (StringUtils.isNotBlank(propertyName)) {
+                        log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
+                        clientProperties.put(propertyName.trim(), propertyValue);
+                    } else {
+                        log.warn("{}--> Invalid Client property: input line: ", line);
                     }
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
@@ -361,9 +388,22 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         return clientPort;
     }
 
+    public String getClientProperty(@NonNull String propertyName) { return clientProperties.getProperty(propertyName); }
+    public String getClientProperty(@NonNull String propertyName, String defaultValue) { return clientProperties.getProperty(propertyName, defaultValue); }
+
     public void sendToClient(String msg) {
+        sendToClient(msg, Level.INFO);
+    }
+
+    public void sendToClient(String msg, Level logLevel) {
         if (msg == null || (msg = msg.trim()).isEmpty()) return;
-        log.info("{}==> PUSH : {}", id, msg);
+        switch (logLevel) {
+            case TRACE: log.trace("{}==> PUSH : {}", id, msg); break;
+            case DEBUG: log.debug("{}==> PUSH : {}", id, msg); break;
+            case WARN:  log.warn("{}==> PUSH : {}", id, msg); break;
+            case ERROR:  log.error("{}==> PUSH : {}", id, msg); break;
+            default: log.info("{}==> PUSH : {}", id, msg);
+        }
         out.println(msg);
     }
 
@@ -371,17 +411,25 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         sendToClient(cmd);
     }
 
+    public void sendCommand(String cmd, Level logLevel) {
+        sendToClient(cmd, logLevel);
+    }
+
     public void sendCommand(String[] cmd) {
         sendToClient(String.join(" ", cmd));
     }
 
-    public Object readFromClient(String cmd) {
+    public void sendCommand(String[] cmd, Level logLevel) {
+        sendToClient(String.join(" ", cmd), logLevel);
+    }
+
+    public Object readFromClient(String cmd, Level logLevel) {
         String uuid = UUID.randomUUID().toString();
         log.trace("ClientShellCommand.readFromClient: uuid={}, cmd={}", uuid, cmd);
         Object oldValue = inputsMap.remove(uuid);
         log.trace("ClientShellCommand.readFromClient: uuid={}, old-inputMap-value={}", uuid, oldValue);
         log.trace("ClientShellCommand.readFromClient: uuid={}, inputMap-BEFORE={}", uuid, inputsMap);
-        sendCommand(cmd+" "+uuid);
+        sendCommand(cmd+" "+uuid, logLevel);
         log.trace("ClientShellCommand.readFromClient: uuid={}, Command sent to client", uuid);
         while (!inputsMap.containsKey(uuid)) {
             log.trace("ClientShellCommand.readFromClient: uuid={}, No input, waiting 500ms", uuid);

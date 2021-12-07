@@ -48,10 +48,10 @@
     <logger name="eu.melodic.event" level="INFO"/>
     <logger name="eu.melodic.event.control" level="INFO"/>
     <logger name="eu.melodic.event.baguette.server" level="INFO"/>
-    <logger name="eu.melodic.event.baguette.client.install" level="DEBUG"/>
+    <logger name="eu.melodic.event.baguette.client.install" level="INFO"/>
     <logger name="eu.melodic.event.brokercep" level="DEBUG"/>
     <logger name="eu.melodic.event.brokerclient" level="DEBUG"/>
-    <logger name="eu.melodic.event.translate" level="DEBUG"/>
+    <logger name="eu.melodic.event.translate" level="INFO"/>
     <logger name="eu.melodic.event.util" level="DEBUG"/>
     <logger name="eu.melodic.event.util.NetUtil" level="INFO"/>
     <logger name="com.ulisesbocchio.jasyptspringboot" level="WARN"/>

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Data
-public class ClusterZone {
+public class ClusterZone implements IClusterZone {
     private final String id;
     private final int startPort;
     private final int endPort;

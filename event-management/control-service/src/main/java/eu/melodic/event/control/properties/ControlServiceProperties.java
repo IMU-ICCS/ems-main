@@ -19,6 +19,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @Validated
@@ -97,6 +98,15 @@ public class ControlServiceProperties {
 
     @Value("${password-encoder-class}")
     private String passwordEncoderClass;
+
+    @Value("${info.metrics.update.interval:1000}") @Min(1)
+    private long metricsUpdateInterval;
+    @Value("${info.client.metrics.update.interval:10000}") @Min(1)
+    private long metricsClientUpdateInterval;
+    @Value("${info.metrics.stream.update.interval:10}") @Min(1)
+    private int metricsStreamUpdateInterval;    // in seconds
+    @Value("${info.metrics.stream.event.name:ems-metrics-event}") @NotBlank
+    private String metricsStreamEventName;
 
     // control.ssl.** settings
     private KeystoreAndCertificateProperties ssl;

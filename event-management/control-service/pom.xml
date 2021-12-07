@@ -23,6 +23,7 @@
         <hawtio.version>2.4.0</hawtio.version>
         <spring.boot.admin.version>2.3.1</spring.boot.admin.version>
         <jasypt.starter.version>2.1.0</jasypt.starter.version>
+        <micrometer.registry.prometheus.version>1.3.1</micrometer.registry.prometheus.version>
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
@@ -94,19 +95,34 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Spring Boot Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!-- Spring Boot Webflux -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <!-- Spring Boot Actuator  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- Micrometer Prometheus registry  -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>${micrometer.registry.prometheus.version}</version>
+        </dependency>
+        <!-- Spring Boot Admin client  -->
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
         </dependency>
+        <!-- Jasypt Spring Boot starter  -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
@@ -335,6 +351,11 @@
                             <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>run.sh</include>
+                        </resource>
+                        <resource>
+                            <targetPath>/bin</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>sysmon.sh</include>
                         </resource>
                         <resource>
                             <targetPath>/config</targetPath>
