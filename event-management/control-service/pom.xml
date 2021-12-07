@@ -33,6 +33,7 @@
     </properties>
 
     <dependencies>
+        <!-- XXX:CHECK -->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
