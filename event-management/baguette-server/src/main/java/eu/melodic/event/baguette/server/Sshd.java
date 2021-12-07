@@ -29,9 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Custom SSH server
@@ -240,6 +239,29 @@ public class Sshd {
         return null;
     }
 
+    public List<String> getActiveClients() {
+        return ClientShellCommand.getActive().stream()
+                .map(c -> String.format("%s %s %s:%d", c.getId(),
+                        c.getClientIpAddress(),
+                        c.getClientClusterNodeHostname(),
+                        c.getClientClusterNodePort()))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Map<String, String>> getActiveClientsMap() {
+        return ClientShellCommand.getActive().stream()
+                //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
+                .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
+                    Map<String,String> properties = new LinkedHashMap<>();
+                    //properties.put("id", c.getId());
+                    properties.put("ip-address", c.getClientIpAddress());
+                    properties.put("node-hostname", c.getClientClusterNodeHostname());
+                    properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
+                    return properties;
+                }));
+    }
+
     public void sendConstants(Map<String, Double> constants) {
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {
             log.info("SSH server: Sending constants to client {} : {}", csc.getId(), constants);
@@ -278,7 +300,7 @@ public class Sshd {
                 log.debug("_loadPubkeyAndFingerprint(): Fingerprint: {}", serverPubkeyFingerprint);
 
             } catch (Exception ex) {
-                log.error("_loadPubkeyAndFingerprint(): EXCEPTION: {}", ex);
+                log.error("_loadPubkeyAndFingerprint(): EXCEPTION: ", ex);
             }
         });
     }
