@@ -199,4 +199,14 @@ public class ByonService {
 
         return byonNodes;
     }
+
+    public void cleanByon() {
+        log.info("[ByonService]: cleanByon starting");
+        List<ByonNode> byonNodeList = getAllByonNodesList();
+        for(ByonNode byonNode : byonNodeList) {
+            String byonId = byonNode.getId();
+            log.info("[ByonService]: deletingByon for id: {}", byonId);
+            proactiveClientServiceGUI.deleteByonNode(byonId);
+        }
+    }
 }

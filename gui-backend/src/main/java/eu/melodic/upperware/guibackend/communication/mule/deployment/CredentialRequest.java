@@ -10,4 +10,6 @@ public class CredentialRequest {
     private String user;
 
     private String secret;
+
+    private String domain;
 }
