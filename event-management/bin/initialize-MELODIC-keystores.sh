@@ -80,8 +80,16 @@ KEY_SIZE=2048
 START_DATE=-1d
 VALIDITY=3650
 DN_FMT="CN=%s,OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR"
-PUBLIC_IP_FOR_SAN=${PUBLIC_IP// /,ip:}
-EXT_SAN_FMT="SAN=dns:%s,dns:localhost,ip:127.0.0.1,ip:${PUBLIC_IP_FOR_SAN}"
+if [[ "${PUBLIC_IP}" != "" ]]; then
+  PUBLIC_IP_FOR_SAN=${PUBLIC_IP// /,ip:}
+  PUBLIC_IP_FOR_SAN="ip:${PUBLIC_IP_FOR_SAN}"
+fi
+if [[ "${EXTRA_IPS_FOR_SAN}" != "" ]]; then
+  EXTRA_IPS_FOR_SAN=",${EXTRA_IPS_FOR_SAN}"
+  EXTRA_IPS_FOR_SAN=`echo ${EXTRA_IPS_FOR_SAN} | sed -e 's/,/,ip:/g'`
+  EXTRA_IPS_FOR_SAN=`echo ${EXTRA_IPS_FOR_SAN} | sed -e 's/[ \t]//g'`
+fi
+EXT_SAN_FMT="SAN=dns:%s,dns:localhost,ip:127.0.0.1,${PUBLIC_IP_FOR_SAN}${EXTRA_IPS_FOR_SAN}"
 
 KEYSTORE_TYPE=PKCS12
 KEYSTORE_PASS=melodic
