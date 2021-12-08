@@ -23,6 +23,65 @@
 
     <build>
         <plugins>
+            <!--<plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <configuration>
+                    &lt;!&ndash;<buildNumberPropertyName>buildNumber</buildNumberPropertyName>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <format>{0,number,integer}</format>
+                    <items>
+                        <item>buildNumber</item>
+                    </items>&ndash;&gt;
+                    <timestampFormat>{0,date,yyyy-MM-dd HH:mm:ss'Z'}</timestampFormat>
+                    <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.michaldo</groupId>
+                <artifactId>nashorn-maven-plugin</artifactId>
+                <version>0.0.2</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>eval</goal>
+                        </goals>
+                        <configuration>
+                            <script>
+                                $project.buildNumber = "${buildNumber}";
+                            </script>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
+
+            <!-- Copy and filter .env file -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>create-env-file</id>
+                        <!-- here the phase you need -->
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/resources</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <!-- See: https://www.futurespace.es/en/crear-un-proyecto-spring-boot-vue-js/ -->
                 <groupId>com.github.eirslett</groupId>

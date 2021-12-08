@@ -6,7 +6,6 @@ module.exports = {
     proxy: {
       '^': {
         target: 'https://localhost:8111',
-        /*target: 'https://147.102.17.76:8111',*/
         ws: true,
         changeOrigin: true
       },
