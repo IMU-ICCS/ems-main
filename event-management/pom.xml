@@ -80,5 +80,11 @@
                 <module>extra</module>
             </modules>
         </profile>
+        <profile>
+            <id>build-web-admin</id>
+            <modules>
+                <module>web-admin</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
