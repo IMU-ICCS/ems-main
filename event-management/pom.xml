@@ -82,6 +82,9 @@
         </profile>
         <profile>
             <id>build-web-admin</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <modules>
                 <module>web-admin</module>
             </modules>
