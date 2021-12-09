@@ -102,7 +102,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitHeartbeat() throws JMSException {
-        if (!SetUtils.emptyIfNull(beaconHeartbeatTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconHeartbeatTopics).isEmpty()) return;
 
         String message = "TOPIC BEACON HEARTBEAT "+new Date();
         log.debug("Topic Beacon: Transmitting Heartbeat info: message={}, topics={}", message, beaconHeartbeatTopics);
@@ -110,7 +110,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitThresholdInfo() {
-        if (!SetUtils.emptyIfNull(beaconThresholdTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconThresholdTopics).isEmpty()) return;
 
         if (coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId())==null)
             return;
@@ -129,7 +129,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitInstanceInfo() throws JMSException {
-        if (!SetUtils.emptyIfNull(beaconInstanceTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconInstanceTopics).isEmpty()) return;
 
         if (coordinator.getBaguetteServer().isServerRunning()) {
             log.debug("Topic Beacon: Transmitting Instance info: topics={}", beaconInstanceTopics);
@@ -146,7 +146,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitPredictionInfo() {
-        if (!SetUtils.emptyIfNull(beaconPredictionTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconPredictionTopics).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
@@ -174,7 +174,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitSloViolatorInfo() {
-        if (!SetUtils.emptyIfNull(beaconSloViolatorTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconSloViolatorTopics).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitSloViolatorInfo: current-camel-model-id: {}", modelId);
