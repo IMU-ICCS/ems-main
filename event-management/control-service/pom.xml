@@ -343,6 +343,32 @@
                 </executions>
             </plugin>
 
+            <!-- Remove previous Web Admin distribution files from /public_resources -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>remove-web-admin-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.parent.basedir}/public_resources/admin</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
             <!-- Copy Web Admin distribution files to /public_resources -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
