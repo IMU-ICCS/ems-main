@@ -10,6 +10,7 @@ package eu.melodic.upperware.metasolver.metricvalue;
 
 import com.google.gson.Gson;
 import eu.melodic.upperware.metasolver.Coordinator;
+import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -30,8 +31,9 @@ public class MetricValueListener implements MessageListener {
     private MetricValueRegistry<Object> registry;
     private Gson gson;
     private Coordinator coordinator;
+    private MetaSolverProperties.OperationMode operationMode;
 
-    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry, boolean isPrediction) throws JMSException {
+    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry, boolean isPrediction, MetaSolverProperties.OperationMode operationMode) throws JMSException {
         log.debug("MetricValueListener.<init>: type={}", type);
         this.coordinator = coordinator;
         this.topic = topic;
@@ -41,6 +43,7 @@ public class MetricValueListener implements MessageListener {
         this.isPrediction = isPrediction;
         this.reconfigurationProbabilityThreshold = coordinator.getMetaSolverProperties().getReconfigurationProbabilityThreshold();
         gson = new Gson();
+        this.operationMode = operationMode;
     }
 
     public void onMessage(Message message) {
@@ -107,12 +110,24 @@ public class MetricValueListener implements MessageListener {
             log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
 
             if (!isPrediction) {
+                // check operation mode
+                if (operationMode==MetaSolverProperties.OperationMode.PREDICTED_ONLY) {
+                    log.debug("  Operation-Mode is {}. Ignoring MVV event due to actual metric: topic={}, payload={}", operationMode, metricName, payload);
+                    return;
+                }
+
                 // Cache Metric Value in registry
                 log.debug("Listener of topic {}: Metric registry values BEFORE update: {}", topicName, registry);
                 registry.setMetricValue(metricName, event.getMetricValue());
                 log.info("Metric Value set: name='{}', value='{}', topic={}", metricName, event.getMetricValue(), topicName);
                 log.debug("Listener of topic {}: Metric registry values AFTER update:  {}", topicName, registry);
             } else {
+                // check operation mode
+                if (operationMode==MetaSolverProperties.OperationMode.ACTUAL_ONLY) {
+                    log.debug("  Operation-Mode is {}. Ignoring MVV event due to predicted metric: topic={}, payload={}", operationMode, metricName, payload);
+                    return;
+                }
+
                 // Get predictionTime
                 long predictionTime = getPredictionTime(event, metricName, payload);
 
@@ -135,9 +150,21 @@ public class MetricValueListener implements MessageListener {
 		try {
 			log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
             if (!isPrediction) {
+                // check operation mode
+                if (operationMode==MetaSolverProperties.OperationMode.PREDICTED_ONLY) {
+                    log.debug("  Operation-Mode is {}. Ignoring SCALE event due to actual metric: topic={}, payload={}", operationMode, metricName, payload);
+                    return;
+                }
+
                 // Start reconfiguration with the actual metric values set in CP model
                 coordinator.requestReconfigurationStart(false);
             } else {
+                // check operation mode
+                if (operationMode==MetaSolverProperties.OperationMode.ACTUAL_ONLY) {
+                    log.debug("  Operation-Mode is {}. Ignoring SCALE event due to predicted metric: topic={}, payload={}", operationMode, metricName, payload);
+                    return;
+                }
+
                 // Extract key-value pairs from message payload
                 // ...using MetricValueEvent
                 log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
