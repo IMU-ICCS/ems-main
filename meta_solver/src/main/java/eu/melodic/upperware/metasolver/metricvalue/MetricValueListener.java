@@ -31,9 +31,9 @@ public class MetricValueListener implements MessageListener {
     private MetricValueRegistry<Object> registry;
     private Gson gson;
     private Coordinator coordinator;
-    private MetaSolverProperties.OperationMode operationMode;
+    private MetaSolverProperties metaSolverProperties;
 
-    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry, boolean isPrediction, MetaSolverProperties.OperationMode operationMode) throws JMSException {
+    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry, boolean isPrediction, MetaSolverProperties metaSolverProperties) throws JMSException {
         log.debug("MetricValueListener.<init>: type={}", type);
         this.coordinator = coordinator;
         this.topic = topic;
@@ -43,7 +43,7 @@ public class MetricValueListener implements MessageListener {
         this.isPrediction = isPrediction;
         this.reconfigurationProbabilityThreshold = coordinator.getMetaSolverProperties().getReconfigurationProbabilityThreshold();
         gson = new Gson();
-        this.operationMode = operationMode;
+        this.metaSolverProperties = metaSolverProperties;
     }
 
     public void onMessage(Message message) {
@@ -107,6 +107,7 @@ public class MetricValueListener implements MessageListener {
             // ...using MetricValueEvent
             log.debug("Listener of topic {}: Converting event payload to MetricValueEvent instance...", topicName);
             MetricValueEvent event = gson.fromJson(payload, MetricValueEvent.class);
+            MetaSolverProperties.OperationMode operationMode = metaSolverProperties.getOperationMode();
             log.debug("Listener of topic {}: MetricValueEvent instance: {}", topicName, event);
 
             if (!isPrediction) {
@@ -149,6 +150,7 @@ public class MetricValueListener implements MessageListener {
     protected void processScaleEvent(@NonNull String metricName, @NonNull String payload) {
 		try {
 			log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
+            MetaSolverProperties.OperationMode operationMode = metaSolverProperties.getOperationMode();
             if (!isPrediction) {
                 // check operation mode
                 if (operationMode==MetaSolverProperties.OperationMode.PREDICTED_ONLY) {

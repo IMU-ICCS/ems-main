@@ -228,7 +228,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     }
 
     private MessageListener getListener(Topic topic, TopicType type, boolean isPrediction) throws JMSException {
-        MessageListener listener = new MetricValueListener(coordinator, topic, type, registry, isPrediction, properties.getOperationMode());
+        MessageListener listener = new MetricValueListener(coordinator, topic, type, registry, isPrediction, properties);
         return listener;
     }
 
