@@ -357,6 +357,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
                     <filesets>
                         <fileset>
                             <directory>${project.parent.basedir}/public_resources/admin</directory>
