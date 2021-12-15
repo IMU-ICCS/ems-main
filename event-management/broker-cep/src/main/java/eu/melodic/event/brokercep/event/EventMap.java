@@ -12,6 +12,7 @@ package eu.melodic.event.brokercep.event;
 import com.google.gson.Gson;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Data
 @Slf4j
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
 
@@ -66,10 +68,10 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
 
 
     // Constructors
-    public EventMap() {
+    /*public EventMap() {
         super();
         put(TIMESTAMP_NAME, System.currentTimeMillis());
-    }
+    }*/
 
     public EventMap(Map<String, ?> map) {
         map.forEach((k, v) -> {
