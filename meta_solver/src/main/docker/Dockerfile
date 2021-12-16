@@ -8,8 +8,9 @@
 
 FROM java:8-alpine
 VOLUME /tmp
-ADD meta-solver.jar meta-solver.jar
 RUN /bin/sh -c "apk add --no-cache bash"
+
+ADD meta-solver.jar meta-solver.jar
 RUN bash -c 'touch /meta-solver.jar'
 
 COPY ./run.sh .

@@ -60,6 +60,9 @@ public class MetaSolverProperties {
 
     private DebugEvent debugEvents = new DebugEvent();
 
+    public enum OperationMode {ACTUAL_AND_PREDICTED, ACTUAL_ONLY, PREDICTED_ONLY}
+    private OperationMode operationMode = OperationMode.ACTUAL_AND_PREDICTED;
+
     // --------------------------------------------------------------
 
     @Data
