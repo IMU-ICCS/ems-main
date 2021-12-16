@@ -57,6 +57,19 @@ public class ControlServiceController {
     // ESB and Upperware interfacing methods
     // ------------------------------------------------------------------------------------------------------------
 
+    @GetMapping(value = "/testVars")
+    public List<Object> testVars(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken) {
+        log.warn("------------------------------------------------------------------");
+        log.warn("------------------------------------------------------------------");
+        log.warn("------------------------------------------------------------------");
+        String currentCamelModelId = coordinator.getCurrentCamelModelId();
+        log.warn(">>>>>>>>>>>>>>>>>>>>> currentCamelModelId: {}", currentCamelModelId);
+        List<Object> result = coordinator.getMetricVariables(currentCamelModelId);
+        log.warn(">>>>>>>>>>>>>>>>>>>>> RESULT: {}", result);
+
+        return result;
+    }
+
     @RequestMapping(value = "/camelModel", method = POST)
     public String newCamelModel(@RequestBody CamelModelRequestImpl request,
                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)

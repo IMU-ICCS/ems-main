@@ -692,6 +692,33 @@ public class ControlServiceCoordinator {
         return null;
     }
 
+    public List<Object> getMetricVariables(String camelModelId) {
+        log.warn(">>>>>>>>>>   getMetricVariables: BEGIN: {}", camelModelId);
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) return Collections.emptyList();
+        log.warn(">>>>>>>>>>   getMetricVariables: PASS: {}", camelModelId);
+
+        // Get metric and logical constraints
+        Set<String> cmVars = _tc.getCompositeMetricVariables();
+        log.warn(">>>>>>>>>>   getMetricVariables: cmVARS: {}", cmVars);
+        Set<String> mvVars = _tc.getMVVs();
+        log.warn(">>>>>>>>>>   getMetricVariables: MVVs: {}", mvVars);
+
+        // Create map of top-level element names and instances
+        log.warn(">>>>>>>>>>   getMetricVariables: DAG: {}", _tc.DAG);
+        Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
+        Map<String, DAGNode> topLevelNodesMap = topLevelNodes.stream()
+                .collect(Collectors.toMap(DAGNode::getElementName, x -> x));
+        log.warn(">>>>>>>>>>   getMetricVariables: TLDs: {}", topLevelNodesMap.keySet());
+
+        // process each VAR
+        topLevelNodesMap.forEach((k,v) -> {
+            log.warn(">>>>>>>>>>   DAG-TLN: k={}\tv={}", k, v);
+        });
+
+        return null;
+    }
+
 
     // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods

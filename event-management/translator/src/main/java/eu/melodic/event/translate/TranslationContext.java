@@ -167,6 +167,10 @@ public class TranslationContext {
         return new HashSet<>(logicalConstraints);
     }
 
+    public Set<String> getMVVs() { return new HashSet<>(MVV); }
+
+    public Set<String> getCompositeMetricVariables() { return new HashSet<>(CMVAR); }
+
     // ====================================================================================================================================================
     // Map- and Set-related helper methods
 
