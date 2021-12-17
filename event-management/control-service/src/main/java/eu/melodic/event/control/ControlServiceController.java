@@ -18,6 +18,7 @@ import eu.melodic.event.baguette.client.install.instruction.InstallationInstruct
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
@@ -58,16 +59,24 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @GetMapping(value = "/testVars")
-    public List<Object> testVars(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken) {
+    public List<Map<String, Object>> testVars(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken) {
         log.warn("------------------------------------------------------------------");
         log.warn("------------------------------------------------------------------");
         log.warn("------------------------------------------------------------------");
         String currentCamelModelId = coordinator.getCurrentCamelModelId();
         log.warn(">>>>>>>>>>>>>>>>>>>>> currentCamelModelId: {}", currentCamelModelId);
-        List<Object> result = coordinator.getMetricVariables(currentCamelModelId);
+        Set<TranslationContext.MetricContext> result = coordinator.getMetricContextsForPrediction(currentCamelModelId);
         log.warn(">>>>>>>>>>>>>>>>>>>>> RESULT: {}", result);
+        List<Map<String,Object>> metricsList = new ArrayList<>();
+        result.forEach(x -> {
+            Map<String,Object> metricItem = new HashMap<>();
+            metricItem.put("metric", x.getName());
+            metricItem.put("level", 3);
+            metricItem.put("publish_rate", x.getSchedule()!=null ? x.getSchedule().getIntervalInMillis() : -1L);
+            metricsList.add(metricItem);
+        });
 
-        return result;
+        return metricsList;
     }
 
     @RequestMapping(value = "/camelModel", method = POST)

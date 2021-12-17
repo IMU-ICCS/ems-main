@@ -22,11 +22,15 @@ import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.models.interfaces.ems.Monitor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -58,7 +62,7 @@ public class TranslationContext {
     // Grouping-to-Topics map
     public final Map<String, Set<String>> G2T;
     // Metric-to-Metric Context map
-    public final Map<Metric, Set<MetricContext>> M2MC;
+    public final Map<Metric, Set<camel.metric.MetricContext>> M2MC;
     // Composite Metric Variables set
     public final Set<String> CMVAR;
     public final Set<MetricVariable> CMVAR_1;
@@ -149,8 +153,8 @@ public class TranslationContext {
         return newGroupingsMap;
     }
 
-    public MetricContext getMetricContextForMetric(Metric m) {
-        Set<MetricContext> set = M2MC.get(m);
+    public camel.metric.MetricContext getMetricContextForMetric(Metric m) {
+        Set<camel.metric.MetricContext> set = M2MC.get(m);
         return set == null ? null : set.iterator().next();
     }
 
@@ -239,11 +243,11 @@ public class TranslationContext {
         rules.forEach(rule -> addGroupingRulePair(grouping, topic, rule));
     }
 
-    public void addMetricMetricContextPair(Metric m, MetricContext mc) {
+    public void addMetricMetricContextPair(Metric m, camel.metric.MetricContext mc) {
         _addPair(M2MC, m, mc);
     }
 
-    public void addMetricMetricContextPairs(Metric m, List<MetricContext> mcs) {
+    public void addMetricMetricContextPairs(Metric m, List<camel.metric.MetricContext> mcs) {
         _addPair(M2MC, m, mcs);
     }
 
@@ -286,7 +290,7 @@ public class TranslationContext {
         String metricName = null;
         if (uc instanceof camel.constraint.MetricConstraint) {
             camel.constraint.MetricConstraint mc = (camel.constraint.MetricConstraint) uc;
-            MetricContext context = mc.getMetricContext();
+            camel.metric.MetricContext context = mc.getMetricContext();
             if (context!=null) metricName = context.getName();
             if (StringUtils.isBlank(metricName))
                 throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no valid metric context");
@@ -485,5 +489,37 @@ public class TranslationContext {
         private final String operator;
         private final List<String> constraints;
         private final List<DAGNode> constraintNodes;
+    }
+
+    @lombok.Data
+    @RequiredArgsConstructor
+    public static class MetricContext {
+        private final String name;
+        private final Schedule schedule;
+
+        public MetricContext(camel.metric.MetricContext mc) {
+            name = mc.getName();
+            schedule = (mc.getSchedule()!=null) ? new TranslationContext.Schedule(mc.getSchedule()) : null;
+        }
+    }
+
+    @lombok.Data
+    @RequiredArgsConstructor
+    public static class Schedule {
+        private final String name;
+        private final String unit;
+        private final long interval;
+        private final int repetitions;
+        private final Date start;
+        private final Date end;
+
+        public Schedule(camel.metric.Schedule s) {
+            this(s.getName(), s.getTimeUnit().getName(), s.getInterval(), s.getRepetitions(), s.getStart(), s.getEnd());
+        }
+
+        public long getIntervalInMillis() {
+            if (unit==null) return interval;
+            return TimeUnit.MILLISECONDS.convert(interval, TimeUnit.valueOf(unit.toUpperCase()));
+        }
     }
 }

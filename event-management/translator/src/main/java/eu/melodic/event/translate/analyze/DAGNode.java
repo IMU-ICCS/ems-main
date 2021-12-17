@@ -10,6 +10,9 @@
 package eu.melodic.event.translate.analyze;
 
 import camel.core.NamedElement;
+import camel.metric.MetricContext;
+import camel.metric.Schedule;
+import eu.melodic.event.translate.TranslationContext;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -20,6 +23,7 @@ public class DAGNode {
     private final long _id = counter.getAndIncrement();
     private final String _name;
     private final String _toString;
+    private final TranslationContext.MetricContext metricContext;
     private Grouping grouping;
 
     DAGNode() {
@@ -27,6 +31,7 @@ public class DAGNode {
         elementName = null;
         _name = null;
         _toString = "NODE <ROOT>";
+        metricContext = null;
     }
 
     public DAGNode(NamedElement elem, String fullName) {
@@ -36,6 +41,12 @@ public class DAGNode {
         elementName = element.getName();
         _name = fullName;
         _toString = String.format("NODE %s", _name);
+
+        if (elem instanceof MetricContext) {
+            MetricContext mc = (MetricContext) elem;
+            metricContext = new TranslationContext.MetricContext(mc);
+        } else
+            metricContext = null;
     }
 
     public long getId() {
@@ -62,6 +73,10 @@ public class DAGNode {
     public String getElementName() {
         //return element!=null? element.getName() : null;
         return elementName;
+    }
+
+    public TranslationContext.MetricContext getMetricContext() {
+        return metricContext;
     }
 
     public int hashCode() {

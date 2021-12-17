@@ -9,7 +9,12 @@
 
 package eu.melodic.event.control;
 
+import camel.constraint.Constraint;
+import camel.constraint.IfThenConstraint;
+import camel.constraint.LogicalConstraint;
 import camel.core.NamedElement;
+import camel.metric.MetricContext;
+import camel.requirement.ServiceLevelObjective;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
@@ -39,6 +44,7 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -692,32 +698,199 @@ public class ControlServiceCoordinator {
         return null;
     }
 
-    public List<Object> getMetricVariables(String camelModelId) {
-        log.warn(">>>>>>>>>>   getMetricVariables: BEGIN: {}", camelModelId);
+    public Set<TranslationContext.MetricContext> getMetricContextsForPrediction(String camelModelId) {
+        /*log.warn(">>>>>>>>>>   getMetricContextsForPrediction: BEGIN: {}", camelModelId);*/
         TranslationContext _tc = camelToTcCache.get(camelModelId);
-        if (_tc==null) return Collections.emptyList();
-        log.warn(">>>>>>>>>>   getMetricVariables: PASS: {}", camelModelId);
+        if (_tc==null) return Collections.emptySet();
+        /*log.warn(">>>>>>>>>>   getMetricContextsForPrediction: PASS: {}", camelModelId);*/
 
         // Get metric and logical constraints
-        Set<String> cmVars = _tc.getCompositeMetricVariables();
-        log.warn(">>>>>>>>>>   getMetricVariables: cmVARS: {}", cmVars);
+        /*Set<String> cmVars = _tc.getCompositeMetricVariables();
+        log.warn(">>>>>>>>>>   getMetricContextsForPrediction: cmVARS: {}", cmVars);
         Set<String> mvVars = _tc.getMVVs();
-        log.warn(">>>>>>>>>>   getMetricVariables: MVVs: {}", mvVars);
+        log.warn(">>>>>>>>>>   getMetricContextsForPrediction: MVVs: {}", mvVars);*/
 
         // Create map of top-level element names and instances
-        log.warn(">>>>>>>>>>   getMetricVariables: DAG: {}", _tc.DAG);
+        /*log.warn(">>>>>>>>>>   getMetricContextsForPrediction: DAG: {}", _tc.DAG);*/
         Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
-        Map<String, DAGNode> topLevelNodesMap = topLevelNodes.stream()
+
+        /*Map<String, DAGNode> topLevelNodesMap = topLevelNodes.stream()
                 .collect(Collectors.toMap(DAGNode::getElementName, x -> x));
-        log.warn(">>>>>>>>>>   getMetricVariables: TLDs: {}", topLevelNodesMap.keySet());
+        log.warn(">>>>>>>>>>   getMetricContextsForPrediction: TLDs: {}", topLevelNodesMap.keySet());*/
+
+        /*Set<String> topLevelTopics = topLevelNodes.stream().map(DAGNode::getElementName).collect(Collectors.toSet());
+        log.warn(">>>>>>>>>>   getMetricContextsForPrediction: TL Topics: {}", topLevelTopics);*/
 
         // process each VAR
-        topLevelNodesMap.forEach((k,v) -> {
+        /*topLevelNodesMap.forEach((k,v) -> {
             log.warn(">>>>>>>>>>   DAG-TLN: k={}\tv={}", k, v);
-        });
+        });*/
 
-        return null;
+//        return topLevelTopics;
+
+//        log.warn("===================================================================");
+//        HashSet<String> metricsOfTopLevelNodes = new HashSet<>();
+        HashSet<TranslationContext.MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
+        topLevelNodes.forEach(node -> {
+            NamedElement element = node.getElement();
+            String elementName = node.getElementName();
+            /*log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM: name={}, type={}", elementName, element.getClass());*/
+            if (element instanceof camel.metric.CompositeMetric || element instanceof camel.metric.RawMetric) {
+                /*log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    IT IS METRIC");*/
+
+                /*Set<MetricContext> contexts = _tc.M2MC.get(element);
+                log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    Contexts: {}", contexts);
+                MetricContext ctx = contexts.iterator().next();
+                log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    CONTEXT: {}", ctx);
+                String ctxName = ctx.getName();
+                log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    CONTEXT-NAME: {}", ctxName);
+
+                metricsOfTopLevelNodes.add(ctxName);*/
+
+                DAGNode _tmpNode = node;
+//                String mcName = null;
+                TranslationContext.MetricContext tcMc = null;
+                while (_tmpNode!=null) {
+//                    log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    NODE: {}", _tmpNode);
+                    NamedElement tmpNodeElement = _tmpNode.getElement();
+                    if (tmpNodeElement instanceof MetricContext) {
+//                        log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    NODE-with-METRIC-CONTEXT: {}", tmpNodeElement);
+//                        mcName = _tmpNode.getElementName();
+                        tcMc = _tmpNode.getMetricContext();
+//                        log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    METRIC-CONTEXT-NAME: {}", mcName);
+//                        log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    METRIC-CONTEXT-TC: {}", tcMc);
+                        break;
+                    }
+//                    log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    No match");
+                    Set<DAGNode> children = _tc.DAG.getNodeChildren(_tmpNode);
+//                    log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    children: {}", children);
+                    _tmpNode = (children!=null && children.size()>0)
+                            ? children.iterator().next() : null;
+//                    log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    NEXT-NODE: {}", _tmpNode);
+                }
+//                log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    -------------------------------------");
+//                log.warn("<<<<<<<<<<   getMetricContextsForPrediction: TL-ELEM:    FINAL mcName: {}", mcName);
+//                if (mcName!=null)
+//                    metricsOfTopLevelNodes.add(mcName);
+                if (tcMc!=null)
+                    tcMetricsOfTopLevelNodes.add(tcMc);
+
+            } else
+            if (element instanceof ServiceLevelObjective) {
+                /*log.warn("^^^^^^^^^^^^   getMetricContextsForPrediction: TL-ELEM:    IT IS SLO");*/
+
+                /*Constraint constraint = ((ServiceLevelObjective) element).getConstraint();
+                log.warn("^^^^^^^^^^^^   getMetricContextsForPrediction: TL-ELEM:    Constraint: {}", constraint);
+                Set<String> sloMetricContextNames = _decomposeConstraintToMetricContextNames(constraint);
+                log.warn("^^^^^^^^^^^^   getMetricContextsForPrediction: TL-ELEM:    Constraint-decomposed-MC-names: {}", sloMetricContextNames);
+
+                metricsOfTopLevelNodes.addAll(sloMetricContextNames);*/
+
+//                Set<String> mcNames = _decomposeToMetricContextNames(_tc, node);
+                Set<TranslationContext.MetricContext> tcMcs = _decomposeToTCMetricContexts(_tc, node);
+//                log.warn("^^^^^^^^^^^^   getMetricContextsForPrediction: TL-ELEM:    -------------------------------------");
+//                log.warn("^^^^^^^^^^^^   getMetricContextsForPrediction: TL-ELEM:    FINAL mcName: {}", mcNames);
+//                log.warn("^^^^^^^^^^^^   getMetricContextsForPrediction: TL-ELEM:    FINAL tcMcs: {}", tcMcs);
+//                if (mcNames!=null)
+//                    metricsOfTopLevelNodes.addAll(mcNames);
+                if (tcMcs!=null)
+                    tcMetricsOfTopLevelNodes.addAll(tcMcs);
+            } else {
+                log.warn("getMetricContextsForPrediction: Skipping element of type: name={}, type={}", elementName, element.getClass());
+            }
+//            log.warn("###########   getMetricContextsForPrediction: TL-ELEM:    ###### metricsOfTopLevelNodes: {}", metricsOfTopLevelNodes);
+        });
+//        log.warn("##################################################################");
+//        log.warn("###########   getMetricContextsForPrediction: TL-ELEM: FINAL metricsOfTopLevelNodes: {}", metricsOfTopLevelNodes);
+//        log.warn("###########   getMetricContextsForPrediction: TL-ELEM: FINAL tcMetricsOfTopLevelNodes: {}", tcMetricsOfTopLevelNodes);
+
+//        return metricsOfTopLevelNodes;
+        return tcMetricsOfTopLevelNodes;
     }
+
+    /*private Set<String> _decomposeToMetricContextNames(TranslationContext _tc, DAGNode node) {
+//        log.warn("^^^^^^^^^^^^   -------------------------------------------------------------");
+//        log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      NODE: {}", node);
+        NamedElement element = node.getElement();
+//        log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      Element: {}", element);
+        if (element instanceof MetricContext) {
+//            log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      IT IS METRIC CONTEXT");
+            String mcName = node.getElementName();
+//            log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      METRIC CONTEXT NAME: {}", mcName);
+            return Collections.singleton(mcName);
+        }
+//        log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      *NOT* metric context");
+
+        Set<DAGNode> children = _tc.DAG.getNodeChildren(node);
+        if (children==null) return Collections.emptySet();
+
+//        log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      NODE-CHILDREN: {}", children);
+        Set<String> results = new HashSet<>();
+        children.forEach(cn -> {
+            Set<String> res = _decomposeToMetricContextNames(_tc, cn);
+//            log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      NODE-CHILDREN-result: {}", res);
+            results.addAll(res);
+//            log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      PARTIAL-result: {}", results);
+        });
+//        log.warn("^^^^^^^^^^^^   _decomposeToMetricContextNames:      FINAL-result: {}", results);
+        return results;
+    }*/
+
+    private Set<TranslationContext.MetricContext> _decomposeToTCMetricContexts(TranslationContext _tc, DAGNode node) {
+//        log.warn("^^^^^^^^^^^^   -------------------------------------------------------------");
+//        log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      NODE: {}", node);
+        NamedElement element = node.getElement();
+//        log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      Element: {}", element);
+        if (element instanceof MetricContext) {
+//            log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      IT IS METRIC CONTEXT");
+            String mcName = node.getElementName();
+            TranslationContext.MetricContext tcMc = node.getMetricContext();
+//            log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      METRIC CONTEXT NAME: {}", mcName);
+//            log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      METRIC CONTEXT TC: {}", tcMc);
+            return Collections.singleton(tcMc);
+        }
+//        log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      *NOT* metric context");
+
+        Set<DAGNode> children = _tc.DAG.getNodeChildren(node);
+        if (children==null) return Collections.emptySet();
+
+//        log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      NODE-CHILDREN: {}", children);
+        Set<TranslationContext.MetricContext> results = new HashSet<>();
+        children.forEach(cn -> {
+            Set<TranslationContext.MetricContext> res = _decomposeToTCMetricContexts(_tc, cn);
+//            log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      NODE-CHILDREN-result: {}", res);
+            results.addAll(res);
+//            log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      PARTIAL-result: {}", results);
+        });
+//        log.warn("^^^^^^^^^^^^   _decomposeToTCMetricContexts:      FINAL-result: {}", results);
+        return results;
+    }
+
+    /*private Set<String> _decomposeConstraintToMetricContextNames(Constraint c) {
+        if (c instanceof camel.constraint.MetricConstraint) {
+            return Collections.singleton(((camel.constraint.MetricConstraint)c).getMetricContext().getName());
+        } else
+        if (c instanceof camel.constraint.LogicalConstraint) {
+            EList<Constraint> constraints = ((LogicalConstraint) c).getConstraints();
+            if (constraints==null) return Collections.emptySet();
+            HashSet<String> contexts = new HashSet<>();
+            constraints.forEach(con -> contexts.addAll( _decomposeConstraintToMetricContextNames(con) ));
+            return contexts;
+        } else
+        if (c instanceof camel.constraint.IfThenConstraint) {
+            Set<Constraint> constraints = new HashSet<>();
+            constraints.add( ((IfThenConstraint) c).getIf() );
+            constraints.add( ((IfThenConstraint) c).getThen() );
+            constraints.add( ((IfThenConstraint) c).getElse() );
+            constraints = constraints.stream().filter(Objects::nonNull).collect(Collectors.toSet());
+
+            HashSet<String> contexts = new HashSet<>();
+            constraints.forEach(con -> contexts.addAll( _decomposeConstraintToMetricContextNames(con) ));
+            return contexts;
+        } else {
+            return Collections.emptySet();
+        }
+    }*/
 
 
     // ------------------------------------------------------------------------------------------------------------
