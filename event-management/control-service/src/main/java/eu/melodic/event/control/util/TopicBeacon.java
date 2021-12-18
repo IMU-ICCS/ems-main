@@ -15,6 +15,7 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.SetUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,10 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -150,17 +148,24 @@ public class TopicBeacon implements InitializingBean {
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
-        Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
-        if (topLevelMetrics==null)
+        //Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
+        //log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
+        Set<TranslationContext.MetricContext> metricContexts = coordinator.getMetricContextsForPrediction(modelId);
+        log.debug("Topic Beacon: transmitPredictionInfo: Metric Contexts for prediction: {}", metricContexts);
+        if (metricContexts==null)
             return;
-        log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
-        List<HashMap<String, Object>> payload = topLevelMetrics.stream().map(s -> {
+
+        // Convert to Translator-to-Forecasting Methods event format
+        List<HashMap<String, Object>> payload = metricContexts.stream().map(s -> {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("metric", s);
+            map.put("metric", s.getName());
             map.put("level", 3);
-            map.put("publish_rate", beaconPredictionRate);
+            map.put("publish_rate", s.getSchedule()!=null
+                    ? s.getSchedule().getIntervalInMillis() :
+                    beaconPredictionRate);
             return map;
         }).collect(Collectors.toList());
+        log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);
 
         String eventPayload = gson.toJson(payload);
 

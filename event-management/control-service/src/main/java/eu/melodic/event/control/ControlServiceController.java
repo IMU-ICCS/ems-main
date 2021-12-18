@@ -58,27 +58,6 @@ public class ControlServiceController {
     // ESB and Upperware interfacing methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @GetMapping(value = "/testVars")
-    public List<Map<String, Object>> testVars(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken) {
-        log.warn("------------------------------------------------------------------");
-        log.warn("------------------------------------------------------------------");
-        log.warn("------------------------------------------------------------------");
-        String currentCamelModelId = coordinator.getCurrentCamelModelId();
-        log.warn(">>>>>>>>>>>>>>>>>>>>> currentCamelModelId: {}", currentCamelModelId);
-        Set<TranslationContext.MetricContext> result = coordinator.getMetricContextsForPrediction(currentCamelModelId);
-        log.warn(">>>>>>>>>>>>>>>>>>>>> RESULT: {}", result);
-        List<Map<String,Object>> metricsList = new ArrayList<>();
-        result.forEach(x -> {
-            Map<String,Object> metricItem = new HashMap<>();
-            metricItem.put("metric", x.getName());
-            metricItem.put("level", 3);
-            metricItem.put("publish_rate", x.getSchedule()!=null ? x.getSchedule().getIntervalInMillis() : -1L);
-            metricsList.add(metricItem);
-        });
-
-        return metricsList;
-    }
-
     @RequestMapping(value = "/camelModel", method = POST)
     public String newCamelModel(@RequestBody CamelModelRequestImpl request,
                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -247,6 +226,29 @@ public class ControlServiceController {
         log.info("ControlServiceController.getConstraintThresholds(): Constraints for application: {}: {}", applicationId, constraints);
 
         return constraints;
+    }
+
+    @GetMapping(value = {"/translator/getTopLevelNodesMetricContexts/{appId}", "/translator/getTopLevelNodesMetricContexts"})
+    public Collection<?> getTopLevelNodesMetricContexts(@PathVariable("appId") Optional<String> optAppId,
+                                                        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        String applicationId = optAppId.orElse(null);
+        log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Received request: app-id={}", applicationId);
+        log.trace("ControlServiceController.getTopLevelNodesMetricContexts(): JWT token: {}", jwtToken);
+
+        if (StringUtils.isBlank(applicationId)) {
+            applicationId = coordinator.getCurrentCamelModelId();
+            log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Using current application: curr-app-id={}", applicationId);
+            if (applicationId==null) return Collections.emptyList();
+        }
+
+        // Retrieve context metrics of the top-level DAG nodes
+        String camelModelId = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): camelModelId: {}", camelModelId);
+        Set<TranslationContext.MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
+        log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Result: {}", results);
+
+        return results;
     }
 
     // ------------------------------------------------------------------------------------------------------------
