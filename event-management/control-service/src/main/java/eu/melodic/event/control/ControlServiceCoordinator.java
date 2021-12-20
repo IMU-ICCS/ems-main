@@ -650,6 +650,8 @@ public class ControlServiceCoordinator {
                 .collect(Collectors.toMap(TranslationContext.MetricConstraint::getName, mc -> mc));
         Map<String, TranslationContext.LogicalConstraint> lcMap = _tc.getLogicalConstraints().stream()
                 .collect(Collectors.toMap(TranslationContext.LogicalConstraint::getName, lc -> lc));
+        /*Map<String, TranslationContext.IfThenConstraint> ifMap = _tc.getIfThenConstraints().stream()
+                .collect(Collectors.toMap(TranslationContext.IfThenConstraint::getName, ic -> ic));*/
 
         // Create map of top-level element names and instances
         Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();

@@ -732,6 +732,9 @@ public class ModelAnalyzer {
         if (elseConstraint!=null)
             _TC.DAG.addNode(constraint, elseConstraint).setGrouping(getGrouping(elseConstraint));
 
+        // cache constraint
+        _TC.addIfThenConstraint(constraint);
+
         _decomposeConstraint(_TC, ifConstraint);
         _decomposeConstraint(_TC, thenConstraint);
         if (elseConstraint!=null)

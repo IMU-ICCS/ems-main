@@ -10,6 +10,7 @@
 package eu.melodic.event.translate;
 
 import camel.constraint.ComparisonOperatorType;
+import camel.constraint.Constraint;
 import camel.constraint.UnaryConstraint;
 import camel.core.Action;
 import camel.core.NamedElement;
@@ -85,6 +86,8 @@ public class TranslationContext {
     protected Set<MetricConstraint> metricConstraints;
     // Logical Constraints
     protected Set<LogicalConstraint> logicalConstraints;
+    // If-Then-Else Constraints
+    protected Set<IfThenConstraint> ifThenConstraints;
 
 
     // ====================================================================================================================================================
@@ -128,6 +131,8 @@ public class TranslationContext {
         this.metricConstraints = new HashSet<>();
         // Logical Constraints
         this.logicalConstraints = new HashSet<>();
+        // If-Then-Else Constraints
+        this.ifThenConstraints = new HashSet<>();
     }
 
     // ====================================================================================================================================================
@@ -169,6 +174,10 @@ public class TranslationContext {
 
     public Set<TranslationContext.LogicalConstraint> getLogicalConstraints() {
         return new HashSet<>(logicalConstraints);
+    }
+
+    public Set<TranslationContext.IfThenConstraint> getIfThenConstraints() {
+        return new HashSet<>(ifThenConstraints);
     }
 
     public Set<String> getMVVs() { return new HashSet<>(MVV); }
@@ -322,6 +331,21 @@ public class TranslationContext {
 
         // Add logical constraint information
         logicalConstraints.add(new LogicalConstraint(logicalConstraint.getName(), opName, childConstraintNames, nodeList));
+    }
+
+    public void addIfThenConstraint(camel.constraint.IfThenConstraint ifThenConstraint) {
+        String name = ifThenConstraint.getName();
+
+        // Get child constraints
+        Constraint ifConstraint = ifThenConstraint.getIf();
+        Constraint thenConstraint = ifThenConstraint.getThen();
+        Constraint elseConstraint = ifThenConstraint.getElse();
+        String ifConstraintName = ifConstraint.getName();
+        String thenConstraintName = thenConstraint.getName();
+        String elseConstraintName = elseConstraint != null ? elseConstraint.getName() : null;
+
+        // Add logical constraint information
+        ifThenConstraints.add(new IfThenConstraint(name, ifConstraintName, thenConstraintName, elseConstraintName));
     }
 
     // ====================================================================================================================================================
@@ -489,6 +513,14 @@ public class TranslationContext {
         private final String operator;
         private final List<String> constraints;
         private final List<DAGNode> constraintNodes;
+    }
+
+    @lombok.Data
+    public static class IfThenConstraint {
+        private final String name;
+        private final String ifConstraintName;
+        private final String thenConstraintName;
+        private final String elseConstraintName;
     }
 
     @lombok.Data
