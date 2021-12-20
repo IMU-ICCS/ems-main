@@ -53,8 +53,8 @@ public class TopicBeacon implements InitializingBean {
     private Set<String> beaconPredictionTopics;
     @Value("${beacon.topics.prediction.rate:60000}")
     private long beaconPredictionRate;
-    @Value("${beacon.topics.slo-violator:}")
-    private Set<String> beaconSloViolatorTopics;
+    @Value("${beacon.topics.slo-violation-detector:}")
+    private Set<String> beaconSloViolationDetectorTopics;
 
     @Autowired
     private ControlServiceCoordinator coordinator;
@@ -179,20 +179,21 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitSloViolatorInfo() {
-        if (SetUtils.emptyIfNull(beaconSloViolatorTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconSloViolationDetectorTopics).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitSloViolatorInfo: current-camel-model-id: {}", modelId);
-        List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
+        //List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
+        Object sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
         if (sloMetricDecompositions==null)
             return;
         log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
 
         String eventPayload = gson.toJson(sloMetricDecompositions);
 
-        log.debug("Topic Beacon: Transmitting SLO Violator info: event={}, topics={}", eventPayload, beaconSloViolatorTopics);
+        log.debug("Topic Beacon: Transmitting SLO Violator info: event={}, topics={}", eventPayload, beaconSloViolationDetectorTopics);
         try {
-            sendMessageToTopics(eventPayload, beaconSloViolatorTopics);
+            sendMessageToTopics(eventPayload, beaconSloViolationDetectorTopics);
         } catch (JMSException e) {
             log.error("Topic Beacon: EXCEPTION while transmitting SLO Violator info: event={}, topics={}, exception: ",
                     eventPayload, beaconPredictionTopics, e);

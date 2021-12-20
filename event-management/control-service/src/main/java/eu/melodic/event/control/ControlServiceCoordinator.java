@@ -632,7 +632,16 @@ public class ControlServiceCoordinator {
                 .collect(Collectors.toSet());
     }*/
 
-    public List<Object> getSLOMetricDecomposition(String camelModelId) {
+    public Object getSLOMetricDecomposition(String camelModelId) {
+        List<Object> slos = _getSLOMetricDecomposition(camelModelId);
+        Map<String,Object> result = new HashMap<>();
+        result.put("name", "_");
+        result.put("operator", "OR");
+        result.put("constraints", slos);
+        return result;
+    }
+
+    public List<Object> _getSLOMetricDecomposition(String camelModelId) {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptyList();
 
