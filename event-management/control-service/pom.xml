@@ -28,6 +28,12 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
         <!--DOCKER plugin properties-->
+        <!--
+        <docker.push>false</docker.push>
+        <docker.repository></docker.repository>
+        <docker.imagePrefix></docker.imagePrefix>
+        <docker.imageTag></docker.imageTag>
+        -->
         <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
     </properties>
