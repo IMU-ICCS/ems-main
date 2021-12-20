@@ -11,7 +11,6 @@ package eu.melodic.event.translate.analyze;
 
 import camel.core.NamedElement;
 import camel.metric.MetricContext;
-import camel.metric.Schedule;
 import eu.melodic.event.translate.TranslationContext;
 
 import java.util.concurrent.atomic.AtomicLong;
