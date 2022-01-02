@@ -182,6 +182,33 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Remove previous files from /public_resources -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>remove-old-public-resources</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--<excludeDefaultDirectories>true</excludeDefaultDirectories>-->
+                    <filesets>
+                        <fileset>
+                            <directory>${project.parent.basedir}/public_resources</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
@@ -311,35 +338,41 @@
                                     <destinationFile>../public_resources/favicon.ico</destinationFile>
                                 </fileSet>
 
+                                <!-- Copy checksums.csv to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>${project.build.directory}/checksums.csv</sourceFile>
+                                    <destinationFile>../public_resources/resources/checksums.csv</destinationFile>
+                                </fileSet>
+
                                 <!-- Copy broker-client files to /public_resources -->
                                 <fileSet>
                                     <sourceFile>../broker-client/target/broker-client-jar-with-dependencies.jar</sourceFile>
-                                    <destinationFile>../public_resources/broker-client.jar</destinationFile>
+                                    <destinationFile>../public_resources/resources/broker-client.jar</destinationFile>
                                 </fileSet>
                                 <!--
                                   "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
                                 -->
                                 <!--<fileSet>
                                     <sourceFile>../broker-client/eu.melodic.event.brokerclient.properties</sourceFile>
-                                    <destinationFile>../public_resources/eu.melodic.event.brokerclient.properties</destinationFile>
+                                    <destinationFile>../public_resources/resources/eu.melodic.event.brokerclient.properties</destinationFile>
                                 </fileSet>-->
                                 <fileSet>
                                     <sourceFile>../bin/client.sh</sourceFile>
-                                    <destinationFile>../public_resources/client.sh</destinationFile>
+                                    <destinationFile>../public_resources/resources/client.sh</destinationFile>
                                 </fileSet>
 
                                 <!-- Copy baguette-client files to /public_resources -->
                                 <fileSet>
                                     <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz</sourceFile>
-                                    <destinationFile>../public_resources/baguette-client.tgz</destinationFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz.md5</sourceFile>
-                                    <destinationFile>../public_resources/baguette-client.tgz.md5</destinationFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz.md5</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>../baguette-client/bin/install.sh</sourceFile>
-                                    <destinationFile>../public_resources/install.sh</destinationFile>
+                                    <destinationFile>../public_resources/resources/install.sh</destinationFile>
                                 </fileSet>
                             </fileSets>
                             <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
@@ -347,33 +380,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- Remove previous Web Admin distribution files from /public_resources -->
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>remove-web-admin-resources</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.parent.basedir}/public_resources/admin</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                    </filesets>
-                </configuration>
             </plugin>
 
             <!-- Copy Web Admin distribution files to /public_resources -->
