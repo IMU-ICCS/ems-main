@@ -5,7 +5,7 @@ module.exports = {
   devServer: {
     proxy: {
       '^': {
-        target: 'https://localhost:8111',
+        target: process.env.NODE_ENV === 'production' ? 'https://localhost:8111' : 'http://localhost:8111',
         ws: true,
         changeOrigin: true
       },
