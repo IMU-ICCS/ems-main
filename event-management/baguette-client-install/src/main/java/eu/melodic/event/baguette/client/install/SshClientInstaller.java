@@ -26,7 +26,6 @@ import org.apache.sshd.client.scp.ScpClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
-import org.apache.sshd.common.scp.ScpTimestamp;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
@@ -40,7 +39,6 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -48,6 +46,8 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -111,9 +111,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     @Override
-    public boolean execute() { return executeTask(); }
+    public boolean execute(Map<String,String> contextMap) { return executeTask(contextMap); }
 
-    private boolean executeTask(/*int retries*/) {
+    private boolean executeTask(/*int retries*/ Map<String,String> contextMap) {
         boolean success = false;
         int retries = 0;
         while (!success && retries<=maxRetries) {
@@ -134,7 +134,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            success = executeInstructionsList();
+            success = executeInstructionsList(contextMap);
         } catch (Exception ex) {
             log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
             success = false;
@@ -493,7 +493,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructionsList() throws IOException {
+    private boolean executeInstructionsList(Map<String,String> contextMap) throws IOException {
         List<InstallationInstructions> installationInstructionsList = task.getInstallationInstructions();
         int cntSuccess = 0;
         int cntFail = 0;
@@ -503,7 +503,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             streamLogger.logMessage(
                     String.format("----------------------------------------------------------------------\nExecuting instruction set: %s\n",
                     installationInstructions.getDescription()));
-            boolean result = executeInstructions(installationInstructions);
+            boolean result = executeInstructions(installationInstructions, contextMap);
             if (!result) {
                 log.error("SshClientInstaller: Task #{}: Installation Instructions failed: {}", taskCounter, installationInstructions.getDescription());
                 cntFail++;
@@ -519,7 +519,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructions(InstallationInstructions installationInstructions) throws IOException {
+    private boolean executeInstructions(InstallationInstructions installationInstructions, Map<String,String> contextMap) throws IOException {
         Map<String, String> valueMap = installationInstructions.getValueMap();
         int numOfInstructions = installationInstructions.getInstructions().size();
         int cnt = 0;
@@ -610,8 +610,15 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     }
                     break;
                 case COPY:
+                case UPLOAD:
                     log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
                     result = sshFileUpload(ins.getLocalFileName(), ins.getFileName());
+                    break;
+                case DOWNLOAD:
+                    log.info("SshClientInstaller: Task #{}: DOWNLOAD: {} -> {}", taskCounter, ins.getFileName(), ins.getLocalFileName());
+                    result = sshFileDownload(ins.getFileName(), ins.getLocalFileName());
+                    if (result)
+                        result = processPatterns(ins, contextMap);
                     break;
                 case CHECK:
                     log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.getCommand());
@@ -674,5 +681,35 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         String description = String.format("Copy file from server to temp to client: %s -> %s", sourcePath.toString(), targetFile);
 
         return sshFileWrite(contents, targetFile, isExecutable);
+    }
+
+    private boolean processPatterns(Instruction ins, Map<String,String> contextMap) {
+        Map<String, Pattern> patterns = ins.getPatterns();
+        if (patterns==null || patterns.size()==0) {
+            log.info("SshClientInstaller: processPatterns: No patterns to process");
+            return true;
+        }
+
+        // Read local file
+        try(Stream<String> lines = Files.lines(Paths.get(ins.getLocalFileName()))) {
+            patterns.forEach((varName,pattern) -> {
+                Matcher matcher = lines.map(pattern::matcher)
+                        .filter(Matcher::matches)
+                        .findFirst()
+                        .orElse(null);
+                if (matcher!=null && matcher.groupCount()>0) {
+                    String varValue = matcher.group(1);
+                    log.info("SshClientInstaller: processPatterns: Setting variable '{}' to: {}", varName, varValue);
+                    contextMap.put(varName, varValue);
+                } else {
+                    log.info("SshClientInstaller: processPatterns: No match for variable '{}' with pattern: {}", varName, pattern);
+                }
+            });
+        } catch (IOException e) {
+            log.error("SshClientInstaller: processPatterns: Error while reading local file: {} -- Exception: ", ins.getLocalFileName(), e);
+            return false;
+        }
+
+        return true;
     }
 }

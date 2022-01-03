@@ -126,7 +126,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
                 .properties(clientInstallationProperties)
                 .build();
         log.warn("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", nodeInfo);
-        boolean result = installer.execute();
+        boolean result = installer.execute(contextMap);
         log.warn("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, nodeInfo);
     }
 }

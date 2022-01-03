@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 @Data
 @Builder
@@ -29,6 +31,8 @@ public class Instruction {
     private boolean match;
     private long executionTimeout;
     private int retries;
+
+    private Map<String, Pattern> patterns;
 
     // Fluent API
     public Instruction taskType(INSTRUCTION_TYPE taskType) { this.taskType = taskType; return this; }
@@ -71,6 +75,14 @@ public class Instruction {
     public static Instruction createUploadFile(@NotNull String localFile, @NotNull String remoteFile) {
         return Instruction.builder()
                 .taskType(INSTRUCTION_TYPE.COPY)
+                .fileName(remoteFile)
+                .localFileName(localFile)
+                .build();
+   }
+
+    public static Instruction createDownloadFile(@NotNull String remoteFile, @NotNull String localFile) {
+        return Instruction.builder()
+                .taskType(INSTRUCTION_TYPE.DOWNLOAD)
                 .fileName(remoteFile)
                 .localFileName(localFile)
                 .build();

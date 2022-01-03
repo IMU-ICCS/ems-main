@@ -9,6 +9,8 @@
 
 package eu.melodic.event.baguette.client.install;
 
+import java.util.Map;
+
 public interface ClientInstallerPlugin {
-    boolean execute();
+    boolean execute(Map<String,String> contextMap);
 }

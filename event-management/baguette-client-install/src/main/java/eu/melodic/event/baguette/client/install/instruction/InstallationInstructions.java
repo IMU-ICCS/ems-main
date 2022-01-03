@@ -56,6 +56,11 @@ public class InstallationInstructions {
         return this;
     }
 
+    public InstallationInstructions appendDownloadFile(String remoteFile, String localFile) {
+        instructions.add(Instruction.createDownloadFile(remoteFile, localFile));
+        return this;
+    }
+
     public InstallationInstructions appendCheck(String command, int exitCode, boolean match, String message) {
         instructions.add(Instruction.createCheck(command, exitCode, match, message));
         return this;
