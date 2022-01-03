@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.webconf;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,8 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -32,8 +35,11 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     private String staticResourceContext;
     @Value("${static.resource.path:#{null}}")
     private String[] staticResourcePath;
+
     @Value("${static.resource.redirect:#{null}}")
     private String staticResourceRedirect;
+    @Value("#{${static.resource.redirects:{}}}")
+    private Map<String,String> staticResourceRedirects;
 
     @Value("${static.logs.context:/logs/**}")
     private String staticLogsContext;
@@ -82,11 +88,26 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
+        // Remains for backward compatibility (of properties file)
         if (StringUtils.isNotBlank(staticResourceRedirect)) {
             log.info("Redirecting / to: {}", staticResourceRedirect);
             registry
                     .addViewController("/")
                     .setViewName("redirect:" + staticResourceRedirect);
+        }
+
+        log.debug("Configured resource redirects: {}", staticResourceRedirects);
+        if (staticResourceRedirects!=null) {
+            staticResourceRedirects.forEach((context, redirect) -> {
+                if (StringUtils.isNotBlank(context) && StringUtils.isNotBlank(redirect)) {
+                    context = context.trim();
+                    redirect = redirect.trim();
+                    log.info("Redirecting {} to: {}", context, redirect);
+                    registry
+                            .addViewController(context)
+                            .setViewName("redirect:" + redirect);
+                }
+            });
         }
 
         WebMvcConfigurer.super.addViewControllers(registry);
@@ -108,5 +129,11 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
         filter.setAfterMessagePrefix("REQUEST DATA AFTER: >>");
         filter.setAfterMessageSuffix("<< REQUEST DATA AFTER");
         return filter;
+    }
+
+    @Data
+    public static class ResourceRedirect {
+        private String context;
+        private String redirect;
     }
 }
