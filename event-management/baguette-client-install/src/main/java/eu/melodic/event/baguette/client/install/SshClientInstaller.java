@@ -530,6 +530,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         for (Instruction ins : installationInstructions.getInstructions()) {
             if (ins==null) continue;
             cnt++;
+            ins = ins.prepareInstruction(valueMap, environment);
             log.trace("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
             Integer exitStatus;

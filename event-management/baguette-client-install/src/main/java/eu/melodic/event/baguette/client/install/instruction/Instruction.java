@@ -11,6 +11,9 @@ package eu.melodic.event.baguette.client.install.instruction;
 
 import lombok.Builder;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
+import org.springframework.core.env.Environment;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
@@ -47,6 +50,37 @@ public class Instruction {
     public Instruction match(boolean match) { this.match = match; return this; }
     public Instruction executionTimeout(long executionTimeout) { this.executionTimeout = executionTimeout; return this; }
     public Instruction retries(int retries) { this.retries = retries; return this; }
+
+    public Instruction patterns(Map<String, Pattern> patterns) { this.patterns = patterns; return this; }
+    public Instruction pattern(String varName, Pattern pattern) { this.patterns.put(varName, pattern); return this; }
+
+    // Process placeholders
+    public Instruction prepareInstruction(Map<String,String> valueMap, Environment environment) {
+        return Instruction.builder()
+                .taskType(taskType)
+                .description(processPlaceholders(description, valueMap, environment))
+                .message(processPlaceholders(message, valueMap, environment))
+                .command(processPlaceholders(command, valueMap, environment))
+                .fileName(processPlaceholders(fileName, valueMap, environment))
+                .localFileName(processPlaceholders(localFileName, valueMap, environment))
+                .contents(processPlaceholders(contents, valueMap, environment))
+                .executable(executable)
+                .exitCode(exitCode)
+                .match(match)
+                .executionTimeout(executionTimeout)
+                .retries(retries)
+                .patterns(patterns)
+                .build();
+    }
+
+    private String processPlaceholders(String s, Map<String,String> valueMap, Environment environment) {
+        if (StringUtils.isBlank(s)) return s;
+        s = StringSubstitutor.replace(s, valueMap);
+        s = environment.resolvePlaceholders(s);
+        //s = environment.resolveRequiredPlaceholders(s);
+        s = s.replace('\\', '/');
+        return s;
+    }
 
     // Creators API
     public static Instruction createLog(@NotNull String message) {
