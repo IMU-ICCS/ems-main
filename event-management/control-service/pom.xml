@@ -422,11 +422,8 @@
                             <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>run.sh</include>
-                        </resource>
-                        <resource>
-                            <targetPath>/bin</targetPath>
-                            <directory>${project.basedir}/../bin/</directory>
                             <include>sysmon.sh</include>
+                            <include>detect.sh</include>
                         </resource>
                         <resource>
                             <targetPath>/config</targetPath>
