@@ -410,7 +410,7 @@ public class ControlServiceController {
         ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
                 .createInstallationHelper(nodeMap)
                 .createClientInstallationTask(nodeMap, contextMap, baguette);
-        ClientInstaller.instance().addTask(installationTask, contextMap);
+        ClientInstaller.instance().addTask(installationTask);
         log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 
         return "OK";

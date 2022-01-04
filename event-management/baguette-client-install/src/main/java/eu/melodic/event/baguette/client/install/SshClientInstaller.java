@@ -111,9 +111,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     @Override
-    public boolean execute(Map<String,String> contextMap) { return executeTask(contextMap); }
+    public boolean execute() { return executeTask(); }
 
-    private boolean executeTask(/*int retries*/ Map<String,String> contextMap) {
+    private boolean executeTask(/*int retries*/) {
         boolean success = false;
         int retries = 0;
         while (!success && retries<=maxRetries) {
@@ -134,7 +134,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            success = executeInstructionsList(contextMap);
+            success = executeInstructionsList();
         } catch (Exception ex) {
             log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
             success = false;
@@ -493,7 +493,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructionsList(Map<String,String> contextMap) throws IOException {
+    private boolean executeInstructionsList() throws IOException {
         List<InstallationInstructions> installationInstructionsList = task.getInstallationInstructions();
         int cntSuccess = 0;
         int cntFail = 0;
@@ -503,7 +503,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             streamLogger.logMessage(
                     String.format("----------------------------------------------------------------------\nExecuting instruction set: %s\n",
                     installationInstructions.getDescription()));
-            boolean result = executeInstructions(installationInstructions, contextMap);
+            boolean result = executeInstructions(installationInstructions);
             if (!result) {
                 log.error("SshClientInstaller: Task #{}: Installation Instructions failed: {}", taskCounter, installationInstructions.getDescription());
                 cntFail++;
@@ -519,7 +519,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructions(InstallationInstructions installationInstructions, Map<String,String> contextMap) throws IOException {
+    private boolean executeInstructions(InstallationInstructions installationInstructions) throws IOException {
         Map<String, String> valueMap = installationInstructions.getValueMap();
         int numOfInstructions = installationInstructions.getInstructions().size();
         int cnt = 0;
@@ -618,7 +618,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     log.info("SshClientInstaller: Task #{}: DOWNLOAD: {} -> {}", taskCounter, ins.getFileName(), ins.getLocalFileName());
                     result = sshFileDownload(ins.getFileName(), ins.getLocalFileName());
                     if (result)
-                        result = processPatterns(ins, contextMap);
+                        result = processPatterns(ins, valueMap);
                     break;
                 case CHECK:
                     log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.getCommand());
@@ -683,7 +683,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return sshFileWrite(contents, targetFile, isExecutable);
     }
 
-    private boolean processPatterns(Instruction ins, Map<String,String> contextMap) {
+    private boolean processPatterns(Instruction ins, Map<String,String> valueMap) {
         Map<String, Pattern> patterns = ins.getPatterns();
         if (patterns==null || patterns.size()==0) {
             log.info("SshClientInstaller: processPatterns: No patterns to process");

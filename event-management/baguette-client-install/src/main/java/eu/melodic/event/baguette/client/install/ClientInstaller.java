@@ -48,20 +48,20 @@ public class ClientInstaller implements InitializingBean {
 
     public static ClientInstaller instance() { return singleton; }
 
-    public void addTask(@NotNull ClientInstallationTask task, Map<String,String> contextMap) {
+    public void addTask(@NotNull ClientInstallationTask task) {
         executorService.submit(() -> {
             long taskCnt = taskCounter.getAndIncrement();
             log.info("ClientInstaller: Executing Client installation Task #{}: task-id={}, node-id={}, name={}, type={}, address={}",
                     taskCnt, task.getId(), task.getNodeId(), task.getName(), task.getType(), task.getAddress());
             long startTm = System.currentTimeMillis();
-            boolean result = executeTask(task, taskCnt, contextMap);
+            boolean result = executeTask(task, taskCnt);
             long endTm = System.currentTimeMillis();
             log.info("ClientInstaller: Client installation Task #{}: result={}, duration={}ms",
                     taskCnt, result?"SUCCESS":"FAILED", endTm-startTm);
         });
     }
 
-    private boolean executeTask(ClientInstallationTask task, long taskCounter, Map<String,String> contextMap) {
+    private boolean executeTask(ClientInstallationTask task, long taskCounter) {
         if ("VM".equalsIgnoreCase(task.getType())) {
             NodeRegistryEntry entry = baguetteServer.getNodeRegistry().getNodeByAddress(task.getAddress());
             if (entry==null)
@@ -69,7 +69,7 @@ public class ClientInstaller implements InitializingBean {
                 //baguetteServer.handleNodeSituation(task.getAddress(), INTERNAL_ERROR);
             entry.nodeInstalling(task);
 
-            boolean success = executeVmTask(task, taskCounter, contextMap);
+            boolean success = executeVmTask(task, taskCounter);
 
             if (success) entry.nodeInstallationComplete(task);
             else entry.nodeInstallationError(task);
@@ -80,7 +80,7 @@ public class ClientInstaller implements InitializingBean {
         return false;
     }
 
-    private boolean executeVmTask(ClientInstallationTask task, long taskCounter, Map<String,String> contextMap) {
+    private boolean executeVmTask(ClientInstallationTask task, long taskCounter) {
         return SshClientInstaller.builder()
                 .task(task)
                 .taskCounter(taskCounter)
@@ -93,6 +93,6 @@ public class ClientInstaller implements InitializingBean {
                 .commandExecutionTimeout(properties.getCommandExecutionTimeout())*/
                 .properties(properties)
                 .build()
-                .execute(contextMap);
+                .execute();
     }
 }
