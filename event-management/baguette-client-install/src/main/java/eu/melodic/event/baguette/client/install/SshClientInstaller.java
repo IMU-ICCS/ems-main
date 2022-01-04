@@ -695,24 +695,32 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         // Read local file
+        String[] linesArr;
         try(Stream<String> lines = Files.lines(Paths.get(ins.getLocalFileName()))) {
-            patterns.forEach((varName,pattern) -> {
-                Matcher matcher = lines.map(pattern::matcher)
-                        .filter(Matcher::matches)
-                        .findFirst()
-                        .orElse(null);
-                if (matcher!=null && matcher.groupCount()>0) {
-                    String varValue = matcher.group(1);
-                    log.info("SshClientInstaller: processPatterns: Setting variable '{}' to: {}", varName, varValue);
-                    contextMap.put(varName, varValue);
-                } else {
-                    log.info("SshClientInstaller: processPatterns: No match for variable '{}' with pattern: {}", varName, pattern);
-                }
-            });
+            linesArr = lines.toArray(String[]::new);
         } catch (IOException e) {
             log.error("SshClientInstaller: processPatterns: Error while reading local file: {} -- Exception: ", ins.getLocalFileName(), e);
             return false;
         }
+
+        // Process file lines against instruction patterns
+        patterns.forEach((varName,pattern) -> {
+            Matcher matcher = null;
+            for (String line : linesArr) {
+                Matcher m = pattern.matcher(line);
+                if (m.matches()) {
+                    matcher = m;
+                    //break;    // Uncomment to return the first match. Comment to return the last match.
+                }
+            }
+            if (matcher!=null && matcher.matches()) {
+                String varValue = matcher.group( matcher.groupCount()>0 ? 1 : 0 );
+                log.info("SshClientInstaller: processPatterns: Setting variable '{}' to: {}", varName, varValue);
+                valueMap.put(varName, varValue);
+            } else {
+                log.info("SshClientInstaller: processPatterns: No match for variable '{}' with pattern: {}", varName, pattern);
+            }
+        });
 
         return true;
     }
