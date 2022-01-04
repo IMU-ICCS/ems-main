@@ -9,7 +9,6 @@
 
 package eu.melodic.event.control.webconf;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -129,11 +128,5 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
         filter.setAfterMessagePrefix("REQUEST DATA AFTER: >>");
         filter.setAfterMessageSuffix("<< REQUEST DATA AFTER");
         return filter;
-    }
-
-    @Data
-    public static class ResourceRedirect {
-        private String context;
-        private String redirect;
     }
 }
