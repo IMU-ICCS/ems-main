@@ -1,0 +1,54 @@
+{
+  "os": "LINUX",
+  "description": "Detect the node features (OS, architecture, cores, RAM, disk etc)",
+  "instructions": [
+    {
+      "description": "Detecting target node type...",
+      "taskType": "LOG",
+      "message": "Detecting target node type..."
+    },
+    {
+      "description": "Copying detection script to node...",
+      "taskType": "COPY",
+      "fileName": "/tmp/detect.sh",
+      "localFileName": "bin/detect.sh",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Make detection script executable",
+      "taskType": "CMD",
+      "command": "chmod +x /tmp/detect.sh ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Run detection script",
+      "taskType": "CMD",
+      "command": "/tmp/detect.sh &> /tmp/detect.txt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Copying detection results back to EMS server...",
+      "taskType": "DOWNLOAD",
+      "fileName": "/tmp/detect.txt",
+      "localFileName": "logs/detect.${NODE_ADDRESS}--${TIMESTAMP-FILE}.txt",
+      "executable": false,
+      "exitCode": 0,
+      "match": false,
+      "patterns": {
+        "VAR_AAA": { "pattern": "(^DETE[^\\r\\n]+)", "flags": 0 },
+        "VAR_BBB": { "pattern": "(^OK$)", "flags": 0 }
+      }
+    },
+    {
+      "description": "Detection results...",
+      "taskType": "LOG",
+      "message": "VAR_AAA=${VAR_AAA}, VAR_BBB=${VAR_BBB}"
+    }
+  ]
+}
