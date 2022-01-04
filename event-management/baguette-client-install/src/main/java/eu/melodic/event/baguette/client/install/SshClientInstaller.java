@@ -532,20 +532,20 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     .getInstance()
                     .resolvePlaceholders(ins, valueMap);
             log.trace("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
-            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
+            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
             Integer exitStatus;
             boolean result = true;
-            switch (ins.getTaskType()) {
+            switch (ins.taskType()) {
                 case LOG:
-                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.getMessage());
+                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.message());
                     break;
                 case CMD:
-                    log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.command());
                     int retries = 0;
-                    int maxRetries = ins.getRetries();
+                    int maxRetries = ins.retries();
                     while (true) {
                         try {
-                            exitStatus = sshExecCmd(ins.getCommand(), ins.getExecutionTimeout());
+                            exitStatus = sshExecCmd(ins.command(), ins.executionTimeout());
                             result = (exitStatus!=null);
                             //result = (exitStatus==0);
                             log.info("SshClientInstaller: Task #{}: EXEC: exit-status={}", taskCounter, exitStatus);
@@ -560,7 +560,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                         retries++;
                         if (retries<=maxRetries) {
                             log.info("SshClientInstaller: Task #{}: Retry {}/{} for instruction {}/{}: {}",
-                                    taskCounter, retries, maxRetries, cnt, numOfInstructions, ins.getDescription());
+                                    taskCounter, retries, maxRetries, cnt, numOfInstructions, ins.description());
                         } else {
                             if (maxRetries>0)
                                 log.error("sshClientInstaller: Task #{}: Last instruction failed {} times. Giving up", taskCounter, maxRetries);
@@ -599,40 +599,40 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     break;*/
                 case FILE:
                     //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
-                    if (Paths.get(ins.getLocalFileName()).toFile().isDirectory()) {
-                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS DIR: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
-                        result = copyDir(ins.getLocalFileName(), ins.getFileName(), valueMap);
+                    if (Paths.get(ins.localFileName()).toFile().isDirectory()) {
+                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS DIR: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
+                        result = copyDir(ins.localFileName(), ins.fileName(), valueMap);
                     } else
-                    if (Paths.get(ins.getLocalFileName()).toFile().isFile()) {
-                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS FILE: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
-                        Path sourceFile = Paths.get(ins.getLocalFileName());
-                        Path sourceBaseDir = Paths.get(ins.getLocalFileName()).getParent();
-                        result = copyFile(sourceFile, sourceBaseDir, ins.getFileName(), valueMap, ins.isExecutable());
+                    if (Paths.get(ins.localFileName()).toFile().isFile()) {
+                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS FILE: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
+                        Path sourceFile = Paths.get(ins.localFileName());
+                        Path sourceBaseDir = Paths.get(ins.localFileName()).getParent();
+                        result = copyFile(sourceFile, sourceBaseDir, ins.fileName(), valueMap, ins.executable());
                     } else {
-                        log.error("SshClientInstaller: Task #{}: FILE: ERROR: Local file is not directory or normal file: {}", taskCounter, ins.getLocalFileName());
+                        log.error("SshClientInstaller: Task #{}: FILE: ERROR: Local file is not directory or normal file: {}", taskCounter, ins.localFileName());
                         result = false;
                     }
                     break;
                 case COPY:
                 case UPLOAD:
-                    log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
-                    result = sshFileUpload(ins.getLocalFileName(), ins.getFileName());
+                    log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
+                    result = sshFileUpload(ins.localFileName(), ins.fileName());
                     break;
                 case DOWNLOAD:
-                    log.info("SshClientInstaller: Task #{}: DOWNLOAD: {} -> {}", taskCounter, ins.getFileName(), ins.getLocalFileName());
-                    result = sshFileDownload(ins.getFileName(), ins.getLocalFileName());
+                    log.info("SshClientInstaller: Task #{}: DOWNLOAD: {} -> {}", taskCounter, ins.fileName(), ins.localFileName());
+                    result = sshFileDownload(ins.fileName(), ins.localFileName());
                     if (result)
                         result = processPatterns(ins, valueMap);
                     break;
                 case CHECK:
-                    log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.getCommand());
-                    exitStatus = sshExecCmd(ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.command());
+                    exitStatus = sshExecCmd(ins.command());
                     log.debug("SshClientInstaller: Task #{}: CHECK: Result: match={}, match-status={}, exec-status={}",
-                            taskCounter, ins.isMatch(), ins.getExitCode(), exitStatus);
-                    if (ins.isMatch() && exitStatus==ins.getExitCode()
-                        || !ins.isMatch() && exitStatus!=ins.getExitCode())
+                            taskCounter, ins.match(), ins.exitCode(), exitStatus);
+                    if (ins.match() && exitStatus==ins.exitCode()
+                        || !ins.match() && exitStatus!=ins.exitCode())
                     {
-                        log.info("SshClientInstaller: Task #{}: CHECK: MATCH: {}", taskCounter, ins.getMessage());
+                        log.info("SshClientInstaller: Task #{}: CHECK: MATCH: {}", taskCounter, ins.message());
                         log.info("SshClientInstaller: Task #{}: CHECK: MATCH: Will not process more instructions", taskCounter);
                         return true;
                     }
@@ -688,7 +688,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean processPatterns(Instruction ins, Map<String,String> valueMap) {
-        Map<String, Pattern> patterns = ins.getPatterns();
+        Map<String, Pattern> patterns = ins.patterns();
         if (patterns==null || patterns.size()==0) {
             log.info("SshClientInstaller: processPatterns: No patterns to process");
             return true;
@@ -696,10 +696,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         // Read local file
         String[] linesArr;
-        try(Stream<String> lines = Files.lines(Paths.get(ins.getLocalFileName()))) {
+        try (Stream<String> lines = Files.lines(Paths.get(ins.localFileName()))) {
             linesArr = lines.toArray(String[]::new);
         } catch (IOException e) {
-            log.error("SshClientInstaller: processPatterns: Error while reading local file: {} -- Exception: ", ins.getLocalFileName(), e);
+            log.error("SshClientInstaller: processPatterns: Error while reading local file: {} -- Exception: ", ins.localFileName(), e);
             return false;
         }
 

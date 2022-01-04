@@ -11,15 +11,14 @@ package eu.melodic.event.baguette.client.install.instruction;
 
 import lombok.Builder;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
-import org.springframework.core.env.Environment;
+import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 @Data
+@Accessors(chain = true, fluent = true)
 @Builder(toBuilder = true)
 public class Instruction {
     private INSTRUCTION_TYPE taskType;
@@ -37,21 +36,7 @@ public class Instruction {
 
     private Map<String, Pattern> patterns;
 
-    // Fluent API
-    public Instruction taskType(INSTRUCTION_TYPE taskType) { this.taskType = taskType; return this; }
-    public Instruction description(String description) { this.description = description; return this; }
-    public Instruction message(String message) { this.message = message; return this; }
-    public Instruction command(String command) { this.command = command; return this; }
-    public Instruction fileName(String fileName) { this.fileName = fileName; return this; }
-    public Instruction localFileName(String localFileName) { this.localFileName = localFileName; return this; }
-    public Instruction contents(String contents) { this.contents = contents; return this; }
-    public Instruction executable(boolean executable) { this.executable = executable; return this; }
-    public Instruction exitCode(int exitCode) { this.exitCode = exitCode; return this; }
-    public Instruction match(boolean match) { this.match = match; return this; }
-    public Instruction executionTimeout(long executionTimeout) { this.executionTimeout = executionTimeout; return this; }
-    public Instruction retries(int retries) { this.retries = retries; return this; }
-
-    public Instruction patterns(Map<String, Pattern> patterns) { this.patterns = patterns; return this; }
+    // Fluent API addition
     public Instruction pattern(String varName, Pattern pattern) { this.patterns.put(varName, pattern); return this; }
 
     // Creators API

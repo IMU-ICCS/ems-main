@@ -37,12 +37,12 @@ public class InstructionPlaceholdersResolutionService {
 
     public Instruction resolvePlaceholders(Instruction instruction, Map<String,String> valueMap) {
         return instruction.toBuilder()
-                .description(processPlaceholders(instruction.getDescription(), valueMap))
-                .message(processPlaceholders(instruction.getMessage(), valueMap))
-                .command(processPlaceholders(instruction.getCommand(), valueMap))
-                .fileName(processPlaceholders(instruction.getFileName(), valueMap))
-                .localFileName(processPlaceholders(instruction.getLocalFileName(), valueMap))
-                .contents(processPlaceholders(instruction.getContents(), valueMap))
+                .description(processPlaceholders(instruction.description(), valueMap))
+                .message(processPlaceholders(instruction.message(), valueMap))
+                .command(processPlaceholders(instruction.command(), valueMap))
+                .fileName(processPlaceholders(instruction.fileName(), valueMap))
+                .localFileName(processPlaceholders(instruction.localFileName(), valueMap))
+                .contents(processPlaceholders(instruction.contents(), valueMap))
                 .build();
     }
 
