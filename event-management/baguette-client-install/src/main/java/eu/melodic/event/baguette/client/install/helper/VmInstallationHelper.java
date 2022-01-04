@@ -31,6 +31,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class VmInstallationHelper extends AbstractInstallationHelper {
+    private final static SimpleDateFormat tsW3C = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private final static SimpleDateFormat tsUTC = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private final static SimpleDateFormat tsFile = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS");
+    static {
+        tsW3C.setTimeZone(TimeZone.getDefault());
+        tsUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+        tsFile.setTimeZone(TimeZone.getDefault());
+    }
+
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -172,6 +182,12 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         valueMap.put("EMS_PUBLIC_DIR", System.getProperty("PUBLIC_DIR", System.getenv("PUBLIC_DIR")));
         log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
+
+        Date ts = new Date();
+        valueMap.put("TIMESTAMP", Long.toString(ts.getTime()));
+        valueMap.put("TIMESTAMP-W3C", tsW3C.format(ts));
+        valueMap.put("TIMESTAMP-UTC", tsUTC.format(ts));
+        valueMap.put("TIMESTAMP-FILE", tsFile.format(ts));
 
 /*        // Clear EMS server certificate (PEM) file, if not secure
         if (!isServerSecure) {
