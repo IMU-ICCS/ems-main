@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client.install;
 
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
+import eu.melodic.event.baguette.client.install.instruction.InstructionPlaceholdersResolutionService;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +32,6 @@ import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
-import org.springframework.core.env.Environment;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -61,7 +61,6 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
     private final ClientInstallationTask task;
     private final long taskCounter;
-    private final Environment environment;
 
     private final int maxRetries;
     private final long connectTimeout;
@@ -96,10 +95,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }*/
 
     @Builder
-    public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties, Environment environment) {
+    public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties) {
         this.task = task;
         this.taskCounter = taskCounter;
-        this.environment = environment;
 
         this.maxRetries = properties.getMaxRetries()>0 ? properties.getMaxRetries() : 5;
         this.connectTimeout = properties.getConnectTimeout()>0 ? properties.getConnectTimeout() : 60000;
@@ -530,7 +528,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         for (Instruction ins : installationInstructions.getInstructions()) {
             if (ins==null) continue;
             cnt++;
-            ins = ins.prepareInstruction(valueMap, environment);
+            ins = InstructionPlaceholdersResolutionService
+                    .getInstance()
+                    .resolvePlaceholders(ins, valueMap);
             log.trace("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
             log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
             Integer exitStatus;

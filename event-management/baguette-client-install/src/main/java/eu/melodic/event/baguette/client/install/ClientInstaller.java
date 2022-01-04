@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
@@ -36,8 +35,6 @@ public class ClientInstaller implements InitializingBean {
     private ClientInstallationProperties properties;
     @Autowired
     private BaguetteServer baguetteServer;
-    @Autowired
-    private Environment environment;
 
     private final AtomicLong taskCounter = new AtomicLong();
     private ExecutorService executorService;
@@ -86,7 +83,6 @@ public class ClientInstaller implements InitializingBean {
         return SshClientInstaller.builder()
                 .task(task)
                 .taskCounter(taskCounter)
-                .environment(environment)
                 /*.maxRetries(properties.getMaxRetries())
                 .authenticationTimeout(properties.getAuthenticateTimeout())
                 .connectTimeout(properties.getConnectTimeout())

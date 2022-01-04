@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class Instruction {
     private INSTRUCTION_TYPE taskType;
     private String description;
@@ -53,34 +53,6 @@ public class Instruction {
 
     public Instruction patterns(Map<String, Pattern> patterns) { this.patterns = patterns; return this; }
     public Instruction pattern(String varName, Pattern pattern) { this.patterns.put(varName, pattern); return this; }
-
-    // Process placeholders
-    public Instruction prepareInstruction(Map<String,String> valueMap, Environment environment) {
-        return Instruction.builder()
-                .taskType(taskType)
-                .description(processPlaceholders(description, valueMap, environment))
-                .message(processPlaceholders(message, valueMap, environment))
-                .command(processPlaceholders(command, valueMap, environment))
-                .fileName(processPlaceholders(fileName, valueMap, environment))
-                .localFileName(processPlaceholders(localFileName, valueMap, environment))
-                .contents(processPlaceholders(contents, valueMap, environment))
-                .executable(executable)
-                .exitCode(exitCode)
-                .match(match)
-                .executionTimeout(executionTimeout)
-                .retries(retries)
-                .patterns(patterns)
-                .build();
-    }
-
-    private String processPlaceholders(String s, Map<String,String> valueMap, Environment environment) {
-        if (StringUtils.isBlank(s)) return s;
-        s = StringSubstitutor.replace(s, valueMap);
-        s = environment.resolvePlaceholders(s);
-        //s = environment.resolveRequiredPlaceholders(s);
-        s = s.replace('\\', '/');
-        return s;
-    }
 
     // Creators API
     public static Instruction createLog(@NotNull String message) {
