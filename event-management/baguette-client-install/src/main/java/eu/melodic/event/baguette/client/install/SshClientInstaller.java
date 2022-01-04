@@ -31,6 +31,7 @@ import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
+import org.springframework.core.env.Environment;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -60,6 +61,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
     private final ClientInstallationTask task;
     private final long taskCounter;
+    private final Environment environment;
 
     private final int maxRetries;
     private final long connectTimeout;
@@ -94,9 +96,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }*/
 
     @Builder
-    public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties) {
-        this.task= task;
+    public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties, Environment environment) {
+        this.task = task;
         this.taskCounter = taskCounter;
+        this.environment = environment;
 
         this.maxRetries = properties.getMaxRetries()>0 ? properties.getMaxRetries() : 5;
         this.connectTimeout = properties.getConnectTimeout()>0 ? properties.getConnectTimeout() : 60000;

@@ -21,12 +21,12 @@ public class InstallationInstructions {
     private Map<String,String> valueMap = new HashMap<>();
     private List<Instruction> instructions = new ArrayList<>();
 
-    public Map<String,String> getValueMap() {
+    /*public Map<String,String> getValueMap() {
         return Collections.unmodifiableMap(valueMap);
     }
     public void setValueMap(Map<String,String> valueMap) {
         this.valueMap = new HashMap<>(valueMap);
-    }
+    }*/
 
     public List<Instruction> getInstructions() { return Collections.unmodifiableList(instructions); }
     public void setInstructions(List<Instruction> ni) { instructions = new ArrayList<>(ni); }

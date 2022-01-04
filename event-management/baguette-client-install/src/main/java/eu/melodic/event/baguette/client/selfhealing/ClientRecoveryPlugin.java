@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
     private final TaskScheduler taskScheduler;
     private final ClientInstallationProperties clientInstallationProperties;
     private final BaguetteServer baguetteServer;
+    private final Environment environment;
 
     @Value("${CLIENT_RECOVERY_DELAY:10000}")
     private long clientRecoveryDelay;
@@ -123,6 +125,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
         log.debug("ClientRecoveryPlugin: runClientRecovery(): Client recovery task: {}", task);
         SshClientInstaller installer = SshClientInstaller.builder()
                 .task(task)
+                .environment(environment)
                 .properties(clientInstallationProperties)
                 .build();
         log.warn("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", nodeInfo);

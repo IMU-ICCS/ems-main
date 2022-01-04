@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -44,8 +43,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
     @Autowired
     private ResourceLoader resourceLoader;
 
-    @Autowired
-    private Environment environment;
+    /*@Autowired
+    private Environment environment;*/
 
     @Override
     public ClientInstallationTask createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
@@ -216,11 +215,12 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Template installation instructions for LINUX: json:\n{}", json);
 
                 // Process placeholders
-                json = StringSubstitutor.replace(json, valueMap);
+                /*json = StringSubstitutor.replace(json, valueMap);
                 json = environment.resolvePlaceholders(json);
                 //json = environment.resolveRequiredPlaceholders(json);
                 json = json.replace('\\', '/');
                 log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
+                */
 
                 // Create InstallationInstructions object from JSON
                 InstallationInstructions installationInstructions =
