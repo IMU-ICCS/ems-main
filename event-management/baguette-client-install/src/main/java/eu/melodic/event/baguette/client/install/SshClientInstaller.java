@@ -504,16 +504,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             // Check installation instructions condition
             try {
                 if (! InstructionsService.getInstance().checkCondition(installationInstructions, installationInstructions.getValueMap())) {
-                    log.info("SshClientInstaller: Task #{}: Installation Instructions is not executed due to condition: {}", taskCounter, installationInstructions.getDescription());
+                    log.info("SshClientInstaller: Task #{}: Installation Instructions is not executed due to failed condition: {}", taskCounter, installationInstructions.getDescription());
                     if (installationInstructions.isStopOnConditionFail()) {
-                        log.info("SshClientInstaller: Task #{}: No further installation instruction will be executed due to stopOnConditionFail: {}", taskCounter, installationInstructions.getDescription());
+                        log.info("SshClientInstaller: Task #{}: No further installation instructions will be executed due to stopOnConditionFail: {}", taskCounter, installationInstructions.getDescription());
                         return false;
                     }
                     continue;
                 }
-                log.debug("SshClientInstaller: Task #{}: Condition evaluation passed for Installation Instructions: {}", taskCounter, installationInstructions.getDescription());
+                log.debug("SshClientInstaller: Task #{}: Condition evaluation for Installation Instructions succeeded: {}", taskCounter, installationInstructions.getDescription());
             } catch (Exception e) {
-                log.error("sshClientInstaller: Task #{}: Installation Instructions Condition evaluation failed. Will not process remaining installation instructions: {}\n", taskCounter, installationInstructions.getDescription(), e);
+                log.error("sshClientInstaller: Task #{}: Installation Instructions Condition evaluation error. Will not process remaining installation instructions: {}\n", taskCounter, installationInstructions.getDescription(), e);
                 return false;
             }
 
@@ -550,16 +550,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             // Check instruction condition
             try {
                 if (! InstructionsService.getInstance().checkCondition(ins, valueMap)) {
-                    log.info("SshClientInstaller: Task #{}: Instruction is not executed due to condition {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
+                    log.info("SshClientInstaller: Task #{}: Instruction is not executed due to failed condition {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
                     if (ins.isStopOnConditionFail()) {
-                        log.info("SshClientInstaller: Task #{}: No further instruction will be executed due to stopOnConditionFail: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
+                        log.info("SshClientInstaller: Task #{}: No further instructions will be executed due to stopOnConditionFail: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
                         return false;
                     }
                     continue;
                 }
-                log.debug("SshClientInstaller: Task #{}: Condition evaluation passed for instruction: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
+                log.debug("SshClientInstaller: Task #{}: Condition evaluation for instruction succeeded: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
             } catch (Exception e) {
-                log.error("sshClientInstaller: Task #{}: Instruction Condition evaluation failed. Will not process remaining instructions: {}/{}: {}\n", taskCounter, cnt, numOfInstructions, ins.description(), e);
+                log.error("sshClientInstaller: Task #{}: Instruction Condition evaluation error. Will not process remaining instructions: {}/{}: {}\n", taskCounter, cnt, numOfInstructions, ins.description(), e);
                 return false;
             }
 
