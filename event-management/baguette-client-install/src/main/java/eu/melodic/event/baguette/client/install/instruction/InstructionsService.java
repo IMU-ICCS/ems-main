@@ -13,6 +13,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -22,8 +23,8 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class InstructionsService {
-    private final Environment environment;
+public class InstructionsService implements EnvironmentAware {
+    private Environment environment;
     private static InstructionsService INSTANCE;
 
     public static InstructionsService getInstance() {
@@ -31,8 +32,8 @@ public class InstructionsService {
         return INSTANCE;
     }
 
-    public InstructionsService(@NonNull Environment environment) {
-        if (INSTANCE!=null) throw new IllegalStateException("InstructionsService singleton instance has already been initialized");
+    @Override
+    public void setEnvironment(Environment environment) {
         this.environment = environment;
         INSTANCE = this;
     }
