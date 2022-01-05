@@ -14,7 +14,7 @@ import lombok.Data;
 import java.util.*;
 
 @Data
-public class InstallationInstructions {
+public class InstallationInstructions extends AbstractInstructionsBase {
     private String os;
     private String description;
     private String fileName;

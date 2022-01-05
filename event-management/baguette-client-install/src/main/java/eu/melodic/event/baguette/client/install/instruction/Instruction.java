@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @Data
 @Accessors(chain = true, fluent = true)
 @Builder(toBuilder = true)
-public class Instruction {
+public class Instruction extends AbstractInstructionsBase {
     private INSTRUCTION_TYPE taskType;
     private String description;
     private String message;
