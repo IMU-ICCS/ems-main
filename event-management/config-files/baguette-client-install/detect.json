@@ -41,14 +41,27 @@
       "exitCode": 0,
       "match": false,
       "patterns": {
-        "VAR_AAA": { "pattern": "(^DETE[^\\r\\n]+)", "flags": 0 },
-        "VAR_BBB": { "pattern": "(^OK$)", "flags": 0 }
+        "CPU_SOCKETS": { "pattern": "(^\\s*CPU_SOCKETS\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "CPU_CORES": { "pattern": "(^\\s*CPU_CORES\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "CPU_PROCESSORS": { "pattern": "(^\\s*CPU_PROCESSORS\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "RAM_TOTAL_KB": { "pattern": "(^\\s*RAM_TOTAL_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "RAM_AVAILABLE_KB": { "pattern": "(^\\s*RAM_AVAILABLE_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "RAM_FREE_KB": { "pattern": "(^\\s*RAM_FREE_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "RAM_USED_KB": { "pattern": "(^\\s*RAM_USED_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "RAM_UTILIZATION": { "pattern": "(^\\s*RAM_UTILIZATION\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "DISK_TOTAL_KB": { "pattern": "(^\\s*DISK_TOTAL_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "DISK_FREE_KB": { "pattern": "(^\\s*DISK_FREE_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "DISK_USED_KB": { "pattern": "(^\\s*DISK_USED_KB\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "DISK_UTILIZATION": { "pattern": "(^\\s*DISK_UTILIZATION\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "OS_ARCHITECTURE": { "pattern": "(^\\s*OS_ARCHITECTURE\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "OS_KERNEL": { "pattern": "(^\\s*OS_KERNEL\\s*[=:]\\s*(.*)\\s*)", "flags": 0 },
+        "OS_KERNEL_RELEASE": { "pattern": "(^\\s*OS_KERNEL_RELEASE\\s*[=:]\\s*(.*)\\s*)", "flags": 0 }
       }
     },
     {
       "description": "Detection results...",
       "taskType": "LOG",
-      "message": "VAR_AAA=${VAR_AAA:-na}, VAR_BBB=${VAR_BBB:-na}"
+      "message": "Detection results:\n    CPU_SOCKETS=${CPU_SOCKETS:-na}\n    CPU_CORES=${CPU_CORES:-na}\n    CPU_PROCESSORS=${CPU_PROCESSORS:-na}\n    RAM_TOTAL_KB=${RAM_TOTAL_KB:-na}\n    RAM_AVAILABLE_KB=${RAM_AVAILABLE_KB:-na}\n    RAM_FREE_KB=${RAM_FREE_KB:-na}\n    RAM_USED_KB=${RAM_USED_KB:-na}\n    RAM_UTILIZATION=${RAM_UTILIZATION:-na}\n    DISK_TOTAL_KB=${DISK_TOTAL_KB:-na}\n    DISK_FREE_KB=${DISK_FREE_KB:-na}\n    DISK_USED_KB=${DISK_USED_KB:-na}\n    DISK_UTILIZATION=${DISK_UTILIZATION:-na}\n    OS_ARCHITECTURE=${OS_ARCHITECTURE:-na}\n    OS_KERNEL=${OS_KERNEL:-na}\n    OS_KERNEL_RELEASE=${OS_KERNEL_RELEASE:-na}"
     }
   ]
 }
