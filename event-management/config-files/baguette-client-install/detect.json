@@ -48,7 +48,7 @@
     {
       "description": "Detection results...",
       "taskType": "LOG",
-      "message": "VAR_AAA=${VAR_AAA}, VAR_BBB=${VAR_BBB}"
+      "message": "VAR_AAA=${VAR_AAA:-na}, VAR_BBB=${VAR_BBB:-na}"
     }
   ]
 }
