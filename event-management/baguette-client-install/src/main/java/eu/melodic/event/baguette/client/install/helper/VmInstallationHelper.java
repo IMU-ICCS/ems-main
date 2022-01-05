@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client.install.helper;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.SshConfig;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
@@ -52,6 +53,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
     @Autowired
     private ResourceLoader resourceLoader;
+    @Autowired
+    private ClientInstallationProperties clientInstallationProperties;
 
     /*@Autowired
     private Environment environment;*/
@@ -180,14 +183,15 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         valueMap.put("SERVER_CERT_FILE", serverCertFile);
         valueMap.put("REMOTE_TMP_DIR", clientTmpDir);
 
-        valueMap.put("EMS_PUBLIC_DIR", System.getProperty("PUBLIC_DIR", System.getenv("PUBLIC_DIR")));
-        log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
-
         Date ts = new Date();
         valueMap.put("TIMESTAMP", Long.toString(ts.getTime()));
         valueMap.put("TIMESTAMP-W3C", tsW3C.format(ts));
         valueMap.put("TIMESTAMP-UTC", tsUTC.format(ts));
         valueMap.put("TIMESTAMP-FILE", tsFile.format(ts));
+
+        valueMap.putAll(clientInstallationProperties.getParameters());
+        valueMap.put("EMS_PUBLIC_DIR", System.getProperty("PUBLIC_DIR", System.getenv("PUBLIC_DIR")));
+        log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: value-map: {}", valueMap);
 
 /*        // Clear EMS server certificate (PEM) file, if not secure
         if (!isServerSecure) {

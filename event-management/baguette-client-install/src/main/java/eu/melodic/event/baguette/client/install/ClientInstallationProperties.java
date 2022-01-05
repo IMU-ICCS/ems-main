@@ -66,6 +66,7 @@ public class ClientInstallationProperties {
     private long commandExecutionTimeout = 60000;
 
     private final Map<String, List<String>> instructions = new HashMap<>();
+    private final Map<String, String> parameters = new HashMap<>();
 
     private boolean continueOnFail = false;
     private String sessionRecordingDir = "logs";
