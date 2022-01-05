@@ -11,7 +11,7 @@ package eu.melodic.event.baguette.client.install;
 
 import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
-import eu.melodic.event.baguette.client.install.instruction.InstructionPlaceholdersResolutionService;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -14,25 +14,40 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.core.env.Environment;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Slf4j
 @Service
-public class InstructionPlaceholdersResolutionService {
+public class InstructionsService {
     private final Environment environment;
-    private static InstructionPlaceholdersResolutionService INSTANCE;
+    private static InstructionsService INSTANCE;
 
-    public static InstructionPlaceholdersResolutionService getInstance() {
-        if (INSTANCE==null) throw new IllegalStateException("InstructionPlaceholdersResolutionService singleton instance has not yet been initialized");
+    public static InstructionsService getInstance() {
+        if (INSTANCE==null) throw new IllegalStateException("InstructionsService singleton instance has not yet been initialized");
         return INSTANCE;
     }
 
-    public InstructionPlaceholdersResolutionService(@NonNull Environment environment) {
-        if (INSTANCE!=null) throw new IllegalStateException("InstructionPlaceholdersResolutionService singleton instance has already been initialized");
+    public InstructionsService(@NonNull Environment environment) {
+        if (INSTANCE!=null) throw new IllegalStateException("InstructionsService singleton instance has already been initialized");
         this.environment = environment;
         INSTANCE = this;
+    }
+
+    public boolean checkCondition(@NonNull AbstractInstructionsBase i, Map<String,String> valueMap) {
+        String condition = i.getCondition();
+        if (StringUtils.isBlank(condition)) return true;
+        String conditionResolved = processPlaceholders(condition, valueMap);
+        final ExpressionParser parser = new SpelExpressionParser();
+        Object result = parser.parseExpression(conditionResolved).getValue();
+        if (result==null)
+            throw new IllegalArgumentException("Condition evaluation returned null: " + condition);
+        if (result instanceof Boolean)
+            return (Boolean)result;
+        throw new IllegalArgumentException("Condition evaluation returned a non-boolean value: " + result + ", condition:  " + condition+", resolved condition: "+ conditionResolved);
     }
 
     public Instruction resolvePlaceholders(Instruction instruction, Map<String,String> valueMap) {
