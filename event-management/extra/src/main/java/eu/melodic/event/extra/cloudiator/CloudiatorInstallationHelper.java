@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.helper.AbstractInstallationHelper;
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
 import lombok.NoArgsConstructor;
@@ -54,13 +54,13 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
     }
 
     @Override
-    public List<InstallationInstructions> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
+    public List<InstructionsSet> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
         log.warn("CloudiatorInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         throw new IllegalArgumentException("CloudiatorInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
     }
 
     @Override
-    public List<InstallationInstructions> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public List<InstructionsSet> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         String baseUrl = contextMap.get("BASE_URL");
         String clientId = contextMap.get("CLIENT_ID");
         String ipSetting = contextMap.get("IP_SETTING");
@@ -100,8 +100,8 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
         valueMap.put("IP_SETTING", ipSetting);
 
         // Set the target operating system
-        InstallationInstructions installationInstructions = new InstallationInstructions();
-        installationInstructions.setOs("LINUX");
+        InstructionsSet instructionsSet = new InstructionsSet();
+        instructionsSet.setOs("LINUX");
 
         // Check whether EMS Client is already installed
                 /*.appendLog("Checking if Baguette Client is already installed")
@@ -109,16 +109,16 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
                 .appendExec("Baguette Client is NOT installed")*/
 
         // Create Baguette Client installation directories
-        installationInstructions.appendLog("Create Baguette Client installation directories");
+        instructionsSet.appendLog("Create Baguette Client installation directories");
         String dirList = String.join(" ", properties.getMkdirs());
         if (StringUtils.isNotEmpty(dirList))
-            installationInstructions.appendExec("sudo mkdir -p " + dirList);
+            instructionsSet.appendExec("sudo mkdir -p " + dirList);
 
         // Create files using touch
-        installationInstructions.appendLog("Touch files");
+        instructionsSet.appendLog("Touch files");
         String touchList = String.join(" ", properties.getTouchFiles());
         if (StringUtils.isNotEmpty(touchList))
-            installationInstructions.appendExec("sudo touch " + touchList);
+            instructionsSet.appendExec("sudo touch " + touchList);
 
         // Clear EMS server certificate (PEM) file, if not secure
         if (!isServerSecure) {
@@ -135,13 +135,13 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
                         .sorted()
                         .collect(Collectors.toList());
                 for (Path p : paths) {
-                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
+                    _appendCopyInstructions(instructionsSet, p, startDir, copyToClientDir, clientTmpDir, valueMap);
                 }
             }
         }
 
         // Download Baguette Client installation script
-        installationInstructions
+        instructionsSet
                 .appendLog("Download Baguette Client installation script")
                 //.appendExec("sudo wget --no-check-certificate " + installScriptUrl + " -O " + installScriptPath)
                 .appendExec(
@@ -171,16 +171,16 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
                 .appendExec("sudo touch " + checkInstallationFile)*/
         ;
 
-        // Pretty print installationInstructions JSON
+        // Pretty print instructionsSet JSON
         if (log.isDebugEnabled()) {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             StringWriter sw = new StringWriter();
             try (PrintWriter writer = new PrintWriter(sw)) {
-                gson.toJson(installationInstructions, writer);
+                gson.toJson(instructionsSet, writer);
             }
-            log.debug("prepareInstallationInstructionsForLinux(): installationInstructions:\n{}", sw.toString());
+            log.debug("prepareInstallationInstructionsForLinux(): instructionsSet:\n{}", sw.toString());
         }
 
-        return Collections.singletonList(installationInstructions);
+        return Collections.singletonList(instructionsSet);
     }
 }

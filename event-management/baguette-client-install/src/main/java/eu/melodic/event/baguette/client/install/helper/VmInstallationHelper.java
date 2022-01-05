@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.SshConfig;
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.CredentialsMap;
@@ -94,7 +94,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             throw new IllegalArgumentException("Missing SSH password or private key for Node");
 
         // Get EMS client installation instructions for VM node
-        List<InstallationInstructions> installationInstructionsList =
+        List<InstructionsSet> instructionsSetList =
                 prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
 
         // Create Installation Task for VM node
@@ -114,20 +114,20 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                         .build())
                 .type(nodeType)
                 .provider(nodeProvider)
-                .installationInstructions(installationInstructionsList)
+                .instructionSets(instructionsSetList)
                 .build();
 
         return installationTask;
     }
 
     @Override
-    public List<InstallationInstructions> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
+    public List<InstructionsSet> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
         log.warn("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         throw new IllegalArgumentException("VmInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
     }
 
     @Override
-    public List<InstallationInstructions> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public List<InstructionsSet> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         String baseUrl = contextMap.get("BASE_URL");
         String clientId = contextMap.get("CLIENT_ID");
         String ipSetting = contextMap.get("IP_SETTING");
@@ -204,12 +204,12 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                         .sorted()
                         .collect(Collectors.toList());
                 for (Path p : paths) {
-                    _appendCopyInstructions(installationInstructions, p, startDir, copyToClientDir, clientTmpDir, valueMap);
+                    _appendCopyInstructions(instructionSets, p, startDir, copyToClientDir, clientTmpDir, valueMap);
                 }
             }
         }*/
 
-        List<InstallationInstructions> installationInstructionsList = new ArrayList<>();
+        List<InstructionsSet> instructionsSetList = new ArrayList<>();
 
         try {
             // Read installation instructions from JSON file
@@ -238,35 +238,35 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX after placeholder processing: json:\n{}", json);
                 */
 
-                // Create InstallationInstructions object from JSON
-                InstallationInstructions installationInstructions =
-                        new Gson().fromJson(json, InstallationInstructions.class);
-                installationInstructions.setValueMap(valueMap);
-                installationInstructions.setFileName(jsonFile);
-                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", installationInstructions);
+                // Create InstructionsSet object from JSON
+                InstructionsSet instructionsSet =
+                        new Gson().fromJson(json, InstructionsSet.class);
+                instructionsSet.setValueMap(valueMap);
+                instructionsSet.setFileName(jsonFile);
+                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", instructionsSet);
 
-                // Pretty print installationInstructions JSON
+                // Pretty print instructionsSet JSON
                 if (log.isTraceEnabled()) {
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     StringWriter sw = new StringWriter();
                     try (PrintWriter writer = new PrintWriter(sw)) {
-                        gson.toJson(installationInstructions, writer);
+                        gson.toJson(instructionsSet, writer);
                     }
                     log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
                 }
 
-                installationInstructionsList.add(installationInstructions);
+                instructionsSetList.add(instructionsSet);
             }
 
-            return installationInstructionsList;
+            return instructionsSetList;
         } catch (Exception ex) {
             log.error("VmInstallationHelper.prepareInstallationInstructionsForLinux: Exception while reading Installation instructions for LINUX: ", ex);
             throw ex;
         }
     }
 
-    private InstallationInstructions _appendCopyInstructions(
-            InstallationInstructions installationInstructions,
+    private InstructionsSet _appendCopyInstructions(
+            InstructionsSet instructionsSet,
             Path path,
             Path localBaseDir,
             String remoteTargetDir,
@@ -279,18 +279,18 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         String contents = new String(Files.readAllBytes(path));
         contents = StringSubstitutor.replace(contents, valueMap);
         String description = String.format("Copy file from server to temp to client: %s -> %s", path.toString(), targetFile);
-        return _appendCopyInstructions(installationInstructions, targetFile, description, contents);
+        return _appendCopyInstructions(instructionsSet, targetFile, description, contents);
     }
 
-    private InstallationInstructions _appendCopyInstructions(
-            InstallationInstructions installationInstructions,
+    private InstructionsSet _appendCopyInstructions(
+            InstructionsSet instructionsSet,
             String targetFile,
             String description,
             String contents)
     {
-        installationInstructions
+        instructionsSet
                 .appendInstruction(Instruction.createWriteFile(targetFile, contents, false).description(description))
                 .appendExec("sudo chmod u+rw,og-rwx " + targetFile);
-        return installationInstructions;
+        return instructionsSet;
     }
 }

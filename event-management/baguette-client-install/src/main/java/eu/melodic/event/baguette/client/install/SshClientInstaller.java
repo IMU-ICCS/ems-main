@@ -9,7 +9,7 @@
 
 package eu.melodic.event.baguette.client.install;
 
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
 import lombok.Builder;
@@ -495,41 +495,41 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean executeInstructionsList() throws IOException {
-        List<InstallationInstructions> installationInstructionsList = task.getInstallationInstructions();
+        List<InstructionsSet> instructionsSetList = task.getInstructionSets();
         int cntSuccess = 0;
         int cntFail = 0;
-        for (InstallationInstructions installationInstructions : installationInstructionsList) {
+        for (InstructionsSet instructionsSet : instructionsSetList) {
             log.info("----------------------------------------------------------------------");
 
             // Check installation instructions condition
             try {
-                if (! InstructionsService.getInstance().checkCondition(installationInstructions, installationInstructions.getValueMap())) {
-                    log.info("SshClientInstaller: Task #{}: Installation Instructions is not executed due to failed condition: {}", taskCounter, installationInstructions.getDescription());
-                    if (installationInstructions.isStopOnConditionFail()) {
-                        log.info("SshClientInstaller: Task #{}: No further installation instructions will be executed due to stopOnConditionFail: {}", taskCounter, installationInstructions.getDescription());
+                if (! InstructionsService.getInstance().checkCondition(instructionsSet, instructionsSet.getValueMap())) {
+                    log.info("SshClientInstaller: Task #{}: Installation Instructions is not executed due to failed condition: {}", taskCounter, instructionsSet.getDescription());
+                    if (instructionsSet.isStopOnConditionFail()) {
+                        log.info("SshClientInstaller: Task #{}: No further installation instructions will be executed due to stopOnConditionFail: {}", taskCounter, instructionsSet.getDescription());
                         return false;
                     }
                     continue;
                 }
-                log.debug("SshClientInstaller: Task #{}: Condition evaluation for Installation Instructions succeeded: {}", taskCounter, installationInstructions.getDescription());
+                log.debug("SshClientInstaller: Task #{}: Condition evaluation for Installation Instructions succeeded: {}", taskCounter, instructionsSet.getDescription());
             } catch (Exception e) {
-                log.error("sshClientInstaller: Task #{}: Installation Instructions Condition evaluation error. Will not process remaining installation instructions: {}\n", taskCounter, installationInstructions.getDescription(), e);
+                log.error("sshClientInstaller: Task #{}: Installation Instructions Condition evaluation error. Will not process remaining installation instructions: {}\n", taskCounter, instructionsSet.getDescription(), e);
                 return false;
             }
 
             // Execute installation instructions
-            log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, installationInstructions.getDescription());
+            log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, instructionsSet.getDescription());
             streamLogger.logMessage(
                     String.format("----------------------------------------------------------------------\nExecuting instruction set: %s\n",
-                    installationInstructions.getDescription()));
-            boolean result = executeInstructions(installationInstructions);
+                    instructionsSet.getDescription()));
+            boolean result = executeInstructions(instructionsSet);
             if (!result) {
-                log.error("SshClientInstaller: Task #{}: Installation Instructions failed: {}", taskCounter, installationInstructions.getDescription());
+                log.error("SshClientInstaller: Task #{}: Installation Instructions failed: {}", taskCounter, instructionsSet.getDescription());
                 cntFail++;
                 if (!continueOnFail)
                     return false;
             } else {
-                log.info("SshClientInstaller: Task #{}: Installation Instructions succeeded: {}", taskCounter, installationInstructions.getDescription());
+                log.info("SshClientInstaller: Task #{}: Installation Instructions succeeded: {}", taskCounter, instructionsSet.getDescription());
                 cntSuccess++;
             }
         }
@@ -538,12 +538,12 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructions(InstallationInstructions installationInstructions) throws IOException {
-        Map<String, String> valueMap = installationInstructions.getValueMap();
-        int numOfInstructions = installationInstructions.getInstructions().size();
+    private boolean executeInstructions(InstructionsSet instructionsSet) throws IOException {
+        Map<String, String> valueMap = instructionsSet.getValueMap();
+        int numOfInstructions = instructionsSet.getInstructions().size();
         int cnt = 0;
-        int insCount = installationInstructions.getInstructions().size();
-        for (Instruction ins : installationInstructions.getInstructions()) {
+        int insCount = instructionsSet.getInstructions().size();
+        for (Instruction ins : instructionsSet.getInstructions()) {
             if (ins==null) continue;
             cnt++;
 

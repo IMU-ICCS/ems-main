@@ -14,7 +14,7 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.ClientInstaller;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.control.properties.ControlServiceProperties;
@@ -385,22 +385,22 @@ public class ControlServiceController {
         String nodeId = (String) nodeMap.get("id");
         String nodeOs = (String) nodeMap.get("operatingSystem");
         final String CLOUDIATOR_HELPER_CLASS = "eu.melodic.event.extra.cloudiator.CloudiatorInstallationHelper";
-        List<InstallationInstructions> list = InstallationHelperFactory.getInstance()
+        List<InstructionsSet> list = InstallationHelperFactory.getInstance()
                 .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, nodeMap)
                 .prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
-        InstallationInstructions installationInstructions =
+        InstructionsSet instructionsSet =
                 (list!=null && list.size()>0) ? list.get(0) : null;
-        if (installationInstructions==null) {
+        if (instructionsSet ==null) {
             log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
             return null;
         }
-        log.debug("ControlServiceController.baguetteRegisterNode(): installationInstructions: {}", installationInstructions);
+        log.debug("ControlServiceController.baguetteRegisterNode(): instructionsSet: {}", instructionsSet);
 
-        // Convert 'installationInstructions' into json string
+        // Convert 'instructionsSet' into json string
         Gson gson = new Gson();
-        String json = gson.toJson(installationInstructions, InstallationInstructions.class);
+        String json = gson.toJson(instructionsSet, InstructionsSet.class);
 
-        log.trace("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
+        log.trace("ControlServiceController.baguetteRegisterNode(): instructionsSet: node: {}, json:\n{}", nodeId, json);
         return json;
     }
 

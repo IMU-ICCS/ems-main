@@ -10,7 +10,7 @@
 package eu.melodic.event.baguette.client.install.helper;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
@@ -189,7 +189,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
     }
 
-    public List<InstallationInstructions> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public List<InstructionsSet> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
 
         String baseUrl = contextMap.get("BASE_URL");
@@ -198,18 +198,18 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         log.trace("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
 
         String osFamily = (String) nodeMap.get("operatingSystem");
-        List<InstallationInstructions> installationInstructionsList = null;
+        List<InstructionsSet> instructionsSetList = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructionsList = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
+            instructionsSetList = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructionsList = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
+            instructionsSetList = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
         else
             log.warn("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
-        return installationInstructionsList;
+        return instructionsSetList;
     }
 
-    protected InstallationInstructions _appendCopyInstructions(
-            InstallationInstructions installationInstructions,
+    protected InstructionsSet _appendCopyInstructions(
+            InstructionsSet instructionsSet,
             Path p,
             Path startDir,
             String copyToClientDir,
@@ -223,13 +223,13 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         String contents = new String(Files.readAllBytes(p));
         contents = StringSubstitutor.replace(contents, valueMap);
         String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
-        installationInstructions
+        instructionsSet
                 .appendLog(String.format("Copy file from server to temp to client: %s -> %s -> %s", p.toString(), tmpFile, targetFile));
-        return _appendCopyInstructions(installationInstructions, targetFile, tmpFile, contents, clientTmpDir);
+        return _appendCopyInstructions(instructionsSet, targetFile, tmpFile, contents, clientTmpDir);
     }
 
-    protected InstallationInstructions _appendCopyInstructions(
-            InstallationInstructions installationInstructions,
+    protected InstructionsSet _appendCopyInstructions(
+            InstructionsSet instructionsSet,
             String targetFile,
             String tmpFile,
             String contents,
@@ -238,11 +238,11 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     {
         if (StringUtils.isEmpty(tmpFile))
             tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
-        installationInstructions
+        instructionsSet
                 .appendWriteFile(tmpFile, contents, false)
                 .appendExec("sudo mv " + tmpFile + " " + targetFile)
                 .appendExec("sudo chmod u+rw,og-rwx " + targetFile);
-        return installationInstructions;
+        return instructionsSet;
     }
 
     protected String _prepareUrl(String urlTemplate, String baseUrl) {

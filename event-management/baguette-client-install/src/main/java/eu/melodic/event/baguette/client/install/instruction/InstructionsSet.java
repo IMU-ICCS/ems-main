@@ -14,7 +14,7 @@ import lombok.Data;
 import java.util.*;
 
 @Data
-public class InstallationInstructions extends AbstractInstructionsBase {
+public class InstructionsSet extends AbstractInstructionsBase {
     private String os;
     private String description;
     private String fileName;
@@ -31,37 +31,37 @@ public class InstallationInstructions extends AbstractInstructionsBase {
     public List<Instruction> getInstructions() { return Collections.unmodifiableList(instructions); }
     public void setInstructions(List<Instruction> ni) { instructions = new ArrayList<>(ni); }
 
-    public InstallationInstructions appendInstruction(Instruction i) {
+    public InstructionsSet appendInstruction(Instruction i) {
         instructions.add(i);
         return this;
     }
 
-    public InstallationInstructions appendLog(String message) {
+    public InstructionsSet appendLog(String message) {
         instructions.add(Instruction.createLog(message));
         return this;
     }
 
-    public InstallationInstructions appendExec(String command) {
+    public InstructionsSet appendExec(String command) {
         instructions.add(Instruction.createShellCommand(command));
         return this;
     }
 
-    public InstallationInstructions appendWriteFile(String file, String contents, boolean executable) {
+    public InstructionsSet appendWriteFile(String file, String contents, boolean executable) {
         instructions.add(Instruction.createWriteFile(file, contents, executable));
         return this;
     }
 
-    public InstallationInstructions appendUploadFile(String localFile, String remoteFile) {
+    public InstructionsSet appendUploadFile(String localFile, String remoteFile) {
         instructions.add(Instruction.createUploadFile(localFile, remoteFile));
         return this;
     }
 
-    public InstallationInstructions appendDownloadFile(String remoteFile, String localFile) {
+    public InstructionsSet appendDownloadFile(String remoteFile, String localFile) {
         instructions.add(Instruction.createDownloadFile(remoteFile, localFile));
         return this;
     }
 
-    public InstallationInstructions appendCheck(String command, int exitCode, boolean match, String message) {
+    public InstructionsSet appendCheck(String command, int exitCode, boolean match, String message) {
         instructions.add(Instruction.createCheck(command, exitCode, match, message));
         return this;
     }
