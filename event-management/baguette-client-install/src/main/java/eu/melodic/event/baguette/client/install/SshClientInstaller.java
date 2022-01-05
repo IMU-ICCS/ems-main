@@ -499,7 +499,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         int cntSuccess = 0;
         int cntFail = 0;
         for (InstructionsSet instructionsSet : instructionsSetList) {
-            log.info("----------------------------------------------------------------------");
+            log.info("----------------------------------------------------------------------\nTask #{}: Instruction Set: {}", taskCounter, instructionsSet.getDescription());
 
             // Check installation instructions condition
             try {
