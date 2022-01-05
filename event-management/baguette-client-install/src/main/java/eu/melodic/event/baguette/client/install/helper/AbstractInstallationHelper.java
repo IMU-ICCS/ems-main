@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install.helper;
 
+import com.google.gson.Gson;
 import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
@@ -187,6 +188,26 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
             return reader.lines().collect(Collectors.joining("\n"));
         }
+    }
+
+    public Optional<List<String>> getInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+        if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+
+        List<InstructionsSet> instructionsSets = prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
+        if (instructionsSets==null) {
+            String nodeOs = (String) nodeMap.get("operatingSystem");
+            log.warn("AbstractInstallationHelper.getInstallationInstructionsForOs(): ERROR: Unknown node OS: {}: node-map={}", nodeOs, nodeMap);
+            return Optional.empty();
+        }
+
+        List<String> jsonSets = null;
+        if (instructionsSets.size()>0) {
+            // Convert 'instructionsSet' into json string
+            Gson gson = new Gson();
+            jsonSets = instructionsSets.stream().map(instructionsSet -> gson.toJson(instructionsSet, InstructionsSet.class)).collect(Collectors.toList());
+        }
+        log.trace("AbstractInstallationHelper.getInstallationInstructionsForOs(): JSON instruction sets for node: node-map={}\n{}", nodeMap, jsonSets);
+        return Optional.ofNullable(jsonSets);
     }
 
     public List<InstructionsSet> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {

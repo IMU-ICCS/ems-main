@@ -16,8 +16,11 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface InstallationHelper {
+    Optional<List<String>> getInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
+
     List<InstructionsSet> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
     List<InstructionsSet> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette);
     List<InstructionsSet> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;

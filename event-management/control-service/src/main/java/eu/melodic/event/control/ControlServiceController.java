@@ -14,7 +14,6 @@ import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.ClientInstaller;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
-import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.control.properties.ControlServiceProperties;
@@ -382,25 +381,20 @@ public class ControlServiceController {
     @SneakyThrows
     public String getClientInstallationInstructions(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
         // Prepare Baguette Client installation instructions for node
-        String nodeId = (String) nodeMap.get("id");
-        String nodeOs = (String) nodeMap.get("operatingSystem");
         final String CLOUDIATOR_HELPER_CLASS = "eu.melodic.event.extra.cloudiator.CloudiatorInstallationHelper";
-        List<InstructionsSet> list = InstallationHelperFactory.getInstance()
+        String json = InstallationHelperFactory.getInstance()
                 .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, nodeMap)
-                .prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
-        InstructionsSet instructionsSet =
-                (list!=null && list.size()>0) ? list.get(0) : null;
-        if (instructionsSet ==null) {
-            log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
+                .getInstallationInstructionsForOs(nodeMap, contextMap, baguette)
+                .orElse(Collections.emptyList())
+                .stream().findFirst()
+                .orElse(null);
+        if (json==null) {
+            log.warn("ControlServiceController.baguetteRegisterNode(): No instruction sets: node-map={}", nodeMap);
             return null;
         }
-        log.debug("ControlServiceController.baguetteRegisterNode(): instructionsSet: {}", instructionsSet);
+        log.debug("ControlServiceController.baguetteRegisterNode(): instructionsSet: {}", json);
 
-        // Convert 'instructionsSet' into json string
-        Gson gson = new Gson();
-        String json = gson.toJson(instructionsSet, InstructionsSet.class);
-
-        log.trace("ControlServiceController.baguetteRegisterNode(): instructionsSet: node: {}, json:\n{}", nodeId, json);
+        log.trace("ControlServiceController.baguetteRegisterNode(): instructionsSet: node-map={}, json:\n{}", nodeMap, json);
         return json;
     }
 
