@@ -1,6 +1,7 @@
 {
   "os": "LINUX",
   "description": "EMS client installation instruction set at VM node",
+  "condition": "! ${SKIP_BAGUETTE_INSTALLATION:-false} && ! '${OS_ARCHITECTURE:-x}'.startsWith('arm') && ${CPU_PROCESSORS:-0} > ${BAGUETTE_INSTALLATION_MIN_PROCESSORS:-0} && ${RAM_AVAILABLE_KB:-0} > ${BAGUETTE_INSTALLATION_MIN_RAM:-0} && ${DISK_FREE_KB:-0} > ${BAGUETTE_INSTALLATION_MIN_DISK_FREE:-0}",
   "instructions": [
     {
       "description": "Check if 'java' is installed at Node",

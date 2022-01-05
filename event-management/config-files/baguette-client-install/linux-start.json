@@ -1,6 +1,7 @@
 {
   "os": "LINUX",
   "description": "Starting Netdata and Baguette agents at VM node",
+  "condition": "! ${SKIP_START:-false}",
   "instructions": [
     {
       "description": "Launch EMS client",
