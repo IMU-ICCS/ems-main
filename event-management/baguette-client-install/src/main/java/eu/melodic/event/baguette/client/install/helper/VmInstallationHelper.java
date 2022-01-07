@@ -86,7 +86,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         String privateKey = nodeMap.get("ssh.key");
         String fingerprint = nodeMap.get("ssh.fingerprint");
 
-        if (port<1 || port>65535)
+        if (port>65535)
             throw new IllegalArgumentException("Invalid SSH port for Node: " + port);
         if (StringUtils.isBlank(username))
             throw new IllegalArgumentException("Missing SSH username for Node");

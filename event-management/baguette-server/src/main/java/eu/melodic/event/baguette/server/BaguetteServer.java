@@ -287,7 +287,7 @@ public class BaguetteServer {
                 .map(c -> {
                     NodeRegistryEntry entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
                     log.debug("getActiveClients: CSC ip-address: {}", c.getClientIpAddress());
-                    log.debug("getActiveClients: CSC NR entry: {}", entry!=null?entry.getPreregistration():null);
+                    log.debug("getActiveClients: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     if (entry==null) {
                         log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
                         entry = getNodeRegistry().getNodeByClientId(c.getClientId());
@@ -314,7 +314,7 @@ public class BaguetteServer {
                 .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
                     NodeRegistryEntry entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
                     log.debug("getActiveClientsMap: CSC ip-address: {}", c.getClientIpAddress());
-                    log.debug("getActiveClientsMap: CSC NR entry: {}", entry!=null?entry.getPreregistration():null);
+                    log.debug("getActiveClientsMap: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     if (entry==null) {
                         log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
                         entry = getNodeRegistry().getNodeByClientId(c.getClientId());
