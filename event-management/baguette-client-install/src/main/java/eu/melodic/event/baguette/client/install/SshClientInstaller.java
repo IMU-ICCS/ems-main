@@ -672,6 +672,38 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                         return true;
                     }
                     break;
+
+                case SET_VARS:
+                    log.info("SshClientInstaller: Task #{}: SET_VARS:", taskCounter);
+                    if (ins.variables()!=null && ins.variables().size()>0) {
+                        ins.variables().forEach((varName, varExpression) -> {
+                            try {
+                                String varValue = InstructionsService.getInstance().processPlaceholders(varExpression, valueMap);
+                                log.info("SshClientInstaller: Task #{}:   Setting VAR: {} = {}", taskCounter, varName, varValue);
+                                valueMap.put(varName, varValue);
+                            } catch (Exception e) {
+                                log.error("SshClientInstaller: Task #{}:   ERROR while Setting VAR: {}: {}\n", taskCounter, varName, varExpression, e);
+                            }
+                        });
+                    } else
+                        log.warn("SshClientInstaller: Task #{}: SET_VARS:  No variables specified", taskCounter);
+                    break;
+                case UNSET_VARS:
+                    log.info("SshClientInstaller: Task #{}: UNSET_VARS:", taskCounter);
+                    if (ins.variables()!=null && ins.variables().size()>0) {
+                        Set<String> vars = ins.variables().keySet();
+                        log.info("SshClientInstaller: Task #{}:   Unsetting VAR: {}", taskCounter, vars);
+                        valueMap.keySet().removeAll(vars);
+                    } else
+                        log.warn("SshClientInstaller: Task #{}: UNSET_VARS:  No variables specified", taskCounter);
+                    break;
+                case PRINT_VARS:
+                    log.info("SshClientInstaller: Task #{}: PRINT_VARS:", taskCounter);
+                    String output = valueMap.entrySet().stream()
+                            .map(e -> "    VAR: "+e.getKey()+" = "+e.getValue())
+                            .collect(Collectors.joining("\n"));
+                    log.info("SshClientInstaller: Task #{}: PRINT_VARS:\n{}", taskCounter, output);
+                    break;
                 default:
                     log.error("sshClientInstaller: Unknown instruction type. Ignoring it: {}", ins);
             }

@@ -35,6 +35,7 @@ public class Instruction extends AbstractInstructionsBase {
     private int retries;
 
     private Map<String, Pattern> patterns;
+    private Map<String, String> variables;
 
     // Fluent API addition
     public Instruction pattern(String varName, Pattern pattern) { this.patterns.put(varName, pattern); return this; }
