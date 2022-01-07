@@ -25,12 +25,12 @@ public class NodeRegistryEntry {
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
-    @Getter private final BaguetteServer baguetteServer;
+    @Getter private final transient BaguetteServer baguetteServer;
     @Getter private STATE state = null;
     @Getter private String reference = UUID.randomUUID().toString();
-    @Getter private Map<String, String> preregistration = new LinkedHashMap<>();
-    @Getter private Map<String, String> installation = new LinkedHashMap<>();
-    @Getter private Map<String, String> registration = new LinkedHashMap<>();
+    @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
+    @Getter private transient Map<String, String> installation = new LinkedHashMap<>();
+    @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
 
     public void refreshReference() { reference = UUID.randomUUID().toString(); }
 
