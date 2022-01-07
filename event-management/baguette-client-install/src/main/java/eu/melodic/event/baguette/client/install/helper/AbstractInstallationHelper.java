@@ -12,7 +12,7 @@ package eu.melodic.event.baguette.client.install.helper;
 import com.google.gson.Gson;
 import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
-import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
 import lombok.Getter;
@@ -190,13 +190,13 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
     }
 
-    public Optional<List<String>> getInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
-        if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+    public Optional<List<String>> getInstallationInstructionsForOs(NodeRegistryEntry entry) throws IOException {
+        if (! entry.getBaguetteServer().isServerRunning()) throw new RuntimeException("Baguette Server is not running");
 
-        List<InstructionsSet> instructionsSets = prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
+        List<InstructionsSet> instructionsSets = prepareInstallationInstructionsForOs(entry);
         if (instructionsSets==null) {
-            String nodeOs = (String) nodeMap.get("operatingSystem");
-            log.warn("AbstractInstallationHelper.getInstallationInstructionsForOs(): ERROR: Unknown node OS: {}: node-map={}", nodeOs, nodeMap);
+            String nodeOs = entry.getPreregistration().get("operatingSystem");
+            log.warn("AbstractInstallationHelper.getInstallationInstructionsForOs(): ERROR: Unknown node OS: {}: node-map={}", nodeOs, entry.getPreregistration());
             return Optional.empty();
         }
 
@@ -206,24 +206,20 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
             Gson gson = new Gson();
             jsonSets = instructionsSets.stream().map(instructionsSet -> gson.toJson(instructionsSet, InstructionsSet.class)).collect(Collectors.toList());
         }
-        log.trace("AbstractInstallationHelper.getInstallationInstructionsForOs(): JSON instruction sets for node: node-map={}\n{}", nodeMap, jsonSets);
+        log.trace("AbstractInstallationHelper.getInstallationInstructionsForOs(): JSON instruction sets for node: node-map={}\n{}", entry.getPreregistration(), jsonSets);
         return Optional.ofNullable(jsonSets);
     }
 
-    public List<InstructionsSet> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
-        if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+    public List<InstructionsSet> prepareInstallationInstructionsForOs(NodeRegistryEntry entry) throws IOException {
+        if (! entry.getBaguetteServer().isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+        log.trace("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}", entry.getPreregistration());
 
-        String baseUrl = contextMap.get("BASE_URL");
-        String clientId = contextMap.get("CLIENT_ID");
-        String ipSetting = contextMap.get("IP_SETTING");
-        log.trace("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
-
-        String osFamily = (String) nodeMap.get("operatingSystem");
+        String osFamily = entry.getPreregistration().get("operatingSystem");
         List<InstructionsSet> instructionsSetList = null;
         if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            instructionsSetList = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
+            instructionsSetList = prepareInstallationInstructionsForLinux(entry);
         else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            instructionsSetList = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
+            instructionsSetList = prepareInstallationInstructionsForWin(entry);
         else
             log.warn("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
         return instructionsSetList;

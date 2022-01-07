@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install.helper;
 
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,15 +37,15 @@ public class InstallationHelperFactory implements InitializingBean {
         InstallationHelperFactory.instance = this;
     }
 
-    public InstallationHelper createInstallationHelper(Map<String,Object> nodeMap) {
-        String nodeType = (String) nodeMap.get("type");
+    public InstallationHelper createInstallationHelper(NodeRegistryEntry entry) {
+        String nodeType = entry.getPreregistration().get("type");
         if ("VM".equalsIgnoreCase(nodeType)) {
-            return createVmInstallationHelper(nodeMap);
+            return createVmInstallationHelper(entry);
         }
         throw new IllegalArgumentException("Unsupported or missing Node type: "+nodeType);
     }
 
-    public InstallationHelper createInstallationHelperBean(String className, Map<String,Object> nodeMap) throws ClassNotFoundException {
+    public InstallationHelper createInstallationHelperBean(String className, NodeRegistryEntry entry) throws ClassNotFoundException {
         Class<?> clzz = Class.forName(className);
         return (InstallationHelper) applicationContext.getBean(clzz);
     }
@@ -56,7 +57,7 @@ public class InstallationHelperFactory implements InitializingBean {
         return (InstallationHelper) clzz.getDeclaredMethod("getInstance").invoke(null);
     }
 
-    private InstallationHelper createVmInstallationHelper(Map<String, Object> nodeMap) {
+    private InstallationHelper createVmInstallationHelper(NodeRegistryEntry entry) {
         return VmInstallationHelper.getInstance();
     }
 }

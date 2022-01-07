@@ -25,6 +25,7 @@ public class NodeRegistryEntry {
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
+    @Getter private final BaguetteServer baguetteServer;
     @Getter private STATE state = null;
     @Getter private String reference = UUID.randomUUID().toString();
     @Getter private Map<String, String> preregistration = new LinkedHashMap<>();

@@ -33,6 +33,7 @@ public class NodeRegistry {
     public synchronized NodeRegistryEntry addNode(Map<String,Object> nodeInfo, String clientId) {
         String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
 
+        // Check if an entry with the same IP address is already registered
         NodeRegistryEntry entry = registry.get(ipAddress);
         if (entry!=null) {
             log.debug("NodeRegistry.addNode(): Node already pre-registered: ip-address={}\nOld Node Info: {}\nNew Node Info: {}",
@@ -47,7 +48,8 @@ public class NodeRegistry {
             }
         }
 
-        entry = new NodeRegistryEntry(ipAddress, clientId).nodePreregistration(nodeInfo);
+        // Create and register node registry entry
+        entry = new NodeRegistryEntry(ipAddress, clientId, coordinator.getServer()).nodePreregistration(nodeInfo);
         nodeInfo.put("baguette-client-id", clientId);
         registry.put(ipAddress, entry);
         log.debug("NodeRegistry.addNode(): Added info for node at address: {}\nNode info: {}", ipAddress, nodeInfo);

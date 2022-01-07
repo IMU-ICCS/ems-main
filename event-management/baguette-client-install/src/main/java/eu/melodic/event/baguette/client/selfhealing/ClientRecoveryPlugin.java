@@ -27,8 +27,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -45,8 +43,6 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
     private long clientRecoveryDelay;
     @Value("${CLIENT_RECOVERY_INSTRUCTIONS_FILES:file:${MELODIC_CONFIG_DIR}/baguette-client-install/recover-vm.json}")
     private String recoveryInstructionsFile;
-    @Value("${IP_SETTING}")
-    private String ipSetting;
 
     private final static String CLIENT_EXIT_TOPIC = "BAGUETTE_SERVER_CLIENT_EXITED";
 
@@ -60,7 +56,6 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
 
         log.debug("ClientRecoveryPlugin: Recovery Delay: {}", clientRecoveryDelay);
         log.debug("ClientRecoveryPlugin: Recovery Instructions File: {}", recoveryInstructionsFile);
-        log.debug("ClientRecoveryPlugin: IP Setting: {}", ipSetting);
     }
 
     @Override
@@ -95,38 +90,22 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
         }
     }
 
-    public void runClientRecovery(NodeRegistryEntry nodeInfo) throws Exception {
-        log.debug("ClientRecoveryPlugin: runClientRecovery(): node-info={}", nodeInfo);
-        if (nodeInfo==null) return;
+    public void runClientRecovery(NodeRegistryEntry entry) throws Exception {
+        log.debug("ClientRecoveryPlugin: runClientRecovery(): node-info={}", entry);
+        if (entry==null) return;
 
-        Map<String, String> nodeMap1 = nodeInfo.getPreregistration();
-        final Map<String,Object> sshMap = new HashMap<>();
-        nodeMap1.entrySet().stream()
-                .filter(e->e.getKey().startsWith("ssh."))
-                .forEach(e->{
-                    String newKey = e.getKey().substring(4);
-                    sshMap.put(newKey, e.getValue());
-                });
-        HashMap<String, Object> nodeMap = new HashMap<String, Object>(nodeMap1);
-        nodeMap.put("ssh", sshMap);
-        //Map<String, Object> nodeMap = Collections.unmodifiableMap(nodeInfo.getPreregistration());
-
-        Map<String, String> contextMap = new HashMap<>();
-        contextMap.put("instruction-files", recoveryInstructionsFile);
-        //contextMap.put("BASE_URL", baseUrl);
-        contextMap.put("CLIENT_ID", (String)nodeMap.getOrDefault("baguette-client-id", ""));
-        contextMap.put("IP_SETTING", ipSetting);
+        entry.getPreregistration().put("instruction-files", recoveryInstructionsFile);
 
         ClientInstallationTask task = InstallationHelperFactory.getInstance()
-                .createInstallationHelper(nodeMap)
-                .createClientInstallationTask(nodeMap, contextMap, baguetteServer);
+                .createInstallationHelper(entry)
+                .createClientInstallationTask(entry);
         log.debug("ClientRecoveryPlugin: runClientRecovery(): Client recovery task: {}", task);
         SshClientInstaller installer = SshClientInstaller.builder()
                 .task(task)
                 .properties(clientInstallationProperties)
                 .build();
-        log.warn("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", nodeInfo);
+        log.warn("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", entry);
         boolean result = installer.execute();
-        log.warn("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, nodeInfo);
+        log.warn("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, entry);
     }
 }

@@ -341,35 +341,18 @@ public class ControlServiceController {
         log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         // Register node to Baguette server
-        BaguetteServer baguette = coordinator.getBaguetteServer();
-        NodeRegistryEntry entry = baguette.registerClient(nodeMap);
-        String clientId = entry.getClientId();
+        NodeRegistryEntry entry = coordinator.getBaguetteServer().registerClient(nodeMap);
 
-        // Get web server base URL
-        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
-        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
-        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
-        if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
-        String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
-        String baseUrl =
-                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
-                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
-                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
-        log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
-
-        // Create context map
-        Map<String,String> contextMap = new HashMap<>();
-        contextMap.put("BASE_URL", baseUrl);
-        contextMap.put("CLIENT_ID", clientId);
-        contextMap.put("IP_SETTING", ipSetting);
+        // Update client registration info with BASE_URL, IP_SETTING and CLIENT_ID
+        updateRegistrationInfo(request, entry);
 
         // Continue processing according to ExecutionWare type
         String response;
         log.info("ControlServiceController.baguetteRegisterNode(): ExecutionWare: {}", properties.getExecutionware());
         if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
-            response = getClientInstallationInstructions(nodeMap, contextMap, baguette);
+            response = getClientInstallationInstructions(entry);
         } else {
-            response = createClientInstallationTask(nodeMap, contextMap, baguette);
+            response = createClientInstallationTask(entry);
         }
 
         log.info("ControlServiceController.baguetteRegisterNode(): node-id: {}", nodeId);
@@ -377,33 +360,55 @@ public class ControlServiceController {
         return response;
     }
 
+    private void updateRegistrationInfo(HttpServletRequest request, NodeRegistryEntry entry) {
+        // Get web server base URL
+        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
+        if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
+        String baseUrl =
+                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
+                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
+                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+        log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
+
+        // Get IP Setting and Client ID
+        String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
+        String clientId = entry.getClientId();
+
+        // Add to context
+        entry.getPreregistration().put("BASE_URL", baseUrl);
+        entry.getPreregistration().put("CLIENT_ID", clientId);
+        entry.getPreregistration().put("IP_SETTING", ipSetting);
+    }
+
     // Retained for backward compatibility with Cloudiator
     @SneakyThrows
-    public String getClientInstallationInstructions(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public String getClientInstallationInstructions(NodeRegistryEntry entry) throws IOException {
         // Prepare Baguette Client installation instructions for node
         final String CLOUDIATOR_HELPER_CLASS = "eu.melodic.event.extra.cloudiator.CloudiatorInstallationHelper";
         String json = InstallationHelperFactory.getInstance()
-                .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, nodeMap)
-                .getInstallationInstructionsForOs(nodeMap, contextMap, baguette)
+                .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, entry)
+                .getInstallationInstructionsForOs(entry)
                 .orElse(Collections.emptyList())
                 .stream().findFirst()
                 .orElse(null);
         if (json==null) {
-            log.warn("ControlServiceController.baguetteRegisterNode(): No instruction sets: node-map={}", nodeMap);
+            log.warn("ControlServiceController.baguetteRegisterNode(): No instruction sets: node-map={}", entry.getPreregistration());
             return null;
         }
         log.debug("ControlServiceController.baguetteRegisterNode(): instructionsSet: {}", json);
 
-        log.trace("ControlServiceController.baguetteRegisterNode(): instructionsSet: node-map={}, json:\n{}", nodeMap, json);
+        log.trace("ControlServiceController.baguetteRegisterNode(): instructionsSet: node-map={}, json:\n{}", entry.getPreregistration(), json);
         return json;
     }
 
-    public String createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception {
+    public String createClientInstallationTask(NodeRegistryEntry entry) throws Exception {
         //log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
 
         ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
-                .createInstallationHelper(nodeMap)
-                .createClientInstallationTask(nodeMap, contextMap, baguette);
+                .createInstallationHelper(entry)
+                .createClientInstallationTask(entry);
         ClientInstaller.instance().addTask(installationTask);
         log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 

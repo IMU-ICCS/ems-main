@@ -11,19 +11,18 @@ package eu.melodic.event.baguette.client.install.helper;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
-import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface InstallationHelper {
-    Optional<List<String>> getInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
+    Optional<List<String>> getInstallationInstructionsForOs(NodeRegistryEntry entry) throws IOException;
 
-    List<InstructionsSet> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
-    List<InstructionsSet> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette);
-    List<InstructionsSet> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException;
+    List<InstructionsSet> prepareInstallationInstructionsForOs(NodeRegistryEntry entry) throws IOException;
+    List<InstructionsSet> prepareInstallationInstructionsForWin(NodeRegistryEntry entry);
+    List<InstructionsSet> prepareInstallationInstructionsForLinux(NodeRegistryEntry entry) throws IOException;
 
-    ClientInstallationTask createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception;
+    ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws Exception;
 }
