@@ -1,6 +1,6 @@
 {
   "os": "LINUX",
-  "description": "Detect the node features (OS, architecture, cores, RAM, disk etc)",
+  "description": "Detect node features (OS, architecture, cores, RAM, disk etc)",
   "condition": "! ${SKIP_DETECTION:-false}",
   "instructions": [
     {
