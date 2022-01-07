@@ -41,7 +41,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
 
     @Value("${CLIENT_RECOVERY_DELAY:10000}")
     private long clientRecoveryDelay;
-    @Value("${CLIENT_RECOVERY_INSTRUCTIONS_FILES:file:${MELODIC_CONFIG_DIR}/baguette-client-install/recover-vm.json}")
+    @Value("${CLIENT_RECOVERY_INSTRUCTIONS_FILES:file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/recover-baguette.json}")
     private String recoveryInstructionsFile;
 
     private final static String CLIENT_EXIT_TOPIC = "BAGUETTE_SERVER_CLIENT_EXITED";
