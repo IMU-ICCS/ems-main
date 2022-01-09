@@ -139,6 +139,13 @@
       "match": false
     },
     {
+      "description": "Set __EMS_CLIENT_INSTALL__ variable",
+      "taskType": "SET_VARS",
+      "variables": {
+        "__EMS_CLIENT_INSTALL__": "INSTALLED"
+      }
+    },
+    {
       "description": "Log installation end",
       "taskType": "LOG",
       "message": "EMS client installation completed at Node"

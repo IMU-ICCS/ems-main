@@ -10,5 +10,14 @@
 package eu.melodic.event.baguette.client.install;
 
 public interface ClientInstallerPlugin {
-    boolean execute();
+    default boolean execute() {
+        preProcessTask();
+        boolean result = executeTask();
+        result = result && postProcessTask();
+        return result;
+    }
+
+    void preProcessTask();
+    boolean executeTask();
+    boolean postProcessTask();
 }

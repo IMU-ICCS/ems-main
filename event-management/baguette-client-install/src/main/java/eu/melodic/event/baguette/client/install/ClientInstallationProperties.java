@@ -18,6 +18,7 @@ import org.springframework.context.annotation.PropertySource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Data
 @Configuration
@@ -70,4 +71,19 @@ public class ClientInstallationProperties {
 
     private boolean continueOnFail = false;
     private String sessionRecordingDir = "logs";
+
+    // ----------------------------------------------------
+
+    private String clientInstalledVarName = "__EMS_CLIENT_INSTALL__";
+    private Pattern clientInstalledPattern = Pattern.compile("^INSTALLED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean clientInstalledIfVarIsMissing = false;
+    private boolean clientInstallErrorIfVarIsMissing = true;
+
+    private String skipInstallVarName = "__EMS_CLIENT_INSTALL__";
+    private Pattern skipInstallPattern = Pattern.compile("^SKIPPED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean skipInstallIfVarIsMissing = false;
+
+    private String ignoreNodeVarName = "__EMS_IGNORE_NODE__";
+    private Pattern ignoreNodePattern = Pattern.compile("^IGNORED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean ignoreNodeIfVarIsMissing = false;
 }

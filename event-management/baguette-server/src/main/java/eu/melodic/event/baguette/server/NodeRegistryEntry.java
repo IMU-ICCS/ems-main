@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server;
 
 import lombok.*;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,18 +20,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class NodeRegistryEntry {
-    public enum STATE { PREREGISTERED, INSTALLING, INSTALLED, INSTALL_ERROR,
-        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR,
-        DISCONNECTED
+    public enum STATE { PREREGISTERED, IGNORE_NODE, INSTALLING, NOT_INSTALLED, INSTALLED, INSTALL_ERROR,
+        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR, DISCONNECTED
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
     @Getter private final transient BaguetteServer baguetteServer;
     @Getter private STATE state = null;
+    @Getter private Date stateLastUpdate;
     @Getter private String reference = UUID.randomUUID().toString();
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
     @Getter private transient Map<String, String> installation = new LinkedHashMap<>();
     @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
+
+    private void setState(@NonNull STATE s) {
+        state = s;
+        stateLastUpdate = new Date();
+    }
 
     public void refreshReference() { reference = UUID.randomUUID().toString(); }
 
@@ -38,33 +44,47 @@ public class NodeRegistryEntry {
         preregistration.clear();
         preregistration.putAll(processMap("", nodeInfo));
 //        preregistration.putAll((Map)processMap(nodeInfo));
-        state = STATE.PREREGISTERED;
+        setState(STATE.PREREGISTERED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeIgnore(Object nodeInfo) {
+        installation.clear();
+        installation.put("ignore-node", nodeInfo!=null ? nodeInfo.toString() : null);
+        setState(STATE.IGNORE_NODE);
         return this;
     }
 
     public NodeRegistryEntry nodeInstalling(Object nodeInfo) {
         installation.clear();
-        installation.put("installation-task", nodeInfo.toString());
-        state = STATE.INSTALLING;
+        installation.put("installation-task", nodeInfo!=null ? nodeInfo.toString() : "INSTALLING");
+        setState(STATE.INSTALLING);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeNotInstalled(Object nodeInfo) {
+        installation.clear();
+        installation.put("installation-task-result", nodeInfo!=null ? nodeInfo.toString() : "NOT_INSTALLED");
+        setState(STATE.NOT_INSTALLED);
         return this;
     }
 
     public NodeRegistryEntry nodeInstallationComplete(Object nodeInfo) {
-        installation.put("installation-task-result", "SUCCESS");
-        state = STATE.INSTALLED;
+        installation.put("installation-task-result", nodeInfo!=null ? nodeInfo.toString() : "SUCCESS");
+        setState(STATE.INSTALLED);
         return this;
     }
 
     public NodeRegistryEntry nodeInstallationError(Object nodeInfo) {
-        installation.put("installation-task-result", "ERROR");
-        state = STATE.INSTALL_ERROR;
+        installation.put("installation-task-result", nodeInfo!=null ? nodeInfo.toString() : "ERROR");
+        setState(STATE.INSTALL_ERROR);
         return this;
     }
 
     public NodeRegistryEntry nodeRegistration(Map<String,Object> nodeInfo) {
         registration.clear();
         registration.putAll(processMap("", nodeInfo));
-        state = STATE.REGISTERED;
+        setState(STATE.REGISTERED);
         return this;
     }
 

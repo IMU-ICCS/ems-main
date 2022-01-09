@@ -9,10 +9,11 @@
 
 package eu.melodic.event.baguette.client.install;
 
-import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -47,6 +48,8 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -112,9 +115,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     @Override
-    public boolean execute() { return executeTask(); }
-
-    private boolean executeTask(/*int retries*/) {
+    public boolean executeTask(/*int retries*/) {
+        task.getNodeRegistryEntry().nodeInstalling(task.getNodeRegistryEntry().getPreregistration());
         boolean success = false;
         int retries = 0;
         while (!success && retries<=maxRetries) {
@@ -790,5 +792,100 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         });
 
         return true;
+    }
+
+    @Override
+    public void preProcessTask() {
+        // Throw exception to prevent task exception, if task data have problem
+    }
+
+    @Override
+    public boolean postProcessTask() {
+        log.trace("SshClientInstaller: postProcessTask: BEGIN:\n{}", task.getNodeRegistryEntry().getPreregistration());
+
+        // Check if Baguette client has been installed (or failed to install)
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION....");
+        boolean result = postProcessVariable(
+                properties.getClientInstalledVarName(),
+                properties.getClientInstalledPattern(),
+                value -> { task.getNodeRegistryEntry().nodeInstallationComplete(value); return true; },
+                value -> {
+                    if (StringUtils.startsWithIgnoreCase(value, "ERROR")) {
+                        task.getNodeRegistryEntry().nodeInstallationError(value);
+                        return true;
+                    }
+                    return false;
+                },
+                null);
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION.... result: {}", result);
+        if (result) return true;
+
+        // Check if Baguette client installation has been skipped (not attempted at all)
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION SKIP....");
+        result = postProcessVariable(
+                properties.getSkipInstallVarName(),
+                properties.getSkipInstallPattern(),
+                value -> { task.getNodeRegistryEntry().nodeNotInstalled(value); return true; },
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION SKIP.... result: {}", result);
+        if (result) return true;
+
+        // Check if the whole Node must be ignored by EMS
+        log.trace("SshClientInstaller: postProcessTask: NODE IGNORE....");
+        result = postProcessVariable(
+                properties.getIgnoreNodeVarName(),
+                properties.getIgnoreNodePattern(),
+                value -> { task.getNodeRegistryEntry().nodeIgnore(value); return true; },
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: NODE IGNORE.... result: {}", result);
+        if (result) return true;
+
+        // Process defaults, if variables are missing or inconclusive
+        log.trace("SshClientInstaller: postProcessTask: DEFAULTS....");
+        if (properties.isIgnoreNodeIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... NODE IGNORED");
+            task.getNodeRegistryEntry().nodeIgnore(null);
+        } else
+        if (properties.isSkipInstallIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLATION SKIPPED");
+            task.getNodeRegistryEntry().nodeNotInstalled(null);
+        } else
+        if (properties.isClientInstalledIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLED");
+            task.getNodeRegistryEntry().nodeInstallationComplete(null);
+        } else
+        if (properties.isClientInstallErrorIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLATION ERROR");
+            task.getNodeRegistryEntry().nodeInstallationError(null);
+        } else
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... NO DEFAULT");
+        log.trace("SshClientInstaller: postProcessTask: END");
+        return true;
+    }
+
+    private boolean postProcessVariable(String varName, Pattern pattern, @NonNull Function<String,Boolean> match, Function<String,Boolean> notMatch, Supplier<Boolean> missing) {
+        log.trace("SshClientInstaller: postProcessVariable: var={}, pattern={}", varName, pattern);
+        if (StringUtils.isNotBlank(varName) && pattern!=null) {
+            String value = task.getNodeRegistryEntry().getPreregistration().get(varName);
+            log.trace("SshClientInstaller: postProcessVariable: var={}, value={}", varName, value);
+            if (value!=null) {
+                if (pattern.matcher(value).matches()) {
+                    log.trace("SshClientInstaller: postProcessVariable: MATCH-END: var={}, value={}, pattern={}", varName, value, pattern);
+                    return match.apply(value);
+                } else {
+                    log.trace("SshClientInstaller: postProcessVariable: NO MATCH: var={}, value={}, pattern={}", varName, value, pattern);
+                    if (notMatch!=null) {
+                        log.trace("SshClientInstaller: postProcessVariable: NO MATCH-END: var={}, value={}, pattern={}", varName, value, pattern);
+                        return notMatch.apply(value);
+                    }
+                }
+            }
+        }
+        if (missing!=null) {
+            log.trace("SshClientInstaller: postProcessVariable: DEFAULT-END: var={}", varName);
+            return missing.get();
+        }
+        log.trace("SshClientInstaller: postProcessVariable: False-END: var={}", varName);
+        return false;
     }
 }
