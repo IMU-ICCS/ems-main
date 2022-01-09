@@ -115,6 +115,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 .type(nodeType)
                 .provider(nodeProvider)
                 .instructionSets(instructionsSetList)
+                .nodeRegistryEntry(entry)
                 .build();
         log.debug("VmInstallationHelper.createClientInstallationTask(): Created client installation task: {}", installationTask);
 
@@ -239,7 +240,6 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 // Create InstructionsSet object from JSON
                 InstructionsSet instructionsSet =
                         new Gson().fromJson(json, InstructionsSet.class);
-                instructionsSet.setValueMap(nodeMap);
                 instructionsSet.setFileName(jsonFile);
                 log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", instructionsSet);
 

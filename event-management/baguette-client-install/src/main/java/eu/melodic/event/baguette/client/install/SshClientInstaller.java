@@ -503,7 +503,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
             // Check installation instructions condition
             try {
-                if (! InstructionsService.getInstance().checkCondition(instructionsSet, instructionsSet.getValueMap())) {
+                if (! InstructionsService.getInstance().checkCondition(instructionsSet, task.getNodeRegistryEntry().getPreregistration())) {
                     log.info("SshClientInstaller: Task #{}: Installation Instructions set is skipped due to failed condition: {}", taskCounter, instructionsSet.getDescription());
                     if (instructionsSet.isStopOnConditionFail()) {
                         log.info("SshClientInstaller: Task #{}: No further installation instructions sets will be executed due to stopOnConditionFail: {}", taskCounter, instructionsSet.getDescription());
@@ -538,7 +538,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     private boolean executeInstructions(InstructionsSet instructionsSet) throws IOException {
-        Map<String, String> valueMap = instructionsSet.getValueMap();
+        Map<String, String> valueMap = task.getNodeRegistryEntry().getPreregistration();
         int numOfInstructions = instructionsSet.getInstructions().size();
         int cnt = 0;
         int insCount = instructionsSet.getInstructions().size();

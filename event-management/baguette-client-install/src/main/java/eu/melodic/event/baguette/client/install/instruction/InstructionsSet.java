@@ -18,7 +18,6 @@ public class InstructionsSet extends AbstractInstructionsBase {
     private String os;
     private String description;
     private String fileName;
-    private Map<String,String> valueMap = new HashMap<>();
     private List<Instruction> instructions = new ArrayList<>();
 
     /*public Map<String,String> getValueMap() {
