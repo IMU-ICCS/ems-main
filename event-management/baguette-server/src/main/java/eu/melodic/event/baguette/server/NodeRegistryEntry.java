@@ -42,11 +42,11 @@ public class NodeRegistryEntry {
         return ipAddress!=null ? ipAddress : getPreregistration().get("address");
     }
 
-    public String getNodeIdOrIpAddress() {
+    public String getNodeIdOrAddress() {
         return StringUtils.isNotBlank(getNodeId()) ? getNodeId() : getNodeAddress();
     }
 
-    public String getNodeIdAndIpAddress() {
+    public String getNodeIdAndAddress() {
         return getNodeId()+" @ "+getNodeAddress();
     }
 

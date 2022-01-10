@@ -132,19 +132,19 @@ public class ClusteringCoordinator extends NoopCoordinator {
             zoneManagementStrategy.notPreregisteredNode(entry);
         }*/
 
-        log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: CHECKING NODE: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+        log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: CHECKING NODE: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
         if (entry.getState()==NodeRegistryEntry.STATE.IGNORE_NODE) {
             // Add in ignored nodes list
-            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: IGNORE NODE: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: IGNORE NODE: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
             ignoredNodes.put(entry.getIpAddress(), entry);
         } else
         if (entry.getState()==NodeRegistryEntry.STATE.NOT_INSTALLED) {
             // Append to Nodes without EMS client (e.g. Edge devices, resource-limited VM's)
-            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: WITHOUT EMS CLIENT: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: WITHOUT EMS CLIENT: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
 
             // Assign node-without-client in a zone
             String zoneId = zoneManagementStrategy.getZoneIdFor(entry);
-            log.debug("preregister: New entry: id={}, address={}, zone-id={}", entry.getClientId(), entry.getIpAddress(), zoneId);
+            log.debug("preregister: New entry: node={}, zone-id={}", entry.getNodeIdAndAddress(), zoneId);
             ClusterZone zone = topologyMap.computeIfAbsent(zoneId, id -> new ClusterZone(id, zoneStartPort, zoneEndPort));
             log.trace("preregister: Zone members without client: BEFORE: {}", zone.getNodesWithoutClient());
             zone.addNodeWithoutClient(entry);
@@ -152,11 +152,11 @@ public class ClusteringCoordinator extends NoopCoordinator {
         } else
         if (entry.getState()==NodeRegistryEntry.STATE.INSTALLED) {
             // Append to normal Node with EMS client
-            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: NORMAL - WITH EMS CLIENT: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: NORMAL - WITH EMS CLIENT: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
             // No need to do something
         } else {
             // Other states are ignored
-            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: IF-ELSE: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: IF-ELSE: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
         }
     }
 
