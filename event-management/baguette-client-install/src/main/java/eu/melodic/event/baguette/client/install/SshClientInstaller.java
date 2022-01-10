@@ -806,17 +806,20 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         // Check if Baguette client has been installed (or failed to install)
         log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION....");
         boolean result = postProcessVariable(
-                properties.getClientInstalledVarName(),
-                properties.getClientInstalledPattern(),
+                properties.getClientInstallVarName(),
+                properties.getClientInstallSuccessPattern(),
                 value -> { task.getNodeRegistryEntry().nodeInstallationComplete(value); return true; },
-                value -> {
-                    if (StringUtils.startsWithIgnoreCase(value, "ERROR")) {
-                        task.getNodeRegistryEntry().nodeInstallationError(value);
-                        return true;
-                    }
-                    return false;
-                },
-                null);
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION.... result: {}", result);
+        if (result) return true;
+
+        // Check if Baguette client installation has failed
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION FAILED....");
+        result = postProcessVariable(
+                properties.getClientInstallVarName(),
+                properties.getClientInstallErrorPattern(),
+                value -> { task.getNodeRegistryEntry().nodeInstallationComplete(value); return true; },
+                null, null);
         log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION.... result: {}", result);
         if (result) return true;
 
@@ -850,7 +853,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLATION SKIPPED");
             task.getNodeRegistryEntry().nodeNotInstalled(null);
         } else
-        if (properties.isClientInstalledIfVarIsMissing()) {
+        if (properties.isClientInstallSuccessIfVarIsMissing()) {
             log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLED");
             task.getNodeRegistryEntry().nodeInstallationComplete(null);
         } else

@@ -74,9 +74,10 @@ public class ClientInstallationProperties {
 
     // ----------------------------------------------------
 
-    private String clientInstalledVarName = "__EMS_CLIENT_INSTALL__";
-    private Pattern clientInstalledPattern = Pattern.compile("^INSTALLED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
-    private boolean clientInstalledIfVarIsMissing = false;
+    private String clientInstallVarName = "__EMS_CLIENT_INSTALL__";
+    private Pattern clientInstallSuccessPattern = Pattern.compile("^INSTALLED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private Pattern clientInstallErrorPattern = Pattern.compile("^ERROR($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean clientInstallSuccessIfVarIsMissing = false;
     private boolean clientInstallErrorIfVarIsMissing = true;
 
     private String skipInstallVarName = "__EMS_CLIENT_INSTALL__";

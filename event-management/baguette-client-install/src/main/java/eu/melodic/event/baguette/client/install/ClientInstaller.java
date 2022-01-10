@@ -71,7 +71,7 @@ public class ClientInstaller implements InitializingBean {
             boolean success = executeVmTask(task, taskCounter);
             log.debug("ClientInstaller: NODE_REGISTRY_ENTRY after installation execution: \n{}", task.getNodeRegistryEntry());
 
-            if (entry.getState()== NodeRegistryEntry.STATE.INSTALLING) {
+            if (entry.getState()==NodeRegistryEntry.STATE.INSTALLING) {
                 log.warn("ClientInstaller: NODE_REGISTRY_ENTRY status is still INSTALLING after executing client installation. Changing to INSTALL_ERROR");
                 entry.nodeInstallationError(null);
             }
