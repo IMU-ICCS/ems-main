@@ -61,6 +61,9 @@ public class ClientInstaller implements InitializingBean {
     }
 
     private boolean executeTask(ClientInstallationTask task, long taskCounter) {
+        if (baguetteServer.getNodeRegistry().getCoordinator()==null)
+            throw new IllegalStateException("Baguette Server Coordinator has not yet been initialized");
+
         if ("VM".equalsIgnoreCase(task.getType())) {
             NodeRegistryEntry entry = baguetteServer.getNodeRegistry().getNodeByAddress(task.getAddress());
             if (entry==null)
@@ -75,6 +78,9 @@ public class ClientInstaller implements InitializingBean {
                 log.warn("ClientInstaller: NODE_REGISTRY_ENTRY status is still INSTALLING after executing client installation. Changing to INSTALL_ERROR");
                 entry.nodeInstallationError(null);
             }
+
+            // Pre-register Node to baguette Server Coordinator
+            baguetteServer.getNodeRegistry().getCoordinator().preregister(entry);
 
             return success;
         } else {

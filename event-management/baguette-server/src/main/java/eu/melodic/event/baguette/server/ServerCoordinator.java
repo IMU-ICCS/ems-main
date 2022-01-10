@@ -35,6 +35,8 @@ public interface ServerCoordinator {
 
     default boolean allowNotPreregisteredNode(ClientShellCommand csc) { return true; }
 
+    default void preregister(NodeRegistryEntry entry) { }
+
     void register(ClientShellCommand c);
 
     void unregister(ClientShellCommand c);
