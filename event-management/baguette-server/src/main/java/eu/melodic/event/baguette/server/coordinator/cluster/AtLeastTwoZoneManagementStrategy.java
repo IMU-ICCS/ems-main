@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.guava.InetAddresses;
@@ -47,16 +48,9 @@ public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy
         String zoneName = null;
         NodeRegistryEntry entry = c.getNodeRegistryEntry();
         if (entry!=null) {
-            log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> NRE: {}", c.getId(), entry);
-            Map<String, String> preregInfo = entry.getPreregistration();
-            log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Prereg-Info: {}", c.getId(), preregInfo);
-            if (preregInfo!=null) {
-                String zoneId = preregInfo.get("zone-id");
-                log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Zone-Id: {}", c.getId(), zoneId);
-                if (StringUtils.isNotBlank(zoneId)) {
-                    log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Found Zone-Id in Prereg-Info: {}", c.getId(), zoneId);
-                    return zoneId;
-                }
+            String zoneId = getZoneIdFor(c.getNodeRegistryEntry());
+            if (StringUtils.isNotBlank(zoneId)) {
+                return zoneId;
             }
         }
         if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
@@ -73,6 +67,22 @@ public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy
         return StringUtils.isBlank(zoneName)
                 ? UUID.randomUUID().toString()
                 : zoneName.replaceAll("[^A-Za-z0-9_]","_");
+    }
+
+    @Override
+    public String getZoneIdFor(@NonNull NodeRegistryEntry entry) {
+        log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> NRE: {}", entry.getClientId(), entry);
+        Map<String, String> preregInfo = entry.getPreregistration();
+        log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Prereg-Info: {}", entry.getClientId(), preregInfo);
+        if (preregInfo!=null) {
+            String zoneId = preregInfo.get("zone-id");
+            log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Zone-Id: {}", entry.getClientId(), zoneId);
+            if (StringUtils.isNotBlank(zoneId)) {
+                log.debug("getZoneIdFor: {}: >>>>>>>>>>>>> Found Zone-Id in Prereg-Info: {}", entry.getClientId(), zoneId);
+                return zoneId;
+            }
+        }
+        return null;
     }
 
     @Override

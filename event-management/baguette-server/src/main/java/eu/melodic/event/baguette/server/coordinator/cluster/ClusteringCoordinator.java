@@ -15,6 +15,7 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.GROUPING;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,8 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private GROUPING topLevelGrouping;
     private GROUPING aggregatorGrouping;
     private GROUPING lastLevelGrouping;
+
+    private Map<String,NodeRegistryEntry> ignoredNodes = new LinkedHashMap<>();
 
     public Collection<String> getClusterIdSet() { return topologyMap.keySet(); }
     public Collection<IClusterZone> getClusters() { return topologyMap.values().stream().map(c->(IClusterZone)c).collect(Collectors.toList()); }
@@ -115,6 +118,46 @@ public class ClusteringCoordinator extends NoopCoordinator {
     @Override
     public boolean allowNotPreregisteredNode(ClientShellCommand csc) {
         return zoneManagementStrategy.allowNotPreregisteredNode(csc);
+    }
+
+    @Override
+    public synchronized void preregister(@NonNull NodeRegistryEntry entry) {
+        log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE:\n{}", entry);
+
+        if (!_logInvocation("preregister", entry, true)) return;
+
+        // Check if client has been preregistered (or connected without being expected)
+        /*if (zoneManagementStrategy.allowNotPreregisteredNode(entry)) {
+            log.warn("Non-Preregistered node will be preregistered: {} @ {}", entry.getClientId(), entry.getIpAddress());
+            zoneManagementStrategy.notPreregisteredNode(entry);
+        }*/
+
+        log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: CHECKING NODE: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+        if (entry.getState()==NodeRegistryEntry.STATE.IGNORE_NODE) {
+            // Add in ignored nodes list
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: IGNORE NODE: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+            ignoredNodes.put(entry.getIpAddress(), entry);
+        } else
+        if (entry.getState()==NodeRegistryEntry.STATE.NOT_INSTALLED) {
+            // Append to Nodes without EMS client (e.g. Edge devices, resource-limited VM's)
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: WITHOUT EMS CLIENT: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+
+            // Assign node-without-client in a zone
+            String zoneId = zoneManagementStrategy.getZoneIdFor(entry);
+            log.debug("preregister: New entry: id={}, address={}, zone-id={}", entry.getClientId(), entry.getIpAddress(), zoneId);
+            ClusterZone zone = topologyMap.computeIfAbsent(zoneId, id -> new ClusterZone(id, zoneStartPort, zoneEndPort));
+            log.trace("preregister: Zone members without client: BEFORE: {}", zone.getNodesWithoutClient());
+            zone.addNodeWithoutClient(entry);
+            log.trace("preregister: Zone members without client:  AFTER: {}", zone.getNodesWithoutClient());
+        } else
+        if (entry.getState()==NodeRegistryEntry.STATE.INSTALLED) {
+            // Append to normal Node with EMS client
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: NORMAL - WITH EMS CLIENT: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+            // No need to do something
+        } else {
+            // Other states are ignored
+            log.warn("=======================> ClusteringCoordinator: PRE-REGISTER NODE: IF-ELSE: ip-address={}, state={}", entry.getIpAddress(), entry.getState());
+        }
     }
 
     @Override

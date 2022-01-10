@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -32,6 +33,22 @@ public class NodeRegistryEntry {
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
     @Getter private transient Map<String, String> installation = new LinkedHashMap<>();
     @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
+
+    public String getNodeId() {
+        return getPreregistration().get("id");
+    }
+
+    public String getNodeAddress() {
+        return ipAddress!=null ? ipAddress : getPreregistration().get("address");
+    }
+
+    public String getNodeIdOrIpAddress() {
+        return StringUtils.isNotBlank(getNodeId()) ? getNodeId() : getNodeAddress();
+    }
+
+    public String getNodeIdAndIpAddress() {
+        return getNodeId()+" @ "+getNodeAddress();
+    }
 
     private void setState(@NonNull STATE s) {
         state = s;

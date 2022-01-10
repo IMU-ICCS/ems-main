@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.KeystoreUtil;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,8 @@ public class ClusterZone implements IClusterZone {
     private final Map<String,ClientShellCommand> nodes = new LinkedHashMap<>();
     @Getter(AccessLevel.NONE)
     private final Map<String, Integer> addressPortCache = new HashMap<>();
+    @Getter(AccessLevel.NONE)
+    private final Map<String, NodeRegistryEntry> nodesWithoutClient = new LinkedHashMap<>();
 
     private final String clusterId;
     private final String clusterKeystoreBase64;
@@ -92,6 +95,7 @@ public class ClusterZone implements IClusterZone {
         addressPortCache.clear();
     }
 
+    // Nodes management
     public void addNode(@NonNull ClientShellCommand csc) {
         synchronized (Objects.requireNonNull(csc)) {
             nodes.put(csc.getClientIpAddress(), csc);
@@ -113,5 +117,28 @@ public class ClusterZone implements IClusterZone {
 
     public ClientShellCommand getNodeByAddress(String address) {
         return nodes.get(address);
+    }
+
+    // Nodes-without-Clients management
+    public synchronized void addNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
+        String address = entry.getIpAddress();
+        if (address==null) address = entry.getNodeAddress();
+        if (address==null) throw new IllegalArgumentException("Node address not found in Preregistration info");
+        nodesWithoutClient.put(address, entry);
+    }
+
+    public synchronized void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
+        String address = entry.getIpAddress();
+        if (address==null) address = entry.getNodeAddress();
+        if (address==null) throw new IllegalArgumentException("Node address not found in Preregistration info");
+        nodesWithoutClient.remove(address);
+    }
+
+    public List<NodeRegistryEntry> getNodesWithoutClient() {
+        return new ArrayList<>(nodesWithoutClient.values());
+    }
+
+    public NodeRegistryEntry getNodeWithoutClientByAddress(String address) {
+        return nodesWithoutClient.get(address);
     }
 }

@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.guava.InetAddresses;
@@ -41,7 +42,7 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
         String hostname = c.getClientHostname();
         log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
         log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
-        String zoneName = null;
+        String zoneName = getZoneIdFor(c.getNodeRegistryEntry());
         if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
             int p = hostname.indexOf(".");
             if (p>0)
@@ -56,6 +57,14 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
         return StringUtils.isBlank(zoneName)
                 ? UUID.randomUUID().toString()
                 : zoneName.replaceAll("[^A-Za-z0-9_]","_");
+    }
+
+    @Override
+    public String getZoneIdFor(NodeRegistryEntry entry) {
+        if (entry==null) return null;
+        String zoneId = entry.getPreregistration().get("zone-id");
+        log.debug("getZoneIdFor: {} @ {}: >>>>>>>>>>>>> Zone-Id in Prereg-Info: {}", entry.getClientId(), entry.getIpAddress(), zoneId);
+        return zoneId;
     }
 
     @Override
