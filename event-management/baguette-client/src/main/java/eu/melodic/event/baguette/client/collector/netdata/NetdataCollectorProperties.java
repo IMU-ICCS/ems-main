@@ -26,6 +26,7 @@ public class NetdataCollectorProperties {
     private boolean enable;
     private long delay;
     private String url;
+    private String urlOfNodesWithoutClient;
     private boolean createTopic;
     private List<String> allowedTopics;
 }

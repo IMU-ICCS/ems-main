@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,15 +128,29 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
 
         while (running && !Thread.currentThread().isInterrupted()) {
             try {
-                // collect data
-                collectAndPublishData();
+                // collect data from local node
+                log.warn("Collectors::Netdata: Collecting metrics from local node: {}", properties.getUrl());
+                collectAndPublishData(properties.getUrl());
+
+                // if Aggregator, collect data from nodes without client
+                log.trace("Collectors::Netdata: Nodes without clients in Zone: {}",
+                        commandExecutor.getClientConfiguration()!=null
+                                ? commandExecutor.getClientConfiguration().getNodesWithoutClient() : null);
+                log.trace("Collectors::Netdata: Is Aggregator: {}", commandExecutor.isAggregator());
+                if (commandExecutor.isAggregator()) {
+                    for (Serializable nodeAddress : commandExecutor.getClientConfiguration().getNodesWithoutClient()) {
+                        String url = String.format(properties.getUrlOfNodesWithoutClient(), nodeAddress);
+                        log.warn("Collectors::Netdata: Collecting metrics from node without EMS client: {}", url);
+                        collectAndPublishData(url);
+                    }
+                }
 
                 // sleep for 'delay' millis
                 Thread.sleep(properties.getDelay());
             } catch (InterruptedException e) {
                 log.warn("Collectors::Netdata: Interrupted");
             } catch (Throwable t) {
-                log.warn("Collectors::Netdata: Exception: {}", t);
+                log.warn("Collectors::Netdata: Exception: ", t);
             }
         }
 
@@ -146,10 +161,10 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         }
     }
 
-    private void collectAndPublishData() {
-        log.info("Collectors::Netdata: Collecting data: {}...", properties.getUrl());
+    private void collectAndPublishData(String url) {
+        log.info("Collectors::Netdata: Collecting data: {}...", url);
         long startTm = System.currentTimeMillis();
-        ResponseEntity<HashMap> response = restTemplate.getForEntity(properties.getUrl(), HashMap.class);
+        ResponseEntity<HashMap> response = restTemplate.getForEntity(url, HashMap.class);
         long callEndTm = System.currentTimeMillis();
         log.trace("Collectors::Netdata: ...response: {}", response);
         if (response.getStatusCode()==HttpStatus.OK) {
@@ -170,7 +185,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                 for (Object dimKey : dimensionsMap.keySet()) {
                     log.trace("Collectors::Netdata: ...Loop-1: ...dimensions-key: {}", dimKey);
                     if (dimKey==null) continue;
-                    String metricName = ("netdata."+key.toString()+"."+dimKey.toString()).replace(".", "__");
+                    String metricName = ("netdata."+ key + "."+ dimKey).replace(".", "__");
                     log.trace("Collectors::Netdata: ...Loop-1: ...metric-name: {}", metricName);
                     Map dimData = (Map)dimensionsMap.get(dimKey);
                     Object valObj = dimData.get("value");

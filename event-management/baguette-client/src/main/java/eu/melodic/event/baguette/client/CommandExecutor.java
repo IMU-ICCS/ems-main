@@ -1226,6 +1226,14 @@ public class CommandExecutor {
         if (out!=null) out.println("STATISTICS CLEARED");
     }
 
+    public boolean isAggregator() {
+        return activeGrouping!=null && aggregatorGrouping!=null && aggregatorGrouping.equals(activeGrouping.getName());
+    }
+
+    public boolean isNode() {
+        return ! isAggregator();
+    }
+
     /*private static class StreamGobbler implements Runnable {
         private InputStream inputStream1;
         private InputStream inputStream2;
