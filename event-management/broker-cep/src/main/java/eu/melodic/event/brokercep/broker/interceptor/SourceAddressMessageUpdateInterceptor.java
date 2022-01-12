@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.broker.interceptor;
 
+import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.Connection;
@@ -17,7 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class SourceAddressMessageUpdateInterceptor extends AbstractMessageInterceptor {
-    private final String sourceAddressPropertyName = "producer-host";
+    private final String sourceAddressPropertyName = EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS;
 
     @Override
     public void intercept(Message message) {
