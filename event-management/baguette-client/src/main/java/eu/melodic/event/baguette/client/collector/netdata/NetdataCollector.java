@@ -138,8 +138,8 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         while (running && !Thread.currentThread().isInterrupted()) {
             try {
                 // collect data from local node
-                log.warn("Collectors::Netdata: Collecting metrics from local node: {}", properties.getUrl());
-                collectAndPublishData(properties.getUrl());
+                log.info("Collectors::Netdata: Collecting metrics from local node...");
+                collectAndPublishData(null);
 
                 // if Aggregator, collect data from nodes without client
                 log.trace("Collectors::Netdata: Nodes without clients in Zone: {}",
@@ -147,10 +147,10 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                                 ? commandExecutor.getClientConfiguration().getNodesWithoutClient() : null);
                 log.trace("Collectors::Netdata: Is Aggregator: {}", commandExecutor.isAggregator());
                 if (commandExecutor.isAggregator()) {
+                    log.info("Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): {}",
+                            commandExecutor.getClientConfiguration().getNodesWithoutClient());
                     for (Serializable nodeAddress : commandExecutor.getClientConfiguration().getNodesWithoutClient()) {
-                        String url = String.format(properties.getUrlOfNodesWithoutClient(), nodeAddress);
-                        log.warn("Collectors::Netdata: Collecting metrics from node without EMS client: {}", url);
-                        collectAndPublishData(url);
+                        collectAndPublishData(nodeAddress.toString());
                     }
                 }
 
@@ -170,8 +170,20 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         }
     }
 
-    private void collectAndPublishData(String url) {
-        log.info("Collectors::Netdata: Collecting data: {}...", url);
+    private void collectAndPublishData(String nodeAddress) {
+        String url;
+        if (StringUtils.isBlank(nodeAddress)) {
+            // Local node data collection URL
+            url = properties.getUrl();
+            if (StringUtils.isBlank(url))
+                url = String.format(properties.getUrlOfNodesWithoutClient(), "127.0.0.1");
+        } else {
+            // Remote node data collection URL
+            url = String.format(properties.getUrlOfNodesWithoutClient(), nodeAddress);
+        }
+        log.info("Collectors::Netdata:   Collecting data from url: {}", url);
+
+        log.debug("Collectors::Netdata: Collecting data: {}...", url);
         long startTm = System.currentTimeMillis();
         ResponseEntity<HashMap> response = restTemplate.getForEntity(url, HashMap.class);
         long callEndTm = System.currentTimeMillis();
@@ -224,10 +236,10 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                 if (Thread.currentThread().isInterrupted()) break;
             }
             long endTm = System.currentTimeMillis();
-            log.info("Collectors::Netdata: Collecting data...ok");
+            log.debug("Collectors::Netdata: Collecting data...ok");
             log.info("Collectors::Netdata:     Metrics: extracted={}, published={}, failed={}",
                     countSuccess+countErrors, countSuccess, countErrors);
-            log.info("Collectors::Netdata:     Durations: rest-call={}, extract+publish={}, total={}",
+            log.debug("Collectors::Netdata:     Durations: rest-call={}, extract+publish={}, total={}",
                     callEndTm-startTm, endTm-callEndTm, endTm-startTm);
         } else {
             log.warn("Collectors::Netdata: Collecting data...failed: Http Status: {}", response.getStatusCode());

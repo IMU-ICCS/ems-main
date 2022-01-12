@@ -111,6 +111,13 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
 
+    // Convert Object to EventMap
+    public static EventMap toEventMap(@NonNull Object o) {
+        if (o instanceof EventMap) return (EventMap) o;
+        if (o instanceof Map) return new EventMap((Map) o);
+        return parseEventMap(o.toString());
+    }
+
     // Parse from string
     public static EventMap parseEventMap(@NonNull String s) {
         /*if (s==null) return null;

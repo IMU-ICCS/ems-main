@@ -24,6 +24,12 @@ public class SourceAddressMessageUpdateInterceptor extends AbstractMessageInterc
     public void intercept(Message message) {
         log.trace("SourceAddressMessageUpdateInterceptor:  Message: {}", message);
         try {
+            Object sourceProperty = message.getProperty(sourceAddressPropertyName);
+            if (sourceProperty!=null && StringUtils.isNotBlank(sourceProperty.toString())) {
+                log.trace("SourceAddressMessageUpdateInterceptor:  Message has Producer Host property set: {}", sourceProperty);
+                return;
+            }
+
             // get remote address from connection
             Connection conn = getProducerBrokerExchange().getConnectionContext().getConnection();
             log.trace("SourceAddressMessageUpdateInterceptor:  Connection: {}", conn);
