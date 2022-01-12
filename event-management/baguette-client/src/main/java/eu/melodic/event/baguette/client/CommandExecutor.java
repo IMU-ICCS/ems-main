@@ -82,6 +82,8 @@ public class CommandExecutor {
     private String clientId;
 
     @Getter
+    private ClientConfiguration clientConfiguration;
+    @Getter
     private final Map<String, GroupingConfiguration> groupings = new LinkedHashMap<>();
     private GroupingConfiguration activeGrouping;
 
@@ -299,6 +301,11 @@ public class CommandExecutor {
             GroupingConfiguration grouping = groupings.get(args[1].trim());
             log.info("{}", grouping);
             out.printf("%s\n", grouping);
+        } else if ("SET-CLIENT-CONFIG".equals(cmd)) {
+            if (args.length < 2) return false;
+            String configStr = String.join(" ", args).trim();
+            log.trace("client-config-base64: {}", configStr);
+            setClientConfiguration(configStr);
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -697,6 +704,24 @@ public class CommandExecutor {
         oos.writeObject( o );
         oos.close();
         return Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+
+    protected synchronized void setClientConfiguration(String configStr) {
+        try {
+            log.debug("Received serialization of client configuration: {}", configStr);
+            ClientConfiguration config = (ClientConfiguration) deserializeFromString(configStr);
+            ClientConfiguration oldConfig = clientConfiguration;
+            if (oldConfig!=null) {
+                log.debug("Old client config.: {}", oldConfig);
+            }
+            synchronized (groupings) {
+                clientConfiguration = config;
+            }
+            log.info("New client config.: {}", config);
+
+        } catch (Exception ex) {
+            log.error("Exception while deserializing received Client configuration: ", ex);
+        }
     }
 
     protected synchronized void setGroupingConfiguration(String configStr) {

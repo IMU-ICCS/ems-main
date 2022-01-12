@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.KeystoreUtil;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -128,6 +129,7 @@ public class ClusterZone implements IClusterZone {
         if (address==null) address = entry.getNodeAddress();
         if (address==null) throw new IllegalArgumentException("Node address not found in Preregistration info");
         nodesWithoutClient.put(address, entry);
+        updateClientConfiguration();
     }
 
     public synchronized void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
@@ -135,6 +137,11 @@ public class ClusterZone implements IClusterZone {
         if (address==null) address = entry.getNodeAddress();
         if (address==null) throw new IllegalArgumentException("Node address not found in Preregistration info");
         nodesWithoutClient.remove(address);
+        updateClientConfiguration();
+    }
+
+    public Set<String> getNodeWithoutClientAddresses() {
+        return new HashSet<>(nodesWithoutClient.keySet());
     }
 
     public List<NodeRegistryEntry> getNodesWithoutClient() {
@@ -143,5 +150,12 @@ public class ClusterZone implements IClusterZone {
 
     public NodeRegistryEntry getNodeWithoutClientByAddress(String address) {
         return nodesWithoutClient.get(address);
+    }
+
+    private void updateClientConfiguration() {
+        ClientConfiguration cc = ClientConfiguration.builder()
+                .nodesWithoutClient(new HashSet<>(nodes.keySet()))
+                .build();
+        ClientShellCommand.sendClientConfigurationToClients(cc , getNodes());
     }
 }

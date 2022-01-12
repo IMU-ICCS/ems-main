@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import com.google.gson.Gson;
+import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.util.GroupingConfiguration;
@@ -33,6 +34,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ClientShellCommand implements Command, Runnable, SessionAware {
@@ -481,7 +483,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     /**
      * Write an object to a Base64 string.
      */
-    protected String serializeToString(Serializable o) throws IOException {
+    public static String serializeToString(Serializable o) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(o);
@@ -492,12 +494,42 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     /**
      * Read the object from Base64 string.
      */
-    protected Object unserializeFromString(String s) throws IOException, ClassNotFoundException {
+    public static Object unserializeFromString(String s) throws IOException, ClassNotFoundException {
         byte[] data = Base64.getDecoder().decode(s);
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
         Object o = ois.readObject();
         ois.close();
         return o;
+    }
+
+    public static void sendClientConfigurationToClients(@NonNull ClientConfiguration cc, @NonNull List<ClientShellCommand> clients) {
+        List<String> clientIds = clients.stream().map(ClientShellCommand::getClientId).collect(Collectors.toList());
+        log.debug("sendClientConfigurationToClients: clients={}, client-config={}", clientIds, cc);
+        try {
+            String ccStr = serializeToString(cc);
+            log.debug("sendClientConfigurationToClients: Serialization of Client configuration: {}", ccStr);
+            ccStr = "SET-CLIENT-CONFIG " + ccStr;
+            for (ClientShellCommand csc : clients) {
+                log.info("sendClientConfigurationToClients: Sending Client configuration to client: {}", csc.getClientId());
+                csc.sendToClient(ccStr);
+            }
+            log.info("sendClientConfigurationToClients: Client configuration sent to clients: {}", clientIds);
+        } catch (IOException ex) {
+            log.error("sendClientConfigurationToClients: Exception while serializing Client configuration: ", ex);
+            log.error("sendClientConfigurationToClients: SET-CLIENT-CONFIG command *NOT* sent to clients");
+        }
+    }
+
+    public void sendClientConfiguration(ClientConfiguration cc) {
+        log.debug("sendClientConfiguration: id={}, client-config={}", id, cc);
+        try {
+            String ccStr = serializeToString(cc);
+            log.info("sendClientConfiguration: Serialization of Client configuration: {}", ccStr);
+            sendToClient("SET-CLIENT-CONFIG " + ccStr);
+        } catch (IOException ex) {
+            log.error("sendClientConfiguration: Exception while serializing Client configuration: ", ex);
+            log.error("sendClientConfiguration: SET-CLIENT-CONFIG command *NOT* sent to client");
+        }
     }
 
     public void sendGroupingConfiguration(String grouping, Map<String, GroupingConfiguration.BrokerConnectionConfig> connectionConfigs, BaguetteServer server) {

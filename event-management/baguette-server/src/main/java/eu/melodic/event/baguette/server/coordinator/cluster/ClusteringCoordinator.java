@@ -14,6 +14,7 @@ import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.GROUPING;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -222,6 +223,14 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     protected synchronized void _do_register(ClientShellCommand csc) {
+        // Add registered node in topology map
+        addNodeInTopology(csc);
+
+        // collect client configuration
+        ClientConfiguration clientConfig = ClientConfiguration.builder()
+                .nodesWithoutClient(new HashSet<>(csc.getClientZone().getNodeWithoutClientAddresses()))
+                .build();
+
         // prepare configuration
         Map<String,BrokerConnectionConfig> connCfgMap = new LinkedHashMap<>();
         BrokerConnectionConfig groupingConn = getUpperwareBrokerConfig(server);
@@ -234,6 +243,13 @@ public class ClusteringCoordinator extends NoopCoordinator {
             connCfgMap.put(groupingName, groupingConn);
             log.trace("ClusteringCoordinator: {} broker config.: {}", groupingName, groupingConn);
         }
+
+        // send client configuration to client
+        log.info("ClusteringCoordinator: --------------------------------------------------");
+        log.info("ClusteringCoordinator: Sending client configuration to client {}...\n{}", csc.getId(), clientConfig);
+        csc.sendClientConfiguration(clientConfig);
+        log.info("ClusteringCoordinator: Sending client configuration to client {}... done", csc.getId());
+        sleep(500);
 
         // send grouping configurations to client
         log.info("ClusteringCoordinator: --------------------------------------------------");
@@ -250,8 +266,8 @@ public class ClusteringCoordinator extends NoopCoordinator {
         log.info("ClusteringCoordinator: --------------------------------------------------");
         sleep(500);
 
-        // Add registered node in topology map
-        addNodeInTopology(csc);
+        // Registered node added in topology map - Notify ZoneManagementStrategy
+        addedNodeInTopology(csc);
     }
 
     private synchronized void addNodeInTopology(ClientShellCommand csc) {
@@ -274,7 +290,9 @@ public class ClusteringCoordinator extends NoopCoordinator {
         //csc.setClientClusterNodeHostname(nodeCanonical);
         log.debug("addNodeInTopology: New client: Cluster node: address={}, hostname={} // {}, port={}",
                 nodeAddress, nodeHostname, nodeCanonical, nodePort);
+    }
 
+     private synchronized void addedNodeInTopology(ClientShellCommand csc) {
         // Signal Zone Management Strategy for new client registration
         zoneManagementStrategy.nodeAdded(csc, this, csc.getClientZone());
         log.info("addNodeInTopology: Client added in topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
