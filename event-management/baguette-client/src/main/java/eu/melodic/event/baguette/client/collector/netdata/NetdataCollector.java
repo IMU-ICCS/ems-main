@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.collector.netdata;
 import eu.melodic.event.baguette.client.Collector;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.RequiredArgsConstructor;
@@ -209,6 +210,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                                     metricName = targetTopic;
                             }
                             EventMap event = new EventMap(metricValue, 1, timestamp);
+                            event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
                             log.debug("Collectors::Netdata:     {}: {}", metricName, metricValue);
                             if (commandExecutor.sendEvent(null, metricName, event, createDestination))
                                 countSuccess++;
