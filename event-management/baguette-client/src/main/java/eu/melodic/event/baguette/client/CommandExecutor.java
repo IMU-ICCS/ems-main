@@ -1043,7 +1043,7 @@ public class CommandExecutor {
     public void sendLocalEvent(String destination, double metricValue) {
         if (activeGrouping != null) {
             String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
-            log.info("sendLocalEvent(): local-broker-url={}", brokerUrl);
+            log.debug("sendLocalEvent(): local-broker-url={}", brokerUrl);
             sendEvent(brokerUrl, destination, metricValue);
         } else {
             log.warn("sendLocalEvent(): No active grouping");
@@ -1068,9 +1068,9 @@ public class CommandExecutor {
 
     public void sendEvent(String connectionStr, String destination, Map event) {
         try {
-            log.info("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            log.debug("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
             brokerCepService.publishEvent(connectionStr, destination, event);
-            log.info("sendEvent(): Event sent: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            log.debug("sendEvent(): Event sent: connection={}, destination={}, payload={}", connectionStr, destination, event);
         } catch (Exception ex) {
             log.error("sendEvent(): Error while sending event: connection={}, destination={}, payload={}, exception: ", connectionStr, destination, event, ex);
         }
