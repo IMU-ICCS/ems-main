@@ -67,6 +67,18 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
 
+    // Event properties
+    private Map<String,Object> properties;
+
+    public Object getProperty(@NonNull String name) {
+        return properties.get(name);
+    }
+
+    public synchronized Object setProperty(@NonNull String name, Object value) {
+        if (properties==null) properties = new LinkedHashMap<>();
+        return properties.put(name, value);
+    }
+
     // Constructors
     /*public EventMap() {
         super();

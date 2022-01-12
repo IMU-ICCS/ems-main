@@ -308,11 +308,25 @@ public class BrokerCepService {
         MessageProducer producer = session.createProducer(destination);
         producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
 
-        // Create a messages
+        // Create a message
         //ObjectMessage message = session.createObjectMessage(event);
         String payload = gson.toJson(event);
         log.trace("BrokerCepService.publishEvent(): Message payload: topic={}, payload={}", destination, payload);
         TextMessage message = session.createTextMessage(payload);
+
+        // Set message properties
+        if (event instanceof EventMap) {
+            Map<String, Object> eventProperties = ((EventMap) event).getProperties();
+            if (eventProperties!=null) {
+                eventProperties.forEach((pName,pValue)->{
+                    try {
+                        message.setStringProperty(pName, pValue!=null ? pValue.toString() : null);
+                    } catch (JMSException e) {
+                        log.warn("BrokerCepService.publishEvent(): Exception while setting event property. Skipping it: name={}, value={}", pName, pValue);
+                    }
+                });
+            }
+        }
 
         // Tell the producer to send the message
         long hash = message.hashCode();
