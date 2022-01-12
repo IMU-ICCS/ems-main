@@ -10,14 +10,29 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.NonNull;
 
+import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 public interface IClusterZone {
     String getId();
     void addNode(@NonNull ClientShellCommand csc);
     void removeNode(@NonNull ClientShellCommand csc);
+    Set<String> getNodeAddresses();
     List<ClientShellCommand> getNodes();
     ClientShellCommand getNodeByAddress(String address);
+
+    void addNodeWithoutClient(@NonNull NodeRegistryEntry entry);
+    void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry);
+    Set<String> getNodeWithoutClientAddresses();
+    List<NodeRegistryEntry> getNodesWithoutClient();
+    NodeRegistryEntry getNodeWithoutClientByAddress(String address);
+
+    File getClusterKeystoreFile();
+    String getClusterKeystoreType();
+    String getClusterKeystorePassword();
+    String getClusterKeystoreBase64();
 }

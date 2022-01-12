@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,8 +32,24 @@ public class NodeRegistry {
     @Getter @Setter
     private ServerCoordinator coordinator;
 
-    public synchronized NodeRegistryEntry addNode(Map<String,Object> nodeInfo, String clientId) {
-        String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
+    public synchronized NodeRegistryEntry addNode(Map<String,Object> nodeInfo, String clientId) throws UnknownHostException {
+        String hostnameOrAddress = getIpAddressFromNodeInfo(nodeInfo);
+        String ipAddress = hostnameOrAddress;
+
+        // Get IP address from provided hostname or address
+        try {
+            log.debug("NodeRegistry.addNode(): Resolving IP address from provided hostname/address: {}", hostnameOrAddress);
+            InetAddress host = InetAddress.getByName(hostnameOrAddress);
+            log.trace("NodeRegistry.addNode(): InetAddress for provided hostname/address: {},  InetAddress: {}", hostnameOrAddress, host);
+            String resolvedIpAddress = host.getHostAddress();
+            log.info("NodeRegistry.addNode(): Provided-Address={},  Resolved-IP-Address={}", hostnameOrAddress, resolvedIpAddress);
+            ipAddress = resolvedIpAddress;
+            nodeInfo.put("original-address", nodeInfo.get("address"));
+            nodeInfo.put("address", ipAddress);
+        } catch (UnknownHostException e) {
+            log.error("NodeRegistry.addNode(): EXCEPTION while resolving IP address from provided hostname/address: {}\n", ipAddress, e);
+            throw e;
+        }
 
         // Check if an entry with the same IP address is already registered
         NodeRegistryEntry entry = registry.get(ipAddress);

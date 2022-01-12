@@ -28,6 +28,7 @@
     {
       "description": "Run detection script",
       "taskType": "CMD",
+      /*"command": "if [ ! -e /tmp/detect.txt ]; then /tmp/detect.sh &> /tmp/detect.txt; fi",*/
       "command": "/tmp/detect.sh &> /tmp/detect.txt",
       "executable": false,
       "exitCode": 0,

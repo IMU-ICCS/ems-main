@@ -47,7 +47,7 @@ public class ClusterZone implements IClusterZone {
     private ClientShellCommand aggregator;
 
     @SneakyThrows
-    public ClusterZone(@NotBlank String id, int startPort, int endPort) {
+    public ClusterZone(@NotBlank String id, int startPort, int endPort, String keystoreFileName) {
         checkArgs(id, startPort, endPort);
         this.id = id;
         this.startPort = startPort;
@@ -55,8 +55,7 @@ public class ClusterZone implements IClusterZone {
         currentPort.set(startPort);
 
         this.clusterId = RandomStringUtils.randomAlphanumeric(64);
-        String fileName = String.format("logs/cluster_%d_%s.p12", System.currentTimeMillis(), id);
-        this.clusterKeystoreFile = new File(fileName);
+        this.clusterKeystoreFile = new File(keystoreFileName);
         this.clusterKeystoreType = "JKS";
         this.clusterKeystorePassword = RandomStringUtils.randomAlphanumeric(64);
         log.info("New ClusterZone:  zone: {}", id);
@@ -109,6 +108,10 @@ public class ClusterZone implements IClusterZone {
             if (csc.getClientZone()==this)
                 csc.setClientZone(null);
         }
+    }
+
+    public Set<String> getNodeAddresses() {
+        return new HashSet<>(nodes.keySet());
     }
 
     public List<ClientShellCommand> getNodes() {

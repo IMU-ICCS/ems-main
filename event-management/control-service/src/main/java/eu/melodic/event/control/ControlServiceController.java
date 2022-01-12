@@ -341,7 +341,13 @@ public class ControlServiceController {
         log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         // Register node to Baguette server
-        NodeRegistryEntry entry = coordinator.getBaguetteServer().registerClient(nodeMap);
+        NodeRegistryEntry entry;
+        try {
+            entry = coordinator.getBaguetteServer().registerClient(nodeMap);
+        } catch (Exception e) {
+            log.error("ControlServiceController.baguetteRegisterNode(): EXCEPTION while registering node: map={}\n", nodeMap, e);
+            return "ERROR "+e.getMessage();
+        }
 
         // Update client registration info with BASE_URL, IP_SETTING and CLIENT_ID
         updateRegistrationInfo(request, entry);

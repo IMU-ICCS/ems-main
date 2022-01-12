@@ -29,6 +29,6 @@ public interface IZoneManagementStrategy {
     default void alreadyRegisteredNode(ClientShellCommand csc) { }
     default void alreadyRegisteredNode(NodeRegistryEntry entry) { }
 
-    default void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zoneInfo) { }
-    default void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zoneInfo) { }
+    default void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zoneInfo) { }
+    default void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zoneInfo) { }
 }

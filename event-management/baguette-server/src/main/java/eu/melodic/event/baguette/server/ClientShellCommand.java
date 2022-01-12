@@ -88,6 +88,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private Exception lastException;
     @Getter
     private NodeRegistry nodeRegistry;
+    @Getter @Setter
+    private NodeRegistryEntry nodeRegistryEntry;
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus, NodeRegistry registry) {
         synchronized (LOCK) {
@@ -393,6 +395,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public String getClientProperty(@NonNull String propertyName, String defaultValue) { return clientProperties.getProperty(propertyName, defaultValue); }
 
     public NodeRegistryEntry getNodeRegistryEntry() {
+        if (nodeRegistryEntry!=null)
+            return nodeRegistryEntry;
+
+        //XXX:BUG: Following code seems not working...
         String clientId = getClientId();
         if (StringUtils.isNotBlank(clientId)) {
             return nodeRegistry.getNodeByClientId(clientId);

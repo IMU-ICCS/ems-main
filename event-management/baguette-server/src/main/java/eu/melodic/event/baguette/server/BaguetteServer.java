@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -338,7 +339,7 @@ public class BaguetteServer {
         server.sendConstants(constants);
     }
 
-    public NodeRegistryEntry registerClient(Map<String,Object> nodeInfoMap) {
+    public NodeRegistryEntry registerClient(Map<String,Object> nodeInfoMap) throws UnknownHostException {
         log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
 
         Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);

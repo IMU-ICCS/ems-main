@@ -700,7 +700,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                         log.warn("SshClientInstaller: Task #{}: UNSET_VARS:  No variables specified", taskCounter);
                     break;
                 case PRINT_VARS:
-                    log.info("SshClientInstaller: Task #{}: PRINT_VARS:", taskCounter);
+                    //log.info("SshClientInstaller: Task #{}: PRINT_VARS:", taskCounter);
                     String output = valueMap.entrySet().stream()
                             .map(e -> "    VAR: "+e.getKey()+" = "+e.getValue())
                             .collect(Collectors.joining("\n"));

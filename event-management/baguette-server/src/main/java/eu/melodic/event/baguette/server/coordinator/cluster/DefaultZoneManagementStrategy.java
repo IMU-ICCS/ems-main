@@ -42,8 +42,10 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
         String hostname = c.getClientHostname();
         log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
         log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
+        log.debug("getZoneIfFor: {}: NRE = {}", c.getId(), c.getNodeRegistryEntry());
         String zoneName = getZoneIdFor(c.getNodeRegistryEntry());
-        if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
+        log.debug("getZoneIfFor: {}: zoneName = {}", c.getId(), zoneName);
+        if (StringUtils.isBlank(zoneName) && StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
             int p = hostname.indexOf(".");
             if (p>0)
                 zoneName = hostname.substring(p+1);
@@ -56,25 +58,25 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
         }
         return StringUtils.isBlank(zoneName)
                 ? UUID.randomUUID().toString()
-                : zoneName.replaceAll("[^A-Za-z0-9_]","_");
+                : zoneName;
     }
 
     @Override
     public String getZoneIdFor(NodeRegistryEntry entry) {
         if (entry==null) return null;
         String zoneId = entry.getPreregistration().get("zone-id");
-        log.debug("getZoneIdFor: {} @ {}: >>>>>>>>>>>>> Zone-Id in Prereg-Info: {}", entry.getClientId(), entry.getIpAddress(), zoneId);
+        log.debug("getZoneIdFor: {} @ {}: Zone-Id in Preregistration-Info: {}", entry.getClientId(), entry.getIpAddress(), zoneId);
         return zoneId;
     }
 
     @Override
-    public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         // Instruct new node to join cluster
         log.info("DefaultZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());
         joinToCluster(csc, coordinator, zone);
     }
 
-    private void joinToCluster(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    private void joinToCluster(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         coordinator.sendClusterKey(csc, zone);
         coordinator.instructClusterJoin(csc, zone, true);
 
@@ -85,7 +87,7 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     }
 
     @Override
-    public synchronized void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    public synchronized void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         // Instruct node to leave cluster
         log.info("DefaultZoneManagementStrategy: Node to leave cluster: client={}, zone={}", csc.getId(), zone.getId());
         coordinator.instructClusterLeave(csc, zone);
