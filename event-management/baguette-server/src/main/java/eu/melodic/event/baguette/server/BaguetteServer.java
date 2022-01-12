@@ -286,7 +286,8 @@ public class BaguetteServer {
     public List<String> getActiveClients() {
         return ClientShellCommand.getActive().stream()
                 .map(c -> {
-                    NodeRegistryEntry entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
+                    NodeRegistryEntry entry = c.getNodeRegistryEntry();
+                    if (entry==null) entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
                     log.debug("getActiveClients: CSC ip-address: {}", c.getClientIpAddress());
                     log.debug("getActiveClients: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     if (entry==null) {
@@ -313,7 +314,8 @@ public class BaguetteServer {
         return ClientShellCommand.getActive().stream()
                 //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
                 .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
-                    NodeRegistryEntry entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
+                    NodeRegistryEntry entry = c.getNodeRegistryEntry();
+                    if (entry!=null) entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
                     log.debug("getActiveClientsMap: CSC ip-address: {}", c.getClientIpAddress());
                     log.debug("getActiveClientsMap: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
                     if (entry==null) {
