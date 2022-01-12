@@ -68,15 +68,15 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
 
 
     // Event properties
-    private Map<String,Object> properties;
+    private Map<String,Object> eventProperties;
 
-    public Object getProperty(@NonNull String name) {
-        return properties.get(name);
+    public Object getEventProperty(@NonNull String name) {
+        return eventProperties.get(name);
     }
 
-    public synchronized Object setProperty(@NonNull String name, Object value) {
-        if (properties==null) properties = new LinkedHashMap<>();
-        return properties.put(name, value);
+    public synchronized Object setEventProperty(@NonNull String name, Object value) {
+        if (eventProperties ==null) eventProperties = new LinkedHashMap<>();
+        return eventProperties.put(name, value);
     }
 
     // Constructors
@@ -90,6 +90,8 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
             log.trace("EventMap.<init>: key={}, value={}", k, v);
             this.put(k, v);
         });
+        if (map instanceof EventMap)
+            setEventProperties(new LinkedHashMap<>(((EventMap)map).getEventProperties()));
     }
 
     public EventMap(double metricValue) {
