@@ -18,12 +18,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,10 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                 .map(s -> s.split(":", 2))
                 .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
 
+        this.restTemplate = new RestTemplateBuilder()
+                .setConnectTimeout(Duration.ofSeconds(5))
+                .setReadTimeout(Duration.ofSeconds(5))
+                .build();
     }
 
     public synchronized void activeGroupingChanged(String oldGrouping, String newGrouping) {
@@ -121,6 +127,8 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         running = false;
         // interrupt sleep
         runner.interrupt();
+
+        log.info("Collectors::Netdata: Stopped");
     }
 
     public void run() {
