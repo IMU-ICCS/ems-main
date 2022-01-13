@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.install;
 
+import eu.melodic.event.baguette.client.install.instruction.INSTRUCTION_RESULT;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
@@ -137,7 +138,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            success = executeInstructionsList();
+            INSTRUCTION_RESULT exitResult = executeInstructionSets();
+            success = exitResult != INSTRUCTION_RESULT.FAIL;
         } catch (Exception ex) {
             log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
             success = false;
@@ -496,8 +498,9 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructionsList() throws IOException {
+    private INSTRUCTION_RESULT executeInstructionSets() throws IOException {
         List<InstructionsSet> instructionsSetList = task.getInstructionSets();
+        INSTRUCTION_RESULT exitResult = INSTRUCTION_RESULT.SUCCESS;
         int cntSuccess = 0;
         int cntFail = 0;
         for (InstructionsSet instructionsSet : instructionsSetList) {
@@ -509,37 +512,47 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     log.info("SshClientInstaller: Task #{}: Installation Instructions set is skipped due to failed condition: {}", taskCounter, instructionsSet.getDescription());
                     if (instructionsSet.isStopOnConditionFail()) {
                         log.info("SshClientInstaller: Task #{}: No further installation instructions sets will be executed due to stopOnConditionFail: {}", taskCounter, instructionsSet.getDescription());
-                        return false;
+                        exitResult = INSTRUCTION_RESULT.FAIL;
+                        break;
                     }
                     continue;
                 }
                 log.debug("SshClientInstaller: Task #{}: Condition evaluation for Installation Instructions Set succeeded: {}", taskCounter, instructionsSet.getDescription());
             } catch (Exception e) {
                 log.error("sshClientInstaller: Task #{}: Installation Instructions Set Condition evaluation error. Will not process remaining installation instructions sets: {}\n", taskCounter, instructionsSet.getDescription(), e);
-                return false;
+                exitResult = INSTRUCTION_RESULT.FAIL;
+                break;
             }
 
             // Execute installation instructions
             log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, instructionsSet.getDescription());
             streamLogger.logMessage(
-                    String.format("\n  ----------------------------------------------------------------------\n  Task #{} :  Executing instruction set: %s\n",
+                    String.format("\n  ----------------------------------------------------------------------\n  Task #%d :  Executing instruction set: %s\n",
                     taskCounter, instructionsSet.getDescription()));
-            boolean result = executeInstructions(instructionsSet);
-            if (!result) {
+            INSTRUCTION_RESULT result = executeInstructions(instructionsSet);
+            if (result==INSTRUCTION_RESULT.FAIL) {
                 log.error("SshClientInstaller: Task #{}: Installation Instructions set failed: {}", taskCounter, instructionsSet.getDescription());
                 cntFail++;
-                if (!continueOnFail)
-                    return false;
+                if (!continueOnFail) {
+                    exitResult = INSTRUCTION_RESULT.FAIL;
+                    break;
+                }
+            } else
+            if (result==INSTRUCTION_RESULT.EXIT) {
+                log.info("SshClientInstaller: Task #{}: Instruction set processing exits", taskCounter);
+                cntSuccess++;
+                exitResult = INSTRUCTION_RESULT.EXIT;
+                break;
             } else {
                 log.info("SshClientInstaller: Task #{}: Installation Instructions set succeeded: {}", taskCounter, instructionsSet.getDescription());
                 cntSuccess++;
             }
         }
-        log.info("\n  -------------------------------------------------------------------------\n  Task #{} :  Instruction sets processed: successful={}, failed={}", taskCounter, cntSuccess, cntFail);
-        return true;
+        log.info("\n  -------------------------------------------------------------------------\n  Task #{} :  Instruction sets processed: successful={}, failed={}, exit-result={}", taskCounter, cntSuccess, cntFail, exitResult);
+        return exitResult;
     }
 
-    private boolean executeInstructions(InstructionsSet instructionsSet) throws IOException {
+    private INSTRUCTION_RESULT executeInstructions(InstructionsSet instructionsSet) throws IOException {
         Map<String, String> valueMap = task.getNodeRegistryEntry().getPreregistration();
         int numOfInstructions = instructionsSet.getInstructions().size();
         int cnt = 0;
@@ -554,14 +567,14 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     log.info("SshClientInstaller: Task #{}: Instruction is skipped due to failed condition {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
                     if (ins.isStopOnConditionFail()) {
                         log.info("SshClientInstaller: Task #{}: No further instructions will be executed due to stopOnConditionFail: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
-                        return false;
+                        return INSTRUCTION_RESULT.FAIL;
                     }
                     continue;
                 }
                 log.debug("SshClientInstaller: Task #{}: Condition evaluation for instruction succeeded: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
             } catch (Exception e) {
                 log.error("sshClientInstaller: Task #{}: Instruction Condition evaluation error. Will not process remaining instructions: {}/{}: {}\n", taskCounter, cnt, numOfInstructions, ins.description(), e);
-                return false;
+                return INSTRUCTION_RESULT.FAIL;
             }
 
             // Execute instruction
@@ -664,6 +677,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 case CHECK:
                     log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.command());
                     exitStatus = sshExecCmd(ins.command());
+                    log.info("SshClientInstaller: Task #{}: CHECK: exit-status={}", taskCounter, exitStatus);
                     log.debug("SshClientInstaller: Task #{}: CHECK: Result: match={}, match-status={}, exec-status={}",
                             taskCounter, ins.match(), ins.exitCode(), exitStatus);
                     if (ins.match() && exitStatus==ins.exitCode()
@@ -671,7 +685,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     {
                         log.info("SshClientInstaller: Task #{}: CHECK: MATCH: {}", taskCounter, ins.message());
                         log.info("SshClientInstaller: Task #{}: CHECK: MATCH: Will not process more instructions", taskCounter);
-                        return true;
+                        return INSTRUCTION_RESULT.SUCCESS;
                     }
                     break;
 
@@ -706,12 +720,29 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                             .collect(Collectors.joining("\n"));
                     log.info("SshClientInstaller: Task #{}: PRINT_VARS:\n{}", taskCounter, output);
                     break;
+                case EXIT_SET:
+                    log.info("SshClientInstaller: Task #{}: EXIT_SET: Stop this instruction set processing", taskCounter);
+                    try {
+                        if (StringUtils.isNotBlank(ins.command())) {
+                            String exitResult = ins.command().trim().toUpperCase();
+                            log.info("SshClientInstaller: Task #{}: EXIT_SET: Result={}", taskCounter, exitResult);
+                            return INSTRUCTION_RESULT.valueOf(exitResult);
+                        }
+                    } catch (Exception e) {
+                        log.error("SshClientInstaller: Task #{}: EXIT_SET: Invalid EXIT_SET result: {}. Will return FAIL", taskCounter, ins.command());
+                        return INSTRUCTION_RESULT.FAIL;
+                    }
+                    log.info("SshClientInstaller: Task #{}: EXIT_SET: Result={}", taskCounter, INSTRUCTION_RESULT.SUCCESS);
+                    return INSTRUCTION_RESULT.SUCCESS;
+                case EXIT:
+                    log.info("SshClientInstaller: Task #{}: EXIT: Stop any further instruction processing", taskCounter);
+                    return INSTRUCTION_RESULT.EXIT;
                 default:
                     log.error("sshClientInstaller: Unknown instruction type. Ignoring it: {}", ins);
             }
             if (!result) {
                 log.error("sshClientInstaller: Last instruction failed. Will not process remaining instructions");
-                return false;
+                return INSTRUCTION_RESULT.FAIL;
             }
 
             if (cnt<insCount)
@@ -719,7 +750,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             else
                 log.trace("sshClientInstaller: No more instructions");
         }
-        return true;
+        return INSTRUCTION_RESULT.SUCCESS;
     }
 
     private boolean copyDir(String sourceDir, String targetDir, Map<String,String> valueMap) throws IOException {
@@ -833,7 +864,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION SKIP.... result: {}", result);
         if (result) return true;
 
-        // Check if the whole Node must be ignored by EMS
+        // Check if the Node must be ignored by EMS
         log.trace("SshClientInstaller: postProcessTask: NODE IGNORE....");
         result = postProcessVariable(
                 properties.getIgnoreNodeVarName(),

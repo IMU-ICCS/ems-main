@@ -17,7 +17,7 @@ public interface ClientInstallerPlugin {
         return result;
     }
 
-    void preProcessTask();
+    void preProcessTask();  // Throw exception to block task execution
     boolean executeTask();
     boolean postProcessTask();
 }
