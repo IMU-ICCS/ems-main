@@ -179,6 +179,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         Map<String,Object> baguetteServerInfo = new LinkedHashMap<>();
         baguetteServerInfo.put("active-clients-list", controlServiceCoordinator.clientList());
         baguetteServerInfo.put("active-clients-map", controlServiceCoordinator.clientMap());
+        baguetteServerInfo.put("passive-clients-list", controlServiceCoordinator.passiveClientList());
+        baguetteServerInfo.put("passive-clients-map", controlServiceCoordinator.passiveClientMap());
         metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
 
         // Destinations per grouping and min/max grouping

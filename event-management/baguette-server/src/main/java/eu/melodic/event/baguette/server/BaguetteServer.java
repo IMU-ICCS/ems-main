@@ -14,6 +14,7 @@ import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.FunctionDefinition;
+import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -56,13 +57,37 @@ public class BaguetteServer {
 
     // Configuration getter methods
     public Set<String> getGroupingNames() {
+        return getGroupingNames(true);
+    }
+
+    public Set<String> getGroupingNames(boolean removeUpperware) {
         Set<String> groupings = new HashSet<>();
         groupings.addAll(groupingTopicsMap.keySet());
         groupings.addAll(groupingRulesMap.keySet());
         groupings.addAll(topicConnections.keySet());
         // remove upperware grouping (i.e. GLOBAL)
-        groupings.remove(upperwareGrouping);
+        if (removeUpperware) groupings.remove(upperwareGrouping);
         return groupings;
+    }
+
+    private List<GROUPING> getGroupingsSorted(boolean removeUpperware, boolean ascending) {
+        List<GROUPING> list = getGroupingNames(removeUpperware).stream()
+                .map(GROUPING::valueOf)
+                .sorted()
+                .collect(Collectors.toList());
+        if (ascending) Collections.reverse(list);
+        return list;
+    }
+
+    private List<String> getGroupingNamesSorted(boolean removeUpperware, boolean ascending) {
+        return getGroupingsSorted(removeUpperware, ascending).stream()
+                .map(GROUPING::name)
+                .collect(Collectors.toList());
+    }
+
+    private String getLowestLevelGroupingName() {
+        List<String> list = getGroupingNamesSorted(false, true);
+        return list.size()>0 ? list.get(0) : null;
     }
 
     public BaguetteServerProperties getConfiguration() {
@@ -286,25 +311,8 @@ public class BaguetteServer {
     public List<String> getActiveClients() {
         return ClientShellCommand.getActive().stream()
                 .map(c -> {
-                    NodeRegistryEntry entry = c.getNodeRegistryEntry();
-                    if (entry==null) entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
-                    log.debug("getActiveClients: CSC ip-address: {}", c.getClientIpAddress());
-                    log.debug("getActiveClients: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
-                    if (entry==null) {
-                        log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
-                        entry = getNodeRegistry().getNodeByClientId(c.getClientId());
-                        log.debug("getActiveClients: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
-                    }
-                    return String.format("%s %s %s:%d %s %s %s %s %s", c.getId(),
-                            c.getClientIpAddress(),
-                            c.getClientClusterNodeHostname(),
-                            c.getClientClusterNodePort(),
-                            c.getClientNodeStatus(),
-                            c.getClientZone()!=null ? c.getClientZone().getId() : null,
-                            c.getClientGrouping(),
-                            entry!=null ? entry.getReference() : null,
-                            c.getClientProperty("node-id")
-                    );
+                    NodeRegistryEntry entry = getNodeRegistryEntryFromClientShellCommand(c);
+                    return formatClientList(c, entry);
                 })
                 .sorted()
                 .collect(Collectors.toList());
@@ -312,29 +320,106 @@ public class BaguetteServer {
 
     public Map<String, Map<String, String>> getActiveClientsMap() {
         return ClientShellCommand.getActive().stream()
-                //.sorted((final ClientShellCommand c1, final ClientShellCommand c2) -> c1.getId().compareTo(c2.getId()))
-                .collect(Collectors.toMap(ClientShellCommand::getId, c -> {
-                    NodeRegistryEntry entry = c.getNodeRegistryEntry();
-                    if (entry!=null) entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
-                    log.debug("getActiveClientsMap: CSC ip-address: {}", c.getClientIpAddress());
-                    log.debug("getActiveClientsMap: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
-                    if (entry==null) {
-                        log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
-                        entry = getNodeRegistry().getNodeByClientId(c.getClientId());
-                        log.debug("getActiveClientsMap: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
-                    }
-                    Map<String,String> properties = new LinkedHashMap<>();
-                    //properties.put("id", c.getId());
-                    properties.put("ip-address", c.getClientIpAddress());
-                    properties.put("node-hostname", c.getClientClusterNodeHostname());
-                    properties.put("node-port", Integer.toString(c.getClientClusterNodePort()));
-                    properties.put("node-status", c.getClientNodeStatus());
-                    properties.put("node-zone", c.getClientZone()!=null ? c.getClientZone().getId() : null);
-                    properties.put("grouping", c.getClientGrouping());
-                    properties.put("reference", entry!=null ? entry.getReference() : null);
-                    properties.put("node-id", c.getClientProperty("node-id"));
-                    return properties;
-                }));
+                .map(c -> {
+                    NodeRegistryEntry entry = getNodeRegistryEntryFromClientShellCommand(c);
+                    return prepareClientMap(c, entry);
+                })
+                .sorted(Comparator.comparing(m -> m.get("id")))
+                .collect(Collectors.toMap(m -> m.get("id"), m -> m,
+                        (u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); },
+                        LinkedHashMap::new));
+    }
+
+    private NodeRegistryEntry getNodeRegistryEntryFromClientShellCommand(ClientShellCommand c) {
+        NodeRegistryEntry entry = c.getNodeRegistryEntry();
+        if (entry!=null) entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
+        log.debug("getNodeRegistryEntryFromClientShellCommand: CSC ip-address: {}", c.getClientIpAddress());
+        log.debug("getNodeRegistryEntryFromClientShellCommand: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
+        if (entry==null) {
+            log.debug("getNodeRegistryEntryFromClientShellCommand: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
+            entry = getNodeRegistry().getNodeByClientId(c.getClientId());
+            log.debug("getNodeRegistryEntryFromClientShellCommand: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
+        }
+        return entry;
+    }
+
+    public List<String> getNodesWithoutClient() {
+        return createClientList(new HashSet<>(Collections.singletonList(NodeRegistryEntry.STATE.NOT_INSTALLED)));
+    }
+
+    public Map<String, Map<String, String>> getNodesWithoutClientMap() {
+        return createClientMap(new HashSet<>(Collections.singletonList(NodeRegistryEntry.STATE.NOT_INSTALLED)));
+    }
+
+    public List<String> getIgnoredNodes() {
+        return createClientList(new HashSet<>(Collections.singletonList(NodeRegistryEntry.STATE.IGNORE_NODE)));
+    }
+
+    public Map<String, Map<String, String>> getIgnoredNodesMap() {
+        return createClientMap(new HashSet<>(Collections.singletonList(NodeRegistryEntry.STATE.IGNORE_NODE)));
+    }
+
+    public List<String> getPassiveNodes() {
+        return createClientList(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.NOT_INSTALLED, NodeRegistryEntry.STATE.IGNORE_NODE)));
+    }
+
+    public Map<String, Map<String, String>> getPassiveNodesMap() {
+        return createClientMap(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.NOT_INSTALLED, NodeRegistryEntry.STATE.IGNORE_NODE)));
+    }
+
+    private List<String> createClientList(Set<NodeRegistryEntry.STATE> states) {
+        return nodeRegistry.getNodes().stream()
+                .filter(entry->states.contains(entry.getState()))
+                .map(entry -> {
+                    log.debug("createClientList: Node ip-address: {}", entry.getIpAddress());
+                    log.debug("createClientList: Node preregistration info: {}", entry.getPreregistration());
+                    ClientShellCommand c = getClientShellCommandFromNodeRegistryEntry(entry);
+                    return formatClientList(c, entry);
+                })
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Map<String, String>> createClientMap(Set<NodeRegistryEntry.STATE> states) {
+        return nodeRegistry.getNodes().stream()
+                .filter(entry -> states.contains(entry.getState()))
+                .sorted(Comparator.comparing(NodeRegistryEntry::getClientId))
+                .collect(Collectors.toMap(NodeRegistryEntry::getClientId, entry -> {
+                    log.debug("createClientMap: Node ip-address: {}", entry.getIpAddress());
+                    log.debug("createClientMap: Node preregistration info: {}", entry.getPreregistration());
+                    ClientShellCommand c = getClientShellCommandFromNodeRegistryEntry(entry);
+                    return prepareClientMap(c, entry);
+                }, (u,v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); }, LinkedHashMap::new));
+    }
+
+    private ClientShellCommand getClientShellCommandFromNodeRegistryEntry(NodeRegistryEntry entry) {
+        return StringUtils.isNotBlank(entry.getClientId())
+                ? ClientShellCommand.getActiveByIpAddress(entry.getIpAddress()) : null;
+    }
+
+    private String formatClientList(ClientShellCommand c, NodeRegistryEntry entry) {
+        final StringBuilder sb = new StringBuilder();
+        prepareClientMap(c, entry).forEach((k,v)->{
+            if ("id".equals(k)) sb.append(v);
+            else if ("node-port".equals(k)) sb.append(":").append(v);
+            else sb.append(" ").append(v);
+        });
+        return sb.toString();
+    }
+
+    private Map<String, String> prepareClientMap(ClientShellCommand c, NodeRegistryEntry entry) {
+        Map<String,String> properties = new LinkedHashMap<>();
+        properties.put("id", c!=null ? c.getId() : entry.getClientId());
+        properties.put("ip-address", entry!=null ? entry.getIpAddress() : c.getClientIpAddress());
+        properties.put("node-hostname", c!=null ? c.getClientClusterNodeHostname() : null);
+        properties.put("node-port", Integer.toString(c!=null ? c.getClientClusterNodePort() : -1));
+        properties.put("node-status", c!=null ? c.getClientNodeStatus() : null);
+        properties.put("node-zone", (entry!=null && entry.getClusterZone()!=null) ? entry.getClusterZone().getId() : null);  //c.getClientZone()!=null ? c.getClientZone().getId() : null
+        properties.put("grouping", c!=null ? c.getClientGrouping() : (entry.getState()==NodeRegistryEntry.STATE.NOT_INSTALLED ? getLowestLevelGroupingName() : null));
+        properties.put("reference", entry!=null ? entry.getReference() : null);
+        properties.put("node-id", c!=null ? c.getClientProperty("node-id") : null);
+        properties.put("node-state", entry!=null && entry.getState()!=null ? entry.getState().toString() : null);
+        return properties;
     }
 
     public void sendConstants(Map<String, Double> constants) {

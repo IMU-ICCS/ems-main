@@ -100,6 +100,7 @@ public class ClusterZone implements IClusterZone {
         synchronized (Objects.requireNonNull(csc)) {
             nodes.put(csc.getClientIpAddress(), csc);
             csc.setClientZone(this);
+            csc.getNodeRegistryEntry().setClusterZone(this);
         }
     }
 
@@ -108,6 +109,8 @@ public class ClusterZone implements IClusterZone {
             nodes.remove(csc.getClientIpAddress());
             if (csc.getClientZone()==this)
                 csc.setClientZone(null);
+            if (csc.getNodeRegistryEntry()!=null && csc.getNodeRegistryEntry().getClusterZone()==this)
+                csc.getNodeRegistryEntry().setClusterZone(null);
         }
     }
 
@@ -124,20 +127,27 @@ public class ClusterZone implements IClusterZone {
     }
 
     // Nodes-without-Clients management
-    public synchronized void addNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
-        String address = entry.getIpAddress();
-        if (address==null) address = entry.getNodeAddress();
-        if (address==null) throw new IllegalArgumentException("Node address not found in Preregistration info");
-        nodesWithoutClient.put(address, entry);
-        updateClientConfiguration();
+    public void addNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
+        synchronized (Objects.requireNonNull(entry)) {
+            String address = entry.getIpAddress();
+            if (address == null) address = entry.getNodeAddress();
+            if (address == null) throw new IllegalArgumentException("Node address not found in Preregistration info");
+            nodesWithoutClient.put(address, entry);
+            entry.setClusterZone(this);
+            updateClientConfiguration();
+        }
     }
 
-    public synchronized void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
-        String address = entry.getIpAddress();
-        if (address==null) address = entry.getNodeAddress();
-        if (address==null) throw new IllegalArgumentException("Node address not found in Preregistration info");
-        nodesWithoutClient.remove(address);
-        updateClientConfiguration();
+    public void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
+        synchronized (Objects.requireNonNull(entry)) {
+            String address = entry.getIpAddress();
+            if (address == null) address = entry.getNodeAddress();
+            if (address == null) throw new IllegalArgumentException("Node address not found in Preregistration info");
+            nodesWithoutClient.remove(address);
+            if (entry.getClusterZone() == this)
+                entry.setClusterZone(null);
+            updateClientConfiguration();
+        }
     }
 
     public Set<String> getNodeWithoutClientAddresses() {

@@ -42,10 +42,19 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private final static Object LOCK = new Object();
     private final static AtomicLong counter = new AtomicLong(0);
     private final static Set<ClientShellCommand> activeCmdList = new HashSet<>();
+    private final static Map<String,ClientShellCommand> activeCmdMap = new HashMap<>();
     private final static long INPUT_CHECK_DELAY = 100;
 
     public static Set<ClientShellCommand> getActive() {
         return Collections.unmodifiableSet(activeCmdList);
+    }
+
+    public static Set<String> getActiveIds() {
+        return Collections.unmodifiableSet(activeCmdMap.keySet());
+    }
+
+    public static ClientShellCommand getActiveByIpAddress(String address) {
+        return activeCmdMap.get(address);
     }
 
     private InputStream in;
@@ -162,7 +171,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         }
 
         synchronized (activeCmdList) {
+            if (activeCmdMap.containsKey(getClientIpAddress()) || activeCmdMap.containsValue(this))
+                throw new IllegalArgumentException("ClientShellCommand has already been registered");
             activeCmdList.add(this);
+            activeCmdMap.put(getClientIpAddress(), this);
         }
         eventBus.send("BAGUETTE_SERVER_CLIENT_STARTING", this);
 
@@ -254,6 +266,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         } finally {
             synchronized (activeCmdList) {
                 activeCmdList.remove(this);
+                activeCmdMap.remove(getClientIpAddress());
             }
             log.info("{}--> Thread stops", id);
             coordinator.unregister(this);

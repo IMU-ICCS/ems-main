@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class Sshd {
-    private ServerCoordinator coordinator;
+    @Getter private ServerCoordinator coordinator;
     private BaguetteServerProperties configuration;
     private SshServer sshd;
     private String serverPubkey;

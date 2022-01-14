@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +34,7 @@ public class NodeRegistryEntry {
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
     @Getter private transient Map<String, String> installation = new LinkedHashMap<>();
     @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
+    @Getter @Setter private transient IClusterZone clusterZone;
 
     public String getNodeId() {
         return getPreregistration().get("id");

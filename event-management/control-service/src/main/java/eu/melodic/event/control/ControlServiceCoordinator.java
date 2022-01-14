@@ -1048,6 +1048,16 @@ public class ControlServiceCoordinator {
         return baguette.isServerRunning() ? baguette.getActiveClientsMap() : Collections.emptyMap();
     }
 
+    public List<String> passiveClientList() {
+        log.debug("ControlServiceCoordinator.passiveClientList(): BEGIN:");
+        return baguette.isServerRunning() ? baguette.getPassiveNodes() : Collections.emptyList();
+    }
+
+    public Map<String, Map<String, String>> passiveClientMap() {
+        log.debug("ControlServiceCoordinator.passiveClientMap(): BEGIN:");
+        return baguette.isServerRunning() ? baguette.getPassiveNodesMap() : Collections.emptyMap();
+    }
+
     public String clientCommandSend(String clientId, String command) {
         log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
         return eventSendCommandToClient("clientCommandSend", clientId, command);
