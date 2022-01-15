@@ -12,6 +12,9 @@
         <span :style="style('fnSendEventToNode')" @click="fnSendEventToNode" title="Send an event to node"><i class="fas fa-paper-plane"/></span>&nbsp;
         <span :style="style('fnGenerateEvents')" @click="fnGenerateEvents" title="Generate events at node"><i class="fas fa-stopwatch"/></span>
     </div>
+    <div :id="id" v-if="nodeType==='edge' || nodeType==='ignore'">
+        <span :style="style('fnSshConsole')" @click="fnSshConsole" title="SSH console"><i class="fas fa-terminal"/></span>&nbsp;&nbsp;
+    </div>
 </template>
 
 <script>

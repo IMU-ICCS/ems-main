@@ -31,7 +31,7 @@
                   </thead>
                   <tbody>
                   <tr v-for="c in clients" v-bind:key="c.id">
-                      <td class="align-middle">{{c.id}}</td>
+                      <td class="align-middle" :title="c.id">{{c.id.startsWith('#') ? c.id : '...'}}</td>
                       <td class="align-middle">
                           {{c.name}}
                           <span :class="['badge', 'pull-right', `${c.status=='Up'?'bg-success':c.status=='Down'?'bg-danger':'bg-warning'}`]">{{c.status??'Unknown'}}</span>
@@ -43,7 +43,7 @@
                           <br/>
                           <small>Lat/Lon: {{c.lat??'-'}}, {{c.lon??'-'}}</small>-->
                           <br/>
-                          <span :class="['badge', 'badge-pill', c.nodeStatus=='AGGREGATOR' ? 'badge-primary' : 'badge-secondary']">{{c.nodeStatus ? c.nodeStatus.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(' ') : '-'}}</span>
+                          <span :class="['badge', 'badge-pill', getClusterStatusClass(c.nodeStatus)]">{{getClusterStatus(c.nodeStatus)}}</span>
                       </td>
 
                       <td class="align-middle text-center">
@@ -67,7 +67,7 @@
                           </div>
                       </td>
                       <td class="align-middle text-center">
-                          <ActionsList id="" nodeType="vm"
+                          <ActionsList id="" :nodeType="c.tree_node_type"
                                        :fnSshConsole="()=>openSshConsole(c.reference, c.address)"
                                        :fnAppointAggregator="()=>appointAggregator(c.id, c.nodeId)"
                           />
@@ -220,17 +220,40 @@
                                        :fnElectAggregator="()=>electAggregator(data)"
                           />
                       </div>
-                      <div v-if="data.tree_node_type=='vm'">
+                      <div v-if="data.tree_node_type=='vm'" :style="data.nodeStatus==='AGGREGATOR' ? 'border: 4px solid green; margin: 0px; padding: 3px;' : ''">
                           <div class="tree-node-head" style="background-color: transparent;"><i class="fas fa-server"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
                           <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
                           <br/>
                           <small>Address: {{data.address}}:{{data.port}}</small>
                           <br/>
-                          <span :class="['badge', 'badge-pill', data.nodeStatus=='AGGREGATOR' ? 'badge-primary' : 'badge-secondary']">{{data.nodeStatus ? data.nodeStatus.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(' ') : '-'}}</span>
+                          <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
                           <br/>
                           <ActionsList id="" :nodeType="data.tree_node_type"
                                        :fnSshConsole="()=>openSshConsole(data.reference, data.address)"
                                        :fnAppointAggregator="()=>appointAggregator(data.id, data.nodeId)"
+                          />
+                      </div>
+                      <div v-if="data.tree_node_type=='edge'" style="border: 4px dashed orange; margin: 0px; padding: 3px; orange; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScgLz4KICA8cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSdibGFjaycgLz4KPC9zdmc+'); background-repeat: repeat;">
+                          <div class="tree-node-head" style="background-color: rgba(255,165,00,.4);"><i class="fas fa-sim-card"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                          <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
+                          <br/>
+                          <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                          <br/>
+                          <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
+                          <br/>
+                          <ActionsList id="" :nodeType="data.tree_node_type"
+                                       :fnSshConsole="()=>openSshConsole(data.reference, data.address)"
+                          />
+                      </div>
+                      <div v-if="data.tree_node_type=='ignore'" style="border: 4px dotted grey; margin: 0px; padding: 3px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgo8cmVjdCB3aWR0aD0nNScgaGVpZ2h0PSc1JyBmaWxsPScjZmZmJy8+CjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNjY2MnLz4KPC9zdmc+'); background-repeat: repeat;">
+                          <div class="tree-node-head" style="background-color: #eeeeee;"><i class="far fa-question-circle"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                          <br/>
+                          <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                          <br/>
+                          <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
+                          <br/>
+                          <ActionsList id="" :nodeType="data.tree_node_type"
+                                       :fnSshConsole="()=>openSshConsole(data.reference, data.address)"
                           />
                       </div>
                     </template>
@@ -393,6 +416,17 @@ export default {
             }
             return name;
         },
+        getClusterStatus(nodeStatus) {
+            return nodeStatus ? nodeStatus.toLowerCase().split(/[ _]/).map(word => word.charAt(0).toUpperCase() + word.substring(1)).join(' ') : '-';
+        },
+        getClusterStatusClass(nodeStatus) {
+            switch (nodeStatus) {
+                case 'AGGREGATOR': return 'badge-primary';
+                case 'NOT_CANDIDATE': return 'badge-warning';
+                case 'IGNORED': return 'badge-dark';
+                default: return 'badge-secondary';
+            }
+        },
 
         openSshConsole(ref, address) {
             $('#ssh-console-dialog').attr("data-webssh-proxy", this.websshProxyUrl);
@@ -447,17 +481,19 @@ export default {
                 return;
 
             let activeClients = this.modelValue['baguette-server']['active-clients-map'];
+            let passiveClients = this.modelValue['baguette-server']['passive-clients-map'];
+            let allClients = { ...passiveClients, ...activeClients };
             let _zones = { };
             let _clients = [ ];
 
-            for (const id in activeClients) {
-                let clientData = activeClients[id];
+            for (const id in allClients) {
+                let clientData = allClients[id];
                 if (!clientData.id) clientData.id = id;
                 //console.log(id, ' ==> ', clientData);
 
                 let clientObj = {
                     id: clientData['id'],
-                    name: clientData['node-hostname'] ?? clientData['id'],
+                    name: clientData['node-hostname'] ?? clientData['ip-address'],
                     nodeStatus: clientData['node-status'],
                     zone: clientData['node-zone'],
                     address: clientData['ip-address'],
@@ -465,6 +501,7 @@ export default {
                     grouping: clientData['grouping'],
                     reference: clientData['reference'],
                     nodeId: clientData['node-id'],
+                    nodeState: clientData['node-state'],
                     loc: 'Unknown',
                     status: 'Up',
                     stats: {}
@@ -515,7 +552,14 @@ export default {
                 for (let ii in _zclients) {
                     let _cdata = _zclients[ii];
                     _cdata.label = _cdata.name ?? 'Unknown';
-                    _cdata.tree_node_type = 'vm';
+                    _cdata.nodeStatus =
+                            _cdata.nodeState==='IGNORE_NODE' ? 'IGNORED' :
+                            _cdata.nodeState==='NOT_INSTALLED' ? 'NOT_CANDIDATE' :
+                            _cdata.nodeStatus;
+                    _cdata.tree_node_type =
+                            _cdata.nodeState==='IGNORE_NODE' ? 'ignore' :
+                            _cdata.nodeState==='NOT_INSTALLED' ? 'edge' :
+                            'vm';
                     _zdata.children.push(_cdata);
 
                     if (_cdata.nodeStatus && _cdata.nodeStatus.toLowerCase()==='aggregator')
