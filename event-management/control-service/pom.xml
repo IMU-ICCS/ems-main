@@ -331,7 +331,7 @@
                                 <!-- Copy index.html and favicon.ico to /public_resources -->
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/index.html</sourceFile>
-                                    <destinationFile>../public_resources/index.html</destinationFile>
+                                    <destinationFile>../public_resources/resources/index.html</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/favicon.ico</sourceFile>
