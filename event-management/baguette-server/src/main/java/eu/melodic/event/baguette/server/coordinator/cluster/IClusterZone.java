@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.util.ClientConfiguration;
 import lombok.NonNull;
 
 import java.io.File;
@@ -30,6 +31,9 @@ public interface IClusterZone {
     Set<String> getNodeWithoutClientAddresses();
     List<NodeRegistryEntry> getNodesWithoutClient();
     NodeRegistryEntry getNodeWithoutClientByAddress(String address);
+
+    ClientConfiguration getClientConfiguration();
+    ClientConfiguration sendClientConfigurationToZoneClients();
 
     File getClusterKeystoreFile();
     String getClusterKeystoreType();

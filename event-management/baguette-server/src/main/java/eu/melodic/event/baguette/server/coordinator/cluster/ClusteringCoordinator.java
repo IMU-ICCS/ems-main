@@ -227,9 +227,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         addNodeInTopology(csc);
 
         // collect client configuration
-        ClientConfiguration clientConfig = ClientConfiguration.builder()
-                .nodesWithoutClient(new HashSet<>(csc.getClientZone().getNodeWithoutClientAddresses()))
-                .build();
+        ClientConfiguration clientConfig = csc.getClientZone().getClientConfiguration();
 
         // prepare configuration
         Map<String,BrokerConnectionConfig> connCfgMap = new LinkedHashMap<>();
@@ -247,7 +245,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         // send client configuration to client
         log.info("ClusteringCoordinator: --------------------------------------------------");
         log.info("ClusteringCoordinator: Sending client configuration to client {}...\n{}", csc.getId(), clientConfig);
-        csc.sendClientConfiguration(clientConfig);
+        csc.getClientZone().sendClientConfigurationToZoneClients();
         log.info("ClusteringCoordinator: Sending client configuration to client {}... done", csc.getId());
         sleep(500);
 

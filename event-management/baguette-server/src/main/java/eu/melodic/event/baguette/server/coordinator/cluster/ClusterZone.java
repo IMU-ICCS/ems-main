@@ -134,7 +134,7 @@ public class ClusterZone implements IClusterZone {
             if (address == null) throw new IllegalArgumentException("Node address not found in Preregistration info");
             nodesWithoutClient.put(address, entry);
             entry.setClusterZone(this);
-            updateClientConfiguration();
+            sendClientConfigurationToZoneClients();
         }
     }
 
@@ -146,7 +146,7 @@ public class ClusterZone implements IClusterZone {
             nodesWithoutClient.remove(address);
             if (entry.getClusterZone() == this)
                 entry.setClusterZone(null);
-            updateClientConfiguration();
+            sendClientConfigurationToZoneClients();
         }
     }
 
@@ -162,10 +162,17 @@ public class ClusterZone implements IClusterZone {
         return nodesWithoutClient.get(address);
     }
 
-    private void updateClientConfiguration() {
+    public ClientConfiguration getClientConfiguration() {
+        return ClientConfiguration.builder()
+                .nodesWithoutClient(new HashSet<>(nodesWithoutClient.keySet()))
+                .build();
+    }
+
+    public ClientConfiguration sendClientConfigurationToZoneClients() {
         ClientConfiguration cc = ClientConfiguration.builder()
-                .nodesWithoutClient(new HashSet<>(nodes.keySet()))
+                .nodesWithoutClient(new HashSet<>(nodesWithoutClient.keySet()))
                 .build();
         ClientShellCommand.sendClientConfigurationToClients(cc , getNodes());
+        return cc;
     }
 }
