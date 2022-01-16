@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -408,10 +409,17 @@ public class BaguetteServer {
     }
 
     private Map<String, String> prepareClientMap(ClientShellCommand c, NodeRegistryEntry entry) {
+        String address = entry!=null ? entry.getIpAddress() : c.getClientIpAddress();
+        String hostname = null;
+        try {
+            hostname = InetAddress.getByName(address).getHostName();
+        } catch (Exception e) {
+            log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
+        }
         Map<String,String> properties = new LinkedHashMap<>();
         properties.put("id", c!=null ? c.getId() : entry.getClientId());
-        properties.put("ip-address", entry!=null ? entry.getIpAddress() : c.getClientIpAddress());
-        properties.put("node-hostname", c!=null ? c.getClientClusterNodeHostname() : null);
+        properties.put("ip-address", address);
+        properties.put("node-hostname", c!=null ? c.getClientClusterNodeHostname() : hostname);
         properties.put("node-port", Integer.toString(c!=null ? c.getClientClusterNodePort() : -1));
         properties.put("node-status", c!=null ? c.getClientNodeStatus() : null);
         properties.put("node-zone", (entry!=null && entry.getClusterZone()!=null) ? entry.getClusterZone().getId() : null);  //c.getClientZone()!=null ? c.getClientZone().getId() : null
