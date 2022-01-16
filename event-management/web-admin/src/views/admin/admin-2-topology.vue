@@ -22,8 +22,8 @@
               <table class="table table-striped table-sm">
                   <thead>
                   <tr>
-                      <th style="width: 30px">Id</th>
-                      <th style="width: 190px">Client/Zone</th>
+                      <th style="width: 30px" nowrap>Client Id</th>
+                      <th style="width: 190px">Node/Zone</th>
                       <th style="width: 90px">Address/Location</th>
                       <th style="width: 40%">Statistics</th>
                       <th style="width: 30px">Actions</th>
@@ -31,10 +31,10 @@
                   </thead>
                   <tbody>
                   <tr v-for="c in clients" v-bind:key="c.id">
-                      <td class="align-middle" :title="c.id">{{c.id.startsWith('#') ? c.id : '...'}}</td>
+                      <td class="align-middle text-center" :title="c.id"><span v-if="c.id.startsWith('#')">{{c.id}}</span><i v-else class="fas fa-ban"/></td>
                       <td class="align-middle">
                           {{c.name}}
-                          <span :class="['badge', 'pull-right', `${c.status=='Up'?'bg-success':c.status=='Down'?'bg-danger':'bg-warning'}`]">{{c.status??'Unknown'}}</span>
+                          <span v-if="c.id.startsWith('#')" :class="['badge', 'pull-right', `${c.status=='Up'?'bg-success':c.status=='Down'?'bg-danger':'bg-warning'}`]">{{c.status??'Unknown'}}</span>
                           <small style="color: lightgrey; font-style: italic;">{{c.nodeId}}</small>
                       </td>
                       <td class="align-middle">
@@ -135,7 +135,7 @@
                       <!--<td class="align-middle">{{c.id}}</td>-->
                       <td class="align-middle">
                           {{c.id}}
-                          <span :class="['badge', 'pull-right', `${c.status=='Up'?'bg-success':c.status=='Down'?'bg-danger':'bg-warning'}`]">{{c.status??'Unknown'}}</span>
+                          <span v-if="c.id!=='IGNORED'" :class="['badge', 'pull-right', `${c.status=='Up'?'bg-success':c.status=='Down'?'bg-danger':'bg-warning'}`]">{{c.status??'Unknown'}}</span>
                           <br/><small>
                               <!--{{c.country??'-'}}<br/>-->
                               <!--Lat/Lon: {{c.lat??'-'}}, {{c.lon??'-'}}-->
@@ -155,7 +155,7 @@
                           </div>
                       </td>
                       <td class="align-middle text-center">
-                          <ActionsList id="" nodeType="zone"
+                          <ActionsList id="" nodeType="zone" v-if="c.id!=='IGNORED'"
                                        :fnElectAggregator="()=>electAggregator(c)"
                           />
                       </td>
@@ -190,7 +190,7 @@
     </div>
 
     <div class="row">
-      <div class="col-6">
+      <div class="col-12">
           <!-- Default box -->
           <Card bodyClasses="table-responsive p-0"
                 header="&nbsp;&nbsp;Topology Graph"
@@ -201,26 +201,27 @@
               <p style="text-align: center;">
                 <vue-blocks-tree  :data="treeData2" :horizontal="false" :collapsable="true" :key="someVariableUnderYourControl">
                     <template #node="{data}">
-                      <div v-if="data.tree_node_type=='ems'">
-                          <div class="tree-node-head" style="background-color: lightyellow;"><i class="fas fa-home"></i>&nbsp;{{data.label}}</div>
+                      <div v-if="data.tree_node_type=='ems'" style="border: 2px solid red; margin: 0px; padding: 3px;">
+                          <div class="tree-node-head" style="background-color: rgba(255,0,0,.1);"><i class="fas fa-home"></i>&nbsp;{{data.label}}</div>
                           <small>Address: {{emsServerLocation()}}</small><br/>
-                          <small>Clusters: {{data.totalClusters}}&nbsp;&nbsp;&nbsp;Clients: {{data.totalClients}}</small>
+                          <small>Clusters: {{data.totalClusters}}&nbsp;&nbsp;&nbsp;Nodes: {{data.totalClients}}</small>
                           <br/>
                           <ActionsList id="" :nodeType="data.tree_node_type" />
                       </div>
                       <div v-if="data.tree_node_type=='zone'">
-                          <div class="tree-node-head" style="background-color: #d0ffff;"><i class="fas fa-cloud"></i>&nbsp;{{data.label}}</div>
+                          <div class="tree-node-head" :style="[data.id!=='IGNORED' ? 'background-color: #d0ffff;' : 'background-color: #eeeeee;']"><i :class="[data.id!=='IGNORED' ? 'fas fa-cloud' : 'far fa-times-circle']"></i>&nbsp;{{data.label}}</div>
                           <small>&nbsp;</small>
                           <!--<small>Provider: ++TODO++
                           <br/>
                               Network: ++TODO++</small>-->
-                          <small>Clients: {{data.totalClients}}</small>
+                          <small>Nodes: {{data.totalClients}}</small>
                           <br/>
-                          <ActionsList id="" :nodeType="data.tree_node_type"
+                          <ActionsList id="" :nodeType="data.tree_node_type" v-if="data.id!=='IGNORED'"
                                        :fnElectAggregator="()=>electAggregator(data)"
                           />
+                          <br v-else/>
                       </div>
-                      <div v-if="data.tree_node_type=='vm'" :style="data.nodeStatus==='AGGREGATOR' ? 'border: 4px solid green; margin: 0px; padding: 3px;' : ''">
+                      <div v-if="data.tree_node_type=='vm'" :style="data.nodeStatus==='AGGREGATOR' ? 'border: 4px solid magenta; margin: 0px; padding: 3px;' : 'border: 2px solid green; margin: 0px; padding: 3px;'">
                           <div class="tree-node-head" style="background-color: transparent;"><i class="fas fa-server"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
                           <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
                           <br/>
@@ -233,8 +234,8 @@
                                        :fnAppointAggregator="()=>appointAggregator(data.id, data.nodeId)"
                           />
                       </div>
-                      <div v-if="data.tree_node_type=='edge'" style="border: 4px dashed orange; margin: 0px; padding: 3px; orange; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScgLz4KICA8cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSdibGFjaycgLz4KPC9zdmc+'); background-repeat: repeat;">
-                          <div class="tree-node-head" style="background-color: rgba(255,165,00,.4);"><i class="fas fa-sim-card"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                      <div v-if="data.tree_node_type=='edge'" style="border: 3px dashed orange; margin: 0px; padding: 3px; orange; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScgLz4KICA8cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMScgaGVpZ2h0PScxJyBmaWxsPSdibGFjaycgLz4KPC9zdmc+'); background-repeat: repeat;">
+                          <div class="tree-node-head" style="background-color: rgba(255,165,0,.4);"><i class="fas fa-sim-card"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
                           <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
                           <br/>
                           <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
@@ -246,7 +247,7 @@
                           />
                       </div>
                       <div v-if="data.tree_node_type=='ignore'" style="border: 4px dotted grey; margin: 0px; padding: 3px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgo8cmVjdCB3aWR0aD0nNScgaGVpZ2h0PSc1JyBmaWxsPScjZmZmJy8+CjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNjY2MnLz4KPC9zdmc+'); background-repeat: repeat;">
-                          <div class="tree-node-head" style="background-color: #eeeeee;"><i class="far fa-question-circle"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                          <div class="tree-node-head" style="background-color: #eeeeee;"><i class="far fa-times-circle"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
                           <br/>
                           <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
                           <br/>
@@ -270,7 +271,6 @@
             <Card bodyClasses="p-0"
                   header="&nbsp;Client Locations (with Leaflet)"
                   icon="fas fa-map"
-                  footer="..."
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
                 <LeafletMap :style="{ height: '425px' }"
@@ -279,9 +279,22 @@
                                     ems: { markerColor: 'red' },
                                     AGGREGATOR: { markerColor: 'magenta' },
                                     CANDIDATE: { markerColor: 'cyan' },
+                                    NOT_CANDIDATE: { markerColor: 'orange' },
+                                    IGNORED: { markerColor: 'black' },
                             }"
                             :markerConnections="clientConnections"
                 ></LeafletMap>
+
+                <template v-slot:footer>
+                    <div class="row" style="color:grey;">
+                        <i class="fas fa-map-marker-alt" style="color: red;" />&nbsp;<span class="align-text-top small">EMS Server</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: magenta;"/>&nbsp;<span class="align-text-top small">Aggregator</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: cyan;"/>&nbsp;<span class="align-text-top small">Candidate</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: black;"/>&nbsp;<span class="align-text-top small">Ignored</span>&nbsp;&nbsp;
+                    </div>
+                </template>
             </Card>
         </div>
         <!-- /.col-6 -->
@@ -407,7 +420,8 @@ export default {
             this.someVariableUnderYourControl = new Date().getTime();
         },
         emsServerLocation() {
-            return window.location.hostname;
+            //return window.location.hostname;
+            return this.modelValue['ip-address'];
         },
         getShorterNodeName(name) {
             let part = name.split(".", 2);
@@ -508,6 +522,7 @@ export default {
                 };
 
                 let zone = clientData['node-zone'];
+                if (clientObj.nodeState==='IGNORE_NODE') zone = 'IGNORED';
                 if (!zone) zone = '_default';
                 if (!_zones[zone]) _zones[zone] = [ ];
                 _zones[zone].push(clientObj);
@@ -621,7 +636,7 @@ export default {
             this.clientMarkers = markers;
 
             // Update connections between EMS and clients
-            let controlConns = this.clientMarkers.filter(cc => cc.id!=='ems')
+            let controlConns = this.clientMarkers.filter(cc => cc.id!=='ems' && cc.type!=='IGNORED')
                     .map(function(cc) {
                         return {
                             startMarker: 'ems',

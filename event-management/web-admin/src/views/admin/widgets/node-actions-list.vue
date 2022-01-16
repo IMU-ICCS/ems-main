@@ -1,6 +1,8 @@
 <template>
     <div :id="id" v-if="nodeType==='ems'">
-        <span :style="style('fnSendEventToAllNodes')" @click="fnSendEventToAllNodes" title="Send an event to all nodes"><i class="fas fa-paper-plane"/></span>
+        <span :style="style('fnSshConsole')" @click="fnSshConsole" title="SSH console"><i class="fas fa-terminal"/></span>&nbsp;&nbsp;
+        <span :style="style('fnSendEventToAllNodes')" @click="fnSendEventToAllNodes" title="Send an event to all nodes"><i class="fas fa-paper-plane"/></span>&nbsp;&nbsp;
+        <span :style="style('fnGenerateEvents')" @click="fnGenerateEvents" title="Generate events at node"><i class="fas fa-stopwatch"/></span>
     </div>
     <div :id="id" v-if="nodeType==='zone'">
         <span :style="style('fnElectAggregator')" @click="fnElectAggregator" title="Start Aggregator election"><i class="fas fa-person-booth"/></span>&nbsp;
