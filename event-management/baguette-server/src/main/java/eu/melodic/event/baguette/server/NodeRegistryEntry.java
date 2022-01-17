@@ -28,6 +28,7 @@ public class NodeRegistryEntry {
     @Getter private final String ipAddress;
     @Getter private final String clientId;
     @Getter private final transient BaguetteServer baguetteServer;
+    @Getter private String hostname;
     @Getter private STATE state = null;
     @Getter private Date stateLastUpdate;
     @Getter private String reference = UUID.randomUUID().toString();

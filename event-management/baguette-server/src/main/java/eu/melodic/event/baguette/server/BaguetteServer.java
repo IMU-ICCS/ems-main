@@ -410,11 +410,21 @@ public class BaguetteServer {
 
     private Map<String, String> prepareClientMap(ClientShellCommand c, NodeRegistryEntry entry) {
         String address = entry!=null ? entry.getIpAddress() : c.getClientIpAddress();
-        String hostname = null;
-        try {
-            hostname = InetAddress.getByName(address).getHostName();
-        } catch (Exception e) {
-            log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
+        String hostname = entry!=null ? entry.getHostname() : null;
+        if (StringUtils.isBlank(hostname)) {
+            if (c!=null)
+                hostname = c.getClientClusterNodeHostname();
+            if (StringUtils.isBlank(hostname)) {
+                try {
+                    hostname = InetAddress.getByName(address).getHostName();
+                } catch (Exception e) {
+                    log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
+                }
+            }
+            if (StringUtils.isNotBlank(hostname)) {
+                if (c!=null) c.setClientClusterNodeHostname(hostname);
+                if (entry!=null) entry.setHostname(hostname);
+            }
         }
         Map<String,String> properties = new LinkedHashMap<>();
         properties.put("id", c!=null ? c.getId() : entry.getClientId());
