@@ -636,7 +636,7 @@ export default {
             this.clientMarkers = markers;
 
             // Update connections between EMS and clients
-            let controlConns = this.clientMarkers.filter(cc => cc.id!=='ems' && cc.type!=='IGNORED')
+            let controlConns = this.clientMarkers.filter(cc => cc.id!=='ems' && cc.type!=='IGNORED' && cc.type!=='NOT_CANDIDATE')
                     .map(function(cc) {
                         return {
                             startMarker: 'ems',
