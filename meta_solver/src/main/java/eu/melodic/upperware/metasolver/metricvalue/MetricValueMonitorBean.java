@@ -134,7 +134,10 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
                 }
 
                 // Subscribe to topic
-                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type, false);
+                boolean isPrediction = false;
+                if (properties.getPredictionTopicPattern()!=null)
+                    isPrediction = properties.getPredictionTopicPattern().matcher(topicName).matches();
+                _do_subscribe(url, brokerUsername, brokerPassword, brokerCertificate, topicName, clientId, type, isPrediction);
                 i++;
             }
         }
@@ -147,8 +150,10 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
             return;
         }
 
+        // Subscribe to actual metric topic
         _do_subscribe(url, username, password, certificate, topicName, clientId, type, false);
 
+        // Subscribe to predicted metric topic
         if (properties.isPredictionMonitoringEnabled()) {
             String predictionTopicName = predictionHelper.getPredictionTopicNameFor(topicName);
             _do_subscribe(url, username, password, certificate, predictionTopicName, clientId, type, true);
