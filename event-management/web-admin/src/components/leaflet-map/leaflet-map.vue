@@ -25,6 +25,9 @@ export default {
     name: 'Leaflet',
     props: {
         id: String,
+        mapType: { type: String, default: 'openstreetmap' },
+        mapTilesUrl: String,
+        mapTilesConfig: Object,
         style: Object,
         wrapperClasses: String,
         markers: Array,
@@ -44,19 +47,28 @@ export default {
     mounted() {
         var map = L.map(this.lid).setView([0, 0], 1);
 
-        // OpenStreetMap base map
-        /*var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        });
-        map.addLayer(OpenStreetMap_Mapnik);*/
-
-        // Stadia base map
-        var Stadia_Outdoors = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
-            maxZoom: 20,
-            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-        });
-        map.addLayer(Stadia_Outdoors);
+        switch (this.mapType) {
+            case 'user-defined':
+                var tileLayer = L.tileLayer(this.mapTilesUrl, this.mapTilesConfig);
+                map.addLayer(tileLayer);
+                break;
+            case 'stadia-outdoors':
+                // Stadia base map
+                var Stadia_Outdoors = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 20,
+                    attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                });
+                map.addLayer(Stadia_Outdoors);
+                break;
+            case 'openstreetmap':
+            default:
+                // OpenStreetMap base map
+                var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                });
+                map.addLayer(OpenStreetMap_Mapnik);
+        }
 
         /*// Add legend
         var legend = L.control({position: 'bottomleft'});
