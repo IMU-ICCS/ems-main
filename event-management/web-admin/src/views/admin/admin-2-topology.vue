@@ -273,7 +273,7 @@
                   icon="fas fa-map"
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
-                <LeafletMap :mapType="modelValue['LEAFLET_MAP_TYPE'] ?? 'openstreetmap'"
+                <LeafletMap :mapType="modelValue['LEAFLET_MAP_TYPE']"
                             :mapTilesUrl="modelValue['LEAFLET_MAP_TILES_URL']"
                             :mapTilesConfig="{
                                 maxZoom: modelValue['LEAFLET_MAP_ZOOM'],
