@@ -52,11 +52,11 @@
             <artifactId>client</artifactId>
             <classifier>repackaged</classifier>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
             <version>${melodic.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
