@@ -12,7 +12,7 @@
           <OverviewSection v-model="ems" />
       </Section>
 
-      <Section title="Topology" :collapsed="true" background="rgba(0,255,100,.3)">
+      <Section title="Topology" :collapsed="false" background="rgba(0,255,100,.3)">
           <TopologySection v-model="ems" />
       </Section>
 
