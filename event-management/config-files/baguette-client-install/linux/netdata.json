@@ -20,7 +20,7 @@
     {
       "description": "Download and run Netdata kickstart.sh",
       "taskType": "CMD",
-      "command": "bash <(curl -Ss https://my-netdata.io/kickstart.sh) --dont-wait --no-updates --disable-telemetry",
+      "command": "bash <(curl -Ss https://my-netdata.io/kickstart-static64.sh) --dont-wait --no-updates --disable-telemetry",
       "executionTimeout": 600000
     }
   ]
