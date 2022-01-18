@@ -108,6 +108,12 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
         eventBus.unsubscribe(CLUSTER_NODE_RECOVERY_COMPLETED, this);
+
+        // Cancel all waiting recovery tasks
+        waitingTasks.forEach((nodeAddress,future) -> {
+            future.cancel(true);
+        });
+        waitingTasks.clear();
         log.info("SelfHealingPlugin: Stopped");
     }
 
