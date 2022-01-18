@@ -44,8 +44,8 @@ import java.util.Optional;
 /**
  * Custom SSH client
  */
-@Service
 @Slf4j
+@Service
 public class Sshc {
     private BaguetteClientProperties config;
     private SshClient client;

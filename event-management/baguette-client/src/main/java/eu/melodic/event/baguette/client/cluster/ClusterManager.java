@@ -25,15 +25,20 @@ import io.atomix.protocols.raft.partition.RaftPartitionGroup;
 import io.atomix.utils.net.Address;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.stereotype.Component;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
 @Data
+@Component
 @EqualsAndHashCode(callSuper = true)
 public class ClusterManager extends AbstractLogBase {
 
@@ -53,6 +58,11 @@ public class ClusterManager extends AbstractLogBase {
 	private Atomix atomix = null;
 	@Setter(AccessLevel.NONE)
 	private BrokerUtil brokerUtil = null;
+
+	@Autowired
+	private TaskScheduler taskScheduler;
+	@Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
+	private ScheduledFuture<?> checkerTask;
 
 	// ------------------------------------------------------------------------
 
@@ -199,6 +209,20 @@ public class ClusterManager extends AbstractLogBase {
 		if (startElection) {
 			brokerUtil.checkBroker();
 		}
+
+		// Start cluster checker
+		if (properties.isClusterCheckerEnabled()) {
+			long delay = Math.max(properties.getClusterCheckerDelay(), 10000L);
+			log_info("CLM: Starting cluster checker (delay: {})...", delay);
+			checkerTask = taskScheduler.scheduleWithFixedDelay(() -> {
+				if (brokerUtil != null)
+					brokerUtil.checkBrokerNumber();
+				else
+					log_warn("CLM: Cluster checker: BrokerUtil is NULL  (is it a BUG?)");
+			}, delay);
+		} else {
+			log_warn("CLM: Cluster checker is DISABLED");
+		}
 	}
 
 	public void waitToJoin() {
@@ -223,6 +247,13 @@ public class ClusterManager extends AbstractLogBase {
 	}
 
 	public void leaveCluster() {
+		// Stop cluster checker
+		if (checkerTask!=null && !checkerTask.isCancelled()) {
+			log_info("CLM: Stopping cluster checker...");
+			checkerTask.cancel(true);
+			checkerTask = null;
+		}
+
 		// Leave cluster
 		log_info("CLM: Leaving cluster...");
 		long startTm = System.currentTimeMillis();

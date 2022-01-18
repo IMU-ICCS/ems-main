@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -61,6 +62,8 @@ public class CommandExecutor {
     public final static String EVENT_CLUSTER_NODE_ADDED = "CLUSTER_NODE_ADDED";
     public final static String EVENT_CLUSTER_NODE_REMOVED = "CLUSTER_NODE_REMOVED";
 
+    @Autowired
+    private ApplicationContext applicationContext;
     @Autowired
     private BaguetteClient baguetteClient;
     @Autowired
@@ -425,7 +428,7 @@ public class CommandExecutor {
 
             // Initialize cluster manager
             if (clusterManager==null) {
-                clusterManager = new ClusterManager();
+                clusterManager = applicationContext.getBean(ClusterManager.class);
                 clusterManager.setProperties(clusterManagerProperties);
             }
 
