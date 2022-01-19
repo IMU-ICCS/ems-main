@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import eu.melodic.event.baguette.client.BaguetteClientProperties;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.baguette.client.Sshc;
+import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.util.Plugin;
@@ -96,6 +97,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         eventBus.subscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.subscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
         eventBus.subscribe(CLUSTER_NODE_RECOVERY_COMPLETED, this);
+        eventBus.subscribe(NetdataCollector.NETDATA_NODE_PAUSED, this);
+        eventBus.subscribe(NetdataCollector.NETDATA_NODE_RESUMED, this);
         log.info("SelfHealingPlugin: Started");
     }
 
@@ -108,6 +111,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
         eventBus.unsubscribe(CLUSTER_NODE_RECOVERY_COMPLETED, this);
+        eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_PAUSED, this);
+        eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_RESUMED, this);
 
         // Cancel all waiting recovery tasks
         waitingTasks.forEach((nodeAddress,future) -> {
@@ -122,6 +127,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         log.debug("SelfHealingPlugin: onMessage(): BEGIN: topic={}, message={}, sender={}", topic, message, sender);
         if (!enabled) return;
 
+        // Self-Healing for EMS client
         if (CommandExecutor.EVENT_CLUSTER_NODE_REMOVED.equals(topic)) {
             log.debug("SelfHealingPlugin: onMessage(): CLUSTER NODE REMOVED: message={}", message);
             processClusterNodeRemovedEvent(message);
@@ -133,6 +139,24 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         if (CommandExecutor.EVENT_CLUSTER_NODE_ADDED.equals(topic)) {
             log.debug("SelfHealingPlugin: onMessage(): CLUSTER NODE ADDED: message={}", message);
             processClusterNodeAddedEvent(message);
+        } else
+
+        // Self-healing for Netdata
+        if (NetdataCollector.NETDATA_NODE_PAUSED.equals(topic)) {
+            log.debug("SelfHealingPlugin: onMessage(): NETDATA NODE PAUSED: message={}", message);
+            //XXX:TODO: Start Netdata problem self-healing
+            log.warn("SelfHealingPlugin: onMessage(): NETDATA NODE PAUSED: message={}", message);
+        } else
+        if (NetdataCollector.NETDATA_NODE_RESUMED.equals(topic)) {
+            log.debug("SelfHealingPlugin: onMessage(): NETDATA NODE RESUMED: message={}", message);
+            //XXX:TODO: Cancel Netdata problem self-healing
+            log.warn("SelfHealingPlugin: onMessage(): NETDATA NODE RESUMED: message={}", message);
+        } else
+
+        // Unsupported message
+        {
+            log.debug("SelfHealingPlugin: onMessage(): Unsupported message: topic={}, message={}, sender={}",
+                    topic, message, sender);
         }
     }
 
