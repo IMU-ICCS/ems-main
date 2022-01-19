@@ -41,6 +41,7 @@
 
     <dependencies>
         <!-- Needed to stop old JDK 1.8 compiler complains -->
+        <!--XXX: Probably remove in the future -->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
