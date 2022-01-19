@@ -20,8 +20,9 @@
                         <option value="/broker/credentials">EMS server Broker credentials</option>
                         <option value="/baguette/stopServer">DEBUG - Stop Baguette Server</option>
                         <option value="/ems/shutdown">DEBUG - EMS server shutdown</option>
-                        <option value="/ems/shutdown/true">DEBUG - EMS server shutdown and Exit</option>
-                        <option value="/health">Health check</option>
+                        <option value="/ems/exit">DEBUG - EMS server shutdown and Exit</option>
+                        <option value="/ems/exit/99">DEBUG - EMS server shutdown and Restart</option>
+                        <option value="GET /health">Health check</option>
                     </select>
                     <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
                 </div>
@@ -80,7 +81,14 @@ export default {
     },
     methods: {
         restCall() {
+            let method = 'POST';
             let url = $('#restEndpoint_'+this.uid).val();
+            if (url.indexOf(' ')>0) {
+                let tmp = url.split(' ', 2);
+                method = tmp[0];
+                url = tmp[1];
+            }
+            //console.log(method+'  '+url);
             let body = $('#restRequest_'+this.uid).val();
             let _this = this;
             _this.showRestCallResult = true;
@@ -88,7 +96,7 @@ export default {
                 $('#restCallResult').html('<span style="color: grey;"><i class="fas fa-spinner fa-spin"></i> Contacting EMS server...</span>');
                 $.ajax({
                     url: url,
-                    type: 'POST',
+                    type: method,
                     contentType: 'application/json',
                     data: body,
                     complete: function(xhr,status) {
