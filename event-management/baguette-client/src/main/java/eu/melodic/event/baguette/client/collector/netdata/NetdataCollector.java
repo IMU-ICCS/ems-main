@@ -12,9 +12,8 @@ package eu.melodic.event.baguette.client.collector.netdata;
 import eu.melodic.event.baguette.client.Collector;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.brokercep.event.EventMap;
-import eu.melodic.event.util.EmsConstant;
-import eu.melodic.event.util.GROUPING;
-import eu.melodic.event.util.GroupingConfiguration;
+import eu.melodic.event.util.*;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,12 +21,15 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -37,15 +39,27 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class NetdataCollector implements Collector, InitializingBean, Runnable {
+    public final static String NETDATA_COLLECTION_START = "NETDATA_COLLECTION_START";
+    public final static String NETDATA_COLLECTION_END = "NETDATA_COLLECTION_END";
+    public final static String NETDATA_CONN_OK = "NETDATA_CONN_OK";
+    public final static String NETDATA_CONN_ERROR = "NETDATA_CONN_ERROR";
+    public final static String NETDATA_CONN_ERROR_TEMP = "NETDATA_CONN_ERROR_TEMP";
+    public final static String NETDATA_NODE_PAUSED = "NETDATA_NODE_PAUSED";
+    public final static String NETDATA_NODE_RESUMED = "NETDATA_NODE_RESUMED";
+
     private final NetdataCollectorProperties properties;
     private final CommandExecutor commandExecutor;
+    private final TaskScheduler taskScheduler;
+    private final EventBus<String,Object,Object> eventBus;
 
     private RestTemplate restTemplate = new RestTemplate();
     private boolean started;
-    private Thread runner;
-    private boolean running;
+    private ScheduledFuture<?> runner;
     private List<String> allowedTopics;
     private Map<String, String> topicMap;
+
+    private Map<String, Integer> errorsMap = new HashMap<>();
+    private Map<String,ScheduledFuture<?>> ignoredNodes = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() {
@@ -110,12 +124,11 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
 
         log.info("Collectors::Netdata: configuration: {}", properties);
 
-        // start thread
-        runner = new Thread(this, "baguette-client-collector-netdata-thread");
-        runner.setDaemon(true);
+        // Schedule collection execution
+        errorsMap.clear();
+        ignoredNodes.clear();
+        runner = taskScheduler.scheduleWithFixedDelay(this, properties.getDelay());
         started = true;
-        running = true;
-        runner.start();
 
         log.info("Collectors::Netdata: Started");
     }
@@ -125,52 +138,99 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
             log.warn("Collectors::Netdata: Not started");
             return;
         }
-        running = false;
-        // interrupt sleep
-        runner.interrupt();
 
+        // Cancel collection execution
+        started = false;
+        runner.cancel(true);
+        runner = null;
+        ignoredNodes.values().forEach(task -> task.cancel(true));
         log.info("Collectors::Netdata: Stopped");
     }
 
     public void run() {
         if (!started) return;
 
-        while (running && !Thread.currentThread().isInterrupted()) {
-            try {
-                // collect data from local node
-                log.info("Collectors::Netdata: Collecting metrics from local node...");
-                collectAndPublishData(null);
-
-                // if Aggregator, collect data from nodes without client
-                log.trace("Collectors::Netdata: Nodes without clients in Zone: {}",
-                        commandExecutor.getClientConfiguration()!=null
-                                ? commandExecutor.getClientConfiguration().getNodesWithoutClient() : null);
-                log.trace("Collectors::Netdata: Is Aggregator: {}", commandExecutor.isAggregator());
-                if (commandExecutor.isAggregator()) {
-                    log.info("Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): {}",
-                            commandExecutor.getClientConfiguration().getNodesWithoutClient());
-                    for (Serializable nodeAddress : commandExecutor.getClientConfiguration().getNodesWithoutClient()) {
-                        collectAndPublishData(nodeAddress.toString());
-                    }
-                }
-
-                // sleep for 'delay' millis
-                Thread.sleep(properties.getDelay());
-            } catch (InterruptedException e) {
-                log.warn("Collectors::Netdata: Interrupted");
-            } catch (Throwable t) {
-                log.warn("Collectors::Netdata: Exception: ", t);
-            }
+        log.trace("Collectors::Netdata: run(): BEGIN");
+        if (log.isTraceEnabled()) {
+            log.trace("Collectors::Netdata: run(): errors-map={}", errorsMap);
+            log.trace("Collectors::Netdata: run(): ignored-nodes={}", ignoredNodes.keySet());
         }
 
-        synchronized (this) {
-            log.info("Collectors::Netdata: Stopped");
-            started = false;
-            running = false;
+        // collect data from local node
+        log.info("Collectors::Netdata: Collecting metrics from local node...");
+        collectAndPublishData("");
+
+        // if Aggregator, collect data from nodes without client
+        log.trace("Collectors::Netdata: Nodes without clients in Zone: {}",
+                commandExecutor.getClientConfiguration()!=null
+                        ? commandExecutor.getClientConfiguration().getNodesWithoutClient() : null);
+        log.trace("Collectors::Netdata: Is Aggregator: {}", commandExecutor.isAggregator());
+        if (commandExecutor.isAggregator()) {
+            if (commandExecutor.getClientConfiguration().getNodesWithoutClient().size()>0) {
+                log.debug("Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): {}",
+                        commandExecutor.getClientConfiguration().getNodesWithoutClient());
+                for (Serializable nodeAddress : commandExecutor.getClientConfiguration().getNodesWithoutClient()) {
+                    // collect data from remote node
+                    collectAndPublishData(nodeAddress.toString());
+                }
+            } else
+                log.debug("Collectors::Netdata: No remote nodes (without EMS client)");
+        }
+
+        log.trace("Collectors::Netdata: run(): END");
+    }
+
+    private void collectAndPublishData(@NonNull String nodeAddress) {
+        if (ignoredNodes.containsKey(nodeAddress)) {
+            log.debug("Collectors::Netdata: Node is in ignore list: {}", nodeAddress);
+            return;
+        }
+        try {
+            sendEvent(NETDATA_COLLECTION_START, nodeAddress);
+            _collectAndPublishData(nodeAddress);
+            sendEvent(NETDATA_COLLECTION_END, nodeAddress);
+
+            if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0)
+                sendEvent(NETDATA_CONN_OK, nodeAddress);
+        } catch (Throwable t) {
+            int errors = errorsMap.compute(nodeAddress, (k, v) -> Optional.ofNullable(v).orElse(0) + 1);
+            int errorLimit = properties.getErrorLimit();
+            int pausePeriod = properties.getPausePeriod();
+            log.warn("Collectors::Netdata: Exception while collecting metrics from node: {}, #errors={}\n", nodeAddress, errors, t);
+
+            sendEvent(NETDATA_CONN_ERROR_TEMP, nodeAddress, "errors="+errors);
+
+            if (errorLimit>0 && pausePeriod>0) {
+                if (errors > errorLimit) {
+                    log.warn("Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", nodeAddress, errors);
+                    log.warn("Collectors::Netdata: Will pause metrics collection from node for {} seconds: {}", pausePeriod, nodeAddress);
+                    ignoredNodes.put(nodeAddress, taskScheduler.schedule(() -> {
+                        errorsMap.put(nodeAddress, 0);
+                        ignoredNodes.remove(nodeAddress);
+                        log.info("Collectors::Netdata: Resumed metrics collection from node: {}", nodeAddress);
+                        sendEvent(NETDATA_NODE_RESUMED, nodeAddress);
+                    }, Instant.now().plusSeconds(pausePeriod)));
+
+                    sendEvent(NETDATA_CONN_ERROR, nodeAddress);
+                    sendEvent(NETDATA_NODE_PAUSED, nodeAddress);
+                }
+            } else
+                log.debug("Collectors::Netdata: Metrics collection pausing is disabled");
         }
     }
 
-    private void collectAndPublishData(String nodeAddress) {
+    private void sendEvent(String topic, String nodeAddress, String...extra) {
+        Map<String,String> message = new HashMap<>();
+        message.put("address", nodeAddress);
+        for (String e : extra) {
+            String[] s = e.split("[:=]", 2);
+            if (s.length==2 && StringUtils.isNotBlank(s[0]))
+                message.put(s[0].trim(), s[1]);
+        }
+        eventBus.send(topic, message, getClass().getName());
+    }
+
+    private void _collectAndPublishData(String nodeAddress) {
         String url;
         if (StringUtils.isBlank(nodeAddress)) {
             // Local node data collection URL

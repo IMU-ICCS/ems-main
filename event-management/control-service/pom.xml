@@ -32,6 +32,7 @@
         <docker.push>false</docker.push>
         <docker.repository></docker.repository>
         <docker.imagePrefix></docker.imagePrefix>
+        <docker.imageName></docker.imageName>
         <docker.imageTag></docker.imageTag>
         -->
         <docker.imageName>ems-server</docker.imageName>
