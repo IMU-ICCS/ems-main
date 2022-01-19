@@ -167,7 +167,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         log.trace("Collectors::Netdata: Is Aggregator: {}", commandExecutor.isAggregator());
         if (commandExecutor.isAggregator()) {
             if (commandExecutor.getClientConfiguration().getNodesWithoutClient().size()>0) {
-                log.debug("Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): {}",
+                log.info("Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): {}",
                         commandExecutor.getClientConfiguration().getNodesWithoutClient());
                 for (Serializable nodeAddress : commandExecutor.getClientConfiguration().getNodesWithoutClient()) {
                     // collect data from remote node
@@ -196,7 +196,9 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
             int errors = errorsMap.compute(nodeAddress, (k, v) -> Optional.ofNullable(v).orElse(0) + 1);
             int errorLimit = properties.getErrorLimit();
             int pausePeriod = properties.getPausePeriod();
-            log.warn("Collectors::Netdata: Exception while collecting metrics from node: {}, #errors={}\n", nodeAddress, errors, t);
+            log.warn("Collectors::Netdata:     Exception while collecting metrics from node: {}, #errors={}, exception: {}",
+                    nodeAddress, errors, getExceptionMessages(t));
+            log.debug("Collectors::Netdata: Exception while collecting metrics from node: {}, #errors={}\n", nodeAddress, errors, t);
 
             sendEvent(NETDATA_CONN_ERROR_TEMP, nodeAddress, "errors="+errors);
 
@@ -217,6 +219,15 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
             } else
                 log.debug("Collectors::Netdata: Metrics collection pausing is disabled");
         }
+    }
+
+    private String getExceptionMessages(Throwable t) {
+        StringBuilder sb = new StringBuilder();
+        while (t!=null) {
+            sb.append(" -> ").append(t.getClass().getName()).append(": ").append(t.getMessage());
+            t = t.getCause();
+        }
+        return sb.toString().substring(4);
     }
 
     private void sendEvent(String topic, String nodeAddress, String...extra) {
