@@ -2,7 +2,8 @@
     <transition name="fade">
         <div v-if="showHeader" class="row align-items-right h-100">
 
-            <div class="col-2" style="padding-left: 0; min-width: 200px;">
+            <!-- EMS server Uptime display -->
+            <div class="col-1" style="padding-left: 0; min-width: 180px;">
                 <span style="font-size:8pt; position:absolute; top:-10px; left:3px;">days</span>
                 <span style="font-size:8pt; position:absolute; top:-10px; left:40%;">hh:mm:ss</span>
                 <SevenSegment classes="D14MBI">
@@ -12,7 +13,8 @@
                 </SevenSegment>
             </div>
 
-            <div class="col-1 text-center container" style="white-space: nowrap; padding: 0 5px; margin: 0 1px;">
+            <!-- EMS ready state lights -->
+            <div class="col-1 text-center container" style="white-space: nowrap; padding: 0 5px; margin: 0 1px; min-width: 120px;">
                 <div class="row">
                     <StatusLed :colorOn="stateLedColor" :on="stateLedOn" :blink="stateLedBlink" :width="24" :height="24" blinkPeriod="1s"></StatusLed>
                     <StatusLed :colorOn="stateLedColor" :on="stateLedOn" :blink="stateLedBlink" :width="24" :height="24" blinkPeriod="1s"></StatusLed>
@@ -21,6 +23,7 @@
                 <div class="row" style="margin-top: 5px; font-size: 8pt;">{{emsStateMessage}}</div>
             </div>
 
+            <!-- EMS server last X-minutes CPU,Mem,Disk usage sparklines -->
             <div class="col-1 text-center section-header-group row">
                 <div class="col-3 container">
                     <span class="row" style="font-size:70%;">CPU</span>
@@ -53,14 +56,15 @@
                 </div>
             </div>
 
-            <div class="col-3">
+            <!--<div class="col-3">
                 <div class="row align-items-center h-100 section-header-group">
                     <vue-gauge :refid="'gauge_h1'" :options="{'needleValue':85, 'chartWidth':60, 'arcDelimiters':[10,36,78], 'arcColors':['green','yellow','orange','red'], 'arcOverEffect':true, 'hasNeedle':true}"></vue-gauge>
                     <vue-gauge :refid="'gauge_h2'" :options="{'needleValue':85, 'chartWidth':60, 'arcDelimiters':[10,36,78], 'arcColors':['green','yellow','orange','red'], 'arcOverEffect':true, 'hasNeedle':true}"></vue-gauge>
                     <vue-gauge :refid="'gauge_h3'" :options="{'needleValue':85, 'chartWidth':60, 'arcDelimiters':[10,36,78], 'arcColors':['green','yellow','orange','red'], 'arcOverEffect':true, 'hasNeedle':true}"></vue-gauge>
                 </div>
-            </div>
+            </div>-->
 
+            <!-- EMS server instant CPU,Mem,Disk usage lines -->
             <div class="col-2">
                 <div class="row align-items-center h-100 section-header-group">
                     <div class="w-75">
@@ -92,6 +96,31 @@
                 </div>
             </div>
 
+            <!-- Info boxes with Totals -->
+            <div class="col-1 text-center container" style="white-space: nowrap; padding: 0 5px; margin: 0 1px;">
+                <InfoBox
+                        message="Nodes"
+                        classes="section-header-info-box"
+                        bg_class="bg-danger" icon_classes="far fa-lightbulb fa-xs"
+                        :value="numOfNodes.toString()"
+                />
+            </div>
+            <div class="col-1 text-center container" style="white-space: nowrap; padding: 0 5px; margin: 0 1px;">
+                <InfoBox
+                        message="Clients"
+                        classes="section-header-info-box"
+                        bg_class="bg-warning" icon_classes="far fa-flag fa-xs"
+                        :value="numOfClients.toString()"
+                />
+            </div>
+            <div class="col-1 text-center container" style="white-space: nowrap; padding: 0 5px; margin: 0 1px;">
+                <InfoBox
+                        message="Events"
+                        classes="section-header-info-box"
+                        bg_class="bg-success" icon_classes="far fa-paper-plane fa-xs"
+                        :value="numOfEvents.toString()"
+                />
+            </div>
         </div>
     </transition>
 </template>
@@ -100,7 +129,8 @@
 import SevenSegment from '@/components/7seg/7seg.vue';
 import StatusLed from '@/components/status-led/status-led.vue';
 import Sparkline from '@/components/sparkline/sparkline.vue';
-import VueGauge from 'vue-gauge';
+//import VueGauge from 'vue-gauge';
+import InfoBox from '@/components/infobox/infobox.vue';
 
 import utils from '@/utils.js';
 
@@ -112,7 +142,7 @@ export default {
         timeseries: Object,
         showHeader: Boolean
     },
-    components: { SevenSegment, StatusLed, Sparkline, VueGauge },
+    components: { SevenSegment, StatusLed, Sparkline, /*VueGauge,*/ InfoBox },
     data() {
         return {
             dataWindow: 60,
@@ -121,6 +151,9 @@ export default {
             stateLedColor: '#D8D8D8',
             stateLedOn: false,
             stateLedBlink: false,
+            numOfNodes: 0,
+            numOfClients: 0,
+            numOfEvents: 0,
         };
     },
     watch: {
@@ -158,6 +191,11 @@ export default {
                             this.stateLedColor = '#D8D8D8'; this.stateLedOn = false; this.stateLedBlink = false;
                     }
                 }
+
+                // Update values of Section Header info boxes
+                this.numOfNodes = newValue['baguette-server']['active-clients-list'].length + newValue['baguette-server']['passive-clients-list'].length;
+                this.numOfClients = newValue['baguette-server']['active-clients-list'].length;
+                this.numOfEvents = newValue['broker-cep']['count-total-events'];
             }
         },
         sseInfo(newVal) {
@@ -207,5 +245,16 @@ export default {
     border-radius: 5px;
     padding: 0 5px;
     margin: 0 1px;
+}
+
+.section-header-info-box {
+    margin: 0;
+    padding: 0;
+    min-height: 20px;
+    height: 40px;
+    width: 85px;
+    font-size: 8pt;
+    line-height: 1.0;
+    background: rgba(255,255,255,.4);
 }
 </style>
