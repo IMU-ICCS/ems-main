@@ -90,8 +90,11 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
             log.trace("EventMap.<init>: key={}, value={}", k, v);
             this.put(k, v);
         });
-        if (map instanceof EventMap)
-            setEventProperties(new LinkedHashMap<>(((EventMap)map).getEventProperties()));
+        if (map instanceof EventMap) {
+            Map<String, Object> properties = ((EventMap) map).getEventProperties();
+            if (properties!=null && properties.size()>0)
+                setEventProperties(new LinkedHashMap<>(properties));
+        }
     }
 
     public EventMap(double metricValue) {
