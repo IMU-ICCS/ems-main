@@ -7,9 +7,9 @@
               <OverviewSectionHeader v-model="ems" :sseInfo="modelValue.sseInfo" :timeseries="sysmonTimeseries" :showHeader="showOverviewHeader" />
           </template>
 
-          <span style="color: darkblue;">(EMS load, EMS state, Events, Clients, Topology Health?)</span>
+          <div style="color: darkblue; margin-bottom: 10px;">An overview of EMS server load and state, total number of events, number of application nodes and EMS clients in topology</div>
 
-          <OverviewSection v-model="ems" />
+          <OverviewSection v-model="ems" :timeseries="sysmonTimeseries" />
       </Section>
 
       <Section title="Topology" :collapsed="false" background="rgba(0,255,100,.3)">

@@ -49,6 +49,15 @@ class Utils {
         return (data) ? (Math.round(precision * data / 1024 / 1024 / 1024) / precision).toString() : data;
     }
 
+    toNum(num, fragDigits) {
+        //return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        if (!fragDigits || fragDigits<0) fragDigits = 0;
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: fragDigits,
+            maximumFractionDigits: fragDigits
+        }).format(num);
+    }
+
     /*updateSelect(newVal, targetMap, valueField, textField) {
         // add new or update targetMap entries
         for (let c of newVal) {

@@ -1,252 +1,221 @@
 <template>
-          <div class="row">
-              <div class="col-md-2 col-sm-6 col-12">
-                  <InfoBox
-                          id="_ems-system-info-jvm-uptime-value"
-                          message="Messages"
-                          value="1,410"
-                          bg_class="bg-info" icon_classes="far fa-envelope"
-                          :loading="false"
-                  />
-              </div>
-              <!-- /.col -->
-              <div class="col-md-2 col-sm-6 col-12">
-                  <InfoBox
-                          id="_ems-system-info-jvm-uptime-value"
-                          message="Agents"
-                          value="410"
-                          bg_class="bg-success" icon_classes="far fa-flag"
-                          :loading="false"
-                  />
-              </div>
-              <!-- /.col -->
-              <div class="col-md-2 col-sm-6 col-12">
-                  <InfoBox
-                          id="_ems-system-info-jvm-uptime-value"
-                          message="Uploads"
-                          value="13,648"
-                          bg_class="bg-warning" icon_classes="far fa-copy"
-                          :loading="true"
-                  />
-              </div>
-              <!-- /.col -->
-              <div class="col-md-2 col-sm-6 col-12">
-                  <InfoBox
-                          id="_ems-system-info-jvm-uptime-value"
-                          message="Likes"
-                          value="93,139"
-                          bg_class="bg-danger" icon_classes="far fa-star"
-                          :loading="true"
-                  />
-              </div>
-              <!-- /.col -->
-              <div class="col-md-2 col-sm-6 col-12">
-                  <InfoBox
-                          :value="getUptime()"
-                          id="_ems-system-info-jvm-uptime"
-                          message="Uptime"
-                          bg_class="bg-aqua" icon_classes="ion ion-ios-gear-outline"
-                          :loading="false"
-                  />
-              </div>
-              <!-- /.col -->
-              <div class="col-md-2 col-sm-6 col-12">
-                  <InfoBox
-                          :value="getFreeMem()"
-                          id="_ems-system-info-jvm-memory-free"
-                          message="Free memory"
-                          text_before=""
-                          text_default="-"
-                          text_after=" GB"
-                          bg_class="bg-indigo" icon_classes="ion ion-ios-people-outline"
-                          :loading="false"
-                  />
-              </div>
-              <!-- /.col -->
-          </div>
-          <!-- /.col -->
-
-          <div class="row">
-              <div class="col-lg-3">
-                  <Card title="Card title"
-                        :links="[{url:'#',text:'Card link'}, {url:'#',text:'Another link'}]"
-                  >Some quick example text to build on the card title and make up the bulk of the card's
-                      content.
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-
-              <div class="col-lg-3">
-                  <Card title="Card title" classes="card-primary card-outline"
-                        :links="[{url:'#',text:'Card link'}, {url:'/logs/ems.log',target:'_new',text:'Another link'}]"
-                  >Some quick example text to build on the card title and make up the bulk of the card's
-                      content.
-                  </Card>
-              </div>
-              <!-- /.col-md-3 -->
-
-              <div class="col-2">
-                  <Card header="Simple Bars" icon="fas fa-chart-bar">
-                      <div class="row align-items-center h-100">
-                          <Sparkline type="bar" width="150px" height="90px" :values="[5,12,15,5]"
-                                     :options="{barWidth:10,barSpacing:5,barColor:'skyblue'}"></Sparkline>
-                      </div>
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-
-              <div class="col-2">
-                  <Card header="Stacked Bars" icon="fas fa-chart-bar">
-                      <div class="row align-items-center h-100">
-                          <Sparkline type="bar" width="150px" height="90px" :values="['5:2:2','12:8:4','15:7:6','5:2:3']"
-                                     :options="{barWidth:10,barSpacing:5}"></Sparkline>
-                      </div>
-                  </Card>
-              </div>
-
-              <!-- /.col-md-2 -->
-              <div class="col-2">
-                  <Card header="Composite" icon="fas fa-chart-bar">
-                      <div class="row align-items-center h-100">
-                          <Sparkline type="composite" width="150px" height="90px" :values="{bars:[5,12,15,5], line:[0,8,4]}"
-                                     :options="{bars:{type:'bar',barWidth:10,barSpacing:5,barColor:'orange'}, line:{type:'line',chartRangeMax:15,lineColor:'darkred',fillColor:''}}"></Sparkline>
-                          &nbsp;&nbsp;&nbsp;
-                      </div>
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-          </div>
+    <div class="row">
+        <div class="col-md-2 col-sm-6 col-12">
+            <InfoBox
+                    message="EMS Clients"
+                    :value="getEmsClients()"
+                    bg_class="bg-info" icon_classes="far fa-flag"
+            />
+        </div>
+        <!-- /.col -->
+        <div class="col-md-2 col-sm-6 col-12">
+            <InfoBox
+                    message="Edge nodes"
+                    :value="getEdgeNodes()"
+                    bg_class="bg-warning" icon_classes="far fa-lightbulb"
+            />
+        </div>
+        <!-- /.col -->
+        <div class="col-md-2 col-sm-6 col-12">
+            <InfoBox
+                    message="Ignored nodes"
+                    :value="getIgnoredNodes()"
+                    bg_class="bg-danger" icon_classes="fa fa-eye-slash"
+            />
+        </div>
+        <!-- /.col -->
+        <div class="col-md-2 col-sm-6 col-12">
+            <InfoBox
+                    message="Total Events"
+                    :value="getTotalEvents()"
+                    bg_class="bg-success" icon_classes="far fa-paper-plane"
+            />
+        </div>
+        <!-- /.col -->
+        <div class="col-md-2 col-sm-6 col-12">
+            <InfoBox
+                    :value="getUptime()"
+                    message="Uptime"
+                    bg_class="bg-aqua" icon_classes="ion ion-ios-timer-outline"
+            />
+        </div>
+        <!-- /.col -->
+        <div class="col-md-2 col-sm-6 col-12">
+            <InfoBox
+                    :value="getState()"
+                    message="EMS State"
+                    bg_class="bg-indigo" icon_classes="ion ion-ios-gear-outline"
+            />
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.col -->
 
 
-          <div class="row">
-              <div class="col-2">
-                  <Card header="Pie" icon="fas fa-chart-pie" classes="h-100">
-                      <div class="row align-items-center h-100">
-                          <Sparkline type="pie" width="150px" height="150px" :values="[5,10,15,5]"
-                                     :options="{offset:-90}"></Sparkline>
-                      </div>
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-
-              <div class="col-5">
-                  <Card header="Knobs" icon="fas fa-glasses" classes="h-100">
-                      <div class="row align-items-center h-100">
-                          <div class="col-3">
-                              <Knob :value="10" :options="{angleArc:230,angleOffset:-112,width:'90px',height:'90px',fgColor:'#3c8dbc'}"></Knob>
-                          </div>
-                          <div class="col-3">
-                              <Knob :value="20" :options="{angleArc:230,angleOffset:-112,width:'90px',height:'90px',fgColor:'#f56954'}"></Knob>
-                          </div>
-                          <div class="col-3">
-                              <Knob :value="30" :options="{angleArc:230,angleOffset:-112,width:'90px',height:'90px',fgColor:'#00a65a'}"></Knob>
-                          </div>
-                          <div class="col-3">
-                              <Knob :value="40" :options="{angleArc:230,angleOffset:-112,width:'90px',height:'90px',fgColor:'#00c0ef'}"></Knob>
-                          </div>
-                      </div>
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-
-              <div class="col-3">
-                  <Card header="&nbsp;Gauges" icon="fas fa-tachometer-alt" classes="h-100">
-                      <div class="row align-items-center h-100">
-                          <vue-gauge :refid="'gauge1'" :options="{'needleValue':85, 'chartWidth':200, 'arcDelimiters':[10,36,78], 'arcLabels':['10','36','78'], 'arcColors':['green','yellow','orange','red'], 'rangeLabel':['Min','Max'], 'arcOverEffect':true, 'hasNeedle':true}"></vue-gauge>
-                          <vue-gauge :refid="'gauge2'" :options="{'needleValue':85, 'chartWidth':200, 'arcDelimiters':[10,36,78], 'arcLabels':['10','36','78'], 'arcColors':['green','yellow','orange','red'], 'rangeLabel':['Min','Max'], 'arcOverEffect':true, 'hasNeedle':true}"></vue-gauge>
-                      </div>
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-
-              <div class="col-2">
-                  <Card header="7-segment" icon="fas fa-grip-vertical" classes="h-100">
-                      <div class="row">
-                          <div class="col-4">
-                              <SevenSegment class="red-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>&nbsp;
-                          </div>
-                          <div class="col-4">
-                              <SevenSegment class="green-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>&nbsp;
-                          </div>
-                          <div class="col-4">
-                              <SevenSegment class="blue-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>
-                          </div>
-                      </div>
-                      <div class="row">
-                          <div class="col-4">
-                              <SevenSegment class="yellow-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>&nbsp;
-                          </div>
-                          <div class="col-4">
-                              <SevenSegment class="orange-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>&nbsp;
-                          </div>
-                          <div class="col-4">
-                              <SevenSegment class="magenta-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>
-                          </div>
-                      </div>
-                      <div class="row">
-                          <div class="col-4">
-                              <SevenSegment class="white-display" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;">123</SevenSegment>&nbsp;
-                          </div>
-                          <div class="col-4">
-                              <SevenSegment :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px; border: 2px solid #000;">123</SevenSegment>&nbsp;
-                          </div>
-                          <div class="col-4">
-                              <SevenSegment colorOn="rgb(255,44,19)" colorOff="rgb(139,22,5)" colorBackground="rgb(36,30,30)" :useWrapper="true" wrapperStyle="width:70px; height:30px; padding-left:15px;  border: 1px solid black; border-radius: 3px;">123</SevenSegment>
-                          </div>
-                      </div>
-                      <div class="row align-middle">
-                          <div class="col-3">
-                              <SevenSegment><span style="font-size:8pt;">123</span></SevenSegment>
-                          </div>
-                          <div class="col-3">
-                              <SevenSegment>123</SevenSegment>
-                          </div>
-                          <div class="col-3">
-                              <SevenSegment><span style="font-size:16pt;">123</span></SevenSegment>
-                          </div>
-                          <div class="col-3">
-                              <SevenSegment><span style="font-size:20pt;">123</span></SevenSegment>
-                          </div>
-                      </div>
-                  </Card>
-              </div>
-              <!-- /.col-md-2 -->
-          </div>
+    <div class="row">
+        <div class="col-3">
+            <Card :header="`CPU usage in last ${dataWindow} seconds`" icon="fas fa-microchip">
+                <div class="row align-items-center h-100">
+                    <Sparkline type="composite" width="100%" height="80%" classes="col-10"
+                               :values="usageDataAndLines('cpu')"
+                               :options="optionsForDataAndLines()"></Sparkline>
+                    <div class="col-2">
+                        <h6>CPU:</h6>
+                        <div class="badge badge-info"><h5>{{currentUsage('cpu',1)+'%'}}</h5></div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-2 -->
+        <div class="col-3">
+            <Card :header="`&nbsp;Memory usage in last ${dataWindow} seconds`" icon="fas fa-memory">
+                <div class="row align-items-center h-100">
+                    <Sparkline type="composite" width="100%" height="80%" classes="col-10"
+                               :values="usageDataAndLines('ram')"
+                               :options="optionsForDataAndLines()"></Sparkline>
+                    <div class="col-2">
+                        <h6>RAM:</h6>
+                        <div class="badge badge-warning"><h5>{{currentUsage('ram',0)+'%'}}</h5></div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-2 -->
+        <div class="col-3">
+            <Card :header="`Disk usage in last ${dataWindow} seconds`" icon="fas fa-compact-disc">
+                <div class="row align-items-center h-100">
+                    <Sparkline type="composite" width="100%" height="80%" classes="col-10"
+                               :values="usageDataAndLines('disk')"
+                               :options="optionsForDataAndLines()"></Sparkline>
+                    <div class="col-2">
+                        <h6>Disk:</h6>
+                        <div class="badge badge-primary"><h5>{{currentUsage('disk',0)+'%'}}</h5></div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-2 -->
+        <div class="col-3">
+            <Card :header="`... usage in last ${dataWindow} seconds`" icon="fas fa-chart-bar">
+                <div class="row align-items-center h-100">
+                    <Sparkline type="line" width="100%" height="80%" classes="col-10"
+                               :values="[0,50,10,60,40,0]"
+                               :options="{ chartRangeMin: 0, chartRangeMax: 100 }"></Sparkline>
+                    <div class="col-2">
+                        <h6>...:</h6>
+                        <div class="badge badge-secondary"><h5>---</h5></div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-2 -->
+    </div>
 </template>
 
 <script>
 import InfoBox from '@/components/infobox/infobox.vue';
 import Card from '@/components/card/card.vue';
 import Sparkline from '@/components/sparkline/sparkline.vue';
-import Knob from '@/components/knob/knob.vue';
-import VueGauge from 'vue-gauge';   // See https://www.npmjs.com/package/vue-gauge
-import SevenSegment from '@/components/7seg/7seg.vue';
 
 import utils from '@/utils.js';
 
 export default {
     name: 'Admin Dashboard - Overview',
     props: {
-        modelValue: Object
+        modelValue: Object,
+        timeseries: Object
     },
-    components: { InfoBox, Card, Sparkline, Knob, VueGauge, SevenSegment },
+    components: { InfoBox, Card, Sparkline },
     methods: {
+        getEmsClients() {
+            let num = utils.getValue(this.modelValue, 'baguette-server.active-clients-list').length;
+            return utils.toNum(num);
+        },
+        getEdgeNodes() {
+            return Object.entries(utils.getValue(this.modelValue, 'baguette-server.passive-clients-map'))
+                    .filter(([key,value]) => key && value && (value['node-state']??'')==='NOT_INSTALLED')
+                    .length;
+        },
+        getIgnoredNodes() {
+            // Object.fromEntries(Object.entries(obj))==obj
+            return Object.entries(utils.getValue(this.modelValue, 'baguette-server.passive-clients-map'))
+                    .filter(([key,value]) => key && value && (value['node-state']??'')==='IGNORE_NODE')
+                    .length;
+        },
+        getTotalEvents() {
+            let num = utils.getValue(this.modelValue, 'broker-cep.count-total-events');
+            return utils.toNum(num);
+        },
         getFreeMem() {
             let bytes = utils.getValue(this.modelValue, 'system-info.jmx-resource-metrics.jvm-memory-free');
             return utils.toGB(bytes);
         },
         getUptime() {
             let uptime = utils.getValue(this.modelValue, 'system-info.jmx-resource-metrics.jvm-uptime');
-            return utils.toIsoFormat(uptime, 's', 'time');
+            let days = Math.floor(uptime/86400);
+            let time = uptime - 86400 * days;
+            days = (days>0) ? days+'d ' : '';
+            return days + utils.toIsoFormat(time, 's', 'time');
+        },
+        getState() {
+            let state = utils.getValue(this.modelValue, 'control.current-ems-state');
+            let stateMessage = utils.getValue(this.modelValue, 'control.current-ems-state-message');
+            return (state??''+' '+stateMessage??'').trim();
+        },
+
+        currentUsage(metric, precision) {
+            if (!this.timeseries) return '--';
+            let v = this.timeseries.getLast();
+            if (!v || !(metric in v)) return '--';
+            return v[metric].toFixed(precision);
+        },
+        usageData(metric) {
+            if (!this.timeseries) return [ 0 ];
+            return this.timeseries.getWindowData(this.dataWindow).map(data => (data && (metric in data)) ? data[metric] : 0);
+        },
+        usageDataAndLines(metric) {
+            return {
+                data: this.usageData(metric),
+                l25: [25,25],
+                l50: [50,50],
+                l75: [75,75],
+                l100: [100,100]
+            };
+        },
+        optionsForDataAndLines(dataOptions) {
+            return {
+                data: dataOptions ?? {
+                    type: 'line',
+                    chartRangeMin: 0, chartRangeMax: 100,
+                    normalRangeMin: 0, normalRangeMax: 75,
+                    normalRangeColor: '#DBF9DB'
+                },
+                l25: {
+                    type: 'line', lineWidth: 1,
+                    chartRangeMin: 0, chartRangeMax: 100,
+                    lineColor: 'lightgrey', fillColor: 'transparent'
+                },
+                l50: {
+                    type: 'line', lineWidth: 1,
+                    chartRangeMin: 0, chartRangeMax: 100,
+                    lineColor: 'lightgrey', fillColor: 'transparent'
+                },
+                l75: {
+                    type: 'line', lineWidth: 1,
+                    chartRangeMin: 0, chartRangeMax: 100,
+                    lineColor: 'lightgrey', fillColor: 'transparent'
+                },
+                l100: {
+                    type: 'line', lineWidth: 1,
+                    chartRangeMin: 0, chartRangeMax: 100,
+                    lineColor: 'lightgrey', fillColor: 'transparent'
+                }
+            };
         },
     },
     data() {
         return {
-            knobs: {
-                k1:30, k2:70, k3:-80, k4:40, k5:90, k6:50,
-                k7:30, k8:30, k9:30, k10:30,
-                k11:80, k12:60, k13:10, k14:100,
-            },
+            dataWindow: 60,
         };
     },
 }
