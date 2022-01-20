@@ -13,4 +13,5 @@ FREE_DATA=`free -m | grep Mem`
 CURRENT=`echo $FREE_DATA | cut -f3 -d' '`
 TOTAL=`echo $FREE_DATA | cut -f2 -d' '`
 echo RAM: $(echo "$CURRENT $TOTAL" | awk '{print 100 * $1 / $2}' )
-echo DISK: `df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1`
+#echo DISK: `df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1`
+echo DISK: `df -lh | awk '{if ($6 == "/") { print 100 * $3 / $2 }}'`
