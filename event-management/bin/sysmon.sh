@@ -8,10 +8,37 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
+# Report CPU usage (%)
 echo CPU: `top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}'`
+
+# Report Memory usage (%)
 FREE_DATA=`free -m | grep Mem`
 CURRENT=`echo $FREE_DATA | cut -f3 -d' '`
 TOTAL=`echo $FREE_DATA | cut -f2 -d' '`
 echo RAM: $(echo "$CURRENT $TOTAL" | awk '{print 100 * $1 / $2}' )
+
+# Report Disk usage (%) -- '/' partition only
 #echo DISK: `df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1`
 echo DISK: `df -lh | awk '{if ($6 == "/") { print 100 * $3 / $2 }}'`
+
+# Report Network RX/TX usage (B/s)
+ARR=($(ls -1 /sys/class/net/ | grep eth))
+
+function measure_ifs() {
+    local SUMRX=0
+    local SUMTX=0
+    for IF in "${ARR[@]}"; do
+        let SUMRX=$SUMRX+`cat /sys/class/net/${IF}/statistics/rx_bytes`
+        let SUMTX=$SUMTX+`cat /sys/class/net/${IF}/statistics/tx_bytes`
+    done
+    echo $SUMRX $SUMTX
+}
+
+START=($(measure_ifs))
+sleep 1
+END=($(measure_ifs))
+
+RX=$(( END[0] - START[0] ))
+TX=$(( END[1] - START[1] ))
+echo RX: $RX
+echo TX: $TX
