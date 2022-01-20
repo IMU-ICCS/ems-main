@@ -58,7 +58,7 @@
                 <div class="row align-items-center h-100">
                     <Sparkline type="composite" width="100%" height="80%" classes="col-10"
                                :values="usageDataAndLines('cpu')"
-                               :options="optionsForDataAndLines()"></Sparkline>
+                               :options="optionsForDataAndLines('cpu')"></Sparkline>
                     <div class="col-2">
                         <h6>CPU:</h6>
                         <div class="badge badge-info"><h5>{{currentUsage('cpu',1)+'%'}}</h5></div>
@@ -72,7 +72,7 @@
                 <div class="row align-items-center h-100">
                     <Sparkline type="composite" width="100%" height="80%" classes="col-10"
                                :values="usageDataAndLines('ram')"
-                               :options="optionsForDataAndLines()"></Sparkline>
+                               :options="optionsForDataAndLines('ram')"></Sparkline>
                     <div class="col-2">
                         <h6>RAM:</h6>
                         <div class="badge badge-warning"><h5>{{currentUsage('ram',0)+'%'}}</h5></div>
@@ -86,7 +86,7 @@
                 <div class="row align-items-center h-100">
                     <Sparkline type="composite" width="100%" height="80%" classes="col-10"
                                :values="usageDataAndLines('disk')"
-                               :options="optionsForDataAndLines()"></Sparkline>
+                               :options="optionsForDataAndLines('disk')"></Sparkline>
                     <div class="col-2">
                         <h6>Disk:</h6>
                         <div class="badge badge-primary"><h5>{{currentUsage('disk',0)+'%'}}</h5></div>
@@ -96,14 +96,19 @@
         </div>
         <!-- /.col-md-2 -->
         <div class="col-3">
-            <Card :header="`... usage in last ${dataWindow} seconds`" icon="fas fa-chart-bar">
+            <Card :header="`&nbsp;Network usage in last ${dataWindow} seconds`" icon="fas fa-network-wired">
                 <div class="row align-items-center h-100">
-                    <Sparkline type="line" width="100%" height="80%" classes="col-10"
-                               :values="[0,50,10,60,40,0]"
-                               :options="{ chartRangeMin: 0, chartRangeMax: 100 }"></Sparkline>
-                    <div class="col-2">
-                        <h6>...:</h6>
-                        <div class="badge badge-secondary"><h5>---</h5></div>
+                    <Sparkline type="composite" width="100%" height="80%" classes="col-9"
+                               :values="Object.assign({ rx: usageData('rx','KB'), tx: usageData('tx','KB') }, this.defaultChartGridValues)"
+                               :options="optionsForDataAndLines({
+                                    'rx': { type: 'line', chartRangeMin: 0, chartRangeMax: 100, lineColor: 'red', fillColor: 'transparent',  },
+                                    'tx': { type: 'line', chartRangeMin: 0, chartRangeMax: 100, lineColor: 'green', fillColor: 'transparent' }
+                                })"></Sparkline>
+                    <div class="col-3">
+                        <h6>RX:</h6>
+                        <div class="badge badge-danger"><h5>{{currentUsage('rx',1,'KB')}} <small>Kb/s</small></h5></div>
+                        <h6>TX:</h6>
+                        <div class="badge badge-success"><h5>{{currentUsage('tx',1,'KB')}} <small>Kb/s</small></h5></div>
                     </div>
                 </div>
             </Card>
@@ -132,15 +137,17 @@ export default {
             return utils.toNum(num);
         },
         getEdgeNodes() {
-            return Object.entries(utils.getValue(this.modelValue, 'baguette-server.passive-clients-map'))
-                    .filter(([key,value]) => key && value && (value['node-state']??'')==='NOT_INSTALLED')
-                    .length;
+            return utils.toNum(
+                    Object.entries(utils.getValue(this.modelValue, 'baguette-server.passive-clients-map'))
+                        .filter(([key,value]) => key && value && (value['node-state']??'')==='NOT_INSTALLED')
+                        .length);
         },
         getIgnoredNodes() {
             // Object.fromEntries(Object.entries(obj))==obj
-            return Object.entries(utils.getValue(this.modelValue, 'baguette-server.passive-clients-map'))
-                    .filter(([key,value]) => key && value && (value['node-state']??'')==='IGNORE_NODE')
-                    .length;
+            return utils.toNum(
+                    Object.entries(utils.getValue(this.modelValue, 'baguette-server.passive-clients-map'))
+                        .filter(([key,value]) => key && value && (value['node-state']??'')==='IGNORE_NODE')
+                        .length);
         },
         getTotalEvents() {
             let num = utils.getValue(this.modelValue, 'broker-cep.count-total-events');
@@ -163,59 +170,83 @@ export default {
             return (state??''+' '+stateMessage??'').trim();
         },
 
-        currentUsage(metric, precision) {
+        currentUsage(metric, precision, prefix) {
             if (!this.timeseries) return '--';
             let v = this.timeseries.getLast();
             if (!v || !(metric in v)) return '--';
-            return v[metric].toFixed(precision);
+            v = v[metric];
+            if (prefix==='KB') v = parseFloat(utils.toKB(v));
+            if (v>=10) precision = 0;
+            //return v.toFixed(precision);
+            return utils.toNum(v, precision);
         },
-        usageData(metric) {
+        usageData(metric, prefix) {
             if (!this.timeseries) return [ 0 ];
-            return this.timeseries.getWindowData(this.dataWindow).map(data => (data && (metric in data)) ? data[metric] : 0);
+            var values = this.timeseries.getWindowData(this.dataWindow).map(data => (data && (metric in data)) ? data[metric] : 0);
+            if (prefix==='KB') values = values.map(x => parseFloat(utils.toKB(x)));
+            return values;
         },
-        usageDataAndLines(metric) {
-            return {
-                data: this.usageData(metric),
-                l25: [25,25],
-                l50: [50,50],
-                l75: [75,75],
-                l100: [100,100]
-            };
+        usageDataAndLines(metric, gridValues) {
+            var result = {};
+            if (Array.isArray(metric)) {
+                for (let m in metric)
+                    result[m] = this.usageData(m);
+            } else
+                result[metric] = this.usageData(metric);
+            result = Object.assign(result, gridValues ?? this.defaultChartGridValues);
+            return result;
         },
-        optionsForDataAndLines(dataOptions) {
-            return {
-                data: dataOptions ?? {
-                    type: 'line',
-                    chartRangeMin: 0, chartRangeMax: 100,
-                    normalRangeMin: 0, normalRangeMax: 75,
-                    normalRangeColor: '#DBF9DB'
-                },
-                l25: {
-                    type: 'line', lineWidth: 1,
-                    chartRangeMin: 0, chartRangeMax: 100,
-                    lineColor: 'lightgrey', fillColor: 'transparent'
-                },
-                l50: {
-                    type: 'line', lineWidth: 1,
-                    chartRangeMin: 0, chartRangeMax: 100,
-                    lineColor: 'lightgrey', fillColor: 'transparent'
-                },
-                l75: {
-                    type: 'line', lineWidth: 1,
-                    chartRangeMin: 0, chartRangeMax: 100,
-                    lineColor: 'lightgrey', fillColor: 'transparent'
-                },
-                l100: {
-                    type: 'line', lineWidth: 1,
-                    chartRangeMin: 0, chartRangeMax: 100,
-                    lineColor: 'lightgrey', fillColor: 'transparent'
+        optionsForDataAndLines(metricOptions, gridOptions) {
+            var result = {};
+            if (Array.isArray(metricOptions)) {
+                for (let metric of metricOptions) {
+                    result[metric] = this.defaultChartLineOptions;
                 }
-            };
+            } else
+            if (typeof metricOptions==='object') {
+                for (let [metric, options] of Object.entries(metricOptions)) {
+                    result[metric] = options;
+                }
+            } else {
+                result[metricOptions] = this.defaultChartLineOptions;
+            }
+            result = Object.assign(result, gridOptions ?? this.defaultChartGridOptions);
+            return result;
         },
     },
     data() {
+        var defaultChartGridLineOptions = {
+            type: 'line',
+            lineWidth: 1,
+            chartRangeMin: 0,
+            chartRangeMax: 100,
+            lineColor: 'lightgrey',
+            fillColor: 'transparent'
+        };
         return {
             dataWindow: 60,
+            defaultChartLineOptions: {
+                type: 'line',
+                chartRangeMin: 0,
+                chartRangeMax: 100,
+                normalRangeMin: 0,
+                normalRangeMax: 75,
+                normalRangeColor: '#DBF9DB'
+            },
+            defaultChartGridValues: {
+                l0: [0, 0],
+                l25: [25, 25],
+                l50: [50, 50],
+                l75: [75, 75],
+                l100: [100, 100]
+            },
+            defaultChartGridOptions: {
+                l0: defaultChartGridLineOptions,
+                l25: defaultChartGridLineOptions,
+                l50: defaultChartGridLineOptions,
+                l75: defaultChartGridLineOptions,
+                l100: defaultChartGridLineOptions
+            }
         };
     },
 }

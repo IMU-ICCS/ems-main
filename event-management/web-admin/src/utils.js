@@ -41,6 +41,10 @@ class Utils {
         return new Date(data * mult).toISOString().substr(start, len);
     }
 
+    toKB(data) {
+        return (data) ? (Math.round(precision * data / 1024) / precision).toString() : data;
+    }
+
     toMB(data) {
         return (data) ? (Math.round(precision * data / 1024 / 1024) / precision).toString() : data;
     }
