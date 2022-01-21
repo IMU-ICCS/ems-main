@@ -9,7 +9,7 @@
 
 package eu.melodic.event.util;
 
-import eu.melodic.event.util.password.IdentityPasswordEncoder;
+import eu.melodic.event.util.password.AsterisksPasswordEncoder;
 import eu.melodic.event.util.password.PasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,19 +19,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.function.Supplier;
 
-@Service
 @Slf4j
+@Service
 public class PasswordUtil implements InitializingBean {
-    @Value("${password-encoder-class}")
+    @Value("${password-encoder-class:}")
     private String passwordEncoderClassName;
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void afterPropertiesSet() {
         log.debug("PasswordUtil: password-encoder-class: {}", passwordEncoderClassName);
-        if (passwordEncoderClassName!=null) {
-            this.setPasswordEncoder(passwordEncoderClassName);
-        }
+        this.setPasswordEncoder(passwordEncoderClassName.trim());
     }
 
     public String encodePassword(String password) {
@@ -39,7 +37,8 @@ public class PasswordUtil implements InitializingBean {
     }
 
     public PasswordEncoder getPasswordEncoder() {
-        return passwordEncoder;
+        return passwordEncoder!=null
+                ? passwordEncoder : (passwordEncoder=createPasswordEncoder(null));
     }
 
     public void setPasswordEncoder(PasswordEncoder pe) {
@@ -52,9 +51,9 @@ public class PasswordUtil implements InitializingBean {
     }
 
     public static PasswordEncoder createPasswordEncoder(String passwordEncoderClassName) {
-        Supplier<PasswordEncoder> passwordEncoderSupplier = IdentityPasswordEncoder::new;
+        Supplier<PasswordEncoder> passwordEncoderSupplier = AsterisksPasswordEncoder::new;
         if (StringUtils.isBlank(passwordEncoderClassName)) {
-            log.info("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
+            log.warn("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
             return passwordEncoderSupplier.get();
         }
 
