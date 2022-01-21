@@ -15,6 +15,7 @@ import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,8 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     @Autowired
     @Getter @Setter
     protected ClientInstallationProperties properties;
+    @Autowired
+    protected PasswordUtil passwordUtil;
 
     protected String archiveBase64;
     protected boolean isServerSecure;
@@ -110,6 +113,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
                 log.debug("AbstractInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
                 KeystoreUtil
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                        .passwordUtil(passwordUtil)
                         .exportCertToFile(keyAlias, certFileName);
                 log.debug("AbstractInstallationHelper.initServerCertificate(): Server certificate exported");
 
@@ -120,6 +124,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
             } else {
                 this.serverCert = KeystoreUtil
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                        .passwordUtil(passwordUtil)
                         .getEntryCertificateAsPEM(keyAlias);
             }
 

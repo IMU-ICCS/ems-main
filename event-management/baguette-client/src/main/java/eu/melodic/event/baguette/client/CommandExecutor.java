@@ -148,7 +148,11 @@ public class CommandExecutor {
                 continue;
             }
             line = line.trim();
-            log.info(line);
+            if (StringUtils.startsWithIgnoreCase(line, "CLUSTER-KEY")) {
+                String[] s = line.split(" ", 2);
+                log.info("{} {}", s[0], s.length>1 ? passwordUtil.encodePassword(s[1]) : "");
+            } else
+                log.info(line);
             try {
                 boolean exit = execCmd(line.split("[ \t]+"), in, out, err);
                 if (exit) break;
@@ -663,14 +667,15 @@ public class CommandExecutor {
         log.info("Cluster Keystore: file: {}", clusterKeystoreFile);
         log.info("                  type: {}", clusterKeystoreType);
         log.info("              password: {}", passwordUtil.encodePassword(clusterKeystorePassword));
-        log.debug("        Base64 content: {}", clusterKeystoreBase64);
+        log.debug("        Base64 content: {}", passwordUtil.encodePassword(clusterKeystoreBase64));
         try {
             KeystoreUtil
                     .getKeystore(clusterKeystoreFile, clusterKeystoreType, clusterKeystorePassword)
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist()
                     .writeBase64ToFile(clusterKeystoreBase64);
         } catch (Exception e) {
-            log.error("Exception while creting cluster keystore", e);
+            log.error("Exception while creating cluster keystore", e);
         }
     }
 

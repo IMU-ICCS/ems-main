@@ -69,7 +69,8 @@ public class ClusterZone implements IClusterZone {
                 .createIfNotExist()
                 .createKeyAndCert(clusterId, "CN=" + clusterId, "")
                 .readFileAsBase64();
-        log.debug("        Base64 content: {}", clusterKeystoreBase64);
+        log.debug("        Base64 content: {}",
+                StringUtils.isNotBlank(clusterKeystoreBase64) ? "Not empty" : "!!! Empty !!!");
     }
 
     private void checkArgs(String id, int startPort, int endPort) {

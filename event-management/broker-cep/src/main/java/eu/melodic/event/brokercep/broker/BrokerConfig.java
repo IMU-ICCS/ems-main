@@ -13,6 +13,7 @@ import eu.melodic.event.brokercep.broker.interceptor.AbstractMessageInterceptor;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
@@ -29,7 +30,6 @@ import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -51,10 +51,11 @@ import java.util.stream.Collectors;
 //import org.apache.activemq.security.JaasAuthenticationPlugin;
 
 
-@Service
-@Configuration
-@EnableJms
 @Slf4j
+@Service
+@EnableJms
+@Configuration
+@RequiredArgsConstructor
 public class BrokerConfig implements InitializingBean {
 
     private final static int LOCAL_ADMIN_INDEX = 0;
@@ -64,12 +65,9 @@ public class BrokerConfig implements InitializingBean {
     private final static int USERNAME_RANDOM_PART_LENGTH = 10;
     private final static int PASSWORD_LENGTH = 20;
 
-    @Autowired
-    private BrokerCepProperties properties;
-    @Autowired
-    private PasswordUtil passwordUtil;
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final BrokerCepProperties properties;
+    private final PasswordUtil passwordUtil;
+    private final ApplicationContext applicationContext;
 
     private SimpleAuthenticationPlugin brokerAuthenticationPlugin;
     private SimpleBrokerAuthorizationPlugin brokerAuthorizationPlugin;
@@ -133,10 +131,8 @@ public class BrokerConfig implements InitializingBean {
             brokerAuthenticationPlugin = sap;
 
             if (log.isDebugEnabled()) {
-                log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-credentials={}",
-                        sap.isAnonymousAccessAllowed(),
-                        sap.getUserPasswords().entrySet().stream()
-                                .collect(Collectors.toMap(Map.Entry::getKey, e -> passwordUtil.encodePassword(e.getValue())))
+                log.debug("BrokerConfig._initializeSecurity(): Initialized broker authentication plugin: anonymous-access={}, user-list={}",
+                        sap.isAnonymousAccessAllowed(), sap.getUserPasswords().keySet()
                 );
             }
         }
@@ -170,9 +166,11 @@ public class BrokerConfig implements InitializingBean {
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
+                .passwordUtil(passwordUtil)
                 .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryNameValue());
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
-                properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword(),
+                properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
+                passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
                 properties.getSsl().getKeyEntryNameValue(), this.brokerCert);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }

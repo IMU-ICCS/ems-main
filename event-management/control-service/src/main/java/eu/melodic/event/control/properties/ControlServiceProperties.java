@@ -96,7 +96,7 @@ public class ControlServiceProperties {
     @Value("${static.resource.context:/**}")
     private String staticResourceContext;
 
-    @Value("${password-encoder-class}")
+    @Value("${password-encoder-class:}")
     private String passwordEncoderClass;
 
     @Value("${info.metrics.update.interval:1000}") @Min(1)
