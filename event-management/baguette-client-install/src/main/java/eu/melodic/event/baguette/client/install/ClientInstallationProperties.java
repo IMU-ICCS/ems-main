@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.client.install;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,7 @@ public class ClientInstallationProperties {
     private String checkInstalledFile;
 
     private String downloadUrl;
+    @ToString.Exclude
     private String apiKey;
     private String installScriptUrl;
     private String installScriptFile;
