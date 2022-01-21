@@ -53,6 +53,7 @@ public class KeystoreUtil {
     private String keystoreFile;
     private String keystoreType;
     private String keystorePassword;
+    private PasswordUtil passwordUtil;
 
     // KeystoreUtil instance methods
     public static KeystoreUtil getKeystore(String file, String type, String password) {
@@ -83,6 +84,17 @@ public class KeystoreUtil {
     public boolean checkIfExist() {
         File f = new File(keystoreFile);
         return f.exists();
+    }
+
+    public PasswordUtil passwordUtil() {
+        if (this.passwordUtil==null)
+            this.passwordUtil = new PasswordUtil();
+        return this.passwordUtil;
+    }
+
+    public KeystoreUtil passwordUtil(PasswordUtil passwordUtil) {
+        this.passwordUtil = passwordUtil!=null ? passwordUtil : new PasswordUtil();
+        return this;
     }
 
     // Create/Replace Key pair and Certificate methods
@@ -289,7 +301,7 @@ public class KeystoreUtil {
     // Certificate retrieval methods
     public X509Certificate getEntryCertificate(String entryName) throws Exception {
         log.trace("KeystoreUtil.getEntryCertificate(): keystore: file={}, type={}, password={}",
-                keystoreFile, keystoreType, keystorePassword);
+                keystoreFile, keystoreType, passwordUtil().encodePassword(keystorePassword));
         KeyStore keystore = readKeystore(keystoreFile, keystoreType, keystorePassword);
         log.trace("KeystoreUtil.getEntryCertificate(): keystore: {}", keystore);
         log.trace("KeystoreUtil.getEntryCertificate(): entry-name: {}", entryName);
@@ -312,9 +324,7 @@ public class KeystoreUtil {
         X509Certificate cert = getEntryCertificate(entryName);
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
         byte[] certBytes = cert.getEncoded();
-        //if (log.isTraceEnabled()) {
-            log.debug("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (DER):\n{}", certBytes);
-        //}
+        log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (DER):\n{}", certBytes);
         return certBytes;
     }
 
@@ -337,6 +347,7 @@ public class KeystoreUtil {
                                 : sanName;
                     } catch (Exception ex) {
                         log.warn("KeystoreUtil: getEntryNames: entry={} caused {}", sanName, ex.toString());
+                        log.debug("KeystoreUtil: getEntryNames: entry={} caused:\n", sanName, ex);
                         return null;
                     }
                 })
@@ -411,12 +422,10 @@ public class KeystoreUtil {
 
     // Keystore, Trust store and Certificate initialization based on a properties source
     public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil) throws Exception {
-        String keystorePassword = properties.getKeystorePassword();
-        String truststorePassword = properties.getTruststorePassword();
-        if (passwordUtil!=null) {
-            keystorePassword = passwordUtil.encodePassword(keystorePassword);
-            truststorePassword = passwordUtil.encodePassword(truststorePassword);
-        }
+        if (passwordUtil==null)
+            passwordUtil = new PasswordUtil();
+        String keystorePassword = passwordUtil.encodePassword(properties.getKeystorePassword());
+        String truststorePassword = passwordUtil.encodePassword(properties.getTruststorePassword());
         log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate");
         log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Key pair and Certificate settings:");
         log.debug("    Keystore file: {}", properties.getKeystoreFile());
@@ -439,14 +448,17 @@ public class KeystoreUtil {
             // Check if keystore and truststore files exist (and create if they don't)
             KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist();
             KeystoreUtil
                     .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword())
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist();
 
             // Check if entry with given 'alias' already exists in keystore
             boolean containsEntry = KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .passwordUtil(passwordUtil)
                     .containsEntry(properties.getKeyEntryNameValue());
             if (containsEntry) {
                 log.debug("    Keystore already contains entry: {}", properties.getKeyEntryNameValue());
@@ -461,14 +473,17 @@ public class KeystoreUtil {
             // Check if keystore and truststore files exist (and create if they don't)
             KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist();
             KeystoreUtil
                     .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword())
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist();
 
             // get subject CN and SAN list (IP's only)
             List<String> addrList = KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .passwordUtil(passwordUtil)
                     .getEntryNames(properties.getKeyEntryNameValue(), true);
             log.debug("    Entry addresses: {}", addrList);
 
@@ -490,6 +505,7 @@ public class KeystoreUtil {
 
             KeystoreUtil ksUtil = KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist();
             if (StringUtils.isBlank(properties.getKeyEntryExtSANValue())) {
                 log.debug("    Create/Replace entry (with SAN auto-generate): {}", properties.getKeyEntryNameValue());
@@ -505,6 +521,7 @@ public class KeystoreUtil {
 
             KeystoreUtil tsUtil = KeystoreUtil
                     .getKeystore(properties.getTruststoreFile(), properties.getTruststoreType(), properties.getTruststorePassword())
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist();
             log.debug("    Importing certificate to trust store: {}", properties.getTruststoreFile());
             tsUtil.importAndReplaceCertFromFile(properties.getKeyEntryNameValue(), properties.getCertificateFile());
@@ -518,6 +535,7 @@ public class KeystoreUtil {
         if (log.isDebugEnabled()) {
             String certPemStr = KeystoreUtil
                     .getKeystore(properties.getKeystoreFile(), properties.getKeystoreType(), properties.getKeystorePassword())
+                    .passwordUtil(passwordUtil)
                     .getEntryCertificateAsPEM(properties.getKeyEntryNameValue());
             log.debug("    Certificate (PEM):\n{}", certPemStr);
         }
