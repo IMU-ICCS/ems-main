@@ -15,6 +15,7 @@ import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.helper.AbstractInstallationHelper;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.CredentialsMap;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,21 +50,24 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
     }
 
     @Override
-    public ClientInstallationTask createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception {
+    public ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws Exception {
         return null;
     }
 
     @Override
-    public List<InstructionsSet> prepareInstallationInstructionsForWin(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) {
+    public List<InstructionsSet> prepareInstallationInstructionsForWin(NodeRegistryEntry entry) {
         log.warn("CloudiatorInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
         throw new IllegalArgumentException("CloudiatorInstallationHelper.prepareInstallationInstructionsForWin(): NOT YET IMPLEMENTED");
     }
 
     @Override
-    public List<InstructionsSet> prepareInstallationInstructionsForLinux(Map<String, Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
-        String baseUrl = contextMap.get("BASE_URL");
-        String clientId = contextMap.get("CLIENT_ID");
-        String ipSetting = contextMap.get("IP_SETTING");
+    public List<InstructionsSet> prepareInstallationInstructionsForLinux(NodeRegistryEntry entry) throws IOException {
+        Map<String, String> nodeMap = entry.getPreregistration();
+        BaguetteServer baguette = entry.getBaguetteServer();
+
+        String baseUrl = nodeMap.get("BASE_URL");
+        String clientId = nodeMap.get("CLIENT_ID");
+        String ipSetting = nodeMap.get("IP_SETTING");
         log.debug("CloudiatorInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
 
         // Get parameters
