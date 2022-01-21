@@ -16,10 +16,10 @@
   <!-- Site wrapper -->
   <div class="wrapper" style="min-height: 100vh;">
     <Header :links="menuItems" :showClock="true">
-      <SearchForm />
+      <!--<SearchForm />-->
       <template v-slot:right-side>
-        <HealthInfo />
-        <Notifications />
+        <!--<HealthInfo />
+        <Notifications />-->
         <ConnectionInfo v-model="emsSseData.sseInfo" v-model:data="emsSseData.data"
                         sseRef="ems_sse" settingsTarget="#control-sidebar-widget-settings" />
       </template>
@@ -52,9 +52,9 @@ import EmsSse from '@/components/ems/sse/ems-sse.vue';
 
 const menuItems = [
   { name: 'Home',  url: '/' },
-  { name: 'Sample', url: '/sample' },
-  { name: 'About', url: '/about' },
-  { name: 'Help',  url: '/help' },
+//  { name: 'Sample', url: '/sample' },
+//  { name: 'About', url: '/about' },
+//  { name: 'Help',  url: '/help' },
 ];
 
 import Header from '@/views/common/header/header.vue'
@@ -62,9 +62,9 @@ import Footer from '@/views/common/footer/footer.vue'
 import MenuSidebar from '@/views/common/menu-sidebar/menu-sidebar.vue'
 import ControlSidebar from '@/views/common/control-sidebar/control-sidebar.vue'
 
-import SearchForm from '@/views/common/widgets/search/search.vue';
-import HealthInfo from '@/views/common/widgets/health-info/health-info.vue';
-import Notifications from '@/views/common/widgets/notifications/notifications.vue';
+//import SearchForm from '@/views/common/widgets/search/search.vue';
+//import HealthInfo from '@/views/common/widgets/health-info/health-info.vue';
+//import Notifications from '@/views/common/widgets/notifications/notifications.vue';
 import ConnectionInfo from '@/views/common/widgets/connection-info/connection-info.vue';
 
 import TitleAndBreadcrumb from '@/views/common/title-and-breadcrumb/title-and-breadcrumb.vue'
@@ -73,8 +73,8 @@ export default {
   name: 'App',
   components: {
     EmsSse,
-    Header, Footer, MenuSidebar, ControlSidebar, SearchForm,
-    HealthInfo, Notifications, ConnectionInfo, TitleAndBreadcrumb
+    Header, Footer, MenuSidebar, ControlSidebar, /*SearchForm,*/
+    /*HealthInfo, Notifications,*/ ConnectionInfo, TitleAndBreadcrumb
   },
   emits: ['update:modelValue'],
 
