@@ -25,7 +25,7 @@
       </template>
     </Header>
 
-    <MenuSidebar />
+    <!--<MenuSidebar />-->
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
@@ -59,7 +59,7 @@ const menuItems = [
 
 import Header from '@/views/common/header/header.vue'
 import Footer from '@/views/common/footer/footer.vue'
-import MenuSidebar from '@/views/common/menu-sidebar/menu-sidebar.vue'
+//import MenuSidebar from '@/views/common/menu-sidebar/menu-sidebar.vue'
 import ControlSidebar from '@/views/common/control-sidebar/control-sidebar.vue'
 
 //import SearchForm from '@/views/common/widgets/search/search.vue';
@@ -73,7 +73,7 @@ export default {
   name: 'App',
   components: {
     EmsSse,
-    Header, Footer, MenuSidebar, ControlSidebar, /*SearchForm,*/
+    Header, Footer, /*MenuSidebar,*/ ControlSidebar, /*SearchForm,*/
     /*HealthInfo, Notifications,*/ ConnectionInfo, TitleAndBreadcrumb
   },
   emits: ['update:modelValue'],
