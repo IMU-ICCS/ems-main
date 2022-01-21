@@ -62,7 +62,7 @@
       </li>
 
       <div id="connection-info-widget-settings-form" style="display: none;">
-        <form>
+        <form action="javascript:return false;">
           <h6 class="control-sidebar-heading">Connection Info widget</h6>
           <hr style="background-color:white; margin-top:0;" />
           <div class="form-group">
