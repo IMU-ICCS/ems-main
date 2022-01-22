@@ -34,6 +34,9 @@ import java.util.concurrent.ScheduledFuture;
 @Service
 @RequiredArgsConstructor
 public class SystemResourceMonitor implements Runnable, InitializingBean {
+    @Getter @Setter
+    private boolean enabled = Boolean.parseBoolean(
+            System.getenv().getOrDefault("EMS_SYSMON_ENABLED", "true"));
     @Getter @Setter @Min(1000)
     private long period = Math.max(1000L,Long.parseLong(
             System.getenv().getOrDefault("EMS_SYSMON_PERIOD", "30000")));
@@ -50,10 +53,12 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        start();
+        if (!enabled) log.warn("SystemResourceMonitor is disabled");
+        else start();
     }
 
     public void start() {
+        if (!enabled) return;
         if (future!=null) {
             log.warn("SystemResourceMonitor is already running");
             return;
@@ -61,7 +66,9 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
         future = scheduler.scheduleAtFixedRate(this, period);
         log.info("SystemResourceMonitor started");
     }
+
     public void stop() {
+        if (!enabled) return;
         if (future==null || future.isCancelled()) {
             log.warn("SystemResourceMonitor is already stopped");
             return;
@@ -72,6 +79,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
     }
 
     public void run() {
+        if (!enabled) return;
         StringBuilder result = new StringBuilder();
         try {
             if (StringUtils.isBlank(commandStr)) {

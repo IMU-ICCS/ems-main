@@ -30,7 +30,7 @@ if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLI
 
 # Initialize keystores and certificate
 # Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
-# Modifying 'initialize-keystores.bat' script you can customize the certificate generation
+# Modifying 'initialize-keystores.sh' script you can customize the certificate generation
 #./bin/initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
@@ -54,7 +54,7 @@ if [[ -z "$LOG_FILE" ]]; then
 fi
 
 # Waiting CDO to come up...
-if [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
+if [[ -z ${EMS_SKIP_WAIT_CDO+x} ]] && [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
     echo "Waiting CDO server to start..."
     $MELODIC_CONFIG_DIR/wait-for-cdo.sh
 fi
