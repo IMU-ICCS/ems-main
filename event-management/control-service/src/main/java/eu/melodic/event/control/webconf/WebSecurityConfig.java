@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.webconf;
 
+import eu.melodic.event.util.PasswordUtil;
 import eu.paasage.upperware.security.authapi.JWTAuthorizationFilter;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
@@ -16,6 +17,7 @@ import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -63,6 +65,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private String apiKeyRequestParam;
     @Value("${web.api-key.value:#{null}}")
     private String apiKeyValue;
+
+    @Autowired
+    private PasswordUtil passwordUtil;
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -135,10 +140,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     HttpServletRequest request = (HttpServletRequest) servletRequest;
                     log.trace("apiKeyAuthenticationFilter: http-request={}", request);
                     String apiKey = request.getHeader(apiKeyRequestHeader);
-                    log.debug("apiKeyAuthenticationFilter: Request Header API Key: {}={}", apiKeyRequestHeader, apiKey);
+                    log.debug("apiKeyAuthenticationFilter: Request Header API Key: {}={}", apiKeyRequestHeader, passwordUtil.encodePassword(apiKey));
                     if (StringUtils.isBlank(apiKey)) {
                         apiKey = request.getParameter(apiKeyRequestParam);
-                        log.debug("apiKeyAuthenticationFilter: Request Parameter API Key: {}={}", apiKeyRequestParam, apiKey);
+                        log.debug("apiKeyAuthenticationFilter: Request Parameter API Key: {}={}", apiKeyRequestParam, passwordUtil.encodePassword(apiKey));
                     }
                     if (StringUtils.isBlank(apiKey) || StringUtils.isNotBlank(apiKey) && ! apiKey.equals(apiKeyValue)) {
                         log.debug("apiKeyAuthenticationFilter: API Key: No Match");

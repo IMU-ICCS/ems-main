@@ -62,11 +62,13 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     protected boolean isServerSecure;
     protected String serverCert;
 
-    public synchronized static AbstractInstallationHelper getInstance() { return instance; }
+    public synchronized static AbstractInstallationHelper getInstance() {
+        return instance;
+    }
 
     @Override
     public void afterPropertiesSet() {
-        log.info("AbstractInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
+        log.info("AbstractInstallationHelper.afterPropertiesSet(): class={}: configuration: {}", getClass().getName(), properties);
         AbstractInstallationHelper.instance = this;
         LINUX_OS_FAMILIES = properties.getOsFamilies().get("LINUX");
         WINDOWS_OS_FAMILIES = properties.getOsFamilies().get("WINDOWS");
