@@ -72,8 +72,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
+        log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
         String sep = "--------------------------------------------------------------------------------";
-        log.warn("afterPropertiesSet: Sample JWT Token: \n{}\nBearer {}\n{}", sep, jwtService(melodicSecurityProperties).create("USER"), sep);
+        log.info("afterPropertiesSet: Sample JWT Token: \n{}\nBearer {}\n{}", sep, jwtService(melodicSecurityProperties).create("USER"), sep);
     }
 
     @Override
