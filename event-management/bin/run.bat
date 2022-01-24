@@ -1,4 +1,4 @@
-::@echo off
+@echo off
 ::
 :: Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
 ::
