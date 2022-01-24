@@ -1,4 +1,4 @@
-@echo off
+::@echo off
 ::
 :: Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
 ::
@@ -51,8 +51,7 @@ if "%LOG_FILE%"=="" (
 )
 
 :: Waiting CDO to come up...
-IF NOT DEFINED EMS_SKIP_WAIT_CDO
-if exist %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
+IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
     echo "Waiting CDO server to start..."
     %MELODIC_CONFIG_DIR%\wait-for-cdo.bat
 )
