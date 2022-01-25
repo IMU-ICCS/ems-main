@@ -68,7 +68,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
 
     @Override
     public void afterPropertiesSet() {
-        log.info("AbstractInstallationHelper.afterPropertiesSet(): class={}: configuration: {}", getClass().getName(), properties);
+        log.debug("AbstractInstallationHelper.afterPropertiesSet(): class={}: configuration: {}", getClass().getName(), properties);
         AbstractInstallationHelper.instance = this;
         LINUX_OS_FAMILIES = properties.getOsFamilies().get("LINUX");
         WINDOWS_OS_FAMILIES = properties.getOsFamilies().get("WINDOWS");

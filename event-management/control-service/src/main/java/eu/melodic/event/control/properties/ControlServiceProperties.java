@@ -47,7 +47,7 @@ public class ControlServiceProperties {
         CLOUDIATOR, PROACTIVE
     }
 
-    @Value("${dontPrintBuildInfo:true}")
+    @Value("${control.printBuildInfo:false}")
     private boolean printBuildInfo;
     @Value("${IP_SETTING:}")
     private IpSetting ipSetting;
