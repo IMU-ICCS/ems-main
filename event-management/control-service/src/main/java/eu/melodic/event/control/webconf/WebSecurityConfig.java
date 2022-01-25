@@ -85,7 +85,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${web.admin-password:}")
     private String password;
 
-    @Value("${web.permitted.urls:/login*,/logout*,/admin/login.html,/admin/favicon.ico,/admin/assets/**}")
+    @Value("${web.permitted.urls:/login*,/logout*,/admin/login.html,/admin/favicon.ico,/admin/assets/**,/resources/*}")
     private String[] permittedUrls;
     @Value("${web.login.page:/admin/login.html}")
     private String loginPage;
