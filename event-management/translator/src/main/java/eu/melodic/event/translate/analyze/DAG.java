@@ -408,6 +408,6 @@ public class DAG {
     }
 
     public String toString() {
-        return _graph.toString();
+        return _graph!=null ? _graph.toString() : null;
     }
 }

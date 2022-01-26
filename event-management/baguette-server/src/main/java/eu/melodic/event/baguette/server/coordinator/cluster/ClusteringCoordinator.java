@@ -50,8 +50,14 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     @Override
     public boolean isSupported(final TranslationContext _TC) {
+        log.trace("ClusteringCoordinator.isSupported: TC: {}", _TC);
+
         // Check if it is a 3-level architecture
         Set<String> groupings = _TC.getG2R().keySet();
+        log.trace("ClusteringCoordinator.isSupported: Groupings: {}", groupings);
+        log.trace("ClusteringCoordinator.isSupported: Contains GLOBAL: {}", groupings.contains("GLOBAL"));
+        log.trace("ClusteringCoordinator.isSupported: Num of Levels: {}", groupings.size());
+
         if (!groupings.contains("GLOBAL")) return false;
         return groupings.size()==3;
     }
