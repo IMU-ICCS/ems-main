@@ -42,6 +42,7 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -57,6 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.*;
@@ -65,7 +67,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class ControlServiceCoordinator {
+public class ControlServiceCoordinator implements InitializingBean {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -101,6 +103,18 @@ public class ControlServiceCoordinator {
     @Getter
     private long currentEmsStateChangeTimestamp;
 
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // Run configuration checks and throw exceptions early (before actually using EMS)
+        if (properties.isSkipTranslation()) {
+            if (StringUtils.isBlank(properties.getTcLoadFile()))
+                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file has been set. Check property: control.tc-load-file");
+            if (! Paths.get(properties.getTcLoadFile()).toFile().exists())
+                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile());
+            log.warn("Model translation will be skipped, and Translation Context file will be used: {}", properties.getTcLoadFile());
+        }
+    }
 
     // ------------------------------------------------------------------------------------------------------------
 
@@ -292,6 +306,8 @@ public class ControlServiceCoordinator {
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to unserialize _TC from file: {} : Exception: ", fileName, ex);
                 }
+            } else {
+                throw new IllegalArgumentException("No translation context file has been set");
             }
         }
 
