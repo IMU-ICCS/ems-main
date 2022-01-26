@@ -703,11 +703,24 @@ export default {
             obj.lon = json.longitude;
             obj.country = (json.org??'')+', '+(json.city??'')+', '+(json.region??'')+', '+(json.country_name??'-');
 
-if (!json.country) {
-    let codes = Object.keys(countryCoords);
-    json.country = codes[ Math.floor(Math.random() * codes.length) ];
-    console.log('RANDOM COUNTRY: ', json.country);
-}
+            /* // Pick a random country
+            if (!json.country) {
+                let codes = Object.keys(countryCoords);
+                json.country = codes[ Math.floor(Math.random() * codes.length) ];
+                console.log('RANDOM COUNTRY: ', json.country);
+            } */
+
+            // If country is unknown, set the location somewhere in the bottom of the map (i.e. somewhere in Antarctica)
+            if (!json.country) {
+                json.country = 'AQ';
+                let cc = countryCoords[json.country];
+                if (cc) {
+                    json.latitude = cc.lat + (Math.floor(Math.random() * 10) - 5);
+                    json.longitude = cc.lon + (Math.floor(Math.random() * 360) - 180);
+                }
+                console.log('UNKNOWN COUNTRY: Setting to \'Antarctica\' with random coordinates');
+            }
+
             if (json.country && (!obj.lat || !obj.lon)) {
                 let cc = countryCoords[json.country];
                 //console.log('updateGeolocationInfo: Missing lat/lon in Geolocation response. Using country default lat/lon: ', obj, json, cc);
