@@ -142,6 +142,10 @@ export default {
             handler(newVal) {
                 if (!newVal || !this.map) return;
 
+                // Clear previous polylines
+                this.clearLayers();
+
+                // Add new connections (as polylines)
                 for (const conn of newVal) {
                     let id1 = conn.startMarker;
                     let id2 = conn.endMarker;
@@ -178,6 +182,17 @@ export default {
                 html: `<div class="pin bounce" style="background-color: ${markerColor};" />`
             });
             return icon;
+        },
+        clearLayers() {
+            for (let i in this.map._layers) {
+                if (this.map._layers[i]._path != undefined) {
+                    try {
+                        this.map.removeLayer(this.map._layers[i]);
+                    } catch(e) {
+                        console.log("Problem while removing layer ", this.map._layers[i], e);
+                    }
+                }
+            }
         }
     }
 }
