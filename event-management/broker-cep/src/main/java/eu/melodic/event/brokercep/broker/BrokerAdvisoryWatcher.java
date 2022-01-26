@@ -42,6 +42,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 
 	@Override
 	public void afterPropertiesSet() {
+		log.debug("BrokerAdvisoryWatcher: afterPropertiesSet: BrokerCepProperties: {}", brokerCerService.getBrokerCepProperties());
 		initialize();
 	}
 	
