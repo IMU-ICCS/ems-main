@@ -299,6 +299,9 @@
                         <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: black;"/>&nbsp;<span class="align-text-top small">Ignored</span>&nbsp;&nbsp;
+                        <div style="right:0; position:absolute; margin-right: 15px;">
+                            <i class="fas fa-trash" role="button" title="Clear geo-locations cache" @click="clearGeolocationCache()"></i>
+                        </div>
                     </div>
                 </template>
             </Card>
@@ -734,6 +737,12 @@ export default {
                 //XXX: TODO: Add emit update event in 'updateGeolocationInfoByIpAddress'
                 //this.$emit('update:clientsValue', dataArray);
             }
+        },
+        clearGeolocationCache() {
+            this.geolocationCache = {};
+            this.clientMarkers = [];
+            this.clientConnections = [];
+            console.log('Geolocation cache purged');
         },
     }
 }
