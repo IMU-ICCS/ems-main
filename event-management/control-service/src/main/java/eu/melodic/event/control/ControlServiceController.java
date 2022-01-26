@@ -31,12 +31,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -52,6 +54,9 @@ public class ControlServiceController {
     private ControlServiceProperties properties;
     @Autowired
     private ControlServiceCoordinator coordinator;
+
+    @Autowired
+    private RequestMappingHandlerMapping mvcHandlerMapping;
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB and Upperware interfacing methods
@@ -561,5 +566,21 @@ public class ControlServiceController {
 
     protected String stripQuotes(String s) {
         return (s != null && s.startsWith("\"") && s.endsWith("\"")) ? s.substring(1, s.length() - 1) : s;
+    }
+
+    public Stream<String> getControllerEndpoints() {
+        return mvcHandlerMapping.getHandlerMethods().keySet().stream()
+                .filter(Objects::nonNull)
+                .map(k -> k.getPatternsCondition().getPatterns())
+                .flatMap(Set::stream);
+    }
+
+    public String[] getControllerEndpointsShort() {
+        return getControllerEndpoints()
+                .map(s -> s.startsWith("/") ? s.substring(1) : s)
+                .map(s -> s.indexOf("/") > 0 ? s.split("/", 2)[0] + "/**" : s)
+                .map(e -> "/" + e.replaceAll("\\{.*", "**"))
+                .distinct()
+                .toArray(String[]::new);
     }
 }
