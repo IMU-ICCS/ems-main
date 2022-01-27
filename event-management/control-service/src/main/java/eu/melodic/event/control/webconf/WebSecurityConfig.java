@@ -78,11 +78,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private PasswordUtil passwordUtil;
 
     // User form authentication fields
-    @Value("${web.user-form-authentication.enabled:true}")
+    @Value("${web.form-authentication.enabled:true}")
     private boolean userFormAuthEnabled;
-    @Value("${web.admin-username:admin}")
+    @Value("${web.form-authentication.username:admin}")
     private String username;
-    @Value("${web.admin-password:}")
+    @Value("${web.form-authentication.password:}")
     private String password;
 
     @Value("${web.permitted.urls:/login*,/logout*,/admin/login.html,/admin/favicon.ico,/admin/assets/**,/resources/*}")
