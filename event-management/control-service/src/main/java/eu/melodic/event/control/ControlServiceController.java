@@ -16,8 +16,10 @@ import eu.melodic.event.baguette.client.install.ClientInstaller;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
@@ -295,6 +297,40 @@ public class ControlServiceController {
 
         if (StringUtils.isBlank(optRef.orElse(null)))
             throw new IllegalArgumentException("The 'ref' parameter is mandatory");
+
+        // Check if it is EMS server ref
+        if (coordinator.getReference().equals(optRef.get())) {
+            if (coordinator.getBaguetteServer()==null || !coordinator.getBaguetteServer().isServerRunning()) {
+                log.warn("ControlServiceController.getNodeCredentials(): Baguette Server is not started");
+                return null;
+            }
+
+            BaguetteServerProperties config = coordinator.getBaguetteServer().getConfiguration();
+            String address = config.getServerAddress();
+            int port = config.getServerPort();
+            String username = null;
+            String password = null;
+            CredentialsMap credentials = config.getCredentials();
+            if (credentials.size()>0) {
+                username = credentials.keySet().stream().findFirst().orElse(null);
+                password = credentials.get(username);
+            }
+            String key = coordinator.getBaguetteServer().getServerPubkey();
+
+            log.debug("ControlServiceController.getNodeCredentials(): Retrieved EMS server connection info by reference: ref={}", optRef.get());
+
+            // Prepare response
+            Map<String,String> response = new HashMap<>();
+            response.put("hostname", address);
+            response.put("port", ""+port);
+            response.put("username", username);
+            response.put("password", password);
+            response.put("private-key", key);
+            HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+            log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+
+            return entity;
+        }
 
         // Retrieve node credentials
         NodeRegistryEntry entry = coordinator.getBaguetteServer().getNodeRegistry().getNodeByReference(optRef.get());
