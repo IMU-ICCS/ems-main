@@ -56,16 +56,21 @@ public class DAG {
 
     public Set<DAGNode> getTopLevelNodes() {
         log.info("DAG.getTopLevelNodes()");
-        Set<DAGNode> children = _graph.outgoingEdgesOf(_root).stream().map(edge -> edge.getTarget()).collect(java.util.stream.Collectors.toSet());
+        if (_graph==null || _root==null) {
+            log.info("DAG.getTopLevelNodes(): _graph or _root is null. Returning empty set");
+            return Collections.emptySet();
+        }
+        Set<DAGNode> children = _graph.outgoingEdgesOf(_root).stream()
+                .map(DAGEdge::getTarget)
+                .collect(Collectors.toSet());
         log.info("DAG.getTopLevelNodes(): top-level-nodes={}", children);
         return children;
     }
 
     public boolean isTopLevelNode(DAGNode node) {
         Set<DAGNode> parents = getParentNodes(node);
-        Iterator<DAGNode> it = parents.iterator();
-        while (it.hasNext()) {
-            if (it.next() == _root) return true;
+        for (DAGNode parent : parents) {
+            if (parent == _root) return true;
         }
         return false;
     }
