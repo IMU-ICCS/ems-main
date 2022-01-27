@@ -83,7 +83,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
         StringBuilder result = new StringBuilder();
         try {
             if (StringUtils.isBlank(commandStr)) {
-                log.warn("SystemResourceMonitor: Nothing to do. System metrics command is blank: {}", commandStr);
+                log.debug("SystemResourceMonitor: Nothing to do. System metrics command is blank: {}", commandStr);
                 return;
             }
             log.debug("SystemResourceMonitor: Getting system metrics with command: {}", commandStr);
