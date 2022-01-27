@@ -17,8 +17,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -36,12 +36,12 @@ public class ApplicationContext {
         return EventBus.<String,Object,Object>builder().build();
     }
 
-    @Bean(name={"taskScheduler", "taskExecutor"})
+    @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
-    public TaskScheduler taskScheduler() {
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setDaemon(true);
-        log.info("ApplicationContext: taskScheduler: NEW INSTANCE CREATED: {}", taskScheduler);
-        return taskScheduler;
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setDaemon(true);
+        log.info("ApplicationContext: taskScheduler: NEW INSTANCE CREATED: {}", taskExecutor);
+        return taskExecutor;
     }
 }
