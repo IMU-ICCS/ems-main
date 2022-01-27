@@ -92,6 +92,9 @@ public class ControlServiceCoordinator implements InitializingBean {
     private String currentCpModelId;
     private TranslationContext currentTC;
 
+    @Getter
+    private String reference = UUID.randomUUID().toString();
+
     public enum EMS_STATE {
         IDLE, INITIALIZING, RECONFIGURING, READY, ERROR
     }

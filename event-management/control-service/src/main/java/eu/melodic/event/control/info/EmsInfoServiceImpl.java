@@ -124,6 +124,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
                         : NetUtil.getDefaultIpAddress());
         metrics.put("public-ip-address", NetUtil.getPublicIpAddress());
         metrics.put("default-ip-address", NetUtil.getDefaultIpAddress());
+        metrics.put("reference", controlServiceCoordinator.getReference());
 
         // Collect JVM and System resource metrics for EMS server
         Map<String,Object> systemInfo = new LinkedHashMap<>();
