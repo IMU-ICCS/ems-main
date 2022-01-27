@@ -68,7 +68,7 @@
                       </td>
                       <td class="align-middle text-center">
                           <ActionsList id="" :nodeType="c.tree_node_type"
-                                       :fnSshConsole="()=>openSshConsole(c.reference, c.address)"
+                                       :fnSshConsole="openSshConsoleCallback(c.reference, c.address)"
                                        :fnAppointAggregator="()=>appointAggregator(c.id, c.nodeId)"
                           />
                       </td>
@@ -206,7 +206,9 @@
                           <small>Address: {{emsServerLocation()}}</small><br/>
                           <small>Clusters: {{data.totalClusters}}&nbsp;&nbsp;&nbsp;Nodes: {{data.totalClients}}</small>
                           <br/>
-                          <ActionsList id="" :nodeType="data.tree_node_type" />
+                          <ActionsList id="" :nodeType="data.tree_node_type"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
+                          />
                       </div>
                       <div v-if="data.tree_node_type=='zone'">
                           <div class="tree-node-head" :style="[data.id!=='IGNORED' ? 'background-color: #d0ffff;' : 'background-color: #eeeeee;']"><i :class="[data.id!=='IGNORED' ? 'fas fa-cloud' : 'far fa-times-circle']"></i>&nbsp;{{data.label}}</div>
@@ -230,7 +232,7 @@
                           <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
                           <br/>
                           <ActionsList id="" :nodeType="data.tree_node_type"
-                                       :fnSshConsole="()=>openSshConsole(data.reference, data.address)"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
                                        :fnAppointAggregator="()=>appointAggregator(data.id, data.nodeId)"
                           />
                       </div>
@@ -243,7 +245,7 @@
                           <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
                           <br/>
                           <ActionsList id="" :nodeType="data.tree_node_type"
-                                       :fnSshConsole="()=>openSshConsole(data.reference, data.address)"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
                           />
                       </div>
                       <div v-if="data.tree_node_type=='ignore'" style="border: 4px dotted grey; margin: 0px; padding: 3px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgo8cmVjdCB3aWR0aD0nNScgaGVpZ2h0PSc1JyBmaWxsPScjZmZmJy8+CjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNjY2MnLz4KPC9zdmc+'); background-repeat: repeat;">
@@ -254,7 +256,7 @@
                           <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
                           <br/>
                           <ActionsList id="" :nodeType="data.tree_node_type"
-                                       :fnSshConsole="()=>openSshConsole(data.reference, data.address)"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
                           />
                       </div>
                     </template>
@@ -357,9 +359,10 @@ export default {
         modelValue: Object,
     },
     data() {
+        const winLocation = window.location.hostname;
         return {
             someVariableUnderYourControl: 0,
-            websshProxyUrl: '',
+            websshProxyUrl: `http://${winLocation}:2121`,
             treeData : {
             },
             clients: [
@@ -458,6 +461,13 @@ export default {
             $('#ssh-console-dialog').attr("data-ref", ref);
             $('#ssh-console-dialog').attr("data-address", address);
             $('#ssh-console-dialog').dialog("open");
+        },
+        openSshConsoleCallback(ref, address) {
+            //console.log('openSshConsoleCallback: ', this.websshProxyUrl, ref, address);
+            return (this.websshProxyUrl && this.websshProxyUrl.trim()!==''
+                    && ref && address && ref.trim!=='' && address.trim()!=='')
+                            ? ()=>this.openSshConsole(ref, address)
+                            : null;
         },
         electAggregator(zoneData) {
             let zoneId = zoneData.id;
@@ -563,7 +573,9 @@ export default {
                 label: 'EMS Server',
                 expand: true,
                 tree_node_type: 'ems',
-                children: []
+                children: [],
+                address: this.modelValue['public-ip-address'],
+                reference: this.modelValue['reference']
             };
             for (let zid in _zones) {
                 let _zclients = _zones[zid];
@@ -611,7 +623,7 @@ export default {
                     name: 'ems',
                     nodeStatus: 'ems',
                     address: this.modelValue['public-ip-address'],
-                    reference: 'used-by-webssh',
+                    reference: this.modelValue['reference'],
                     loc: 'Unknown',
                     status: 'Up',
                     stats: {}
