@@ -93,7 +93,7 @@
         <Modal id="connection-info-widget-modal" width="80%" @close-modal-request="showModal=false">
           <template v-slot:header>
             <div style="width:100%; display: flex; justify-content: center;">
-              <b>Title</b>
+              <b>Current Data</b>
               <a href="#" @click="showModal=!showModal" style="position:absolute; right:0;">
                 <span style="color: grey; font-weight: normal;"><i class="fas fa-times"></i></span>
               </a>
