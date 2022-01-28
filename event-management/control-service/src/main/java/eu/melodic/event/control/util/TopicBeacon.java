@@ -217,7 +217,7 @@ public class TopicBeacon implements InitializingBean {
                     brokerCepService.getBrokerPassword(),
                     topicName,
                     event);
-            log.info("Topic Beacon: Event sent to topic: event={}, topic={}", event, topicName);
+            log.debug("Topic Beacon: Event sent to topic: event={}, topic={}", event, topicName);
         }
     }
 }
