@@ -12,15 +12,14 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.translate.TranslationContext;
-import eu.melodic.event.util.EventBus;
-import eu.melodic.event.util.FunctionDefinition;
-import eu.melodic.event.util.GROUPING;
-import eu.melodic.event.util.PasswordUtil;
+import eu.melodic.event.util.*;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.event.Level;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class BaguetteServer {
+public class BaguetteServer implements InitializingBean {
     @Autowired
     private BaguetteServerProperties config;
     @Autowired
@@ -55,6 +54,21 @@ public class BaguetteServer {
     private String upperwareGrouping;
     private String upperwareBrokerUrl;
     private BrokerCepService brokerCepService;
+
+    @Override
+    public void afterPropertiesSet() {
+        // Generate a new, random username/password pair and add it to provided credentials
+        generateUsernamePassword();
+    }
+
+    private void generateUsernamePassword() {
+        String genUsername = "user-"+UUID.randomUUID();
+        String genPassword = RandomStringUtils.randomAlphanumeric(32, 64);
+        CredentialsMap credentials = config.getCredentials();
+        credentials.put(genUsername, genPassword, true);
+        log.info("BaguetteServer.afterPropertiesSet(): Generated new Baguette Server username/password: username={}, password={}", genUsername,
+                credentials.getPasswordEncoder()!=null ? credentials.getPasswordEncoder().encode(genPassword) : "****");
+    }
 
     // Configuration getter methods
     public Set<String> getGroupingNames() {

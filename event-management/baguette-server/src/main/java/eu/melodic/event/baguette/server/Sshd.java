@@ -78,10 +78,10 @@ public class Sshd {
                     private NodeRegistry nodeRegistry;
 
                     public Command create() {
-                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus, nodeRegistry);
-                        //msc.setId( "#-"+System.currentTimeMillis() );
-                        log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", msc.getId());
-                        return msc;
+                        ClientShellCommand csc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus, nodeRegistry);
+                        //csc.setId( "#-"+System.currentTimeMillis() );
+                        log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", csc.getId());
+                        return csc;
                     }
 
                     public Command get() {
@@ -286,8 +286,8 @@ public class Sshd {
         String serverKeyFilePath = configuration.getServerKeyFile();
         log.debug("_loadPubkeyAndFingerprint(): Server Key file: {}", serverKeyFilePath);
         File serverKeyFile = new File(serverKeyFilePath);
-        SimpleGeneratorHostKeyProvider z = new SimpleGeneratorHostKeyProvider(serverKeyFile);
-        z.loadKeys().forEach(kp -> {
+        SimpleGeneratorHostKeyProvider simpleGeneratorHostKeyProvider = new SimpleGeneratorHostKeyProvider(serverKeyFile);
+        simpleGeneratorHostKeyProvider.loadKeys().forEach(kp -> {
             log.debug("_loadPubkeyAndFingerprint(): KeyPair found: {}", kp.toString());
             PublicKey serverKey = kp.getPublic();
             log.debug("_loadPubkeyAndFingerprint(): Pubkey: {}", kp.toString());

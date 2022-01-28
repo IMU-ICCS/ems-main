@@ -17,11 +17,16 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @Slf4j
 @Service
 public class PasswordUtil implements InitializingBean {
+    private final static Supplier<PasswordEncoder> passwordEncoderSupplier = AsterisksPasswordEncoder::new;
+    private final static AtomicReference<PasswordEncoder> defaultPasswordEncoder = new AtomicReference<>();
+
     @Value("${password-encoder-class:}")
     private String passwordEncoderClassName;
     private PasswordEncoder passwordEncoder;
@@ -30,6 +35,9 @@ public class PasswordUtil implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("PasswordUtil: password-encoder-class: {}", passwordEncoderClassName);
         this.setPasswordEncoder(passwordEncoderClassName.trim());
+        if (passwordEncoder!=null)
+            if (defaultPasswordEncoder.compareAndSet(null, passwordEncoder))
+                log.info("PasswordUtil: Initialized default Password Encoder: {}", defaultPasswordEncoder.get().getClass().getName());
     }
 
     public String encodePassword(String password) {
@@ -51,7 +59,6 @@ public class PasswordUtil implements InitializingBean {
     }
 
     public static PasswordEncoder createPasswordEncoder(String passwordEncoderClassName) {
-        Supplier<PasswordEncoder> passwordEncoderSupplier = AsterisksPasswordEncoder::new;
         if (StringUtils.isBlank(passwordEncoderClassName)) {
             log.warn("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
             return passwordEncoderSupplier.get();
@@ -64,5 +71,10 @@ public class PasswordUtil implements InitializingBean {
             log.warn("Could not instantiate PasswordEncoder instance of {}. Default instance of PasswordEncoder will be created", passwordEncoderClassName);
             return passwordEncoderSupplier.get();
         }
+    }
+
+    public static PasswordEncoder getDefaultPasswordEncoder() {
+        return Optional.ofNullable(defaultPasswordEncoder.get())
+                .orElse(passwordEncoderSupplier.get());
     }
 }

@@ -172,7 +172,9 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         nodeMap.put("BAGUETTE_SERVER_PUBKEY", baguette.getServerPubkey());
         nodeMap.put("BAGUETTE_SERVER_PUBKEY_FINGERPRINT", baguette.getServerPubkeyFingerprint());
         CredentialsMap.Entry<String,String> pair =
-                baguette.getConfiguration().getCredentials().entrySet().iterator().next();
+                baguette.getConfiguration().getCredentials().hasPreferredPair()
+                        ? baguette.getConfiguration().getCredentials().getPreferredPair()
+                        : baguette.getConfiguration().getCredentials().entrySet().iterator().next();
         nodeMap.put("BAGUETTE_SERVER_USERNAME", pair.getKey());
         nodeMap.put("BAGUETTE_SERVER_PASSWORD", pair.getValue());
 
