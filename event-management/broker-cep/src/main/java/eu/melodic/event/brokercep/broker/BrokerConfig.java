@@ -347,6 +347,11 @@ public class BrokerConfig implements InitializingBean {
         final MessageInterceptorRegistry registry = MessageInterceptorRegistry.getInstance().get(brokerService);    // or ...get(BrokerRegistry.getInstance().findFirst());
         log.trace("BrokerConfig: Message interceptor registry: {}", registry);
 
+        if (properties.getMessageInterceptors()==null) {
+            log.warn("BrokerConfig: No message interceptors configured");
+            return;
+        }
+
         log.info("BrokerConfig: Message interceptors initializing...");
         List<BrokerCepProperties.MessageInterceptorSpec> interceptorSpecs = properties.getMessageInterceptors()
                 .stream()
