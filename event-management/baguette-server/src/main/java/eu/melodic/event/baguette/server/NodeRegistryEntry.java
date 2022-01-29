@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
@@ -27,14 +28,19 @@ public class NodeRegistryEntry {
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
+    @JsonIgnore
     @Getter private final transient BaguetteServer baguetteServer;
     @Getter private String hostname;
     @Getter private STATE state = null;
     @Getter private Date stateLastUpdate;
     @Getter private String reference = UUID.randomUUID().toString();
+    @JsonIgnore
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
+    @JsonIgnore
     @Getter private transient Map<String, String> installation = new LinkedHashMap<>();
+    @JsonIgnore
     @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
+    @JsonIgnore
     @Getter @Setter private transient IClusterZone clusterZone;
 
     public String getNodeId() {
