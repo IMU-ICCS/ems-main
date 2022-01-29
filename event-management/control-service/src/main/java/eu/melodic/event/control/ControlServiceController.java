@@ -18,6 +18,7 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -51,6 +53,9 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RestController
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ControlServiceController {
+
+    private final static String ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY =
+            "hasAnyRole('"+WebSecurityConfig.ROLE_JWT_TOKEN+"','"+WebSecurityConfig.ROLE_API_KEY+"')";
 
     @Autowired
     private ControlServiceProperties properties;
@@ -261,6 +266,7 @@ public class ControlServiceController {
     // Broker-CEP query & control methods
     // ------------------------------------------------------------------------------------------------------------
 
+    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
     @RequestMapping(value = "/broker/credentials", method = {GET,POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -287,6 +293,7 @@ public class ControlServiceController {
         return entity;
     }
 
+    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
     @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,

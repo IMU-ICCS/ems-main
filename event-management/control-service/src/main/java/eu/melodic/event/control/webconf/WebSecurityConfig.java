@@ -28,6 +28,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,9 +50,14 @@ import java.util.Collections;
 @Order(1)
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    public final static String ROLE_USER_FORM = "ROLE_USER_FORM";
+    public static final String ROLE_JWT_TOKEN = "ROLE_JWT_TOKEN";
+    public static final String ROLE_API_KEY = "ROLE_API_KEY";
 
     private final MelodicSecurityProperties melodicSecurityProperties;
 
@@ -134,7 +140,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         if (this.userFormAuthEnabled && StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             auth.inMemoryAuthentication()
-                    .withUser(username).password(passwordEncoder().encode(password)).authorities("ROLE_ADMIN");
+                    .withUser(username).password(passwordEncoder().encode(password)).authorities(ROLE_USER_FORM);
             log.info("WebSecurityConfig: User Form Admin credentials have been set: username={}", username);
         }
     }
@@ -176,6 +182,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             httpSecurity
                     .csrf().disable()
                     .authorizeRequests()
+                        //.antMatchers("//broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
+                        //.antMatchers("/baguette/ref/**").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
                         .antMatchers(permittedUrls).permitAll()
                         .anyRequest().authenticated()
                         .and()
@@ -267,7 +275,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                                 log.debug("jwtAuthorizationFilter: JWT token is valid");
                                 UsernamePasswordAuthenticationToken authentication =
                                         new UsernamePasswordAuthenticationToken(user, null,
-                                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                                                Collections.singletonList(new SimpleGrantedAuthority(ROLE_JWT_TOKEN)));
                                 SecurityContextHolder.getContext().setAuthentication(authentication);
                                 log.debug("jwtAuthorizationFilter: Security context updated");
                             } else {
@@ -313,7 +321,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                                 // construct one of Spring's auth tokens
                                 UsernamePasswordAuthenticationToken authentication =
                                         new UsernamePasswordAuthenticationToken(apiKeyRequestHeader, apiKeyValue,
-                                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                                                Collections.singletonList(new SimpleGrantedAuthority(ROLE_API_KEY)));
                                 // store completed authentication in security context
                                 SecurityContextHolder.getContext().setAuthentication(authentication);
                                 log.debug("apiKeyAuthenticationFilter: Security context has been updated");
