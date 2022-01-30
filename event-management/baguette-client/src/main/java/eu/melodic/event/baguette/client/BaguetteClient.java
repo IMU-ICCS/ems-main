@@ -12,7 +12,7 @@ package eu.melodic.event.baguette.client;
 import edu.emory.mathcs.backport.java.util.Collections;
 import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
-import eu.melodic.event.baguette.client.plugin.SelfHealingPlugin;
+import eu.melodic.event.baguette.client.plugin.recovery.SelfHealingPlugin;
 import eu.melodic.event.util.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
