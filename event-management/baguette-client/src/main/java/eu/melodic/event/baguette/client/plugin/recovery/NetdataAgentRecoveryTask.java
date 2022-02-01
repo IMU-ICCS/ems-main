@@ -14,13 +14,14 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Netdata agent (client-side) Self-Healing
@@ -33,18 +34,22 @@ public class NetdataAgentRecoveryTask extends VmNodeRecoveryTask {
             new RECOVERY_COMMAND("Initial wait...",
                     "pwd",0, 5000),
             new RECOVERY_COMMAND("Sending Netdata agent kill command...",
-                    "killall -9 netdata",0, 2000),
+                    "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ",0, 2000),
             new RECOVERY_COMMAND("Sending Netdata agent start command...",
-                    "netdata",0, 2000),
-            new RECOVERY_COMMAND("Exiting...",
-                    "exit",0, 0)
+                    "sudo netdata",0, 2000)
     ));
+
+    @Value("${self.healing.recovery.file.netdata:}")
+    private String netdataRecoveryFile;
 
     public NetdataAgentRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler) {
         super(eventBus, passwordUtil, taskScheduler);
     }
 
     public void runNodeRecovery() throws Exception {
-        runNodeRecovery(recoveryCommands);
+        if (StringUtils.isNotBlank(netdataRecoveryFile))
+            runNodeRecovery(netdataRecoveryFile);
+        else
+            runNodeRecovery(recoveryCommands);
     }
 }

@@ -203,7 +203,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
             sendEvent(NETDATA_CONN_ERROR_TEMP, nodeAddress, "errors="+errors);
 
             if (errorLimit>0 && pausePeriod>0) {
-                if (errors > errorLimit) {
+                if (errors >= errorLimit) {
                     log.warn("Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", nodeAddress, errors);
                     log.warn("Collectors::Netdata: Will pause metrics collection from node for {} seconds: {}", pausePeriod, nodeAddress);
                     ignoredNodes.put(nodeAddress, taskScheduler.schedule(() -> {
