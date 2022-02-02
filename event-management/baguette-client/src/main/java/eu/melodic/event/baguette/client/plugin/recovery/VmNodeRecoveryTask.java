@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static eu.melodic.event.baguette.client.plugin.recovery.SelfHealingPlugin.CLUSTER_NODE_RECOVERY_COMPLETED;
+import static eu.melodic.event.baguette.client.plugin.recovery.SelfHealingPlugin.SELF_HEALING_RECOVERY_COMPLETED;
 
 /**
  * Client-side, VM-node Self-Healing
@@ -84,7 +84,7 @@ public class VmNodeRecoveryTask implements RecoveryTask {
         disconnectFromNode(sshc, closed);
 
         // Send recovery complete event
-        eventBus.send(CLUSTER_NODE_RECOVERY_COMPLETED, baguetteClientProperties.getServerAddress());
+        eventBus.send(SELF_HEALING_RECOVERY_COMPLETED, baguetteClientProperties.getServerAddress());
     }
 
     private String str(Object o) {

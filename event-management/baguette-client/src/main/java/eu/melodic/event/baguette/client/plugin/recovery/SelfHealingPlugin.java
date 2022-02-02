@@ -46,8 +46,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     private final PasswordUtil passwordUtil;
     private final NodeInfoHelper nodeInfoHelper;
 
-    final static String CLUSTER_NODE_RECOVERY_FAILED = "CLUSTER_NODE_RECOVERY_FAILED";
-    final static String CLUSTER_NODE_RECOVERY_COMPLETED = "CLUSTER_NODE_RECOVERY_COMPLETED";
+    final static String SELF_HEALING_RECOVERY_FAILED = "SELF_HEALING_RECOVERY_FAILED";
+    final static String SELF_HEALING_RECOVERY_COMPLETED = "SELF_HEALING_RECOVERY_COMPLETED";
 
     private boolean started;
 
@@ -77,7 +77,6 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
         eventBus.subscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.subscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
-        eventBus.subscribe(CLUSTER_NODE_RECOVERY_COMPLETED, this);
         eventBus.subscribe(NetdataCollector.NETDATA_NODE_PAUSED, this);
         eventBus.subscribe(NetdataCollector.NETDATA_NODE_RESUMED, this);
         log.info("SelfHealingPlugin: Started");
@@ -91,7 +90,6 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
-        eventBus.unsubscribe(CLUSTER_NODE_RECOVERY_COMPLETED, this);
         eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_PAUSED, this);
         eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_RESUMED, this);
 
@@ -112,9 +110,6 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         if (CommandExecutor.EVENT_CLUSTER_NODE_REMOVED.equals(topic)) {
             log.debug("SelfHealingPlugin: onMessage(): CLUSTER NODE REMOVED: message={}", message);
             processClusterNodeRemovedEvent(message);
-        } else
-        if (CLUSTER_NODE_RECOVERY_COMPLETED.equals(topic)) {
-            log.debug("SelfHealingPlugin: onMessage(): CLUSTER NODE RECOVERY COMPLETED: message={}", message);
         } else
         if (CommandExecutor.EVENT_CLUSTER_NODE_ADDED.equals(topic)) {
             log.debug("SelfHealingPlugin: onMessage(): CLUSTER NODE ADDED: message={}", message);
@@ -245,12 +240,14 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
             try {
                 log.info("SelfHealingPlugin: Retry #{}: Recovering node: id={}, address={}", retries.get(), nodeId, nodeAddress);
                 recoveryTask.runNodeRecovery();
+                //NOTE: 'recoveryTask.runNodeRecovery()' must send SELF_HEALING_RECOVERY_COMPLETED or _FAILED event
                 if (retries.getAndIncrement() > clientRecoveryMaxRetries) {
                     log.warn("SelfHealingPlugin: Max retries reached. No more recovery retries for node: id={}, address={}", nodeId, nodeAddress);
                     cancelRecoveryTask(nodeId, nodeAddress, true);
                 }
             } catch (Exception e) {
                 log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-info={} -- Exception: ", recoveryTask.getNodeInfo(), e);
+                eventBus.send(SELF_HEALING_RECOVERY_FAILED, nodeAddress);
             }
         }, Instant.now().plusMillis(clientRecoveryDelay), Duration.ofMillis(clientRecoveryRetryDelay));
         waitingTasks.put(nodeAddress, future);
