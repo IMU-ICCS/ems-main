@@ -16,11 +16,13 @@ import eu.melodic.event.util.PasswordUtil;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sshd.common.util.io.IoUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +68,7 @@ public class VmNodeRecoveryTask implements RecoveryTask {
 
         // Redirect SSH output to standard output
         final AtomicBoolean closed = new AtomicBoolean(false);
-        redirectSshToStandardOutput(sshc, closed);
+        redirectSshOutput(sshc.getIn(), "OUT", closed);
 
         // Carrying out recovery commands
         log.info("VmNodeRecoveryTask: runNodeRecovery(): Executing {} recovery commands", recoveryCommands.size());
@@ -164,15 +166,20 @@ public class VmNodeRecoveryTask implements RecoveryTask {
                 baguetteClientProperties.getServerAddress(), baguetteClientProperties.getServerPort(), baguetteClientProperties.getServerUsername());
     }
 
-    private void redirectSshToStandardOutput(Sshc sshc, AtomicBoolean closed) {
+    private void redirectSshOutput(InputStream in, String id, AtomicBoolean closed) {
         taskScheduler.schedule(() -> {
                     try {
-                        IoUtils.copy(sshc.getIn(), System.out);
+                        //IoUtils.copy(sshc.getIn(), System.out);
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                            while (reader.ready()) {
+                                log.info(" {}> {}", id, reader.readLine());
+                            }
+                        }
                     } catch (IOException e) {
                         if (closed.get()) {
-                            log.info("VmNodeRecoveryTask: redirectSshToStandardOutput(): Connection closed");
+                            log.info("VmNodeRecoveryTask: redirectSshOutput(): Connection closed: id={}", id);
                         } else {
-                            log.error("VmNodeRecoveryTask: redirectSshToStandardOutput(): Exception while copying SSH IN stream: ", e);
+                            log.error("VmNodeRecoveryTask: redirectSshOutput(): Exception while copying SSH IN stream: id={}\n", id, e);
                         }
                     }
                 },

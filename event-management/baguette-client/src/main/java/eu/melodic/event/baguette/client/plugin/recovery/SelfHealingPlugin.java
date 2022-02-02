@@ -16,7 +16,9 @@ import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.util.Plugin;
 import io.atomix.cluster.ClusterMembershipEvent;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -25,6 +27,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -183,15 +188,37 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
             return;
         }
 
-        // Get removed node address
-        String nodeAddress = ((Map)message).get("address").toString();
-        log.debug("SelfHealingPlugin: processNetdataNodePausedEvent(): node-address={}", nodeAddress);
-        if (StringUtils.isBlank(nodeAddress)) {
+        // Get paused node address
+        Object addressValue = ((Map) message).getOrDefault("address", null);
+        log.debug("SelfHealingPlugin: processNetdataNodePausedEvent(): node-address={}", addressValue);
+        if (addressValue==null) {
             log.warn("SelfHealingPlugin: processNetdataNodePausedEvent(): Node address is missing. Cannot recover node. Initial message: {}", message);
             return;
         }
+        String nodeAddress = addressValue.toString();
 
-        createRecoveryTask(null, nodeAddress, NetdataAgentRecoveryTask.class);
+        if (isLocalAddress(nodeAddress)) {
+            // We are responsible for recovering our local Netdata agent
+            createRecoveryTask(null, "", NetdataAgentLocalRecoveryTask.class);
+        } else {
+            // Aggregator is responsible for recovering remote Netdata agents
+            createRecoveryTask(null, nodeAddress, NetdataAgentRecoveryTask.class);
+        }
+    }
+
+    @SneakyThrows
+    private boolean isLocalAddress(String address) {
+        if (address.isEmpty()) return true;
+        if ("127.0.0.1".equals(address)) return true;
+        if ("::1".equals(address)) return true;
+        if ("0:0:0:0:0:0:0:1".equals(address)) return true;
+        InetAddress ia = InetAddress.getByName(address);
+        if (ia.isAnyLocalAddress() || ia.isLoopbackAddress()) return true;
+        try {
+            return NetworkInterface.getByInetAddress(ia) != null;
+        } catch (SocketException se) {
+            return false;
+        }
     }
 
     private void processNetdataNodeResumedEvent(Object message) {
@@ -201,13 +228,13 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
             return;
         }
 
-        // Get added node address
-        String nodeAddress = ((Map)message).get("address").toString();
+        // Get resumed node address
+        String nodeAddress = ((Map) message).getOrDefault("address", "").toString();
         log.debug("SelfHealingPlugin: processNetdataNodeResumedEvent(): node-address={}", nodeAddress);
-        if (StringUtils.isBlank(nodeAddress)) {
+        /*if (StringUtils.isBlank(nodeAddress)) {
             log.warn("SelfHealingPlugin: processNetdataNodeResumedEvent(): Node address is missing. Initial message: {}", message);
             return;
-        }
+        }*/
 
         // Cancel any waiting recovery task
         cancelRecoveryTask(null, nodeAddress, false);
@@ -215,7 +242,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
     // ------------------------------------------------------------------------
 
-    private void createRecoveryTask(String nodeId, String nodeAddress, Class<? extends RecoveryTask> recoveryTaskClass) {
+    private void createRecoveryTask(String nodeId, @NonNull String nodeAddress, @NonNull Class<? extends RecoveryTask> recoveryTaskClass) {
         // Check if a recovery task has already been scheduled
         synchronized (waitingTasks) {
             if (waitingTasks.containsKey(nodeAddress)) {
@@ -226,15 +253,22 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         }
 
         // Get node info and credentials from EMS server
-        Map nodeInfo = nodeInfoHelper.getNodeInfo(nodeId, nodeAddress);
-        if (nodeInfo==null || nodeInfo.size()==0) {
-            log.warn("SelfHealingPlugin: createRecoveryTask(): Node info is null or empty. Cannot recover node.");
-            return;
+        Map nodeInfo = null;
+        if (StringUtils.isNotBlank(nodeAddress)) {
+            nodeInfo = nodeInfoHelper.getNodeInfo(nodeId, nodeAddress);
+            if (nodeInfo == null || nodeInfo.size() == 0) {
+                log.warn("SelfHealingPlugin: createRecoveryTask(): Node info is null or empty. Cannot recover node.");
+                return;
+            }
+            log.trace("SelfHealingPlugin: createRecoveryTask(): Node info retrieved for node: id={}, address={}, node-info:\n{}", nodeId, nodeAddress, nodeInfo);
+        } else {
+            log.debug("SelfHealingPlugin: createRecoveryTask(): Node address is blank. Node info will not be retrieved: id={}, address={}", nodeId, nodeAddress);
         }
 
         // Schedule node recovery task
         final RecoveryTask recoveryTask = applicationContext.getBean(recoveryTaskClass);
-        recoveryTask.setNodeInfo(nodeInfo);
+        if (nodeInfo!=null && nodeInfo.size()>0)
+            recoveryTask.setNodeInfo(nodeInfo);
         AtomicInteger retries = new AtomicInteger(0);
         ScheduledFuture<?> future = taskScheduler.scheduleWithFixedDelay(() -> {
             try {
@@ -251,15 +285,16 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
             }
         }, Instant.now().plusMillis(clientRecoveryDelay), Duration.ofMillis(clientRecoveryRetryDelay));
         waitingTasks.put(nodeAddress, future);
+        log.info("SelfHealingPlugin: createRecoveryTask(): Created recovery task for Node: id={}, address={}", nodeId, nodeAddress);
     }
 
-    private void cancelRecoveryTask(String nodeId, String nodeAddress, boolean retainAddress) {
+    private void cancelRecoveryTask(String nodeId, @NonNull String nodeAddress, boolean retainAddress) {
         synchronized (waitingTasks) {
             ScheduledFuture<?> future = retainAddress ? waitingTasks.put(nodeAddress, null) : waitingTasks.remove(nodeAddress);
             if (future != null) {
                 future.cancel(true);
                 nodeInfoHelper.remove(nodeId, nodeAddress);
-                log.warn("SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id={}, address={}", nodeId, nodeAddress);
+                log.info("SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id={}, address={}", nodeId, nodeAddress);
             } else
                 log.warn("SelfHealingPlugin: cancelRecoveryTask(): No recovery task is scheduled for Node: id={}, address={}", nodeId, nodeAddress);
         }

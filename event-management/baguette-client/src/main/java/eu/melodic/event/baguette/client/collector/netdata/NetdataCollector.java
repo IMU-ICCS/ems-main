@@ -63,6 +63,8 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
     private Map<String, Integer> errorsMap = new HashMap<>();
     private Map<String,ScheduledFuture<?>> ignoredNodes = new HashMap<>();
 
+    private enum COLLECTION_RESULT { IGNORED, OK, ERROR }
+
     @Override
     public void afterPropertiesSet() {
         log.debug("Collectors::Netdata: properties: {}", properties);
@@ -182,18 +184,19 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         log.trace("Collectors::Netdata: run(): END");
     }
 
-    private void collectAndPublishData(@NonNull String nodeAddress) {
+    private COLLECTION_RESULT collectAndPublishData(@NonNull String nodeAddress) {
         if (ignoredNodes.containsKey(nodeAddress)) {
-            log.debug("Collectors::Netdata: Node is in ignore list: {}", nodeAddress);
-            return;
+            log.info("Collectors::Netdata:   Node is in ignore list: {}", nodeAddress);
+            return COLLECTION_RESULT.IGNORED;
         }
         try {
             sendEvent(NETDATA_COLLECTION_START, nodeAddress);
             _collectAndPublishData(nodeAddress);
             sendEvent(NETDATA_COLLECTION_END, nodeAddress);
 
-            if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0)
-                sendEvent(NETDATA_CONN_OK, nodeAddress);
+            //if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0) sendEvent(NETDATA_CONN_OK, nodeAddress);
+            sendEvent(NETDATA_CONN_OK, nodeAddress);
+            return COLLECTION_RESULT.OK;
         } catch (Throwable t) {
             int errors = errorsMap.compute(nodeAddress, (k, v) -> Optional.ofNullable(v).orElse(0) + 1);
             int errorLimit = properties.getErrorLimit();
@@ -219,6 +222,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                 }
             } else
                 log.debug("Collectors::Netdata: Metrics collection pausing is disabled");
+            return COLLECTION_RESULT.ERROR;
         }
     }
 
@@ -228,7 +232,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
             sb.append(" -> ").append(t.getClass().getName()).append(": ").append(t.getMessage());
             t = t.getCause();
         }
-        return sb.toString().substring(4);
+        return sb.substring(4);
     }
 
     private void sendEvent(String topic, String nodeAddress, String...extra) {
