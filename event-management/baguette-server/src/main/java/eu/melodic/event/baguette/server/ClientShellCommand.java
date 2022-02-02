@@ -210,18 +210,18 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                             NodeRegistryEntry entry = nodeRegistry.getNodeByAddress(nodeAddress);
                             if (entry!=null) {
                                 Map<String, String> preregInfo = entry.getPreregistration();
-                                log.warn(">>>>>>>>>>>>>>>>>>>>>>   NODE PREREG INFO: address={}\n{}", nodeAddress, preregInfo);
+                                log.debug("{}--> NODE PRE-REGISTRATION INFO: address={}\n{}", getId(), nodeAddress, preregInfo);
 
                                 if (preregInfo!=null) {
                                     String preregInfoStr = new Gson().toJson(preregInfo);
-                                    log.warn(">>>>>>>>>>>>>>>>>>>>>>   NODE PREREG INFO: STR={}\n{}", nodeAddress, preregInfoStr);
+                                    log.trace("{}--> NODE PRE-REGISTRATION INFO STRING: STR={}\n{}", getId(), nodeAddress, preregInfoStr);
                                     sendToClient(preregInfoStr);
                                 } else {
-                                    log.warn(">>>>>>>>>>>>>>>>>>>>>>   NO PRE-REGISTRATION INFO FOR NODE: {}", nodeAddress);
+                                    log.warn("{}--> NO PRE-REGISTRATION INFO FOR NODE: {}", getId(), nodeAddress);
                                     sendToClient("{}");
                                 }
                             } else {
-                                log.warn(">>>>>>>>>>>>>>>>>>>>>>   UNKNOWN NODE: {}", nodeAddress);
+                                log.warn("{}--> UNKNOWN NODE: {}", getId(), nodeAddress);
                                 sendToClient("{}");
                             }
                         }
