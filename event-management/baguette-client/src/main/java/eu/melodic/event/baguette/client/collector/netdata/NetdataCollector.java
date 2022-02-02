@@ -12,7 +12,10 @@ package eu.melodic.event.baguette.client.collector.netdata;
 import eu.melodic.event.baguette.client.Collector;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.brokercep.event.EventMap;
-import eu.melodic.event.util.*;
+import eu.melodic.event.util.EmsConstant;
+import eu.melodic.event.util.EventBus;
+import eu.melodic.event.util.GROUPING;
+import eu.melodic.event.util.GroupingConfiguration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +46,6 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
     public final static String NETDATA_COLLECTION_END = "NETDATA_COLLECTION_END";
     public final static String NETDATA_CONN_OK = "NETDATA_CONN_OK";
     public final static String NETDATA_CONN_ERROR = "NETDATA_CONN_ERROR";
-    public final static String NETDATA_CONN_ERROR_TEMP = "NETDATA_CONN_ERROR_TEMP";
     public final static String NETDATA_NODE_PAUSED = "NETDATA_NODE_PAUSED";
     public final static String NETDATA_NODE_RESUMED = "NETDATA_NODE_RESUMED";
 
@@ -200,7 +202,7 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                     nodeAddress, errors, getExceptionMessages(t));
             log.debug("Collectors::Netdata: Exception while collecting metrics from node: {}, #errors={}\n", nodeAddress, errors, t);
 
-            sendEvent(NETDATA_CONN_ERROR_TEMP, nodeAddress, "errors="+errors);
+            sendEvent(NETDATA_CONN_ERROR, nodeAddress, "errors="+errors);
 
             if (errorLimit>0 && pausePeriod>0) {
                 if (errors >= errorLimit) {
@@ -213,7 +215,6 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
                         sendEvent(NETDATA_NODE_RESUMED, nodeAddress);
                     }, Instant.now().plusSeconds(pausePeriod)));
 
-                    sendEvent(NETDATA_CONN_ERROR, nodeAddress);
                     sendEvent(NETDATA_NODE_PAUSED, nodeAddress);
                 }
             } else
