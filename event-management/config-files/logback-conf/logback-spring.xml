@@ -55,6 +55,7 @@
     <logger name="eu.melodic.event.util" level="INFO"/>
     <logger name="eu.melodic.event.util.NetUtil" level="INFO"/>
     <logger name="com.ulisesbocchio.jasyptspringboot" level="WARN"/>
+    <logger name="org.apache.catalina.core.AprLifecycleListener" level="ERROR"/>
 
     <!-- functionizer testing tool -->
     <logger name="eu.functionizer.functionizertestingtool" level="DEBUG"/>

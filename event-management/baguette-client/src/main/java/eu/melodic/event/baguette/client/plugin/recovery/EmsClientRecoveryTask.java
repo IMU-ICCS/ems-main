@@ -36,7 +36,7 @@ public class EmsClientRecoveryTask extends VmNodeRecoveryTask {
             new RECOVERY_COMMAND("Sending baguette client kill command...",
                     "/opt/baguette-client/bin/kill.sh",0, 2000),
             new RECOVERY_COMMAND("Sending baguette client start command...",
-                    "/opt/baguette-client/bin/run.sh",0, 2000)
+                    "/opt/baguette-client/bin/run.sh",0, 10000)
     ));
 
     @Value("${self.healing.recovery.file.baguette:}")

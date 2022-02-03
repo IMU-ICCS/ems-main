@@ -36,7 +36,7 @@ public class NetdataAgentRecoveryTask extends VmNodeRecoveryTask {
             new RECOVERY_COMMAND("Sending Netdata agent kill command...",
                     "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ",0, 2000),
             new RECOVERY_COMMAND("Sending Netdata agent start command...",
-                    "sudo netdata",0, 2000)
+                    "sudo netdata",0, 10000)
     ));
 
     @Value("${self.healing.recovery.file.netdata:}")
