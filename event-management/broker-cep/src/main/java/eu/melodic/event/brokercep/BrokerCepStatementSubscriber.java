@@ -50,19 +50,20 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
         log.info("- New event received: subscriber={}, topic={}, payload={}", name, topic, eventMap);
         String localBrokerUrl = brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer();
         String username = brokerCep.getBrokerUsername();
-        String password = passwordUtil.getPasswordEncoder().encode(brokerCep.getBrokerPassword());
+        String password = brokerCep.getBrokerPassword();
+        String passwordEncoded = passwordUtil.encodePassword(password);
         try {
             // Publish new event to Local Broker topic
             log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                    name, localBrokerUrl, username, password, topic, eventMap);
+                    name, localBrokerUrl, username, passwordEncoded, topic, eventMap);
             brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
             log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                    name, localBrokerUrl, username, password, topic, eventMap);
+                    name, localBrokerUrl, username, passwordEncoded, topic, eventMap);
             countLocalPublish(true);
 
         } catch (Exception ex) {
             log.error("- New event: ERROR while publishing to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, exception=",
-                    name, localBrokerUrl, username, password, topic, ex);
+                    name, localBrokerUrl, username, passwordEncoded, topic, ex);
             countLocalPublish(false);
         }
     }
