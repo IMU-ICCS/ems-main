@@ -21,6 +21,13 @@
     <url>https://gitlab.ow2.org/melodic/melodic-upperware/-/tree/master/event-management/broker-client</url>
 
     <dependencies>
+        <!-- EMS dependencies -->
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Spring-boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

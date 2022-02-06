@@ -14,9 +14,9 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+@Slf4j
 @Data
 @ToString(exclude = {"truststorePassword", "keystorePassword"})
-@Slf4j
 public class KeystoreAndCertificateProperties implements IKeystoreAndCertificateProperties {
 
     private String defaultIpAddress;
@@ -53,14 +53,20 @@ public class KeystoreAndCertificateProperties implements IKeystoreAndCertificate
 
     public static String prepareValue(String value, String publicIpAddress, String defaultIpAddress, String defaultValue) {
         if (value==null) return null;
-        String pubIpAddr = NetUtil.getPublicIpAddress();
-        pubIpAddr = StringUtils.isNotBlank(pubIpAddr)
-                ? pubIpAddr
-                : StringUtils.isNotBlank(publicIpAddress) ? publicIpAddress : defaultValue;
-        String defIpAddr = NetUtil.getDefaultIpAddress();
-        defIpAddr = StringUtils.isNotBlank(defIpAddr)
-                ? defIpAddr
-                : StringUtils.isNotBlank(defaultIpAddress) ? defaultIpAddress: defaultValue;
+        String pubIpAddr = "";
+        if (value.contains("%{PUBLIC_IP}%")) {
+            pubIpAddr = NetUtil.getPublicIpAddress();
+            pubIpAddr = StringUtils.isNotBlank(pubIpAddr)
+                    ? pubIpAddr
+                    : StringUtils.isNotBlank(publicIpAddress) ? publicIpAddress : defaultValue;
+        }
+        String defIpAddr = "";
+        if (value.contains("%{DEFAULT_IP}%")) {
+            defIpAddr = NetUtil.getDefaultIpAddress();
+            defIpAddr = StringUtils.isNotBlank(defIpAddr)
+                    ? defIpAddr
+                    : StringUtils.isNotBlank(defaultIpAddress) ? defaultIpAddress : defaultValue;
+        }
         return value
                 .replace("%{PUBLIC_IP}%", pubIpAddr)
                 .replace("%{DEFAULT_IP}%", defIpAddr);

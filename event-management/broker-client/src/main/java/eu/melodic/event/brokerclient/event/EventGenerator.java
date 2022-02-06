@@ -12,20 +12,36 @@ package eu.melodic.event.brokerclient.event;
 import eu.melodic.event.brokerclient.BrokerClient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-@Data
+import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicLong;
+
 @Slf4j
+@Data
+@Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class EventGenerator implements Runnable {
-    private BrokerClient client;
+    private final static AtomicLong counter = new AtomicLong();
+    private final BrokerClient client;
     private String brokerUrl;
+    private String brokerUsername;
+    private String brokerPassword;
     private String destinationName;
     private long interval;
-    private long howmany = -1;
+    private long howMany = -1;
     private double lowerValue;
     private double upperValue;
     private int level;
 
     private transient boolean keepRunning;
+
+    @PostConstruct
+    public void printCounter() {
+        log.info("New EventGenerator with instance number: {}", counter.getAndIncrement());
+    }
 
     public void start() {
         if (keepRunning) return;
@@ -49,12 +65,12 @@ public class EventGenerator implements Runnable {
                 double newValue = Math.random() * valueRangeWidth + lowerValue;
                 EventMap event = new EventMap(newValue, level, System.currentTimeMillis());
                 log.info("EventGenerator.run(): Sending event #{}: {}", countSent + 1, event);
-                client.publishEvent(brokerUrl, destinationName, event);
+                client.publishEventWithCredentials(brokerUrl, brokerUsername, brokerPassword, destinationName, event);
                 countSent++;
-                if (countSent == howmany) keepRunning = false;
+                if (countSent == howMany) keepRunning = false;
                 log.info("EventGenerator.run(): Event sent #{}: {}", countSent, event);
             } catch (Exception ex) {
-                log.warn("EventGenerator.run(): WHILE-EXCEPTION: {}", ex);
+                log.warn("EventGenerator.run(): WHILE-EXCEPTION: ", ex);
             }
             // sleep for 'interval' ms
             try {

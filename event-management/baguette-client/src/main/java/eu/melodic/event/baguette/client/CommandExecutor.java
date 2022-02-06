@@ -353,9 +353,10 @@ public class CommandExecutor {
             double upper = Double.parseDouble(args[4].trim());
 
             if (eventGenerators.get(destination) == null) {
-                EventGenerator generator = new EventGenerator();
-                generator.setClient(new BrokerClient(brokerClientProperties));
-                generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrl());
+                EventGenerator generator = applicationContext.getBean(EventGenerator.class);
+                generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrlForClients());
+                generator.setBrokerUsername(brokerCepService.getBrokerUsername());
+                generator.setBrokerPassword(brokerCepService.getBrokerPassword());
                 generator.setDestinationName(destination);
                 generator.setLevel(1);
                 generator.setInterval(interval);
