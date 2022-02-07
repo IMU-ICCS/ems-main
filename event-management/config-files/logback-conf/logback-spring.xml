@@ -50,6 +50,7 @@
     <logger name="eu.melodic.event.baguette.server" level="INFO"/>
     <logger name="eu.melodic.event.baguette.client.install" level="INFO"/>
     <logger name="eu.melodic.event.brokercep" level="INFO"/>
+    <logger name="eu.melodic.event.common" level="INFO"/>
     <logger name="eu.melodic.event.brokerclient" level="INFO"/>
     <logger name="eu.melodic.event.translate" level="INFO"/>
     <logger name="eu.melodic.event.util" level="INFO"/>
