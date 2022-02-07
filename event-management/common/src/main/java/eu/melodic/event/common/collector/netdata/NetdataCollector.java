@@ -137,7 +137,7 @@ public class NetdataCollector implements InitializingBean, Runnable {
         }
 
         // collect data from local node
-        if (! properties.isIgnoreLocal()) {
+        if (! properties.isSkipLocal()) {
             log.info("Collectors::Netdata: Collecting metrics from local node...");
             collectAndPublishData("");
         } else {
