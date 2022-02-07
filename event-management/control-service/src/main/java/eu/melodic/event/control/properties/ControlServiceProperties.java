@@ -74,6 +74,8 @@ public class ControlServiceProperties {
     private boolean skipBrokerCep;
     @Value("${control.skip-baguette:false}")
     private boolean skipBaguette;
+    @Value("${control.skip-collectors:false}")
+    private boolean skipCollectors;
     @Value("${control.skip-metasolver:false}")
     private boolean skipMetasolver;
     @Value("${control.skip-esb-notification:false}")

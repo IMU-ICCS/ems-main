@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Collects measurements from Netdata server
+ * Collects measurements from Netdata http server
  */
 @Slf4j
 @Component

@@ -35,7 +35,7 @@ import java.util.TimerTask;
 @SpringBootApplication(
         scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
                 "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep", "eu.melodic.event.control",
-                "eu.melodic.event.translate", "eu.melodic.event.util"},
+                "eu.melodic.event.translate", "eu.melodic.event.common", "eu.melodic.event.util"},
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
 @EnableAsync
 @Configuration

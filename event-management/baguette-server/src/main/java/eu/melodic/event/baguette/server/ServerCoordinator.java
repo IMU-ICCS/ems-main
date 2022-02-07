@@ -19,6 +19,8 @@ import static eu.melodic.event.util.GroupingConfiguration.BrokerConnectionConfig
 public interface ServerCoordinator {
     default boolean isSupported(TranslationContext tc) { return true; }
 
+    default boolean supportsAggregators() { return false; }
+
     void initialize(TranslationContext tc, String upperwareGrouping, BaguetteServer server, Runnable callback);
 
     default void setProperties(Map<String, String> p) { }

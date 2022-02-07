@@ -15,9 +15,12 @@ import camel.metric.MetricContext;
 import camel.metric.RawMetric;
 import camel.requirement.ServiceLevelObjective;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistry;
+import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
@@ -79,6 +82,8 @@ public class ControlServiceCoordinator implements InitializingBean {
     @Getter
     private BrokerCepService brokerCep;
     @Autowired
+    private NodeRegistry nodeRegistry;
+    @Autowired
     private RestTemplate restTemplate;
     @Autowired
     private PasswordUtil passwordUtil;
@@ -91,6 +96,8 @@ public class ControlServiceCoordinator implements InitializingBean {
     @Getter
     private String currentCpModelId;
     private TranslationContext currentTC;
+
+    private ServerNetdataCollector netdataCollector;
 
     @Getter
     private String reference = UUID.randomUUID().toString();
@@ -416,6 +423,34 @@ public class ControlServiceCoordinator implements InitializingBean {
             }
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping Baguette Server setup due to configuration");
+        }
+
+        // Start/Stop Top-Level collectors
+        if (!properties.isSkipCollectors()) {
+            if (netdataCollector!=null) {
+                log.info("ControlServiceCoordinator.processNewModel(): Stopping NetdataCollector: camel-model-id={}", camelModelId);
+                try {
+                    netdataCollector.stop();
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while stopping NetdataCollector: camel-model-id={}", camelModelId, ex);
+                }
+            }
+            ServerCoordinator serverCoordinator = nodeRegistry.getCoordinator();
+            if (! serverCoordinator.supportsAggregators()) {
+                if (netdataCollector==null) {
+                    netdataCollector = applicationContext.getBean(ServerNetdataCollector.class);
+                }
+                log.info("ControlServiceCoordinator.processNewModel(): Starting NetdataCollector: camel-model-id={}", camelModelId);
+                try {
+                    netdataCollector.start();
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting NetdataCollector: camel-model-id={}", camelModelId, ex);
+                }
+            } else {
+                log.info("ControlServiceCoordinator.processNewModel(): NetdataCollector is not needed (will not start it): camel-model-id={}", camelModelId);
+            }
+        } else {
+            log.warn("ControlServiceCoordinator.processNewModel(): Skipping Collectors setup due to configuration");
         }
 
         // (Re-)Configure MetaSolver

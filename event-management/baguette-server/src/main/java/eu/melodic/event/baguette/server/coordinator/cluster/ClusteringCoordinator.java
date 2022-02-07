@@ -63,6 +63,11 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     @Override
+    public boolean supportsAggregators() {
+        return true;
+    }
+
+    @Override
     public void initialize(final TranslationContext TC, String upperwareGrouping, BaguetteServer server, Runnable callback) {
         if (!isSupported(TC))
             throw new IllegalArgumentException("Passed Translation Context is not supported");
