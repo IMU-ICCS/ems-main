@@ -38,7 +38,7 @@ import java.util.List;
 @Slf4j
 @EnableScheduling
 @SpringBootApplication(scanBasePackages = {
-        "eu.melodic.event.baguette.client", "eu.melodic.event.brokercep",
+        "eu.melodic.event.baguette.client", "eu.melodic.event.brokercep", "eu.melodic.event.common",
         "eu.melodic.event.brokerclient", "eu.melodic.event.util"})
 @RequiredArgsConstructor
 public class BaguetteClient implements ApplicationRunner {

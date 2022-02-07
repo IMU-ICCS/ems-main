@@ -7,13 +7,12 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.collector.netdata;
+package eu.melodic.event.common.collector.netdata;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
 
@@ -21,7 +20,6 @@ import java.util.List;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "collector.netdata")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/baguette-client.properties")
 public class NetdataCollectorProperties {
     private boolean enable;
     private long delay;
