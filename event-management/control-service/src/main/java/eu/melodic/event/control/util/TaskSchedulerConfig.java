@@ -22,7 +22,7 @@ import javax.validation.constraints.Min;
 @Configuration
 @EnableScheduling
 public class TaskSchedulerConfig {
-    @Value("${control.task-scheduler.thread-pool-size:16}")
+    @Value("${control.task-scheduler.thread-pool-size:2}")
     @Min(1)
     private int threadPoolSize;
 
