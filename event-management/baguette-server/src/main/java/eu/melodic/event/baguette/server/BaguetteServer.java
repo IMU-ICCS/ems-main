@@ -409,7 +409,7 @@ public class BaguetteServer implements InitializingBean {
     }
 
     private ClientShellCommand getClientShellCommandFromNodeRegistryEntry(NodeRegistryEntry entry) {
-        return StringUtils.isNotBlank(entry.getClientId())
+        return StringUtils.isNotBlank(entry.getIpAddress())
                 ? ClientShellCommand.getActiveByIpAddress(entry.getIpAddress()) : null;
     }
 
