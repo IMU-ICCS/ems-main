@@ -347,14 +347,15 @@ public class BaguetteServer implements InitializingBean {
 
     private NodeRegistryEntry getNodeRegistryEntryFromClientShellCommand(ClientShellCommand c) {
         NodeRegistryEntry entry = c.getNodeRegistryEntry();
-        if (entry!=null) entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
+        if (entry==null)
+            entry = getNodeRegistry().getNodeByAddress(c.getClientIpAddress());
         log.debug("getNodeRegistryEntryFromClientShellCommand: CSC ip-address: {}", c.getClientIpAddress());
         log.debug("getNodeRegistryEntryFromClientShellCommand: CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
-        if (entry==null) {
-            log.debug("getNodeRegistryEntryFromClientShellCommand: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
+        /*if (entry==null) {
+            log.warn("getNodeRegistryEntryFromClientShellCommand: WARN: ** NOT SECURE ** CSC client-id: {}", c.getClientId());
             entry = getNodeRegistry().getNodeByClientId(c.getClientId());
             log.debug("getNodeRegistryEntryFromClientShellCommand: WARN: ** NOT SECURE ** CSC NR entry: {}", entry!=null ? entry.getPreregistration() : null);
-        }
+        }*/
         return entry;
     }
 
