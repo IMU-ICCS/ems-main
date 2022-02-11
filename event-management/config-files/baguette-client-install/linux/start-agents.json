@@ -15,7 +15,8 @@
     {
       "description": "Check if Netdata is already running",
       "taskType": "CHECK",
-      "command": "[[ $(( `ps -ef |grep /usr/sbin/netdata |grep -v grep |wc -l`+1 )) -gt 1 ]] && exit 1 || exit 0",
+      /*"command": "[[ $(( `ps -ef |grep /usr/sbin/netdata |grep -v grep |wc -l`+1 )) -gt 1 ]] && exit 1 || exit 0",*/
+      "command": "[[ $(ps -e -o pid,comm,cgroup |grep netdata |grep -v grep |grep -v docker |grep -v lxc |wc -l) -gt 0 ]] && exit 1 || exit 0",
       "executable": false,
       "exitCode": 1,
       "match": true,
