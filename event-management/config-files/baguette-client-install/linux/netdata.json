@@ -21,7 +21,7 @@
     {
       "description": "Download Netdata kickstart.sh",
       "taskType": "CMD",
-      "command": "curl https://my-netdata.io/kickstart.sh > /tmp/netdata-kickstart.sh",
+      "command": "curl https://my-netdata.io/kickstart-static64.sh > /tmp/netdata-kickstart.sh",
       "executionTimeout": 600000
     },
     {
