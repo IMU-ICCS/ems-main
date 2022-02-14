@@ -50,11 +50,11 @@ We also distinguish between ***Monitoring Topologies***:
 
 
 ## A) <u>Support for Resource-Limited nodes</u>
-	Feature Quick Notes:
-	- EMS server will NOT install EMS client and JRE8 in RL nodes.
-	- EMS server will install Netda in RL nodes.
-	- EMS server or an Aggregator will periodically query Netdata agents of RL nodes for metrics.
-	- Normal nodes will periodically query their Local Netdata agent for metrics.
+> Feature Quick Notes:
+> - EMS server will NOT install EMS client and JRE8 in RL nodes.
+> - EMS server will install Netda in RL nodes.
+> - EMS server or an Aggregator will periodically query Netdata agents of RL nodes for metrics.
+> - Normal nodes will periodically query their Local Netdata agent for metrics.
 
 
 
@@ -62,12 +62,11 @@ We also distinguish between ***Monitoring Topologies***:
 
 **A.1) Metrics collection from RL nodes in a 2-LEVEL topology**
 
-```
-Test Case Quick Notes:
-- EMS server MUST log when it collects metrics from RL nodes.
-- EMS server MUST *NOT* log or collect metrics from Normal (Non-RL) nodes.
-- Normal nodes MUST log when they collect metrics from their Local Netdata agents. (The Log records are slightly different).
-```
+> Test Case Quick Notes:
+> - EMS server MUST log when it collects metrics from RL nodes.
+> - EMS server MUST *NOT* log or collect metrics from Normal (Non-RL) nodes.
+> - Normal nodes MUST log when they collect metrics from their Local Netdata agents. (The Log records are slightly different).
+
 **You need a CAMEL model:**
 
 * with two Requirement Sets:
@@ -101,12 +100,11 @@ Test Case Quick Notes:
 
 **A.2)  Metrics collection from RL nodes in a 3-LEVEL topology**
 
-```
-Test Case Quick Notes:
-- The Aggregator (it is a Normal node) MUST log each time it collects metrics from RL nodes in its cluster.
-- The Aggregator MUST *NOT* log or collect metrics from Normal (Non-RL) nodes in its cluster.
-- Normal nodes (including Aggregator) MUST log each time they collect metrics from their Local Netdata agents. (The Log records are slightly different).
-```
+> Test Case Quick Notes:
+> - The Aggregator (it is a Normal node) MUST log each time it collects metrics from RL nodes in its cluster.
+> - The Aggregator MUST *NOT* log or collect metrics from Normal (Non-RL) nodes in its cluster.
+> - Normal nodes (including Aggregator) MUST log each time they collect metrics from their Local Netdata agents. (The Log records are slightly different).
+
 **You need a CAMEL model:**
 
 * with two Requirement Sets:
@@ -145,10 +143,10 @@ Test Case Quick Notes:
 ------
 
 ## B) <u>Support for monitoring SELF-HEALING</u>
-	Feature Quick Notes:
-	- Self-Healing refers to recovering the monitoring software running at the nodes.
-	- In Normal nodes, specifically refers to recovering of EMS client and/or Netdata agent.
-	- In RL nodes, refers to recovering Netdata agent only.
+> Feature Quick Notes:
+> - Self-Healing refers to recovering the monitoring software running at the nodes.
+> - In Normal nodes, specifically refers to recovering of EMS client and/or Netdata agent.
+> - In RL nodes, refers to recovering Netdata agent only.
 
 
 
@@ -255,7 +253,7 @@ We distinguish between monitoring topologies:
 > **You need a CAMEL model with a 2-LEVEL topology:**
 >
 > * with two Requirement Sets:
-    >   - for Normal nodes: 4 cores, 4GB RAM, >1 GB Disk, and
+>   - for Normal nodes: 4 cores, 4GB RAM, >1 GB Disk, and
 >   - for RL nodes: 1-2 cores, or <2GB RAM, or <1GB Disk
 > * with 1-2 COMPONENTS with Requirement Set #1 (Normal nodes)
 > * with 1-2 COMPONENTS with Requirement Set #2 (RL nodes)
@@ -269,104 +267,94 @@ We distinguish between monitoring topologies:
 
 **B.1.a)  Successful recovery of an EMS client in a Normal node**
 
-```
-Test Case Quick Notes:
-- Kill EMS client of any Normal node.
-- The EMS server will recover the killed EMS client after a configured period of time.
-- Check EMS server log messages for disconnection, recovery actions and re-connection.
-```
+> Test Case Quick Notes:
+> - Kill EMS client of any Normal node.
+> - The EMS server will recover the killed EMS client after a configured period of time.
+> - Check EMS server log messages for disconnection, recovery actions and re-connection.
 
 **After Application deployment...**
 
-* Connect to a Normal node and ***kill*** EMS client
+  * Connect to a Normal node and ***kill*** EMS client
 
 **Next, check the logs of:**
 
-* ***EMS server***, for messages reporting an EMS client disconnection, the recovery attempt(s) and EMS client re-connection.
-* ***Normal node where EMS client killed***, for EMS client's logs indicating its restart.
-* ***Other Normal nodes***, for NO logs indicating failure or recovery attempts.
+  * ***EMS server***, for messages reporting an EMS client disconnection, the recovery attempt(s) and EMS client re-connection.
+  * ***Normal node where EMS client killed***, for EMS client's logs indicating its restart.
+  * ***Other Normal nodes***, for NO logs indicating failure or recovery attempts.
 
 
 
 **B.1.b)  Failed recovery of EMS client in a Normal node**
 
-```
-Test Case Quick Notes:
-- Kill the VM of any Normal node.
-- The EMS server will try to connect to the affected VM but fail.
-- After a configured number of retries EMS server will give up.
-```
+> Test Case Quick Notes:
+> - Kill the VM of any Normal node.
+> - The EMS server will try to connect to the affected VM but fail.
+> - After a configured number of retries EMS server will give up.
 
 **After Application deployment...**
 
-* Terminate the VM of a Normal node
+  * Terminate the VM of a Normal node
 
 **Next, check the logs of:**
 
-* ***EMS server***, for messages reporting an EMS client disconnection, failed recovery attempts and giving up recovery
-* ***Normal nodes that operate***, for NO logs indicating any failure or recovery attempts
+  * ***EMS server***, for messages reporting an EMS client disconnection, failed recovery attempts and giving up recovery
+  * ***Normal nodes that operate***, for NO logs indicating any failure or recovery attempts
 
 
 
 **B.2.a)  Successful recovery of a Netdata agent in a RL node**
 
-```
-Test Case Quick Notes:
-- Kill Netdata agent of any RL node.
-- The EMS server will recover the killed Netdata agent after a configured period of time.
-- Check EMS server log messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
-```
+> Test Case Quick Notes:
+> - Kill Netdata agent of any RL node.
+> - The EMS server will recover the killed Netdata agent after a configured period of time.
+> - Check EMS server log messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
 
 **After Application deployment...**
 
-* Connect to a RL node and kill Netdata agent.
+  * Connect to a RL node and kill Netdata agent.
 
 **Next, check the logs of:**
 
-* ***EMS server***, for logs reporting connection failure to a Netdata agent, and recovery actions.
-* ***RL node with killed Netdata***, check if the Netdata processes have started again.
-* ***Normal nodes (that operate)***, for NO Logs indicating failure or recovery attempts.
+  * ***EMS server***, for logs reporting connection failure to a Netdata agent, and recovery actions.
+  * ***RL node with killed Netdata***, check if the Netdata processes have started again.
+  * ***Normal nodes (that operate)***, for NO Logs indicating failure or recovery attempts.
 
 
 
 **B.2.b)  Failed recovery of a Netdata agent in a RL node**
 
-```
-Test Case Quick Notes:
-- Kill the VM of any RL node.
-- The EMS server will try to connect to the affected VM but fail.
-- After a configured number of retries EMS server will give up.
-```
+> Test Case Quick Notes:
+> - Kill the VM of any RL node.
+> - The EMS server will try to connect to the affected VM but fail.
+> - After a configured number of retries EMS server will give up.
 
 **After Application deployment...**
 
-* Terminate the VM of a RL node
+  * Terminate the VM of a RL node
 
 **You need to check the logs of:**
 
-* ***EMS server***, for logs reporting connection failure to a Netdata agent, and then a number of failed attempts to connect to VM.
-* ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
+  * ***EMS server***, for logs reporting connection failure to a Netdata agent, and then a number of failed attempts to connect to VM.
+  * ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
 
 
 
 **B.3)  Successful recovery of a Netdata agent in a Normal node**
 
-```
-Test Case Quick Notes:
-- Kill Netdata agent of any Normal node.
-- The EMS client of the node will recover the killed Netdata agent after a configured period of time.
-- Check EMS client's logs for messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
-```
+> Test Case Quick Notes:
+> - Kill Netdata agent of any Normal node.
+> - The EMS client of the node will recover the killed Netdata agent after a configured period of time.
+> - Check EMS client's logs for messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
 
 **After Application deployment...**
 
-* Connect to a Normal node and kill Netdata agent.
+  * Connect to a Normal node and kill Netdata agent.
 
 **Next, check the logs of:**
 
-* ***EMS server***, for No log messages indicating connection failures to Netdata, or recovery actions.
-* ***Normal node with killed Netdata***, check if the Netdata processes have started again. Also check EMS client's log messages reporting failed metric collections, recovery actions, and successful metric collection.
-* ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
+  * ***EMS server***, for No log messages indicating connection failures to Netdata, or recovery actions.
+  * ***Normal node with killed Netdata***, check if the Netdata processes have started again. Also check EMS client's log messages reporting failed metric collections, recovery actions, and successful metric collection.
+  * ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
 
 
 
@@ -377,7 +365,7 @@ Test Case Quick Notes:
 > **You need a CAMEL model for 3-LEVEL topology:**
 >
 > * with two Requirement Sets:
-    >   - for Normal nodes: 4 cores, 4GB RAM, >1 GB Disk, and
+>   - for Normal nodes: 4 cores, 4GB RAM, >1 GB Disk, and
 >   - for RL nodes: 1-2 cores, or <2GB RAM, or <1GB Disk,
 > * with 1-2 COMPONENTS with Requirement Set #1 (Normal nodes)
 > * with 1-2 COMPONENTS with Requirement Set #2 (RL nodes)
@@ -391,155 +379,141 @@ Test Case Quick Notes:
 
 **B.4.a)  Successful recovery of an EMS client in a clustered Normal node**
 
-```
-Test Case Quick Notes:
-- Kill EMS client of any Normal node except the Aggregator.
-- The Aggregator will recover the killed EMS client after a configured period of time.
-- Check Aggregator log messages for node leaving cluster, recovery actions, and node joining back.
-```
+> Test Case Quick Notes:
+> - Kill EMS client of any Normal node except the Aggregator.
+> - The Aggregator will recover the killed EMS client after a configured period of time.
+> - Check Aggregator log messages for node leaving cluster, recovery actions, and node joining back.
 
 **After Application deployment...**
 
-* Connect to a Normal node, except Aggregator, and ***kill*** EMS client
+  * Connect to a Normal node, except Aggregator, and ***kill*** EMS client
 
 **Next, check the logs of:**
 
-* ***EMS server***, for NO logs related to EMS client leave and recovery.
-* ***Aggregator***, for log messages about, (i) EMS client leaving cluster, (ii) recovery actions, and (iii) EMS client joining back to the cluster.
-* ***Normal node whose EMS client killed***, for EMS client's logs indicating its restart.
-* ***Other Normal nodes***, for logs about, (i) EMS client leaving cluster, (ii) EMS client joining to cluster, but NO logs about recovery actions.
+  * ***EMS server***, for NO logs related to EMS client leave and recovery.
+  * ***Aggregator***, for log messages about, (i) EMS client leaving cluster, (ii) recovery actions, and (iii) EMS client joining back to the cluster.
+  * ***Normal node whose EMS client killed***, for EMS client's logs indicating its restart.
+  * ***Other Normal nodes***, for logs about, (i) EMS client leaving cluster, (ii) EMS client joining to cluster, but NO logs about recovery actions.
 
 
 
 **B.4.b)  Failed recovery of an EMS client in a clustered Normal node**
 
-```
-Test Case Quick Notes:
-- Kill the VM of any Normal node, except Aggregator.
-- The Aggregator will try to connect to the affected VM but fail.
-- After a configured number of retries Aggregator will give up.
-```
+> Test Case Quick Notes:
+> - Kill the VM of any Normal node, except Aggregator.
+> - The Aggregator will try to connect to the affected VM but fail.
+> - After a configured number of retries Aggregator will give up.
 
 **After Application deployment...**
 
-* Terminate the VM of a Normal node, except the Aggregator's
+  * Terminate the VM of a Normal node, except the Aggregator's
 
 **Next, check the logs of:**
 
-* ***EMS server***, for a recovery Give up message from Aggregator
-* ***Aggregator***, for messages reporting, (i) an EMS client left cluster, (ii) a number of failed connection attempts to the VM, and (iii) a recovery give up message.
-* ***Normal nodes that operate***, for logs about EMS client leaving cluster, and NO logs about recovery actions or EMS client joining back.
+  * ***EMS server***, for a recovery Give up message from Aggregator
+  * ***Aggregator***, for messages reporting, (i) an EMS client left cluster, (ii) a number of failed connection attempts to the VM, and (iii) a recovery give up message.
+  * ***Normal nodes that operate***, for logs about EMS client leaving cluster, and NO logs about recovery actions or EMS client joining back.
 
 
 
 **B.5.a)  Successful recovery of EMS client of the cluster Aggregator**
 
-```
-Test Case Quick Notes:
-- Kill EMS client of the Aggregator.
-- The cluster nodes will elect a new Aggregator. Check logs of any cluster node.
-- The new Aggregator will recover the killed EMS client after a configured period of time.
-- Check new Aggregator log messages for node leaving cluster, being elected as Aggregator, recovery actions, and node joining back.
-- Old Aggregator will join back as a Normal node.
-```
+> Test Case Quick Notes:
+> - Kill EMS client of the Aggregator.
+> - The cluster nodes will elect a new Aggregator. Check logs of any cluster node.
+> - The new Aggregator will recover the killed EMS client after a configured period of time.
+> - Check new Aggregator log messages for node leaving cluster, being elected as Aggregator, recovery actions, and node joining back.
+> - Old Aggregator will join back as a Normal node.
 
 **After Application deployment...**
 
-* Connect to the Aggregator node, and ***kill*** EMS client.
+  * Connect to the Aggregator node, and ***kill*** EMS client.
 
 **Next, check the logs of:**
 
-* ***EMS server***, for message about Aggregator change.
-* ***Old Aggregator node whose EMS client killed***, for EMS client's logs indicating its restart (as a `PER_INSTANCE` node).
-* ***Other Normal nodes***, for log messages about, (i) EMS client leaving cluster, (ii) Aggregator election, (iii) EMS client joining to cluster, but NO logs about recovery actions.
-* ***New Aggregator***, for log messages about, (i) EMS client leaving cluster, (ii) being elected as Aggregator, (iii) recovery actions, and (iv) EMS client joining to cluster.
+  * ***EMS server***, for message about Aggregator change.
+  * ***Old Aggregator node whose EMS client killed***, for EMS client's logs indicating its restart (as a `PER_INSTANCE` node).
+  * ***Other Normal nodes***, for log messages about, (i) EMS client leaving cluster, (ii) Aggregator election, (iii) EMS client joining to cluster, but NO logs about recovery actions.
+  * ***New Aggregator***, for log messages about, (i) EMS client leaving cluster, (ii) being elected as Aggregator, (iii) recovery actions, and (iv) EMS client joining to cluster.
 
 
 
 **B.5.b)  Failed recovery of EMS client of the cluster Aggregator**
 
-```
-Test Case Quick Notes:
-- Kill the VM of the Aggregator.
-- The cluster nodes will elect a new Aggregator. Check logs of any cluster node.
-- The new Aggregator will try to connect to the affected VM but fail.
-- After a configured number of retries new Aggregator will give up.
-```
+> Test Case Quick Notes:
+> - Kill the VM of the Aggregator.
+> - The cluster nodes will elect a new Aggregator. Check logs of any cluster node.
+> - The new Aggregator will try to connect to the affected VM but fail.
+> - After a configured number of retries new Aggregator will give up.
 
 **After Application deployment...**
 
-* Terminate the VM of the Aggregator's
+  * Terminate the VM of the Aggregator's
 
 **Next, check the logs of:**
 
-* ***EMS server***, for a message about Aggregator change, and one about Giving recovery, up from the new Aggregator.
-* ***Normal nodes that operate***, for log messages about, (i) EMS client leaving cluster, (ii) Aggregator election, but NO logs about recovery actions, or EMS client joining back to cluster.
-* ***New Aggregator***, for messages reporting, (i) an EMS client left cluster, (ii) being elected as Aggregator, (iii) a number of failed connection attempts to the VM, and (iv) a recovery give up message.
+  * ***EMS server***, for a message about Aggregator change, and one about Giving recovery, up from the new Aggregator.
+  * ***Normal nodes that operate***, for log messages about, (i) EMS client leaving cluster, (ii) Aggregator election, but NO logs about recovery actions, or EMS client joining back to cluster.
+  * ***New Aggregator***, for messages reporting, (i) an EMS client left cluster, (ii) being elected as Aggregator, (iii) a number of failed connection attempts to the VM, and (iv) a recovery give up message.
 
 
 
 **B.6.a)  Successful recovery of Netdata agent in a clustered RL node**
 
-```
-Test Case Quick Notes:
-- Kill Netdata agent of any RL node.
-- The Aggregator will recover the killed Netdata agent after a configured period of time.
-- Check Aggregator log messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
-```
+> Test Case Quick Notes:
+> - Kill Netdata agent of any RL node.
+> - The Aggregator will recover the killed Netdata agent after a configured period of time.
+> - Check Aggregator log messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
 
 **After Application deployment...**
 
-* Connect to a RL node and ***kill*** Netdata agent.
+  * Connect to a RL node and ***kill*** Netdata agent.
 
 **Next, check the logs of:**
 
-* ***EMS server***, for NO logs indicating a Netdata failure and recovery.
-* ***Aggregator***, for logs reporting, (i) connection failures to a Netdata agent, (ii) recovery actions, and (iii) successful connection to Netdata agent and collection of metrics.
-* ***RL node with killed Netdata***, check if the Netdata processes have started again.
-* ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery action.
+  * ***EMS server***, for NO logs indicating a Netdata failure and recovery.
+  * ***Aggregator***, for logs reporting, (i) connection failures to a Netdata agent, (ii) recovery actions, and (iii) successful connection to Netdata agent and collection of metrics.
+  * ***RL node with killed Netdata***, check if the Netdata processes have started again.
+  * ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery action.
 
 
 
 **B.6.b)  Failed recovery of Netdata agent in a clustered RL node**
 
-```
-Test Case Quick Notes:
-- Kill the VM of any RL node.
-- The EMS server will try to connect to the affected VM but fail.
-- After a configured number of retries EMS server will give up.
-```
+> Test Case Quick Notes:
+> - Kill the VM of any RL node.
+> - The EMS server will try to connect to the affected VM but fail.
+> - After a configured number of retries EMS server will give up.
 
 **After Application deployment...**
 
-* Terminate the VM of a RL node
+  * Terminate the VM of a RL node
 
 **You need to check the logs of:**
 
-* ***EMS server***, for NO logs indicating a Netdata failure and recovery, BUT reporting a recovery give up from Aggregator.
-* ***Aggregator***, for logs reporting (i) connection failures to a Netdata agent, (ii) a number of failed attempts to connect to VM, and (iii) a recovery give up message.
-* ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
+  * ***EMS server***, for NO logs indicating a Netdata failure and recovery, BUT reporting a recovery give up from Aggregator.
+  * ***Aggregator***, for logs reporting (i) connection failures to a Netdata agent, (ii) a number of failed attempts to connect to VM, and (iii) a recovery give up message.
+  * ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
 
 
 
 **B.7)  Successful recovery of Netdata agent in a clustered Normal node (including Aggregator)**
 
-```
-Test Case Quick Notes:
-- Kill Netdata agent of any Normal node.
-- The EMS client of the affected node will recover the killed Netdata agent after a configured period of time.
-- Check EMS client's log for messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
-```
+> Test Case Quick Notes:
+> - Kill Netdata agent of any Normal node.
+> - The EMS client of the affected node will recover the killed Netdata agent after a configured period of time.
+> - Check EMS client's log for messages reporting failures to collect metrics, recovery actions, and successful metrics collection.
 
 **After Application deployment...**
 
-* Connect to a Normal node and ***kill*** Netdata agent.
+  * Connect to a Normal node and ***kill*** Netdata agent.
 
 **Next, check the logs of:**
 
-* ***EMS server***, for No log messages indicating connection failures to a Netdata agent or recovery actions.
-* ***Aggregator***, for No log messages indicating connection failures to a Netdata agent or recovery actions.
-* ***Normal node with killed Netdata***, check if the Netdata processes have started again. Also check EMS client's log messages reporting failed metric collection attempts, recovery actions, and successful metric collection.
-* ***Other Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
+  * ***EMS server***, for No log messages indicating connection failures to a Netdata agent or recovery actions.
+  * ***Aggregator***, for No log messages indicating connection failures to a Netdata agent or recovery actions.
+  * ***Normal node with killed Netdata***, check if the Netdata processes have started again. Also check EMS client's log messages reporting failed metric collection attempts, recovery actions, and successful metric collection.
+  * ***Other Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
 
 
 
