@@ -258,7 +258,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             log.info("{}==> Signaling client to exit", id);
             out.println("EXIT");
 
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             log.warn("{}==> EXCEPTION : {}", id, ex);
             out.printf("EXCEPTION %s\n", ex);
             this.lastException = ex;
