@@ -41,9 +41,9 @@ public class ClusterZoneDetector implements IClusterZoneDetector {
             "'${cloud-id:-}'",
             "'${provider:-}'",
             "'${provider-id:-}'",
+            "T(java.time.OffsetDateTime).now().toString()",
 //            "'Cluster_'+T(java.lang.System).currentTimeMillis()",
 //            "'Cluster_'+T(java.util.UUID).randomUUID()",
-            "'Cluster_'+T(java.time.OffsetDateTime).now().toString()",
             ""
     );
     private final static RULE_TYPE DEFAULT_RULES_TYPE = RULE_TYPE.SPEL;
