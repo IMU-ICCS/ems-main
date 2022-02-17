@@ -33,6 +33,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     private final Map<String, ClusterZone> topologyMap = new HashMap<>();
 
+    private IClusterZoneDetector clusterZoneDetector;
     private IZoneManagementStrategy zoneManagementStrategy;
     private int zoneStartPort = 1200;
     private int zoneEndPort = 65535;
@@ -42,7 +43,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private GROUPING aggregatorGrouping;
     private GROUPING lastLevelGrouping;
 
-    private Map<String,NodeRegistryEntry> ignoredNodes = new LinkedHashMap<>();
+    private final Map<String,NodeRegistryEntry> ignoredNodes = new LinkedHashMap<>();
 
     public Collection<String> getClusterIdSet() { return topologyMap.keySet(); }
     public Collection<IClusterZone> getClusters() { return topologyMap.values().stream().map(c->(IClusterZone)c).collect(Collectors.toList()); }
@@ -97,6 +98,20 @@ public class ClusteringCoordinator extends NoopCoordinator {
                 ? Integer.parseInt(zoneConfig.get("zone-port-end")) : zoneEndPort;
         zoneKeystoreFileNameFormatter = zoneConfig.containsKey("zone-keystore-file-name-formatter")
                 ? zoneConfig.get("zone-keystore-file-name-formatter") : zoneKeystoreFileNameFormatter;
+
+        // Initialize Cluster Detector
+        String clusterDetectorClass = zoneConfig.get("cluster-detector-class");
+        if (StringUtils.isNotBlank(clusterDetectorClass)) {
+            Class<?> clazz = Class.forName(clusterDetectorClass);
+            if (clazz.isAssignableFrom(IClusterZoneDetector.class))
+                clusterZoneDetector = (IClusterZoneDetector) clazz.newInstance();
+            else
+                throw new IllegalArgumentException("Invalid Cluster Detector class. Not implementing IClusterZoneDetector interface: "+clazz.getName());
+        } else {
+            clusterZoneDetector = new ClusterZoneDetector();
+        }
+        clusterZoneDetector.setProperties(zoneConfig);
+        log.info("Cluster Detector class: {}", clusterZoneDetector.getClass().getName());
     }
 
     @Override
@@ -108,7 +123,10 @@ public class ClusteringCoordinator extends NoopCoordinator {
             String clientId1 = csc.getId();
             String clientId2 = csc.getClientId();
             String clientId3 = args[2];
+            log.trace("processClientInput: csc.zone: {}", csc.getClientZone()!=null ? csc.getClientZone().getId() : null);
+            log.trace("processClientInput: topology-map: {}", topologyMap.keySet());
             ClusterZone zone = findZone(csc);
+            log.trace("processClientInput: zone={}", zone);
             zone.setAggregator(csc);
             log.info("Updated aggregator of zone: {} -- New aggregator: {} @ {} ({})",
                     zone.getId(), clientId1, csc.getClientIpAddress(), clientId2);
@@ -117,7 +135,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     private ClusterZone findZone(ClientShellCommand csc) {
-        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
         return topologyMap.get(zoneId);
     }
 
@@ -159,7 +177,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
             log.debug("ClusteringCoordinator: preregister: Adding node without EMS client: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
 
             // Assign node-without-client in a zone
-            String zoneId = zoneManagementStrategy.getZoneIdFor(entry);
+            String zoneId = clusterZoneDetector.getZoneIdFor(entry);
             log.debug("ClusteringCoordinator: preregister: New entry: node={}, zone-id={}", entry.getNodeIdAndAddress(), zoneId);
             if (log.isTraceEnabled()) {
                 log.trace("preregister: topologyMap: BEFORE: keys={}", topologyMap.keySet());
@@ -281,7 +299,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     private synchronized void addNodeInTopology(ClientShellCommand csc) {
         // Assign client in a zone
-        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
         log.debug("addNodeInTopology: New client: id={}, address={}, zone-id={}", csc.getId(), csc.getClientIpAddress(), zoneId);
         ClusterZone zone = topologyMap.computeIfAbsent(zoneId, this::createClusterZone);
         log.trace("addNodeInTopology: Zone members: BEFORE: {}", zone.getNodes());
@@ -314,7 +332,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     private synchronized void removeNodeFromTopology(ClientShellCommand csc) {
         // Assign client in a zone
-        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
         ClusterZone zone = topologyMap.get(zoneId);
         if (zone == null) {
             log.warn("removeNodeFromTopology: Not Registered client removed: client={}, address={}", csc.getId(), csc.getClientIpAddress());

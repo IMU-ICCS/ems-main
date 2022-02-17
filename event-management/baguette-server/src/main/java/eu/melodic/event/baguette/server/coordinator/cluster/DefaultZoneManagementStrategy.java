@@ -37,39 +37,6 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     }
 
     @Override
-    public String getZoneIdFor(ClientShellCommand c) {
-        String nodeAddress = c.getClientIpAddress();
-        String hostname = c.getClientHostname();
-        log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
-        log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
-        log.debug("getZoneIfFor: {}: NRE = {}", c.getId(), c.getNodeRegistryEntry());
-        String zoneName = getZoneIdFor(c.getNodeRegistryEntry());
-        log.debug("getZoneIfFor: {}: zoneName = {}", c.getId(), zoneName);
-        if (StringUtils.isBlank(zoneName) && StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
-            int p = hostname.indexOf(".");
-            if (p>0)
-                zoneName = hostname.substring(p+1);
-        }
-        if (StringUtils.isBlank(zoneName) && StringUtils.isNotBlank(nodeAddress)) {
-            int p = nodeAddress.lastIndexOf(".");
-            if (p<0) p = nodeAddress.lastIndexOf(":");
-            if (p>0)
-                zoneName = nodeAddress.substring(0, p);
-        }
-        return StringUtils.isBlank(zoneName)
-                ? UUID.randomUUID().toString()
-                : zoneName;
-    }
-
-    @Override
-    public String getZoneIdFor(NodeRegistryEntry entry) {
-        if (entry==null) return null;
-        String zoneId = entry.getPreregistration().get("zone-id");
-        log.debug("getZoneIdFor: {} @ {}: Zone-Id in Preregistration-Info: {}", entry.getClientId(), entry.getIpAddress(), zoneId);
-        return zoneId;
-    }
-
-    @Override
     public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         // Instruct new node to join cluster
         log.info("DefaultZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());

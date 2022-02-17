@@ -40,53 +40,6 @@ public class AtLeastTwoZoneManagementStrategy implements IZoneManagementStrategy
     }
 
     @Override
-    public String getZoneIdFor(ClientShellCommand c) {
-        String nodeAddress = c.getClientIpAddress();
-        String hostname = c.getClientHostname();
-        log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
-        log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
-        String zoneName = null;
-        NodeRegistryEntry entry = c.getNodeRegistryEntry();
-        if (entry!=null) {
-            String zoneId = getZoneIdFor(c.getNodeRegistryEntry());
-            if (StringUtils.isNotBlank(zoneId)) {
-                return zoneId;
-            }
-        }
-        if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
-            int p = hostname.indexOf(".");
-            if (p>0)
-                zoneName = hostname.substring(p+1);
-        }
-        if (StringUtils.isBlank(zoneName) && StringUtils.isNotBlank(nodeAddress)) {
-            int p = nodeAddress.lastIndexOf(".");
-            if (p<0) p = nodeAddress.lastIndexOf(":");
-            if (p>0)
-                zoneName = nodeAddress.substring(0, p);
-        }
-        return StringUtils.isBlank(zoneName)
-                ? UUID.randomUUID().toString()
-                : zoneName;
-    }
-
-    @Override
-    public String getZoneIdFor(@NonNull NodeRegistryEntry entry) {
-        log.debug("getZoneIdFor: {}: NRE: {}", entry.getClientId(), entry);
-        Map<String, String> preregInfo = entry.getPreregistration();
-        log.trace("getZoneIdFor: {}: Preregistration-Info: {}", entry.getClientId(), preregInfo);
-        if (preregInfo!=null) {
-            String zoneId = preregInfo.get("zone-id");
-            log.debug("getZoneIdFor: {}: Zone-Id: {}", entry.getClientId(), zoneId);
-            if (StringUtils.isNotBlank(zoneId)) {
-                log.debug("getZoneIdFor: {}: Found Zone-Id in Preregistration-Info: {}", entry.getClientId(), zoneId);
-                return zoneId;
-            }
-        }
-        log.debug("getZoneIdFor: {}: Not found Zone-Id in Preregistration-Info. Returning null", entry.getClientId());
-        return null;
-    }
-
-    @Override
     public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         if (zone.getNodes().size() < 2)
             return;

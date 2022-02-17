@@ -15,9 +15,6 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import java.util.Map;
 
 public interface IZoneManagementStrategy {
-    String getZoneIdFor(ClientShellCommand csc);
-    String getZoneIdFor(NodeRegistryEntry entry);
-
     default boolean allowAlreadyPreregisteredNode(Map<String,Object> nodeInfo) { return true; }
     default boolean allowAlreadyPreregisteredNode(NodeRegistryEntry entry) { return true; }
     default boolean allowAlreadyRegisteredNode(ClientShellCommand csc) { return true; }
