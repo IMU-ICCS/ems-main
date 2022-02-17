@@ -259,7 +259,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             out.println("EXIT");
 
         } catch (Exception ex) {
-            log.warn("{}==> EXCEPTION : {}", id, ex);
+            log.warn("{}==> EXCEPTION : ", id, ex);
             out.printf("EXCEPTION %s\n", ex);
             this.lastException = ex;
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXCEPTION", this);
