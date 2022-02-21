@@ -686,7 +686,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                 .collect(Collectors.toSet());
     }*/
 
-    public Object getSLOMetricDecomposition(String camelModelId) {
+    public @NonNull Map<String,Object> getSLOMetricDecomposition(String camelModelId) {
         List<Object> slos = _getSLOMetricDecomposition(camelModelId);
         Map<String,Object> result = new HashMap<>();
         result.put("name", "_");
@@ -695,7 +695,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         return result;
     }
 
-    public List<Object> _getSLOMetricDecomposition(String camelModelId) {
+    public @NonNull List<Object> _getSLOMetricDecomposition(String camelModelId) {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptyList();
 
@@ -760,7 +760,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         return null;
     }
 
-    public Set<TranslationContext.MetricContext> getMetricContextsForPrediction(String camelModelId) {
+    public @NonNull Set<TranslationContext.MetricContext> getMetricContextsForPrediction(String camelModelId) {
         log.debug("getMetricContextsForPrediction: BEGIN: {}", camelModelId);
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) {
