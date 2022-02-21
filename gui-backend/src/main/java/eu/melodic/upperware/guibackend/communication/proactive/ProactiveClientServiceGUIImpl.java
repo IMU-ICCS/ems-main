@@ -41,8 +41,8 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     }
 
     @Override
-    public ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.registerNewByonNode(byonNodeDefinition, jobId)).orElse(null);
+    public ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId, boolean automate) {
+        return getPAGateway().map(paGateway -> paGateway.registerNewByonNode(byonNodeDefinition, jobId, automate)).orElse(null);
     }
 
     @Override
