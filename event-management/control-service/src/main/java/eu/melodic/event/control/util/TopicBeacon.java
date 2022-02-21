@@ -167,6 +167,12 @@ public class TopicBeacon implements InitializingBean {
         }).collect(Collectors.toList());
         log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);
 
+        // Skip event sending if payload is empty
+        if (payload.size()==0) {
+            log.debug("Topic Beacon: Transmitting Prediction info: Event is empty. Not sending anything");
+            return;
+        }
+
         String eventPayload = gson.toJson(payload);
 
         log.debug("Topic Beacon: Transmitting Prediction info: event={}, topics={}", eventPayload, beaconPredictionTopics);
@@ -188,6 +194,12 @@ public class TopicBeacon implements InitializingBean {
         if (sloMetricDecompositions==null)
             return;
         log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
+
+        // Skip event sending if payload is empty
+        if (!(sloMetricDecompositions instanceof Map) || ((Map) sloMetricDecompositions).size() == 0) {
+            log.debug("Topic Beacon: transmitSloViolatorInfo: Event is empty. Not sending anything");
+            return;
+        }
 
         String eventPayload = gson.toJson(sloMetricDecompositions);
 
