@@ -20,6 +20,10 @@ public class NewUserRequest {
     @ValidPassword()
     private String password;
 
+    private String fullName;
+
+    private String mail;
+
     private String passwordConfirmation;
 
     private UserRole userRole;

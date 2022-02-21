@@ -432,6 +432,7 @@ deploy:adapter:
     - morphemic-rc1.5
     - morphemic-rc2.0
     - proactive-dev
+    - fix-cloud-id
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
