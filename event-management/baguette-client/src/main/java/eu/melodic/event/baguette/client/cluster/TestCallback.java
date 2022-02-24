@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.cluster;
 
+import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
 import io.atomix.utils.net.Address;
 
@@ -19,6 +20,9 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
     public TestCallback(Address localAddress) {
         address = localAddress.toString();
     }
+
+    public void joinedCluster() { }
+    public void leftCluster() { }
 
     public void initialize() {
         if ("L2".equals(state)) {
@@ -64,6 +68,10 @@ public class TestCallback extends AbstractLogBase implements BrokerUtil.NodeCall
 
     public void statusChanged(BrokerUtil.NODE_STATUS oldStatus, BrokerUtil.NODE_STATUS newStatus) {
         log_info("__TestNode at {}: Status changed: {} --> {}", address, oldStatus, newStatus);
+    }
+
+    public void clusterChanged(ClusterMembershipEvent event) {
+        log_info("__TestNode at {}: Cluster changed: {}: {}", address, event.type(), event.subject().id().id());
     }
 
     public String getConfiguration(Member local) {

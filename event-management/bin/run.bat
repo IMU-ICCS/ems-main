@@ -51,7 +51,7 @@ if "%LOG_FILE%"=="" (
 )
 
 :: Waiting CDO to come up...
-if exist %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
+IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
     echo "Waiting CDO server to start..."
     %MELODIC_CONFIG_DIR%\wait-for-cdo.bat
 )
@@ -66,10 +66,10 @@ IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
 :_restart_ems
 
 rem Use when Esper is packaged in control-service.jar
-rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
+rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
 
 rem Use when Esper is NOT packaged in control-service.jar
-java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE% %*
+java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE% %*
 
 if errorlevel %RESTART_EXIT_CODE% (
     echo Restarting EMS server...

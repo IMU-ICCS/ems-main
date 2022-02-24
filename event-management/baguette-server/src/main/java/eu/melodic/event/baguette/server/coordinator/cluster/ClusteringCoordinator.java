@@ -14,10 +14,13 @@ import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.GROUPING;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,20 +33,39 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     private final Map<String, ClusterZone> topologyMap = new HashMap<>();
 
+    private IClusterZoneDetector clusterZoneDetector;
     private IZoneManagementStrategy zoneManagementStrategy;
     private int zoneStartPort = 1200;
     private int zoneEndPort = 65535;
+    private String zoneKeystoreFileNameFormatter = "logs/cluster_${TIMESTAMP}_${ZONE_ID}.p12";
 
     private GROUPING topLevelGrouping;
     private GROUPING aggregatorGrouping;
     private GROUPING lastLevelGrouping;
 
+    private final Map<String,NodeRegistryEntry> ignoredNodes = new LinkedHashMap<>();
+
+    public Collection<String> getClusterIdSet() { return topologyMap.keySet(); }
+    public Collection<IClusterZone> getClusters() { return topologyMap.values().stream().map(c->(IClusterZone)c).collect(Collectors.toList()); }
+    public IClusterZone getCluster(String id) { return topologyMap.get(id); }
+
     @Override
     public boolean isSupported(final TranslationContext _TC) {
+        log.trace("ClusteringCoordinator.isSupported: TC: {}", _TC);
+
         // Check if it is a 3-level architecture
         Set<String> groupings = _TC.getG2R().keySet();
+        log.trace("ClusteringCoordinator.isSupported: Groupings: {}", groupings);
+        log.trace("ClusteringCoordinator.isSupported: Contains GLOBAL: {}", groupings.contains("GLOBAL"));
+        log.trace("ClusteringCoordinator.isSupported: Num of Levels: {}", groupings.size());
+
         if (!groupings.contains("GLOBAL")) return false;
         return groupings.size()==3;
+    }
+
+    @Override
+    public boolean supportsAggregators() {
+        return true;
     }
 
     @Override
@@ -74,6 +96,22 @@ public class ClusteringCoordinator extends NoopCoordinator {
                 ? Integer.parseInt(zoneConfig.get("zone-port-start")) : zoneStartPort;
         zoneEndPort = zoneConfig.containsKey("zone-port-end")
                 ? Integer.parseInt(zoneConfig.get("zone-port-end")) : zoneEndPort;
+        zoneKeystoreFileNameFormatter = zoneConfig.containsKey("zone-keystore-file-name-formatter")
+                ? zoneConfig.get("zone-keystore-file-name-formatter") : zoneKeystoreFileNameFormatter;
+
+        // Initialize Cluster Detector
+        String clusterDetectorClass = zoneConfig.get("cluster-detector-class");
+        if (StringUtils.isNotBlank(clusterDetectorClass)) {
+            Class<?> clazz = Class.forName(clusterDetectorClass);
+            if (clazz.isAssignableFrom(IClusterZoneDetector.class))
+                clusterZoneDetector = (IClusterZoneDetector) clazz.newInstance();
+            else
+                throw new IllegalArgumentException("Invalid Cluster Detector class. Not implementing IClusterZoneDetector interface: "+clazz.getName());
+        } else {
+            clusterZoneDetector = new ClusterZoneDetector();
+        }
+        clusterZoneDetector.setProperties(zoneConfig);
+        log.info("Cluster Detector class: {}", clusterZoneDetector.getClass().getName());
     }
 
     @Override
@@ -85,7 +123,10 @@ public class ClusteringCoordinator extends NoopCoordinator {
             String clientId1 = csc.getId();
             String clientId2 = csc.getClientId();
             String clientId3 = args[2];
+            log.trace("processClientInput: csc.zone: {}", csc.getClientZone()!=null ? csc.getClientZone().getId() : null);
+            log.trace("processClientInput: topology-map: {}", topologyMap.keySet());
             ClusterZone zone = findZone(csc);
+            log.trace("processClientInput: zone={}", zone);
             zone.setAggregator(csc);
             log.info("Updated aggregator of zone: {} -- New aggregator: {} @ {} ({})",
                     zone.getId(), clientId1, csc.getClientIpAddress(), clientId2);
@@ -94,7 +135,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     private ClusterZone findZone(ClientShellCommand csc) {
-        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
         return topologyMap.get(zoneId);
     }
 
@@ -114,25 +155,83 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     @Override
+    public synchronized void preregister(@NonNull NodeRegistryEntry entry) {
+        log.debug("ClusteringCoordinator: preregister: BEGIN: NRE:\n{}", entry);
+
+        if (!_logInvocation("preregister", entry.getNodeIdAndAddress(), true)) return;
+
+        // Check if client has been preregistered (or connected without being expected)
+        /*if (zoneManagementStrategy.allowNotPreregisteredNode(entry)) {
+            log.warn("Non-Preregistered node will be preregistered: {} @ {}", entry.getClientId(), entry.getIpAddress());
+            zoneManagementStrategy.notPreregisteredNode(entry);
+        }*/
+
+        log.debug("ClusteringCoordinator: preregister: Checking node State: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
+        if (entry.getState()==NodeRegistryEntry.STATE.IGNORE_NODE) {
+            // Add in ignored nodes list
+            log.info("ClusteringCoordinator: preregister: Ignoring node: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
+            ignoredNodes.put(entry.getIpAddress(), entry);
+        } else
+        if (entry.getState()==NodeRegistryEntry.STATE.NOT_INSTALLED) {
+            // Append to Nodes without EMS client (e.g. Edge devices, resource-limited VM's)
+            log.debug("ClusteringCoordinator: preregister: Adding node without EMS client: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
+
+            // Assign node-without-client in a zone
+            String zoneId = clusterZoneDetector.getZoneIdFor(entry);
+            log.debug("ClusteringCoordinator: preregister: New entry: node={}, zone-id={}", entry.getNodeIdAndAddress(), zoneId);
+            if (log.isTraceEnabled()) {
+                log.trace("preregister: topologyMap: BEFORE: keys={}", topologyMap.keySet());
+                log.trace("preregister: topologyMap: containsKey: key={}, result={}", zoneId, topologyMap.containsKey(zoneId));
+            }
+            ClusterZone zone = topologyMap.computeIfAbsent(zoneId, this::createClusterZone);
+            log.trace("ClusteringCoordinator: preregister: Zone members without client: BEFORE: {}", zone.getNodesWithoutClient());
+            zone.addNodeWithoutClient(entry);
+            log.trace("ClusteringCoordinator: preregister: Zone members without client:  AFTER: {}", zone.getNodesWithoutClient());
+        } else
+        if (entry.getState()==NodeRegistryEntry.STATE.INSTALLED) {
+            // Append to normal Node with EMS client
+            log.debug("ClusteringCoordinator: preregister: Node with EMS client: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
+            // No need to do something
+        } else {
+            // Other states are ignored
+            log.warn("ClusteringCoordinator: preregister: No preregistration due to node state: node={}, state={}", entry.getNodeIdAndAddress(), entry.getState());
+        }
+    }
+
+    private ClusterZone createClusterZone(@NonNull String id) {
+        Map<String,String> values = new HashMap<>();
+        values.put("TIMESTAMP", ""+System.currentTimeMillis());
+        values.put("ZONE_ID", id.replaceAll("[^A-Za-z0-9_]", "_"));
+        String keystoreFile = StringSubstitutor.replace(zoneKeystoreFileNameFormatter, values);
+        return new ClusterZone(id, zoneStartPort, zoneEndPort, keystoreFile);
+    }
+
+    @Override
     public synchronized void register(ClientShellCommand csc) {
         if (!_logInvocation("register", csc, true)) return;
 
         // Check if client has been preregistered (or connected without being expected)
         NodeRegistryEntry preregEntry = server.getNodeRegistry().getNodeByAddress(csc.getClientIpAddress());
+        log.debug("Preregistered info for node: {} @ {}:\n{}", csc.getId(), csc.getClientIpAddress(), preregEntry);
         if (preregEntry==null && zoneManagementStrategy.allowNotPreregisteredNode(csc)) {
             log.warn("Non Preregistered node connected: {} @ {}", csc.getId(), csc.getClientIpAddress());
+            log.warn("Preregistered nodes: {}", server.getNodeRegistry().getNodes().stream()
+                    .map(entry->entry.getState()+"/"+entry.getIpAddress()+"/"+entry.getNodeIdAndAddress()+"/"+entry.getClientId())
+                    .collect(Collectors.toList()));
             zoneManagementStrategy.notPreregisteredNode(csc);
         } else if (preregEntry==null) {
             log.warn("Non Preregistered node is refused connection: {} @ {}", csc.getId(), csc.getClientIpAddress());
             csc.setCloseConnection(true);
             return;
         }
+        if (preregEntry!=null) csc.setNodeRegistryEntry(preregEntry);
 
         // Check if client has already been registered (i.e. is still connected)
         ClientShellCommand regEntry = topologyMap.values().stream()
                 .map(zone->zone.getNodeByAddress(csc.getClientIpAddress()))
                 .filter(Objects::nonNull)
                 .findAny().orElse(null);
+        log.debug("Registered CSC for node: {} @ {}:\n{}", csc.getId(), csc.getClientIpAddress(), regEntry);
         if (regEntry!=null && allowAlreadyRegisteredNode(csc)) {
             log.warn("Already Registered node connected: {} @ {}", csc.getId(), csc.getClientIpAddress());
             zoneManagementStrategy.alreadyRegisteredNode(csc);
@@ -153,6 +252,12 @@ public class ClusteringCoordinator extends NoopCoordinator {
     }
 
     protected synchronized void _do_register(ClientShellCommand csc) {
+        // Add registered node in topology map
+        addNodeInTopology(csc);
+
+        // collect client configuration
+        ClientConfiguration clientConfig = csc.getClientZone().getClientConfiguration();
+
         // prepare configuration
         Map<String,BrokerConnectionConfig> connCfgMap = new LinkedHashMap<>();
         BrokerConnectionConfig groupingConn = getUpperwareBrokerConfig(server);
@@ -165,6 +270,13 @@ public class ClusteringCoordinator extends NoopCoordinator {
             connCfgMap.put(groupingName, groupingConn);
             log.trace("ClusteringCoordinator: {} broker config.: {}", groupingName, groupingConn);
         }
+
+        // send client configuration to client
+        log.info("ClusteringCoordinator: --------------------------------------------------");
+        log.info("ClusteringCoordinator: Sending client configuration to client {}...\n{}", csc.getId(), clientConfig);
+        csc.getClientZone().sendClientConfigurationToZoneClients();
+        log.info("ClusteringCoordinator: Sending client configuration to client {}... done", csc.getId());
+        sleep(500);
 
         // send grouping configurations to client
         log.info("ClusteringCoordinator: --------------------------------------------------");
@@ -181,15 +293,15 @@ public class ClusteringCoordinator extends NoopCoordinator {
         log.info("ClusteringCoordinator: --------------------------------------------------");
         sleep(500);
 
-        // Add registered node in topology map
-        addNodeInTopology(csc);
+        // Registered node added in topology map - Notify ZoneManagementStrategy
+        addedNodeInTopology(csc);
     }
 
     private synchronized void addNodeInTopology(ClientShellCommand csc) {
         // Assign client in a zone
-        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
         log.debug("addNodeInTopology: New client: id={}, address={}, zone-id={}", csc.getId(), csc.getClientIpAddress(), zoneId);
-        ClusterZone zone = topologyMap.computeIfAbsent(zoneId, id -> new ClusterZone(id, zoneStartPort, zoneEndPort));
+        ClusterZone zone = topologyMap.computeIfAbsent(zoneId, this::createClusterZone);
         log.trace("addNodeInTopology: Zone members: BEFORE: {}", zone.getNodes());
         zone.addNode(csc);
         log.trace("addNodeInTopology: Zone members:  AFTER: {}", zone.getNodes());
@@ -205,9 +317,11 @@ public class ClusteringCoordinator extends NoopCoordinator {
         //csc.setClientClusterNodeHostname(nodeCanonical);
         log.debug("addNodeInTopology: New client: Cluster node: address={}, hostname={} // {}, port={}",
                 nodeAddress, nodeHostname, nodeCanonical, nodePort);
+    }
 
+     private synchronized void addedNodeInTopology(ClientShellCommand csc) {
         // Signal Zone Management Strategy for new client registration
-        zoneManagementStrategy.nodeAdded(csc, this, zone);
+        zoneManagementStrategy.nodeAdded(csc, this, csc.getClientZone());
         log.info("addNodeInTopology: Client added in topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
     }
 
@@ -218,7 +332,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     private synchronized void removeNodeFromTopology(ClientShellCommand csc) {
         // Assign client in a zone
-        String zoneId = zoneManagementStrategy.getZoneIdFor(csc);
+        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
         ClusterZone zone = topologyMap.get(zoneId);
         if (zone == null) {
             log.warn("removeNodeFromTopology: Not Registered client removed: client={}, address={}", csc.getId(), csc.getClientIpAddress());
@@ -235,7 +349,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     // Methods to be used by Zone Management Strategies
     // ------------------------------------------------------------------------
 
-    void sendClusterKey(ClientShellCommand csc, ClusterZone zoneInfo) {
+    void sendClusterKey(ClientShellCommand csc, IClusterZone zoneInfo) {
         csc.sendCommand(String.format("CLUSTER-KEY %s %s %s %s",
                 zoneInfo.getClusterKeystoreFile().getName(), zoneInfo.getClusterKeystoreType(),
                 zoneInfo.getClusterKeystorePassword(), zoneInfo.getClusterKeystoreBase64()));
@@ -247,7 +361,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         zoneNodes.forEach(c -> c.sendCommand(command));
     }
 
-    void instructClusterJoin(ClientShellCommand csc, ClusterZone zone, boolean startElection) {
+    void instructClusterJoin(ClientShellCommand csc, IClusterZone zone, boolean startElection) {
         List<ClientShellCommand> zoneNodes = zone.getNodes();
         log.debug("instructClusterJoin: Zone members: {}", zoneNodes);
 
@@ -282,7 +396,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         csc.sendCommand("CLUSTER-JOIN "+command);
     }
 
-    void instructClusterLeave(ClientShellCommand csc, ClusterZone zone) {
+    void instructClusterLeave(ClientShellCommand csc, IClusterZone zone) {
         // Send cluster leave command
         log.debug("instructClusterLeave: Client {} @ {} leaves cluster: CLUSTER-LEAVE", csc.getId(), csc.getClientIpAddress());
         try {
@@ -293,7 +407,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         }
     }
 
-    void electAggregator(ClusterZone zone) {
+    void electAggregator(IClusterZone zone) {
         sendCommandToZone("CLUSTER-EXEC broker elect", zone.getNodes());
     }
 }

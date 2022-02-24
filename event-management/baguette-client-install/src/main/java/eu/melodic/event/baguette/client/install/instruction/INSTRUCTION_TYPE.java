@@ -9,4 +9,7 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
-public enum INSTRUCTION_TYPE { LOG, CHECK, CMD, SHELL, FILE, COPY }
+public enum INSTRUCTION_TYPE {
+    LOG, CHECK, CMD, SHELL, FILE, COPY, UPLOAD, DOWNLOAD,
+    SET_VARS, UNSET_VARS, PRINT_VARS, EXIT, EXIT_SET
+}

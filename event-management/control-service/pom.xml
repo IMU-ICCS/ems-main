@@ -23,15 +23,32 @@
         <hawtio.version>2.4.0</hawtio.version>
         <spring.boot.admin.version>2.3.1</spring.boot.admin.version>
         <jasypt.starter.version>2.1.0</jasypt.starter.version>
+        <micrometer.registry.prometheus.version>1.3.1</micrometer.registry.prometheus.version>
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
         <!--DOCKER plugin properties-->
+        <!--
+        <docker.push>false</docker.push>
+        <docker.repository></docker.repository>
+        <docker.imagePrefix></docker.imagePrefix>
+        <docker.imageName></docker.imageName>
+        <docker.imageTag></docker.imageTag>
+        -->
         <docker.imageName>ems-server</docker.imageName>
         <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
     </properties>
 
     <dependencies>
+        <!-- Needed to stop old JDK 1.8 compiler complains -->
+        <!--XXX: Probably remove in the future -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- Melodic dependencies -->
         <dependency>
             <groupId>eu.melodic</groupId>
@@ -72,6 +89,11 @@
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -94,19 +116,34 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Spring Boot Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+        <!-- Spring Boot Webflux -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <!-- Spring Boot Actuator  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- Micrometer Prometheus registry  -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>${micrometer.registry.prometheus.version}</version>
+        </dependency>
+        <!-- Spring Boot Admin client  -->
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
         </dependency>
+        <!-- Jasypt Spring Boot starter  -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
@@ -153,6 +190,33 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Remove previous files from /public_resources -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>remove-old-public-resources</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--<excludeDefaultDirectories>true</excludeDefaultDirectories>-->
+                    <filesets>
+                        <fileset>
+                            <directory>${project.parent.basedir}/public_resources</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
@@ -275,46 +339,77 @@
                                 <!-- Copy index.html and favicon.ico to /public_resources -->
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/index.html</sourceFile>
-                                    <destinationFile>../public_resources/index.html</destinationFile>
+                                    <destinationFile>../public_resources/resources/index.html</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/favicon.ico</sourceFile>
                                     <destinationFile>../public_resources/favicon.ico</destinationFile>
                                 </fileSet>
 
+                                <!-- Copy checksums.csv to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>${project.build.directory}/checksums.csv</sourceFile>
+                                    <destinationFile>../public_resources/resources/checksums.csv</destinationFile>
+                                </fileSet>
+
                                 <!-- Copy broker-client files to /public_resources -->
                                 <fileSet>
                                     <sourceFile>../broker-client/target/broker-client-jar-with-dependencies.jar</sourceFile>
-                                    <destinationFile>../public_resources/broker-client.jar</destinationFile>
+                                    <destinationFile>../public_resources/resources/broker-client.jar</destinationFile>
                                 </fileSet>
                                 <!--
                                   "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
                                 -->
                                 <!--<fileSet>
                                     <sourceFile>../broker-client/eu.melodic.event.brokerclient.properties</sourceFile>
-                                    <destinationFile>../public_resources/eu.melodic.event.brokerclient.properties</destinationFile>
+                                    <destinationFile>../public_resources/resources/eu.melodic.event.brokerclient.properties</destinationFile>
                                 </fileSet>-->
                                 <fileSet>
                                     <sourceFile>../bin/client.sh</sourceFile>
-                                    <destinationFile>../public_resources/client.sh</destinationFile>
+                                    <destinationFile>../public_resources/resources/client.sh</destinationFile>
                                 </fileSet>
 
                                 <!-- Copy baguette-client files to /public_resources -->
                                 <fileSet>
                                     <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz</sourceFile>
-                                    <destinationFile>../public_resources/baguette-client.tgz</destinationFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz.md5</sourceFile>
-                                    <destinationFile>../public_resources/baguette-client.tgz.md5</destinationFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz.md5</destinationFile>
                                 </fileSet>
                                 <fileSet>
                                     <sourceFile>../baguette-client/bin/install.sh</sourceFile>
-                                    <destinationFile>../public_resources/install.sh</destinationFile>
+                                    <destinationFile>../public_resources/resources/install.sh</destinationFile>
                                 </fileSet>
                             </fileSets>
                             <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
                             <overWrite>true</overWrite>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Copy Web Admin distribution files to /public_resources -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-web-admin-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.parent.basedir}/public_resources/admin</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.parent.basedir}/web-admin/dist</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>
@@ -335,6 +430,8 @@
                             <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>run.sh</include>
+                            <include>sysmon.sh</include>
+                            <include>detect.sh</include>
                         </resource>
                         <resource>
                             <targetPath>/config</targetPath>
@@ -372,6 +469,7 @@
                     </resources>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>

@@ -38,6 +38,9 @@ public class ClusterManagerProperties {
 	private boolean joinOnInit = true;
 	private boolean electionOnJoin;
 
+	private boolean clusterCheckerEnabled = true;
+	private long clusterCheckerDelay = 30000L;
+
 	private boolean usePBInMg = true;
 	private boolean usePBInPg = true;
 	private String mgName = "system";

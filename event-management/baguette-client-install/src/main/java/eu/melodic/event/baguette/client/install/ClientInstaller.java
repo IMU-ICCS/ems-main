@@ -9,6 +9,8 @@
 
 package eu.melodic.event.baguette.client.install;
 
+import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,6 +33,8 @@ public class ClientInstaller implements InitializingBean {
 
     @Autowired
     private ClientInstallationProperties properties;
+    @Autowired
+    private BaguetteServer baguetteServer;
 
     private final AtomicLong taskCounter = new AtomicLong();
     private ExecutorService executorService;
@@ -57,8 +61,28 @@ public class ClientInstaller implements InitializingBean {
     }
 
     private boolean executeTask(ClientInstallationTask task, long taskCounter) {
+        if (baguetteServer.getNodeRegistry().getCoordinator()==null)
+            throw new IllegalStateException("Baguette Server Coordinator has not yet been initialized");
+
         if ("VM".equalsIgnoreCase(task.getType())) {
-            return executeVmTask(task, taskCounter);
+            NodeRegistryEntry entry = baguetteServer.getNodeRegistry().getNodeByAddress(task.getAddress());
+            if (entry==null)
+                throw new IllegalStateException("Node entry has been removed from Node Registry before installation: Node IP address: "+task.getAddress());
+                //baguetteServer.handleNodeSituation(task.getAddress(), INTERNAL_ERROR);
+            entry.nodeInstalling(task);
+
+            boolean success = executeVmTask(task, taskCounter);
+            log.debug("ClientInstaller: NODE_REGISTRY_ENTRY after installation execution: \n{}", task.getNodeRegistryEntry());
+
+            if (entry.getState()==NodeRegistryEntry.STATE.INSTALLING) {
+                log.warn("ClientInstaller: NODE_REGISTRY_ENTRY status is still INSTALLING after executing client installation. Changing to INSTALL_ERROR");
+                entry.nodeInstallationError(null);
+            }
+
+            // Pre-register Node to baguette Server Coordinator
+            baguetteServer.getNodeRegistry().getCoordinator().preregister(entry);
+
+            return success;
         } else {
             log.error("ClientInstaller: UNSUPPORTED TASK TYPE: {}", task.getType());
         }

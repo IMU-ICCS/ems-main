@@ -149,7 +149,6 @@ public class MetricValueListener implements MessageListener {
 
     protected void processScaleEvent(@NonNull String metricName, @NonNull String payload) {
 		try {
-			log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
             MetaSolverProperties.OperationMode operationMode = metaSolverProperties.getOperationMode();
             if (!isPrediction) {
                 // check operation mode
@@ -159,6 +158,7 @@ public class MetricValueListener implements MessageListener {
                 }
 
                 // Start reconfiguration with the actual metric values set in CP model
+                log.debug("Listener of topic {}: Calling coordinator to start Scaling process...", topicName);
                 coordinator.requestReconfigurationStart(false);
             } else {
                 // check operation mode
@@ -190,6 +190,7 @@ public class MetricValueListener implements MessageListener {
                 //log.debug("Listener of topic {}: Predicted metric values (as MVs): {}", topicName, metricValues);
 
                 // Start reconfiguration with the given predicted values set in CP model
+                log.debug("Listener of topic {}: Calling coordinator to start Scaling process due to prediction...", topicName);
                 coordinator.requestReconfigurationStart(false, metricValues);
 
                 // Cleanup older predictionTime frames

@@ -10,59 +10,43 @@
 package eu.melodic.event.baguette.client.collector.netdata;
 
 import eu.melodic.event.baguette.client.Collector;
-import eu.melodic.event.baguette.client.CommandExecutor;
-import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.baguette.client.collector.ClientCollectorContext;
+import eu.melodic.event.common.collector.CollectorContext;
+import eu.melodic.event.common.collector.netdata.NetdataCollectorProperties;
+import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.GroupingConfiguration;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Collects measurements from Netdata server
+ * Collects measurements from Netdata http server
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class NetdataCollector implements Collector, InitializingBean, Runnable {
-    private final NetdataCollectorProperties properties;
-    private final CommandExecutor commandExecutor;
-
-    private RestTemplate restTemplate = new RestTemplate();
-    private boolean started;
-    private Thread runner;
-    private boolean running;
-    private List<String> allowedTopics;
-    private Map<String, String> topicMap;
-
-    @Override
-    public void afterPropertiesSet() {
-        log.debug("Collectors::Netdata: properties: {}", properties);
-        this.allowedTopics = properties.getAllowedTopics()==null
-                ? null
-                : properties.getAllowedTopics().stream()
-                .map(s -> s.split(":")[0])
-                .collect(Collectors.toList());
-        this.topicMap = properties.getAllowedTopics()==null
-                ? null
-                : properties.getAllowedTopics().stream()
-                .map(s -> s.split(":", 2))
-                .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
-
+public class NetdataCollector extends eu.melodic.event.common.collector.netdata.NetdataCollector implements Collector {
+    public NetdataCollector(@NonNull NetdataCollectorProperties properties,
+                            @NonNull CollectorContext collectorContext,
+                            @NonNull TaskScheduler taskScheduler,
+                            @NonNull EventBus<String, Object, Object> eventBus)
+    {
+        super(properties, collectorContext, taskScheduler, eventBus);
+        if (!(collectorContext instanceof ClientCollectorContext))
+            throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ClientCollectorContext, but got "+collectorContext.getClass().getName());
     }
 
     public synchronized void activeGroupingChanged(String oldGrouping, String newGrouping) {
         HashSet<String> topics = new HashSet<>();
         for (String g : GROUPING.getNames()) {
-            GroupingConfiguration grp = commandExecutor.getGroupings().get(g);
+            GroupingConfiguration grp = ((ClientCollectorContext)collectorContext).getGroupings().get(g);
             if (grp!=null)
                 topics.addAll(grp.getEventTypeNames());
         }
@@ -81,131 +65,4 @@ public class NetdataCollector implements Collector, InitializingBean, Runnable {
         }
     }
 
-    public synchronized void start() {
-        // check if already running
-        if (started) {
-            log.warn("Collectors::Netdata: Already started");
-            return;
-        }
-
-        // check parameters
-        if (properties==null || !properties.isEnable()) {
-            log.warn("Collectors::Netdata: Collector not enabled");
-            return;
-        }
-        if (properties.getDelay()<0) properties.setDelay(0);
-        if (StringUtils.isBlank(properties.getUrl())) {
-            String url = "http://127.0.0.1:19999/api/v1/allmetrics?format=json";
-            log.debug("Collectors::Netdata: URL not specified. Assuming {}", url);
-            properties.setUrl(url);
-        }
-
-        log.info("Collectors::Netdata: configuration: {}", properties);
-
-        // start thread
-        runner = new Thread(this, "baguette-client-collector-netdata-thread");
-        runner.setDaemon(true);
-        started = true;
-        running = true;
-        runner.start();
-
-        log.info("Collectors::Netdata: Started");
-    }
-
-    public synchronized void stop() {
-        if (!started) {
-            log.warn("Collectors::Netdata: Not started");
-            return;
-        }
-        running = false;
-        // interrupt sleep
-        runner.interrupt();
-    }
-
-    public void run() {
-        if (!started) return;
-
-        while (running && !Thread.currentThread().isInterrupted()) {
-            try {
-                // collect data
-                collectAndPublishData();
-
-                // sleep for 'delay' millis
-                Thread.sleep(properties.getDelay());
-            } catch (InterruptedException e) {
-                log.warn("Collectors::Netdata: Interrupted");
-            } catch (Throwable t) {
-                log.warn("Collectors::Netdata: Exception: {}", t);
-            }
-        }
-
-        synchronized (this) {
-            log.info("Collectors::Netdata: Stopped");
-            started = false;
-            running = false;
-        }
-    }
-
-    private void collectAndPublishData() {
-        log.info("Collectors::Netdata: Collecting data: {}...", properties.getUrl());
-        long startTm = System.currentTimeMillis();
-        ResponseEntity<HashMap> response = restTemplate.getForEntity(properties.getUrl(), HashMap.class);
-        long callEndTm = System.currentTimeMillis();
-        log.trace("Collectors::Netdata: ...response: {}", response);
-        if (response.getStatusCode()==HttpStatus.OK) {
-            Map dataMap = response.getBody();
-            boolean createTopic = properties.isCreateTopic();
-            int countSuccess = 0;
-            int countErrors = 0;
-            log.trace("Collectors::Netdata: ...keys: {}", dataMap.keySet());
-            for (Object key : dataMap.keySet()) {
-                log.trace("Collectors::Netdata: ...Loop-1: key={}", key);
-                if (key==null) continue;
-                Map keyData = (Map)dataMap.get(key);
-                log.trace("Collectors::Netdata: ...Loop-1: key-data={}", keyData);
-                long timestamp = Long.parseLong( keyData.get("last_updated").toString() );
-                Map dimensionsMap = (Map)keyData.get("dimensions");
-
-                log.trace("Collectors::Netdata: ...Loop-1: ...dimensions-keys: {}", dimensionsMap.keySet());
-                for (Object dimKey : dimensionsMap.keySet()) {
-                    log.trace("Collectors::Netdata: ...Loop-1: ...dimensions-key: {}", dimKey);
-                    if (dimKey==null) continue;
-                    String metricName = ("netdata."+key.toString()+"."+dimKey.toString()).replace(".", "__");
-                    log.trace("Collectors::Netdata: ...Loop-1: ...metric-name: {}", metricName);
-                    Map dimData = (Map)dimensionsMap.get(dimKey);
-                    Object valObj = dimData.get("value");
-                    log.trace("Collectors::Netdata: ...Loop-1: ...metric-value: {}", valObj);
-                    if (valObj!=null) {
-                        double metricValue = Double.parseDouble(valObj.toString());
-                        log.trace("Collectors::Netdata:           {} = {}", metricName, metricValue);
-                        try {
-                            boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
-                            if (topicMap!=null) {
-                                String targetTopic = topicMap.get(metricName);
-                                if (targetTopic!=null && !targetTopic.isEmpty())
-                                    metricName = targetTopic;
-                            }
-                            EventMap event = new EventMap(metricValue, 1, timestamp);
-                            log.debug("Collectors::Netdata:     {}: {}", metricName, metricValue);
-                            if (commandExecutor.sendEvent(null, metricName, event, createDestination))
-                                countSuccess++;
-                        } catch (Exception e) {
-                            log.warn("Collectors::Netdata: Publishing netdata metric failed: ", e);
-                            countErrors++;
-                        }
-                    }
-                }
-
-                if (Thread.currentThread().isInterrupted()) break;
-            }
-            long endTm = System.currentTimeMillis();
-            log.info("Collectors::Netdata: Collecting data...ok");
-            log.info("Collectors::Netdata:     Metrics: extracted={}, published={}, failed={}",
-                    countSuccess+countErrors, countSuccess, countErrors);
-            log.info("Collectors::Netdata:     Durations: rest-call={}, extract+publish={}, total={}",
-                    callEndTm-startTm, endTm-callEndTm, endTm-startTm);
-        } else {
-            log.warn("Collectors::Netdata: Collecting data...failed: Http Status: {}", response.getStatusCode());
-        }
-    }
 }

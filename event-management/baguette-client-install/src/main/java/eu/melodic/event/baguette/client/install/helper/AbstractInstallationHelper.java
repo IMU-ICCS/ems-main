@@ -9,11 +9,13 @@
 
 package eu.melodic.event.baguette.client.install.helper;
 
+import com.google.gson.Gson;
 import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
-import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -53,16 +55,20 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     @Autowired
     @Getter @Setter
     protected ClientInstallationProperties properties;
+    @Autowired
+    protected PasswordUtil passwordUtil;
 
     protected String archiveBase64;
     protected boolean isServerSecure;
     protected String serverCert;
 
-    public synchronized static AbstractInstallationHelper getInstance() { return instance; }
+    public synchronized static AbstractInstallationHelper getInstance() {
+        return instance;
+    }
 
     @Override
     public void afterPropertiesSet() {
-        log.info("AbstractInstallationHelper.afterPropertiesSet(): configuration: {}", properties);
+        log.debug("AbstractInstallationHelper.afterPropertiesSet(): class={}: configuration: {}", getClass().getName(), properties);
         AbstractInstallationHelper.instance = this;
         LINUX_OS_FAMILIES = properties.getOsFamilies().get("LINUX");
         WINDOWS_OS_FAMILIES = properties.getOsFamilies().get("WINDOWS");
@@ -109,6 +115,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
                 log.debug("AbstractInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
                 KeystoreUtil
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                        .passwordUtil(passwordUtil)
                         .exportCertToFile(keyAlias, certFileName);
                 log.debug("AbstractInstallationHelper.initServerCertificate(): Server certificate exported");
 
@@ -119,6 +126,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
             } else {
                 this.serverCert = KeystoreUtil
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
+                        .passwordUtil(passwordUtil)
                         .getEntryCertificateAsPEM(keyAlias);
             }
 
@@ -189,27 +197,43 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         }
     }
 
-    public List<InstallationInstructions> prepareInstallationInstructionsForOs(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
-        if (! baguette.isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+    public Optional<List<String>> getInstallationInstructionsForOs(NodeRegistryEntry entry) throws IOException {
+        if (! entry.getBaguetteServer().isServerRunning()) throw new RuntimeException("Baguette Server is not running");
 
-        String baseUrl = contextMap.get("BASE_URL");
-        String clientId = contextMap.get("CLIENT_ID");
-        String ipSetting = contextMap.get("IP_SETTING");
-        log.trace("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}, base-url={}, client-id={}", nodeMap, baseUrl, clientId);
+        List<InstructionsSet> instructionsSets = prepareInstallationInstructionsForOs(entry);
+        if (instructionsSets==null) {
+            String nodeOs = entry.getPreregistration().get("operatingSystem");
+            log.warn("AbstractInstallationHelper.getInstallationInstructionsForOs(): ERROR: Unknown node OS: {}: node-map={}", nodeOs, entry.getPreregistration());
+            return Optional.empty();
+        }
 
-        String osFamily = (String) nodeMap.get("operatingSystem");
-        List<InstallationInstructions> installationInstructionsList = null;
-        if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructionsList = prepareInstallationInstructionsForLinux(nodeMap, contextMap, baguette);
-        else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
-            installationInstructionsList = prepareInstallationInstructionsForWin(nodeMap, contextMap, baguette);
-        else
-            log.warn("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
-        return installationInstructionsList;
+        List<String> jsonSets = null;
+        if (instructionsSets.size()>0) {
+            // Convert 'instructionsSet' into json string
+            Gson gson = new Gson();
+            jsonSets = instructionsSets.stream().map(instructionsSet -> gson.toJson(instructionsSet, InstructionsSet.class)).collect(Collectors.toList());
+        }
+        log.trace("AbstractInstallationHelper.getInstallationInstructionsForOs(): JSON instruction sets for node: node-map={}\n{}", entry.getPreregistration(), jsonSets);
+        return Optional.ofNullable(jsonSets);
     }
 
-    protected InstallationInstructions _appendCopyInstructions(
-            InstallationInstructions installationInstructions,
+    public List<InstructionsSet> prepareInstallationInstructionsForOs(NodeRegistryEntry entry) throws IOException {
+        if (! entry.getBaguetteServer().isServerRunning()) throw new RuntimeException("Baguette Server is not running");
+        log.trace("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): node-map={}", entry.getPreregistration());
+
+        String osFamily = entry.getPreregistration().get("operatingSystem");
+        List<InstructionsSet> instructionsSetList = null;
+        if (LINUX_OS_FAMILIES.contains(osFamily.toUpperCase()))
+            instructionsSetList = prepareInstallationInstructionsForLinux(entry);
+        else if (WINDOWS_OS_FAMILIES.contains(osFamily.toUpperCase()))
+            instructionsSetList = prepareInstallationInstructionsForWin(entry);
+        else
+            log.warn("AbstractInstallationHelper.prepareInstallationInstructionsForOs(): Unsupported OS family: {}", osFamily);
+        return instructionsSetList;
+    }
+
+    protected InstructionsSet _appendCopyInstructions(
+            InstructionsSet instructionsSet,
             Path p,
             Path startDir,
             String copyToClientDir,
@@ -223,13 +247,13 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
         String contents = new String(Files.readAllBytes(p));
         contents = StringSubstitutor.replace(contents, valueMap);
         String tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
-        installationInstructions
+        instructionsSet
                 .appendLog(String.format("Copy file from server to temp to client: %s -> %s -> %s", p.toString(), tmpFile, targetFile));
-        return _appendCopyInstructions(installationInstructions, targetFile, tmpFile, contents, clientTmpDir);
+        return _appendCopyInstructions(instructionsSet, targetFile, tmpFile, contents, clientTmpDir);
     }
 
-    protected InstallationInstructions _appendCopyInstructions(
-            InstallationInstructions installationInstructions,
+    protected InstructionsSet _appendCopyInstructions(
+            InstructionsSet instructionsSet,
             String targetFile,
             String tmpFile,
             String contents,
@@ -238,16 +262,16 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     {
         if (StringUtils.isEmpty(tmpFile))
             tmpFile = clientTmpDir+"/installEMS_"+System.currentTimeMillis();
-        installationInstructions
+        instructionsSet
                 .appendWriteFile(tmpFile, contents, false)
                 .appendExec("sudo mv " + tmpFile + " " + targetFile)
                 .appendExec("sudo chmod u+rw,og-rwx " + targetFile);
-        return installationInstructions;
+        return instructionsSet;
     }
 
     protected String _prepareUrl(String urlTemplate, String baseUrl) {
         return urlTemplate
-                .replace("%{BASE_URL}%", baseUrl)
+                .replace("%{BASE_URL}%", Optional.ofNullable(baseUrl).orElse(""))
                 .replace("%{PUBLIC_IP}%", Optional.ofNullable(NetUtil.getPublicIpAddress()).orElse(""))
                 .replace("%{DEFAULT_IP}%", Optional.ofNullable(NetUtil.getDefaultIpAddress()).orElse(""));
     }

@@ -168,12 +168,12 @@ public class BrokerClientApp {
 
             BrokerClient client = BrokerClient.newClient();
             client.openConnection(url, username, password, true);
-            EventGenerator generator = new EventGenerator();
-            generator.setClient(client);
+            EventGenerator generator = new EventGenerator(client);
+            //generator.setClient(client);
             generator.setBrokerUrl(url);
             generator.setDestinationName(topic);
             generator.setInterval(interval);
-            generator.setHowmany(howmany);
+            generator.setHowMany(howmany);
             generator.setLowerValue(lowerValue);
             generator.setUpperValue(upperValue);
             generator.setLevel(level);

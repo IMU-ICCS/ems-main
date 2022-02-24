@@ -20,12 +20,14 @@ import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
 import eu.melodic.event.util.*;
+import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -57,6 +59,11 @@ public class CommandExecutor {
     private static final int DEFAULT_ID_LENGTH = 32;
     private final static String DEFAULT_KEYSTORE_DIR = DEFAULT_CONF_DIR;
 
+    public final static String EVENT_CLUSTER_NODE_ADDED = "CLUSTER_NODE_ADDED";
+    public final static String EVENT_CLUSTER_NODE_REMOVED = "CLUSTER_NODE_REMOVED";
+
+    @Autowired
+    private ApplicationContext applicationContext;
     @Autowired
     private BaguetteClient baguetteClient;
     @Autowired
@@ -65,6 +72,9 @@ public class CommandExecutor {
     private BrokerClientProperties brokerClientProperties;
     @Autowired
     private PasswordUtil passwordUtil;
+    @Autowired
+    @Getter
+    private EventBus<String,Object,Object> eventBus;
 
     private BaguetteClientProperties config;
     private String idFile;
@@ -74,6 +84,8 @@ public class CommandExecutor {
     private PrintStream err;
     private String clientId;
 
+    @Getter
+    private ClientConfiguration clientConfiguration;
     @Getter
     private final Map<String, GroupingConfiguration> groupings = new LinkedHashMap<>();
     private GroupingConfiguration activeGrouping;
@@ -96,6 +108,10 @@ public class CommandExecutor {
     @Getter private String globalGrouping;
     @Getter private String aggregatorGrouping;
     @Getter private String nodeGrouping;
+
+    private Thread serverWatcherThread;
+    private boolean captureInputLine;
+    @Getter private String lastInputLine;
 
 
     public CommandExecutor() {
@@ -122,6 +138,46 @@ public class CommandExecutor {
         }
     }
 
+    void communicateWithServer(InputStream in, PrintStream out, PrintStream err) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (captureInputLine) {
+                lastInputLine = line;
+                captureInputLine = false;
+                continue;
+            }
+            line = line.trim();
+            if (StringUtils.startsWithIgnoreCase(line, "CLUSTER-KEY")) {
+                String[] s = line.split(" ", 2);
+                log.info("{} {}", s[0], s.length>1 ? passwordUtil.encodePassword(s[1]) : "");
+            } else
+                log.info(line);
+            try {
+                boolean exit = execCmd(line.split("[ \t]+"), in, out, err);
+                if (exit) break;
+            } catch (Exception ex) {
+                log.error("", ex);
+                // Report exception back to server
+                err.println(ex);
+                ex.printStackTrace(err);
+                err.flush();
+            }
+        }
+    }
+
+    public void executeCommand(String command) throws IOException, InterruptedException {
+        String[] args = command.split(" ");
+        execCmd(args, baguetteClient.getClient().getIn(), baguetteClient.getClient().getOut(), baguetteClient.getClient().getOut());
+
+        // Wait for server response/input if needed
+        while (captureInputLine) {
+            log.trace("Waiting for server input...");
+            try { Thread.sleep(100); } catch (InterruptedException e) {}
+        }
+        log.trace("Server input: {}", lastInputLine);
+    }
+
     boolean executeCommand(String line, InputStream in, PrintStream out, PrintStream err) throws IOException, InterruptedException {
         return execCmd(line.split("[ \t]+"), in, out, err);
     }
@@ -146,6 +202,46 @@ public class CommandExecutor {
                 log.warn(mesg);
                 out.println(mesg);
             }
+        } else if ("CONNECT".equals(cmd)) {
+            if (serverWatcherThread!=null) {
+                log.warn("Already connected");
+                return false;
+            }
+            baguetteClient.startSshClient(false);
+            serverWatcherThread = new Thread(() -> {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(baguetteClient.getClient().getIn())));
+                String line;
+                try {
+                    while ((line = reader.readLine()) != null) {
+                        log.info(line);
+                    }
+                } catch (Exception ex) {
+                    if (baguetteClient.getClient()!=null)
+                        log.warn("Exception in serverWatcherThread: ", ex);
+                    else
+                        log.debug("serverWatcherThread has exited");
+                }
+                serverWatcherThread = null;
+            });
+            serverWatcherThread.start();
+        } else if ("DISCONNECT".equals(cmd)) {
+            if (serverWatcherThread==null) {
+                log.warn("Not connected");
+                return false;
+            }
+            baguetteClient.stopSshClient();
+            serverWatcherThread = null;
+
+        } else if ("SEND".equals(cmd)) {
+            StringBuilder sb = new StringBuilder();
+            for (int i=1; i<args.length; i++)
+                sb.append(args[i]).append(" ");
+            String cmdLine = sb.toString();
+            log.info("SEND: {}", cmdLine);
+            lastInputLine = null;
+            captureInputLine = true;
+            baguetteClient.getClient().getOut().println(cmdLine);
+
         } else if ("CLIENT".equals(cmd)) {
             // Information from server. Don't do anything
         } else if ("ECHO".equals(cmd)) {
@@ -212,6 +308,11 @@ public class CommandExecutor {
             GroupingConfiguration grouping = groupings.get(args[1].trim());
             log.info("{}", grouping);
             out.printf("%s\n", grouping);
+        } else if ("SET-CLIENT-CONFIG".equals(cmd)) {
+            if (args.length < 2) return false;
+            String configStr = String.join(" ", args).trim();
+            log.trace("client-config-base64: {}", configStr);
+            setClientConfiguration(configStr);
         } else if ("SET-GROUPING-CONFIG".equals(cmd)) {
             if (args.length < 2) return false;
             String configStr = String.join(" ", args).trim();
@@ -252,9 +353,10 @@ public class CommandExecutor {
             double upper = Double.parseDouble(args[4].trim());
 
             if (eventGenerators.get(destination) == null) {
-                EventGenerator generator = new EventGenerator();
-                generator.setClient(new BrokerClient(brokerClientProperties));
-                generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrl());
+                EventGenerator generator = applicationContext.getBean(EventGenerator.class);
+                generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrlForClients());
+                generator.setBrokerUsername(brokerCepService.getBrokerUsername());
+                generator.setBrokerPassword(brokerCepService.getBrokerPassword());
                 generator.setDestinationName(destination);
                 generator.setLevel(1);
                 generator.setInterval(interval);
@@ -331,7 +433,7 @@ public class CommandExecutor {
 
             // Initialize cluster manager
             if (clusterManager==null) {
-                clusterManager = new ClusterManager();
+                clusterManager = applicationContext.getBean(ClusterManager.class);
                 clusterManager.setProperties(clusterManagerProperties);
             }
 
@@ -536,6 +638,15 @@ public class CommandExecutor {
             sendStatistics(args[1]);
         } else if ("CLEAR-STATS".equals(cmd)) {
             clearStatistics();
+        } else if ("SEND-CLIENT-PROPERTY".equals(cmd)) {
+            if (args.length < 2) {
+                log.warn("Too few arguments");
+                out.println("Too few arguments");
+                return false;
+            }
+            String propName = args[1];
+            String propValue = args.length==3 ? args[2] : null;
+            sendClientProperty(propName, propValue);
         } else {
             args[0] = cmd;
             String line = String.join(" ", args);
@@ -557,14 +668,15 @@ public class CommandExecutor {
         log.info("Cluster Keystore: file: {}", clusterKeystoreFile);
         log.info("                  type: {}", clusterKeystoreType);
         log.info("              password: {}", passwordUtil.encodePassword(clusterKeystorePassword));
-        log.debug("        Base64 content: {}", clusterKeystoreBase64);
+        log.debug("        Base64 content: {}", passwordUtil.encodePassword(clusterKeystoreBase64));
         try {
             KeystoreUtil
                     .getKeystore(clusterKeystoreFile, clusterKeystoreType, clusterKeystorePassword)
+                    .passwordUtil(passwordUtil)
                     .createIfNotExist()
                     .writeBase64ToFile(clusterKeystoreBase64);
         } catch (Exception e) {
-            log.error("Exception while creting cluster keystore", e);
+            log.error("Exception while creating cluster keystore", e);
         }
     }
 
@@ -601,6 +713,24 @@ public class CommandExecutor {
         oos.writeObject( o );
         oos.close();
         return Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+
+    protected synchronized void setClientConfiguration(String configStr) {
+        try {
+            log.debug("Received serialization of client configuration: {}", configStr);
+            ClientConfiguration config = (ClientConfiguration) deserializeFromString(configStr);
+            ClientConfiguration oldConfig = clientConfiguration;
+            if (oldConfig!=null) {
+                log.debug("Old client config.: {}", oldConfig);
+            }
+            synchronized (groupings) {
+                clientConfiguration = config;
+            }
+            log.info("New client config.: {}", config);
+
+        } catch (Exception ex) {
+            log.error("Exception while deserializing received Client configuration: ", ex);
+        }
     }
 
     protected synchronized void setGroupingConfiguration(String configStr) {
@@ -691,6 +821,10 @@ public class CommandExecutor {
         log.info("Active grouping switch completed: {} -> {}", activeGroupingName, newGroupingName);
         String oldGroupingName = activeGroupingName;
         activeGroupingName = newGroupingName;
+
+        // Notify Baguette Server about grouping change
+        log.info("NOTIFY-GROUPING-CHANGE: {}", newGroupingName);
+        out.println("-NOTIFY-GROUPING-CHANGE: "+newGroupingName);
 
         // If Aggregator notify Baguette Server
         if (clusterManager!=null && GROUPING.valueOf(aggregatorGrouping)==GROUPING.valueOf(newGroupingName)) {
@@ -918,7 +1052,7 @@ public class CommandExecutor {
     public void sendLocalEvent(String destination, double metricValue) {
         if (activeGrouping != null) {
             String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
-            log.info("sendLocalEvent(): local-broker-url={}", brokerUrl);
+            log.debug("sendLocalEvent(): local-broker-url={}", brokerUrl);
             sendEvent(brokerUrl, destination, metricValue);
         } else {
             log.warn("sendLocalEvent(): No active grouping");
@@ -943,9 +1077,9 @@ public class CommandExecutor {
 
     public void sendEvent(String connectionStr, String destination, Map event) {
         try {
-            log.info("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            log.debug("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
             brokerCepService.publishEvent(connectionStr, destination, event);
-            log.info("sendEvent(): Event sent: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            log.debug("sendEvent(): Event sent: connection={}, destination={}, payload={}", connectionStr, destination, event);
         } catch (Exception ex) {
             log.error("sendEvent(): Error while sending event: connection={}, destination={}, payload={}, exception: ", connectionStr, destination, event, ex);
         }
@@ -1078,10 +1212,20 @@ public class CommandExecutor {
         updateCertificates(activeGrouping);
     }
 
+    private void nodeStatusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
+        log.info("NOTIFY-STATUS-CHANGE: {}", newStatus.toString());
+        out.println("-NOTIFY-STATUS-CHANGE: "+newStatus);
+    }
+
+    private void sendClientProperty(String propertyName, String propertyValue) {
+        log.info("CLIENT-PROPERTY-CHANGE: {} = {}", propertyName, propertyValue);
+        out.printf("-CLIENT-PROPERTY-CHANGE: %s %s%n", propertyName, propertyValue);
+    }
+
     @SneakyThrows
     private void sendStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
-        log.info("Statistics: {}", statsMap);
+        log.debug("Statistics: {}", statsMap);
         if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
     }
 
@@ -1089,6 +1233,14 @@ public class CommandExecutor {
         brokerCepService.clearBrokerCepStatistics();
         log.info("Statistics cleared");
         if (out!=null) out.println("STATISTICS CLEARED");
+    }
+
+    public boolean isAggregator() {
+        return activeGrouping!=null && aggregatorGrouping!=null && aggregatorGrouping.equals(activeGrouping.getName());
+    }
+
+    public boolean isNode() {
+        return ! isAggregator();
     }
 
     /*private static class StreamGobbler implements Runnable {
@@ -1131,6 +1283,19 @@ public class CommandExecutor {
         }
 
         @Override
+        public void joinedCluster() {
+            String nodeId = commandExecutor.getClusterManager().getLocalMember().id().id();
+            log.info("joinedCluster(): Node joined cluster: {}", nodeId);
+            commandExecutor.sendClientProperty("node-id", nodeId);
+        }
+
+        @Override
+        public void leftCluster() {
+            log.info("joinedCluster(): Node left cluster");
+            commandExecutor.sendClientProperty("node-id", "");
+        }
+
+        @Override
         public void initialize() {
             printInfo("initialize", "INITIALIZE");
 
@@ -1151,6 +1316,22 @@ public class CommandExecutor {
         @Override
         public void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus) {
             log.debug("statusChanged(): Status changed: {} --> {}", oldStatus, newStatus);
+            commandExecutor.nodeStatusChanged(oldStatus, newStatus);
+        }
+
+        @Override
+        public void clusterChanged(ClusterMembershipEvent event) {
+            log.debug("clusterChanged(): Cluster changed: {} --> {}", event.type(), event.subject().id().id());
+            if (commandExecutor.getClusterManager().getBrokerUtil().getLocalStatus()==NODE_STATUS.AGGREGATOR) {
+                if (event.type() == ClusterMembershipEvent.Type.MEMBER_ADDED) {
+                    log.debug("clusterChanged(): Broadcast MEMBER_ADDED in event bus: {}", event.subject().id().id());
+                    commandExecutor.getEventBus().send(EVENT_CLUSTER_NODE_ADDED, event);
+                } else
+                if (event.type() == ClusterMembershipEvent.Type.MEMBER_REMOVED) {
+                    log.debug("clusterChanged(): Broadcast MEMBER_REMOVED in event bus: {}", event.subject().id().id());
+                    commandExecutor.getEventBus().send(EVENT_CLUSTER_NODE_REMOVED, event);
+                }
+            }
         }
 
         @Override

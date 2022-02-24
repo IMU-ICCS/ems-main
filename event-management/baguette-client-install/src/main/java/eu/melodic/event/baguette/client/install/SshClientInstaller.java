@@ -9,9 +9,12 @@
 
 package eu.melodic.event.baguette.client.install;
 
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
+import eu.melodic.event.baguette.client.install.instruction.INSTRUCTION_RESULT;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -26,7 +29,6 @@ import org.apache.sshd.client.scp.ScpClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
-import org.apache.sshd.common.scp.ScpTimestamp;
 import org.apache.sshd.common.util.io.NoCloseInputStream;
 import org.apache.sshd.common.util.io.NoCloseOutputStream;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
@@ -40,7 +42,6 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -48,6 +49,10 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,7 +100,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
     @Builder
     public SshClientInstaller(ClientInstallationTask task, long taskCounter, ClientInstallationProperties properties) {
-        this.task= task;
+        this.task = task;
         this.taskCounter = taskCounter;
 
         this.maxRetries = properties.getMaxRetries()>0 ? properties.getMaxRetries() : 5;
@@ -111,9 +116,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     }
 
     @Override
-    public boolean execute() { return executeTask(); }
-
-    private boolean executeTask(/*int retries*/) {
+    public boolean executeTask(/*int retries*/) {
+        task.getNodeRegistryEntry().nodeInstalling(task.getNodeRegistryEntry().getPreregistration());
         boolean success = false;
         int retries = 0;
         while (!success && retries<=maxRetries) {
@@ -134,7 +138,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         }
 
         try {
-            success = executeInstructionsList();
+            INSTRUCTION_RESULT exitResult = executeInstructionSets();
+            success = exitResult != INSTRUCTION_RESULT.FAIL;
         } catch (Exception ex) {
             log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
             success = false;
@@ -493,54 +498,104 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean executeInstructionsList() throws IOException {
-        List<InstallationInstructions> installationInstructionsList = task.getInstallationInstructions();
+    private INSTRUCTION_RESULT executeInstructionSets() throws IOException {
+        List<InstructionsSet> instructionsSetList = task.getInstructionSets();
+        INSTRUCTION_RESULT exitResult = INSTRUCTION_RESULT.SUCCESS;
         int cntSuccess = 0;
         int cntFail = 0;
-        for (InstallationInstructions installationInstructions : installationInstructionsList) {
-            log.info("----------------------------------------------------------------------");
-            log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, installationInstructions.getDescription());
+        for (InstructionsSet instructionsSet : instructionsSetList) {
+            log.info("\n  ----------------------------------------------------------------------\n  Task #{} :  Instruction Set: {}", taskCounter, instructionsSet.getDescription());
+
+            // Check installation instructions condition
+            try {
+                if (! InstructionsService.getInstance().checkCondition(instructionsSet, task.getNodeRegistryEntry().getPreregistration())) {
+                    log.info("SshClientInstaller: Task #{}: Installation Instructions set is skipped due to failed condition: {}", taskCounter, instructionsSet.getDescription());
+                    if (instructionsSet.isStopOnConditionFail()) {
+                        log.info("SshClientInstaller: Task #{}: No further installation instructions sets will be executed due to stopOnConditionFail: {}", taskCounter, instructionsSet.getDescription());
+                        exitResult = INSTRUCTION_RESULT.FAIL;
+                        break;
+                    }
+                    continue;
+                }
+                log.debug("SshClientInstaller: Task #{}: Condition evaluation for Installation Instructions Set succeeded: {}", taskCounter, instructionsSet.getDescription());
+            } catch (Exception e) {
+                log.error("sshClientInstaller: Task #{}: Installation Instructions Set Condition evaluation error. Will not process remaining installation instructions sets: {}\n", taskCounter, instructionsSet.getDescription(), e);
+                exitResult = INSTRUCTION_RESULT.FAIL;
+                break;
+            }
+
+            // Execute installation instructions
+            log.info("SshClientInstaller: Task #{}: Executing installation instructions set: {}", taskCounter, instructionsSet.getDescription());
             streamLogger.logMessage(
-                    String.format("----------------------------------------------------------------------\nExecuting instruction set: %s\n",
-                    installationInstructions.getDescription()));
-            boolean result = executeInstructions(installationInstructions);
-            if (!result) {
-                log.error("SshClientInstaller: Task #{}: Installation Instructions failed: {}", taskCounter, installationInstructions.getDescription());
+                    String.format("\n  ----------------------------------------------------------------------\n  Task #%d :  Executing instruction set: %s\n",
+                    taskCounter, instructionsSet.getDescription()));
+            INSTRUCTION_RESULT result = executeInstructions(instructionsSet);
+            if (result==INSTRUCTION_RESULT.FAIL) {
+                log.error("SshClientInstaller: Task #{}: Installation Instructions set failed: {}", taskCounter, instructionsSet.getDescription());
                 cntFail++;
-                if (!continueOnFail)
-                    return false;
+                if (!continueOnFail) {
+                    exitResult = INSTRUCTION_RESULT.FAIL;
+                    break;
+                }
+            } else
+            if (result==INSTRUCTION_RESULT.EXIT) {
+                log.info("SshClientInstaller: Task #{}: Instruction set processing exits", taskCounter);
+                cntSuccess++;
+                exitResult = INSTRUCTION_RESULT.EXIT;
+                break;
             } else {
-                log.info("SshClientInstaller: Task #{}: Installation Instructions succeeded: {}", taskCounter, installationInstructions.getDescription());
+                log.info("SshClientInstaller: Task #{}: Installation Instructions set succeeded: {}", taskCounter, instructionsSet.getDescription());
                 cntSuccess++;
             }
         }
-        log.info("-------------------------------------------------------------------------");
-        log.info("SshClientInstaller: Task #{}: Instruction sets processed: successful={}, failed={}", taskCounter, cntSuccess, cntFail);
-        return true;
+        log.info("\n  -------------------------------------------------------------------------\n  Task #{} :  Instruction sets processed: successful={}, failed={}, exit-result={}", taskCounter, cntSuccess, cntFail, exitResult);
+        return exitResult;
     }
 
-    private boolean executeInstructions(InstallationInstructions installationInstructions) throws IOException {
-        Map<String, String> valueMap = installationInstructions.getValueMap();
-        int numOfInstructions = installationInstructions.getInstructions().size();
+    private INSTRUCTION_RESULT executeInstructions(InstructionsSet instructionsSet) throws IOException {
+        Map<String, String> valueMap = task.getNodeRegistryEntry().getPreregistration();
+        int numOfInstructions = instructionsSet.getInstructions().size();
         int cnt = 0;
-        int insCount = installationInstructions.getInstructions().size();
-        for (Instruction ins : installationInstructions.getInstructions()) {
+        int insCount = instructionsSet.getInstructions().size();
+        for (Instruction ins : instructionsSet.getInstructions()) {
+            if (ins==null) continue;
             cnt++;
+
+            // Check instruction condition
+            try {
+                if (! InstructionsService.getInstance().checkCondition(ins, valueMap)) {
+                    log.info("SshClientInstaller: Task #{}: Instruction is skipped due to failed condition {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
+                    if (ins.isStopOnConditionFail()) {
+                        log.info("SshClientInstaller: Task #{}: No further instructions will be executed due to stopOnConditionFail: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
+                        return INSTRUCTION_RESULT.FAIL;
+                    }
+                    continue;
+                }
+                log.debug("SshClientInstaller: Task #{}: Condition evaluation for instruction succeeded: {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
+            } catch (Exception e) {
+                log.error("sshClientInstaller: Task #{}: Instruction Condition evaluation error. Will not process remaining instructions: {}/{}: {}\n", taskCounter, cnt, numOfInstructions, ins.description(), e);
+                return INSTRUCTION_RESULT.FAIL;
+            }
+
+            // Execute instruction
+            ins = InstructionsService
+                    .getInstance()
+                    .resolvePlaceholders(ins, valueMap);
             log.trace("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins);
-            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.getDescription());
+            log.info("SshClientInstaller: Task #{}: Executing instruction {}/{}: {}", taskCounter, cnt, numOfInstructions, ins.description());
             Integer exitStatus;
             boolean result = true;
-            switch (ins.getTaskType()) {
+            switch (ins.taskType()) {
                 case LOG:
-                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.getMessage());
+                    log.info("SshClientInstaller: Task #{}: LOG: {}", taskCounter, ins.message());
                     break;
                 case CMD:
-                    log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: EXEC: {}", taskCounter, ins.command());
                     int retries = 0;
-                    int maxRetries = ins.getRetries();
+                    int maxRetries = ins.retries();
                     while (true) {
                         try {
-                            exitStatus = sshExecCmd(ins.getCommand(), ins.getExecutionTimeout());
+                            exitStatus = sshExecCmd(ins.command(), ins.executionTimeout());
                             result = (exitStatus!=null);
                             //result = (exitStatus==0);
                             log.info("SshClientInstaller: Task #{}: EXEC: exit-status={}", taskCounter, exitStatus);
@@ -555,7 +610,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                         retries++;
                         if (retries<=maxRetries) {
                             log.info("SshClientInstaller: Task #{}: Retry {}/{} for instruction {}/{}: {}",
-                                    taskCounter, retries, maxRetries, cnt, numOfInstructions, ins.getDescription());
+                                    taskCounter, retries, maxRetries, cnt, numOfInstructions, ins.description());
                         } else {
                             if (maxRetries>0)
                                 log.error("sshClientInstaller: Task #{}: Last instruction failed {} times. Giving up", taskCounter, maxRetries);
@@ -594,43 +649,100 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                     break;*/
                 case FILE:
                     //log.info("SshClientInstaller: Task #{}: FILE: {}, content-length={}", taskCounter, ins.getFileName(), ins.getContents().length());
-                    if (Paths.get(ins.getLocalFileName()).toFile().isDirectory()) {
-                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS DIR: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
-                        result = copyDir(ins.getLocalFileName(), ins.getFileName(), valueMap);
+                    if (Paths.get(ins.localFileName()).toFile().isDirectory()) {
+                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS DIR: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
+                        result = copyDir(ins.localFileName(), ins.fileName(), valueMap);
                     } else
-                    if (Paths.get(ins.getLocalFileName()).toFile().isFile()) {
-                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS FILE: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
-                        Path sourceFile = Paths.get(ins.getLocalFileName());
-                        Path sourceBaseDir = Paths.get(ins.getLocalFileName()).getParent();
-                        result = copyFile(sourceFile, sourceBaseDir, ins.getFileName(), valueMap, ins.isExecutable());
+                    if (Paths.get(ins.localFileName()).toFile().isFile()) {
+                        log.info("SshClientInstaller: Task #{}: FILE: COPY-PROCESS FILE: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
+                        Path sourceFile = Paths.get(ins.localFileName());
+                        Path sourceBaseDir = Paths.get(ins.localFileName()).getParent();
+                        result = copyFile(sourceFile, sourceBaseDir, ins.fileName(), valueMap, ins.executable());
                     } else {
-                        log.error("SshClientInstaller: Task #{}: FILE: ERROR: Local file is not directory or normal file: {}", taskCounter, ins.getLocalFileName());
+                        log.error("SshClientInstaller: Task #{}: FILE: ERROR: Local file is not directory or normal file: {}", taskCounter, ins.localFileName());
                         result = false;
                     }
                     break;
                 case COPY:
-                    log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.getLocalFileName(), ins.getFileName());
-                    result = sshFileUpload(ins.getLocalFileName(), ins.getFileName());
+                case UPLOAD:
+                    log.info("SshClientInstaller: Task #{}: UPLOAD: {} -> {}", taskCounter, ins.localFileName(), ins.fileName());
+                    result = sshFileUpload(ins.localFileName(), ins.fileName());
+                    break;
+                case DOWNLOAD:
+                    log.info("SshClientInstaller: Task #{}: DOWNLOAD: {} -> {}", taskCounter, ins.fileName(), ins.localFileName());
+                    result = sshFileDownload(ins.fileName(), ins.localFileName());
+                    if (result)
+                        result = processPatterns(ins, valueMap);
                     break;
                 case CHECK:
-                    log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.getCommand());
-                    exitStatus = sshExecCmd(ins.getCommand());
+                    log.info("SshClientInstaller: Task #{}: CHECK: {}", taskCounter, ins.command());
+                    exitStatus = sshExecCmd(ins.command());
+                    log.info("SshClientInstaller: Task #{}: CHECK: exit-status={}", taskCounter, exitStatus);
                     log.debug("SshClientInstaller: Task #{}: CHECK: Result: match={}, match-status={}, exec-status={}",
-                            taskCounter, ins.isMatch(), ins.getExitCode(), exitStatus);
-                    if (ins.isMatch() && exitStatus==ins.getExitCode()
-                        || !ins.isMatch() && exitStatus!=ins.getExitCode())
+                            taskCounter, ins.match(), ins.exitCode(), exitStatus);
+                    if (ins.match() && exitStatus==ins.exitCode()
+                        || !ins.match() && exitStatus!=ins.exitCode())
                     {
-                        log.info("SshClientInstaller: Task #{}: CHECK: MATCH: {}", taskCounter, ins.getMessage());
+                        log.info("SshClientInstaller: Task #{}: CHECK: MATCH: {}", taskCounter, ins.message());
                         log.info("SshClientInstaller: Task #{}: CHECK: MATCH: Will not process more instructions", taskCounter);
-                        return true;
+                        return INSTRUCTION_RESULT.SUCCESS;
                     }
                     break;
+
+                case SET_VARS:
+                    log.info("SshClientInstaller: Task #{}: SET_VARS:", taskCounter);
+                    if (ins.variables()!=null && ins.variables().size()>0) {
+                        ins.variables().forEach((varName, varExpression) -> {
+                            try {
+                                String varValue = InstructionsService.getInstance().processPlaceholders(varExpression, valueMap);
+                                log.info("SshClientInstaller: Task #{}:   Setting VAR: {} = {}", taskCounter, varName, varValue);
+                                valueMap.put(varName, varValue);
+                            } catch (Exception e) {
+                                log.error("SshClientInstaller: Task #{}:   ERROR while Setting VAR: {}: {}\n", taskCounter, varName, varExpression, e);
+                            }
+                        });
+                    } else
+                        log.warn("SshClientInstaller: Task #{}: SET_VARS:  No variables specified", taskCounter);
+                    break;
+                case UNSET_VARS:
+                    log.info("SshClientInstaller: Task #{}: UNSET_VARS:", taskCounter);
+                    if (ins.variables()!=null && ins.variables().size()>0) {
+                        Set<String> vars = ins.variables().keySet();
+                        log.info("SshClientInstaller: Task #{}:   Unsetting VAR: {}", taskCounter, vars);
+                        valueMap.keySet().removeAll(vars);
+                    } else
+                        log.warn("SshClientInstaller: Task #{}: UNSET_VARS:  No variables specified", taskCounter);
+                    break;
+                case PRINT_VARS:
+                    //log.info("SshClientInstaller: Task #{}: PRINT_VARS:", taskCounter);
+                    String output = valueMap.entrySet().stream()
+                            .map(e -> "    VAR: "+e.getKey()+" = "+e.getValue())
+                            .collect(Collectors.joining("\n"));
+                    log.info("SshClientInstaller: Task #{}: PRINT_VARS:\n{}", taskCounter, output);
+                    break;
+                case EXIT_SET:
+                    log.info("SshClientInstaller: Task #{}: EXIT_SET: Stop this instruction set processing", taskCounter);
+                    try {
+                        if (StringUtils.isNotBlank(ins.command())) {
+                            String exitResult = ins.command().trim().toUpperCase();
+                            log.info("SshClientInstaller: Task #{}: EXIT_SET: Result={}", taskCounter, exitResult);
+                            return INSTRUCTION_RESULT.valueOf(exitResult);
+                        }
+                    } catch (Exception e) {
+                        log.error("SshClientInstaller: Task #{}: EXIT_SET: Invalid EXIT_SET result: {}. Will return FAIL", taskCounter, ins.command());
+                        return INSTRUCTION_RESULT.FAIL;
+                    }
+                    log.info("SshClientInstaller: Task #{}: EXIT_SET: Result={}", taskCounter, INSTRUCTION_RESULT.SUCCESS);
+                    return INSTRUCTION_RESULT.SUCCESS;
+                case EXIT:
+                    log.info("SshClientInstaller: Task #{}: EXIT: Stop any further instruction processing", taskCounter);
+                    return INSTRUCTION_RESULT.EXIT;
                 default:
                     log.error("sshClientInstaller: Unknown instruction type. Ignoring it: {}", ins);
             }
             if (!result) {
                 log.error("sshClientInstaller: Last instruction failed. Will not process remaining instructions");
-                return false;
+                return INSTRUCTION_RESULT.FAIL;
             }
 
             if (cnt<insCount)
@@ -638,7 +750,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
             else
                 log.trace("sshClientInstaller: No more instructions");
         }
-        return true;
+        return INSTRUCTION_RESULT.SUCCESS;
     }
 
     private boolean copyDir(String sourceDir, String targetDir, Map<String,String> valueMap) throws IOException {
@@ -673,5 +785,141 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         String description = String.format("Copy file from server to temp to client: %s -> %s", sourcePath.toString(), targetFile);
 
         return sshFileWrite(contents, targetFile, isExecutable);
+    }
+
+    private boolean processPatterns(Instruction ins, Map<String,String> valueMap) {
+        Map<String, Pattern> patterns = ins.patterns();
+        if (patterns==null || patterns.size()==0) {
+            log.info("SshClientInstaller: processPatterns: No patterns to process");
+            return true;
+        }
+
+        // Read local file
+        String[] linesArr;
+        try (Stream<String> lines = Files.lines(Paths.get(ins.localFileName()))) {
+            linesArr = lines.toArray(String[]::new);
+        } catch (IOException e) {
+            log.error("SshClientInstaller: processPatterns: Error while reading local file: {} -- Exception: ", ins.localFileName(), e);
+            return false;
+        }
+
+        // Process file lines against instruction patterns
+        patterns.forEach((varName,pattern) -> {
+            Matcher matcher = null;
+            for (String line : linesArr) {
+                Matcher m = pattern.matcher(line);
+                if (m.matches()) {
+                    matcher = m;
+                    //break;    // Uncomment to return the first match. Comment to return the last match.
+                }
+            }
+            if (matcher!=null && matcher.matches()) {
+                String varValue = matcher.group( matcher.groupCount()>0 ? 1 : 0 );
+                log.info("SshClientInstaller: processPatterns: Setting variable '{}' to: {}", varName, varValue);
+                valueMap.put(varName, varValue);
+            } else {
+                log.info("SshClientInstaller: processPatterns: No match for variable '{}' with pattern: {}", varName, pattern);
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public void preProcessTask() {
+        // Throw exception to prevent task exception, if task data have problem
+    }
+
+    @Override
+    public boolean postProcessTask() {
+        log.trace("SshClientInstaller: postProcessTask: BEGIN:\n{}", task.getNodeRegistryEntry().getPreregistration());
+
+        // Check if Baguette client has been installed (or failed to install)
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION....");
+        boolean result = postProcessVariable(
+                properties.getClientInstallVarName(),
+                properties.getClientInstallSuccessPattern(),
+                value -> { task.getNodeRegistryEntry().nodeInstallationComplete(value); return true; },
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION.... result: {}", result);
+        if (result) return true;
+
+        // Check if Baguette client installation has failed
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION FAILED....");
+        result = postProcessVariable(
+                properties.getClientInstallVarName(),
+                properties.getClientInstallErrorPattern(),
+                value -> { task.getNodeRegistryEntry().nodeInstallationComplete(value); return true; },
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION.... result: {}", result);
+        if (result) return true;
+
+        // Check if Baguette client installation has been skipped (not attempted at all)
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION SKIP....");
+        result = postProcessVariable(
+                properties.getSkipInstallVarName(),
+                properties.getSkipInstallPattern(),
+                value -> { task.getNodeRegistryEntry().nodeNotInstalled(value); return true; },
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION SKIP.... result: {}", result);
+        if (result) return true;
+
+        // Check if the Node must be ignored by EMS
+        log.trace("SshClientInstaller: postProcessTask: NODE IGNORE....");
+        result = postProcessVariable(
+                properties.getIgnoreNodeVarName(),
+                properties.getIgnoreNodePattern(),
+                value -> { task.getNodeRegistryEntry().nodeIgnore(value); return true; },
+                null, null);
+        log.trace("SshClientInstaller: postProcessTask: NODE IGNORE.... result: {}", result);
+        if (result) return true;
+
+        // Process defaults, if variables are missing or inconclusive
+        log.trace("SshClientInstaller: postProcessTask: DEFAULTS....");
+        if (properties.isIgnoreNodeIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... NODE IGNORED");
+            task.getNodeRegistryEntry().nodeIgnore(null);
+        } else
+        if (properties.isSkipInstallIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLATION SKIPPED");
+            task.getNodeRegistryEntry().nodeNotInstalled(null);
+        } else
+        if (properties.isClientInstallSuccessIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLED");
+            task.getNodeRegistryEntry().nodeInstallationComplete(null);
+        } else
+        if (properties.isClientInstallErrorIfVarIsMissing()) {
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... CLIENT INSTALLATION ERROR");
+            task.getNodeRegistryEntry().nodeInstallationError(null);
+        } else
+            log.trace("SshClientInstaller: postProcessTask: DEFAULTS.... NO DEFAULT");
+        log.trace("SshClientInstaller: postProcessTask: END");
+        return true;
+    }
+
+    private boolean postProcessVariable(String varName, Pattern pattern, @NonNull Function<String,Boolean> match, Function<String,Boolean> notMatch, Supplier<Boolean> missing) {
+        log.trace("SshClientInstaller: postProcessVariable: var={}, pattern={}", varName, pattern);
+        if (StringUtils.isNotBlank(varName) && pattern!=null) {
+            String value = task.getNodeRegistryEntry().getPreregistration().get(varName);
+            log.trace("SshClientInstaller: postProcessVariable: var={}, value={}", varName, value);
+            if (value!=null) {
+                if (pattern.matcher(value).matches()) {
+                    log.trace("SshClientInstaller: postProcessVariable: MATCH-END: var={}, value={}, pattern={}", varName, value, pattern);
+                    return match.apply(value);
+                } else {
+                    log.trace("SshClientInstaller: postProcessVariable: NO MATCH: var={}, value={}, pattern={}", varName, value, pattern);
+                    if (notMatch!=null) {
+                        log.trace("SshClientInstaller: postProcessVariable: NO MATCH-END: var={}, value={}, pattern={}", varName, value, pattern);
+                        return notMatch.apply(value);
+                    }
+                }
+            }
+        }
+        if (missing!=null) {
+            log.trace("SshClientInstaller: postProcessVariable: DEFAULT-END: var={}", varName);
+            return missing.get();
+        }
+        log.trace("SshClientInstaller: postProcessVariable: False-END: var={}", varName);
+        return false;
     }
 }

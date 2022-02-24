@@ -15,8 +15,10 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.SetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,15 +28,13 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @EnableScheduling
-@Slf4j
 public class TopicBeacon implements InitializingBean {
     // Topic Beacon settings
     @Value("${beacon.enable:true}")
@@ -55,8 +55,8 @@ public class TopicBeacon implements InitializingBean {
     private Set<String> beaconPredictionTopics;
     @Value("${beacon.topics.prediction.rate:60000}")
     private long beaconPredictionRate;
-    @Value("${beacon.topics.slo-violator:}")
-    private Set<String> beaconSloViolatorTopics;
+    @Value("${beacon.topics.slo-violation-detector:}")
+    private Set<String> beaconSloViolationDetectorTopics;
 
     @Autowired
     private ControlServiceCoordinator coordinator;
@@ -66,6 +66,8 @@ public class TopicBeacon implements InitializingBean {
     private TaskScheduler scheduler;
 
     private Gson gson;
+    private String previousModelId = "";
+    private final AtomicLong modelVersion = new AtomicLong(0);
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -93,6 +95,7 @@ public class TopicBeacon implements InitializingBean {
 
     public void transmitInfo() throws JMSException {
         log.debug("Topic Beacon: Start transmitting info: {}", new Date());
+        updateModelVersion();
         transmitHeartbeat();
         transmitThresholdInfo();
         transmitInstanceInfo();
@@ -102,7 +105,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitHeartbeat() throws JMSException {
-        if (!SetUtils.emptyIfNull(beaconHeartbeatTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconHeartbeatTopics).isEmpty()) return;
 
         String message = "TOPIC BEACON HEARTBEAT "+new Date();
         log.debug("Topic Beacon: Transmitting Heartbeat info: message={}, topics={}", message, beaconHeartbeatTopics);
@@ -110,7 +113,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitThresholdInfo() {
-        if (!SetUtils.emptyIfNull(beaconThresholdTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconThresholdTopics).isEmpty()) return;
 
         if (coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId())==null)
             return;
@@ -129,7 +132,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitInstanceInfo() throws JMSException {
-        if (!SetUtils.emptyIfNull(beaconInstanceTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconInstanceTopics).isEmpty()) return;
 
         if (coordinator.getBaguetteServer().isServerRunning()) {
             log.debug("Topic Beacon: Transmitting Instance info: topics={}", beaconInstanceTopics);
@@ -146,21 +149,34 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitPredictionInfo() {
-        if (!SetUtils.emptyIfNull(beaconPredictionTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconPredictionTopics).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
-        Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
-        if (topLevelMetrics==null)
-            return;
-        log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
-        List<HashMap<String, Object>> payload = topLevelMetrics.stream().map(s -> {
+        //Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
+        //log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
+        Set<TranslationContext.MetricContext> metricContexts = coordinator.getMetricContextsForPrediction(modelId);
+        log.debug("Topic Beacon: transmitPredictionInfo: Metric Contexts for prediction: {}", metricContexts);
+
+        // Convert to Translator-to-Forecasting Methods event format
+        final long currVersion = modelVersion.get();
+        List<HashMap<String, Object>> payload = metricContexts.stream().map(s -> {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("metric", s);
+            map.put("metric", s.getName());
             map.put("level", 3);
-            map.put("publish_rate", beaconPredictionRate);
+            map.put("version", currVersion);
+            map.put("publish_rate", s.getSchedule()!=null
+                    ? s.getSchedule().getIntervalInMillis() :
+                    beaconPredictionRate);
             return map;
         }).collect(Collectors.toList());
+        log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);
+
+        // Skip event sending if payload is empty
+        if (payload.size()==0) {
+            log.debug("Topic Beacon: transmitSloViolatorInfo: Payload is empty. Not sending event");
+            return;
+        }
 
         String eventPayload = gson.toJson(payload);
 
@@ -174,20 +190,26 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitSloViolatorInfo() {
-        if (!SetUtils.emptyIfNull(beaconSloViolatorTopics).isEmpty()) return;
+        if (SetUtils.emptyIfNull(beaconSloViolationDetectorTopics).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitSloViolatorInfo: current-camel-model-id: {}", modelId);
-        List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
-        if (sloMetricDecompositions==null)
-            return;
+        //List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
+        Map<String, Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
         log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
 
+        // Skip event sending if payload is empty
+        if (sloMetricDecompositions.get("constraints") == null || ((List) sloMetricDecompositions.get("constraints")).size() == 0) {
+            log.debug("Topic Beacon: transmitSloViolatorInfo: Payload is empty. Not sending event");
+            return;
+        }
+
+        sloMetricDecompositions.put("version", modelVersion.get());
         String eventPayload = gson.toJson(sloMetricDecompositions);
 
-        log.debug("Topic Beacon: Transmitting SLO Violator info: event={}, topics={}", eventPayload, beaconSloViolatorTopics);
+        log.debug("Topic Beacon: Transmitting SLO Violator info: event={}, topics={}", eventPayload, beaconSloViolationDetectorTopics);
         try {
-            sendMessageToTopics(eventPayload, beaconSloViolatorTopics);
+            sendMessageToTopics(eventPayload, beaconSloViolationDetectorTopics);
         } catch (JMSException e) {
             log.error("Topic Beacon: EXCEPTION while transmitting SLO Violator info: event={}, topics={}, exception: ",
                     eventPayload, beaconPredictionTopics, e);
@@ -211,7 +233,20 @@ public class TopicBeacon implements InitializingBean {
                     brokerCepService.getBrokerPassword(),
                     topicName,
                     event);
-            log.info("Topic Beacon: Event sent to topic: event={}, topic={}", event, topicName);
+            log.debug("Topic Beacon: Event sent to topic: event={}, topic={}", event, topicName);
         }
+    }
+
+    private synchronized boolean updateModelVersion() {
+        String modelId = coordinator.getCurrentCamelModelId();
+        boolean versionChanged = ! StringUtils.defaultIfBlank(modelId, "").equals(previousModelId);
+        log.trace("Topic Beacon: updateModelVersion: previousModelId='{}', modelId='{}', version={}, version-changed={}",
+                previousModelId, modelId, modelVersion.get(), versionChanged);
+        if (versionChanged) {
+            long newVersion = modelVersion.incrementAndGet();
+            log.info("Topic Beacon: updateModelVersion: Model changed: {} -> {}, version: {}", previousModelId, modelId, newVersion);
+            previousModelId = modelId;
+        }
+        return versionChanged;
     }
 }

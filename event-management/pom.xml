@@ -47,6 +47,7 @@
         <module>translator</module>
         <module>broker-client</module>
         <module>broker-cep</module>
+        <module>common</module>
         <module>baguette-client</module>
         <module>baguette-client-install</module>
         <module>baguette-server</module>
@@ -79,6 +80,23 @@
             <modules>
                 <module>extra</module>
             </modules>
+        </profile>
+        <profile>
+            <id>build-web-admin</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>web-admin</module>
+            </modules>
+            <dependencies>
+                <dependency>
+                    <groupId>eu.melodic.event</groupId>
+                    <artifactId>web-admin</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>

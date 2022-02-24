@@ -26,8 +26,8 @@ import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.models.interfaces.ems.*;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
+import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
+import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -731,6 +731,9 @@ public class ModelAnalyzer {
         _TC.DAG.addNode(constraint, thenConstraint).setGrouping(getGrouping(thenConstraint));
         if (elseConstraint!=null)
             _TC.DAG.addNode(constraint, elseConstraint).setGrouping(getGrouping(elseConstraint));
+
+        // cache constraint
+        _TC.addIfThenConstraint(constraint);
 
         _decomposeConstraint(_TC, ifConstraint);
         _decomposeConstraint(_TC, thenConstraint);

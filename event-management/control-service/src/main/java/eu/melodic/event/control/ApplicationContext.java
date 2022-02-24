@@ -9,17 +9,39 @@
 
 package eu.melodic.event.control;
 
+import eu.melodic.event.util.EventBus;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ApplicationContext {
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public EventBus<String,Object,Object> eventBus() {
+        return EventBus.<String,Object,Object>builder().build();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setDaemon(true);
+        log.info("ApplicationContext: taskScheduler: NEW INSTANCE CREATED: {}", taskExecutor);
+        return taskExecutor;
     }
 }
