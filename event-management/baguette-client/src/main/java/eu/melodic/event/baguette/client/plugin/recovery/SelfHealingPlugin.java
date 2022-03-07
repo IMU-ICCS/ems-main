@@ -52,6 +52,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     private final NodeInfoHelper nodeInfoHelper;
 
     final static String SELF_HEALING_RECOVERY_FAILED = "SELF_HEALING_RECOVERY_FAILED";
+    final static String SELF_HEALING_RECOVERY_GIVE_UP = "SELF_HEALING_RECOVERY_GIVE_UP";
     final static String SELF_HEALING_RECOVERY_COMPLETED = "SELF_HEALING_RECOVERY_COMPLETED";
 
     private boolean started;
@@ -269,19 +270,23 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         final RecoveryTask recoveryTask = applicationContext.getBean(recoveryTaskClass);
         if (nodeInfo!=null && nodeInfo.size()>0)
             recoveryTask.setNodeInfo(nodeInfo);
-        AtomicInteger retries = new AtomicInteger(0);
+        final AtomicInteger retries = new AtomicInteger(0);
         ScheduledFuture<?> future = taskScheduler.scheduleWithFixedDelay(() -> {
             try {
                 log.info("SelfHealingPlugin: Retry #{}: Recovering node: id={}, address={}", retries.get(), nodeId, nodeAddress);
                 recoveryTask.runNodeRecovery();
                 //NOTE: 'recoveryTask.runNodeRecovery()' must send SELF_HEALING_RECOVERY_COMPLETED or _FAILED event
-                if (retries.getAndIncrement() > clientRecoveryMaxRetries) {
-                    log.warn("SelfHealingPlugin: Max retries reached. No more recovery retries for node: id={}, address={}", nodeId, nodeAddress);
-                    cancelRecoveryTask(nodeId, nodeAddress, true);
-                }
             } catch (Exception e) {
                 log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-info={} -- Exception: ", recoveryTask.getNodeInfo(), e);
                 eventBus.send(SELF_HEALING_RECOVERY_FAILED, nodeAddress);
+            }
+            if (retries.getAndIncrement() >= clientRecoveryMaxRetries) {
+                log.warn("SelfHealingPlugin: Max retries reached. No more recovery retries for node: id={}, address={}", nodeId, nodeAddress);
+                cancelRecoveryTask(nodeId, nodeAddress, true);
+                eventBus.send(SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress);
+
+                // Notify EMS server about giving up recovery due to permanent failure
+                commandExecutor.notifyEmsServer("RECOVERY GIVE_UP "+nodeId+" @ "+nodeAddress);
             }
         }, Instant.now().plusMillis(clientRecoveryDelay), Duration.ofMillis(clientRecoveryRetryDelay));
         waitingTasks.put(nodeAddress, future);

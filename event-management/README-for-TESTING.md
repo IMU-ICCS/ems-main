@@ -723,7 +723,8 @@ We distinguish between monitoring topologies:
     ```
     *<p align="center">EMS server log: Aggregator give up message</p>*
     ```
-    ......................... BUG: No Give up message
+    e.m.e.b.server.ClientShellCommand        : #00000--> Client notification: CMD=RECOVERY, ARGS=GIVE_UP node_3866738cb0f4_2002 @ 192.168.16.4
+    e.m.e.b.server.ClientShellCommand        : #00000--> Client Recovery Notification: GIVE_UP: node_3866738cb0f4_2002 @ 192.168.16.4
     ```
     Note: EMS client disconnection from EMS server will also be logged in EMS server logs, but no recovery action will be taken by EMS server.
 
@@ -748,8 +749,9 @@ We distinguish between monitoring topologies:
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.onEvent(UnixAsynchronousSocketChannelImpl.java:213)
             at sun.nio.ch.EPollPort$EventHandlerTask.run(EPollPort.java:293)
             at java.lang.Thread.run(Thread.java:748)
-    
-    SelfHealingPlugin: Retry #0: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
+    .........................
+    .........................
+    SelfHealingPlugin: Retry #3: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
     Connecting to server...
     SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=cecab3d4-4c09-43b1-b6fa-3534d37bbc8f, zone-id=IMU-ZONE, address=192.168.16.4,.........................
@@ -762,7 +764,9 @@ We distinguish between monitoring topologies:
             at java.lang.Thread.run(Thread.java:748)
     ```
     ```
-    ......................... BUG: No Give up message
+    SelfHealingPlugin: Max retries reached. No more recovery retries for node: id=node_3866738cb0f4_2002, address=192.168.16.4
+    SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=node_3866738cb0f4_2002, address=192.168.16.4
+    NOTIFY-X: RECOVERY GIVE_UP node_3866738cb0f4_2002 @ 192.168.16.4
     ```
   * ***Normal nodes that operate***, for logs about EMS client leaving cluster, and NO logs about recovery actions or EMS client joining back.
 
@@ -920,7 +924,7 @@ We distinguish between monitoring topologies:
 
 **After Application deployment...**
 
-  * Terminate the VM of the Aggregator's
+  * Terminate the VM of the Aggregator
 
 **Next, check the logs of:**
 
@@ -934,11 +938,12 @@ We distinguish between monitoring topologies:
     ```
     *<p align="center">EMS server log: New Aggregator queries for node's credentials</p>*
     ```
-    e.m.e.b.server.ClientShellCommand        : #00004==> PUSH : {"random":"4abf9ae2-b7fc-4e8c-b6d9-464623d1b05f","zone-id":"IMU-ZONE","address":"192.168.16.4","provider":"AWS","name":"vm2","ssh.port":"22","ssh.username":"ubuntu","ssh.password":"ubuntu",.........................
+    e.m.e.b.server.ClientShellCommand        : #00004==> PUSH : {"random":"4abf9ae2-b7fc-4e8c-b6d9-464623d1b05f","zone-id":"IMU-ZONE","address":"192.168.16.4",.........................
     ```
     *<p align="center">EMS server log: New Aggregator give up message</p>*
     ```
-    ......................... BUG: No give up message
+    e.m.e.b.server.ClientShellCommand        : #00004--> Client notification: CMD=RECOVERY, ARGS=GIVE_UP node_3866738cb0f4_2002 @ 192.168.16.4
+    e.m.e.b.server.ClientShellCommand        : #00004--> Client Recovery Notification: GIVE_UP: node_3866738cb0f4_2002 @ 192.168.16.4
     ```
     Note: Aggregator disconnection from EMS server will also be logged in EMS server logs, but no recovery action will be taken by EMS server.
 
@@ -994,8 +999,9 @@ We distinguish between monitoring topologies:
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.onEvent(UnixAsynchronousSocketChannelImpl.java:213)
             at sun.nio.ch.EPollPort$EventHandlerTask.run(EPollPort.java:293)
             at java.lang.Thread.run(Thread.java:748)
-    
-    SelfHealingPlugin: Retry #0: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
+    .........................
+    .........................
+    SelfHealingPlugin: Retry #3: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
     Connecting to server...
     SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4abf9ae2-b7fc-4e8c-b6d9-464623d1b05f, zone-id=IMU-ZONE, address=192.168.16.4,.........................
@@ -1008,7 +1014,9 @@ We distinguish between monitoring topologies:
             at java.lang.Thread.run(Thread.java:748)
     ```
     ```
-    ......................... BUG: No give up message
+    SelfHealingPlugin: Max retries reached. No more recovery retries for node: id=node_3866738cb0f4_2002, address=192.168.16.4
+    SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=node_3866738cb0f4_2002, address=192.168.16.4
+    NOTIFY-X: RECOVERY GIVE_UP node_3866738cb0f4_2002 @ 192.168.16.4
     ```
   * ***Normal nodes that operate***, for log messages about, (i) EMS client leaving cluster, (ii) Aggregator election, but NO logs about recovery actions, or EMS client joining back to cluster.
 
