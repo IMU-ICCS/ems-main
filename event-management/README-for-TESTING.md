@@ -986,7 +986,7 @@ We distinguish between monitoring topologies:
     SEND: SERVER-GET-NODE-SSH-CREDENTIALS 192.168.16.4
     SelfHealingPlugin: createRecoveryTask(): Created recovery task for Node: id=node_3866738cb0f4_2002, address=192.168.16.4
     ```
-    *<p align="center">New Aggregator log: Failing recovery actions of old Aggregator and give up message</p>*
+    *<p align="center">New Aggregator log: Failing recovery actions of old Aggregator</p>*
     ```
     SelfHealingPlugin: Retry #0: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
@@ -1013,6 +1013,7 @@ We distinguish between monitoring topologies:
             at sun.nio.ch.EPollPort$EventHandlerTask.run(EPollPort.java:293)
             at java.lang.Thread.run(Thread.java:748)
     ```
+    *<p align="center">New Aggregator log: Recovery actions Give Up message</p>*
     ```
     SelfHealingPlugin: Max retries reached. No more recovery retries for node: id=node_3866738cb0f4_2002, address=192.168.16.4
     SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=node_3866738cb0f4_2002, address=192.168.16.4
@@ -1064,7 +1065,6 @@ We distinguish between monitoring topologies:
     Collectors::Netdata:   Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
     Collectors::Netdata:     Exception while collecting metrics from node: 192.168.96.2, #errors=3, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": Connection refused (Connection refused); nested exception is java.net.ConnectException: Connection refused (Connection refused) -> java.net.ConnectException: Connection refused (Connection refused)
     Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: 192.168.96.2, num-of-errors=3
-    Collectors::Netdata: Will pause metrics collection from node for 60 seconds: 192.168.96.2
     ```
     *<p align="center">Aggregator log: Requesting RL node's credentials</p>*
     ```
@@ -1088,11 +1088,14 @@ We distinguish between monitoring topologies:
     VmNodeRecoveryTask: disconnectFromNode(): Disconnecting from node: address=192.168.96.2, port=22, username=ubuntu
     Stopping SSH client...
     SSH client stopped
+    Collectors::Netdata: Resuming collection from Node: 192.168.96.2
     Collectors::Netdata: Collecting metrics from local node...
     Collectors::Netdata:   Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
     Collectors::Netdata:     Metrics: extracted=0, published=0, failed=0
     Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-    Collectors::Netdata:   Node is in ignore list: 192.168.96.2
+    Collectors::Netdata:   Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
+    Collectors::Netdata:     Metrics: extracted=0, published=0, failed=0
+    SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=null, address=192.168.96.2
      OUT> Last login: Sat Feb 12 10:40:09 2022 from 172.29.0.4
      OUT>
      OUT> pwd
@@ -1121,27 +1124,6 @@ We distinguish between monitoring topologies:
     ```
     *<p align="center">Aggregator log: Successful metrics collection from RL node's Netdata agent</p>*
     ```
-    Collectors::Netdata: Collecting metrics from local node...
-    Collectors::Netdata:   Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-    Collectors::Netdata:     Metrics: extracted=0, published=0, failed=0
-    Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-    Collectors::Netdata:   Node is in ignore list: 192.168.96.2
-    
-    Collectors::Netdata: Collecting metrics from local node...
-    Collectors::Netdata:   Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-    Collectors::Netdata:     Metrics: extracted=0, published=0, failed=0
-    Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-    Collectors::Netdata:   Node is in ignore list: 192.168.96.2
-    
-    Collectors::Netdata: Collecting metrics from local node...
-    Collectors::Netdata:   Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-    Collectors::Netdata:     Metrics: extracted=0, published=0, failed=0
-    Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-    Collectors::Netdata:   Node is in ignore list: 192.168.96.2
-    
-    Collectors::Netdata: Resumed metrics collection from node: 192.168.96.2
-    SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=null, address=192.168.96.2
-    
     Collectors::Netdata: Collecting metrics from local node...
     Collectors::Netdata:   Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
     Collectors::Netdata:     Metrics: extracted=0, published=0, failed=0
@@ -1187,7 +1169,8 @@ We distinguish between monitoring topologies:
     ```
     *<p align="center">EMS server log: Aggregator give up message</p>*
     ```
-    ......................... BUG: No Give up message
+    e.m.e.b.server.ClientShellCommand        : #00000--> Client notification: CMD=RECOVERY, ARGS=GIVE_UP null @ 192.168.96.2
+    e.m.e.b.server.ClientShellCommand        : #00000--> Client Recovery Notification: GIVE_UP: null @ 192.168.96.2
     ```
   * ***Aggregator***, for logs reporting (i) connection failures to a Netdata agent, (ii) a number of failed attempts to connect to VM, and (iii) a recovery give up message.
     *<p align="center">Aggregator log: Failed metric collection attempts from a RL node's Netdata agent</p>*
@@ -1213,19 +1196,17 @@ We distinguish between monitoring topologies:
     Collectors::Netdata:   Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
     Collectors::Netdata:     Exception while collecting metrics from node: 192.168.96.2, #errors=3, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": connect timed out; nested exception is java.net.SocketTimeoutException: connect timed out -> java.net.SocketTimeoutException: connect timed out
     Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: 192.168.96.2, num-of-errors=3
-    Collectors::Netdata: Will pause metrics collection from node for 60 seconds: 192.168.96.2
     ```
     *<p align="center">Aggregator log: Requesting RL node's credentials</p>*
     ```
     SEND: SERVER-GET-NODE-SSH-CREDENTIALS 192.168.96.2
     SelfHealingPlugin: createRecoveryTask(): Created recovery task for Node: id=null, address=192.168.96.2
     ```
-    *<p align="center">Aggregator log: Netdata agent recovery actions</p>*
+    *<p align="center">Aggregator log: Netdata agent (failing) recovery actions</p>*
     ```
     SelfHealingPlugin: Retry #0: Recovering node: id=null, address=192.168.96.2
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.96.2, port=22, username=ubuntu
     Connecting to server...
-    Heartbeat 1645015873205
     SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4b676a58-e00e-4ddf-a21e-b1c0d1382cd6, zone-id=IMU-ZONE, address=192.168.96.2, provider=AWS,.........................
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
@@ -1241,47 +1222,30 @@ We distinguish between monitoring topologies:
     Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
       Node is in ignore list: 192.168.96.2
     .........................
-    Collecting metrics from local node...
-      Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-        Metrics: extracted=0, published=0, failed=0
-    Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-      Node is in ignore list: 192.168.96.2
-    
-    Resumed metrics collection from node: 192.168.96.2
-    ncelRecoveryTask(): Cancelled recovery task for Node: id=null, address=192.168.96.2
-    
-    Collecting metrics from local node...
-      Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-        Metrics: extracted=0, published=0, failed=0
-    Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-      Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
-        Exception while collecting metrics from node: 192.168.96.2, #errors=1, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": No route to host (Host unreachable); nested exception is java.net.NoRouteToHostException: No route to host (Host unreachable) -> java.net.NoRouteToHostException: No route to host (Host unreachable)
-    
-    Collecting metrics from local node...
-      Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-        Metrics: extracted=0, published=0, failed=0
-    Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-      Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
-        Exception while collecting metrics from node: 192.168.96.2, #errors=2, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": No route to host (Host unreachable); nested exception is java.net.NoRouteToHostException: No route to host (Host unreachable) -> java.net.NoRouteToHostException: No route to host (Host unreachable)
-    
-    Collecting metrics from local node...
-      Collecting data from url: http://127.0.0.1:19999/api/v1/allmetrics?format=json
-        Metrics: extracted=0, published=0, failed=0
-    Collecting metrics from remote nodes (without EMS client): [192.168.96.2]
-      Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
-        Exception while collecting metrics from node: 192.168.96.2, #errors=3, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": No route to host (Host unreachable); nested exception is java.net.NoRouteToHostException: No route to host (Host unreachable) -> java.net.NoRouteToHostException: No route to host (Host unreachable)
-    Too many consecutive errors occurred while attempting to collect metrics from node: 192.168.96.2, num-of-errors=3
-    Will pause metrics collection from node for 60 seconds: 192.168.96.2
     .........................
+    SelfHealingPlugin: Retry #3: Recovering node: id=null, address=192.168.96.2
+    VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.96.2, port=22, username=ubuntu
+    Connecting to server...
+    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4b676a58-e00e-4ddf-a21e-b1c0d1382cd6, zone-id=IMU-ZONE, address=192.168.96.2, provider=AWS,.........................
+    java.net.NoRouteToHostException: No route to host
+            at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
+            at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)
+            at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finish(UnixAsynchronousSocketChannelImpl.java:198)
+            at sun.nio.ch.UnixAsynchronousSocketChannelImpl.onEvent(UnixAsynchronousSocketChannelImpl.java:213)
+            at sun.nio.ch.EPollPort$EventHandlerTask.run(EPollPort.java:293)
+            at java.lang.Thread.run(Thread.java:748)
     ```
+    *<p align="center">Aggregator log: Netdata agent recovery Give Up message</p>*
     ```
-    ......................... BUG: No Give up message
+    SelfHealingPlugin: Max retries reached. No more recovery retries for node: id=null, address=192.168.96.2
+    SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=null, address=192.168.96.2
+    NOTIFY-X: RECOVERY GIVE_UP null @ 192.168.96.2
     ```
   * ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
 
 
 
-**B.7)  Successful recovery of Netdata agent in a clustered Normal node (including Aggregator)**
+**B.7)  Successful recovery of local Netdata agent, in a clustered Normal node (including Aggregator)**
 
 > Test Case Quick Notes:
 > - Kill Netdata agent of any Normal node.
@@ -1351,10 +1315,9 @@ We distinguish between monitoring topologies:
 
 ------
 
-## Limitations and Bugs
+## Limitations
 
 * Clustering is never used for 2-level monitoring topologies.
-* ***Bug:*** EMS clients do not give up after many recovery failures. -- No message is sent to EMS server for failed recoveries.
 * When no Normal nodes (and hence no Aggregator) exist in a cluster, no one will collect metrics from the (orphan) RL nodes.
 * When no Normal nodes (and hence no Aggregator) exist in a cluster, no one will recover the (orphan) RL nodes.
 * If EMS server fails no one will recover it.

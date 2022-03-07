@@ -26,26 +26,24 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
+
+import eu.melodic.event.common.recovery.RecoveryConstant;
 
 /**
  * Collects measurements from Netdata http server
  */
 @Slf4j
 @RequiredArgsConstructor
-public class NetdataCollector implements InitializingBean, Runnable {
+public class NetdataCollector implements InitializingBean, Runnable, EventBus.EventConsumer<String,Object,Object> {
     public final static String NETDATA_COLLECTION_START = "NETDATA_COLLECTION_START";
     public final static String NETDATA_COLLECTION_END = "NETDATA_COLLECTION_END";
     public final static String NETDATA_CONN_OK = "NETDATA_CONN_OK";
     public final static String NETDATA_CONN_ERROR = "NETDATA_CONN_ERROR";
-    public final static String NETDATA_NODE_PAUSED = "NETDATA_NODE_PAUSED";
-    public final static String NETDATA_NODE_RESUMED = "NETDATA_NODE_RESUMED";
+    public final static String NETDATA_NODE_OK = "NETDATA_NODE_OK";
+    public final static String NETDATA_NODE_FAILED = "NETDATA_NODE_FAILED";
 
     protected final NetdataCollectorProperties properties;
     protected final CollectorContext collectorContext;
@@ -104,6 +102,10 @@ public class NetdataCollector implements InitializingBean, Runnable {
 
         log.info("Collectors::Netdata: configuration: {}", properties);
 
+        // Subscribe for SELF-HEALING plugin GIVE_UP events
+        eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED, this);
+        eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
+
         // Schedule collection execution
         errorsMap.clear();
         ignoredNodes.clear();
@@ -119,12 +121,40 @@ public class NetdataCollector implements InitializingBean, Runnable {
             return;
         }
 
+        // Unsubscribe from SELF-HEALING plugin GIVE_UP events
+        eventBus.unsubscribe(RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED, this);
+        eventBus.unsubscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
+
         // Cancel collection execution
         started = false;
         runner.cancel(true);
         runner = null;
-        ignoredNodes.values().forEach(task -> task.cancel(true));
+        ignoredNodes.values().stream().filter(Objects::nonNull).forEach(task -> task.cancel(true));
         log.info("Collectors::Netdata: Stopped");
+    }
+
+    @Override
+    public void onMessage(String topic, Object message, Object sender) {
+        log.trace("Collectors::Netdata: onMessage: BEGIN: topic={}, message={}, sender={}", topic, message, sender);
+        if (RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED.equals(topic)) {
+            if (message!=null) {
+                String nodeAddress = message.toString();
+                if (StringUtils.isNotBlank(nodeAddress)) {
+                    log.info("Collectors::Netdata: Resuming collection from Node: {}", nodeAddress);
+                    ignoredNodes.remove(nodeAddress);
+                }
+            }
+        } else
+        if (RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP.equals(topic)) {
+            if (message!=null) {
+                String nodeAddress = message.toString();
+                if (StringUtils.isNotBlank(nodeAddress)) {
+                    log.info("Collectors::Netdata: Pausing collection from Node: {}", nodeAddress);
+                    ignoredNodes.put(nodeAddress, null);
+                }
+            }
+        } else
+            log.warn("Collectors::Netdata: onMessage: Event from unexpected topic. Ignoring it: {}", topic);
     }
 
     public void run() {
@@ -174,32 +204,22 @@ public class NetdataCollector implements InitializingBean, Runnable {
 
             //if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0) sendEvent(NETDATA_CONN_OK, nodeAddress);
             sendEvent(NETDATA_CONN_OK, nodeAddress);
+            sendEvent(NETDATA_NODE_OK, nodeAddress);
             return COLLECTION_RESULT.OK;
         } catch (Throwable t) {
             int errors = errorsMap.compute(nodeAddress, (k, v) -> Optional.ofNullable(v).orElse(0) + 1);
             int errorLimit = properties.getErrorLimit();
-            int pausePeriod = properties.getPausePeriod();
             log.warn("Collectors::Netdata:     Exception while collecting metrics from node: {}, #errors={}, exception: {}",
                     nodeAddress, errors, getExceptionMessages(t));
             log.debug("Collectors::Netdata: Exception while collecting metrics from node: {}, #errors={}\n", nodeAddress, errors, t);
 
             sendEvent(NETDATA_CONN_ERROR, nodeAddress, "errors="+errors);
 
-            if (errorLimit>0 && pausePeriod>0) {
-                if (errors >= errorLimit) {
-                    log.warn("Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", nodeAddress, errors);
-                    log.warn("Collectors::Netdata: Will pause metrics collection from node for {} seconds: {}", pausePeriod, nodeAddress);
-                    ignoredNodes.put(nodeAddress, taskScheduler.schedule(() -> {
-                        errorsMap.put(nodeAddress, 0);
-                        ignoredNodes.remove(nodeAddress);
-                        log.info("Collectors::Netdata: Resumed metrics collection from node: {}", nodeAddress);
-                        sendEvent(NETDATA_NODE_RESUMED, nodeAddress);
-                    }, Instant.now().plusSeconds(pausePeriod)));
-
-                    sendEvent(NETDATA_NODE_PAUSED, nodeAddress);
-                }
-            } else
-                log.debug("Collectors::Netdata: Metrics collection pausing is disabled");
+            if (errorLimit<=0 || errors >= errorLimit) {
+                log.warn("Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", nodeAddress, errors);
+                ignoredNodes.put(nodeAddress, null);
+                sendEvent(NETDATA_NODE_FAILED, nodeAddress);
+            }
             return COLLECTION_RESULT.ERROR;
         }
     }

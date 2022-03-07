@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.plugin.recovery;
 import eu.melodic.event.baguette.client.BaguetteClientProperties;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
+import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.util.Plugin;
@@ -51,10 +52,6 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     private final PasswordUtil passwordUtil;
     private final NodeInfoHelper nodeInfoHelper;
 
-    final static String SELF_HEALING_RECOVERY_FAILED = "SELF_HEALING_RECOVERY_FAILED";
-    final static String SELF_HEALING_RECOVERY_GIVE_UP = "SELF_HEALING_RECOVERY_GIVE_UP";
-    final static String SELF_HEALING_RECOVERY_COMPLETED = "SELF_HEALING_RECOVERY_COMPLETED";
-
     private boolean started;
 
     private final HashMap<String,ScheduledFuture<?>> waitingTasks = new HashMap<>();
@@ -83,8 +80,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
         eventBus.subscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.subscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
-        eventBus.subscribe(NetdataCollector.NETDATA_NODE_PAUSED, this);
-        eventBus.subscribe(NetdataCollector.NETDATA_NODE_RESUMED, this);
+        eventBus.subscribe(NetdataCollector.NETDATA_NODE_OK, this);
+        eventBus.subscribe(NetdataCollector.NETDATA_NODE_FAILED, this);
         log.info("SelfHealingPlugin: Started");
     }
 
@@ -96,8 +93,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_ADDED, this);
         eventBus.unsubscribe(CommandExecutor.EVENT_CLUSTER_NODE_REMOVED, this);
-        eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_PAUSED, this);
-        eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_RESUMED, this);
+        eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_OK, this);
+        eventBus.unsubscribe(NetdataCollector.NETDATA_NODE_FAILED, this);
 
         // Cancel all waiting recovery tasks
         waitingTasks.forEach((nodeAddress,future) -> {
@@ -123,13 +120,13 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         } else
 
         // Self-healing for Netdata agents
-        if (NetdataCollector.NETDATA_NODE_PAUSED.equals(topic)) {
+        if (NetdataCollector.NETDATA_NODE_FAILED.equals(topic)) {
             log.debug("SelfHealingPlugin: onMessage(): NETDATA NODE PAUSED: message={}", message);
-            processNetdataNodePausedEvent(message);
+            processNetdataNodeFailedEvent(message);
         } else
-        if (NetdataCollector.NETDATA_NODE_RESUMED.equals(topic)) {
+        if (NetdataCollector.NETDATA_NODE_OK.equals(topic)) {
             log.debug("SelfHealingPlugin: onMessage(): NETDATA NODE RESUMED: message={}", message);
-            processNetdataNodeResumedEvent(message);
+            processNetdataNodeOkEvent(message);
         } else
 
         // Unsupported message
@@ -182,18 +179,18 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
 
     // ------------------------------------------------------------------------
 
-    private void processNetdataNodePausedEvent(Object message) {
-        log.debug("SelfHealingPlugin: processNetdataNodePausedEvent(): BEGIN: message={}", message);
+    private void processNetdataNodeFailedEvent(Object message) {
+        log.debug("SelfHealingPlugin: processNetdataNodeFailedEvent(): BEGIN: message={}", message);
         if (!(message instanceof Map)) {
-            log.warn("SelfHealingPlugin: processNetdataNodePausedEvent(): Message is not a {} object. Will ignore it.", Map.class.getSimpleName());
+            log.warn("SelfHealingPlugin: processNetdataNodeFailedEvent(): Message is not a {} object. Will ignore it.", Map.class.getSimpleName());
             return;
         }
 
         // Get paused node address
         Object addressValue = ((Map) message).getOrDefault("address", null);
-        log.debug("SelfHealingPlugin: processNetdataNodePausedEvent(): node-address={}", addressValue);
+        log.debug("SelfHealingPlugin: processNetdataNodeFailedEvent(): node-address={}", addressValue);
         if (addressValue==null) {
-            log.warn("SelfHealingPlugin: processNetdataNodePausedEvent(): Node address is missing. Cannot recover node. Initial message: {}", message);
+            log.warn("SelfHealingPlugin: processNetdataNodeFailedEvent(): Node address is missing. Cannot recover node. Initial message: {}", message);
             return;
         }
         String nodeAddress = addressValue.toString();
@@ -222,18 +219,18 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         }
     }
 
-    private void processNetdataNodeResumedEvent(Object message) {
-        log.debug("SelfHealingPlugin: processNetdataNodeResumedEvent(): BEGIN: message={}", message);
+    private void processNetdataNodeOkEvent(Object message) {
+        log.debug("SelfHealingPlugin: processNetdataNodeOkEvent(): BEGIN: message={}", message);
         if (!(message instanceof Map)) {
-            log.warn("SelfHealingPlugin: processNetdataNodeResumedEvent(): Message is not a {} object. Will ignore it.", Map.class.getSimpleName());
+            log.warn("SelfHealingPlugin: processNetdataNodeOkEvent(): Message is not a {} object. Will ignore it.", Map.class.getSimpleName());
             return;
         }
 
         // Get resumed node address
         String nodeAddress = ((Map) message).getOrDefault("address", "").toString();
-        log.debug("SelfHealingPlugin: processNetdataNodeResumedEvent(): node-address={}", nodeAddress);
+        log.debug("SelfHealingPlugin: processNetdataNodeOkEvent(): node-address={}", nodeAddress);
         /*if (StringUtils.isBlank(nodeAddress)) {
-            log.warn("SelfHealingPlugin: processNetdataNodeResumedEvent(): Node address is missing. Initial message: {}", message);
+            log.warn("SelfHealingPlugin: processNetdataNodeOkEvent(): Node address is missing. Initial message: {}", message);
             return;
         }*/
 
@@ -278,12 +275,12 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 //NOTE: 'recoveryTask.runNodeRecovery()' must send SELF_HEALING_RECOVERY_COMPLETED or _FAILED event
             } catch (Exception e) {
                 log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-info={} -- Exception: ", recoveryTask.getNodeInfo(), e);
-                eventBus.send(SELF_HEALING_RECOVERY_FAILED, nodeAddress);
+                eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_FAILED, nodeAddress);
             }
             if (retries.getAndIncrement() >= clientRecoveryMaxRetries) {
                 log.warn("SelfHealingPlugin: Max retries reached. No more recovery retries for node: id={}, address={}", nodeId, nodeAddress);
                 cancelRecoveryTask(nodeId, nodeAddress, true);
-                eventBus.send(SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress);
+                eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress);
 
                 // Notify EMS server about giving up recovery due to permanent failure
                 commandExecutor.notifyEmsServer("RECOVERY GIVE_UP "+nodeId+" @ "+nodeAddress);
@@ -301,7 +298,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 nodeInfoHelper.remove(nodeId, nodeAddress);
                 log.info("SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id={}, address={}", nodeId, nodeAddress);
             } else
-                log.warn("SelfHealingPlugin: cancelRecoveryTask(): No recovery task is scheduled for Node: id={}, address={}", nodeId, nodeAddress);
+                log.debug("SelfHealingPlugin: cancelRecoveryTask(): No recovery task is scheduled for Node: id={}, address={}", nodeId, nodeAddress);
         }
     }
 }

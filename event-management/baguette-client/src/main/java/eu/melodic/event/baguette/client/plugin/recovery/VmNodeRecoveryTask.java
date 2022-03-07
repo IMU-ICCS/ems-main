@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static eu.melodic.event.baguette.client.plugin.recovery.SelfHealingPlugin.SELF_HEALING_RECOVERY_COMPLETED;
+import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED;
 
 /**
  * Client-side, VM-node Self-Healing
