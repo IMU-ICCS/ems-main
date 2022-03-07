@@ -136,25 +136,23 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
     @Override
     public void onMessage(String topic, Object message, Object sender) {
         log.trace("Collectors::Netdata: onMessage: BEGIN: topic={}, message={}, sender={}", topic, message, sender);
+
+        String nodeAddress = (message!=null) ? message.toString() : null;
+        log.trace("Collectors::Netdata: nodeAddress={}", nodeAddress);
+
         if (RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED.equals(topic)) {
-            if (message!=null) {
-                String nodeAddress = message.toString();
-                if (StringUtils.isNotBlank(nodeAddress)) {
-                    log.info("Collectors::Netdata: Resuming collection from Node: {}", nodeAddress);
-                    ignoredNodes.remove(nodeAddress);
-                }
+            if (StringUtils.isNotBlank(nodeAddress)) {
+                log.info("Collectors::Netdata: Resuming collection from Node: {}", nodeAddress);
+                ignoredNodes.remove(nodeAddress);
             }
         } else
         if (RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP.equals(topic)) {
-            if (message!=null) {
-                String nodeAddress = message.toString();
-                if (StringUtils.isNotBlank(nodeAddress)) {
-                    log.info("Collectors::Netdata: Pausing collection from Node: {}", nodeAddress);
-                    ignoredNodes.put(nodeAddress, null);
-                }
+            if (StringUtils.isNotBlank(nodeAddress)) {
+                log.info("Collectors::Netdata: Giving up collection from Node: {}", nodeAddress);
+                ignoredNodes.put(nodeAddress, null);
             }
         } else
-            log.warn("Collectors::Netdata: onMessage: Event from unexpected topic. Ignoring it: {}", topic);
+            log.warn("Collectors::Netdata: onMessage: Event from unexpected topic received. Ignoring it: {}", topic);
     }
 
     public void run() {
@@ -217,6 +215,7 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
 
             if (errorLimit<=0 || errors >= errorLimit) {
                 log.warn("Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", nodeAddress, errors);
+                log.warn("Collectors::Netdata: Pausing collection from Node: {}", nodeAddress);
                 ignoredNodes.put(nodeAddress, null);
                 sendEvent(NETDATA_NODE_FAILED, nodeAddress);
             }

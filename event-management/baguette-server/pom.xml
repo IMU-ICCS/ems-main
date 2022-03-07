@@ -32,6 +32,11 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>eu.melodic.event</groupId>
+			<artifactId>common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.sshd/apache-sshd -->
 		<dependency>

@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import com.google.gson.Gson;
+import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
@@ -262,9 +263,15 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                         String clientData = part.length>1 ? part[1] : null;
                         if (StringUtils.isNotBlank(notificationType) && StringUtils.isNotBlank(clientData)) {
                             log.info("{}--> Client Recovery Notification: {}: {}", getId(), notificationType, clientData);
-                            if ("GIVE_UP".equalsIgnoreCase(notificationType))
-                                eventBus.send("CLIENT_NOTIFICATION_RECOVERY_GIVE_UP", clientData, "Client_"+getId());
-                            else
+                            if ("GIVE_UP".equalsIgnoreCase(notificationType)) {
+                                String[] tmp = clientData.split("@", 2);
+                                String nodeId = tmp[0].trim();
+                                String nodeAddress = tmp.length>1 ? tmp[1].trim() : null;
+                                if (StringUtils.isNotBlank(nodeAddress))
+                                    eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress, "Client_" + getId());
+                                else
+                                    log.warn("{}--> Missing Node Address in Client Recovery Notification: {}", getId(), args);
+                            } else
                                 log.warn("{}--> UNKNOWN Client Recovery Notification: {}", getId(), args);
                         } else {
                             log.warn("{}--> INVALID Client Recovery Notification: {}", getId(), args);

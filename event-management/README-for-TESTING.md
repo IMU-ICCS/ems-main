@@ -1065,6 +1065,7 @@ We distinguish between monitoring topologies:
     Collectors::Netdata:   Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
     Collectors::Netdata:     Exception while collecting metrics from node: 192.168.96.2, #errors=3, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": Connection refused (Connection refused); nested exception is java.net.ConnectException: Connection refused (Connection refused) -> java.net.ConnectException: Connection refused (Connection refused)
     Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: 192.168.96.2, num-of-errors=3
+    Collectors::Netdata: Pausing collection from Node: 192.168.96.2
     ```
     *<p align="center">Aggregator log: Requesting RL node's credentials</p>*
     ```
@@ -1171,6 +1172,7 @@ We distinguish between monitoring topologies:
     ```
     e.m.e.b.server.ClientShellCommand        : #00000--> Client notification: CMD=RECOVERY, ARGS=GIVE_UP null @ 192.168.96.2
     e.m.e.b.server.ClientShellCommand        : #00000--> Client Recovery Notification: GIVE_UP: null @ 192.168.96.2
+    e.m.e.baguette.server.BaguetteServer     : BaguetteServer.onMessage: Marked Node as Failed: 192.168.96.2
     ```
   * ***Aggregator***, for logs reporting (i) connection failures to a Netdata agent, (ii) a number of failed attempts to connect to VM, and (iii) a recovery give up message.
     *<p align="center">Aggregator log: Failed metric collection attempts from a RL node's Netdata agent</p>*
@@ -1196,6 +1198,7 @@ We distinguish between monitoring topologies:
     Collectors::Netdata:   Collecting data from url: http://192.168.96.2:19999/api/v1/allmetrics?format=json
     Collectors::Netdata:     Exception while collecting metrics from node: 192.168.96.2, #errors=3, exception: org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://192.168.96.2:19999/api/v1/allmetrics": connect timed out; nested exception is java.net.SocketTimeoutException: connect timed out -> java.net.SocketTimeoutException: connect timed out
     Collectors::Netdata: Too many consecutive errors occurred while attempting to collect metrics from node: 192.168.96.2, num-of-errors=3
+    Collectors::Netdata: Pausing collection from Node: 192.168.96.2
     ```
     *<p align="center">Aggregator log: Requesting RL node's credentials</p>*
     ```
@@ -1239,6 +1242,7 @@ We distinguish between monitoring topologies:
     ```
     SelfHealingPlugin: Max retries reached. No more recovery retries for node: id=null, address=192.168.96.2
     SelfHealingPlugin: cancelRecoveryTask(): Cancelled recovery task for Node: id=null, address=192.168.96.2
+    Collectors::Netdata: Giving up collection from Node: 192.168.96.2
     NOTIFY-X: RECOVERY GIVE_UP null @ 192.168.96.2
     ```
   * ***Normal nodes (that operate)***, for NO logs indicating connection failures or recovery actions.
