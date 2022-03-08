@@ -741,7 +741,7 @@ We distinguish between monitoring topologies:
     SelfHealingPlugin: Retry #0: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
     Connecting to server...
-    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=cecab3d4-4c09-43b1-b6fa-3534d37bbc8f, zone-id=IMU-ZONE, address=192.168.16.4,.........................
+    SelfHealingPlugin: EXCEPTION while recovering node: node-address=192.168.16.4 -- Exception:
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)
@@ -754,7 +754,7 @@ We distinguish between monitoring topologies:
     SelfHealingPlugin: Retry #3: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
     Connecting to server...
-    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=cecab3d4-4c09-43b1-b6fa-3534d37bbc8f, zone-id=IMU-ZONE, address=192.168.16.4,.........................
+    SelfHealingPlugin: EXCEPTION while recovering node: node-address=192.168.16.4 -- Exception:
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)
@@ -991,7 +991,7 @@ We distinguish between monitoring topologies:
     SelfHealingPlugin: Retry #0: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
     Connecting to server...
-    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4abf9ae2-b7fc-4e8c-b6d9-464623d1b05f, zone-id=IMU-ZONE, address=192.168.16.4,.........................
+    SelfHealingPlugin: EXCEPTION while recovering node: node-address=192.168.16.4 -- Exception:
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)
@@ -1004,7 +1004,7 @@ We distinguish between monitoring topologies:
     SelfHealingPlugin: Retry #3: Recovering node: id=node_3866738cb0f4_2002, address=192.168.16.4
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.16.4, port=22, username=ubuntu
     Connecting to server...
-    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4abf9ae2-b7fc-4e8c-b6d9-464623d1b05f, zone-id=IMU-ZONE, address=192.168.16.4,.........................
+    SelfHealingPlugin: EXCEPTION while recovering node: node-address=192.168.16.4 -- Exception:
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)
@@ -1210,7 +1210,7 @@ We distinguish between monitoring topologies:
     SelfHealingPlugin: Retry #0: Recovering node: id=null, address=192.168.96.2
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.96.2, port=22, username=ubuntu
     Connecting to server...
-    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4b676a58-e00e-4ddf-a21e-b1c0d1382cd6, zone-id=IMU-ZONE, address=192.168.96.2, provider=AWS,.........................
+    SelfHealingPlugin: EXCEPTION while recovering node: node-address=192.168.96.2 -- Exception:
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)
@@ -1229,7 +1229,7 @@ We distinguish between monitoring topologies:
     SelfHealingPlugin: Retry #3: Recovering node: id=null, address=192.168.96.2
     VmNodeRecoveryTask: connectToNode(): Connecting to node using SSH: address=192.168.96.2, port=22, username=ubuntu
     Connecting to server...
-    SelfHealingPlugin: EXCEPTION while recovering node: node-info={random=4b676a58-e00e-4ddf-a21e-b1c0d1382cd6, zone-id=IMU-ZONE, address=192.168.96.2, provider=AWS,.........................
+    SelfHealingPlugin: EXCEPTION while recovering node: node-address=192.168.96.2 -- Exception:
     java.net.NoRouteToHostException: No route to host
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.checkConnect(Native Method)
             at sun.nio.ch.UnixAsynchronousSocketChannelImpl.finishConnect(UnixAsynchronousSocketChannelImpl.java:252)

@@ -203,6 +203,7 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
             //if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0) sendEvent(NETDATA_CONN_OK, nodeAddress);
             sendEvent(NETDATA_CONN_OK, nodeAddress);
             sendEvent(NETDATA_NODE_OK, nodeAddress);
+            errorsMap.put(nodeAddress, 0);
             return COLLECTION_RESULT.OK;
         } catch (Throwable t) {
             int errors = errorsMap.compute(nodeAddress, (k, v) -> Optional.ofNullable(v).orElse(0) + 1);

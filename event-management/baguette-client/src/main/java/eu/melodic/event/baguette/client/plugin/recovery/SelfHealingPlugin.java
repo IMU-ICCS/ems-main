@@ -274,7 +274,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 recoveryTask.runNodeRecovery();
                 //NOTE: 'recoveryTask.runNodeRecovery()' must send SELF_HEALING_RECOVERY_COMPLETED or _FAILED event
             } catch (Exception e) {
-                log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-info={} -- Exception: ", recoveryTask.getNodeInfo(), e);
+                log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-address={} -- Exception: ", nodeAddress, e);
                 eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_FAILED, nodeAddress);
             }
             if (retries.getAndIncrement() >= clientRecoveryMaxRetries) {
