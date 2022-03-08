@@ -258,7 +258,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 log.warn("SelfHealingPlugin: createRecoveryTask(): Node info is null or empty. Cannot recover node.");
                 return;
             }
-            log.trace("SelfHealingPlugin: createRecoveryTask(): Node info retrieved for node: id={}, address={}, node-info:\n{}", nodeId, nodeAddress, nodeInfo);
+            log.trace("SelfHealingPlugin: createRecoveryTask(): Node info retrieved for node: id={}, address={}", nodeId, nodeAddress);
         } else {
             log.debug("SelfHealingPlugin: createRecoveryTask(): Node address is blank. Node info will not be retrieved: id={}, address={}", nodeId, nodeAddress);
         }
