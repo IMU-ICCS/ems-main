@@ -7,11 +7,10 @@
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>upperware</artifactId>
-        <version>4.5.0-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>jwt-commons</artifactId>
-
     <name>Upperware - JWT Commons</name>
 
     <dependencies>
