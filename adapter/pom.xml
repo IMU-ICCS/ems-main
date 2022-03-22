@@ -22,6 +22,7 @@
     <version>5.0.0-SNAPSHOT</version>
   </parent>
   <properties>
+    <authorization.version>4.5.0-SNAPSHOT</authorization.version>
     <colloseum-client.version>0.2.0-SNAPSHOT</colloseum-client.version>
     <jgrapht.version>1.0.1</jgrapht.version>
     <gson.version>2.8.1</gson.version>
@@ -144,7 +145,7 @@
     <dependency>
       <groupId>eu.melodic.security.authorization</groupId>
       <artifactId>authorization-service-client</artifactId>
-      <version>${melodic.version}</version>
+      <version>${authorization.version}</version>
     </dependency>
     <!--dependencies for higher version required by Spring boot 2 for Cloudiator Colosseum-->
     <dependency>
