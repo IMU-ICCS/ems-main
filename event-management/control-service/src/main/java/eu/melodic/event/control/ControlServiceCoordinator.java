@@ -10,15 +10,21 @@
 package eu.melodic.event.control;
 
 import camel.core.NamedElement;
+import camel.metric.CompositeMetric;
+import camel.metric.MetricContext;
+import camel.metric.RawMetric;
+import camel.requirement.ServiceLevelObjective;
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.NodeRegistry;
+import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
-import eu.melodic.event.translate.analyze.Grouping;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
@@ -31,6 +37,7 @@ import eu.melodic.models.interfaces.ems.Sink;
 import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -38,6 +45,7 @@ import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -53,6 +61,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.*;
@@ -61,7 +70,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class ControlServiceCoordinator {
+public class ControlServiceCoordinator implements InitializingBean {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -72,6 +81,8 @@ public class ControlServiceCoordinator {
     @Autowired
     @Getter
     private BrokerCepService brokerCep;
+    @Autowired
+    private NodeRegistry nodeRegistry;
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -86,11 +97,45 @@ public class ControlServiceCoordinator {
     private String currentCpModelId;
     private TranslationContext currentTC;
 
+    private ServerNetdataCollector netdataCollector;
+
+    @Getter
+    private String reference = UUID.randomUUID().toString();
+
+    public enum EMS_STATE {
+        IDLE, INITIALIZING, RECONFIGURING, READY, ERROR
+    }
+
+    @Getter
+    private EMS_STATE currentEmsState = EMS_STATE.IDLE;
+    @Getter
+    private String currentEmsStateMessage;
+    @Getter
+    private long currentEmsStateChangeTimestamp;
+
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // Run configuration checks and throw exceptions early (before actually using EMS)
+        if (properties.isSkipTranslation()) {
+            if (StringUtils.isBlank(properties.getTcLoadFile()))
+                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file has been set. Check property: control.tc-load-file");
+            if (! Paths.get(properties.getTcLoadFile()).toFile().exists())
+                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile());
+            log.warn("Model translation will be skipped, and Translation Context file will be used: {}", properties.getTcLoadFile());
+        }
+    }
 
     // ------------------------------------------------------------------------------------------------------------
 
     public ControlServiceProperties getControlServiceProperties() {
         return properties;
+    }
+
+    public void setCurrentEmsState(@NonNull EMS_STATE newState, String message) {
+        this.currentEmsState = newState;
+        this.currentEmsStateMessage = message;
+        this.currentEmsStateChangeTimestamp = System.currentTimeMillis();
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -138,6 +183,8 @@ public class ControlServiceCoordinator {
             this.currentCamelModelId = camelModelId;
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
+            setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
+
             String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
@@ -170,6 +217,8 @@ public class ControlServiceCoordinator {
             _processCpModel(cpModelId, notificationUri, requestUuid, jwtToken);
             this.currentCpModelId = cpModelId;
         } catch (Exception ex) {
+            setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
+
             String mesg = "ControlServiceCoordinator.processCpModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
@@ -193,6 +242,8 @@ public class ControlServiceCoordinator {
         // Translate models into EPL rules etc
         TranslationContext _TC = null;
         if (!properties.isSkipTranslation()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
+
             log.info("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: camel-model-id={}", camelModelId);
             CamelToEplTranslator translator =
                     applicationContext.getBean(CamelToEplTranslator.class);
@@ -203,6 +254,8 @@ public class ControlServiceCoordinator {
             String fileName = properties.getTcSaveFile();
             if (StringUtils.isNotBlank(fileName)) {
                 try {
+                    setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
+
                     log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
                     java.io.Writer writer = new java.io.FileWriter(fileName);
                     com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
@@ -247,6 +300,8 @@ public class ControlServiceCoordinator {
             // unserialize 'TranslationContext' from file
             String fileName = properties.getTcLoadFile();
             if (StringUtils.isNotBlank(fileName)) {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
+
                 try {
                     log.info("ControlServiceCoordinator.processNewModel(): Start unserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
@@ -261,6 +316,8 @@ public class ControlServiceCoordinator {
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to unserialize _TC from file: {} : Exception: ", fileName, ex);
                 }
+            } else {
+                throw new IllegalArgumentException("No translation context file has been set");
             }
         }
 
@@ -268,6 +325,8 @@ public class ControlServiceCoordinator {
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
             if (StringUtils.isNotBlank(cpModelId)) {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving MVVs from CP model");
+
                 try {
                     log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
@@ -290,6 +349,8 @@ public class ControlServiceCoordinator {
         // (Re-)Configure Broker and CEP
         String upperwareGrouping = properties.getUpperwareGrouping();
         if (!properties.isSkipBrokerCep()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "initializing Broker-CEP");
+
             try {
                 // Initializing Broker-CEP module if necessary
                 if (brokerCep == null) {
@@ -352,6 +413,8 @@ public class ControlServiceCoordinator {
 
         // (Re-)Configure Baguette server
         if (!properties.isSkipBaguette()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Initializing Baguette Server");
+
             log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
             try {
                 baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
@@ -362,8 +425,38 @@ public class ControlServiceCoordinator {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping Baguette Server setup due to configuration");
         }
 
+        // Start/Stop Top-Level collectors
+        if (!properties.isSkipCollectors()) {
+            if (netdataCollector!=null) {
+                log.info("ControlServiceCoordinator.processNewModel(): Stopping NetdataCollector: camel-model-id={}", camelModelId);
+                try {
+                    netdataCollector.stop();
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while stopping NetdataCollector: camel-model-id={}", camelModelId, ex);
+                }
+            }
+            ServerCoordinator serverCoordinator = nodeRegistry.getCoordinator();
+            if (! serverCoordinator.supportsAggregators()) {
+                if (netdataCollector==null) {
+                    netdataCollector = applicationContext.getBean(ServerNetdataCollector.class);
+                }
+                log.info("ControlServiceCoordinator.processNewModel(): Starting NetdataCollector: camel-model-id={}", camelModelId);
+                try {
+                    netdataCollector.start();
+                } catch (Exception ex) {
+                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting NetdataCollector: camel-model-id={}", camelModelId, ex);
+                }
+            } else {
+                log.info("ControlServiceCoordinator.processNewModel(): NetdataCollector is not needed (will not start it): camel-model-id={}", camelModelId);
+            }
+        } else {
+            log.warn("ControlServiceCoordinator.processNewModel(): Skipping Collectors setup due to configuration");
+        }
+
         // (Re-)Configure MetaSolver
         if (!properties.isSkipMetasolver()) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Sending configuration to MetaSolver");
+
             // Get scaling event and SLO topics from _TC
             Set<String> scalingTopics = new HashSet<>();
             scalingTopics.addAll(_TC.E2A.keySet());
@@ -435,6 +528,8 @@ public class ControlServiceCoordinator {
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
             if (StringUtils.isNotBlank(notificationUri)) {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Notifying ESB");
+
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
                 sendSuccessNotification(camelModelId, notificationUri, requestUuid, jwtToken);
@@ -446,6 +541,8 @@ public class ControlServiceCoordinator {
 
         this.currentTC = _TC;
         log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
     protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
@@ -457,6 +554,8 @@ public class ControlServiceCoordinator {
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
             if (StringUtils.isNotBlank(cpModelId)) {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Retrieving MVVs from CP model");
+
                 try {
                     log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
@@ -480,6 +579,8 @@ public class ControlServiceCoordinator {
         // (Re-)Configure Broker and CEP
         if (!properties.isSkipBrokerCep()) {
             try {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Broker-CEP");
+
                 // Initializing Broker-CEP module if necessary
                 if (brokerCep == null) {
                     log.info("ControlServiceCoordinator._processCpModel(): Broker-CEP: Initializing...");
@@ -498,6 +599,8 @@ public class ControlServiceCoordinator {
 
         // (Re-)Configure Baguette server
         if (!properties.isSkipBaguette()) {
+            setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
+
             log.info("ControlServiceCoordinator._processCpModel(): Re-configuring Baguette Server with constants: {}", constants);
             try {
                 baguette.sendConstants(constants);
@@ -511,6 +614,8 @@ public class ControlServiceCoordinator {
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
             if (StringUtils.isNotBlank(notificationUri)) {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Notifying ESB");
+
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
                 sendSuccessNotification(null, notificationUri, requestUuid, jwtToken);
@@ -521,6 +626,8 @@ public class ControlServiceCoordinator {
         }
 
         log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -558,7 +665,7 @@ public class ControlServiceCoordinator {
         return _tc.getMetricConstraints();
     }
 
-    public Set<String> getGlobalGroupingMetrics(String camelModelId) {
+    /*public Set<String> getGlobalGroupingMetrics(String camelModelId) {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptySet();
 
@@ -577,9 +684,18 @@ public class ControlServiceCoordinator {
         return nodes.stream()
                 .map(DAGNode::getElementName)
                 .collect(Collectors.toSet());
+    }*/
+
+    public @NonNull Map<String,Object> getSLOMetricDecomposition(String camelModelId) {
+        List<Object> slos = _getSLOMetricDecomposition(camelModelId);
+        Map<String,Object> result = new HashMap<>();
+        result.put("name", "_");
+        result.put("operator", "OR");
+        result.put("constraints", slos);
+        return result;
     }
 
-    public List<Object> getSLOMetricDecomposition(String camelModelId) {
+    public @NonNull List<Object> _getSLOMetricDecomposition(String camelModelId) {
         TranslationContext _tc = camelToTcCache.get(camelModelId);
         if (_tc==null) return Collections.emptyList();
 
@@ -588,6 +704,8 @@ public class ControlServiceCoordinator {
                 .collect(Collectors.toMap(TranslationContext.MetricConstraint::getName, mc -> mc));
         Map<String, TranslationContext.LogicalConstraint> lcMap = _tc.getLogicalConstraints().stream()
                 .collect(Collectors.toMap(TranslationContext.LogicalConstraint::getName, lc -> lc));
+        /*Map<String, TranslationContext.IfThenConstraint> ifMap = _tc.getIfThenConstraints().stream()
+                .collect(Collectors.toMap(TranslationContext.IfThenConstraint::getName, ic -> ic));*/
 
         // Create map of top-level element names and instances
         Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
@@ -642,6 +760,39 @@ public class ControlServiceCoordinator {
         return null;
     }
 
+    public @NonNull Set<TranslationContext.MetricContext> getMetricContextsForPrediction(String camelModelId) {
+        log.debug("getMetricContextsForPrediction: BEGIN: {}", camelModelId);
+        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        if (_tc==null) {
+            log.debug("getMetricContextsForPrediction: END: No Translation Context found for model: {}", camelModelId);
+            return Collections.emptySet();
+        }
+
+        // Process DAG top-level nodes
+        Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
+        HashSet<TranslationContext.MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
+
+        final Deque<DAGNode> q = topLevelNodes.stream()
+                .filter(x ->
+                        x.getElement() instanceof ServiceLevelObjective ||
+                        x.getElement() instanceof CompositeMetric ||
+                        x.getElement() instanceof RawMetric)
+                .distinct()
+                .collect(Collectors.toCollection(ArrayDeque::new));
+
+        while (!q.isEmpty()) {
+            DAGNode node = q.pop();
+            if (node.getElement() instanceof MetricContext) {
+                tcMetricsOfTopLevelNodes.add(node.getMetricContext());
+            } else {
+                Set<DAGNode> children = _tc.DAG.getNodeChildren(node);
+                if (children!=null) q.addAll(children);
+            }
+        }
+
+        return tcMetricsOfTopLevelNodes;
+    }
+
 
     // ------------------------------------------------------------------------------------------------------------
     // Baguette control methods
@@ -685,10 +836,15 @@ public class ControlServiceCoordinator {
 
     @Async
     synchronized void emsExit() {
+        emsExit(properties.getExitCode());
+    }
+
+    @Async
+    synchronized void emsExit(int exitCode) {
         if (properties.isExitAllowed()) {
             // Signal SpringBootApp to exit
             log.info("ControlServiceCoordinator.emsExit(): Signaling exit...");
-            ControlServiceApplication.exitApp(properties.getExitCode(), properties.getExitGracePeriod());
+            ControlServiceApplication.exitApp(exitCode, properties.getExitGracePeriod());
             log.info("ControlServiceCoordinator.emsExit(): Signaling exit... done");
         } else {
             log.warn("ControlServiceCoordinator.emsExit(): Exit is not allowed");
@@ -938,12 +1094,22 @@ public class ControlServiceCoordinator {
 
     public List<String> clientList() {
         log.debug("ControlServiceCoordinator.clientList(): BEGIN:");
-        return baguette.getActiveClients();
+        return baguette.isServerRunning() ? baguette.getActiveClients() : Collections.emptyList();
     }
 
     public Map<String, Map<String, String>> clientMap() {
         log.debug("ControlServiceCoordinator.clientMap(): BEGIN:");
-        return baguette.getActiveClientsMap();
+        return baguette.isServerRunning() ? baguette.getActiveClientsMap() : Collections.emptyMap();
+    }
+
+    public List<String> passiveClientList() {
+        log.debug("ControlServiceCoordinator.passiveClientList(): BEGIN:");
+        return baguette.isServerRunning() ? baguette.getPassiveNodes() : Collections.emptyList();
+    }
+
+    public Map<String, Map<String, String>> passiveClientMap() {
+        log.debug("ControlServiceCoordinator.passiveClientMap(): BEGIN:");
+        return baguette.isServerRunning() ? baguette.getPassiveNodesMap() : Collections.emptyMap();
     }
 
     public String clientCommandSend(String clientId, String command) {
@@ -951,51 +1117,25 @@ public class ControlServiceCoordinator {
         return eventSendCommandToClient("clientCommandSend", clientId, command);
     }
 
-    // ------------------------------------------------------------------------------------------------------------
-
-    public Map<String,Object> emsServerStatistics() {
-        log.debug("ControlServiceCoordinator.emsServerStatistics(): BEGIN");
-        Map<String,Object> statsMap = brokerCep.getBrokerCepStatistics();
-        log.debug("ControlServiceCoordinator.emsServerStatistics(): END: {}", statsMap);
-        return statsMap;
+    public String clusterCommandSend(String clusterId, String command) {
+        log.debug("ControlServiceCoordinator.clusterCommandSend(): BEGIN: cluster={}, command={}", clusterId, command);
+        return sendCommandToCluster("clusterCommandSend", clusterId, command);
     }
 
-    public Map<String,Object> emsOverallStatistics() {
-        log.debug("ControlServiceCoordinator.emsOverallStatistics(): BEGIN");
+    private String sendCommandToCluster(String method, String clusterId, String command) {
+        // Check status
+        if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
+        if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
+        if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
 
-        // Collecting EMS server statistics
-        Map<String, Object> serverStats = emsServerStatistics();
-        Map<String,Object> statsMap = new HashMap<>();
-        statsMap.put("server", serverStats);
+        // Send command
+        if ("*".equals(clusterId))
+            baguette.sendToActiveClusters(command);
+        else
+            baguette.sendToCluster(clusterId, command);
 
-        // Collecting EMS clients' statistics
-        log.trace("ControlServiceCoordinator.emsOverallStatistics(): clients: {}", clientList());
-        for (String clientId : clientList().stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
-            log.trace("ControlServiceCoordinator.emsOverallStatistics(): Requesting statistics from client: {}", clientId);
-            Object o = baguette.readFromClient(clientId, "SHOW-STATS");
-            log.trace("ControlServiceCoordinator.emsOverallStatistics(): Statistics from client: {}, stats: {}", clientId, o);
-            if (o instanceof Map) {
-                statsMap.put(clientId, o);
-            }
-        }
-
-        log.debug("ControlServiceCoordinator.emsOverallStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    public void emsServerStatisticsClear() {
-        log.debug("ControlServiceCoordinator.emsServerStatisticsClear(): BEGIN");
-        brokerCep.clearBrokerCepStatistics();
-        log.info("ControlServiceCoordinator.emsServerStatisticsClear(): EMS server statistics cleared");
-        log.debug("ControlServiceCoordinator.emsServerStatisticsClear(): END");
-    }
-
-    public void emsOverallStatisticsClear() {
-        log.debug("ControlServiceCoordinator.emsOverallStatisticsClear(): BEGIN");
-        emsServerStatisticsClear();
-        clientCommandSend("*", "CLEAR-STATS");
-        log.info("ControlServiceCoordinator.emsOverallStatisticsClear(): All EMS statistics cleared");
-        log.debug("ControlServiceCoordinator.emsOverallStatisticsClear(): END");
+        // Log success
+        return eventLogEnd(method, EVENT_DEBUG_OK);
     }
 
     // ------------------------------------------------------------------------------------------------------------

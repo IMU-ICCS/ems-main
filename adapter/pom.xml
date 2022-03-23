@@ -194,6 +194,10 @@
       <groupId>io.github.cloudiator.client</groupId>
       <artifactId>java-rest</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.github.cloudiator.client</groupId>
+      <artifactId>java-rest</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>

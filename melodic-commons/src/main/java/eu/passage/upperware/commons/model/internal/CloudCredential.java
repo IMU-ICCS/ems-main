@@ -15,4 +15,6 @@ public class CloudCredential implements Serializable {
     private String user;
     @JsonProperty("secret")
     private String secret;
+    @JsonProperty("domain")
+    private String domain;
 }

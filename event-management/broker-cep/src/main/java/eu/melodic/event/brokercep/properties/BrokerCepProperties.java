@@ -61,6 +61,7 @@ public class BrokerCepProperties {
 
     @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;
+    @ToString.Exclude
     @Value("${additional-broker-credentials:}")
     private String additionalBrokerCredentials;
     @Value("${authorization-enabled:false}")
@@ -108,6 +109,7 @@ public class BrokerCepProperties {
     public static class ForwardDestinationConfig {
         private String connectionString;
         private String username;
+        @ToString.Exclude
         private String password;
     }
 }

@@ -55,17 +55,22 @@ public class DAG {
     }
 
     public Set<DAGNode> getTopLevelNodes() {
-        log.info("DAG.getTopLevelNodes()");
-        Set<DAGNode> children = _graph.outgoingEdgesOf(_root).stream().map(edge -> edge.getTarget()).collect(java.util.stream.Collectors.toSet());
-        log.info("DAG.getTopLevelNodes(): top-level-nodes={}", children);
+        log.debug("DAG.getTopLevelNodes()");
+        if (_graph==null || _root==null) {
+            log.debug("DAG.getTopLevelNodes(): _graph or _root is null. Returning empty set");
+            return Collections.emptySet();
+        }
+        Set<DAGNode> children = _graph.outgoingEdgesOf(_root).stream()
+                .map(DAGEdge::getTarget)
+                .collect(Collectors.toSet());
+        log.debug("DAG.getTopLevelNodes(): top-level-nodes={}", children);
         return children;
     }
 
     public boolean isTopLevelNode(DAGNode node) {
         Set<DAGNode> parents = getParentNodes(node);
-        Iterator<DAGNode> it = parents.iterator();
-        while (it.hasNext()) {
-            if (it.next() == _root) return true;
+        for (DAGNode parent : parents) {
+            if (parent == _root) return true;
         }
         return false;
     }
@@ -88,9 +93,9 @@ public class DAG {
 
     public Set<DAGNode> getNodeChildren(DAGNode node) {
         try {
-            //log.info("DAG.getNodeChildren(): node={}", node);
+            //log.debug("DAG.getNodeChildren(): node={}", node);
             Set<DAGNode> children = _graph.outgoingEdgesOf(node).stream().map(edge -> edge.getTarget()).collect(java.util.stream.Collectors.toSet());
-            //log.info("DAG.getNodeChildren(): parent={}, children={}", node, children);
+            //log.debug("DAG.getNodeChildren(): parent={}, children={}", node, children);
             return children;
         } catch (IllegalArgumentException iae) {
             log.warn("DAG.getNodeChildren(): Node not in DAG: node={}", node);
@@ -123,8 +128,8 @@ public class DAG {
 
                 node = new DAGNode(elem, fullName);
                 newNode = _graph.addVertex(node);
-                if (newNode) log.info("DAG.addTopLevelNode(): Element added in DAG: {}", node.getName());
-                else log.info("DAG.addTopLevelNode(): Element already in DAG and replaced: {}", node.getName());
+                if (newNode) log.debug("DAG.addTopLevelNode(): Element added in DAG: {}", node.getName());
+                else log.debug("DAG.addTopLevelNode(): Element already in DAG and replaced: {}", node.getName());
 
                 _namedElementToNodesMapping.put(elem, node);
                 if (_nameToNodesMapping.put(node.getName(), node) != null) {
@@ -135,19 +140,19 @@ public class DAG {
             } else {
                 node = _nameToNodesMapping.get(fullName);
                 newNode = _graph.addVertex(node);
-                if (newNode) log.info("DAG.addTopLevelNode()-2: Element added in DAG: {}", node.getName());
-                else log.info("DAG.addTopLevelNode()-2: Element already in DAG and replaced: {}", node.getName());
+                if (newNode) log.debug("DAG.addTopLevelNode()-2: Element added in DAG: {}", node.getName());
+                else log.debug("DAG.addTopLevelNode()-2: Element already in DAG and replaced: {}", node.getName());
 
                 _namedElementToNodesMapping.put(elem, node);
             }
         } else {
-            log.info("DAG.addTopLevelNode(): Element already in DAG: {}", node.getName());
+            log.debug("DAG.addTopLevelNode(): Element already in DAG: {}", node.getName());
         }
 
         DAGEdge edge = new DAGEdge();
         boolean newEdge = _graph.addEdge(_root, node, edge);
-        if (newNode) log.info("DAG.addTopLevelNode(): Element set as Top-Level in DAG: {}", node.getName());
-        else log.info("DAG.addTopLevelNode(): Element is already set as Top-Level in DAG: {}", node.getName());
+        if (newNode) log.debug("DAG.addTopLevelNode(): Element set as Top-Level in DAG: {}", node.getName());
+        else log.debug("DAG.addTopLevelNode(): Element is already set as Top-Level in DAG: {}", node.getName());
 
         return node;
     }
@@ -167,8 +172,8 @@ public class DAG {
 
                 node = new DAGNode(elem, fullName);
                 newNode = _graph.addVertex(node);
-                if (newNode) log.info("DAG.addNode(): Element added in DAG: {}", node.getName());
-                else log.info("DAG.addNode(): Element already in DAG and replaced: {}", node.getName());
+                if (newNode) log.debug("DAG.addNode(): Element added in DAG: {}", node.getName());
+                else log.debug("DAG.addNode(): Element already in DAG and replaced: {}", node.getName());
 
                 _namedElementToNodesMapping.put(elem, node);
                 if (_nameToNodesMapping.put(node.getName(), node) != null) {
@@ -179,20 +184,20 @@ public class DAG {
             } else {
                 node = _nameToNodesMapping.get(fullName);
                 newNode = _graph.addVertex(node);
-                if (newNode) log.info("DAG.addNode()-2: Element added in DAG: {}", node.getName());
-                else log.info("DAG.addNode()-2: Element already in DAG and replaced: {}", node.getName());
+                if (newNode) log.debug("DAG.addNode()-2: Element added in DAG: {}", node.getName());
+                else log.debug("DAG.addNode()-2: Element already in DAG and replaced: {}", node.getName());
 
                 _namedElementToNodesMapping.put(elem, node);
             }
         } else {
-            log.info("DAG.addNode(): Element already in DAG: {}", node.getName());
+            log.debug("DAG.addNode(): Element already in DAG: {}", node.getName());
         }
 
         DAGNode parentNode = _namedElementToNodesMapping.get(parent);
         DAGEdge edge = new DAGEdge();
         boolean newEdge = _graph.addEdge(parentNode, node, edge);
-        if (newNode) log.info("DAG.addNode(): Edge added in DAG: {} --> {} ", parent.getName(), node.getName());
-        else log.info("DAG.addNode(): Edge is already in DAG: {} --> {}", parent.getName(), node.getName());
+        if (newNode) log.debug("DAG.addNode(): Edge added in DAG: {} --> {} ", parent.getName(), node.getName());
+        else log.debug("DAG.addNode(): Edge is already in DAG: {} --> {}", parent.getName(), node.getName());
 
         return node;
     }
@@ -214,13 +219,9 @@ public class DAG {
             throw new RuntimeException("Element being removed has children: " + node.getName());
 
         // remove node from DAG
-        if (node != null) {
-            _graph.removeVertex(node);        // This also removes edges touching this node
-            _namedElementToNodesMapping.remove(elem);
-            log.error("DAG.removeNode(): Element removed from DAG: {}", node.getName());
-        } else {
-            log.error("DAG.removeNode(): Element not found in DAG: {}", node.getName());
-        }
+        _graph.removeVertex(node);        // This also removes edges touching this node
+        _namedElementToNodesMapping.remove(elem);
+        log.debug("DAG.removeNode(): Element removed from DAG: {}", node.getName());
 
         return node;
     }
@@ -244,8 +245,8 @@ public class DAG {
         if (nodeFrom != null && nodeTo != null) {
             DAGEdge edge = new DAGEdge();
             boolean newEdge = _graph.addEdge(nodeFrom, nodeTo, edge);
-            if (newEdge) log.info("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
-            else log.info("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
+            if (newEdge) log.debug("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
+            else log.debug("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
             return edge;
         } else {
             throw new RuntimeException(String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
@@ -257,7 +258,7 @@ public class DAG {
         if (elemFrom == null)
             throw new IllegalArgumentException("DAG.addEdge(): Argument #1 'elemFrom' cannot be null");
         if (elemTo == null) throw new IllegalArgumentException("DAG.addEdge(): Argument #2 'elemTo' cannot be null");
-        log.info("DAG.addEdge(): Adding edge in DAG: {} --> {} ", elemFrom, elemTo);
+        log.debug("DAG.addEdge(): Adding edge in DAG: {} --> {} ", elemFrom, elemTo);
 
         Iterator<DAGNode> it = _graph.iterator();
         DAGNode nodeFrom = null;
@@ -270,8 +271,8 @@ public class DAG {
         if (nodeFrom != null && nodeTo != null) {
             DAGEdge edge = new DAGEdge();
             boolean newEdge = _graph.addEdge(nodeFrom, nodeTo, edge);
-            if (newEdge) log.info("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom, elemTo);
-            else log.info("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom, elemTo);
+            if (newEdge) log.debug("DAG.addEdge(): Edge added in DAG: {} --> {} ", elemFrom, elemTo);
+            else log.debug("DAG.addEdge(): Edge is already in DAG: {} --> {}", elemFrom, elemTo);
             return edge;
         } else {
             throw new RuntimeException(String.format("Adding edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
@@ -295,8 +296,8 @@ public class DAG {
         if (nodeFrom != null && nodeTo != null) {
             DAGEdge deletedEdge = _graph.removeEdge(nodeFrom, nodeTo);
             if (deletedEdge != null)
-                log.info("DAG.removeEdge(): Edge removed from DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
-            else log.info("DAG.removeEdge(): Edge not found in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
+                log.debug("DAG.removeEdge(): Edge removed from DAG: {} --> {} ", elemFrom.getName(), elemTo.getName());
+            else log.warn("DAG.removeEdge(): Edge not found in DAG: {} --> {}", elemFrom.getName(), elemTo.getName());
             return deletedEdge;
         } else {
             throw new RuntimeException(String.format("Removing edge FAILED: elem-from=%s -> elem-to=%s. Node not found in DAG: node-from=%s --> node-to=%s",
@@ -311,9 +312,9 @@ public class DAG {
 
         DAGEdge deletedEdge = _graph.removeEdge(nodeFrom, nodeTo);
         if (deletedEdge != null)
-            log.info("DAG.removeEdge(): Edge removed from DAG: {} --> {} ", nodeFrom.getElementName(), nodeTo.getElementName());
+            log.debug("DAG.removeEdge(): Edge removed from DAG: {} --> {} ", nodeFrom.getElementName(), nodeTo.getElementName());
         else
-            log.info("DAG.removeEdge(): Edge not found in DAG: {} --> {}", nodeFrom.getElementName(), nodeTo.getElementName());
+            log.warn("DAG.removeEdge(): Edge not found in DAG: {} --> {}", nodeFrom.getElementName(), nodeTo.getElementName());
         return deletedEdge;
     }
 
@@ -321,9 +322,9 @@ public class DAG {
     // Traverse graph methods
 
     public void traverseDAG(java.util.function.Consumer<? super DAGNode> action) {
-        log.info("DAG.traverseDAG(): Traversing graph: Begin");
+        log.debug("DAG.traverseDAG(): Traversing graph: Begin");
         _graph.iterator().forEachRemaining(action);
-        log.info("DAG.traverseDAG(): Traversing graph: End");
+        log.debug("DAG.traverseDAG(): Traversing graph: End");
     }
 
     // ====================================================================================================================================================
@@ -408,6 +409,6 @@ public class DAG {
     }
 
     public String toString() {
-        return _graph.toString();
+        return _graph!=null ? _graph.toString() : null;
     }
 }

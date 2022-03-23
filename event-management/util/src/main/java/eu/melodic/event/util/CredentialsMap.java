@@ -9,7 +9,6 @@
 
 package eu.melodic.event.util;
 
-import eu.melodic.event.util.password.IdentityPasswordEncoder;
 import eu.melodic.event.util.password.PasswordEncoder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,16 +17,42 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
- *  CredentialsMap is a HashMap with toString() method overidden in order to password encodes entry values.
+ *  CredentialsMap is a HashMap with toString() method overridden in order to password encodes entry values.
  *  Used to store credentials
  */
 @Slf4j
 public class CredentialsMap extends HashMap<String,String> {
     @Getter
     private PasswordEncoder passwordEncoder;
+    @Getter
+    private String preferredKey;
 
-    public CredentialsMap() { this(new IdentityPasswordEncoder()); }
-    public CredentialsMap(PasswordEncoder pe) { this.passwordEncoder = pe; }
+    public CredentialsMap() {
+        this(PasswordUtil.getDefaultPasswordEncoder());
+    }
+
+    public CredentialsMap(PasswordEncoder pe) {
+        this.passwordEncoder = pe;
+    }
+
+    public String put(String key, String value, boolean preferred) {
+        if (preferred) preferredKey = key;
+        return super.put(key, value);
+    }
+
+    public String remove(String key) {
+        if (key.equals(preferredKey)) preferredKey = null;
+        return super.remove(key);
+    }
+
+    public boolean hasPreferredPair() {
+        return preferredKey!=null;
+    }
+
+    public CredentialsMap.Entry<String, String> getPreferredPair() {
+        if (preferredKey==null) return null;
+        return new CredentialsMap.SimpleEntry<String,String>(preferredKey, get(preferredKey));
+    }
 
     public String toString() {
         return entrySet()

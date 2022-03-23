@@ -24,6 +24,12 @@ public class User {
     @Attribute(name = "sn")
     private String username;
 
+    @Attribute(name = "displayName")
+    private String fullName;
+
+    @Attribute(name = "mail")
+    private String mail;
+
     @JsonIgnore
     @Attribute(name = "userPassword")
     private String password;
@@ -34,8 +40,10 @@ public class User {
     @Transient
     private boolean lockedAccount;
 
-    public User(String username, String password, UserRole userRole, boolean lockedAccount) {
+    public User(String username, String fullName, String mail, String password, UserRole userRole, boolean lockedAccount) {
         this.username = username;
+        this.fullName = fullName;
+        this.mail = mail;
         this.password = password;
         this.userRole = userRole;
         this.lockedAccount = lockedAccount;

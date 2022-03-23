@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.guava.InetAddresses;
@@ -36,47 +37,24 @@ public class DefaultZoneManagementStrategy implements IZoneManagementStrategy {
     }
 
     @Override
-    public String getZoneIdFor(ClientShellCommand c) {
-        String nodeAddress = c.getClientIpAddress();
-        String hostname = c.getClientHostname();
-        log.debug("getZoneIdFor: {}:  address: {}", c.getId(), nodeAddress);
-        log.debug("getZoneIdFor: {}: hostname: {}", c.getId(), hostname);
-        String zoneName = null;
-        if (StringUtils.isNotBlank(hostname) && !InetAddresses.isUriInetAddress(hostname)) {
-            int p = hostname.indexOf(".");
-            if (p>0)
-                zoneName = hostname.substring(p+1);
-        }
-        if (StringUtils.isBlank(zoneName) && StringUtils.isNotBlank(nodeAddress)) {
-            int p = nodeAddress.lastIndexOf(".");
-            if (p<0) p = nodeAddress.lastIndexOf(":");
-            if (p>0)
-                zoneName = nodeAddress.substring(0, p);
-        }
-        return StringUtils.isBlank(zoneName)
-                ? UUID.randomUUID().toString()
-                : zoneName.replaceAll("[^A-Za-z0-9_]","_");
-    }
-
-    @Override
-    public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    public synchronized void nodeAdded(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         // Instruct new node to join cluster
         log.info("DefaultZoneManagementStrategy: Node to join cluster: client={}, zone={}", csc.getId(), zone.getId());
         joinToCluster(csc, coordinator, zone);
     }
 
-    private void joinToCluster(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    private void joinToCluster(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         coordinator.sendClusterKey(csc, zone);
         coordinator.instructClusterJoin(csc, zone, true);
 
         coordinator.sleep(1000);
         csc.sendCommand("CLUSTER-EXEC broker list");
-        coordinator.sleep(1000);
-        csc.sendCommand("CLUSTER-TEST");
+        //coordinator.sleep(1000);
+        //csc.sendCommand("CLUSTER-TEST");
     }
 
     @Override
-    public synchronized void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, ClusterZone zone) {
+    public synchronized void nodeRemoved(ClientShellCommand csc, ClusteringCoordinator coordinator, IClusterZone zone) {
         // Instruct node to leave cluster
         log.info("DefaultZoneManagementStrategy: Node to leave cluster: client={}, zone={}", csc.getId(), zone.getId());
         coordinator.instructClusterLeave(csc, zone);

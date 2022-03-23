@@ -16,26 +16,29 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
-@EnableWebMvc
+import java.util.Map;
+
 @Slf4j
+@Configuration
 public class StaticResourceConfiguration implements WebMvcConfigurer {
     @Value("${static.favicon.context:/favicon.ico}")
     private String faviconContext;
     @Value("${static.favicon.path:#{null}}")
     private String faviconPath;
 
-    @Value("${static.resource.context:/**}")
+    @Value("${static.resource.context:/resources/**}")
     private String staticResourceContext;
     @Value("${static.resource.path:#{null}}")
     private String[] staticResourcePath;
+
     @Value("${static.resource.redirect:#{null}}")
     private String staticResourceRedirect;
+    @Value("#{${static.resource.redirects:{}}}")
+    private Map<String,String> staticResourceRedirects;
 
     @Value("${static.logs.context:/logs/**}")
     private String staticLogsContext;
@@ -84,11 +87,26 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
+        // Remains for backward compatibility (of properties file)
         if (StringUtils.isNotBlank(staticResourceRedirect)) {
             log.info("Redirecting / to: {}", staticResourceRedirect);
             registry
                     .addViewController("/")
                     .setViewName("redirect:" + staticResourceRedirect);
+        }
+
+        log.debug("Configured resource redirects: {}", staticResourceRedirects);
+        if (staticResourceRedirects!=null) {
+            staticResourceRedirects.forEach((context, redirect) -> {
+                if (StringUtils.isNotBlank(context) && StringUtils.isNotBlank(redirect)) {
+                    context = context.trim();
+                    redirect = redirect.trim();
+                    log.info("Redirecting {} to: {}", context, redirect);
+                    registry
+                            .addViewController(context)
+                            .setViewName("redirect:" + redirect);
+                }
+            });
         }
 
         WebMvcConfigurer.super.addViewControllers(registry);

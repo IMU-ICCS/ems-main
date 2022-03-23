@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.brokerclient.event.EventMap;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
@@ -41,6 +42,8 @@ public class BrokerClient {
 
     @Autowired
     private BrokerClientProperties properties;
+    @Autowired
+    private PasswordUtil passwordUtil;
     private Connection connection;
     private Session session;
     private HashMap<MessageListener,MessageConsumer> listeners = new HashMap<>();
@@ -55,6 +58,20 @@ public class BrokerClient {
 
     public BrokerClient(Properties p) {
         properties = new BrokerClientProperties(p);
+    }
+
+    public BrokerClient(PasswordUtil pu) {
+        passwordUtil = pu;
+    }
+
+    public BrokerClient(BrokerClientProperties bcp, PasswordUtil pu) {
+        properties = bcp;
+        passwordUtil = pu;
+    }
+
+    public BrokerClient(Properties p, PasswordUtil pu) {
+        properties = new BrokerClientProperties(p);
+        passwordUtil = pu;
     }
 
     // ------------------------------------------------------------------------
@@ -87,7 +104,7 @@ public class BrokerClient {
         }
 
         // initialize broker client
-        BrokerClient client = new BrokerClient(p);
+        BrokerClient client = new BrokerClient(p, new PasswordUtil());
         log.info("BrokerClient: Default Configuration:\n{}", client.properties);
 
         return client;
@@ -179,13 +196,43 @@ public class BrokerClient {
         _publishEvent(connectionString, destinationName, messageType, eventContents, propertiesMap);
     }
 
-    @SneakyThrows
+    public synchronized void publishEventWithCredentials(String connectionString, String username, String password, String destinationName, Map<String, Object> eventMap) throws JMSException {
+        _publishEvent(connectionString, username, password, destinationName, MESSAGE_TYPE.TEXT, new EventMap(eventMap), null);
+    }
+
+    public synchronized void publishEventWithCredentials(String connectionString, String username, String password, String destinationName, Map<String, Object> eventMap, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, username, password, destinationName, MESSAGE_TYPE.TEXT, new EventMap(eventMap), propertiesMap);
+    }
+
+    public synchronized void publishEventWithCredentials(String connectionString, String username, String password, String destinationName, String eventContents) throws JMSException {
+        _publishEvent(connectionString, username, password, destinationName, MESSAGE_TYPE.TEXT, eventContents, null);
+    }
+
+    public synchronized void publishEventWithCredentials(String connectionString, String username, String password, String destinationName, String eventContents, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, username, password, destinationName, MESSAGE_TYPE.TEXT, eventContents, propertiesMap);
+    }
+
+    public synchronized void publishEventWithCredentials(String connectionString, String username, String password, String destinationName, String type, Serializable eventContents, Map<String,String> propertiesMap) throws JMSException {
+        MESSAGE_TYPE messageType = StringUtils.isNotBlank(type)
+                ? MESSAGE_TYPE.valueOf(type.trim().toUpperCase())
+                : MESSAGE_TYPE.TEXT;
+        _publishEvent(connectionString, username, password, destinationName, messageType, eventContents, propertiesMap);
+    }
+
     protected synchronized void _publishEvent(String connectionString, String destinationName, MESSAGE_TYPE messageType, Serializable event, Map<String,String> propertiesMap) throws JMSException {
+        _publishEvent(connectionString, null, null, destinationName, messageType, event, propertiesMap);
+    }
+
+    @SneakyThrows
+    protected synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, MESSAGE_TYPE messageType, Serializable event, Map<String,String> propertiesMap) throws JMSException {
         // open or reuse connection
         checkProperties();
         boolean _closeConn = false;
         if (session==null) {
-            openConnection(connectionString);
+            if (StringUtils.isBlank(username))
+                openConnection(connectionString);
+            else
+                openConnection(connectionString, username, password);
             _closeConn = ! properties.isPreserveConnection();
         }
 
@@ -387,11 +434,11 @@ public class BrokerClient {
     public synchronized void openConnection(String connectionString, String username, String password, boolean preserveConnection) throws JMSException {
         checkProperties();
         if (connectionString == null) connectionString = properties.getBrokerUrl();
-        log.debug("BrokerClient: Credetials provided as arguments: username={}, password={}", username, password);
+        log.debug("BrokerClient: Credentials provided as arguments: username={}, password={}", username, passwordUtil.encodePassword(password));
         if (StringUtils.isBlank(username)) {
             username = properties.getBrokerUsername();
             password = properties.getBrokerPassword();
-            log.debug("BrokerClient: Credetials read from properties: username={}, password={}", username, password);
+            log.debug("BrokerClient: Credentials read from properties: username={}, password={}", username, passwordUtil.encodePassword(password));
         }
 
         // Create connection factory
@@ -401,15 +448,15 @@ public class BrokerClient {
             connectionFactory.setUserName(username);
             connectionFactory.setPassword(password);
         }
-        log.debug("BrokerClient: Connection credentials: username={}, password={}", username, password);
+        log.debug("BrokerClient: Connection credentials: username={}, password={}", username, passwordUtil.encodePassword(password));
 
         // Create a Connection
-        log.info("BrokerClient: Connecting to broker: {}...", connectionString);
+        log.debug("BrokerClient: Connecting to broker: {}...", connectionString);
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
         // Create a Session
-        log.info("BrokerClient: Opening session...");
+        log.debug("BrokerClient: Opening session...");
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
         this.connection = connection;

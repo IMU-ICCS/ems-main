@@ -11,12 +11,16 @@ package eu.melodic.event.control;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.baguette.client.install.*;
+import eu.melodic.event.baguette.client.install.ClientInstallationTask;
+import eu.melodic.event.baguette.client.install.ClientInstaller;
 import eu.melodic.event.baguette.client.install.helper.InstallationHelperFactory;
-import eu.melodic.event.baguette.client.install.instruction.InstallationInstructions;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.webconf.WebSecurityConfig;
+import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
@@ -29,13 +33,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -47,10 +54,16 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class ControlServiceController {
 
+    private final static String ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY =
+            "hasAnyRole('"+WebSecurityConfig.ROLE_JWT_TOKEN+"','"+WebSecurityConfig.ROLE_API_KEY+"')";
+
     @Autowired
     private ControlServiceProperties properties;
     @Autowired
     private ControlServiceCoordinator coordinator;
+
+    @Autowired
+    private RequestMappingHandlerMapping mvcHandlerMapping;
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB and Upperware interfacing methods
@@ -226,10 +239,34 @@ public class ControlServiceController {
         return constraints;
     }
 
+    @GetMapping(value = {"/translator/getTopLevelNodesMetricContexts/{appId}", "/translator/getTopLevelNodesMetricContexts"})
+    public Collection<?> getTopLevelNodesMetricContexts(@PathVariable("appId") Optional<String> optAppId,
+                                                        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        String applicationId = optAppId.orElse(null);
+        log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Received request: app-id={}", applicationId);
+        log.trace("ControlServiceController.getTopLevelNodesMetricContexts(): JWT token: {}", jwtToken);
+
+        if (StringUtils.isBlank(applicationId)) {
+            applicationId = coordinator.getCurrentCamelModelId();
+            log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Using current application: curr-app-id={}", applicationId);
+            if (applicationId==null) return Collections.emptyList();
+        }
+
+        // Retrieve context metrics of the top-level DAG nodes
+        String camelModelId = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): camelModelId: {}", camelModelId);
+        Set<TranslationContext.MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
+        log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Result: {}", results);
+
+        return results;
+    }
+
     // ------------------------------------------------------------------------------------------------------------
     // Broker-CEP query & control methods
     // ------------------------------------------------------------------------------------------------------------
 
+    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
     @RequestMapping(value = "/broker/credentials", method = {GET,POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -253,6 +290,72 @@ public class ControlServiceController {
         log.info("ControlServiceController.getBrokerCredentials(): Response: {}", response);
 
         //return response;
+        return entity;
+    }
+
+    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
+    @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
+                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("ControlServiceController.getNodeCredentials(): BEGIN: ref={}", optRef);
+        log.trace("ControlServiceController.getNodeCredentials(): JWT token: {}", jwtToken);
+
+        if (StringUtils.isBlank(optRef.orElse(null)))
+            throw new IllegalArgumentException("The 'ref' parameter is mandatory");
+
+        // Check if it is EMS server ref
+        if (coordinator.getReference().equals(optRef.get())) {
+            if (coordinator.getBaguetteServer()==null || !coordinator.getBaguetteServer().isServerRunning()) {
+                log.warn("ControlServiceController.getNodeCredentials(): Baguette Server is not started");
+                return null;
+            }
+
+            BaguetteServerProperties config = coordinator.getBaguetteServer().getConfiguration();
+            String address = config.getServerAddress();
+            int port = config.getServerPort();
+            String username = null;
+            String password = null;
+            CredentialsMap credentials = config.getCredentials();
+            if (credentials.size()>0) {
+                username = credentials.keySet().stream().findFirst().orElse(null);
+                password = credentials.get(username);
+            }
+            String key = coordinator.getBaguetteServer().getServerPubkey();
+
+            log.debug("ControlServiceController.getNodeCredentials(): Retrieved EMS server connection info by reference: ref={}", optRef.get());
+
+            // Prepare response
+            Map<String,String> response = new HashMap<>();
+            response.put("hostname", address);
+            response.put("port", ""+port);
+            response.put("username", username);
+            response.put("password", password);
+            response.put("private-key", key);
+            HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+            log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+
+            return entity;
+        }
+
+        // Retrieve node credentials
+        NodeRegistryEntry entry = coordinator.getBaguetteServer().getNodeRegistry().getNodeByReference(optRef.get());
+        if (entry==null) {
+            throw new IllegalArgumentException("Not found Node with reference: "+optRef.get());
+        }
+        log.debug("ControlServiceController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef.get());
+
+        // Prepare response
+        Map<String,String> response = new HashMap<>();
+        response.put("hostname", entry.getIpAddress());
+        response.put("port", entry.getPreregistration().getOrDefault("ssh.port", "22"));
+        response.put("username", entry.getPreregistration().get("ssh.username"));
+        response.put("password", entry.getPreregistration().get("ssh.password"));
+        response.put("private-key", entry.getPreregistration().get("ssh.key"));
+        HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
+        log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+
         return entity;
     }
 
@@ -286,34 +389,24 @@ public class ControlServiceController {
         log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         // Register node to Baguette server
-        BaguetteServer baguette = coordinator.getBaguetteServer();
-        String clientId = baguette.registerClient(nodeMap);
+        NodeRegistryEntry entry;
+        try {
+            entry = coordinator.getBaguetteServer().registerClient(nodeMap);
+        } catch (Exception e) {
+            log.error("ControlServiceController.baguetteRegisterNode(): EXCEPTION while registering node: map={}\n", nodeMap, e);
+            return "ERROR "+e.getMessage();
+        }
 
-        // Get web server base URL
-        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
-        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
-        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
-        if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
-        String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
-        String baseUrl =
-                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
-                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
-                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
-        log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
-
-        // Create context map
-        Map<String,String> contextMap = new HashMap<>();
-        contextMap.put("BASE_URL", baseUrl);
-        contextMap.put("CLIENT_ID", clientId);
-        contextMap.put("IP_SETTING", ipSetting);
+        // Update client registration info with BASE_URL, IP_SETTING and CLIENT_ID
+        updateRegistrationInfo(request, entry);
 
         // Continue processing according to ExecutionWare type
         String response;
         log.info("ControlServiceController.baguetteRegisterNode(): ExecutionWare: {}", properties.getExecutionware());
         if (properties.getExecutionware()==ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
-            response = getClientInstallationInstructions(nodeMap, contextMap, baguette);
+            response = getClientInstallationInstructions(entry);
         } else {
-            response = createClientInstallationTask(nodeMap, contextMap, baguette);
+            response = createClientInstallationTask(entry);
         }
 
         log.info("ControlServiceController.baguetteRegisterNode(): node-id: {}", nodeId);
@@ -321,38 +414,55 @@ public class ControlServiceController {
         return response;
     }
 
+    private void updateRegistrationInfo(HttpServletRequest request, NodeRegistryEntry entry) {
+        // Get web server base URL
+        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
+        staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
+        if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
+        String baseUrl =
+                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
+                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
+                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+        log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
+
+        // Get IP Setting and Client ID
+        String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
+        String clientId = entry.getClientId();
+
+        // Add to context
+        entry.getPreregistration().put("BASE_URL", baseUrl);
+        entry.getPreregistration().put("CLIENT_ID", clientId);
+        entry.getPreregistration().put("IP_SETTING", ipSetting);
+    }
+
     // Retained for backward compatibility with Cloudiator
     @SneakyThrows
-    public String getClientInstallationInstructions(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws IOException {
+    public String getClientInstallationInstructions(NodeRegistryEntry entry) throws IOException {
         // Prepare Baguette Client installation instructions for node
-        String nodeId = (String) nodeMap.get("id");
-        String nodeOs = (String) nodeMap.get("operatingSystem");
         final String CLOUDIATOR_HELPER_CLASS = "eu.melodic.event.extra.cloudiator.CloudiatorInstallationHelper";
-        List<InstallationInstructions> list = InstallationHelperFactory.getInstance()
-                .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, nodeMap)
-                .prepareInstallationInstructionsForOs(nodeMap, contextMap, baguette);
-        InstallationInstructions installationInstructions =
-                (list!=null && list.size()>0) ? list.get(0) : null;
-        if (installationInstructions==null) {
-            log.warn("ControlServiceController.baguetteRegisterNode(): ERROR: Unknown node OS: {}", nodeOs);
+        String json = InstallationHelperFactory.getInstance()
+                .createInstallationHelperBean(CLOUDIATOR_HELPER_CLASS, entry)
+                .getInstallationInstructionsForOs(entry)
+                .orElse(Collections.emptyList())
+                .stream().findFirst()
+                .orElse(null);
+        if (json==null) {
+            log.warn("ControlServiceController.baguetteRegisterNode(): No instruction sets: node-map={}", entry.getPreregistration());
             return null;
         }
-        log.debug("ControlServiceController.baguetteRegisterNode(): installationInstructions: {}", installationInstructions);
+        log.debug("ControlServiceController.baguetteRegisterNode(): instructionsSet: {}", json);
 
-        // Convert 'installationInstructions' into json string
-        Gson gson = new Gson();
-        String json = gson.toJson(installationInstructions, InstallationInstructions.class);
-
-        log.trace("ControlServiceController.baguetteRegisterNode(): installationInstructions: node: {}, json:\n{}", nodeId, json);
+        log.trace("ControlServiceController.baguetteRegisterNode(): instructionsSet: node-map={}, json:\n{}", entry.getPreregistration(), json);
         return json;
     }
 
-    public String createClientInstallationTask(Map<String,Object> nodeMap, Map<String,String> contextMap, BaguetteServer baguette) throws Exception {
+    public String createClientInstallationTask(NodeRegistryEntry entry) throws Exception {
         //log.info("ControlServiceController.baguetteRegisterNodeForProactive(): INPUT: node-map: {}", nodeMap);
 
         ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
-                .createInstallationHelper(nodeMap)
-                .createClientInstallationTask(nodeMap, contextMap, baguette);
+                .createInstallationHelper(entry)
+                .createClientInstallationTask(entry);
         ClientInstaller.instance().addTask(installationTask);
         log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 
@@ -389,7 +499,7 @@ public class ControlServiceController {
     // Event Generation and Debugging methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}-{upperValue}", method = GET)
+    @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}/{upperValue}", method = GET)
     public String startEventGeneration(@PathVariable String clientId, @PathVariable String topicName, @PathVariable long interval, @PathVariable double lowerValue, @PathVariable double upperValue) {
         log.info("ControlServiceController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
         return coordinator.eventGenerationStart(clientId, topicName, interval, lowerValue, upperValue);
@@ -424,22 +534,40 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
-    public String sendClientCommand(@PathVariable String clientId, @PathVariable String command) {
-        log.info("ControlServiceController.sendClientCommand(): PARAMS: client={}, command={}", clientId, command);
+    public String clientCommand(@PathVariable String clientId, @PathVariable String command) {
+        log.info("ControlServiceController.clientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);
+    }
+
+    @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
+    public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
+        log.info("ControlServiceController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
+        return coordinator.clusterCommandSend(clusterId, command);
     }
 
     // ------------------------------------------------------------------------------------------------------------
     // EMS status and information query methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = { "/ems/shutdown", "/ems/shutdown/{exitApp}" }, method = {GET, POST})
-    public String emsShutdown(@PathVariable Optional<Boolean> exitApp) {
-        boolean _exitApp = exitApp.orElse(false);
-        log.info("ControlServiceController.emsShutdown(): exitApp={}", _exitApp);
+    @RequestMapping(value = "/ems/shutdown", method = {GET, POST})
+    public String emsShutdown() {
+        log.info("ControlServiceController.emsShutdown(): ");
         coordinator.emsShutdown();
-        if (_exitApp) coordinator.emsExit();
         return "OK";
+    }
+
+    @RequestMapping(value = { "/ems/exit", "/ems/exit/{exitCode}" }, method = {GET, POST})
+    public String emsExit(@PathVariable Optional<Integer> exitCode) {
+        if (properties.isExitAllowed()) {
+            int _exitCode = exitCode.orElse(properties.getExitCode());
+            log.info("ControlServiceController.emsExit(): exitCode={}", _exitCode);
+            coordinator.emsShutdown();
+            coordinator.emsExit(_exitCode);
+            return "OK";
+        } else {
+            log.info("ControlServiceController.emsExit(): Exiting EMS is not allowed");
+            return "NOT ALLOWED";
+        }
     }
 
     @RequestMapping(value = "/ems/status", method = {GET, POST},
@@ -458,40 +586,6 @@ public class ControlServiceController {
 
         log.debug("ControlServiceController.emsTopology(): END");
         return "{}";
-    }
-
-    @RequestMapping(value = "/ems/stats", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Map<String,Object> emsServerStatistics() {
-        log.debug("ControlServiceController.emsServerStatistics(): BEGIN");
-        Map<String,Object> statsMap = coordinator.emsServerStatistics();
-        log.debug("ControlServiceController.emsServerStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    @RequestMapping(value = "/ems/stats/overall", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public Map<String,Object> emsOverallStatistics() {
-        log.debug("ControlServiceController.emsOverallStatistics(): BEGIN");
-        Map<String,Object> statsMap = coordinator.emsOverallStatistics();
-        log.debug("ControlServiceController.emsOverallStatistics(): END: {}", statsMap);
-        return statsMap;
-    }
-
-    @RequestMapping(value = "/ems/stats/clear", method = {GET, POST})
-    public String emsServerStatisticsClear() {
-        log.debug("ControlServiceController.emsServerStatisticsClear(): BEGIN");
-        coordinator.emsServerStatisticsClear();
-        log.debug("ControlServiceController.emsServerStatisticsClear(): END");
-        return "OK";
-    }
-
-    @RequestMapping(value = "/ems/stats/overall/clear", method = {GET, POST})
-    public String emsOverallStatisticsClear() {
-        log.debug("ControlServiceController.emsOverallStatisticsClear(): BEGIN");
-        coordinator.emsOverallStatisticsClear();
-        log.debug("ControlServiceController.emsOverallStatisticsClear(): END");
-        return "OK";
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -515,5 +609,21 @@ public class ControlServiceController {
 
     protected String stripQuotes(String s) {
         return (s != null && s.startsWith("\"") && s.endsWith("\"")) ? s.substring(1, s.length() - 1) : s;
+    }
+
+    public Stream<String> getControllerEndpoints() {
+        return mvcHandlerMapping.getHandlerMethods().keySet().stream()
+                .filter(Objects::nonNull)
+                .map(k -> k.getPatternsCondition().getPatterns())
+                .flatMap(Set::stream);
+    }
+
+    public String[] getControllerEndpointsShort() {
+        return getControllerEndpoints()
+                .map(s -> s.startsWith("/") ? s.substring(1) : s)
+                .map(s -> s.indexOf("/") > 0 ? s.split("/", 2)[0] + "/**" : s)
+                .map(e -> "/" + e.replaceAll("\\{.*", "**"))
+                .distinct()
+                .toArray(String[]::new);
     }
 }

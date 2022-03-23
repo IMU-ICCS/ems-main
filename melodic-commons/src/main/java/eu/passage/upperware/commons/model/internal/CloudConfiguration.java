@@ -16,4 +16,10 @@ public class CloudConfiguration implements Serializable {
     private String nodeGroup;
     @JsonProperty("properties")
     private Map<String, String> properties = null;
+    @JsonProperty("scopePrefix")
+    private String scopePrefix;
+    @JsonProperty("scopeValue")
+    private String scopeValue;
+    @JsonProperty("identityVersion")
+    private String identityVersion;
 }

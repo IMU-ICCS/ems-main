@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client.cluster;
 
+import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
 import io.atomix.core.Atomix;
 import lombok.Getter;
@@ -397,17 +398,39 @@ public class BrokerUtil extends AbstractLogBase {
 
         // Check if any node is initializing as broker (then don't start election)
         if (getActiveNodes().stream()
-                .map(MemberWithScore::getMember).map(this::getNodeStatus)
-                .noneMatch(s -> INITIALIZING==s || AGGREGATOR ==s))
+                .map(MemberWithScore::getMember)
+                .map(this::getNodeStatus)
+                .noneMatch(s -> INITIALIZING==s || AGGREGATOR==s))
         {
             startElection();
         }
     }
 
+    public void checkBrokerNumber() {
+        List<Member> brokers = getBrokers();
+        log_debug("BRU: Check number of Brokers in cluster: {}", brokers);
+
+        // Check if there are more than one brokers in cluster
+        long numOfBrokers = getActiveNodes().stream()
+                .map(MemberWithScore::getMember)
+                .map(this::getNodeStatus)
+                .filter(s -> AGGREGATOR==s)
+                .count();
+        log_info("BRU: Number of Brokers in cluster: {}", numOfBrokers);
+        if (numOfBrokers>1) {
+            log_warn("BRU: {} brokers found in the cluster. Starting election...", numOfBrokers);
+            startElection();
+        }
+    }
+
     public interface NodeCallback {
+        void joinedCluster();
+        void leftCluster();
+
         void initialize();
         void stepDown();
         void statusChanged(NODE_STATUS oldStatus, NODE_STATUS newStatus);
+        void clusterChanged(ClusterMembershipEvent event);
         String getConfiguration(Member local);
         void setConfiguration(String newConfig);
     }

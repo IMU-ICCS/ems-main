@@ -26,7 +26,7 @@ import camel.scalability.UnaryEventPattern;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.properties.RuleTemplateProperties;
-import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataTool;
+import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -20,9 +20,11 @@ import org.apache.activemq.command.DestinationInfo;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
+import java.time.Instant;
 
 @ConditionalOnProperty(name="brokercep.enable-advisory-watcher", matchIfMissing = true)
 @Service
@@ -36,12 +38,17 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 	private BrokerCepService brokerCerService;
 	@Autowired
 	private PasswordUtil passwordUtil;
+	@Autowired
+	private TaskScheduler taskScheduler;
+
+	private final int initRetryDelay = 5;	// in seconds
 
 	private Connection connection;
 	private Session session;
 
 	@Override
 	public void afterPropertiesSet() {
+		log.debug("BrokerAdvisoryWatcher: afterPropertiesSet: BrokerCepProperties: {}", brokerCerService.getBrokerCepProperties());
 		initialize();
 	}
 	
@@ -72,7 +79,9 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 			consumer.setMessageListener( this );
 			log.debug("BrokerAdvisoryWatcher.init(): Initializing instance... done");
 		} catch (Exception ex) {
-			log.error("BrokerAdvisoryWatcher.init(): EXCEPTION: ", ex);
+			log.error("BrokerAdvisoryWatcher.init(): EXCEPTION: while retry in {} seconds:", initRetryDelay, ex);
+			final BrokerAdvisoryWatcher _this = this;
+			taskScheduler.schedule(_this::initialize, Instant.now().plusSeconds(initRetryDelay));
 		}
 	}
 

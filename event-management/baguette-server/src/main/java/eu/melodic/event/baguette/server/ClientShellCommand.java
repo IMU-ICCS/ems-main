@@ -9,8 +9,13 @@
 
 package eu.melodic.event.baguette.server;
 
+import com.google.gson.Gson;
+import eu.melodic.event.util.ClientConfiguration;
+import eu.melodic.event.util.EventBus;
+import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +25,7 @@ import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.SessionAware;
 import org.apache.sshd.server.session.ServerSession;
 import org.cryptacular.util.CertUtil;
+import org.slf4j.event.Level;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -28,6 +34,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ClientShellCommand implements Command, Runnable, SessionAware {
@@ -35,10 +42,19 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private final static Object LOCK = new Object();
     private final static AtomicLong counter = new AtomicLong(0);
     private final static Set<ClientShellCommand> activeCmdList = new HashSet<>();
+    private final static Map<String,ClientShellCommand> activeCmdMap = new HashMap<>();
     private final static long INPUT_CHECK_DELAY = 100;
 
     public static Set<ClientShellCommand> getActive() {
         return Collections.unmodifiableSet(activeCmdList);
+    }
+
+    public static Set<String> getActiveIds() {
+        return Collections.unmodifiableSet(activeCmdMap.keySet());
+    }
+
+    public static ClientShellCommand getActiveByIpAddress(String address) {
+        return activeCmdMap.get(address);
     }
 
     private InputStream in;
@@ -65,7 +81,10 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter private int clientClusterNodePort;
     @Getter @Setter private String clientClusterNodeAddress;
     @Getter @Setter private String clientClusterNodeHostname;
-    @Getter @Setter private Object clientZone;
+    @Getter @Setter private IClusterZone clientZone;
+    @Getter private String clientNodeStatus;
+    @Getter private String clientGrouping;
+    private final Properties clientProperties = new Properties();
 
     private final ServerCoordinator coordinator;
     private final boolean clientAddressOverrideAllowed;
@@ -75,19 +94,29 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private boolean closeConnection = false;
 
     private Map<String,Object> inputsMap = new HashMap<>();
+    private EventBus<String,Object,Object> eventBus;
+    @Getter
+    private Exception lastException;
+    @Getter
+    private NodeRegistry nodeRegistry;
+    @Getter @Setter
+    private NodeRegistryEntry nodeRegistryEntry;
 
-    public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress) {
+    public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus, NodeRegistry registry) {
         synchronized (LOCK) {
             id = String.format("#%05d", counter.getAndIncrement());
         }
         this.coordinator = coordinator;
         this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;
+        this.eventBus = eventBus;
+        this.nodeRegistry = registry;
     }
 
     public void setSession(ServerSession session) {
         log.info("{}--> Got session : {}", id, session);
         this.session = session;
-		
+        eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_STARTED", this);
+
 		/*try {
 			String clientIpAddr = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getAddress().getHostAddress();
 			int clientPort = ((InetSocketAddress)session.getIoSession().getRemoteAddress()).getPort();
@@ -123,6 +152,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     public void run() {
         if (closeConnection) {
             log.warn("{}--> Exiting immediately because 'closeConnection' flag is set", id);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSING_IMMEDIATELY", this);
             coordinator.unregister(this);
             if (this.session!=null && this.session.isOpen()) {
                 try {
@@ -136,12 +166,17 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 callback.onExit(2);
             }
             log.info("{}--> Thread stopped immediately", id);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSED_IMMEDIATELY", this);
             return;
         }
 
         synchronized (activeCmdList) {
+            if (activeCmdMap.containsKey(getClientIpAddress()) || activeCmdMap.containsValue(this))
+                throw new IllegalArgumentException("ClientShellCommand has already been registered");
             activeCmdList.add(this);
+            activeCmdMap.put(getClientIpAddress(), this);
         }
+        eventBus.send("BAGUETTE_SERVER_CLIENT_STARTING", this);
 
         try {
             log.info("{}==> Thread started", id);
@@ -153,7 +188,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                log.info("{}--> {}", id, line);
+                log.debug("{}--> {}", id, line);
 
                 //if (echoOn) out.printf("CLIENT (%s) : ECHO : %s\n", id, line);
                 if (echoOn) out.printf("ECHO %s\n", line);
@@ -162,32 +197,84 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 if (line.startsWith("-HELLO FROM CLIENT:")) {
                     getClientInfoFromGreeting(line.substring("-HELLO FROM CLIENT:".length()));
                     coordinator.register(this);
+                    eventBus.send("BAGUETTE_SERVER_CLIENT_REGISTERED", this);
                 } else if (line.startsWith("-INPUT:")) {
                     String input = line.substring("-INPUT:".length());
                     String[] part = input.split(":",2 );
                     inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
+                } else if (StringUtils.startsWithIgnoreCase(line, "SERVER-")) {
+                    String[] lineArgs = line.split(" ", 2);
+                    if ("SERVER-GET-NODE-SSH-CREDENTIALS".equalsIgnoreCase(lineArgs[0].trim()) && lineArgs.length>1) {
+                        String nodeAddress = lineArgs[1].trim();
+                        if (!nodeAddress.isEmpty()) {
+                            NodeRegistryEntry entry = nodeRegistry.getNodeByAddress(nodeAddress);
+                            if (entry!=null) {
+                                Map<String, String> preregInfo = entry.getPreregistration();
+                                log.debug("{}--> NODE PRE-REGISTRATION INFO: address={}\n{}", getId(), nodeAddress, preregInfo);
+
+                                if (preregInfo!=null) {
+                                    String preregInfoStr = new Gson().toJson(preregInfo);
+                                    log.trace("{}--> NODE PRE-REGISTRATION INFO STRING: STR={}\n{}", getId(), nodeAddress, preregInfoStr);
+                                    sendToClient(preregInfoStr);
+                                } else {
+                                    log.warn("{}--> NO PRE-REGISTRATION INFO FOR NODE: {}", getId(), nodeAddress);
+                                    sendToClient("{}");
+                                }
+                            } else {
+                                log.warn("{}--> UNKNOWN NODE: {}", getId(), nodeAddress);
+                                sendToClient("{}");
+                            }
+                        }
+                    }
+                } else if (line.startsWith("-NOTIFY-GROUPING-CHANGE:")) {
+                    String newGrouping = line.substring("-NOTIFY-GROUPING-CHANGE:".length()).trim();
+                    log.info("{}--> Client grouping changed: {} --> {}", getId(), clientGrouping, newGrouping);
+                    if (StringUtils.isNotBlank(newGrouping) && ! StringUtils.equals(clientGrouping, newGrouping))
+                        this.clientGrouping = newGrouping;
+                } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
+                    String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();
+                    log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
+                    if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
+                        this.clientNodeStatus = newNodeStatus;
+                } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
+                    String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
+                    String propertyName = part[0];
+                    String propertyValue = part.length>1 ? part[1] : null;
+                    String oldValue = clientProperties.getProperty(propertyName);
+                    if (StringUtils.isNotBlank(propertyName)) {
+                        log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
+                        clientProperties.put(propertyName.trim(), propertyValue);
+                    } else {
+                        log.warn("{}--> Invalid Client property: input line: ", line);
+                    }
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);
                 } else {
                     coordinator.processClientInput(this, line);
                 }
             }
+            eventBus.send("BAGUETTE_SERVER_CLIENT_EXITING", this);
 
             log.info("{}==> Signaling client to exit", id);
             out.println("EXIT");
 
-        } catch (IOException ex) {
-            log.warn("{}==> EXCEPTION : {}", id, ex);
+        } catch (Exception ex) {
+            log.warn("{}==> EXCEPTION : ", id, ex);
             out.printf("EXCEPTION %s\n", ex);
+            this.lastException = ex;
+            eventBus.send("BAGUETTE_SERVER_CLIENT_EXCEPTION", this);
         } finally {
             synchronized (activeCmdList) {
                 activeCmdList.remove(this);
+                activeCmdMap.remove(getClientIpAddress());
             }
             log.info("{}--> Thread stops", id);
             coordinator.unregister(this);
+            eventBus.send("BAGUETTE_SERVER_CLIENT_UNREGISTERED", this);
             if (!callbackCalled.getAndSet(true)) {
                 callback.onExit(0);
             }
+            eventBus.send("BAGUETTE_SERVER_CLIENT_EXITED", this);
         }
     }
 
@@ -319,9 +406,34 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         return clientPort;
     }
 
+    public String getClientProperty(@NonNull String propertyName) { return clientProperties.getProperty(propertyName); }
+    public String getClientProperty(@NonNull String propertyName, String defaultValue) { return clientProperties.getProperty(propertyName, defaultValue); }
+
+    public NodeRegistryEntry getNodeRegistryEntry() {
+        if (nodeRegistryEntry!=null)
+            return nodeRegistryEntry;
+
+        //XXX:BUG: Following code seems not working...
+        String clientId = getClientId();
+        if (StringUtils.isNotBlank(clientId)) {
+            return nodeRegistry.getNodeByClientId(clientId);
+        }
+        return null;
+    }
+
     public void sendToClient(String msg) {
+        sendToClient(msg, Level.INFO);
+    }
+
+    public void sendToClient(String msg, Level logLevel) {
         if (msg == null || (msg = msg.trim()).isEmpty()) return;
-        log.info("{}==> PUSH : {}", id, msg);
+        switch (logLevel) {
+            case TRACE: log.trace("{}==> PUSH : {}", id, msg); break;
+            case DEBUG: log.debug("{}==> PUSH : {}", id, msg); break;
+            case WARN:  log.warn("{}==> PUSH : {}", id, msg); break;
+            case ERROR:  log.error("{}==> PUSH : {}", id, msg); break;
+            default: log.info("{}==> PUSH : {}", id, msg);
+        }
         out.println(msg);
     }
 
@@ -329,17 +441,25 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         sendToClient(cmd);
     }
 
+    public void sendCommand(String cmd, Level logLevel) {
+        sendToClient(cmd, logLevel);
+    }
+
     public void sendCommand(String[] cmd) {
         sendToClient(String.join(" ", cmd));
     }
 
-    public Object readFromClient(String cmd) {
+    public void sendCommand(String[] cmd, Level logLevel) {
+        sendToClient(String.join(" ", cmd), logLevel);
+    }
+
+    public Object readFromClient(String cmd, Level logLevel) {
         String uuid = UUID.randomUUID().toString();
         log.trace("ClientShellCommand.readFromClient: uuid={}, cmd={}", uuid, cmd);
         Object oldValue = inputsMap.remove(uuid);
         log.trace("ClientShellCommand.readFromClient: uuid={}, old-inputMap-value={}", uuid, oldValue);
         log.trace("ClientShellCommand.readFromClient: uuid={}, inputMap-BEFORE={}", uuid, inputsMap);
-        sendCommand(cmd+" "+uuid);
+        sendCommand(cmd+" "+uuid, logLevel);
         log.trace("ClientShellCommand.readFromClient: uuid={}, Command sent to client", uuid);
         while (!inputsMap.containsKey(uuid)) {
             log.trace("ClientShellCommand.readFromClient: uuid={}, No input, waiting 500ms", uuid);
@@ -376,7 +496,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     /**
      * Write an object to a Base64 string.
      */
-    protected String serializeToString(Serializable o) throws IOException {
+    public static String serializeToString(Serializable o) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(o);
@@ -387,12 +507,42 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     /**
      * Read the object from Base64 string.
      */
-    protected Object unserializeFromString(String s) throws IOException, ClassNotFoundException {
+    public static Object unserializeFromString(String s) throws IOException, ClassNotFoundException {
         byte[] data = Base64.getDecoder().decode(s);
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
         Object o = ois.readObject();
         ois.close();
         return o;
+    }
+
+    public static void sendClientConfigurationToClients(@NonNull ClientConfiguration cc, @NonNull List<ClientShellCommand> clients) {
+        List<String> clientIds = clients.stream().map(ClientShellCommand::getClientId).collect(Collectors.toList());
+        log.debug("sendClientConfigurationToClients: clients={}, client-config={}", clientIds, cc);
+        try {
+            String ccStr = serializeToString(cc);
+            log.debug("sendClientConfigurationToClients: Serialization of Client configuration: {}", ccStr);
+            ccStr = "SET-CLIENT-CONFIG " + ccStr;
+            for (ClientShellCommand csc : clients) {
+                log.info("sendClientConfigurationToClients: Sending Client configuration to client: {}", csc.getClientId());
+                csc.sendToClient(ccStr);
+            }
+            log.info("sendClientConfigurationToClients: Client configuration sent to clients: {}", clientIds);
+        } catch (IOException ex) {
+            log.error("sendClientConfigurationToClients: Exception while serializing Client configuration: ", ex);
+            log.error("sendClientConfigurationToClients: SET-CLIENT-CONFIG command *NOT* sent to clients");
+        }
+    }
+
+    public void sendClientConfiguration(ClientConfiguration cc) {
+        log.debug("sendClientConfiguration: id={}, client-config={}", id, cc);
+        try {
+            String ccStr = serializeToString(cc);
+            log.info("sendClientConfiguration: Serialization of Client configuration: {}", ccStr);
+            sendToClient("SET-CLIENT-CONFIG " + ccStr);
+        } catch (IOException ex) {
+            log.error("sendClientConfiguration: Exception while serializing Client configuration: ", ex);
+            log.error("sendClientConfiguration: SET-CLIENT-CONFIG command *NOT* sent to client");
+        }
     }
 
     public void sendGroupingConfiguration(String grouping, Map<String, GroupingConfiguration.BrokerConnectionConfig> connectionConfigs, BaguetteServer server) {

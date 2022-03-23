@@ -7,6 +7,7 @@ import eu.passage.upperware.commons.model.internal.OperatingSystemFamily;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.model.Image;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.lang.NonNull;
 
 @Slf4j
@@ -22,8 +23,10 @@ public class ProactiveImageConverter implements GenericConverter<Image, eu.passa
                 .name(external.getName())
                 .providerId(external.getProviderId())
                 .operatingSystem(OperatingSystem.builder()
-                        .operatingSystemArchitecture(OperatingSystemArchitecture.valueOf(external.getOperatingSystem().getOperatingSystemArchitecture().name()))
-                        .operatingSystemFamily(OperatingSystemFamily.valueOf(external.getOperatingSystem().getOperatingSystemFamily().name()))
+                        .operatingSystemArchitecture(ObjectUtils.defaultIfNull(OperatingSystemArchitecture
+                                .valueOf(external.getOperatingSystem().getOperatingSystemArchitecture().name()), OperatingSystemArchitecture.UNKNOWN))
+                        .operatingSystemFamily(ObjectUtils.defaultIfNull(OperatingSystemFamily
+                                .valueOf(external.getOperatingSystem().getOperatingSystemFamily().name()),OperatingSystemFamily.UNKNOWN_OS_FAMILY))
                         .operatingSystemVersion(external.getOperatingSystem().getOperatingSystemVersion())
                         .build())
                 .location(proactiveLocationConverter.createDomain(external.getLocation()))
@@ -31,6 +34,7 @@ public class ProactiveImageConverter implements GenericConverter<Image, eu.passa
                 .owner("NOT_AVAILABLE")
                 .build();
     }
+
 
     @Override
     public Image createExternal(@NonNull eu.passage.upperware.commons.model.internal.Image domain) {

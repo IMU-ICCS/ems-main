@@ -203,25 +203,25 @@ public class BrokerCepService {
     public synchronized void publishEvent(String connectionString, String destinationName, Map<String, Object> eventMap) throws JMSException {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
             return;
-        _publishEvent(connectionString, destinationName, new EventMap(eventMap));
+        _publishEvent(connectionString, destinationName, EventMap.toEventMap(eventMap), true);
     }
 	
     public synchronized void publishEvent(String connectionString, String username, String password, String destinationName, Map<String, Object> eventMap) throws JMSException {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, new EventMap(eventMap)))
             return;
-        _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap));
+        _publishEvent(connectionString, username, password, destinationName, new EventMap(eventMap), true);
     }
 
-    public synchronized void publishSerializable(String connectionString, String destinationName, Serializable event) throws JMSException {
+    public synchronized void publishSerializable(String connectionString, String destinationName, Serializable event, boolean convertToJson) throws JMSException {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event))
             return;
-        _publishEvent(connectionString, destinationName, event);
+        _publishEvent(connectionString, destinationName, event, convertToJson);
     }
 
-    public synchronized void publishSerializable(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
+    public synchronized void publishSerializable(String connectionString, String username, String password, String destinationName, Serializable event, boolean convertToJson) throws JMSException {
         if (properties.isBypassLocalBroker() && _publishLocalEvent(connectionString, destinationName, event))
             return;
-        _publishEvent(connectionString, username, password, destinationName, event);
+        _publishEvent(connectionString, username, password, destinationName, event, convertToJson);
     }
 
     // When destination is the local broker then hand event to (local) CEP engine, bypassing local broker
@@ -250,7 +250,7 @@ public class BrokerCepService {
         return true;
     }
 
-    private synchronized void _publishEvent(String connectionString, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(String connectionString, String destinationName, Serializable event, boolean convertToJson) throws JMSException {
         // Get username/password for local broker service
         String username = null;
         String password = null;
@@ -260,10 +260,10 @@ public class BrokerCepService {
             log.debug("BrokerCepService._publishEvent(): Setting LOCAL BROKER credentials: {} / {}",
                     username, passwordUtil.encodePassword(password));
         }
-        _publishEvent(connectionString, username, password, destinationName, event);
+        _publishEvent(connectionString, username, password, destinationName, event, convertToJson);
     }
 
-    private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(String connectionString, String username, String password, String destinationName, Serializable event, boolean convertToJson) throws JMSException {
         // Clone connection factory
         if (connectionString == null) connectionString = properties.getBrokerUrlForConsumer();
         ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryFor(connectionString);
@@ -277,26 +277,26 @@ public class BrokerCepService {
         connection.start();
 
         // Publish event
-        _publishEvent(connection, destinationName, event);
+        _publishEvent(connection, destinationName, event, convertToJson);
 
         // Clean up
         connection.close();
     }
 
-    private synchronized void _publishEvent(Connection connection, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(Connection connection, String destinationName, Serializable event, boolean convertToJson) throws JMSException {
         log.trace("BrokerCepService._publishEvent(): Connection given: {}", connection);
 
         // Create a Session
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
         // Publish event
-        _publishEvent(session, destinationName, event);
+        _publishEvent(session, destinationName, event, convertToJson);
 
         // Clean up
         session.close();
     }
 
-    private synchronized void _publishEvent(Session session, String destinationName, Serializable event) throws JMSException {
+    private synchronized void _publishEvent(Session session, String destinationName, Serializable event, boolean convertToJson) throws JMSException {
         log.trace("BrokerCepService._publishEvent(): Session: {}", session);
 
         // Create the destination (Topic or Queue)
@@ -308,11 +308,14 @@ public class BrokerCepService {
         MessageProducer producer = session.createProducer(destination);
         producer.setDeliveryMode(javax.jms.DeliveryMode.NON_PERSISTENT);
 
-        // Create a messages
+        // Create a message
         //ObjectMessage message = session.createObjectMessage(event);
-        String payload = gson.toJson(event);
-        log.trace("BrokerCepService.publishEvent(): Message payload: topic={}, payload={}", destination, payload);
+        String payload = convertToJson ? gson.toJson(event) : (event!=null ? event.toString() : null);
+        log.trace("BrokerCepService.publishEvent(): Message payload: topic={}, convert-to-json={}, payload={}", destination, convertToJson, payload);
         TextMessage message = session.createTextMessage(payload);
+
+        // Set message properties
+        addEventPropertiesToMessage(event, message);
 
         // Tell the producer to send the message
         long hash = message.hashCode();
@@ -321,6 +324,22 @@ public class BrokerCepService {
         producer.send(message);
         //log.info("BrokerCepService.publishEvent(): Message sent: connection={}, username={}, destination={}, hash={}, payload={}", connectionString, username, destinationName, hash, event);
         log.debug("BrokerCepService.publishEvent(): Message sent: destination={}, hash={}, payload={}", destinationName, hash, event);
+    }
+
+    private void addEventPropertiesToMessage(Serializable event, Message message) {
+        if (event instanceof EventMap) {
+            Map<String, Object> eventProperties = ((EventMap) event).getEventProperties();
+            if (eventProperties!=null) {
+                eventProperties.forEach((pName,pValue)->{
+                    try {
+                        message.setStringProperty(pName, pValue!=null ? pValue.toString() : null);
+                    } catch (JMSException e) {
+                        log.warn("BrokerCepService.publishEvent(): Exception while setting event property. Skipping it: name={}, value={}", pName, pValue);
+                        log.debug("BrokerCepService.publishEvent(): Exception while setting event property. Skipping it: name={}, value={}, EXCEPTION:\n", pName, pValue, e);
+                    }
+                });
+            }
+        }
     }
 
     private String getAddressFromBrokerUrl(String url) {
@@ -401,7 +420,7 @@ public class BrokerCepService {
     }
 
     public Map<String,Object> getBrokerCepStatistics() {
-        Map<String,Long> bcepStats = new HashMap<>();
+        Map<String,Object> bcepStats = new HashMap<>();
         bcepStats.put("count-event-local-publish-success", BrokerCepStatementSubscriber.getLocalPublishSuccessCounter());
         bcepStats.put("count-event-local-publish-failure", BrokerCepStatementSubscriber.getLocalPublishFailureCounter());
         bcepStats.put("count-event-forwards-success", BrokerCepStatementSubscriber.getForwardSuccessCounter());
@@ -412,9 +431,7 @@ public class BrokerCepService {
         bcepStats.put("count-total-events-other", BrokerCepConsumer.getOtherEventCounter());
         bcepStats.put("count-total-events-failures", BrokerCepConsumer.getEventFailuresCounter());
 
-        Map<String,Object> statsMap = new HashMap<>();
-        statsMap.put("broker-cep", bcepStats);
-        return statsMap;
+        return bcepStats;
     }
 
     public void clearBrokerCepStatistics() {

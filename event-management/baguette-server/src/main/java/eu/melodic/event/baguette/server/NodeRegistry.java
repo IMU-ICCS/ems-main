@@ -15,9 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Node Registry
@@ -29,9 +32,26 @@ public class NodeRegistry {
     @Getter @Setter
     private ServerCoordinator coordinator;
 
-    public synchronized void addNode(Map<String,Object> nodeInfo) {
-        String ipAddress = getIpAddressFromNodeInfo(nodeInfo);
+    public synchronized NodeRegistryEntry addNode(Map<String,Object> nodeInfo, String clientId) throws UnknownHostException {
+        String hostnameOrAddress = getIpAddressFromNodeInfo(nodeInfo);
+        String ipAddress = hostnameOrAddress;
 
+        // Get IP address from provided hostname or address
+        try {
+            log.debug("NodeRegistry.addNode(): Resolving IP address from provided hostname/address: {}", hostnameOrAddress);
+            InetAddress host = InetAddress.getByName(hostnameOrAddress);
+            log.trace("NodeRegistry.addNode(): InetAddress for provided hostname/address: {},  InetAddress: {}", hostnameOrAddress, host);
+            String resolvedIpAddress = host.getHostAddress();
+            log.info("NodeRegistry.addNode(): Provided-Address={},  Resolved-IP-Address={}", hostnameOrAddress, resolvedIpAddress);
+            ipAddress = resolvedIpAddress;
+            nodeInfo.put("original-address", nodeInfo.get("address"));
+            nodeInfo.put("address", ipAddress);
+        } catch (UnknownHostException e) {
+            log.error("NodeRegistry.addNode(): EXCEPTION while resolving IP address from provided hostname/address: {}\n", ipAddress, e);
+            throw e;
+        }
+
+        // Check if an entry with the same IP address is already registered
         NodeRegistryEntry entry = registry.get(ipAddress);
         if (entry!=null) {
             log.debug("NodeRegistry.addNode(): Node already pre-registered: ip-address={}\nOld Node Info: {}\nNew Node Info: {}",
@@ -46,9 +66,12 @@ public class NodeRegistry {
             }
         }
 
-        entry = new NodeRegistryEntry(ipAddress).nodePreregistration(nodeInfo);
+        // Create and register node registry entry
+        entry = new NodeRegistryEntry(ipAddress, clientId, coordinator.getServer()).nodePreregistration(nodeInfo);
+        nodeInfo.put("baguette-client-id", clientId);
         registry.put(ipAddress, entry);
         log.debug("NodeRegistry.addNode(): Added info for node at address: {}\nNode info: {}", ipAddress, nodeInfo);
+        return entry;
     }
 
     public synchronized void removeNode(NodeRegistryEntry nodeEntry) {
@@ -85,6 +108,18 @@ public class NodeRegistry {
         return entry;
     }
 
+    public NodeRegistryEntry getNodeByReference(String ref) {
+        return registry.values().stream()
+                .filter(n->n.getReference().equals(ref))
+                .findAny().orElse(null);
+    }
+
+    public NodeRegistryEntry getNodeByClientId(String clientId) {
+        return registry.values().stream()
+                .filter(n->n.getClientId().equals(clientId))
+                .findAny().orElse(null);
+    }
+
     public Collection<String> getNodeAddresses() {
         return registry.keySet();
     }
@@ -92,4 +127,6 @@ public class NodeRegistry {
     public Collection<NodeRegistryEntry> getNodes() {
         return registry.values();
     }
+
+    public Collection<String> getNodeReferences() { return registry.values().stream().map(NodeRegistryEntry::getReference).collect(Collectors.toList()); }
 }

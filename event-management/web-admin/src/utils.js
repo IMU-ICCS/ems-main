@@ -1,0 +1,87 @@
+
+const precision = 100;
+
+class Utils {
+    valueExists(modelValue, name) {
+        if (!modelValue) return false;
+        let part = name.split('.');
+        let d = modelValue;
+        for (let i=0; i<part.length; i++) {
+            if (!part[i]) continue;
+            let n = part[i].trim();
+            if (n==='') continue;
+            if (!d[n]) return false;
+            d = d[n];
+        }
+        return true;
+    }
+    getValue(modelValue, name) {
+        let part = name.split('.');
+        let d = modelValue;
+        for (let i=0; i<part.length; i++) {
+            if (!part[i]) continue;
+            let n = part[i].trim();
+            if (n==='') continue;
+            if (!d[n]) return null;
+            d = d[n];
+        }
+        return d;
+    }
+
+    toIsoFormat(data, inUnit, outPart) {
+        let mult = inUnit==='s' || inUnit==='sec' ? 1000 : 1;
+        let start = 0;
+        let len = 100;
+        if (outPart==='time') { start = 11; len = 8; }
+        if (outPart==='time+frac') { start = 11; }
+        if (outPart==='frac' || outPart==='fraction') { start = 19; len = 4; }
+        if (outPart==='date') { start = 0; len = 10; }
+        if (outPart==='datetime') { start = 0; len = 19; }
+        if (outPart==='tz' || outPart==='timezone') { start = 23; len = 1; }
+        return new Date(data * mult).toISOString().substr(start, len);
+    }
+
+    toKB(data) {
+        return (data) ? (Math.round(precision * data / 1024) / precision).toString() : data;
+    }
+
+    toMB(data) {
+        return (data) ? (Math.round(precision * data / 1024 / 1024) / precision).toString() : data;
+    }
+
+    toGB(data) {
+        return (data) ? (Math.round(precision * data / 1024 / 1024 / 1024) / precision).toString() : data;
+    }
+
+    toNum(num, fragDigits) {
+        //return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        if (!fragDigits || fragDigits<0) fragDigits = 0;
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: fragDigits,
+            maximumFractionDigits: fragDigits
+        }).format(num);
+    }
+
+    /*updateSelect(newVal, targetMap, valueField, textField) {
+        // add new or update targetMap entries
+        for (let c of newVal) {
+            if (!targetMap[c[valueField]] || targetMap[c[valueField]].text !== c[textField]) {
+                targetMap[c[valueField]] = { value: c[valueField], text: c[textField] };
+                console.log('updateMap: ADD/UPD: ', c.id, targetMap[c.id]);
+            }
+        }
+
+        // remove obsolete targetMap entries
+        let newVal_ids = newVal.map(o=>o[valueField]);
+        for (let cid of Object.keys(targetMap)) {
+            if (!newVal_ids.includes(cid)) {
+                delete targetMap[cid];
+                console.log('updateMap: DEL: ', cid);
+            }
+        }
+    }*/
+}
+
+var utils = new Utils();
+
+export default utils;

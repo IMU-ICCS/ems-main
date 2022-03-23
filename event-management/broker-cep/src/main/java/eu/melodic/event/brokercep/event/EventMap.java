@@ -12,6 +12,7 @@ package eu.melodic.event.brokercep.event;
 import com.google.gson.Gson;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Data
 @Slf4j
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
 
@@ -65,16 +67,34 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
 
-    // Constructors
-    public EventMap() {
-        super();
+    // Event properties
+    private Map<String,Object> eventProperties;
+
+    public Object getEventProperty(@NonNull String name) {
+        return eventProperties.get(name);
     }
+
+    public synchronized Object setEventProperty(@NonNull String name, Object value) {
+        if (eventProperties ==null) eventProperties = new LinkedHashMap<>();
+        return eventProperties.put(name, value);
+    }
+
+    // Constructors
+    /*public EventMap() {
+        super();
+        put(TIMESTAMP_NAME, System.currentTimeMillis());
+    }*/
 
     public EventMap(Map<String, ?> map) {
         map.forEach((k, v) -> {
             log.trace("EventMap.<init>: key={}, value={}", k, v);
             this.put(k, v);
         });
+        if (map instanceof EventMap) {
+            Map<String, Object> properties = ((EventMap) map).getEventProperties();
+            if (properties!=null && properties.size()>0)
+                setEventProperties(new LinkedHashMap<>(properties));
+        }
     }
 
     public EventMap(double metricValue) {
@@ -93,6 +113,13 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         put(TIMESTAMP_NAME, timestamp);
     }
 
+
+    // Convert Object to EventMap
+    public static EventMap toEventMap(@NonNull Object o) {
+        if (o instanceof EventMap) return (EventMap) o;
+        if (o instanceof Map) return new EventMap((Map) o);
+        return parseEventMap(o.toString());
+    }
 
     // Parse from string
     public static EventMap parseEventMap(@NonNull String s) {

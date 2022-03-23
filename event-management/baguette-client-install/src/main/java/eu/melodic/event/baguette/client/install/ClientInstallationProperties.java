@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.client.install;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.PropertySource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Data
 @Configuration
@@ -35,6 +37,7 @@ public class ClientInstallationProperties {
     private String checkInstalledFile;
 
     private String downloadUrl;
+    @ToString.Exclude
     private String apiKey;
     private String installScriptUrl;
     private String installScriptFile;
@@ -66,7 +69,24 @@ public class ClientInstallationProperties {
     private long commandExecutionTimeout = 60000;
 
     private final Map<String, List<String>> instructions = new HashMap<>();
+    private final Map<String, String> parameters = new HashMap<>();
 
     private boolean continueOnFail = false;
     private String sessionRecordingDir = "logs";
+
+    // ----------------------------------------------------
+
+    private String clientInstallVarName = "__EMS_CLIENT_INSTALL__";
+    private Pattern clientInstallSuccessPattern = Pattern.compile("^INSTALLED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private Pattern clientInstallErrorPattern = Pattern.compile("^ERROR($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean clientInstallSuccessIfVarIsMissing = false;
+    private boolean clientInstallErrorIfVarIsMissing = true;
+
+    private String skipInstallVarName = "__EMS_CLIENT_INSTALL__";
+    private Pattern skipInstallPattern = Pattern.compile("^SKIPPED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean skipInstallIfVarIsMissing = false;
+
+    private String ignoreNodeVarName = "__EMS_IGNORE_NODE__";
+    private Pattern ignoreNodePattern = Pattern.compile("^IGNORED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
+    private boolean ignoreNodeIfVarIsMissing = false;
 }

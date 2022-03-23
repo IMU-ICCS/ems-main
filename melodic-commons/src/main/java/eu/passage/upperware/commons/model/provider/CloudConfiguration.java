@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class CloudConfiguration {
     private long id;
 
@@ -16,4 +17,9 @@ public class CloudConfiguration {
 
     private List<ParentProperty> properties;
 
+    private String scopePrefix;
+
+    private String scopeValue;
+
+    private String identityVersion;
 }

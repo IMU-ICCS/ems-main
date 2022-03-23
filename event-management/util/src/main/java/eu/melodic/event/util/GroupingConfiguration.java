@@ -17,7 +17,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Baguette Client Configuration
+ * Baguette Client Grouping Configuration
  */
 @Data
 @Builder
@@ -39,6 +39,7 @@ public class GroupingConfiguration implements Serializable {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @ToString(exclude = {/*"certificate",*/ "password"})
     public static class BrokerConnectionConfig implements Serializable {
         private String grouping;
         private String url;

@@ -10,6 +10,8 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.KeystoreUtil;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Data
-public class ClusterZone {
+public class ClusterZone implements IClusterZone {
     private final String id;
     private final int startPort;
     private final int endPort;
@@ -34,6 +36,8 @@ public class ClusterZone {
     private final Map<String,ClientShellCommand> nodes = new LinkedHashMap<>();
     @Getter(AccessLevel.NONE)
     private final Map<String, Integer> addressPortCache = new HashMap<>();
+    @Getter(AccessLevel.NONE)
+    private final Map<String, NodeRegistryEntry> nodesWithoutClient = new LinkedHashMap<>();
 
     private final String clusterId;
     private final String clusterKeystoreBase64;
@@ -44,7 +48,7 @@ public class ClusterZone {
     private ClientShellCommand aggregator;
 
     @SneakyThrows
-    public ClusterZone(@NotBlank String id, int startPort, int endPort) {
+    public ClusterZone(@NotBlank String id, int startPort, int endPort, String keystoreFileName) {
         checkArgs(id, startPort, endPort);
         this.id = id;
         this.startPort = startPort;
@@ -52,8 +56,7 @@ public class ClusterZone {
         currentPort.set(startPort);
 
         this.clusterId = RandomStringUtils.randomAlphanumeric(64);
-        String fileName = String.format("logs/cluster_%d_%s.p12", System.currentTimeMillis(), id);
-        this.clusterKeystoreFile = new File(fileName);
+        this.clusterKeystoreFile = new File(keystoreFileName);
         this.clusterKeystoreType = "JKS";
         this.clusterKeystorePassword = RandomStringUtils.randomAlphanumeric(64);
         log.info("New ClusterZone:  zone: {}", id);
@@ -66,7 +69,8 @@ public class ClusterZone {
                 .createIfNotExist()
                 .createKeyAndCert(clusterId, "CN=" + clusterId, "")
                 .readFileAsBase64();
-        log.debug("        Base64 content: {}", clusterKeystoreBase64);
+        log.debug("        Base64 content: {}",
+                StringUtils.isNotBlank(clusterKeystoreBase64) ? "Not empty" : "!!! Empty !!!");
     }
 
     private void checkArgs(String id, int startPort, int endPort) {
@@ -92,10 +96,12 @@ public class ClusterZone {
         addressPortCache.clear();
     }
 
+    // Nodes management
     public void addNode(@NonNull ClientShellCommand csc) {
         synchronized (Objects.requireNonNull(csc)) {
             nodes.put(csc.getClientIpAddress(), csc);
             csc.setClientZone(this);
+            csc.getNodeRegistryEntry().setClusterZone(this);
         }
     }
 
@@ -104,7 +110,13 @@ public class ClusterZone {
             nodes.remove(csc.getClientIpAddress());
             if (csc.getClientZone()==this)
                 csc.setClientZone(null);
+            if (csc.getNodeRegistryEntry()!=null && csc.getNodeRegistryEntry().getClusterZone()==this)
+                csc.getNodeRegistryEntry().setClusterZone(null);
         }
+    }
+
+    public Set<String> getNodeAddresses() {
+        return new HashSet<>(nodes.keySet());
     }
 
     public List<ClientShellCommand> getNodes() {
@@ -113,5 +125,55 @@ public class ClusterZone {
 
     public ClientShellCommand getNodeByAddress(String address) {
         return nodes.get(address);
+    }
+
+    // Nodes-without-Clients management
+    public void addNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
+        synchronized (Objects.requireNonNull(entry)) {
+            String address = entry.getIpAddress();
+            if (address == null) address = entry.getNodeAddress();
+            if (address == null) throw new IllegalArgumentException("Node address not found in Preregistration info");
+            nodesWithoutClient.put(address, entry);
+            entry.setClusterZone(this);
+            sendClientConfigurationToZoneClients();
+        }
+    }
+
+    public void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
+        synchronized (Objects.requireNonNull(entry)) {
+            String address = entry.getIpAddress();
+            if (address == null) address = entry.getNodeAddress();
+            if (address == null) throw new IllegalArgumentException("Node address not found in Preregistration info");
+            nodesWithoutClient.remove(address);
+            if (entry.getClusterZone() == this)
+                entry.setClusterZone(null);
+            sendClientConfigurationToZoneClients();
+        }
+    }
+
+    public Set<String> getNodeWithoutClientAddresses() {
+        return new HashSet<>(nodesWithoutClient.keySet());
+    }
+
+    public List<NodeRegistryEntry> getNodesWithoutClient() {
+        return new ArrayList<>(nodesWithoutClient.values());
+    }
+
+    public NodeRegistryEntry getNodeWithoutClientByAddress(String address) {
+        return nodesWithoutClient.get(address);
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return ClientConfiguration.builder()
+                .nodesWithoutClient(new HashSet<>(nodesWithoutClient.keySet()))
+                .build();
+    }
+
+    public ClientConfiguration sendClientConfigurationToZoneClients() {
+        ClientConfiguration cc = ClientConfiguration.builder()
+                .nodesWithoutClient(new HashSet<>(nodesWithoutClient.keySet()))
+                .build();
+        ClientShellCommand.sendClientConfigurationToClients(cc , getNodes());
+        return cc;
     }
 }

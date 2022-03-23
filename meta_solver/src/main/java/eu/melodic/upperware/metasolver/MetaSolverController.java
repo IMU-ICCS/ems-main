@@ -11,6 +11,7 @@ package eu.melodic.upperware.metasolver;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
+import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -210,6 +211,27 @@ public class MetaSolverController {
         metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applicationId));
 
         return metricsNamesResponse;
+    }
+
+    @GetMapping("/getOperationMode")
+    public MetaSolverProperties.OperationMode getOperationMode(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
+        setAuthenticationToken(jwtToken);
+        log.info("Received request for getting operation mode: ");
+        MetaSolverProperties.OperationMode mode = coordinator.getMetaSolverProperties().getOperationMode();
+        log.info("Current operation mode: {}", mode);
+        return mode;
+    }
+
+    @GetMapping("/setOperationMode/{mode}")
+    public void setOperationMode(@PathVariable("mode") MetaSolverProperties.OperationMode mode,
+                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
+
+        setAuthenticationToken(jwtToken);
+        log.info("Received request for setting operation mode: {}", mode);
+        MetaSolverProperties.OperationMode prevMode = coordinator.getMetaSolverProperties().getOperationMode();
+        log.info("Previous operation mode: {}", prevMode);
+        coordinator.getMetaSolverProperties().setOperationMode(mode);
+        log.info("New operation mode: {}", mode);
     }
 
     @RequestMapping(value = "/health", method = GET)

@@ -17,7 +17,7 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
 
     List<Location> getAllLocation();
 
-    ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId);
+    ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId, boolean automate);
 
     List<ByonNode> getByonNodeList(String jobId);
 
@@ -26,4 +26,6 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
     List<Deployment> getAllNodes();
 
     List<EmsDeploymentRequest> getAllMonitors();
+
+    boolean deleteByonNode(String byonId);
 }

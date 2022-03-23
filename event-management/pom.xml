@@ -28,8 +28,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Melodic component versions -->
-        <!--<melodic.version>4.5.0-SNAPSHOT</melodic.version>
-        <interfaces.version>4.5.0-SNAPSHOT</interfaces.version>
+        <!--<melodic.version>5.0.0-SNAPSHOT</melodic.version>
+        <interfaces.version>5.0.0-SNAPSHOT</interfaces.version>
         <camel.version>4.5.0-SNAPSHOT</camel.version>-->
         <authorization.version>4.5.0-SNAPSHOT</authorization.version>
         <!-- Gson version -->
@@ -47,6 +47,7 @@
         <module>translator</module>
         <module>broker-client</module>
         <module>broker-cep</module>
+        <module>common</module>
         <module>baguette-client</module>
         <module>baguette-client-install</module>
         <module>baguette-server</module>
@@ -79,6 +80,23 @@
             <modules>
                 <module>extra</module>
             </modules>
+        </profile>
+        <profile>
+            <id>build-web-admin</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>web-admin</module>
+            </modules>
+            <dependencies>
+                <dependency>
+                    <groupId>eu.melodic.event</groupId>
+                    <artifactId>web-admin</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 </project>

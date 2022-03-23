@@ -129,7 +129,7 @@ public class ByonService {
         }
     }
 
-    public ByonNode createByonNode(int byonDefinitionId, String applicationId) {
+    public ByonNode createByonNode(int byonDefinitionId, String applicationId, boolean automate) {
         ByonDefinition byonDefinitionForNode = getByonDefList(true).orElseGet(ArrayList::new)
                 .stream()
                 .filter(byonDefinition -> byonDefinition.getId() == byonDefinitionId)
@@ -137,7 +137,7 @@ public class ByonService {
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
         final org.activeeon.morphemic.model.ByonDefinition byonDefinitionProactive = byonMapper.mapByonDefinitionToProactive(byonDefinitionForNode);
         log.info("LSZ DEV[ByonService]: createByonNode: byonDefinitionProactive={}", byonDefinitionProactive);
-        final Optional<org.activeeon.morphemic.model.ByonNode> byonNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId));
+        final Optional<org.activeeon.morphemic.model.ByonNode> byonNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId, automate));
         log.info("LSZ DEV[ByonService]: createByonNode: byonNodeProactive={}", byonNodeProactive);
         ByonNode byonNode = null;
         if(byonNodeProactive.isPresent()) {
@@ -198,5 +198,15 @@ public class ByonService {
         log.info("LSZ DEV[ByonService]: getAllByonNodesList: byonNodes={}", byonNodes);
 
         return byonNodes;
+    }
+
+    public void cleanByon() {
+        log.info("[ByonService]: cleanByon starting");
+        List<ByonNode> byonNodeList = getAllByonNodesList();
+        for(ByonNode byonNode : byonNodeList) {
+            String byonId = byonNode.getId();
+            log.info("[ByonService]: deletingByon for id: {}", byonId);
+            proactiveClientServiceGUI.deleteByonNode(byonId);
+        }
     }
 }

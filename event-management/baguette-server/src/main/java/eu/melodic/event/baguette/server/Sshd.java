@@ -9,7 +9,11 @@
 
 package eu.melodic.event.baguette.server;
 
+import eu.melodic.event.baguette.server.coordinator.cluster.ClusteringCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
+import eu.melodic.event.util.EventBus;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.PropertyResolverUtils;
@@ -21,6 +25,7 @@ import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +39,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class Sshd {
-    private ServerCoordinator coordinator;
+    @Getter private ServerCoordinator coordinator;
     private BaguetteServerProperties configuration;
     private SshServer sshd;
     private String serverPubkey;
@@ -43,10 +48,16 @@ public class Sshd {
     private boolean heartbeatOn;
     private long heartbeatPeriod;
 
-    public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator) throws IOException {
+    private EventBus<String,Object,Object> eventBus;
+    @Getter @Setter
+    private NodeRegistry nodeRegistry;
+
+    public void start(BaguetteServerProperties configuration, ServerCoordinator coordinator, EventBus<String,Object,Object> eventBus, NodeRegistry registry) throws IOException {
         log.info("** SSH server **");
         this.coordinator = coordinator;
         this.configuration = configuration;
+        this.eventBus = eventBus;
+        this.nodeRegistry = registry;
 
         // Configure SSH server
         int port = configuration.getServerPort();
@@ -64,12 +75,13 @@ public class Sshd {
         sshd.setShellFactory(
                 new Factory<Command>() {
                     private ServerCoordinator coordinator;
+                    private NodeRegistry nodeRegistry;
 
                     public Command create() {
-                        ClientShellCommand msc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed());
-                        //msc.setId( "#-"+System.currentTimeMillis() );
-                        log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", msc.getId());
-                        return msc;
+                        ClientShellCommand csc = new ClientShellCommand(this.coordinator, configuration.isClientAddressOverrideAllowed(), eventBus, nodeRegistry);
+                        //csc.setId( "#-"+System.currentTimeMillis() );
+                        log.debug("SSH server: Shell Factory: create invoked : New ClientShellCommand id: {}", csc.getId());
+                        return csc;
                     }
 
                     public Command get() {
@@ -77,12 +89,13 @@ public class Sshd {
                         return null;
                     }
 
-                    public Factory<Command> setCoordinator(ServerCoordinator coordinator) {
+                    public Factory<Command> setCoordinatorAndNodeRegistry(ServerCoordinator coordinator, NodeRegistry nodeRegistry) {
                         this.coordinator = coordinator;
+                        this.nodeRegistry = nodeRegistry;
                         return this;
                     }
                 }
-                .setCoordinator(coordinator)
+                .setCoordinatorAndNodeRegistry(coordinator, nodeRegistry)
         );
 
         sshd.setPasswordAuthenticator(
@@ -157,7 +170,7 @@ public class Sshd {
                             String msg = String.format("Heartbeat %d", System.currentTimeMillis());
                             log.debug("--> Heartbeat: {}", msg);
                             for (ClientShellCommand csc : ClientShellCommand.getActive()) {
-                                csc.sendToClient(msg);
+                                csc.sendToClient(msg, Level.DEBUG);
                             }
                         }
                         log.info("--> Heartbeat: Stopped");
@@ -201,13 +214,29 @@ public class Sshd {
         }
     }
 
-    public Object readFromClient(String clientId, String command) {
+    public void sendToActiveClusters(String command) {
+        if (!(coordinator instanceof ClusteringCoordinator)) return;
+        ((ClusteringCoordinator)coordinator).getClusters().forEach(cluster -> {
+            log.info("SSH server: Sending to cluster {} : {}", cluster.getId(), command);
+            sendToCluster(cluster.getId(), command);
+        });
+    }
+
+    public void sendToCluster(String clusterId, String command) {
+        if (!(coordinator instanceof ClusteringCoordinator)) return;
+        ((ClusteringCoordinator)coordinator).getCluster(clusterId).getNodes().forEach(csc -> {
+            log.info("SSH server: Sending to client {} : {}", csc.getId(), command);
+            csc.sendToClient(command);
+        });
+    }
+
+    public Object readFromClient(String clientId, String command, Level logLevel) {
         log.trace("SSH server: Sending and Reading to/from client {}: {}", clientId, command);
         for (ClientShellCommand csc : ClientShellCommand.getActive()) {
             log.trace("SSH server: Check CSC: csc-id={}, client={}", csc.getId(), clientId);
             if (csc.getId().equals(clientId)) {
-                log.info("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
-                return csc.readFromClient(command);
+                log.debug("SSH server: Sending and Reading to/from client {} : {}", csc.getId(), command);
+                return csc.readFromClient(command, logLevel);
             }
         }
         return null;
@@ -257,8 +286,8 @@ public class Sshd {
         String serverKeyFilePath = configuration.getServerKeyFile();
         log.debug("_loadPubkeyAndFingerprint(): Server Key file: {}", serverKeyFilePath);
         File serverKeyFile = new File(serverKeyFilePath);
-        SimpleGeneratorHostKeyProvider z = new SimpleGeneratorHostKeyProvider(serverKeyFile);
-        z.loadKeys().forEach(kp -> {
+        SimpleGeneratorHostKeyProvider simpleGeneratorHostKeyProvider = new SimpleGeneratorHostKeyProvider(serverKeyFile);
+        simpleGeneratorHostKeyProvider.loadKeys().forEach(kp -> {
             log.debug("_loadPubkeyAndFingerprint(): KeyPair found: {}", kp.toString());
             PublicKey serverKey = kp.getPublic();
             log.debug("_loadPubkeyAndFingerprint(): Pubkey: {}", kp.toString());
@@ -274,7 +303,7 @@ public class Sshd {
                 log.debug("_loadPubkeyAndFingerprint(): Fingerprint: {}", serverPubkeyFingerprint);
 
             } catch (Exception ex) {
-                log.error("_loadPubkeyAndFingerprint(): EXCEPTION: {}", ex);
+                log.error("_loadPubkeyAndFingerprint(): EXCEPTION: ", ex);
             }
         });
     }

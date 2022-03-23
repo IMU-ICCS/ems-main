@@ -66,9 +66,10 @@ public class ByonController {
 
     @PostMapping("/proactive/{byonDefinitionId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public eu.passage.upperware.commons.model.byon.ByonNode createByonNode(@PathVariable(value = "byonDefinitionId") int byonDefinitionId, @RequestParam(value = "applicationId") String applicationId) {
+    public eu.passage.upperware.commons.model.byon.ByonNode createByonNode(@PathVariable(value = "byonDefinitionId") int byonDefinitionId, @RequestParam(value = "applicationId") String applicationId,
+                                                                           @RequestParam(value = "automate") boolean automate) {
         log.info("POST request for creating new byon node from byon definition with id {} and for application id {}", byonDefinitionId, applicationId);
-        final eu.passage.upperware.commons.model.byon.ByonNode byonNode = byonService.createByonNode(byonDefinitionId, applicationId);
+        final eu.passage.upperware.commons.model.byon.ByonNode byonNode = byonService.createByonNode(byonDefinitionId, applicationId, automate);
         log.info("Byon node with id {} successfully added to Proactive", byonNode.getId());
         return byonNode;
     }
@@ -94,5 +95,13 @@ public class ByonController {
     public ByonEnums getByonEnums() {
         log.info("GET request for byon enums");
         return byonService.getByonEnums();
+    }
+
+    @PutMapping("/cleanByon")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cleanByonNodes() {
+        log.info("Put request for byon nodes purging");
+        byonService.cleanByon();
+        log.info("Put request for byon nodes purging finished");
     }
 }

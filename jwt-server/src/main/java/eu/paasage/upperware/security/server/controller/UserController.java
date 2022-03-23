@@ -6,6 +6,7 @@ import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
+import eu.paasage.upperware.security.server.controller.response.UserDataResponse;
 import eu.paasage.upperware.security.server.controller.response.UserResponse;
 import eu.paasage.upperware.security.server.data.repository.RefreshToken;
 import eu.paasage.upperware.security.server.data.repository.User;
@@ -103,6 +104,13 @@ public class UserController {
         String requesterName = authentication.getName();
         log.info("GET request for all users list from user: {}", requesterName);
         return userService.getUsersList();
+    }
+
+    @GetMapping("/auth/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDataResponse getUserData(@PathVariable("username") String username) {
+        log.info("GET request for user data for user: {}", username);
+        return userService.getUserDataResponse(username);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server.coordinator;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.translate.TranslationContext;
@@ -63,6 +64,11 @@ public class NoopCoordinator implements ServerCoordinator {
     }
 
     @Override
+    public synchronized void preregister(NodeRegistryEntry entry) {
+        _logInvocation("preregister", entry, true);
+    }
+
+    @Override
     public synchronized void register(ClientShellCommand c) {
         _logInvocation("register", c, true);
     }
@@ -77,16 +83,21 @@ public class NoopCoordinator implements ServerCoordinator {
         _logInvocation("clientReady", c, true);
     }
 
-    protected boolean _logInvocation(String methodName, ClientShellCommand c, boolean checkStarted) {
+    protected boolean _logInvocation(String methodName, Object o, boolean checkStarted) {
         String className = getClass().getSimpleName();
-        String cscStr =  (c!=null) ? String.format(". CSC: %s", c.toString()) : "";
+        String str =  (o==null) ? "" : (
+                o instanceof ClientShellCommand ? String.format(". CSC: %s", o) : (
+                        o instanceof NodeRegistryEntry ? String.format(". NRE: %s", o) :
+                                String.format(". Object: %s", o)
+                        )
+                );
         if (checkStarted && !started) {
-            log.warn("{}: {}(): Coordinator has not been started{}", className, methodName, cscStr);
+            log.warn("{}: {}(): Coordinator has not been started{}", className, methodName, str);
         } else
         if (!checkStarted && started) {
-            log.warn("{}: {}(): Coordinator is already running{}", className, methodName, cscStr);
+            log.warn("{}: {}(): Coordinator is already running{}", className, methodName, str);
         } else {
-            log.info("{}: {}(): Method invoked{}", className, methodName, cscStr);
+            log.info("{}: {}(): Method invoked{}", className, methodName, str);
         }
         return started;
     }

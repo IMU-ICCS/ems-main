@@ -30,7 +30,7 @@ if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLI
 
 # Initialize keystores and certificate
 # Uncomment next line to generate BrokerCEP keystore, truststore and certificate before EMS server launch
-# Modifying 'initialize-keystores.bat' script you can customize the certificate generation
+# Modifying 'initialize-keystores.sh' script you can customize the certificate generation
 #./bin/initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
@@ -54,7 +54,7 @@ if [[ -z "$LOG_FILE" ]]; then
 fi
 
 # Waiting CDO to come up...
-if [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
+if [[ -z ${EMS_SKIP_WAIT_CDO+x} ]] && [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
     echo "Waiting CDO server to start..."
     $MELODIC_CONFIG_DIR/wait-for-cdo.sh
 fi
@@ -66,11 +66,19 @@ fi
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "Starting EMS server..."
-# Use when Esper is packaged in control-service.jar
-# java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
+if [[ -z $RESTART_EXIT_CODE ]]; then RESTART_EXIT_CODE=99; export RESTART_EXIT_CODE; fi
+retCode=$RESTART_EXIT_CODE
+while :; do
+  # Use when Esper is packaged in control-service.jar
+  # java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
 
-# Use when Esper is NOT packaged in control-service.jar
-java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Warsaw -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE $*
+  # Use when Esper is NOT packaged in control-service.jar
+  java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE $*
+
+  retCode=$?
+  if [[ $retCode -eq $RESTART_EXIT_CODE ]]; then echo "Restarting EMS server..."; else break; fi
+done
+echo "EMS server exited"
 
 # Extra parameters
 # e.g. --spring.config.location=$MELODIC_CONFIG_DIR

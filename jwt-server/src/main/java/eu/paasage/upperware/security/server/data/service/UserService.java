@@ -4,6 +4,7 @@ import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
+import eu.paasage.upperware.security.server.controller.response.UserDataResponse;
 import eu.paasage.upperware.security.server.controller.response.UserResponse;
 import eu.paasage.upperware.security.server.data.repository.User;
 import eu.paasage.upperware.security.server.data.repository.UserLdapRepository;
@@ -64,15 +65,18 @@ public class UserService {
 
     public UserResponse create(NewUserRequest userRequest) {
 
-        User newUser = new User(userRequest.getUsername(), digestSHA(userRequest.getPassword()), userRequest.getUserRole(), false);
+        User newUser = new User(userRequest.getUsername(), userRequest.getFullName(), userRequest.getMail(), digestSHA(userRequest.getPassword()), userRequest.getUserRole(), false);
 
         String userDN = createUserDN(newUser.getUsername(), newUser.getUserRole());
 
         DirContextAdapter context = new DirContextAdapter(userDN);
 
         context.setAttributeValues("objectclass", new String[] {"person"});
+        context.setAttributeValues("objectclass", new String[] {"InetOrgPerson"});
         context.setAttributeValue("cn", newUser.getUsername());
         context.setAttributeValue("sn", newUser.getUsername());
+        context.setAttributeValue("fullName", newUser.getFullName());
+        context.setAttributeValue("mail", newUser.getMail());
         context.setAttributeValue("userPassword", newUser.getPassword());
         context.setAttributeValue("pwdPolicySubentry", "cn=ppolicy,dc=example,dc=org");
 
@@ -184,6 +188,17 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
         return UserResponse.builder()
                 .username(username)
+                .userRole(findUserRole(user.getId()))
+                .build();
+    }
+
+    public UserDataResponse getUserDataResponse(String username) {
+        User user = userLdapRepository.findByUsername(username)
+                .orElseThrow(UserNotFoundException::new);
+        return UserDataResponse.builder()
+                .username(username)
+                .fullName(user.getFullName())
+                .mail(user.getMail())
                 .userRole(findUserRole(user.getId()))
                 .build();
     }
