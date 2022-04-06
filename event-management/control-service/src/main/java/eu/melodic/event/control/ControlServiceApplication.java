@@ -32,14 +32,14 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@Slf4j
+@EnableAsync
+@Configuration
 @SpringBootApplication(
         scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
                 "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep", "eu.melodic.event.control",
                 "eu.melodic.event.translate", "eu.melodic.event.common", "eu.melodic.event.util"},
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
-@EnableAsync
-@Configuration
-@Slf4j
 public class ControlServiceApplication /*implements ApplicationContextAware*/ {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
