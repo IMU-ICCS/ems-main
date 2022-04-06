@@ -40,7 +40,7 @@ import java.util.TimerTask;
                 "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep", "eu.melodic.event.control",
                 "eu.melodic.event.translate", "eu.melodic.event.common", "eu.melodic.event.util"},
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
-public class ControlServiceApplication /*implements ApplicationContextAware*/ {
+public class ControlServiceApplication {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
 
