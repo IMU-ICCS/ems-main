@@ -21,26 +21,16 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
+@Slf4j
 @Data
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = "control")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
-@Slf4j
 public class ControlServiceProperties {
     public enum IpSetting {
-        DEFAULT_IP("%{DEFAULT_IP}%"),
-        PUBLIC_IP("%{PUBLIC_IP}%");
-
-        private final String placeholder;
-
-        IpSetting(String placeholder) {
-            this.placeholder = placeholder;
-        }
-
-        public String toString() {
-            return placeholder;
-        }
+        DEFAULT_IP,
+        PUBLIC_IP
     }
 
     public enum ExecutionWare {
@@ -49,7 +39,7 @@ public class ControlServiceProperties {
 
     @Value("${control.printBuildInfo:false}")
     private boolean printBuildInfo;
-    @Value("${IP_SETTING:}")
+    @Value("${IP_SETTING:PUBLIC_IP}")
     private IpSetting ipSetting;
     @Value("${EXECUTIONWARE:PROACTIVE}")
     private ExecutionWare executionware;
