@@ -180,6 +180,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>*.txt</include>
+                    <include>META-INF/spring.factories</include>
                 </includes>
             </resource>
         </resources>
