@@ -38,10 +38,6 @@ public class BrokerCepProperties {
     @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.util.NetUtil).getPublicIpAddress()+':61616' }")
     private String brokerUrlForClients;
 
-    public String getBrokerUrl() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrl); }
-    public String getBrokerUrlForConsumer() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrlForConsumer); }
-    public String getBrokerUrlForClients() { return KeystoreAndCertificateProperties.prepareUrl(brokerUrlForClients); }
-
     @Value("${default-ip-address:}")
     private String defaultIpAddress;
     @Value("${public-ip-address:}")

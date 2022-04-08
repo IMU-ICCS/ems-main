@@ -167,11 +167,11 @@ public class BrokerConfig implements InitializingBean {
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
                 .passwordUtil(passwordUtil)
-                .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryNameValue());
+                .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryName());
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
                 properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
                 passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
-                properties.getSsl().getKeyEntryNameValue(), this.brokerCert);
+                properties.getSsl().getKeyEntryName(), this.brokerCert);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }
 
