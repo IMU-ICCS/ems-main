@@ -18,35 +18,32 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
-@Slf4j
 public class BrokerCepProperties {
 
     @Value("${broker-name:broker}")
     private String brokerName;
-    @Value("${broker-url:ssl://0.0.0.0:61616}")
-    private String brokerUrl;
+
+    // Broker connector URLs
+    private List<String> brokerUrl = Collections.singletonList("ssl://0.0.0.0:61616");
+
+    public String getBrokerUrl() { return brokerUrl.get(0); }
+    public List<String> getBrokerUrlList() { return brokerUrl; }
+
     @Value("${broker-url-for-consumer:ssl://127.0.0.1:61616}")
     private String brokerUrlForConsumer;
     @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.util.NetUtil).getPublicIpAddress()+':61616' }")
     private String brokerUrlForClients;
 
-    @Value("${default-ip-address:}")
-    private String defaultIpAddress;
-    @Value("${public-ip-address:}")
-    private String publicIpAddress;
-
-    @Value("${broker-url-properties:}")
-    private String brokerUrlProperties;
-    @Value("${brokercep.ssl.client-auth.required:false}")
-    private boolean clientAuthRequired;
     @Value("${connector-port:-1}")
     private int connectorPort;
     @Value("${bypass-local-broker:false}")

@@ -30,7 +30,6 @@ import org.apache.activemq.usage.SystemUsage;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -80,12 +79,7 @@ public class BrokerConfig implements InitializingBean {
 
     private KeyStore truststore;
 
-    @Value("${brokercep.broker-url-2}")
-    private String brokerUrl2;
-    @Value("${brokercep.broker-url-3}")
-    private String brokerUrl3;
-
-    private HashMap<String, ConnectionFactory> connectionFactoryCache = new HashMap<>();
+    private final HashMap<String, ConnectionFactory> connectionFactoryCache = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -238,31 +232,41 @@ public class BrokerConfig implements InitializingBean {
 
     /**
      * Creates an embedded JMS server
-     *
-     * @return
-     * @throws Exception
      */
-    @Bean//(initMethod = "start", destroyMethod = "stop")
+    @Bean
     public BrokerService createBrokerService() throws Exception {
 
         // Create new broker service instance
         String brokerUrl = getBrokerUrl();
         log.info("BrokerConfig: Creating new Broker Service instance: url={}", brokerUrl);
 
-        BrokerService brokerService;
-        if (brokerUrl.startsWith("ssl")) {
-            brokerService = _createSslBrokerService();
-        } else {
-            brokerService = new BrokerService();
-            brokerService.addConnector(brokerUrl);
-        }
+        SslBrokerService brokerService = new SslBrokerService();;
         brokerService.setBrokerName(getBrokerName());
 
-        // Start additional connectors (non-SSL)
-        log.debug("BrokerConfig: 2nd connector: {}", brokerUrl2);
-        log.debug("BrokerConfig: 3rd connector: {}", brokerUrl3);
-        if (StringUtils.isNotEmpty(brokerUrl2)) brokerService.addConnector(brokerUrl2);
-        if (StringUtils.isNotEmpty(brokerUrl3)) brokerService.addConnector(brokerUrl3);
+        // Initialize keystore and truststore for broker SSL connectors
+        KeyManager[] keystore = null;
+        TrustManager[] truststore = null;
+        if (secureConnectorsExist()) {
+            keystore = readKeystore();
+            truststore = readTruststore();
+        }
+
+        // Start broker connectors
+        if (properties.getBrokerUrlList()!=null) {
+            int i = 1;
+            for (String url : properties.getBrokerUrlList()) {
+                if (StringUtils.isNotBlank(url)) {
+                    String num = (i==1 ? "st" : (i==2 ? "nd" : "rd"));
+                    log.info("BrokerConfig: {}{} connector: {}", i++, num, url);
+                    if (isSecureUrl(url))
+                        // Add an SSL broker connector
+                        brokerService.addSslConnector(url, keystore, truststore, null);
+                    else
+                        // Add a non-SSL broker connector
+                        brokerService.addConnector(url);
+                }
+            }
+        }
 
         // Set authentication and authorization plugins
         List<BrokerPlugin> plugins = new ArrayList<>();
@@ -284,7 +288,7 @@ public class BrokerConfig implements InitializingBean {
         brokerService.setEnableStatistics(properties.isEnableStatistics());
 
         // Change the JMX connector port
-        if (properties != null && properties.getConnectorPort() > 0) {
+        if (properties.getConnectorPort() > 0) {
             if (brokerService.getManagementContext() != null) {
                 log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getConnectorPort());
                 brokerService.getManagementContext().setConnectorPort(properties.getConnectorPort());
@@ -372,18 +376,19 @@ public class BrokerConfig implements InitializingBean {
         log.info("BrokerConfig: Registering message interceptors... done");
     }
 
-    private BrokerService _createSslBrokerService() throws Exception {
-        // Create new SSL broker service instance
-        SslBrokerService brokerService = new SslBrokerService();
+    private boolean isSecureUrl(String url) {
+        int p = url.indexOf(":");
+        if (p<=0) return false;
+        String scheme = url.substring(0, p);
+        return scheme.startsWith("ssl") || scheme.contains("+ssl") || scheme.startsWith("https:");
+    }
 
-        // Add ActiveMQ SSL connector using configured keystore and truststore
-        final KeyManager[] keystore = readKeystore();
-        final TrustManager[] truststore = readTruststore();
-        String props = Optional.ofNullable(properties.getBrokerUrlProperties()).orElse("").trim();
-        if (!props.isEmpty() && !props.startsWith("?")) props = "?" + props;
-        brokerService.addSslConnector(properties.getBrokerUrl() + props, keystore, truststore, null);
-
-        return brokerService;
+    private boolean secureConnectorsExist() {
+        if (properties.getBrokerUrlList()!=null) {
+            for (String url : properties.getBrokerUrlList())
+                if (isSecureUrl(url.trim())) return true;
+        }
+        return false;
     }
 
     private KeyManager[] readKeystore() throws Exception {
