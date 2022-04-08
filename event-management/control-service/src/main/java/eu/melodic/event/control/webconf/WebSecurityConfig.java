@@ -110,15 +110,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
-        if (userFormAuthEnabled && (StringUtils.isBlank(username) || password.isEmpty()))
+        if (securityEnabled && userFormAuthEnabled && (StringUtils.isBlank(username) || password.isEmpty()))
             throw new InvalidParameterException("User form authentication is enabled but username or password are blank");
-        if (apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
+        if (securityEnabled && apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
             throw new InvalidParameterException("API Key authentication is enabled but no API Key provided or it is blank");
         if (permittedUrls==null) permittedUrls = new String[0];
 
-        log.info("afterPropertiesSet: Admin Username: {}", username);
-        log.info("afterPropertiesSet: Admin Password: {}", passwordUtil.encodePassword(password));
-        log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
+        if (securityEnabled && userFormAuthEnabled) {
+            log.info("afterPropertiesSet: Admin Username: {}", username);
+            log.info("afterPropertiesSet: Admin Password: {}", passwordUtil.encodePassword(password));
+        }
+        if (securityEnabled && apiKeyAuthEnabled) {
+            log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
+        }
         if (printSampleJwt)
             log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
                 divider, jwtService(melodicSecurityProperties).create("USER"), divider);

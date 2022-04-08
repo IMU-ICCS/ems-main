@@ -12,7 +12,6 @@ package eu.melodic.event.control.info;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.lang.NonNullApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@NonNullApi
 @RequiredArgsConstructor
 public class ControlServiceMetrics implements ApplicationContextAware {
 

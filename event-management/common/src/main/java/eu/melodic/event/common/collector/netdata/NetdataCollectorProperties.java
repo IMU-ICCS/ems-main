@@ -29,6 +29,5 @@ public class NetdataCollectorProperties {
     private boolean createTopic;
     private List<String> allowedTopics;
 
-    private int errorLimit;     // num of consecutive errors. Zero or negative value disables collection pausing
-    private int pausePeriod;    // in seconds. Zero or negative value disables collection pausing
+    private int errorLimit;     // num of consecutive errors. Zero or negative value will immediately trigger self-healing
 }

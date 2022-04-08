@@ -62,13 +62,13 @@ public class NodeInfoHelper {
                 throw ex;
             }
         }
-        log.debug("NodeInfoHelper: getNodeInfo(): Node info: {}", nodeInfo);
+        //log.debug("NodeInfoHelper: getNodeInfo(): Node info: {}", nodeInfo);
         return nodeInfo;
     }
 
     public void remove(String nodeId, @NonNull String nodeAddress) {
         log.debug("NodeInfoHelper: remove(): node-id={}, node-address={}", nodeId, nodeAddress);
         Map nodeInfo = nodeInfoCache.remove(nodeAddress);
-        log.trace("NodeInfoHelper: remove(): Removed: node-id={}, node-address={}, node-info={}", nodeId, nodeAddress, nodeInfo);
+        log.trace("NodeInfoHelper: remove(): Removed: node-id={}, node-address={}", nodeId, nodeAddress);
     }
 }

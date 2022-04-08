@@ -1243,6 +1243,11 @@ public class CommandExecutor {
         return ! isAggregator();
     }
 
+    public void notifyEmsServer(String message) {
+        log.info("NOTIFY-X: {}", message);
+        out.println("-NOTIFY-X: "+message);
+    }
+
     /*private static class StreamGobbler implements Runnable {
         private InputStream inputStream1;
         private InputStream inputStream2;

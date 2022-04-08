@@ -21,7 +21,6 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
-import eu.melodic.event.util.NetUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
@@ -421,9 +420,7 @@ public class ControlServiceController {
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
         String baseUrl =
-                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
-                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
-                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+                request.getScheme()+"://"+ coordinator.getServerIpAddress() +":"+request.getServerPort()+staticResourceContext;
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Get IP Setting and Client ID

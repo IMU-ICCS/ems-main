@@ -10,6 +10,7 @@
 package eu.melodic.event.baguette.server;
 
 import com.google.gson.Gson;
+import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
@@ -236,6 +237,50 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
                     if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
                         this.clientNodeStatus = newNodeStatus;
+                } else if (line.startsWith("-NOTIFY-X:")) {
+                    String message = line.substring("-NOTIFY-X:".length()).trim();
+                    String[] part = message.split(" ", 2);
+                    String command = part[0].trim();
+                    String args = part.length>1 ? part[1] : null;
+                    log.info("{}--> Client notification: CMD={}, ARGS={}", getId(), command, args);
+
+                    if ("DEBUG".equalsIgnoreCase(command)) {
+                        log.debug("{}--> {}", getId(), args);
+                    } else
+                    if ("INFO".equalsIgnoreCase(command)) {
+                        log.info("{}--> {}", getId(), args);
+                    } else
+                    if ("WARN".equalsIgnoreCase(command)) {
+                        log.warn("{}--> {}", getId(), args);
+                    } else
+                    if ("ERROR".equalsIgnoreCase(command)) {
+                        log.error("{}--> {}", getId(), args);
+                    } else
+                    if ("RECOVERY".equalsIgnoreCase(command)) {
+                        args = args==null ? "" : args;
+                        part = args.split(" ", 2);
+                        String notificationType = part[0].trim();
+                        String clientData = part.length>1 ? part[1] : null;
+                        if (StringUtils.isNotBlank(notificationType) && StringUtils.isNotBlank(clientData)) {
+                            log.info("{}--> Client Recovery Notification: {}: {}", getId(), notificationType, clientData);
+                            if ("GIVE_UP".equalsIgnoreCase(notificationType)) {
+                                String[] tmp = clientData.split("@", 2);
+                                String nodeId = tmp[0].trim();
+                                String nodeAddress = tmp.length>1 ? tmp[1].trim() : null;
+                                if (StringUtils.isNotBlank(nodeAddress))
+                                    eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress, "Client_" + getId());
+                                else
+                                    log.warn("{}--> Missing Node Address in Client Recovery Notification: {}", getId(), args);
+                            } else
+                                log.warn("{}--> UNKNOWN Client Recovery Notification: {}", getId(), args);
+                        } else {
+                            log.warn("{}--> INVALID Client Recovery Notification: {}", getId(), args);
+                        }
+                    } else
+                    {
+                        log.warn("{}--> UNKNOWN Client Notification type: {}", getId(), message);
+                    }
+
                 } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
                     String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
                     String propertyName = part[0];

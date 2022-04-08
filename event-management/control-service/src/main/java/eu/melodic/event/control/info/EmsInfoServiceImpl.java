@@ -118,10 +118,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
         Map<String,Object> metrics = new LinkedHashMap<>();
 
-        metrics.put("ip-address",
-                controlServiceCoordinator.getControlServiceProperties().getIpSetting()==ControlServiceProperties.IpSetting.PUBLIC_IP
-                        ? NetUtil.getPublicIpAddress()
-                        : NetUtil.getDefaultIpAddress());
+        metrics.put("ip-address", controlServiceCoordinator.getServerIpAddress());
         metrics.put("public-ip-address", NetUtil.getPublicIpAddress());
         metrics.put("default-ip-address", NetUtil.getDefaultIpAddress());
         metrics.put("reference", controlServiceCoordinator.getReference());

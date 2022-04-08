@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static eu.melodic.event.baguette.client.plugin.recovery.SelfHealingPlugin.SELF_HEALING_RECOVERY_COMPLETED;
+import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED;
 
 /**
  * Client-side, VM-node Self-Healing
@@ -61,7 +61,7 @@ public class VmNodeRecoveryTask implements RecoveryTask {
     }
 
     public void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands) throws Exception {
-        log.debug("VmNodeRecoveryTask: runNodeRecovery(): node-info={}", nodeInfo);
+        log.debug("VmNodeRecoveryTask: runNodeRecovery(): BEGIN: recovery-command: {}", recoveryCommands);
 
         // Connect to Node (VM)
         Sshc sshc = connectToNode();
@@ -102,7 +102,7 @@ public class VmNodeRecoveryTask implements RecoveryTask {
     }
 
     private BaguetteClientProperties createBaguetteClientProperties() {
-        log.debug("VmNodeRecoveryTask: createBaguetteClientProperties(): node-info={}", nodeInfo);
+        log.debug("VmNodeRecoveryTask: createBaguetteClientProperties(): BEGIN:");
 
         // Extract connection info and credentials
         String os = str(nodeInfo.get("operatingSystem"));

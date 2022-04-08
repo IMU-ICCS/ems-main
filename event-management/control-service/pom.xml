@@ -40,15 +40,6 @@
     </properties>
 
     <dependencies>
-        <!-- Needed to stop old JDK 1.8 compiler complains -->
-        <!--XXX: Probably remove in the future -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!-- Melodic dependencies -->
         <dependency>
             <groupId>eu.melodic</groupId>
@@ -127,6 +118,7 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <!-- Spring Boot Actuator  -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -138,11 +130,12 @@
             <version>${micrometer.registry.prometheus.version}</version>
         </dependency>
         <!-- Spring Boot Admin client  -->
-        <dependency>
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
+        <!--<dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- Jasypt Spring Boot starter  -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
@@ -171,6 +164,7 @@
         </dependency>
 
         <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
         <dependency>
             <groupId>io.hawt</groupId>
             <artifactId>hawtio-springboot</artifactId>
@@ -186,6 +180,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>*.txt</include>
+                    <include>META-INF/spring.factories</include>
                 </includes>
             </resource>
         </resources>

@@ -24,7 +24,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class NodeRegistryEntry {
     public enum STATE { PREREGISTERED, IGNORE_NODE, INSTALLING, NOT_INSTALLED, INSTALLED, INSTALL_ERROR,
-        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR, DISCONNECTED
+        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR, DISCONNECTED, NODE_FAILED
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
@@ -111,6 +111,13 @@ public class NodeRegistryEntry {
         registration.clear();
         registration.putAll(processMap("", nodeInfo));
         setState(STATE.REGISTERED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeFailed(Map<String,Object> failInfo) {
+        if (failInfo!=null)
+            registration.putAll(processMap("", failInfo));
+        setState(STATE.NODE_FAILED);
         return this;
     }
 

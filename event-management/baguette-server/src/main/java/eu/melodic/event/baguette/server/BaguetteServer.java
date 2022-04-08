@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server;
 
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.*;
 import lombok.SneakyThrows;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class BaguetteServer implements InitializingBean {
+public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<String, Object, Object> {
     @Autowired
     private BaguetteServerProperties config;
     @Autowired
@@ -148,6 +149,8 @@ public class BaguetteServer implements InitializingBean {
     // Server control methods
     public synchronized void startServer(ServerCoordinator coordinator) throws IOException {
         if (server == null) {
+            eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
+
             log.info("BaguetteServer.startServer(): Starting SSH server instance...");
             nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
@@ -162,6 +165,8 @@ public class BaguetteServer implements InitializingBean {
 
     public synchronized void stopServer() throws IOException {
         if (server != null) {
+            eventBus.unsubscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
+
             log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server...");
             server.stop();
             this.server = null;
@@ -179,6 +184,29 @@ public class BaguetteServer implements InitializingBean {
 
     public synchronized boolean isServerRunning() {
         return server != null;
+    }
+
+    @Override
+    public void onMessage(String topic, Object message, Object sender) {
+        log.trace ("BaguetteServer.onMessage: BEGIN: topic={}, message={}, sender={}", topic, message, sender);
+
+        String nodeAddress = (message!=null) ? message.toString() : null;
+        log.trace("BaguetteServer.onMessage: nodeAddress={}", nodeAddress);
+
+        if (RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP.equals(topic)) {
+            if (StringUtils.isNotBlank(nodeAddress)) {
+                NodeRegistryEntry node = nodeRegistry.getNodeByAddress(nodeAddress);
+                if (node!=null) {
+                    node.nodeFailed(null);
+                    log.info("BaguetteServer.onMessage: Marked Node as Failed: {}", nodeAddress);
+                } else {
+                    log.warn("BaguetteServer.onMessage: Node with Address not found: {}", nodeAddress);
+                    log.debug("BaguetteServer.onMessage: Node addresses: {}", nodeRegistry.getNodeAddresses());
+                }
+            }
+        } else {
+            log.warn("BaguetteServer.onMessage: Event from unexpected topic received. Ignoring it: {}", topic);
+        }
     }
 
     // Topology configuration methods
