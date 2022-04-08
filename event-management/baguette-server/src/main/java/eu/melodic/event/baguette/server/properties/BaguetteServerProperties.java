@@ -11,10 +11,8 @@ package eu.melodic.event.baguette.server.properties;
 
 import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.util.CredentialsMap;
-import eu.melodic.event.util.NetUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -71,29 +69,8 @@ public class BaguetteServerProperties {
     @Min(-1)
     private int NumberOfSegments;
 
-    //@Value("#{ '${baguette.server.address}'!='' ? '${baguette.server.address}' : T(eu.melodic.event.util.NetUtil).getPublicIpAddress() }")
     @Value("${baguette.server.address:}")
     private String serverAddress;
-
-    public String getServerAddress() {
-        String oldVal = serverAddress;
-        if (StringUtils.isEmpty(serverAddress) || "%{PUBLIC_IP}%".equals(serverAddress.trim())) {
-            serverAddress = NetUtil.getPublicIpAddress();
-            log.info("BaguetteServerProperties: Set serverAddress to PUBLIC: {} -> {}", oldVal, serverAddress);
-        } else if ("%{DEFAULT_IP}%".equals(serverAddress.trim())) {
-            serverAddress = eu.melodic.event.util.NetUtil.getDefaultIpAddress();
-            log.info("BaguetteServerProperties: Set serverAddress to DEFAULT: {} -> {}", oldVal, serverAddress);
-        }
-        return serverAddress;
-    }
-
-    public String getServerHostname() {
-        return NetUtil.getHostname();
-    }
-
-    public String getCanonicalHostName() {
-        return NetUtil.getCanonicalHostName();
-    }
 
     @Value("${baguette.server.port:2222}")
     @Min(value = 1, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
