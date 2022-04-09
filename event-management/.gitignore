@@ -6,3 +6,4 @@ public_resources/**
 tcnative*
 ems.log
 server.pem
+.dev-*

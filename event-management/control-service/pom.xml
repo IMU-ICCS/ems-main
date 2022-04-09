@@ -533,7 +533,12 @@
         </profile>
 
         <profile>
-            <id>dev-docker-image-build</id>
+            <id>dev-local-docker-image-build</id>
+            <activation>
+                <file>
+                    <exists>.dev-local-docker-image-build</exists>
+                </file>
+            </activation>
             <build>
                 <plugins>
                     <!-- Turn off com.spotify:docker-maven-plugin (same as 'without-docker' profile -->
