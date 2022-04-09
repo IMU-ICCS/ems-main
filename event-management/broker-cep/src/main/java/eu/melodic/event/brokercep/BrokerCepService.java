@@ -42,9 +42,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
-@Service
 @Slf4j
+@Service
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class BrokerCepService {
     private BrokerCepProperties properties;
     private BrokerConfig brokerConfig;

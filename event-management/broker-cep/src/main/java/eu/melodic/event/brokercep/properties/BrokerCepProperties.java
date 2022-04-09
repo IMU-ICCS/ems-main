@@ -35,7 +35,6 @@ public class BrokerCepProperties {
 
     // Broker connector URLs
     private List<String> brokerUrl = Collections.singletonList("ssl://0.0.0.0:61616");
-
     public String getBrokerUrl() { return brokerUrl.get(0); }
     public List<String> getBrokerUrlList() { return brokerUrl; }
 
@@ -87,6 +86,11 @@ public class BrokerCepProperties {
     private int memoryJvmHeapPercentage;
     @Value("${brokercep.usage.memory.size:-1}")
     private long memorySize;
+
+    @Value("${brokercep.max-event-forward-retries:-1}")
+    private int maxEventForwardRetries;
+    @Value("${brokercep.max-event-forward-duration:-1}")
+    private long maxEventForwardDuration;
 
     @Data
     public static class MessageInterceptorSpec {
