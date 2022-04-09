@@ -134,7 +134,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         Map<String, String> nodeMap = entry.getPreregistration();
         BaguetteServer baguette = entry.getBaguetteServer();
 
-        String baseUrl = nodeMap.get("BASE_URL");
+        String baseUrl = StringUtils.removeEnd(nodeMap.get("BASE_URL"), "/");
         String clientId = nodeMap.get("CLIENT_ID");
         String ipSetting = nodeMap.get("IP_SETTING");
         log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
