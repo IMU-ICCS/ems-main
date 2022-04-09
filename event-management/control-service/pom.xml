@@ -536,7 +536,7 @@
             <id>dev-local-docker-image-build</id>
             <activation>
                 <file>
-                    <exists>.dev-local-docker-image-build</exists>
+                    <exists>../.dev-local-docker-image-build</exists>
                 </file>
             </activation>
             <build>
