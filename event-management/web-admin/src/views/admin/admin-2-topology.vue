@@ -223,7 +223,12 @@
                           />
                           <br v-else/>
                       </div>
-                      <div v-if="data.tree_node_type=='vm'" :style="data.nodeStatus==='AGGREGATOR' ? 'border: 4px solid magenta; margin: 0px; padding: 3px;' : 'border: 2px solid green; margin: 0px; padding: 3px;'">
+                      <div v-if="data.tree_node_type=='vm'" :style="
+                                    data.nodeStatus==='AGGREGATOR'
+                                        ? 'border: 4px solid magenta; margin: 0px; padding: 3px;'
+                                        : data.nodeStatus==='CANDIDATE'
+                                            ? 'border: 3px solid cyan; margin: 0px; padding: 3px;'
+                                            : 'border: 2px solid green; margin: 0px; padding: 3px;'">
                           <div class="tree-node-head" style="background-color: transparent;"><i class="fas fa-server"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
                           <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
                           <br/>
@@ -298,8 +303,8 @@
                         <i class="fas fa-map-marker-alt" style="color: red;" />&nbsp;<span class="align-text-top small">EMS Server</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: magenta;"/>&nbsp;<span class="align-text-top small">Aggregator</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: cyan;"/>&nbsp;<span class="align-text-top small">Candidate</span>&nbsp;&nbsp;
-                        <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing or Non-clustered</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: black;"/>&nbsp;<span class="align-text-top small">Ignored</span>&nbsp;&nbsp;
                         <div style="right:0; position:absolute; margin-right: 15px;">
                             <i class="fas fa-trash" role="button" title="Clear geo-locations cache" @click="clearGeolocationCache()"></i>
