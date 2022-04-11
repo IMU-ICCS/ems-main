@@ -303,7 +303,7 @@
                         <i class="fas fa-map-marker-alt" style="color: red;" />&nbsp;<span class="align-text-top small">EMS Server</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: magenta;"/>&nbsp;<span class="align-text-top small">Aggregator</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: cyan;"/>&nbsp;<span class="align-text-top small">Candidate</span>&nbsp;&nbsp;
-                        <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate / Resource-Limited</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing or Non-clustered</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: black;"/>&nbsp;<span class="align-text-top small">Ignored</span>&nbsp;&nbsp;
                         <div style="right:0; position:absolute; margin-right: 15px;">
@@ -641,6 +641,7 @@ export default {
         // -------------------------------------------------------------------------------------------------------------
 
         updateClientMarkers(clients) {
+            // Update markers of EMS server and clients
             let markers = [ ];
             for (let c of clients) {
                 if (!c.lat || !c.lon) {
@@ -663,7 +664,7 @@ export default {
             //console.log('NEW MARKERS: ', markers);
             this.clientMarkers = markers;
 
-            // Update connections between EMS and clients
+            // Update SSH connections between EMS server and clients
             let controlConns = this.clientMarkers.filter(cc => cc.id!=='ems' && cc.type!=='IGNORED' && cc.type!=='NOT_CANDIDATE')
                     .map(function(cc) {
                         return {
@@ -672,10 +673,11 @@ export default {
                             line: { color: '#696969', weight: 1, dashArray: '8 6' }
                         };
                     });
+            // Update broker connections between nodes (EMS server, nodes with client, and nodes without client)
             let eventConns = this.clientMarkers.filter(cc => cc.id!=='ems')
                     .map(function(cc) {
                         return {
-                            startMarker: cc.nextLevel,
+                            startMarker: cc.nextLevel ?? 'ems',
                             endMarker: cc.id,
                             line: { color: cc.nextLevel=='ems' ? 'magenta' : 'blue', weight: 0.5 }
                         };
