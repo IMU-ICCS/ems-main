@@ -52,7 +52,7 @@ We also distinguish between ***Monitoring Topologies***:
 ## A) <u>Support for Resource-Limited nodes</u>
 > Feature Quick Notes:
 > - EMS server will NOT install EMS client and JRE8 in RL nodes.
-> - EMS server will install Netda in RL nodes.
+> - EMS server will install Netdata in RL nodes.
 > - EMS server or an Aggregator will periodically query Netdata agents of RL nodes for metrics.
 > - Normal nodes will periodically query their Local Netdata agent for metrics.
 

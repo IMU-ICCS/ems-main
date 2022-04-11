@@ -51,11 +51,11 @@ public class BaguetteServerProperties {
     }*/
 
     //@Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
-    @Value("${baguette.server.coordinator.class}")
+    @Value("${baguette.server.coordinator.class:}")
     private Class<ServerCoordinator> coordinatorClass;
     private Map<String,String> coordinatorParameters = new HashMap<>();
 
-    @Value("${baguette.server.coordinator.id}")
+    @Value("${baguette.server.coordinator.id:}")
     private List<String> coordinatorId;
     private Map<String, CoordinatorConfig> coordinatorConfig = new HashMap<>();
 

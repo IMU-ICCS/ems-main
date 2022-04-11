@@ -299,7 +299,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         }
 
         if (coordinatorClass == null)
-            throw new IllegalArgumentException("Either coordinator class or configuration id must be specified");
+            throw new IllegalArgumentException("Either coordinator class or coordinator id must be specified");
 
         // Initialize coordinator class and parameters for backward compatibility
         ServerCoordinator coordinator = createServerCoordinator(null, coordinatorClass, coordinatorParams, _TC, upperwareGrouping);
