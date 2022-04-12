@@ -367,7 +367,8 @@ export default {
         const winLocation = window.location.hostname;
         return {
             someVariableUnderYourControl: 0,
-            websshProxyUrl: `http://${winLocation}:2121`,
+            /*websshProxyUrl: `http://${winLocation}:2121`,*/
+            websshProxyUrl: `https://${winLocation}:4433`,
             treeData : {
             },
             clients: [
