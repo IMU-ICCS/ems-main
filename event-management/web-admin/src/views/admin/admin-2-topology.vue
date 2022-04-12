@@ -426,6 +426,9 @@ export default {
                         let h = $('#ssh-console-dialog').css('height');
                         $('#ssh-console-dialog').html(`<object id="ssh-console-object" type="text/html" data="${url}" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: ${h}px !important;" />`);
                         $('#ssh-console-dialog').dialog('option', "title", `SSH console: ${address}    [ref=${ref}]`);
+
+                        // Move dialog on top of other page widgets (i.e. LeafletJS map)
+                        $('#ssh-console-object').parent().parent().css('z-index', 1000);
                 },
                 close: function() {
                         $('#ssh-console-dialog').html('&nbsp;');
