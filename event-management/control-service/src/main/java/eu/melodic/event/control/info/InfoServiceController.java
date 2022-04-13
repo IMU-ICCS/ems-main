@@ -183,12 +183,9 @@ public class InfoServiceController {
     public Map<String,Object> createServerMetricsResult(String sid, long sequence) {
         log.trace("createServerMetricsResult: BEGIN: sid={}, seq={}", sid, sequence);
         Map<String, Object> metrics = new LinkedHashMap<>(emsInfoService.getServerMetricValues());
-        metrics.put("WEBSSH-BASE-URL", System.getenv("WEBSSH_BASE_URL"));
-        System.getenv().forEach((property,value) -> {
-            if (property.startsWith("WEB_ADMIN_")) {
-                metrics.put(property.substring("WEB_ADMIN_".length()), value);
-            }
-        });
+
+        addMetricsFromEnvVars(metrics);
+
         metrics.put(".stream-id", sid);
         metrics.put(".sequence", sequence);
         log.trace("createMetricsResult: {}", metrics);
@@ -228,5 +225,53 @@ public class InfoServiceController {
         clientMetrics.put(".sequence", sequence);
         log.trace("createClientMetricsResult: END: sid={}, seq={} ==> {}", sid, sequence, clientMetrics);
         return clientMetrics;
+    }
+
+    protected void addMetricsFromEnvVars(Map<String, Object> metrics) {
+        // Process configured env. var. prefixes
+        for (String prefix : properties.getEnvVarPrefixes()) {
+            prefix = prefix.trim();
+            if (StringUtils.isNotBlank(prefix)) {
+                // Check for processing switches (at the end of the prefix)
+                boolean trimPrefix = false;
+                boolean underscoreToDash = false;
+                boolean uppercase = false;
+                boolean lowercase = false;
+                int len = prefix.length();
+                while (len>0) {
+                    char ch = prefix.charAt(len-1);
+                    if (ch=='/') { trimPrefix = true; len--; }
+                    else if (ch=='-') { underscoreToDash = true; len--; }
+                    else if (ch=='^') { uppercase = true; len--; }
+                    else if (ch=='~') { lowercase = true; len--; }
+                    else break;
+                }
+
+                // Check env. vars against the prefix (and its switches)
+                if (len>0) {
+                    if (prefix.length()!=len) prefix = prefix.substring(0, len);
+
+                    final String _prefix = prefix;
+                    final boolean _trimPrefix = trimPrefix;
+                    final boolean _underscoreToDash = underscoreToDash;
+                    final boolean _uppercase = uppercase;
+                    final boolean _lowercase = lowercase;
+                    System.getenv().forEach((varName,varValue) -> {
+                        if (StringUtils.startsWithIgnoreCase(varName, _prefix)) {
+                            // Process switches
+                            String varNameOriginal = varName;
+                            if (_trimPrefix) varName = varName.substring(_prefix.length());
+                            if (_underscoreToDash) varName = varName.replace("_", "-");
+                            if (_uppercase) varName = varName.toUpperCase();
+                            if (_lowercase) varName = varName.toLowerCase();
+
+                            // Add env. var. in the metrics map
+                            log.debug("addMetricsFromEnvVars: Adding env. var. {} in metrics map as: {} = {}", varNameOriginal, varName, varValue);
+                            metrics.put(varName, varValue);
+                        }
+                    });
+                }
+            }
+        }
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Slf4j
 @Data
@@ -99,6 +100,9 @@ public class ControlServiceProperties {
     private int metricsStreamUpdateInterval;    // in seconds
     @Value("${info.metrics.stream.event.name:ems-metrics-event}") @NotBlank
     private String metricsStreamEventName;
+    @Value("${info.metrics.include.env-vars-with-prefixes: WEBSSH_SERVICE_-^, WEB_ADMIN_!^}")
+    private List<String> envVarPrefixes;    // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
+                                            // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
 
     // control.ssl.** settings
     private KeystoreAndCertificateProperties ssl;
