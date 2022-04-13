@@ -332,9 +332,7 @@
     </div>
 
     <!-- SSH console modal -->
-    <div id="ssh-console-dialog" title="SSH console" style="overflow: hidden; width: 90vw !important; height: 90% !important; padding: 0px; display: flex; align-items: stretch;">
-        <!--<object id="ssh-console-object" type="text/html" data="" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: 100% !important;" />-->
-    </div>
+    <div id="ssh-console-dialog" title="SSH console" style="overflow: hidden; width: 90vw !important; height: 90% !important; padding: 0px; display: flex; align-items: stretch;"></div>
 </template>
 
 <script>
@@ -364,11 +362,10 @@ export default {
         modelValue: Object,
     },
     data() {
-        const winLocation = window.location.hostname;
+        //const winLocation = window.location.hostname;
         return {
             someVariableUnderYourControl: 0,
-            /*websshProxyUrl: `http://${winLocation}:2121`,*/
-            websshProxyUrl: `https://${winLocation}:4433`,
+            websshServiceUrl: '',
             treeData : {
             },
             clients: [
@@ -399,45 +396,62 @@ export default {
     mounted() {
         this.initData();
 
+        let _getWebsshServiceUrl = this.getWebsshServiceUrl;
+
         $('#ssh-console-dialog').dialog({
-                autoOpen : false,
-                modal : true,
-                show : "blind",
-                hide : "blind",
-                minWidth: 800,
-                minHeight: 600,
-                buttons: {
-                        Close: function() {
-                                $('#ssh-console-dialog').dialog( "close" );
-                        }
+            autoOpen : false,
+            modal : true,
+            show : "blind",
+            hide : "blind",
+            minWidth: 800,
+            minHeight: 600,
+            buttons: [
+                {
+                    id: 'ssh-console-open-in-new-tab',
+                    text: 'Open in a new tab',
+                    icon: 'ui-icon-extlink',
+                    click: function() {
+                        let url = _getWebsshServiceUrl(this);
+                        console.log('SSH-console in a new tab: url: ', url);
+
+                        if (url==null) return;
+                        window.open(url, '_blank').focus();
+                    }
                 },
-                open: function() {
-                        let websshProxy = $(this).attr('data-webssh-proxy');
-                        let ref = $(this).attr('data-ref');
-                        let address = $(this).attr('data-address');
-                        console.log('SSH-console: open: websshProxy=', websshProxy, ', ref=', ref);
-                        if (websshProxy.trim()==='' || ref.trim()==='') {
-                                alert('ERROR: No webssh proxy or no client reference found');
-                                return;
-                        }
-
-                        let url = `${websshProxy}?hostname=x&username=x&cref=${ref}`;
-                        console.log('SSH-console: url: ', url);
-
-                        let h = $('#ssh-console-dialog').css('height');
-                        $('#ssh-console-dialog').html(`
-                            <object id="ssh-console-object" type="text/html" data="${url}" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: ${h}px !important;" />
-                            <a href="${url}" target="_blank">Open in a new tab</a>
-                        `);
-                        $('#ssh-console-dialog').dialog('option', "title", `SSH console: ${address}    [ref=${ref}]`);
-
-                        // Move dialog on top of other page widgets (i.e. LeafletJS map)
-                        $('#ssh-console-object').parent().parent().css('z-index', 1000);
-                },
-                close: function() {
-                        $('#ssh-console-dialog').html('&nbsp;');
-                        $('#ssh-console-dialog').dialog('option', "title", "SSH console");
+                {
+                    id: 'ssh-console-clone',
+                    text: 'Close',
+                    icon: 'ui-icon-close',
+                    click: function() {
+                        $('#ssh-console-dialog').dialog( "close" );
+                    }
                 }
+            ],
+            open: function() {
+                let url = _getWebsshServiceUrl(this);
+                console.log('SSH-console dialog: url: ', url);
+                if (url==null) return;
+
+                // Set SSH console content (i.e. the webssh iframe)
+                let h = $('#ssh-console-dialog').css('height');
+                $('#ssh-console-dialog').html(`
+                    <iframe id="ssh-console-object" title="SSH console" src="${url}" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: ${h}px !important;"></iframe>
+                `);
+
+                // Set SSH console title
+                let ref = $(this).attr('data-ref');
+                let address = $(this).attr('data-address');
+                $('#ssh-console-dialog').dialog('option', "title", `SSH console: ${address}    [ref=${ref}]`);
+
+                // Move dialog on top of other page widgets (i.e. LeafletJS map)
+                $('#ssh-console-object').parent().parent().css('z-index', 1000);
+                $(".ui-dialog-buttonpane").append('<small id="ssh-console-bottom-text" style="color: grey;">If the SSH console does not appear correctly, try the <b>Open in a new tab</b> button.</small>');
+            },
+            close: function() {
+                $('#ssh-console-dialog').html('&nbsp;');
+                $('#ssh-console-dialog').dialog('option', "title", "SSH console");
+                $("#ssh-console-bottom-text").replaceWith('');
+            }
         });
     },
 
@@ -468,15 +482,28 @@ export default {
             }
         },
 
+        getWebsshServiceUrl(elem) {
+            let websshServiceUrl = $(elem).attr('data-webssh-service-url');
+            let ref = $(elem).attr('data-ref');
+            //console.log('getWebsshServiceUrl: websshServiceUrl=', websshServiceUrl, ', ref=', ref);
+            let url = null;
+            if (!websshServiceUrl || websshServiceUrl.trim()==='' || !ref || ref.trim()==='') {
+                alert('ERROR: No webssh URL or no client reference found');
+            } else {
+                url = websshServiceUrl.replace('{0}', ref);
+            }
+            //console.log('getWebsshServiceUrl: return url: ', url);
+            return url;
+        },
         openSshConsole(ref, address) {
-            $('#ssh-console-dialog').attr("data-webssh-proxy", this.websshProxyUrl);
+            $('#ssh-console-dialog').attr("data-webssh-service-url", this.websshServiceUrl);
             $('#ssh-console-dialog').attr("data-ref", ref);
             $('#ssh-console-dialog').attr("data-address", address);
             $('#ssh-console-dialog').dialog("open");
         },
         openSshConsoleCallback(ref, address) {
-            //console.log('openSshConsoleCallback: ', this.websshProxyUrl, ref, address);
-            return (this.websshProxyUrl && this.websshProxyUrl.trim()!==''
+            //console.log('openSshConsoleCallback: ', this.websshServiceUrl, ref, address);
+            return (this.websshServiceUrl && this.websshServiceUrl.trim()!==''
                     && ref && address && ref.trim!=='' && address.trim()!=='')
                             ? ()=>this.openSshConsole(ref, address)
                             : null;
@@ -521,8 +548,8 @@ export default {
         initData() {
             if (!this.modelValue) return;
 
-            if (this.modelValue['WEBSSH-BASE-URL'])
-                this.websshProxyUrl = this.modelValue['WEBSSH-BASE-URL'];
+            if (this.modelValue['WEBSSH-SERVICE-URL'])
+                this.websshServiceUrl = this.modelValue['WEBSSH-SERVICE-URL'];
 
             if (!this.modelValue['baguette-server'] || !this.modelValue['baguette-server']['active-clients-map'])
                 return;
