@@ -264,12 +264,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (servletRequest instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest) servletRequest;
 
-                String header = req.getHeader(SecurityConstants.HEADER_STRING);
-                log.debug("jwtAuthorizationFilter: Authorization Header: {}", header);
-                if (header!=null && header.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+                // Get JWT token from Authorization header
+                String jwtValue = req.getHeader(SecurityConstants.HEADER_STRING);
+                log.debug("jwtAuthorizationFilter: Authorization Header: {}", jwtValue);
+
+                // ...else get JWT token from 'jwt' query parameter
+                if (StringUtils.isBlank(jwtValue)) {
+                    log.debug("jwtAuthorizationFilter: Authorization Header is missing. Checking for 'jwt' parameter");
+                    jwtValue = req.getParameter("jwt");
+                    log.debug("jwtAuthorizationFilter: 'jwt' parameter value: {}", jwtValue);
+                    if (StringUtils.isNotBlank(jwtValue))
+                        jwtValue = SecurityConstants.TOKEN_PREFIX + jwtValue;
+                }
+
+                // Check JWT token validity
+                if (jwtValue!=null && jwtValue.startsWith(SecurityConstants.TOKEN_PREFIX)) {
                     try {
                         log.debug("jwtAuthorizationFilter: Parsing Authorization header...");
-                        Claims claims = jwtService(melodicSecurityProperties).parse(header);
+                        Claims claims = jwtService(melodicSecurityProperties).parse(jwtValue);
                         String user = claims.getSubject();
                         String audience  = claims.getAudience();
                         log.debug("jwtAuthorizationFilter: Authorization header -->     user: {}", user);
@@ -298,7 +310,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 log.warn("jwtAuthorizationFilter: Not an HttpServletRequest");
             }
 
-            // continue down the chain
+            // continue filter chain processing
             filterChain.doFilter(servletRequest, servletResponse);
         };
     }
