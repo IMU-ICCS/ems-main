@@ -22,7 +22,6 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -84,16 +83,5 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 executor.getCorePoolSize(), executor.getMaximumPoolSize(), executor.getPoolSize(),
                 executor.getActiveCount(), executor.getKeepAliveTime(TimeUnit.SECONDS));
         return new ConcurrentTaskExecutor(executor);
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "OPTIONS")
-                //.allowedHeaders("DNT", "User-Agent", "X-Requested-With", "If-Modified-Since", "Cache-Control", "Content-Type", "Range")
-                //.exposedHeaders("Content-Length", "Content-Range")
-                .allowCredentials(false)
-                .maxAge(3600);
     }
 }
