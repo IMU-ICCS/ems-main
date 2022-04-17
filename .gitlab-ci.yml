@@ -469,6 +469,7 @@ deploy:ems-server:
     - rc3.0
     - rc3.1
     - morphemic-rc2.5
+    - ems/morphemic-rc2.5
     - proactive-dev
   image: $DOCKER_DIND_IMAGE
   dependencies:
