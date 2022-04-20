@@ -21,6 +21,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
@@ -61,6 +62,10 @@ public class ControlServiceController {
     private ControlServiceProperties properties;
     @Autowired
     private ControlServiceCoordinator coordinator;
+    @Autowired
+    private WebSecurityConfig webSecurityConfig;
+    @Autowired
+    private PasswordUtil passwordUtil;
 
     @Autowired
     private RequestMappingHandlerMapping mvcHandlerMapping;
@@ -545,6 +550,26 @@ public class ControlServiceController {
     public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
         log.info("ControlServiceController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
         return coordinator.clusterCommandSend(clusterId, command);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // EMS One-Time-Password (OTP) endpoints
+    // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/ems/otp/new", method = {GET, POST})
+    public String newOtp() {
+        log.info("ControlServiceController.newOtp(): BEGIN");
+        String newOtp = webSecurityConfig.otpCreate();
+        log.debug("ControlServiceController.newOtp(): New OTP: {}", passwordUtil.encodePassword(newOtp));
+        return newOtp;
+    }
+
+    @RequestMapping(value = "/ems/otp/remove", method = {GET, POST})
+    public String removeOtp(@PathVariable String otp) {
+        log.info("ControlServiceController.removeOtp(): BEGIN");
+        webSecurityConfig.otpRemove(otp);
+        log.debug("ControlServiceController.removeOtp(): Removed OTP: {}", passwordUtil.encodePassword(otp));
+        return "OK";
     }
 
     // ------------------------------------------------------------------------------------------------------------

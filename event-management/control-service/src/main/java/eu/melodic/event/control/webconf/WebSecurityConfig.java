@@ -18,6 +18,7 @@ import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -45,6 +46,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Order(1)
@@ -58,6 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public final static String ROLE_USER_FORM = "ROLE_USER_FORM";
     public static final String ROLE_JWT_TOKEN = "ROLE_JWT_TOKEN";
     public static final String ROLE_API_KEY = "ROLE_API_KEY";
+    public static final String ROLE_OTP = "ROLE_OTP";
 
     private final MelodicSecurityProperties melodicSecurityProperties;
 
@@ -67,6 +71,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // JWT Token authentication fields
     @Value("${web.jwt-token-authentication.enabled:true}")
     private boolean jwtTokenAuthEnabled;
+    @Value("${web.jwt-token.parameter:#{null}}")
+    private String jwtTokenRequestParam;
     @Value("${web.jwt-print-sample-token:false}")
     private boolean printSampleJwt;
 
@@ -79,6 +85,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private String apiKeyRequestParam;
     @Value("${web.api-key.value:#{null}}")
     private String apiKeyValue;
+
+    // OTP authentication fields
+    @Value("${web.otp-authentication.enabled:true}")
+    private boolean otpAuthEnabled;
+    @Value("${web.otp.duration:3600000}")
+    private long otpDuration;
+    @Value("${web.otp.header:EMS-OTP}")
+    private String otpRequestHeader;
+    @Value("${web.otp.parameter:ems-otp}")
+    private String otpRequestParam;
+
+    private Map<String,Long> otpCache = new HashMap<>();
 
     @Autowired
     private PasswordUtil passwordUtil;
@@ -127,10 +145,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
                 divider, jwtService(melodicSecurityProperties).create("USER"), divider);
 
-        log.debug("afterPropertiesSet:     securityEnabled: {}", securityEnabled);
-        log.debug("afterPropertiesSet: jwtTokenAuthEnabled: {}", jwtTokenAuthEnabled);
-        log.debug("afterPropertiesSet: apiKeyRequestHeader: {}", apiKeyRequestHeader);
-        log.debug("afterPropertiesSet:  apiKeyRequestParam: {}", apiKeyRequestParam);
+        log.debug("afterPropertiesSet:      securityEnabled: {}", securityEnabled);
+        log.debug("afterPropertiesSet:  jwtTokenAuthEnabled: {}", jwtTokenAuthEnabled);
+        log.debug("afterPropertiesSet: jwtTokenRequestParam: {}", jwtTokenRequestParam);
+        log.debug("afterPropertiesSet:    apiKeyAuthEnabled: {}", apiKeyAuthEnabled);
+        log.debug("afterPropertiesSet:  apiKeyRequestHeader: {}", apiKeyRequestHeader);
+        log.debug("afterPropertiesSet:   apiKeyRequestParam: {}", apiKeyRequestParam);
+        log.debug("afterPropertiesSet:       otpAuthEnabled: {}", otpAuthEnabled);
+        log.debug("afterPropertiesSet:     otpRequestHeader: {}", otpRequestHeader);
+        log.debug("afterPropertiesSet:      otpRequestParam: {}", otpRequestParam);
+        log.debug("afterPropertiesSet:  userFormAuthEnabled: {}", userFormAuthEnabled);
         log.debug("afterPropertiesSet:    permittedUrls: {}", Arrays.asList(permittedUrls));
         log.debug("afterPropertiesSet:        loginPage: {}", loginPage);
         log.debug("afterPropertiesSet:         loginUrl: {}", loginUrl);
@@ -168,9 +192,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         checkSettings();
 
         // Check if authentication is disabled
-        log.debug("WebSecurityConfig: security-enabled={}, user-form-auth-enabled={}, jwt-token-auth-enabled={}, api-key-auth-enabled={}",
-                securityEnabled, userFormAuthEnabled, jwtTokenAuthEnabled, apiKeyAuthEnabled);
-        if (!securityEnabled || !userFormAuthEnabled && !jwtTokenAuthEnabled && !apiKeyAuthEnabled) {
+        log.debug("WebSecurityConfig: security-enabled={}, user-form-auth-enabled={}, jwt-token-auth-enabled={}, api-key-auth-enabled={}, otp-auth-enabled={}",
+                securityEnabled, userFormAuthEnabled, jwtTokenAuthEnabled, apiKeyAuthEnabled, otpAuthEnabled);
+        if (!securityEnabled || !userFormAuthEnabled && !jwtTokenAuthEnabled && !apiKeyAuthEnabled && !otpAuthEnabled) {
             log.warn("WebSecurityConfig: Authentication is disabled");
             // Authorize all requests
             httpSecurity
@@ -229,6 +253,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .anyRequest().authenticated();
             log.debug("WebSecurityConfig: JWT-Token Authentication filter added");
         }
+        if (otpAuthEnabled) {
+            log.info("WebSecurityConfig: OTP Authentication is enabled");
+            httpSecurity
+                    .addFilterAfter(otpAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .authorizeRequests()
+                    .anyRequest().authenticated();
+            log.debug("WebSecurityConfig: OTP Authentication filter added");
+        }
     }
 
     private void checkSettings() {
@@ -251,7 +283,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (StringUtils.isBlank(apiKeyValue))
                 log.warn("WebSecurityConfig: API Key authentication is enabled but -no- API Key has been provided. It will not be possible to authenticate using API Key");
             else
-                log.warn("WebSecurityConfig: API Key authentication is enabled but -no- API Key request header or parameter have been set. It will not be possible to authenticate using API Key");
+                log.warn("WebSecurityConfig: API Key authentication is enabled but -no- API Key request header or parameter has been set. It will not be possible to authenticate using API Key");
+        }
+
+        // Check OTP authentication settings
+        boolean otpAuthEnabled = this.otpAuthEnabled
+                && (StringUtils.isNotBlank(otpRequestHeader) || StringUtils.isNotBlank(otpRequestParam));
+        if (this.otpAuthEnabled && !otpAuthEnabled) {
+            log.warn("WebSecurityConfig: OTP authentication is enabled but -no- OTP request header or parameter has been set. It will not be possible to authenticate using OTP");
         }
     }
 
@@ -266,15 +305,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // Get JWT token from Authorization header
                 String jwtValue = req.getHeader(SecurityConstants.HEADER_STRING);
-                log.debug("jwtAuthorizationFilter: Authorization Header: {}", jwtValue);
+                log.debug("jwtAuthorizationFilter: Authorization Header: {}", passwordUtil.encodePassword(jwtValue));
 
                 // ...else get JWT token from 'jwt' query parameter
                 if (StringUtils.isBlank(jwtValue)) {
-                    log.debug("jwtAuthorizationFilter: Authorization Header is missing. Checking for 'jwt' parameter");
-                    jwtValue = req.getParameter("jwt");
-                    log.debug("jwtAuthorizationFilter: 'jwt' parameter value: {}", jwtValue);
-                    if (StringUtils.isNotBlank(jwtValue))
-                        jwtValue = SecurityConstants.TOKEN_PREFIX + jwtValue;
+                    if (StringUtils.isNotBlank(jwtTokenRequestParam)) {
+                        log.debug("jwtAuthorizationFilter: Authorization Header is missing. Checking for '{}' parameter", jwtTokenRequestParam);
+                        jwtValue = req.getParameter(jwtTokenRequestParam);
+                        log.debug("jwtAuthorizationFilter: '{}' parameter value: {}", jwtTokenRequestParam, passwordUtil.encodePassword(jwtValue));
+                        if (StringUtils.isNotBlank(jwtValue))
+                            jwtValue = SecurityConstants.TOKEN_PREFIX + jwtValue;
+                    } else {
+                        log.debug("jwtAuthorizationFilter: JWT token not found in headers and no JWT token parameter has been set");
+                    }
                 }
 
                 // Check JWT token validity
@@ -348,18 +391,99 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                             log.debug("apiKeyAuthenticationFilter: API Key is incorrect");
                         }
                     } else {
-                        log.debug("apiKeyAuthenticationFilter: No API Key found in request header or parameters");
+                        log.debug("apiKeyAuthenticationFilter: No API Key found in request headers or parameters");
                     }
                 } else {
                     throw new IllegalArgumentException("API Key Authentication filter does not support non-HTTP requests and responses. Req-class: "
                             +servletRequest.getClass().getName()+"  Resp-class: "+servletResponse.getClass().getName());
                 }
             } else {
-                log.warn("apiKeyAuthenticationFilter: No API-Key specified. Access is granted");
+                log.warn("apiKeyAuthenticationFilter: No API-Key specified");
             }
 
             // continue down the chain
             filterChain.doFilter(servletRequest, servletResponse);
         };
+    }
+
+    public Filter otpAuthenticationFilter() {
+        return (servletRequest, servletResponse, filterChain) -> {
+            log.trace("OTPAuthenticationFilter: BEGIN: request={}", servletRequest);
+            if (otpAuthEnabled) {
+                if (servletRequest instanceof HttpServletRequest && servletResponse instanceof HttpServletResponse) {
+                    HttpServletRequest request = (HttpServletRequest) servletRequest;
+                    log.trace("OTPAuthenticationFilter: http-request={}", request);
+                    String otp = request.getHeader(otpRequestHeader);
+                    log.debug("OTPAuthenticationFilter: Request Header OTP: {}={}", otpRequestHeader, passwordUtil.encodePassword(otp));
+                    if (StringUtils.isBlank(otp)) {
+                        otp = request.getParameter(otpRequestParam);
+                        log.debug("OTPAuthenticationFilter: Request Parameter OTP: {}={}", otpRequestParam, passwordUtil.encodePassword(otp));
+                    }
+                    if (StringUtils.isNotBlank(otp)) {
+                        log.debug("OTPAuthenticationFilter: OTP provided");
+
+                        if (otpCache.containsKey(otp)) {
+                            long issueTimestamp = otpCache.remove(otp);
+                            boolean expired = (System.currentTimeMillis() - issueTimestamp) > otpDuration;
+
+                            if (!expired) {
+                                log.debug("OTPAuthenticationFilter: OTP found in cache");
+                                try {
+                                    // construct one of Spring's auth tokens
+                                    UsernamePasswordAuthenticationToken authentication =
+                                            new UsernamePasswordAuthenticationToken(otpRequestHeader, otp,
+                                                    Collections.singletonList(new SimpleGrantedAuthority(ROLE_OTP)));
+                                    // store completed authentication in security context
+                                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                                    log.debug("OTPAuthenticationFilter: Security context has been updated");
+                                } catch (Exception e) {
+                                    log.error("OTPAuthenticationFilter: EXCEPTION: ", e);
+                                }
+                            } else {
+                                log.debug("OTPAuthenticationFilter: OTP found in cache but has expired");
+                            }
+                        } else {
+                            log.debug("OTPAuthenticationFilter: OTP not found in cache");
+                        }
+                    } else {
+                        log.debug("OTPAuthenticationFilter: No OTP provided in request headers or parameters");
+                    }
+                } else {
+                    throw new IllegalArgumentException("OTP Authentication filter does not support non-HTTP requests and responses. Req-class: "
+                            +servletRequest.getClass().getName()+"  Resp-class: "+servletResponse.getClass().getName());
+                }
+            } else {
+                log.warn("OTPAuthenticationFilter: OTP is disabled");
+            }
+
+            // continue down the chain
+            filterChain.doFilter(servletRequest, servletResponse);
+        };
+    }
+
+    public String otpCreate() {
+        String newOtp = RandomStringUtils.randomAlphanumeric(32, 64);
+        otpCache.put(newOtp, System.currentTimeMillis());
+        return newOtp;
+    }
+
+    public long otpIssueTimestamp(String otp) {
+        return otpCache.get(otp);
+    }
+
+    public long otpExpirationTimestamp(String otp) {
+        return otpCache.get(otp) + otpDuration;
+    }
+
+    public long otpDuration(String otp) {
+        return otpDuration;
+    }
+
+    public void otpRemove(String otp) {
+        otpCache.remove(otp);
+    }
+
+    public void otpClearCache() {
+        otpCache.clear();
     }
 }
