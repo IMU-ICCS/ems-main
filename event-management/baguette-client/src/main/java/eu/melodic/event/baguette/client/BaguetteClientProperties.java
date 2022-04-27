@@ -42,4 +42,6 @@ public class BaguetteClientProperties {
 
 	private String serverUsername;
 	private String serverPassword;
+
+	private long sendStatisticsDelay = 10000L;
 }

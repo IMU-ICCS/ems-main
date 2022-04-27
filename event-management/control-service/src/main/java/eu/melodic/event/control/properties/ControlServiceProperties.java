@@ -94,7 +94,7 @@ public class ControlServiceProperties {
 
     @Value("${info.metrics.update.interval:1000}") @Min(1)
     private long metricsUpdateInterval;
-    @Value("${info.client.metrics.update.interval:10000}") @Min(1)
+    @Value("${info.client.metrics.update.interval:500}") @Min(1)        // Not really needed since clients PUSH their statistics to server
     private long metricsClientUpdateInterval;
     @Value("${info.metrics.stream.update.interval:10}") @Min(1)
     private int metricsStreamUpdateInterval;    // in seconds

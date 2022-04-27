@@ -28,6 +28,7 @@ import org.apache.sshd.server.session.ServerSession;
 import org.cryptacular.util.CertUtil;
 import org.slf4j.event.Level;
 
+import javax.validation.constraints.NotBlank;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -54,8 +55,12 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         return Collections.unmodifiableSet(activeCmdMap.keySet());
     }
 
-    public static ClientShellCommand getActiveByIpAddress(String address) {
+    public static ClientShellCommand getActiveByIpAddress(@NotBlank String address) {
         return activeCmdMap.get(address);
+    }
+
+    public static ClientShellCommand getActiveById(@NotBlank String id) {
+        return activeCmdList.stream().filter(csc->csc.getId().equals(id)).findFirst().orElse(null);
     }
 
     private InputStream in;
@@ -102,6 +107,9 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private NodeRegistry nodeRegistry;
     @Getter @Setter
     private NodeRegistryEntry nodeRegistryEntry;
+
+    @Getter
+    private Map<String, Object> clientStatistics;
 
     public ClientShellCommand(ServerCoordinator coordinator, boolean allowClientOverrideItsAddress, EventBus<String,Object,Object> eventBus, NodeRegistry registry) {
         synchronized (LOCK) {
@@ -187,6 +195,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line;
+            boolean helloReceived = false;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 log.debug("{}--> {}", id, line);
@@ -195,10 +204,13 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 if (echoOn) out.printf("ECHO %s\n", line);
                 //if (line.equalsIgnoreCase("exit")) break;
 
-                if (line.startsWith("-HELLO FROM CLIENT:")) {
+                if (!helloReceived && line.startsWith("-HELLO FROM CLIENT:")) {
+                    helloReceived = true;
                     getClientInfoFromGreeting(line.substring("-HELLO FROM CLIENT:".length()));
                     coordinator.register(this);
                     eventBus.send("BAGUETTE_SERVER_CLIENT_REGISTERED", this);
+
+                    sendCommand("SEND-STATS START");
                 } else if (line.startsWith("-INPUT:")) {
                     String input = line.substring("-INPUT:".length());
                     String[] part = input.split(":",2 );
@@ -284,13 +296,26 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
                     String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
                     String propertyName = part[0];
-                    String propertyValue = part.length>1 ? part[1] : null;
+                    String propertyValue = part.length > 1 ? part[1] : null;
                     String oldValue = clientProperties.getProperty(propertyName);
                     if (StringUtils.isNotBlank(propertyName)) {
                         log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
                         clientProperties.put(propertyName.trim(), propertyValue);
                     } else {
                         log.warn("{}--> Invalid Client property: input line: ", line);
+                    }
+                } else if (line.startsWith("-STATS:")) {
+                    String statsStr = line.substring("-STATS:".length());
+                    Object statsObj = deserializeFromString(statsStr);
+                    if (statsObj instanceof Map) {
+                        Map<String, Object> statsMap = (Map<String, Object>) statsObj;
+                        statsMap.put("_received_at_server_timestamp", System.currentTimeMillis());
+                        log.debug("{}--> Client STATS received: {}", getId(), statsMap);
+                        this.clientStatistics = statsMap;
+                    } else if (statsObj==null) {
+                        log.debug("{}--> Client STATS object is NULL", getId());
+                    } else {
+                        log.error("{}--> Unsupported Client STATS object: class={}, object={}", getId(), statsObj.getClass().getName(), statsObj);
                     }
                 } else if (line.equalsIgnoreCase("READY")) {
                     coordinator.clientReady(this);

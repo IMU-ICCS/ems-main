@@ -10,6 +10,7 @@
 package eu.melodic.event.control.info;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
@@ -21,7 +22,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.event.Level;
+//import org.slf4j.event.Level;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -227,6 +228,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
     protected void updateClientMetricValues() {
         log.debug("updateClientMetricValues(): BEGIN");
+        // Not really needed check, since clients PUSH their statistics to server
         if (currentClientMetrics!=null) {
             long timestamp = (long) currentClientMetrics.get(".timestamp");
             log.trace("updateClientMetricValues(): stored-timestamp: {}", timestamp);
@@ -246,12 +248,26 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         List<String> clientIds = controlServiceCoordinator.clientList();
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
         for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
-            log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
-            Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS", Level.DEBUG);
+            /*log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
+            Object o = baguetteServer.readFromClient(clientId, "GET-STATS", Level.DEBUG);
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
             if (o instanceof Map) {
                 clientMetrics.put(clientId, o);
                 log.trace("updateClientMetricValues(): client-metrics: id={}, Client metrics ADDED in results map", clientId);
+            }*/
+
+            log.trace("updateClientMetricValues(): Retrieving cached statistics of client: id={}", clientId);
+            ClientShellCommand csc = ClientShellCommand.getActiveById(clientId);
+            log.trace("updateClientMetricValues(): CSC of client: id={}, CSC={}", clientId, csc);
+            if (csc!=null) {
+                if (csc.getClientStatistics()!=null) {
+                    clientMetrics.put(clientId, csc.getClientStatistics());
+                    log.trace("updateClientMetricValues(): client-metrics: id={}, Client metrics ADDED in results map", clientId);
+                } else {
+                    log.debug("updateClientMetricValues(): No client statistics available: client-id={}", clientId);
+                }
+            } else {
+                log.warn("updateClientMetricValues(): CSC NOT FOUND: client-id={}", clientId);
             }
         }
         log.debug("updateClientMetricValues(): Collected client metrics: {}", clientMetrics);
