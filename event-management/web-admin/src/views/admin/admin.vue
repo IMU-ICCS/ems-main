@@ -21,7 +21,7 @@
       </Section>
 
       <Section title="Topology" :collapsed="false" background="rgba(0,255,100,.3)">
-          <TopologySection v-model="ems" />
+          <TopologySection v-model="ems" :clientStats="clients['client-metrics']" :sseRef="sseRef" />
       </Section>
 
       <!--<Section title="Geography" background="rgba(250,170,0,.25)">
@@ -81,7 +81,7 @@ export default {
                 console.log('EMS-SSE data updated');
                 if (newVal && newVal.data) {
                     if (newVal.data.ems) this.ems = newVal.data.ems;
-                    //if (newVal.data.clients) this.clients = newVal.data.clients;
+                    if (newVal.data.clients) this.clients = newVal.data.clients;
 
                     if (this.sysmonTimeseries!=null && this.ems && utils.valueExists(this.ems, 'system-info.system-resource-metrics')) {
                         let sysmonData = utils.getValue(this.ems, 'system-info.system-resource-metrics');
@@ -102,6 +102,7 @@ export default {
         return {
             showOverviewHeader: true,
             ems: { },
+            clients: { },
             sysmonTimeseries: null,
         };
     },

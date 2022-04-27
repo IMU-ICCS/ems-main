@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.control.info;
+package eu.melodic.event.common.misc;
 
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
@@ -21,8 +21,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,12 +35,12 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
     @Getter @Setter
     private boolean enabled = Boolean.parseBoolean(
             System.getenv().getOrDefault("EMS_SYSMON_ENABLED", "true"));
-    @Getter @Setter @Min(1000)
+    @Getter @Setter
     private long period = Math.max(1000L,Long.parseLong(
             System.getenv().getOrDefault("EMS_SYSMON_PERIOD", "30000")));
-    @Getter @Setter @NotBlank
-    private String commandStr = System.getenv("EMS_SYSMON_COMMAND");
-    @Getter @Setter @NotBlank
+    @Getter @Setter
+    private String commandStr = System.getenv().getOrDefault("EMS_SYSMON_COMMAND", "./bin/sysmon.sh");
+    @Getter @Setter
     private String systemResourceMetricsTopic = System.getenv("EMS_SYSMON_TOPIC");
 
     private final BrokerCepService brokerCepService;

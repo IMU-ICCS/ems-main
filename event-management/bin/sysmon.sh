@@ -8,6 +8,16 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
+# Current Time / Start Time / Uptime
+curr_dt=`date '+%Y-%m-%d %H:%M:%S'`
+up_dt=`uptime -s`
+curr_dt_sec=`date -d "$curr_dt" +%s`
+up_dt_sec=`date -d "$up_dt" +%s`
+uptime_sec=$(( curr_dt_sec - up_dt_sec ))
+echo CurrDateTime: $curr_dt_sec
+echo UpDateTime: $up_dt_sec
+echo Uptime: $uptime_sec
+
 # Report CPU usage (%)
 echo CPU: `top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}'`
 

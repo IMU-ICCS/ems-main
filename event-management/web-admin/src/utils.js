@@ -49,6 +49,15 @@ class Utils {
         return new Date(data * mult).toISOString().substr(start, len);
     }
 
+    toDuration(data) {
+        let s = data % 60;
+        data = (data-s) / 60;
+        let m = data % 60;
+        data = (data-m) / 60;
+        let h = data;
+        return h+':'+new String(100+m).substr(1)+':'+new String(100+s).substr(1);
+    }
+
     toKB(data) {
         return (data) ? (Math.round(precision * data / 1024) / precision).toString() : data;
     }
@@ -68,6 +77,17 @@ class Utils {
             minimumFractionDigits: fragDigits,
             maximumFractionDigits: fragDigits
         }).format(num);
+    }
+
+    orderOfMagnitude(data) {
+        if (!data || typeof data !== 'number') return false;
+        let d = Math.abs(data);
+        let r = 0;
+        while (d>=1) {
+            r++;
+            d = d / 10;
+        }
+        return r;
     }
 
     /*updateSelect(newVal, targetMap, valueField, textField) {

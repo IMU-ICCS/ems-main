@@ -18,6 +18,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.util.*;
 import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
@@ -117,6 +118,8 @@ public class CommandExecutor {
     @Autowired
     private TaskScheduler taskScheduler;
     private ScheduledFuture<?> statsSendTask;
+    @Autowired
+    private SystemResourceMonitor systemResourceMonitor;
 
 
     public CommandExecutor() {
@@ -1257,8 +1260,14 @@ public class CommandExecutor {
         statsSendTask = taskScheduler.scheduleWithFixedDelay(() -> {
             try {
                 Map<String, Object> statsMap = brokerCepService.getBrokerCepStatistics();
-                log.debug("Statistics: {}", statsMap);
-                if (out != null) out.println("-STATS:" + serializeToString(statsMap));
+                log.debug("BCEP Statistics: {}", statsMap);
+                Map<String, Object> sysMap = systemResourceMonitor.getLatestMeasurements();
+                log.debug("System Statistics: {}", sysMap);
+
+                Map<String, Object> clientStats = new HashMap<>();
+                if (statsMap!=null) clientStats.putAll(statsMap);
+                if (sysMap!=null) clientStats.putAll(sysMap);
+                if (out != null) out.println("-STATS:" + serializeToString(clientStats));
             } catch (Exception ex) {
                 log.error("Exception while sending Statistics to server: ", ex);
             }

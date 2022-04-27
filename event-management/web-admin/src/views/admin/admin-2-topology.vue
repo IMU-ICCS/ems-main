@@ -57,20 +57,29 @@
                       <td class="align-middle text-center">
                           <div class="row p-0 m-0">
                               <div class="col-md-3 m-0 border-left border-right">
-                                  <small>CPU:</small>
-                                  <Sparkline type="bullet" width="100%" height="10px" :values="[.7,c.stats.cpu,1]"></Sparkline>
+                                  <small>CPU: {{currentClientUsage(c.id, 'cpu', 0)+'%'}}</small>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'cpu')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'cpu')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-3 m-0 border-left border-right">
-                                  <small>Mem:</small>
-                                  <Sparkline type="bullet" width="100%" height="10px" :values="[.8,c.stats.mem,1]"></Sparkline>
+                                  <small>Mem: {{currentClientUsage(c.id, 'ram', 0)+'%'}}</small>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'ram')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'ram')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-3 m-0 border-left border-right">
-                                  <small style="white-space: pre;">#Events:</small><br/>
-                                  <Sparkline type="line" width="100%" height="20px" :values="[0,0,10,8,0]"></Sparkline>
+                                  <small style="white-space: pre;">#Events: {{currentClientUsage(c.id, 'count-total-events', 0)}}</small><br/>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'count-total-events')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'count-total-events')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-3 m-0 border-left border-right">
                                   <small style="white-space: nowrap;">Uptime:</small><br/>
-                                  <small style="white-space: nowrap;">{{c.stats.uptime ? "toIsoFormat(c.stats.uptime,'sec','time')" : '--:--:--'}}</small>
+                                  <small style="white-space: nowrap;">{{clientUptime(c.id) ?? '--:--:--'}}</small>
                               </div>
                           </div>
                       </td>
@@ -153,12 +162,15 @@
                       <td class="align-middle text-center">
                           <div class="row p-0 m-0">
                               <div class="col-md-6 m-0 border-left border-right">
-                                  <small style="white-space: pre;">#Events:</small><br/>
-                                  <Sparkline type="line" width="100%" height="20px" :values="[0,0,10,8,0]"></Sparkline>
+                                  <small style="white-space: pre;">#Events: {{currentClientUsage(c.id, 'count-total-events', 0)}}</small><br/>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'count-total-events')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'count-total-events')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-6 m-0 border-left border-right">
                                   <small style="white-space: nowrap;">Uptime:</small><br/>
-                                  <small style="white-space: nowrap;">{{c.stats.uptime ? 'xx:xx:xx' : '--:--:--'}}</small>
+                                  <small style="white-space: nowrap;">{{clientUptime(c.id) ?? '--:--:--'}}</small>
                               </div>
                           </div>
                       </td>
@@ -357,17 +369,22 @@ import 'vue3-blocks-tree/dist/vue3-blocks-tree.css';
 import ActionsList from './widgets/node-actions-list';
 
 import JVectorMap from '@/components/jvectormap/jvectormap.vue';
-//import utils from '@/utils.js';
 
 import LeafletMap from '@/components/leaflet-map/leaflet-map.vue';
 
 import countryCoords from './country-coordinates.js';
+
+import utils from '@/utils.js';
+import { TimeWindow } from '@/components/ems/ts/ts.js';
+const TIME_WINDOW_LENGTH = 5*60;  // seconds
 
 export default {
     name: 'Admin Dashboard',
     components: { Card, Sparkline, VueBlocksTree, JVectorMap, LeafletMap, ActionsList },
     props: {
         modelValue: Object,
+        clientStats: Object,
+        sseRef: String
     },
     data() {
         //const winLocation = window.location.hostname;
@@ -386,11 +403,20 @@ export default {
             },
             clientMarkers: [],
             clientConnections: [],
+            clientStatsTimeseries: { },
+            dataWindow: 60,
+            defaultChartGridValues: {
+                l0: [0, 0]
+            }
         };
     },
     watch: {
         modelValue: function() {
             this.initData();
+        },
+        clientStats: function() {
+            this.updateClientStats();
+            this.updateClusterStats();
         },
         treeData: function() {
             //console.log("TREE DATA UPDATED: ", this.treeData);
@@ -405,6 +431,8 @@ export default {
         this.initData();
 
         let _getWebsshServiceUrl = this.getWebsshServiceUrl;
+
+        this.clientStatsTimeseries = { };
 
         $('#ssh-console-dialog').dialog({
             autoOpen : false,
@@ -678,6 +706,93 @@ export default {
             let clientsAndEms = [emsObj, ..._clients];
             this.addGeolocationInfo(clientsAndEms, this.geolocationCache);
             this.updateClientMarkers(clientsAndEms);
+        },
+
+        // -------------------------------------------------------------------------------------------------------------
+
+        updateClientStats() {
+            for (const [id, data] of Object.entries(this.clientStats)) {
+                if (!this.clientStatsTimeseries[id]) {
+                    let sseInterval = this.$root.$refs[this.sseRef].getCurrentInterval();
+                    this.clientStatsTimeseries[id] = new TimeWindow(TIME_WINDOW_LENGTH, sseInterval);
+                }
+
+                if (data) this.clientStatsTimeseries[id].add(data);
+            }
+        },
+
+        updateClusterStats() {
+            if (!this.treeData) return;
+            for (const zoneObj of this.treeData.children) {
+                let zoneId = zoneObj.id;
+                if (!this.clientStatsTimeseries[zoneId]) {
+                    let sseInterval = this.$root.$refs[this.sseRef].getCurrentInterval();
+                    this.clientStatsTimeseries[zoneId] = new TimeWindow(TIME_WINDOW_LENGTH, sseInterval);
+                }
+
+                let maxUptime = -1;
+                let totalEvents = 0;
+                let clientCount = 0;
+                for (const clientObj of zoneObj.children) {
+                    let clientId = clientObj.id;
+                    let clientUptime = this.currentClientUsageData(clientId, 'uptime');
+                    let clientTotalEvents = this.currentClientUsageData(clientId, 'count-total-events');
+                    if (maxUptime < clientUptime) maxUptime = clientUptime;
+                    totalEvents += clientTotalEvents;
+                    clientCount++;
+                }
+
+                this.clientStatsTimeseries[zoneId].add({ 'uptime': maxUptime, 'count-total-events': totalEvents, 'count-clients': clientCount });
+            }
+        },
+
+        clientUptime(id) {
+            return utils.toDuration( this.currentClientUsageData(id, 'uptime') );
+        },
+
+        currentClientUsageData(id, metric, prefix) {
+            if (!id || !this.clientStatsTimeseries || !this.clientStatsTimeseries[id]) return null;
+            let v = this.clientStatsTimeseries[id].getLast();
+            if (!v || !(metric in v)) return null;
+            v = v[metric];
+            if (prefix==='KB') v = parseFloat(utils.toKB(v));
+            return v;
+        },
+        currentClientUsage(id, metric, precision, prefix) {
+            let v = this.currentClientUsageData(id, metric, prefix);
+            if (v==null) return '--';
+            if (v>=10) precision = 0;
+            //return v.toFixed(precision);
+            return utils.toNum(v, precision);
+        },
+
+        clientUsageData(id, metric, prefix) {
+            if (!id || !this.clientStatsTimeseries || !this.clientStatsTimeseries[id]) return [ 0 ];
+            var values = this.clientStatsTimeseries[id].getWindowData(this.dataWindow).map(data => (data && (metric in data)) ? data[metric] : 0);
+            if (prefix==='KB') values = values.map(x => parseFloat(utils.toKB(x)));
+            return values;
+        },
+        clientUsageDataAndLines(id, metric, gridValues) {
+            var result = {};
+            if (Array.isArray(metric)) {
+                for (let m in metric)
+                    result[m] = this.clientUsageData(id, m);
+            } else
+                result[metric] = this.clientUsageData(id, metric);
+            result = Object.assign(result, gridValues ?? this.defaultChartGridValues);
+            return result;
+        },
+
+        /*clusterUsageData(id, metric, prefix) {
+        },*/
+
+        sparkLineRangeMax(numArr) {
+            let numMax = Math.max( ...numArr );
+            let order = utils.orderOfMagnitude(numMax);
+            let order2 = Math.pow(10, order);
+            let normalized = numMax / order2;
+            let factor = Math.min(Math.ceil(10 * normalized), 10);
+            return factor * order2 / 10;
         },
 
         // -------------------------------------------------------------------------------------------------------------
