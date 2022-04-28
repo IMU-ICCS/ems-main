@@ -1,0 +1,40 @@
+/*
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
+ */
+
+package eu.melodic.event.control.properties;
+
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
+@Data
+@Validated
+@Configuration
+@ConfigurationProperties(prefix = "info")
+public class InfoServiceProperties {
+    @Min(1)
+    private long metricsUpdateInterval = 1000;
+    @Min(1)
+    private long metricsClientUpdateInterval = 500; // Not really needed since clients PUSH their statistics to server
+    @Min(1)
+    private int metricsStreamUpdateInterval = 10;   // in seconds
+    @NotBlank
+    private String metricsStreamEventName = "ems-metrics-event";
+    private List<String> envVarPrefixes = Arrays.asList("WEBSSH_SERVICE_-^", "WEB_ADMIN_!^");
+                // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
+                // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
+}

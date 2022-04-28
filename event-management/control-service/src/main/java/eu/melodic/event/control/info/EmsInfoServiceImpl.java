@@ -9,12 +9,12 @@
 
 package eu.melodic.event.control.info;
 
-import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.GROUPING;
@@ -23,7 +23,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-//import org.slf4j.event.Level;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -42,9 +41,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private Map<String,Object> currentClientMetrics;
 
     private final ApplicationContext applicationContext;
-    private final ControlServiceProperties properties;
+    private final ControlServiceProperties controlServiceProperties;
+    private final InfoServiceProperties infoServiceProperties;
     private final ControlServiceCoordinator controlServiceCoordinator;
-    private final BaguetteServer baguetteServer;
 
     private final BuildInfoProvider buildInfoProvider;
     private final SystemInfoProvider systemInfoProvider;
@@ -108,9 +107,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         if (currentServerMetrics!=null) {
             long timestamp = (long) currentServerMetrics.get(".timestamp");
             log.trace("updateServerMetricValues(): stored-timestamp: {}", timestamp);
-            if (System.currentTimeMillis() - timestamp < properties.getMetricsUpdateInterval()) {
+            if (System.currentTimeMillis() - timestamp < infoServiceProperties.getMetricsUpdateInterval()) {
                 log.debug("updateServerMetricValues(): STOP: Retry in {}ms",
-                        timestamp+properties.getMetricsUpdateInterval()-System.currentTimeMillis());
+                        timestamp + infoServiceProperties.getMetricsUpdateInterval() - System.currentTimeMillis());
                 return;
             }
         }
@@ -142,32 +141,32 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         controlServiceInfo.put("current-ems-state-change-timestamp", controlServiceCoordinator.getCurrentEmsStateChangeTimestamp());
         controlServiceInfo.put("current-camel-model-id", controlServiceCoordinator.getCurrentCamelModelId());
         controlServiceInfo.put("current-cp-model-id", controlServiceCoordinator.getCurrentCpModelId());
-        if (controlServiceCoordinator.getControlServiceProperties()!=null) {
-            controlServiceInfo.put("prop-ip-setting", controlServiceCoordinator.getControlServiceProperties().getIpSetting());
-            controlServiceInfo.put("prop-esb-url", controlServiceCoordinator.getControlServiceProperties().getEsbUrl());
-            controlServiceInfo.put("prop-metasolver-config-url", controlServiceCoordinator.getControlServiceProperties().getMetasolverConfigurationUrl());
-            controlServiceInfo.put("prop-metrics-update-interval", controlServiceCoordinator.getControlServiceProperties().getMetricsUpdateInterval());
-            controlServiceInfo.put("prop-metrics-client-update-interval", controlServiceCoordinator.getControlServiceProperties().getMetricsClientUpdateInterval());
-            controlServiceInfo.put("prop-metrics-stream-event-name", controlServiceCoordinator.getControlServiceProperties().getMetricsStreamEventName());
-            controlServiceInfo.put("prop-metrics-stream-update-interval", controlServiceCoordinator.getControlServiceProperties().getMetricsStreamUpdateInterval());
-            controlServiceInfo.put("prop-executionware", controlServiceCoordinator.getControlServiceProperties().getExecutionware().toString());
-            controlServiceInfo.put("prop-preload-camel-model", controlServiceCoordinator.getControlServiceProperties().getPreloadCamelModel());
-            controlServiceInfo.put("prop-preload-cp-model", controlServiceCoordinator.getControlServiceProperties().getPreloadCpModel());
-            controlServiceInfo.put("prop-static-resource-context", controlServiceCoordinator.getControlServiceProperties().getStaticResourceContext());
-            controlServiceInfo.put("prop-upperware-grouping", controlServiceCoordinator.getControlServiceProperties().getUpperwareGrouping());
-            controlServiceInfo.put("prop-tc-load-file", controlServiceCoordinator.getControlServiceProperties().getTcLoadFile());
-            controlServiceInfo.put("prop-tc-save-file", controlServiceCoordinator.getControlServiceProperties().getTcSaveFile());
+        if (controlServiceProperties!=null && infoServiceProperties!=null) {
+            controlServiceInfo.put("prop-ip-setting", controlServiceProperties.getIpSetting());
+            controlServiceInfo.put("prop-esb-url", controlServiceProperties.getEsbUrl());
+            controlServiceInfo.put("prop-metasolver-config-url", controlServiceProperties.getMetasolverConfigurationUrl());
+            controlServiceInfo.put("prop-metrics-update-interval", infoServiceProperties.getMetricsUpdateInterval());
+            controlServiceInfo.put("prop-metrics-client-update-interval", infoServiceProperties.getMetricsClientUpdateInterval());
+            controlServiceInfo.put("prop-metrics-stream-event-name", infoServiceProperties.getMetricsStreamEventName());
+            controlServiceInfo.put("prop-metrics-stream-update-interval", infoServiceProperties.getMetricsStreamUpdateInterval());
+            controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
+            controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreloadCamelModel());
+            controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreloadCpModel());
+            controlServiceInfo.put("prop-static-resource-context", controlServiceProperties.getStaticResourceContext());
+            controlServiceInfo.put("prop-upperware-grouping", controlServiceProperties.getUpperwareGrouping());
+            controlServiceInfo.put("prop-tc-load-file", controlServiceProperties.getTcLoadFile());
+            controlServiceInfo.put("prop-tc-save-file", controlServiceProperties.getTcSaveFile());
 
             Map<String,Object> debugFlags = new LinkedHashMap<>();
-            debugFlags.put("event-debug-enabled",  controlServiceCoordinator.getControlServiceProperties().isEventDebugEnabled());
-            debugFlags.put("exit-allowed",  controlServiceCoordinator.getControlServiceProperties().isExitAllowed());
-            debugFlags.put("print-build-info",  controlServiceCoordinator.getControlServiceProperties().isPrintBuildInfo());
-            debugFlags.put("skip-translation",  controlServiceCoordinator.getControlServiceProperties().isSkipTranslation());
-            debugFlags.put("skip-broker-cep-init",  controlServiceCoordinator.getControlServiceProperties().isSkipBrokerCep());
-            debugFlags.put("skip-baguette-server-init",  controlServiceCoordinator.getControlServiceProperties().isSkipBaguette());
-            debugFlags.put("skip-mvv-retrieve",  controlServiceCoordinator.getControlServiceProperties().isSkipMvvRetrieve());
-            debugFlags.put("skip-metasolver-configuration",  controlServiceCoordinator.getControlServiceProperties().isSkipMetasolver());
-            debugFlags.put("skip-esb-notification",  controlServiceCoordinator.getControlServiceProperties().isSkipEsbNotification());
+            debugFlags.put("event-debug-enabled",  controlServiceProperties.isEventDebugEnabled());
+            debugFlags.put("exit-allowed",  controlServiceProperties.isExitAllowed());
+            debugFlags.put("print-build-info",  controlServiceProperties.isPrintBuildInfo());
+            debugFlags.put("skip-translation",  controlServiceProperties.isSkipTranslation());
+            debugFlags.put("skip-broker-cep-init",  controlServiceProperties.isSkipBrokerCep());
+            debugFlags.put("skip-baguette-server-init",  controlServiceProperties.isSkipBaguette());
+            debugFlags.put("skip-mvv-retrieve",  controlServiceProperties.isSkipMvvRetrieve());
+            debugFlags.put("skip-metasolver-configuration",  controlServiceProperties.isSkipMetasolver());
+            debugFlags.put("skip-esb-notification",  controlServiceProperties.isSkipEsbNotification());
             controlServiceInfo.put("prop-debug-flags",debugFlags);
         }
         metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
@@ -233,9 +232,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         if (currentClientMetrics!=null) {
             long timestamp = (long) currentClientMetrics.get(".timestamp");
             log.trace("updateClientMetricValues(): stored-timestamp: {}", timestamp);
-            if (System.currentTimeMillis() - timestamp < properties.getMetricsClientUpdateInterval()) {
+            if (System.currentTimeMillis() - timestamp < infoServiceProperties.getMetricsClientUpdateInterval()) {
                 log.debug("updateClientMetricValues(): STOP: Retry in {}ms",
-                        timestamp+properties.getMetricsClientUpdateInterval()-System.currentTimeMillis());
+                        timestamp + infoServiceProperties.getMetricsClientUpdateInterval() - System.currentTimeMillis());
                 return;
             }
         }
@@ -250,7 +249,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
         for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
             /*log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
-            Object o = baguetteServer.readFromClient(clientId, "GET-STATS", Level.DEBUG);
+            Object o = baguetteServer.readFromClient(clientId, "GET-STATS", org.slf4j.event.Level.DEBUG);
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
             if (o instanceof Map) {
                 clientMetrics.put(clientId, o);
