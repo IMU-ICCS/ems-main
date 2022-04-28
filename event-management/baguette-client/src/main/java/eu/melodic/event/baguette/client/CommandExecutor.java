@@ -121,7 +121,6 @@ public class CommandExecutor {
     @Autowired
     private SystemResourceMonitor systemResourceMonitor;
 
-
     public CommandExecutor() {
         initializeClientId();
     }
