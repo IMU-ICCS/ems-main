@@ -29,16 +29,7 @@ public class BaguetteClientProperties extends SshClientProperties {
 
 	private List<Class<Collector>> collectorClasses;
 
-	private String clientId;
 	private String debugFakeIpAddress;
-
-	private String serverAddress = "127.0.0.1";
-	private int serverPort = 22;
-	private String serverPubkey;
-	private String serverFingerprint;
-
-	private String serverUsername;
-	private String serverPassword;
 
 	private long sendStatisticsDelay = 10000L;
 }

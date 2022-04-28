@@ -128,6 +128,7 @@ public class CommandExecutor {
 
     public void setConfiguration(BaguetteClientProperties config) {
         log.trace("CommandExecutor: brokerCepService: {}", brokerCepService);
+        log.trace("CommandExecutor: config: {}", config);
         this.config = config;
         this.idFile = DEFAULT_ID_FILE;
         initializeClientId();
