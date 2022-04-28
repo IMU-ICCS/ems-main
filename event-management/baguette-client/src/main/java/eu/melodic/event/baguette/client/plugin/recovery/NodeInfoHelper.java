@@ -10,23 +10,16 @@
 package eu.melodic.event.baguette.client.plugin.recovery;
 
 import com.google.gson.Gson;
-import eu.melodic.event.baguette.client.BaguetteClientProperties;
 import eu.melodic.event.baguette.client.CommandExecutor;
-import eu.melodic.event.util.EventBus;
-import eu.melodic.event.util.PasswordUtil;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * Node Info helper -- Retrieves node info from EMS server and caches them

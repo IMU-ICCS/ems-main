@@ -7,14 +7,11 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.plugin.recovery;
+package eu.melodic.event.common.misc;
 
-import lombok.Data;
-
-@Data
-class RECOVERY_COMMAND {
-    private final String name;
-    private final String command;
-    private final long waitBefore;
-    private final long waitAfter;
+/**
+ * Common Event Constants
+ */
+public class EventConstant {
+    public final static String EVENT_CLIENT_CONFIG_UPDATED = "EVENT_CLIENT_CONFIG_UPDATED";
 }

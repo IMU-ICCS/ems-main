@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.plugin.recovery;
+package eu.melodic.event.common.recovery;
 
 import eu.melodic.event.util.EventBus;
 import lombok.*;
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED;
 
 /**
- * Client-side, Local-node Self-Healing
+ * Local-node Self-Healing using Shell
  */
 @Slf4j
 @Component

@@ -18,6 +18,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.common.misc.EventConstant;
 import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.util.*;
 import io.atomix.cluster.ClusterMembershipEvent;
@@ -752,6 +753,10 @@ public class CommandExecutor {
                 clientConfiguration = config;
             }
             log.info("New client config.: {}", config);
+            HashMap<String,ClientConfiguration> payload = new HashMap<>();
+            payload.put("new", clientConfiguration);
+            payload.put("old", oldConfig);
+            eventBus.send(EventConstant.EVENT_CLIENT_CONFIG_UPDATED, payload, this);
 
         } catch (Exception ex) {
             log.error("Exception while deserializing received Client configuration: ", ex);

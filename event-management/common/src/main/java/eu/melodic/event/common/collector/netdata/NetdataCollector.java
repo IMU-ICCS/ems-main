@@ -11,6 +11,8 @@ package eu.melodic.event.common.collector.netdata;
 
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.common.collector.CollectorContext;
+import eu.melodic.event.common.misc.EventConstant;
+import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.EventBus;
 import lombok.NonNull;
@@ -24,13 +26,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
-
-import eu.melodic.event.common.recovery.RecoveryConstant;
 
 /**
  * Collects measurements from Netdata http server
@@ -105,6 +104,7 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
         // Subscribe for SELF-HEALING plugin GIVE_UP events
         eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED, this);
         eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
+        eventBus.subscribe(EventConstant.EVENT_CLIENT_CONFIG_UPDATED, this);
 
         // Schedule collection execution
         errorsMap.clear();
@@ -122,6 +122,7 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
         }
 
         // Unsubscribe from SELF-HEALING plugin GIVE_UP events
+        eventBus.unsubscribe(EventConstant.EVENT_CLIENT_CONFIG_UPDATED, this);
         eventBus.unsubscribe(RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED, this);
         eventBus.unsubscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
 
@@ -152,6 +153,14 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
                 ignoredNodes.put(nodeAddress, null);
             }
         } else
+        if (EventConstant.EVENT_CLIENT_CONFIG_UPDATED.equals(topic)) {
+            log.info("Collectors::Netdata: Client configuration updated. Purging nodes without recovery task from ignore list: Old ignore list nodes: {}", ignoredNodes.keySet());
+            List<String> nodesToPurge = ignoredNodes.entrySet().stream().filter(e -> e.getValue() == null).map(Map.Entry::getKey).collect(Collectors.toList());
+            nodesToPurge.forEach(node -> {
+                ignoredNodes.remove(node);
+                log.info("Collectors::Netdata: Client configuration updated. Node purged from ignore list: {}", node);
+            });
+        } else
             log.warn("Collectors::Netdata: onMessage: Event from unexpected topic received. Ignoring it: {}", topic);
     }
 
@@ -179,7 +188,7 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
             if (collectorContext.getNodesWithoutClient().size()>0) {
                 log.info("Collectors::Netdata: Collecting metrics from remote nodes (without EMS client): {}",
                         collectorContext.getNodesWithoutClient());
-                for (Serializable nodeAddress : collectorContext.getNodesWithoutClient()) {
+                for (Object nodeAddress : collectorContext.getNodesWithoutClient()) {
                     // collect data from remote node
                     collectAndPublishData(nodeAddress.toString());
                 }

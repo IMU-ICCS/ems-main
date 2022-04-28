@@ -7,38 +7,29 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client;
+package eu.melodic.event.common.client;
 
-import eu.melodic.event.common.client.SshClientProperties;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-
-import java.util.List;
 
 @Data
 @Configuration
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/baguette-client.properties")
-@ToString(callSuper = true)
-public class BaguetteClientProperties extends SshClientProperties {
-	private boolean exitCommandAllowed = false;
-	private int killDelay = 5;
-
-	private List<Class<Collector>> collectorClasses;
+@ToString(exclude = "serverPassword")
+public class SshClientProperties {
+	private long authTimeout = 60000;
+	private long execTimeout = 120000;
+	private long retryPeriod = 60000;
 
 	private String clientId;
-	private String debugFakeIpAddress;
 
-	private String serverAddress = "127.0.0.1";
+	private String serverAddress;
 	private int serverPort = 22;
 	private String serverPubkey;
 	private String serverFingerprint;
 
 	private String serverUsername;
 	private String serverPassword;
-
-	private long sendStatisticsDelay = 10000L;
 }

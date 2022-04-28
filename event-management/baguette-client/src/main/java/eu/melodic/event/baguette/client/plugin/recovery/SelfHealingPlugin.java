@@ -12,7 +12,7 @@ package eu.melodic.event.baguette.client.plugin.recovery;
 import eu.melodic.event.baguette.client.BaguetteClientProperties;
 import eu.melodic.event.baguette.client.CommandExecutor;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
-import eu.melodic.event.common.recovery.RecoveryConstant;
+import eu.melodic.event.common.recovery.*;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.util.Plugin;

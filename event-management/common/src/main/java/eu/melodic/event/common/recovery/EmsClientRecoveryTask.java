@@ -7,8 +7,10 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.plugin.recovery;
+package eu.melodic.event.common.recovery;
 
+import eu.melodic.event.common.client.SshClientProperties;
+import eu.melodic.event.common.collector.CollectorContext;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
@@ -24,31 +26,31 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Netdata agent (client-side) Self-Healing
+ * EMS client Self-Healing
  */
 @Slf4j
 @Component
-public class NetdataAgentRecoveryTask extends VmNodeRecoveryTask {
+public class EmsClientRecoveryTask<P extends SshClientProperties> extends VmNodeRecoveryTask<P> {
     @Getter
     private final List<RECOVERY_COMMAND> recoveryCommands = Collections.unmodifiableList(Arrays.asList(
             new RECOVERY_COMMAND("Initial wait...",
-                    "pwd",0, 5000),
-            new RECOVERY_COMMAND("Sending Netdata agent kill command...",
-                    "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ",0, 2000),
-            new RECOVERY_COMMAND("Sending Netdata agent start command...",
-                    "sudo netdata",0, 10000)
+                    "pwd",0, 10000),
+            new RECOVERY_COMMAND("Sending baguette client kill command...",
+                    "/opt/baguette-client/bin/kill.sh",0, 2000),
+            new RECOVERY_COMMAND("Sending baguette client start command...",
+                    "/opt/baguette-client/bin/run.sh",0, 10000)
     ));
 
-    @Value("${self.healing.recovery.file.netdata:}")
-    private String netdataRecoveryFile;
+    @Value("${self.healing.recovery.file.baguette:}")
+    private String emsRecoveryFile;
 
-    public NetdataAgentRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler) {
-        super(eventBus, passwordUtil, taskScheduler);
+    public EmsClientRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext) {
+        super(eventBus, passwordUtil, taskScheduler, collectorContext);
     }
 
     public void runNodeRecovery() throws Exception {
-        if (StringUtils.isNotBlank(netdataRecoveryFile))
-            runNodeRecovery(netdataRecoveryFile);
+        if (StringUtils.isNotBlank(emsRecoveryFile))
+            runNodeRecovery(emsRecoveryFile);
         else
             runNodeRecovery(recoveryCommands);
     }

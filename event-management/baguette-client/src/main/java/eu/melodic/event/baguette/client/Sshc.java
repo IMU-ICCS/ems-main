@@ -46,7 +46,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-public class Sshc {
+public class Sshc implements eu.melodic.event.common.client.SshClient<BaguetteClientProperties> {
     private BaguetteClientProperties config;
     private SshClient client;
     private SimpleClient simple;
@@ -62,15 +62,17 @@ public class Sshc {
     private InputStream in;
     @Getter
     private PrintStream out;
-    //@Getter
-    //private PrintStream err;
+    @Getter
+    private PrintStream err;
     @Getter
     private String clientId;
 
     @Getter @Setter
     private boolean useServerKeyVerifier = true;
 
-    public void setConfiguration(BaguetteClientProperties config) throws IOException {
+    @Override
+    public void setConfiguration(BaguetteClientProperties config) {
+        log.trace("Sshc: New config: {}", config);
         this.config = config;
         this.clientId = config.getClientId();
         log.trace("Sshc: cmd-exec: {}", commandExecutor);
@@ -102,6 +104,7 @@ public class Sshc {
         if (started) log.trace("Client started");
     }
 
+    @Override
     public synchronized void start() throws IOException {
         if (started) return;
         log.info("Connecting to server...");
@@ -201,6 +204,7 @@ public class Sshc {
         this.started = true;
     }
 
+    @Override
     public synchronized void stop() throws IOException {
         if (!started) return;
         this.started = false;
