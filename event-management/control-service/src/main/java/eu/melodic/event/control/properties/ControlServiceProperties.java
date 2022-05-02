@@ -19,6 +19,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Data
@@ -76,10 +78,18 @@ public class ControlServiceProperties {
     private KeystoreAndCertificateProperties ssl;
 
     private TaskSchedulerProperties taskScheduler = new TaskSchedulerProperties();
+    private AuthorizationProperties authorization = new AuthorizationProperties();
 
     @Data
     public static class TaskSchedulerProperties {
         @Min(1)
         private int threadPoolSize = 2;
+    }
+
+    @Data
+    public static class AuthorizationProperties {
+        private boolean enabled = true;
+        private List<String> pathsProtected = Collections.emptyList();
+        private List<String> pathsExcluded = Collections.emptyList();
     }
 }
