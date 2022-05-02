@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.properties;
 
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -24,7 +25,7 @@ import java.util.List;
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = "info")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "info")
 public class InfoServiceProperties {
     @Min(1)
     private long metricsUpdateInterval = 1000;

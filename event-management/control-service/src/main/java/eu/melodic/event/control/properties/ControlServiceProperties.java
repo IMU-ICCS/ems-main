@@ -23,11 +23,13 @@ import javax.validation.constraints.Min;
 import java.util.Arrays;
 import java.util.List;
 
+import static eu.melodic.event.util.EmsConstant.EMS_PROPERTIES_PREFIX;
+
 @Slf4j
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = "control")
+@ConfigurationProperties(prefix = EMS_PROPERTIES_PREFIX + "control")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
 public class ControlServiceProperties {
     public enum IpSetting {
@@ -41,11 +43,11 @@ public class ControlServiceProperties {
 
     private boolean printBuildInfo;
 
-    @Value("${IP_SETTING}")
+    @Value("${" + EMS_PROPERTIES_PREFIX + "IP_SETTING}")
     private IpSetting ipSetting = IpSetting.PUBLIC_IP;
-    @Value("${EXECUTIONWARE}")
+    @Value("${" + EMS_PROPERTIES_PREFIX + "EXECUTIONWARE}")
     private ExecutionWare executionware = ExecutionWare.PROACTIVE;
-    @Value("${password-encoder-class:}")
+    @Value("${" + EMS_PROPERTIES_PREFIX + "password-encoder-class:}")
     private String passwordEncoderClass;
 
     private String upperwareGrouping;

@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.properties;
 
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -23,7 +24,7 @@ import java.util.Map;
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = "static")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "static")
 public class StaticResourceProperties {
     private String faviconContext = "/favicon.ico";
     private String faviconPath;
