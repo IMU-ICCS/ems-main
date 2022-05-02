@@ -16,6 +16,7 @@ import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.control.properties.StaticResourceProperties;
+import eu.melodic.event.control.properties.WebSecurityProperties;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.GROUPING;
@@ -46,6 +47,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final InfoServiceProperties infoServiceProperties;
     private final ControlServiceCoordinator controlServiceCoordinator;
     private final StaticResourceProperties staticResourceProperties;
+    private final WebSecurityProperties webSecurityProperties;
 
     private final BuildInfoProvider buildInfoProvider;
     private final SystemInfoProvider systemInfoProvider;
@@ -195,6 +197,14 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             authMap.put("paths-protected",  authorizationProperties.getPathsProtected());
             authMap.put("paths-excluded",  authorizationProperties.getPathsExcluded());
             controlServiceInfo.put("prop-authorization", authMap);
+        }
+        if (webSecurityProperties!=null) {
+            Map<String,Object> authMap = new LinkedHashMap<>();
+            authMap.put("jwt-authentication-enabled",  webSecurityProperties.getJwtAuthentication().isEnabled());
+            authMap.put("api-key-authentication-enabled",  webSecurityProperties.getApiKeyAuthentication().isEnabled());
+            authMap.put("otp-authentication-enabled",  webSecurityProperties.getOtpAuthentication().isEnabled());
+            authMap.put("form-authentication-enabled",  webSecurityProperties.getFormAuthentication().isEnabled());
+            controlServiceInfo.put("prop-authentication-methods", authMap);
         }
         metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
 
