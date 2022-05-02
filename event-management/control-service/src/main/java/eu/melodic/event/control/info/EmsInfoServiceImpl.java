@@ -15,6 +15,7 @@ import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.properties.InfoServiceProperties;
+import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.GROUPING;
@@ -44,6 +45,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final ControlServiceProperties controlServiceProperties;
     private final InfoServiceProperties infoServiceProperties;
     private final ControlServiceCoordinator controlServiceCoordinator;
+    private final StaticResourceProperties staticResourceProperties;
 
     private final BuildInfoProvider buildInfoProvider;
     private final SystemInfoProvider systemInfoProvider;
@@ -152,7 +154,6 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
             controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreloadCamelModel());
             controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreloadCpModel());
-            controlServiceInfo.put("prop-static-resource-context", controlServiceProperties.getStaticResourceContext());
             controlServiceInfo.put("prop-upperware-grouping", controlServiceProperties.getUpperwareGrouping());
             controlServiceInfo.put("prop-tc-load-file", controlServiceProperties.getTcLoadFile());
             controlServiceInfo.put("prop-tc-save-file", controlServiceProperties.getTcSaveFile());
@@ -168,6 +169,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             debugFlags.put("skip-metasolver-configuration",  controlServiceProperties.isSkipMetasolver());
             debugFlags.put("skip-esb-notification",  controlServiceProperties.isSkipEsbNotification());
             controlServiceInfo.put("prop-debug-flags",debugFlags);
+        }
+        if (staticResourceProperties!=null) {
+            controlServiceInfo.put("prop-static-resource", staticResourceProperties);
         }
         metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
 

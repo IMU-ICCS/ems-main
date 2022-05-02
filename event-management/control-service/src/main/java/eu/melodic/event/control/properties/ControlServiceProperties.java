@@ -42,6 +42,8 @@ public class ControlServiceProperties {
     private IpSetting ipSetting = IpSetting.PUBLIC_IP;
     @Value("${EXECUTIONWARE}")
     private ExecutionWare executionware = ExecutionWare.PROACTIVE;
+    @Value("${password-encoder-class:}")
+    private String passwordEncoderClass;
 
     private String upperwareGrouping;
     private String metasolverConfigurationUrl;
@@ -60,18 +62,15 @@ public class ControlServiceProperties {
 
     private String tcLoadFile;
     private String tcSaveFile;
+
     private boolean eventDebugEnabled;
+    private String eventDebugResourceContext;
+    private String[] eventDebugResourcePath;
 
     private boolean exitAllowed;
     @Min(1)
     private long exitGracePeriod = 10;
     private int exitCode = 0;
-
-    @Value("${static.resource.context}")
-    private String staticResourceContext = "/**";
-
-    @Value("${password-encoder-class:}")
-    private String passwordEncoderClass;
 
     // control.ssl.** settings
     private KeystoreAndCertificateProperties ssl;

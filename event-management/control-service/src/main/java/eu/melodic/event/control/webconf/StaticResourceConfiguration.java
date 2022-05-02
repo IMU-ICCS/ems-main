@@ -9,9 +9,12 @@
 
 package eu.melodic.event.control.webconf;
 
+import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.properties.StaticResourceProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,60 +27,51 @@ import java.util.Map;
 
 @Slf4j
 @Configuration
-public class StaticResourceConfiguration implements WebMvcConfigurer {
-    @Value("${static.favicon.context:/favicon.ico}")
-    private String faviconContext;
-    @Value("${static.favicon.path:#{null}}")
-    private String faviconPath;
+public class StaticResourceConfiguration implements WebMvcConfigurer, InitializingBean {
+    @Autowired
+    private StaticResourceProperties properties;
+    @Autowired
+    private ControlServiceProperties controlServiceProperties;
 
-    @Value("${static.resource.context:/resources/**}")
-    private String staticResourceContext;
-    @Value("${static.resource.path:#{null}}")
-    private String[] staticResourcePath;
-
-    @Value("${static.resource.redirect:#{null}}")
-    private String staticResourceRedirect;
-    @Value("#{${static.resource.redirects:{}}}")
-    private Map<String,String> staticResourceRedirects;
-
-    @Value("${static.logs.context:/logs/**}")
-    private String staticLogsContext;
-    @Value("${static.logs.path:#{null}}")
-    private String[] staticLogsPath;
-
-    @Value("${event-debug.resource.context:/event-debug/**}")
-    private String eventDebugResourceContext;
-    @Value("${event-debug.resource.path:#{null}}")
-    private String[] eventDebugResourcePath;
-    @Value("${control.event-debug-enabled:false}")
-    private boolean eventDebugEnabled;
+    public void afterPropertiesSet() {
+        log.debug("StaticResourceConfiguration: afterPropertiesSet: {}", properties);
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String faviconContext = properties.getFaviconContext();
+        String faviconPath = properties.getFaviconPath();
         if(StringUtils.isNotBlank(faviconPath)) {
             log.info("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
             registry
                     .addResourceHandler(faviconContext)
                     .addResourceLocations(faviconPath);
         }
-        if(staticResourcePath != null && staticResourcePath.length > 0) {
-            log.info("Serving static content from: {} --> {}", staticResourceContext, staticResourcePath);
+        String resourceContext = properties.getResourceContext();
+        String[] resourcePath = properties.getResourcePath();
+        if (resourcePath != null && resourcePath.length > 0) {
+            log.info("Serving static content from: {} --> {}", resourceContext, resourcePath);
             registry
-                    .addResourceHandler(staticResourceContext)
-                    .addResourceLocations(staticResourcePath);
+                    .addResourceHandler(resourceContext)
+                    .addResourceLocations(resourcePath);
         }
-        if(staticLogsPath != null && staticLogsPath.length > 0) {
-            log.info("Serving logs from: {} --> {}", staticLogsContext, staticLogsPath);
+        String logsContext = properties.getLogsContext();
+        String[] logsPath = properties.getLogsPath();
+        if (logsPath != null && logsPath.length > 0) {
+            log.info("Serving logs from: {} --> {}", logsContext, logsPath);
             registry
-                    .addResourceHandler(staticLogsContext)
-                    .addResourceLocations(staticLogsPath);
+                    .addResourceHandler(logsContext)
+                    .addResourceLocations(logsPath);
         }
 
-        if(eventDebugEnabled && eventDebugResourcePath != null && eventDebugResourcePath.length > 0) {
-            log.info("Serving event-debug content from: {} --> {}", eventDebugResourceContext, eventDebugResourcePath);
+        if (controlServiceProperties.isEventDebugEnabled()
+            && controlServiceProperties.getEventDebugResourcePath()!=null
+            && controlServiceProperties.getEventDebugResourcePath().length > 0)
+        {
+            log.info("Serving event-debug content from: {} --> {}", controlServiceProperties.getEventDebugResourceContext(), controlServiceProperties.getEventDebugResourcePath());
             registry
-                    .addResourceHandler(eventDebugResourceContext)
-                    .addResourceLocations(eventDebugResourcePath)
+                    .addResourceHandler(controlServiceProperties.getEventDebugResourceContext())
+                    .addResourceLocations(controlServiceProperties.getEventDebugResourcePath())
                     //.setCachePeriod(0)
             ;
         }
@@ -88,16 +82,18 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         // Remains for backward compatibility (of properties file)
-        if (StringUtils.isNotBlank(staticResourceRedirect)) {
-            log.info("Redirecting / to: {}", staticResourceRedirect);
+        String resourceRedirect = properties.getResourceRedirect();
+        if (StringUtils.isNotBlank(resourceRedirect)) {
+            log.info("Redirecting / to: {}", resourceRedirect);
             registry
                     .addViewController("/")
-                    .setViewName("redirect:" + staticResourceRedirect);
+                    .setViewName("redirect:" + resourceRedirect);
         }
 
-        log.debug("Configured resource redirects: {}", staticResourceRedirects);
-        if (staticResourceRedirects!=null) {
-            staticResourceRedirects.forEach((context, redirect) -> {
+        Map<String,String> resourceRedirects = properties.getResourceRedirects();
+        log.debug("Configured resource redirects: {}", resourceRedirects);
+        if (resourceRedirects!=null) {
+            resourceRedirects.forEach((context, redirect) -> {
                 if (StringUtils.isNotBlank(context) && StringUtils.isNotBlank(redirect)) {
                     context = context.trim();
                     redirect = redirect.trim();

@@ -18,6 +18,7 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
@@ -60,6 +61,8 @@ public class ControlServiceController {
 
     @Autowired
     private ControlServiceProperties properties;
+    @Autowired
+    private StaticResourceProperties staticResourceProperties;
     @Autowired
     private ControlServiceCoordinator coordinator;
     @Autowired
@@ -421,7 +424,7 @@ public class ControlServiceController {
 
     private void updateRegistrationInfo(HttpServletRequest request, NodeRegistryEntry entry) {
         // Get web server base URL
-        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
+        String staticResourceContext = staticResourceProperties.getResourceContext();
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
