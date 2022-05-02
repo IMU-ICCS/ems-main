@@ -33,8 +33,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 @ComponentScan(basePackages={"eu.melodic.security.authorization.util.properties"})
 public class WebMvcConfig implements WebMvcConfigurer {
-    private final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
-    private final static String[] DEFAULT_PATHS_EXCLUDED = { };
+    public final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
+    public final static String[] DEFAULT_PATHS_EXCLUDED = { };
 
     @Autowired
     private AuthorizationServiceClientProperties authProperties;

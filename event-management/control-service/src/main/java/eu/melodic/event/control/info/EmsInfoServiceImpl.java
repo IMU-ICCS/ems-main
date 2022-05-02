@@ -182,6 +182,20 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             staticResourceCfg.put("logs-path",  staticResourceProperties.getLogsPath());
             controlServiceInfo.put("prop-static-resource", staticResourceCfg);
         }
+        if (controlServiceProperties!=null && controlServiceProperties.getTaskScheduler()!=null) {
+            ControlServiceProperties.TaskSchedulerProperties taskSchedulerProperties = controlServiceProperties.getTaskScheduler();
+            Map<String,Object> taskSchedulerMap = new LinkedHashMap<>();
+            taskSchedulerMap.put("thread-pool-size",  taskSchedulerProperties.getThreadPoolSize());
+            controlServiceInfo.put("prop-task-scheduler", taskSchedulerMap);
+        }
+        if (controlServiceProperties!=null && controlServiceProperties.getAuthorization()!=null) {
+            ControlServiceProperties.AuthorizationProperties authorizationProperties = controlServiceProperties.getAuthorization();
+            Map<String,Object> authMap = new LinkedHashMap<>();
+            authMap.put("enabled",  authorizationProperties.isEnabled());
+            authMap.put("paths-protected",  authorizationProperties.getPathsProtected());
+            authMap.put("paths-excluded",  authorizationProperties.getPathsExcluded());
+            controlServiceInfo.put("prop-authorization", authMap);
+        }
         metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
 
         // Collect Broker-CEP metrics

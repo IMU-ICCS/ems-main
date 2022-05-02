@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.properties;
 
+import eu.melodic.event.control.webconf.WebMvcConfig;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -89,7 +90,7 @@ public class ControlServiceProperties {
     @Data
     public static class AuthorizationProperties {
         private boolean enabled = true;
-        private List<String> pathsProtected = Collections.emptyList();
-        private List<String> pathsExcluded = Collections.emptyList();
+        private List<String> pathsProtected = Arrays.asList(WebMvcConfig.DEFAULT_PATHS_PROTECTED);
+        private List<String> pathsExcluded = Arrays.asList(WebMvcConfig.DEFAULT_PATHS_EXCLUDED);
     }
 }
