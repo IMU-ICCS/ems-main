@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -28,11 +29,11 @@ public class StaticResourceProperties {
     private String faviconPath;
 
     private String resourceContext = "/resources/**";
-    private String[] resourcePath;
+    private List<String> resourcePath;
 
     private String resourceRedirect;
     private Map<String,String> resourceRedirects = new LinkedHashMap<>();
 
     private String logsContext = "/logs/**";
-    private String[] logsPath;
+    private List<String> logsPath;
 }

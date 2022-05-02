@@ -23,6 +23,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -48,20 +49,20 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
                     .addResourceLocations(faviconPath);
         }
         String resourceContext = properties.getResourceContext();
-        String[] resourcePath = properties.getResourcePath();
-        if (resourcePath != null && resourcePath.length > 0) {
+        List<String> resourcePath = properties.getResourcePath();
+        if (resourcePath != null && resourcePath.size() > 0) {
             log.info("Serving static content from: {} --> {}", resourceContext, resourcePath);
             registry
                     .addResourceHandler(resourceContext)
-                    .addResourceLocations(resourcePath);
+                    .addResourceLocations(resourcePath.toArray(new String[0]));
         }
         String logsContext = properties.getLogsContext();
-        String[] logsPath = properties.getLogsPath();
-        if (logsPath != null && logsPath.length > 0) {
+        List<String> logsPath = properties.getLogsPath();
+        if (logsPath != null && logsPath.size() > 0) {
             log.info("Serving logs from: {} --> {}", logsContext, logsPath);
             registry
                     .addResourceHandler(logsContext)
-                    .addResourceLocations(logsPath);
+                    .addResourceLocations(logsPath.toArray(new String[0]));
         }
 
         if (controlServiceProperties.isEventDebugEnabled()

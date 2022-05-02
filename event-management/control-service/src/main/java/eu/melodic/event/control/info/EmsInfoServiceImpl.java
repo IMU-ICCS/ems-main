@@ -171,7 +171,16 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             controlServiceInfo.put("prop-debug-flags",debugFlags);
         }
         if (staticResourceProperties!=null) {
-            controlServiceInfo.put("prop-static-resource", staticResourceProperties);
+            Map<String,Object> staticResourceCfg = new LinkedHashMap<>();
+            staticResourceCfg.put("favicon-context",  staticResourceProperties.getFaviconContext());
+            staticResourceCfg.put("favicon-path",  staticResourceProperties.getFaviconPath());
+            staticResourceCfg.put("resource-context",  staticResourceProperties.getResourceContext());
+            staticResourceCfg.put("resource-path",  staticResourceProperties.getResourcePath());
+            staticResourceCfg.put("resource-redirect",  staticResourceProperties.getResourceRedirect());
+            staticResourceCfg.put("resource-redirects",  staticResourceProperties.getResourceRedirects());
+            staticResourceCfg.put("logs-context",  staticResourceProperties.getLogsContext());
+            staticResourceCfg.put("logs-path",  staticResourceProperties.getLogsPath());
+            controlServiceInfo.put("prop-static-resource", staticResourceCfg);
         }
         metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
 
