@@ -9,9 +9,10 @@
 
 package eu.melodic.event.translate.properties;
 
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -22,14 +23,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Data
 @Validated
 @Configuration
 @EnableConfigurationProperties
-@ConfigurationProperties(prefix = "generator")
-@Slf4j
-public class RuleTemplateProperties {
-    @Value("${generator.language:}")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "generator")
+public class RuleTemplateProperties implements InitializingBean {
+    @Override
+    public void afterPropertiesSet() {
+        log.debug("RuleTemplateProperties: {}", this);
+    }
+
     private String language;
 
     private Map<String, Map<String, List<String>>> ruleTemplates;
