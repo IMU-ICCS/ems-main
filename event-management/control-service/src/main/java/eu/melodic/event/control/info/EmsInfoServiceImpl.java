@@ -147,13 +147,13 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         controlServiceInfo.put("current-cp-model-id", controlServiceCoordinator.getCurrentCpModelId());
         if (controlServiceProperties!=null && infoServiceProperties!=null) {
             controlServiceInfo.put("prop-ip-setting", controlServiceProperties.getIpSetting());
+            controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
             controlServiceInfo.put("prop-esb-url", controlServiceProperties.getEsbUrl());
             controlServiceInfo.put("prop-metasolver-config-url", controlServiceProperties.getMetasolverConfigurationUrl());
             controlServiceInfo.put("prop-metrics-update-interval", infoServiceProperties.getMetricsUpdateInterval());
             controlServiceInfo.put("prop-metrics-client-update-interval", infoServiceProperties.getMetricsClientUpdateInterval());
             controlServiceInfo.put("prop-metrics-stream-event-name", infoServiceProperties.getMetricsStreamEventName());
             controlServiceInfo.put("prop-metrics-stream-update-interval", infoServiceProperties.getMetricsStreamUpdateInterval());
-            controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
             controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreloadCamelModel());
             controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreloadCpModel());
             controlServiceInfo.put("prop-upperware-grouping", controlServiceProperties.getUpperwareGrouping());

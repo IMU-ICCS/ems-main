@@ -43,12 +43,8 @@ public class ControlServiceProperties {
 
     private boolean printBuildInfo;
 
-    @Value("${" + EMS_PROPERTIES_PREFIX + "IP_SETTING}")
     private IpSetting ipSetting = IpSetting.PUBLIC_IP;
-    @Value("${" + EMS_PROPERTIES_PREFIX + "EXECUTIONWARE}")
     private ExecutionWare executionware = ExecutionWare.PROACTIVE;
-    @Value("${" + EMS_PROPERTIES_PREFIX + "password-encoder-class:}")
-    private String passwordEncoderClass;
 
     private String upperwareGrouping;
     private String metasolverConfigurationUrl;
