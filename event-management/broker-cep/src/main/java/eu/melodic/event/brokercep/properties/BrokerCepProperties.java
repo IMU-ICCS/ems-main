@@ -9,11 +9,12 @@
 
 package eu.melodic.event.brokercep.properties;
 
+import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -26,72 +27,64 @@ import java.util.Map;
 @Slf4j
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "brokercep")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "brokercep")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
-public class BrokerCepProperties {
+public class BrokerCepProperties implements InitializingBean {
+    public void afterPropertiesSet() {
+        log.debug("BrokerCepProperties: {}", this);
+    }
 
-    @Value("${broker-name:broker}")
-    private String brokerName;
+    private String brokerName = "broker";
 
     // Broker connector URLs
     private List<String> brokerUrl = Collections.singletonList("ssl://0.0.0.0:61616");
     public String getBrokerUrl() { return brokerUrl.get(0); }
     public List<String> getBrokerUrlList() { return brokerUrl; }
 
-    @Value("${broker-url-for-consumer:ssl://127.0.0.1:61616}")
-    private String brokerUrlForConsumer;
-    @Value("#{ '${brokercep.broker-url-for-clients}'!='' ? '${brokercep.broker-url-for-clients}' : 'ssl://'+T(eu.melodic.event.util.NetUtil).getPublicIpAddress()+':61616' }")
-    private String brokerUrlForClients;
+    private String brokerUrlForConsumer = "ssl://127.0.0.1:61616";
+    private String brokerUrlForClients = "ssl://"+eu.melodic.event.util.NetUtil.getPublicIpAddress()+":61616";
 
-    @Value("${connector-port:-1}")
-    private int connectorPort;
-    @Value("${bypass-local-broker:false}")
+    private int managementConnectorPort = -1;
     private boolean bypassLocalBroker;
 
     // brokercep.ssl.** settings
     private KeystoreAndCertificateProperties ssl;
 
-    @Value("${authentication-enabled:false}")
     private boolean authenticationEnabled;
     @ToString.Exclude
-    @Value("${additional-broker-credentials:}")
     private String additionalBrokerCredentials;
-    @Value("${authorization-enabled:false}")
     private boolean authorizationEnabled;
 
-    @Value("${broker-persistence-enabled:false}")
     private boolean brokerPersistenceEnabled;
-    @Value("${broker-using-jmx:false}")
     private boolean brokerUsingJmx;
-    @Value("${broker-advisory-support-enabled:false}")
     private boolean brokerAdvisorySupportEnabled;
-    @Value("${broker-using-shutdown-hook:false}")
     private boolean brokerUsingShutdownHook;
 
-    @Value("${broker-enable-statistics:false}")
-    private boolean enableStatistics;
-    @Value("${broker-populate-jmsx-user-id:false}")
-    private boolean populateJmsxUserId;
+    private boolean brokerEnableStatistics;
+    private boolean brokerPopulateJmsxUserId;
+
+    private boolean enableAdvisoryWatcher = true;
 
     private List<MessageInterceptorConfig> messageInterceptors;
     private Map<String,MessageInterceptorSpec> messageInterceptorsSpecs = new HashMap<>();
 
-    @Value("${message-forward-destinations:}#{T(java.util.Collections).emptyList()}")
-    private List<ForwardDestinationConfig> messageForwardDestinations;
+    private List<ForwardDestinationConfig> messageForwardDestinations = Collections.emptyList();
 
-    @Value("${enable-advisory-watcher:true}")
-    private boolean enableAdvisoryWatcher;
+    private int maxEventForwardRetries = -1;
+    private long maxEventForwardDuration = -1;
 
-    @Value("${brokercep.usage.memory.jvm-heap-percentage:-1}")
-    private int memoryJvmHeapPercentage;
-    @Value("${brokercep.usage.memory.size:-1}")
-    private long memorySize;
+    private Usage usage = new Usage();
 
-    @Value("${brokercep.max-event-forward-retries:-1}")
-    private int maxEventForwardRetries;
-    @Value("${brokercep.max-event-forward-duration:-1}")
-    private long maxEventForwardDuration;
+    @Data
+    public static class Usage {
+        private Memory memory = new Memory();
 
+        @Data
+        public static class Memory {
+            private int jvmHeapPercentage = -1;
+            private long size = -1;
+        }
+    }
     @Data
     public static class MessageInterceptorSpec {
         private String className;

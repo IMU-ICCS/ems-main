@@ -34,7 +34,7 @@ import java.util.Map;
 @Slf4j
 public class BaguetteServerProperties implements InitializingBean {
     public void afterPropertiesSet() {
-        log.warn(">>>>>>>>>>>>>>>>>>>> {}", this);
+        log.debug("BaguetteServerProperties: {}", this);
     }
 
     /*XXX: TODO: Add combinatorial properties check

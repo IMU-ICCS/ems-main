@@ -284,14 +284,14 @@ public class BrokerConfig implements InitializingBean {
         brokerService.setUseShutdownHook(properties.isBrokerUsingShutdownHook());
         brokerService.setAdvisorySupport(properties.isBrokerAdvisorySupportEnabled());
 
-        brokerService.setPopulateJMSXUserID(properties.isPopulateJmsxUserId());
-        brokerService.setEnableStatistics(properties.isEnableStatistics());
+        brokerService.setPopulateJMSXUserID(properties.isBrokerPopulateJmsxUserId());
+        brokerService.setEnableStatistics(properties.isBrokerEnableStatistics());
 
         // Change the JMX connector port
-        if (properties.getConnectorPort() > 0) {
+        if (properties.getManagementConnectorPort() > 0) {
             if (brokerService.getManagementContext() != null) {
-                log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getConnectorPort());
-                brokerService.getManagementContext().setConnectorPort(properties.getConnectorPort());
+                log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getManagementConnectorPort());
+                brokerService.getManagementContext().setConnectorPort(properties.getManagementConnectorPort());
             }
         }
 
@@ -321,8 +321,8 @@ public class BrokerConfig implements InitializingBean {
         }
 
         // Set memory limit in order not to use too much memory
-        int memHeapPercent = properties.getMemoryJvmHeapPercentage();
-        long memSize = properties.getMemorySize();
+        int memHeapPercent = properties.getUsage().getMemory().getJvmHeapPercentage();
+        long memSize = properties.getUsage().getMemory().getSize();
         if (memHeapPercent > 0 || memSize > 0) {
             final MemoryUsage memoryUsage = new MemoryUsage();
             if (memHeapPercent > 0) {
