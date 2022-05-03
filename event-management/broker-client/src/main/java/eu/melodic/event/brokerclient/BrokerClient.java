@@ -390,12 +390,12 @@ public class BrokerClient {
             log.debug("BrokerClient.createConnectionFactory(): Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
             try {
-                sslConnectionFactory.setTrustStore(properties.getTruststoreFile());
-                sslConnectionFactory.setTrustStoreType(properties.getTruststoreType());
-                sslConnectionFactory.setTrustStorePassword(properties.getTruststorePassword());
-                sslConnectionFactory.setKeyStore(properties.getKeystoreFile());
-                sslConnectionFactory.setKeyStoreType(properties.getKeystoreType());
-                sslConnectionFactory.setKeyStorePassword(properties.getKeystorePassword());
+                sslConnectionFactory.setTrustStore(properties.getSsl().getTruststoreFile());
+                sslConnectionFactory.setTrustStoreType(properties.getSsl().getTruststoreType());
+                sslConnectionFactory.setTrustStorePassword(properties.getSsl().getTruststorePassword());
+                sslConnectionFactory.setKeyStore(properties.getSsl().getKeystoreFile());
+                sslConnectionFactory.setKeyStoreType(properties.getSsl().getKeystoreType());
+                sslConnectionFactory.setKeyStorePassword(properties.getSsl().getKeystorePassword());
                 //sslConnectionFactory.setKeyStoreKeyPassword( properties........ );
 
                 connectionFactory = sslConnectionFactory;
