@@ -9,6 +9,7 @@
 
 package eu.melodic.event.common.recovery;
 
+import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public class NetdataAgentLocalRecoveryTask extends ShellRecoveryTask {
                     "sudo netdata",0, 10000)
     ));
 
-    @Value("${self.healing.recovery.file.netdata:}")
+    @Value("${" + EmsConstant.EMS_PROPERTIES_PREFIX + "self.healing.recovery.file.netdata:}")
     private String netdataRecoveryFile;
 
     public NetdataAgentLocalRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler) {

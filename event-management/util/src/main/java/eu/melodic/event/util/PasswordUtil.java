@@ -27,7 +27,7 @@ public class PasswordUtil implements InitializingBean {
     private final static Supplier<PasswordEncoder> passwordEncoderSupplier = AsterisksPasswordEncoder::new;
     private final static AtomicReference<PasswordEncoder> defaultPasswordEncoder = new AtomicReference<>();
 
-    @Value("${password-encoder-class:}")
+    @Value("${" + EmsConstant.EMS_PROPERTIES_PREFIX + "password-encoder-class:}")
     private String passwordEncoderClassName;
     private PasswordEncoder passwordEncoder;
 

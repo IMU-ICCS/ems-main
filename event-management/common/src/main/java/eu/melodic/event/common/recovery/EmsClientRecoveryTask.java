@@ -11,6 +11,7 @@ package eu.melodic.event.common.recovery;
 
 import eu.melodic.event.common.client.SshClientProperties;
 import eu.melodic.event.common.collector.CollectorContext;
+import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
@@ -41,7 +42,7 @@ public class EmsClientRecoveryTask<P extends SshClientProperties> extends VmNode
                     "/opt/baguette-client/bin/run.sh",0, 10000)
     ));
 
-    @Value("${self.healing.recovery.file.baguette:}")
+    @Value("${" + EmsConstant.EMS_PROPERTIES_PREFIX + "self.healing.recovery.file.baguette:}")
     private String emsRecoveryFile;
 
     public EmsClientRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext) {
