@@ -14,17 +14,15 @@ import eu.melodic.event.common.client.SshClientProperties;
 import eu.melodic.event.common.collector.CollectorContext;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
-import lombok.*;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,20 +34,18 @@ import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_REC
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class VmNodeRecoveryTask <P extends SshClientProperties> implements RecoveryTask {
-    @NonNull private final EventBus<String,Object,Object> eventBus;
-    @NonNull private final PasswordUtil passwordUtil;
-    @NonNull private final TaskScheduler taskScheduler;
+public class VmNodeRecoveryTask <P extends SshClientProperties> extends AbstractRecoveryTask {
     @NonNull private final CollectorContext<P> collectorContext;
-
-    @Getter
-    private Map nodeInfo;
 
     private P sshClientProperties;
 
+    public VmNodeRecoveryTask(EventBus<String,Object,Object> eventBus, PasswordUtil passwordUtil, TaskScheduler taskScheduler, SelfHealingProperties selfHealingProperties, CollectorContext<P> collectorContext) {
+        super(eventBus, passwordUtil, taskScheduler, selfHealingProperties);
+        this.collectorContext = collectorContext;
+    }
+
     public void setNodeInfo(@NonNull Map nodeInfo) {
-        this.nodeInfo = nodeInfo;
+        super.setNodeInfo(nodeInfo);
         this.sshClientProperties = createSshClientProperties();
     }
 
@@ -94,13 +90,6 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> implements Recov
     private String str(Object o) {
         if (o==null) return "";
         return o.toString();
-    }
-
-    private void waitFor(long millis, String description) {
-        if (millis>0) {
-            log.warn("##############  Waiting for {}ms after {}...", millis, description);
-            try { Thread.sleep(millis); } catch (InterruptedException e) { }
-        }
     }
 
     private P createSshClientProperties() {
@@ -169,23 +158,9 @@ public class VmNodeRecoveryTask <P extends SshClientProperties> implements Recov
     }
 
     private void redirectSshOutput(InputStream in, String id, AtomicBoolean closed) {
-        taskScheduler.schedule(() -> {
-                    try {
-                        //IoUtils.copy(sshc.getIn(), System.out);
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-                            while (reader.ready()) {
-                                log.info(" {}> {}", id, reader.readLine());
-                            }
-                        }
-                    } catch (IOException e) {
-                        if (closed.get()) {
-                            log.info("VmNodeRecoveryTask: redirectSshOutput(): Connection closed: id={}", id);
-                        } else {
-                            log.error("VmNodeRecoveryTask: redirectSshOutput(): Exception while copying SSH IN stream: id={}\n", id, e);
-                        }
-                    }
-                },
-                Instant.now()
-        );
+        redirectOutput(in, id, closed,
+                "VmNodeRecoveryTask: redirectSshOutput(): Connection closed: id={}",
+                "VmNodeRecoveryTask: redirectSshOutput(): Exception while copying SSH IN stream: id={}\n");
+        //IoUtils.copy(sshc.getIn(), System.out);
     }
 }

@@ -10,19 +10,15 @@
 package eu.melodic.event.common.recovery;
 
 import eu.melodic.event.util.EventBus;
-import lombok.*;
+import eu.melodic.event.util.PasswordUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED;
@@ -32,16 +28,9 @@ import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_REC
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class ShellRecoveryTask implements RecoveryTask {
-    @NonNull private final EventBus<String,Object,Object> eventBus;
-    @NonNull private final TaskScheduler taskScheduler;
-
-    @Getter @Setter
-    private Map nodeInfo;
-
-    public void setNodeInfo(@NonNull Map nodeInfo) {
-        this.nodeInfo = nodeInfo;
+public class ShellRecoveryTask extends AbstractRecoveryTask {
+    public ShellRecoveryTask(EventBus<String,Object,Object> eventBus, PasswordUtil passwordUtil, TaskScheduler taskScheduler, SelfHealingProperties selfHealingProperties) {
+        super(eventBus, passwordUtil, taskScheduler, selfHealingProperties);
     }
 
     @SneakyThrows
@@ -83,31 +72,10 @@ public class ShellRecoveryTask implements RecoveryTask {
         eventBus.send(SELF_HEALING_RECOVERY_COMPLETED, "");
     }
 
-    private void waitFor(long millis, String description) {
-        if (millis>0) {
-            log.warn("##############  Waiting for {}ms after {}...", millis, description);
-            try { Thread.sleep(millis); } catch (InterruptedException e) { }
-        }
-    }
-
     private void redirectShellOutput(InputStream in, String id, AtomicBoolean closed) {
-        taskScheduler.schedule(() -> {
-                    try {
-                        //IoUtils.copy(in, System.out);
-                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-                            while (reader.ready()) {
-                                log.info(" {}> {}", id, reader.readLine());
-                            }
-                        }
-                    } catch (IOException e) {
-                        if (closed.get()) {
-                            log.info("ShellRecoveryTask: redirectShellOutput(): Connection closed: id={}", id);
-                        } else {
-                            log.error("ShellRecoveryTask: redirectShellOutput(): Exception while copying Process IN stream: id={}\n", id, e);
-                        }
-                    }
-                },
-                Instant.now()
-        );
+        redirectOutput(in, id, closed,
+                "ShellRecoveryTask: redirectShellOutput(): Connection closed: id={}",
+                "ShellRecoveryTask: redirectShellOutput(): Exception while copying Process IN stream: id={}\n");
+        //IoUtils.copy(in, System.out);
     }
 }
