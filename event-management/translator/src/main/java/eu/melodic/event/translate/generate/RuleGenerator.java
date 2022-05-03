@@ -15,7 +15,7 @@ import camel.constraint.LogicalConstraint;
 import camel.constraint.MetricConstraint;
 import camel.core.NamedElement;
 import camel.data.Data;
-//import camel.deployment.Component;
+import camel.deployment.Component;
 import camel.metric.*;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
@@ -31,7 +31,7 @@ import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.dialect.SpringStandardDialect;
@@ -45,7 +45,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Service
 public class RuleGenerator {
 
     @Autowired
@@ -467,7 +467,7 @@ public class RuleGenerator {
                 MetricVariable mvar = (MetricVariable) elem;
                 boolean isCurrConfig = mvar.isCurrentConfiguration();
                 boolean isOnNodeCand = mvar.isOnNodeCandidates();
-                camel.deployment.Component comp = mvar.getComponent();
+                Component comp = mvar.getComponent();
                 String compName = comp != null ? comp.getName() : null;
                 String formula = mvar.getFormula();
                 EList<Metric> _componentMetrics = mvar.getComponentMetrics();
@@ -623,7 +623,7 @@ public class RuleGenerator {
         if (mc != null) {
             ObjectContext objCtx = mc.getObjectContext();
             if (objCtx != null) {
-                camel.deployment.Component comp = objCtx.getComponent();
+                Component comp = objCtx.getComponent();
                 Data data = objCtx.getData();
                 compName = comp != null ? comp.getName() : null;
                 dataName = data != null ? data.getName() : null;

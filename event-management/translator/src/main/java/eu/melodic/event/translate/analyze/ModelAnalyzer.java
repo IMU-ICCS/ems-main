@@ -12,7 +12,7 @@ package eu.melodic.event.translate.analyze;
 import camel.constraint.*;
 import camel.core.*;
 import camel.data.Data;
-//import camel.deployment.Component;
+import camel.deployment.Component;
 import camel.metric.*;
 import camel.metric.Sensor;
 import camel.metric.impl.MetricVariableImpl;
@@ -35,7 +35,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.List;
@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
 public class ModelAnalyzer {
     private final CamelToEplTranslatorProperties properties;
@@ -163,7 +163,7 @@ public class ModelAnalyzer {
             variables.forEach(mv -> {
                 // get component metrics
                 EList<Metric> componentMetrics = mv.getComponentMetrics();
-                camel.deployment.Component component = mv.getComponent();
+                Component component = mv.getComponent();
                 log.info("  Metric-Variable: {}.{}.{} :: component-metrics={}, component={}", camelModel.getName(), mm.getName(), mv.getName(), getListElementNames(componentMetrics), getElementName(component));
 
                 // update _TC.MVV set
@@ -188,7 +188,7 @@ public class ModelAnalyzer {
 //XXX:Improve this method (probably pre-process metric models to avoid multiple scans of the model)
     private static MetricVariable _findMatchingVar(MetricVariable mvar, CamelModel camelModel) {
         CamelMetadata type = CamelMetadataTool.findVariableType((MetricVariableImpl) mvar);
-        camel.deployment.Component comp = mvar.getComponent();
+        Component comp = mvar.getComponent();
         if (type==null || comp==null) {
             log.warn("  _findMatchingVar: type or component is null: type={}, component={}", type, comp);
             return null;
@@ -473,7 +473,7 @@ public class ModelAnalyzer {
                 MetricTemplate template = mv.getMetricTemplate();
                 boolean isCurrConfig = mv.isCurrentConfiguration();
                 boolean isOnNodeCand = mv.isOnNodeCandidates();
-                camel.deployment.Component component = mv.getComponent();
+                Component component = mv.getComponent();
                 String formula = mv.getFormula();
                 List<Metric> componentMetrics = ListUtils.emptyIfNull(mv.getComponentMetrics());
                 boolean containsMetrics = ! componentMetrics.isEmpty();
@@ -769,7 +769,7 @@ public class ModelAnalyzer {
         MetricTemplate template = mvar.getMetricTemplate();
         boolean currentConfig = mvar.isCurrentConfiguration();
         boolean nodeCandidates = mvar.isOnNodeCandidates();
-        camel.deployment.Component component = mvar.getComponent();
+        Component component = mvar.getComponent();
         String formula = mvar.getFormula();
         EList<Metric> metrics = mvar.getComponentMetrics();
         log.info("  _decomposeMetricVariable(): {} :: template={}, current-config={}, on-node-candidates={}, component={}, formula={}, component-metrics={}",
@@ -1291,7 +1291,7 @@ public class ModelAnalyzer {
 
     private String getComponentName(ObjectContext objContext) {
         if (objContext == null) return null;
-        camel.deployment.Component comp = objContext.getComponent();
+        Component comp = objContext.getComponent();
         Data data = objContext.getData();
         if (comp != null && data != null)
             throw new ModelAnalysisException("Invalid Object Context: properties Component and Data cannot be not null at the same time: " + objContext.getName());

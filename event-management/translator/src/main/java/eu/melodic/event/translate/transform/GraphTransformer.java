@@ -20,12 +20,12 @@ import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
 public class GraphTransformer {
     private final CamelToEplTranslatorProperties properties;
