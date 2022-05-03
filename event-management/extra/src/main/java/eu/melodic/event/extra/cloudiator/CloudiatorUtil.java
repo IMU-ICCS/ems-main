@@ -55,8 +55,8 @@ public class CloudiatorUtil implements InitializingBean {
         log.warn("CloudiatorUtil.afterPropertiesSet(): configuration: {}", properties);
 
         this.client = ClientBuilder.getNew()
-                .url(properties.getColosseumEndpoint())
-                .credentials(properties.getColosseumAuthEmail(), properties.getColosseumAuthTenant(), properties.getColosseumAuthPassword())
+                .url(properties.getColosseum().getEndpoint())
+                .credentials(properties.getColosseum().getAuthEmail(), properties.getColosseum().getAuthTenant(), properties.getColosseum().getAuthPassword())
                 .build();
 
         preparePatterns();

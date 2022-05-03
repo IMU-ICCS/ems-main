@@ -9,11 +9,10 @@
 
 package eu.melodic.event.extra.cloudiator;
 
-import lombok.Getter;
-import lombok.Setter;
+import eu.melodic.event.util.EmsConstant;
+import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -23,52 +22,45 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
-@ToString
+@Slf4j
+@Data
 @Validated
 @Configuration
-@ConfigurationProperties
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "colosseum")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/cloudiator.properties")
-@Slf4j
 public class CloudiatorUtilProperties {
     @NotNull
-    @Value("${colosseum.endpoint}")
-    private String colosseumEndpoint;
-    @NotNull
-    @Value("${colosseum.auth.email}")
-    private String colosseumAuthEmail;
-    @NotNull
-    @Value("${colosseum.auth.tenant}")
-    private String colosseumAuthTenant;
-    @NotNull
-    @Value("${colosseum.auth.password}")
-    private String colosseumAuthPassword;
+    private Colosseum colosseum = new Colosseum();
 
-    @Value("${colosseum.db.enabled:false}")
-    private boolean colosseumDbEnabled;
-    @Value("${colosseum.db.driver:}")
-    private String colosseumDbDriver;
-    @Value("${colosseum.db.url:}")
-    private String colosseumDbUrl;
-    @Value("${colosseum.db.username:}")
-    private String colosseumDbUsername;
-    @Value("${colosseum.db.password:}")
-    private String colosseumDbPassword;
-    @Value("${colosseum.db.database:}")
-    private String colosseumDbDatabase;
+    @Data
+    public static class Colosseum {
+        @NotNull
+        private String endpoint;
+        @NotNull
+        private String authEmail;
+        @NotNull
+        private String authTenant;
+        @NotNull
+        @ToString.Exclude
+        private String authPassword;
 
-    @Value("${colosseum.owner-id:-1}")
-    private int colosseumOwnerId;
+        private boolean dbEnabled;
+        private String dbDriver;
+        private String dbUrl;
+        private String dbUsername;
+        @ToString.Exclude
+        private String dbPassword;
+        private String dbDatabase;
+
+        private int ownerId = -1;
+    }
 
     @NotNull
     private final List<ProviderPatternPair> providerEndpointPatterns = new ArrayList<>();
     @NotNull
     private final List<ProviderPatternPair> providerLocationPatterns = new ArrayList<>();
 
-    @Getter
-    @Setter
-    @ToString
+    @Data
     public static class ProviderPatternPair {
         private String pattern;
         private String provider;
