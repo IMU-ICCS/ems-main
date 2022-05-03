@@ -11,3 +11,4 @@
  :: Build Num.  :: @buildNumber@
  :: Build Date  :: @timestamp@
  :: SCM Branch  :: @scmBranch@
+ :: Description :: @build-description@
