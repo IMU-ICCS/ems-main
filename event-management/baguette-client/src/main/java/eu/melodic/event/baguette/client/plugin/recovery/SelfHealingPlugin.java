@@ -23,7 +23,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
@@ -47,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.EventConsumer<String,Object,Object> {
     private final ApplicationContext applicationContext;
     private final BaguetteClientProperties properties;
+    private final SelfHealingProperties selfHealingProperties;
     private final CommandExecutor commandExecutor;
     private final EventBus<String,Object,Object> eventBus;
     private final PasswordUtil passwordUtil;
@@ -57,18 +57,10 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     private final HashMap<String,ScheduledFuture<?>> waitingTasks = new HashMap<>();
     private final TaskScheduler taskScheduler;
 
-    @Value("${self.healing.enabled:true}")
-    private boolean enabled;
-    @Value("${self.healing.recovery.delay:10000}")
-    private long clientRecoveryDelay;
-    @Value("${self.healing.recovery.retry.wait:60000}")
-    private long clientRecoveryRetryDelay;
-    @Value("${self.healing.recovery.max.retries:3}")
-    private int clientRecoveryMaxRetries;
-
     @Override
     public void afterPropertiesSet() {
         log.debug("SelfHealingPlugin: properties: {}", properties);
+        log.debug("SelfHealingPlugin: selfHealingProperties: {}", selfHealingProperties);
     }
 
     public synchronized void start() {
@@ -107,7 +99,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
     @Override
     public void onMessage(String topic, Object message, Object sender) {
         log.debug("SelfHealingPlugin: onMessage(): BEGIN: topic={}, message={}, sender={}", topic, message, sender);
-        if (!enabled) return;
+        if (!selfHealingProperties.isEnabled()) return;
 
         // Self-Healing for EMS clients
         if (CommandExecutor.EVENT_CLUSTER_NODE_REMOVED.equals(topic)) {
@@ -277,7 +269,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 log.error("SelfHealingPlugin: EXCEPTION while recovering node: node-address={} -- Exception: ", nodeAddress, e);
                 eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_FAILED, nodeAddress);
             }
-            if (retries.getAndIncrement() >= clientRecoveryMaxRetries) {
+            if (retries.getAndIncrement() >= selfHealingProperties.getRecovery().getMaxRetries()) {
                 log.warn("SelfHealingPlugin: Max retries reached. No more recovery retries for node: id={}, address={}", nodeId, nodeAddress);
                 cancelRecoveryTask(nodeId, nodeAddress, true);
                 eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress);
@@ -285,7 +277,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                 // Notify EMS server about giving up recovery due to permanent failure
                 commandExecutor.notifyEmsServer("RECOVERY GIVE_UP "+nodeId+" @ "+nodeAddress);
             }
-        }, Instant.now().plusMillis(clientRecoveryDelay), Duration.ofMillis(clientRecoveryRetryDelay));
+        }, Instant.now().plusMillis(selfHealingProperties.getRecovery().getDelay()), Duration.ofMillis(selfHealingProperties.getRecovery().getRetryDelay()));
         waitingTasks.put(nodeAddress, future);
         log.info("SelfHealingPlugin: createRecoveryTask(): Created recovery task for Node: id={}, address={}", nodeId, nodeAddress);
     }
