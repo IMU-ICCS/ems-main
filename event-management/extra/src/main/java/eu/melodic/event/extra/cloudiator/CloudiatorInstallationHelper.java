@@ -17,6 +17,7 @@ import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.NetUtil;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -91,7 +92,7 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
         Map<String,String> valueMap = new HashMap<>();
         valueMap.put("BAGUETTE_CLIENT_ID", clientId);
         valueMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
-        valueMap.put("BAGUETTE_SERVER_HOSTNAME", baguette.getConfiguration().getServerHostname());
+        valueMap.put("BAGUETTE_SERVER_HOSTNAME", NetUtil.getHostname());
         valueMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());
         valueMap.put("BAGUETTE_SERVER_PUBKEY", baguette.getServerPubkey());
         valueMap.put("BAGUETTE_SERVER_PUBKEY_FINGERPRINT", baguette.getServerPubkeyFingerprint());
