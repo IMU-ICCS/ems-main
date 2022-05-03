@@ -11,14 +11,12 @@ package eu.melodic.event.common.recovery;
 
 import eu.melodic.event.common.client.SshClientProperties;
 import eu.melodic.event.common.collector.CollectorContext;
-import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -42,14 +40,13 @@ public class EmsClientRecoveryTask<P extends SshClientProperties> extends VmNode
                     "/opt/baguette-client/bin/run.sh",0, 10000)
     ));
 
-    @Value("${" + EmsConstant.EMS_PROPERTIES_PREFIX + "self.healing.recovery.file.baguette:}")
-    private String emsRecoveryFile;
-
-    public EmsClientRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext) {
-        super(eventBus, passwordUtil, taskScheduler, collectorContext);
+    public EmsClientRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext, @NonNull SelfHealingProperties selfHealingProperties) {
+        super(eventBus, passwordUtil, taskScheduler, selfHealingProperties, collectorContext);
     }
 
     public void runNodeRecovery() throws Exception {
+        String emsRecoveryFile = selfHealingProperties.getRecovery().getFile().get("baguette");
+        log.debug("runNodeRecovery: file={}", emsRecoveryFile);
         if (StringUtils.isNotBlank(emsRecoveryFile))
             runNodeRecovery(emsRecoveryFile);
         else

@@ -14,6 +14,9 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "self.healing")
@@ -26,5 +29,7 @@ public class SelfHealingProperties {
 		private long delay = 10000;
 		private long retryDelay = 60000;
 		private int maxRetries = 3;
+
+		private Map<String,String> file = new HashMap<>();
 	}
 }
