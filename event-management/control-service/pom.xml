@@ -45,6 +45,7 @@
         <docker-maven-plugin.version>0.39.1</docker-maven-plugin.version>
         <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
         <!--<docker-image-tag>2022-devel</docker-image-tag>-->
+        <!--<build-description></build-description>-->
     </properties>
 
     <dependencies>
