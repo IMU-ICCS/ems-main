@@ -142,16 +142,12 @@ public class NetdataCollector implements InitializingBean, Runnable, EventBus.Ev
         log.trace("Collectors::Netdata: nodeAddress={}", nodeAddress);
 
         if (RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED.equals(topic)) {
-            if (StringUtils.isNotBlank(nodeAddress)) {
-                log.info("Collectors::Netdata: Resuming collection from Node: {}", nodeAddress);
-                ignoredNodes.remove(nodeAddress);
-            }
+            log.info("Collectors::Netdata: Resuming collection from Node: {}", nodeAddress);
+            ignoredNodes.remove(nodeAddress);
         } else
         if (RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP.equals(topic)) {
-            if (StringUtils.isNotBlank(nodeAddress)) {
-                log.info("Collectors::Netdata: Giving up collection from Node: {}", nodeAddress);
-                ignoredNodes.put(nodeAddress, null);
-            }
+            log.info("Collectors::Netdata: Giving up collection from Node: {}", nodeAddress);
+            ignoredNodes.put(nodeAddress, null);
         } else
         if (EventConstant.EVENT_CLIENT_CONFIG_UPDATED.equals(topic)) {
             log.info("Collectors::Netdata: Client configuration updated. Purging nodes without recovery task from ignore list: Old ignore list nodes: {}", ignoredNodes.keySet());
