@@ -14,18 +14,18 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "baguette.client.install")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-client-install.properties")
-@Slf4j
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-client-install.properties")
 public class ClientInstallationProperties {
     private final Map<String, List<String>> osFamilies = new HashMap<>();
 

@@ -13,7 +13,6 @@ import eu.melodic.event.control.webconf.WebMvcConfig;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -30,7 +29,12 @@ import static eu.melodic.event.util.EmsConstant.EMS_PROPERTIES_PREFIX;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EMS_PROPERTIES_PREFIX + "control")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
+@PropertySource(value = {
+        "file:${MELODIC_CONFIG_DIR}/ems-server.yml",
+        "file:${MELODIC_CONFIG_DIR}/ems-server.properties",
+        "file:${MELODIC_CONFIG_DIR}/ems.yml",
+        "file:${MELODIC_CONFIG_DIR}/ems.properties"
+}, ignoreResourceNotFound = true)
 public class ControlServiceProperties {
     public enum IpSetting {
         DEFAULT_IP,
