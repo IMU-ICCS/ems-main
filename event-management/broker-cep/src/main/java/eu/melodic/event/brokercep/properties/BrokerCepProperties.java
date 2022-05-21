@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import java.util.Map;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "brokercep")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 public class BrokerCepProperties implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("BrokerCepProperties: {}", this);

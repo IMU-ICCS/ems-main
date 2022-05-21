@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import java.util.Map;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "translator")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.translator.properties")
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.translator.properties")
 public class CamelToEplTranslatorProperties implements InitializingBean {
     @Override
     public void afterPropertiesSet() {

@@ -21,7 +21,12 @@ import java.util.List;
 @Data
 @Configuration
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/baguette-client.properties")
+@PropertySource(value = {
+//		"file:${MELODIC_CONFIG_DIR}/ems-client.yml",
+		"file:${MELODIC_CONFIG_DIR}/ems-client.properties",
+//		"file:${MELODIC_CONFIG_DIR}/baguette-client.yml",
+		"file:${MELODIC_CONFIG_DIR}/baguette-client.properties"
+}, ignoreResourceNotFound = true)
 @ToString(callSuper = true)
 public class BaguetteClientProperties extends SshClientProperties {
 	private boolean exitCommandAllowed = false;
