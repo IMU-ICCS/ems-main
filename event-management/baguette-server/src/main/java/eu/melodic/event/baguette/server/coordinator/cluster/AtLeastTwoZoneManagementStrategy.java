@@ -10,14 +10,7 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
-import eu.melodic.event.baguette.server.NodeRegistryEntry;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.internal.guava.InetAddresses;
-
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * A smarter than default Zone Management Strategy.
