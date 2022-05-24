@@ -22,9 +22,9 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties
 @PropertySource(value = {
-//		"file:${MELODIC_CONFIG_DIR}/ems-client.yml",
+		"file:${MELODIC_CONFIG_DIR}/ems-client.yml",
 		"file:${MELODIC_CONFIG_DIR}/ems-client.properties",
-//		"file:${MELODIC_CONFIG_DIR}/baguette-client.yml",
+		"file:${MELODIC_CONFIG_DIR}/baguette-client.yml",
 		"file:${MELODIC_CONFIG_DIR}/baguette-client.properties"
 }, ignoreResourceNotFound = true)
 @ToString(callSuper = true)

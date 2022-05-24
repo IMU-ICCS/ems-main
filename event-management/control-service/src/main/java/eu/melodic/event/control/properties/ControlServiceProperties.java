@@ -30,9 +30,9 @@ import static eu.melodic.event.util.EmsConstant.EMS_PROPERTIES_PREFIX;
 @Configuration
 @ConfigurationProperties(prefix = EMS_PROPERTIES_PREFIX + "control")
 @PropertySource(value = {
-//        "file:${MELODIC_CONFIG_DIR}/ems-server.yml",
+        "file:${MELODIC_CONFIG_DIR}/ems-server.yml",
         "file:${MELODIC_CONFIG_DIR}/ems-server.properties",
-//        "file:${MELODIC_CONFIG_DIR}/ems.yml",
+        "file:${MELODIC_CONFIG_DIR}/ems.yml",
         "file:${MELODIC_CONFIG_DIR}/ems.properties"
 }, ignoreResourceNotFound = true)
 public class ControlServiceProperties {
