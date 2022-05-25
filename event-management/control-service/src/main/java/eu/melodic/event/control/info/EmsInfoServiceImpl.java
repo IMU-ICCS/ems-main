@@ -161,7 +161,6 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             controlServiceInfo.put("prop-tc-save-file", controlServiceProperties.getTcSaveFile());
 
             Map<String,Object> debugFlags = new LinkedHashMap<>();
-            debugFlags.put("event-debug-enabled",  controlServiceProperties.isEventDebugEnabled());
             debugFlags.put("exit-allowed",  controlServiceProperties.isExitAllowed());
             debugFlags.put("print-build-info",  controlServiceProperties.isPrintBuildInfo());
             debugFlags.put("skip-translation",  controlServiceProperties.isSkipTranslation());

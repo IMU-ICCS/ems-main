@@ -68,10 +68,6 @@ public class ControlServiceProperties {
     private String tcLoadFile;
     private String tcSaveFile;
 
-    private boolean eventDebugEnabled;
-    private String eventDebugResourceContext;
-    private String[] eventDebugResourcePath;
-
     private boolean exitAllowed;
     @Min(1)
     private long exitGracePeriod = 10;

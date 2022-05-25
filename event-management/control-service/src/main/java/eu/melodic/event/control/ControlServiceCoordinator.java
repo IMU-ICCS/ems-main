@@ -1026,9 +1026,8 @@ public class ControlServiceCoordinator implements InitializingBean {
     // Event Generation and Debugging methods
     // ------------------------------------------------------------------------------------------------------------
 
-    private final static String EVENT_DEBUG_OK = "OK";
-    private final static String EVENT_DEBUG_ERROR = "ERROR";
-    private final static String EVENT_DEBUG_DISABLED = "EVENT DEBUGGING IS DISABLED";
+    private final static String EVENT_LOG_OK = "OK";
+    private final static String EVENT_LOG_ERROR = "ERROR";
     private final static String BAGUETTE_DISABLED = "BAGUETTE SERVER IS DISABLED";
     private final static String BAGUETTE_NOT_RUNNING = "BAGUETTE SERVER IS NOT RUNNING";
 
@@ -1039,7 +1038,6 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private String eventSendCommandToClient(String method, String clientId, String command) {
         // Check status
-        if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
         if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
         if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
 
@@ -1055,12 +1053,12 @@ public class ControlServiceCoordinator implements InitializingBean {
                 } catch (Exception ex) {
                     log.debug("ControlServiceCoordinator.{}(): EXCEPTION: command: {}, exception: ", method, command, ex);
                     // Log error
-                    return eventLogEnd(method, EVENT_DEBUG_ERROR);
+                    return eventLogEnd(method, EVENT_LOG_ERROR);
                 }
             } else {
                 log.debug("ControlServiceCoordinator.{}(): ERROR: Unsupported command for client-id=0 : {}", method, command);
                 // Log error
-                return eventLogEnd(method, EVENT_DEBUG_ERROR);
+                return eventLogEnd(method, EVENT_LOG_ERROR);
             }
         } else if ("*".equals(clientId))
             baguette.sendToActiveClients(command);
@@ -1068,7 +1066,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             baguette.sendToClient("#"+clientId, command);
 
         // Log success
-        return eventLogEnd(method, EVENT_DEBUG_OK);
+        return eventLogEnd(method, EVENT_LOG_OK);
     }
 
 
@@ -1131,7 +1129,6 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private String sendCommandToCluster(String method, String clusterId, String command) {
         // Check status
-        if (!properties.isEventDebugEnabled()) return eventLogEnd(method, EVENT_DEBUG_DISABLED);
         if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
         if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
 
@@ -1142,7 +1139,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             baguette.sendToCluster(clusterId, command);
 
         // Log success
-        return eventLogEnd(method, EVENT_DEBUG_OK);
+        return eventLogEnd(method, EVENT_LOG_OK);
     }
 
     // ------------------------------------------------------------------------------------------------------------

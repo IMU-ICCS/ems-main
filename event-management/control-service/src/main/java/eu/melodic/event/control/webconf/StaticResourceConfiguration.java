@@ -65,18 +65,6 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
                     .addResourceLocations(logsPath.toArray(new String[0]));
         }
 
-        if (controlServiceProperties.isEventDebugEnabled()
-            && controlServiceProperties.getEventDebugResourcePath()!=null
-            && controlServiceProperties.getEventDebugResourcePath().length > 0)
-        {
-            log.info("Serving event-debug content from: {} --> {}", controlServiceProperties.getEventDebugResourceContext(), controlServiceProperties.getEventDebugResourcePath());
-            registry
-                    .addResourceHandler(controlServiceProperties.getEventDebugResourceContext())
-                    .addResourceLocations(controlServiceProperties.getEventDebugResourcePath())
-                    //.setCachePeriod(0)
-            ;
-        }
-
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
