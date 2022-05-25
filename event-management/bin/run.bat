@@ -41,7 +41,12 @@ if "%JASYPT_PASSWORD%"=="" (
 :: Use this online service to encrypt/decrypt passwords:
 :: https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
-:: check logger configuration
+:: Check EMS configuration
+if "%EMS_CONFIG_LOCATION%"=="" (
+    set EMS_CONFIG_LOCATION=file:%MELODIC_CONFIG_DIR%\ems-server.yml,file:%MELODIC_CONFIG_DIR%\ems-server.properties,file:%MELODIC_CONFIG_DIR%\ems.yml,file:%MELODIC_CONFIG_DIR%\ems.properties
+)
+
+:: Check logger configuration
 if "%LOG_CONFIG_FILE%"=="" (
     set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-conf\logback-spring.xml
 )
@@ -61,6 +66,7 @@ rem Uncomment next line to set JAVA runtime options
 rem set JAVA_OPTS=-Djavax.net.debug=all
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
+echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION%
 echo Starting EMS server...
 IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
 :_restart_ems
@@ -69,7 +75,7 @@ rem Use when Esper is packaged in control-service.jar
 rem java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
 
 rem Use when Esper is NOT packaged in control-service.jar
-java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog --logging.config=file:%LOG_CONFIG_FILE% %*
+java %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"  %*
 
 if errorlevel %RESTART_EXIT_CODE% (
     echo Restarting EMS server...

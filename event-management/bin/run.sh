@@ -44,7 +44,12 @@ fi
 
 export JASYPT_PASSWORD
 
-# check logger configuration
+# Check EMS configuration
+if [[ -z "$EMS_CONFIG_LOCATION" ]]; then
+  EMS_CONFIG_LOCATION=file:$MELODIC_CONFIG_DIR/ems-server.yml,file:$MELODIC_CONFIG_DIR/ems-server.properties,file:$MELODIC_CONFIG_DIR/ems.yml,file:$MELODIC_CONFIG_DIR/ems.properties
+fi
+
+# Check logger configuration
 if [[ -z "$LOG_CONFIG_FILE" ]]; then
     LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-conf/logback-spring.xml
 fi
@@ -65,15 +70,16 @@ fi
 #export JAVA_OPTS
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
+echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}"
 echo "Starting EMS server..."
 if [[ -z $RESTART_EXIT_CODE ]]; then RESTART_EXIT_CODE=99; export RESTART_EXIT_CODE; fi
 retCode=$RESTART_EXIT_CODE
 while :; do
   # Use when Esper is packaged in control-service.jar
-  # java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar --logging.config=file:$LOG_CONFIG_FILE
+  # java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE"
 
   # Use when Esper is NOT packaged in control-service.jar
-  java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher --logging.config=file:$LOG_CONFIG_FILE $*
+  java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE" $*
 
   retCode=$?
   if [[ $retCode -eq $RESTART_EXIT_CODE ]]; then echo "Restarting EMS server..."; else break; fi

@@ -14,6 +14,7 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
 MELODIC_CONFIG_DIR=${BASEDIR}/conf
 PAASAGE_CONFIG_DIR=${BASEDIR}/conf
+EMS_CONFIG_LOCATION=file:$MELODIC_CONFIG_DIR/ems-client.yml,file:$MELODIC_CONFIG_DIR/ems-client.properties,file:$MELODIC_CONFIG_DIR/baguette-client.yml,file:$MELODIC_CONFIG_DIR/baguette-client.properties
 LOG_FILE=${BASEDIR}/logs/output.txt
 TEE_FILE=${BASEDIR}/logs/tee.txt
 JASYPT_PASSWORD=password
@@ -47,17 +48,19 @@ JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
 
 echo "Starting baguette client..."
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
+echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}"
 echo "LOG_FILE=${LOG_FILE}"
 
 echo "Starting baguette client..." &>> ${LOG_FILE}
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}" &>> ${LOG_FILE}
+echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}" &>> ${LOG_FILE}
 echo "LOG_FILE=${LOG_FILE}" &>> ${LOG_FILE}
 
 if [ "$1" == "--i" ]; then
   echo "Baguette client running in Interactive mode"
-  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient --logging.config=file:${MELODIC_CONFIG_DIR}/logback-spring.xml $* $* 2>&1 | tee ${TEE_FILE}
+  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${MELODIC_CONFIG_DIR}/logback-spring.xml" $* $* 2>&1 | tee ${TEE_FILE}
 else
-  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient --logging.config=file:${MELODIC_CONFIG_DIR}/logback-spring.xml $* &>> ${LOG_FILE} &
+  java ${JAVA_OPTS} -classpath "conf:jars/*:target/classes:target/dependency/*" eu.melodic.event.baguette.client.BaguetteClient "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:${MELODIC_CONFIG_DIR}/logback-spring.xml" $* &>> ${LOG_FILE} &
   PID=`jps | grep BaguetteClient | cut -d " " -f 1`
   PID=`ps -ef |grep java |grep BaguetteClient | cut -c 10-14`
   echo "Baguette client PID: $PID"

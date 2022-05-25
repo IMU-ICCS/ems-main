@@ -14,6 +14,7 @@ cd %PWD%..
 set BASEDIR=%cd%
 IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\conf
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\conf
+IF NOT DEFINED EMS_CONFIG_LOCATION set EMS_CONFIG_LOCATION=file:%MELODIC_CONFIG_DIR%\ems-client.yml,file:%MELODIC_CONFIG_DIR%\ems-client.properties,file:%MELODIC_CONFIG_DIR%\baguette-client.yml,file:%MELODIC_CONFIG_DIR%\baguette-client.properties
 IF NOT DEFINED JASYPT_PASSWORD set JASYPT_PASSWORD=password
 
 :: Copy dependencies if missing
@@ -30,8 +31,9 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-tru
 ::set JAVA_OPTS=-Dlogging.level.eu.melodic.event=TRACE %JAVA_OPTS%
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
+echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION%
 echo Starting baguette client...
-java %JAVA_OPTS% -classpath "%MELODIC_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" eu.melodic.event.baguette.client.BaguetteClient --logging.config=file:%MELODIC_CONFIG_DIR%\logback-spring.xml %*
+java %JAVA_OPTS% -classpath "%MELODIC_CONFIG_DIR%;%BASEDIR%\jars\*;%BASEDIR%\target\classes;%BASEDIR%\target\dependency\*" eu.melodic.event.baguette.client.BaguetteClient "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%MELODIC_CONFIG_DIR%\logback-spring.xml"  %*
 
 cd %PWD%
 endlocal
