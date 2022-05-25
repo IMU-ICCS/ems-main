@@ -173,14 +173,14 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         }
         if (staticResourceProperties!=null) {
             Map<String,Object> staticResourceCfg = new LinkedHashMap<>();
-            staticResourceCfg.put("favicon-context",  staticResourceProperties.getFaviconContext());
-            staticResourceCfg.put("favicon-path",  staticResourceProperties.getFaviconPath());
-            staticResourceCfg.put("resource-context",  staticResourceProperties.getResourceContext());
-            staticResourceCfg.put("resource-path",  staticResourceProperties.getResourcePath());
-            staticResourceCfg.put("resource-redirect",  staticResourceProperties.getResourceRedirect());
-            staticResourceCfg.put("resource-redirects",  staticResourceProperties.getResourceRedirects());
-            staticResourceCfg.put("logs-context",  staticResourceProperties.getLogsContext());
-            staticResourceCfg.put("logs-path",  staticResourceProperties.getLogsPath());
+            staticResourceCfg.put("favicon-context",  staticResourceProperties.getFavicon().getContext());
+            staticResourceCfg.put("favicon-path",  staticResourceProperties.getFavicon().getPath());
+            staticResourceCfg.put("resource-context",  staticResourceProperties.getResource().getContext());
+            staticResourceCfg.put("resource-path",  staticResourceProperties.getResource().getPath());
+            staticResourceCfg.put("resource-redirect",  staticResourceProperties.getRedirect());
+            staticResourceCfg.put("resource-redirects",  staticResourceProperties.getRedirects());
+            staticResourceCfg.put("logs-context",  staticResourceProperties.getLogs().getContext());
+            staticResourceCfg.put("logs-path",  staticResourceProperties.getLogs().getPath());
             controlServiceInfo.put("prop-static-resource", staticResourceCfg);
         }
         if (controlServiceProperties!=null && controlServiceProperties.getTaskScheduler()!=null) {

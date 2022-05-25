@@ -224,7 +224,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 // Spring Security should completely ignore the following URLs
-                .antMatchers(staticResourceProperties.getFaviconContext(), "/health");
+                .antMatchers(staticResourceProperties.getFavicon().getContext(), "/health");
     }
 
     @Override

@@ -10,6 +10,7 @@
 package eu.melodic.event.control.properties;
 
 import eu.melodic.event.util.EmsConstant;
+import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -24,17 +25,26 @@ import java.util.Map;
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "static")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "web.static")
 public class StaticResourceProperties {
-    private String faviconContext = "/favicon.ico";
-    private String faviconPath;
+    private ResourceOneMapping favicon = ResourceOneMapping.builder().context("/favicon.ico").build();
+    private ResourceMappings resource = ResourceMappings.builder().context("/resources/**").build();
+    private ResourceMappings logs = ResourceMappings.builder().context("/logs/**").build();
 
-    private String resourceContext = "/resources/**";
-    private List<String> resourcePath;
+    private String redirect;
+    private Map<String,String> redirects = new LinkedHashMap<>();
 
-    private String resourceRedirect;
-    private Map<String,String> resourceRedirects = new LinkedHashMap<>();
+    @Data
+    @Builder
+    public static class ResourceOneMapping {
+        private String context;
+        private String path;
+    }
 
-    private String logsContext = "/logs/**";
-    private List<String> logsPath;
+    @Data
+    @Builder
+    public static class ResourceMappings {
+        private String context;
+        private List<String> path;
+    }
 }
