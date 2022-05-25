@@ -18,10 +18,11 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
-import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -60,7 +62,13 @@ public class ControlServiceController {
     @Autowired
     private ControlServiceProperties properties;
     @Autowired
+    private StaticResourceProperties staticResourceProperties;
+    @Autowired
     private ControlServiceCoordinator coordinator;
+    @Autowired
+    private WebSecurityConfig webSecurityConfig;
+    @Autowired
+    private PasswordUtil passwordUtil;
 
     @Autowired
     private RequestMappingHandlerMapping mvcHandlerMapping;
@@ -416,14 +424,16 @@ public class ControlServiceController {
 
     private void updateRegistrationInfo(HttpServletRequest request, NodeRegistryEntry entry) {
         // Get web server base URL
-        String staticResourceContext = coordinator.getControlServiceProperties().getStaticResourceContext();
+        String staticResourceContext = staticResourceProperties.getResourceContext();
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
-        String baseUrl =
-                (ControlServiceProperties.IpSetting.DEFAULT_IP == coordinator.getControlServiceProperties().getIpSetting())
-                        ? request.getScheme()+"://"+ NetUtil.getDefaultIpAddress() +":"+request.getServerPort()+staticResourceContext
-                        : request.getScheme()+"://"+ NetUtil.getPublicIpAddress() +":"+request.getServerPort()+staticResourceContext;
+        /*String baseUrl =
+                request.getScheme()+"://"+ coordinator.getServerIpAddress() +":"+request.getServerPort()+staticResourceContext;*/
+        String baseUrl = ServletUriComponentsBuilder.fromRequestUri(request)
+                .host(coordinator.getServerIpAddress())
+                .replacePath(staticResourceContext)
+                .build().toUriString();
         log.debug("ControlServiceController.baguetteRegisterNode(): baseUrl={}", baseUrl);
 
         // Get IP Setting and Client ID
@@ -543,6 +553,26 @@ public class ControlServiceController {
     public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
         log.info("ControlServiceController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
         return coordinator.clusterCommandSend(clusterId, command);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // EMS One-Time-Password (OTP) endpoints
+    // ------------------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/ems/otp/new", method = {GET, POST})
+    public String newOtp() {
+        log.info("ControlServiceController.newOtp(): BEGIN");
+        String newOtp = webSecurityConfig.otpCreate();
+        log.debug("ControlServiceController.newOtp(): New OTP: {}", passwordUtil.encodePassword(newOtp));
+        return newOtp;
+    }
+
+    @RequestMapping(value = "/ems/otp/remove", method = {GET, POST})
+    public String removeOtp(@PathVariable String otp) {
+        log.info("ControlServiceController.removeOtp(): BEGIN");
+        webSecurityConfig.otpRemove(otp);
+        log.debug("ControlServiceController.removeOtp(): Removed OTP: {}", passwordUtil.encodePassword(otp));
+        return "OK";
     }
 
     // ------------------------------------------------------------------------------------------------------------

@@ -10,15 +10,19 @@
 package eu.melodic.event.common.collector;
 
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.common.client.SshClient;
+import eu.melodic.event.common.client.SshClientProperties;
 import eu.melodic.event.util.ClientConfiguration;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-public interface CollectorContext {
+public interface CollectorContext<P extends SshClientProperties> {
     List<ClientConfiguration> getNodeConfigurations();
     Set<Serializable> getNodesWithoutClient();
     boolean isAggregator();
     boolean sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination);
+    default SshClient<P> getSshClient() { return null; }
+    default P getSshClientProperties() { return null; }
 }

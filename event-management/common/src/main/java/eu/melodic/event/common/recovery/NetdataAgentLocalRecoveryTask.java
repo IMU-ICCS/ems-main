@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.plugin.recovery;
+package eu.melodic.event.common.recovery;
 
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -24,11 +23,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Netdata agent (client-side) Self-Healing
+ * Local Netdata agent Self-Healing
  */
 @Slf4j
 @Component
-public class NetdataAgentRecoveryTask extends VmNodeRecoveryTask {
+public class NetdataAgentLocalRecoveryTask extends ShellRecoveryTask {
     @Getter
     private final List<RECOVERY_COMMAND> recoveryCommands = Collections.unmodifiableList(Arrays.asList(
             new RECOVERY_COMMAND("Initial wait...",
@@ -39,14 +38,13 @@ public class NetdataAgentRecoveryTask extends VmNodeRecoveryTask {
                     "sudo netdata",0, 10000)
     ));
 
-    @Value("${self.healing.recovery.file.netdata:}")
-    private String netdataRecoveryFile;
-
-    public NetdataAgentRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler) {
-        super(eventBus, passwordUtil, taskScheduler);
+    public NetdataAgentLocalRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull SelfHealingProperties selfHealingProperties) {
+        super(eventBus, passwordUtil, taskScheduler, selfHealingProperties);
     }
 
     public void runNodeRecovery() throws Exception {
+        String netdataRecoveryFile = selfHealingProperties.getRecovery().getFile().get("netdata");
+        log.debug("runNodeRecovery: file={}", netdataRecoveryFile);
         if (StringUtils.isNotBlank(netdataRecoveryFile))
             runNodeRecovery(netdataRecoveryFile);
         else

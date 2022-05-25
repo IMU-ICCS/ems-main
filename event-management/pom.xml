@@ -33,7 +33,7 @@
         <camel.version>4.5.0-SNAPSHOT</camel.version>-->
         <authorization.version>4.5.0-SNAPSHOT</authorization.version>
         <!-- Gson version -->
-        <gson.version>2.8.5</gson.version>
+        <gson.version>2.8.9</gson.version>
         <!-- Apache Commons Lang3 version -->
         <commons-lang3.version>3.8.1</commons-lang3.version>
         <!-- Esper version -->
@@ -81,10 +81,14 @@
                 <module>extra</module>
             </modules>
         </profile>
+
         <profile>
             <id>build-web-admin</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <missing>.dev-skip-build-web-admin</missing>
+                </file>
             </activation>
             <modules>
                 <module>web-admin</module>

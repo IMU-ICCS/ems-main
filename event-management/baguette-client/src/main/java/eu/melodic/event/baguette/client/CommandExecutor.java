@@ -16,9 +16,10 @@ import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
-import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.common.misc.EventConstant;
+import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.util.*;
 import io.atomix.cluster.ClusterMembershipEvent;
 import io.atomix.cluster.Member;
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -35,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -113,6 +116,11 @@ public class CommandExecutor {
     private boolean captureInputLine;
     @Getter private String lastInputLine;
 
+    @Autowired
+    private TaskScheduler taskScheduler;
+    private ScheduledFuture<?> statsSendTask;
+    @Autowired
+    private SystemResourceMonitor systemResourceMonitor;
 
     public CommandExecutor() {
         initializeClientId();
@@ -120,6 +128,7 @@ public class CommandExecutor {
 
     public void setConfiguration(BaguetteClientProperties config) {
         log.trace("CommandExecutor: brokerCepService: {}", brokerCepService);
+        log.trace("CommandExecutor: config: {}", config);
         this.config = config;
         this.idFile = DEFAULT_ID_FILE;
         initializeClientId();
@@ -634,8 +643,26 @@ public class CommandExecutor {
         } else if ("SHOW-CONFIG".equals(cmd)) {
             log.info("BaguetteClient: configuration:\n{}", config);
             log.info("Cluster: configuration:\n{}", clusterManagerProperties);
-        } else if ("SHOW-STATS".equals(cmd)) {
-            sendStatistics(args[1]);
+        } else if ("GET-STATS".equals(cmd)) {
+            getStatistics(args[1]);
+        } else if ("SEND-STATS".equals(cmd)) {
+            if (args.length < 2) {
+                log.warn("Too few arguments");
+                out.println("Too few arguments");
+                return false;
+            }
+            String operation = args[1];
+
+            if ("START".equalsIgnoreCase(operation))
+                sendStatisticsStart();
+            else if ("STOP".equalsIgnoreCase(operation))
+                sendStatisticsStop();
+            else if ("CLEAR".equalsIgnoreCase(operation))
+                clearStatistics();
+            else {
+                log.error("BaguetteClient: Unknown STATS operation: {}", operation);
+            }
+
         } else if ("CLEAR-STATS".equals(cmd)) {
             clearStatistics();
         } else if ("SEND-CLIENT-PROPERTY".equals(cmd)) {
@@ -727,6 +754,10 @@ public class CommandExecutor {
                 clientConfiguration = config;
             }
             log.info("New client config.: {}", config);
+            HashMap<String,ClientConfiguration> payload = new HashMap<>();
+            payload.put("new", clientConfiguration);
+            payload.put("old", oldConfig);
+            eventBus.send(EventConstant.EVENT_CLIENT_CONFIG_UPDATED, payload, this);
 
         } catch (Exception ex) {
             log.error("Exception while deserializing received Client configuration: ", ex);
@@ -1223,10 +1254,36 @@ public class CommandExecutor {
     }
 
     @SneakyThrows
-    private void sendStatistics(String inputUuid) {
+    private void getStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
         log.debug("Statistics: {}", statsMap);
         if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
+    }
+
+    @SneakyThrows
+    private void sendStatisticsStart() {
+        statsSendTask = taskScheduler.scheduleWithFixedDelay(() -> {
+            try {
+                Map<String, Object> statsMap = brokerCepService.getBrokerCepStatistics();
+                log.debug("BCEP Statistics: {}", statsMap);
+                Map<String, Object> sysMap = systemResourceMonitor.getLatestMeasurements();
+                log.debug("System Statistics: {}", sysMap);
+
+                Map<String, Object> clientStats = new HashMap<>();
+                if (statsMap!=null) clientStats.putAll(statsMap);
+                if (sysMap!=null) clientStats.putAll(sysMap);
+                if (out != null) out.println("-STATS:" + serializeToString(clientStats));
+            } catch (Exception ex) {
+                log.error("Exception while sending Statistics to server: ", ex);
+            }
+        }, baguetteClient.getBaguetteClientProperties().getSendStatisticsDelay());
+        log.info("Start sending STATS to server");
+    }
+
+    @SneakyThrows
+    private void sendStatisticsStop() {
+        statsSendTask.cancel(true);
+        log.info("Stop sending STATS to server");
     }
 
     private void clearStatistics() {
@@ -1241,6 +1298,11 @@ public class CommandExecutor {
 
     public boolean isNode() {
         return ! isAggregator();
+    }
+
+    public void notifyEmsServer(String message) {
+        log.info("NOTIFY-X: {}", message);
+        out.println("-NOTIFY-X: "+message);
     }
 
     /*private static class StreamGobbler implements Runnable {

@@ -9,7 +9,6 @@
 
 package eu.melodic.event.control.info;
 
-import io.micrometer.core.lang.NonNullApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
@@ -21,7 +20,6 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@NonNullApi
 @Endpoint(id = "emsBuildInfo")
 public class ControlServiceBuildInfoEndpoint {
     @Autowired

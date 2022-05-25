@@ -13,5 +13,6 @@ package eu.melodic.event.util;
  * EMS constant
  */
 public class EmsConstant {
+    public final static String EMS_PROPERTIES_PREFIX = ""; //""ems.";
     public final static String EVENT_PROPERTY_SOURCE_ADDRESS = "producer-host";
 }

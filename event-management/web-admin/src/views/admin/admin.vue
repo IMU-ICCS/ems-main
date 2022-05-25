@@ -1,3 +1,11 @@
+<!--
+  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+  ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+  ~ If a copy of the MPL was not distributed with this file, you can obtain one at
+  ~ https://www.mozilla.org/en-US/MPL/2.0/
+  -->
 <template>
   <!-- Main content -->
   <section class="content" style="padding: 0;">
@@ -13,7 +21,7 @@
       </Section>
 
       <Section title="Topology" :collapsed="false" background="rgba(0,255,100,.3)">
-          <TopologySection v-model="ems" />
+          <TopologySection v-model="ems" :clientStats="clients['client-metrics']" :sseRef="sseRef" />
       </Section>
 
       <!--<Section title="Geography" background="rgba(250,170,0,.25)">
@@ -73,7 +81,7 @@ export default {
                 console.log('EMS-SSE data updated');
                 if (newVal && newVal.data) {
                     if (newVal.data.ems) this.ems = newVal.data.ems;
-                    //if (newVal.data.clients) this.clients = newVal.data.clients;
+                    if (newVal.data.clients) this.clients = newVal.data.clients;
 
                     if (this.sysmonTimeseries!=null && this.ems && utils.valueExists(this.ems, 'system-info.system-resource-metrics')) {
                         let sysmonData = utils.getValue(this.ems, 'system-info.system-resource-metrics');
@@ -94,6 +102,7 @@ export default {
         return {
             showOverviewHeader: true,
             ems: { },
+            clients: { },
             sysmonTimeseries: null,
         };
     },

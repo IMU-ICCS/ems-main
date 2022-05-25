@@ -30,7 +30,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -42,12 +42,12 @@ import java.util.stream.Collectors;
 public class CamelToEplTranslator implements Translator {
 	
 	@Autowired
+	private ApplicationContext applicationContext;
+	@Autowired
 	private CamelToEplTranslatorProperties properties;
 	@Autowired
 	private RuleTemplateProperties ruleTemplatesRegistry;
-	@Value("${translator.leaf-node-grouping}")
-	private String leafGrouping;
-	
+
 	private CDOClientX cdoClient;
 	
 	public CamelToEplTranslator(CDOClientX client) {
@@ -106,19 +106,19 @@ public class CamelToEplTranslator implements Translator {
 		
 		// analyze scalability rules and metric expressions
 		log.debug("CamelToEplTranslator.translate():  Analyzing models...");
-		ModelAnalyzer modelAnalyzer = new ModelAnalyzer();
-		modelAnalyzer.analyzeModel(_TC, leafGrouping, camelModel, properties);
+		ModelAnalyzer modelAnalyzer = applicationContext.getBean(ModelAnalyzer.class);
+		modelAnalyzer.analyzeModel(_TC, camelModel);
 		log.debug("CamelToEplTranslator.translate():  Analyzing models... done");
 		
 		// transform graph
 		log.debug("CamelToEplTranslator.translate():  Transforming DAG...");
-		GraphTransformer transformer = new GraphTransformer();
-		transformer.transformGraph(_TC.DAG, properties);
+		GraphTransformer transformer = applicationContext.getBean(GraphTransformer.class);
+		transformer.transformGraph(_TC.DAG);
 		log.debug("CamelToEplTranslator.translate():  Transforming DAG... done");
 		
 		// generate EPL rules
 		log.debug("CamelToEplTranslator.translate():  Generating EPL rules...");
-		RuleGenerator generator = new RuleGenerator(ruleTemplatesRegistry);
+		RuleGenerator generator = applicationContext.getBean(RuleGenerator.class);
 		generator.generateRules(_TC);
 		log.debug("CamelToEplTranslator.translate():  Generating EPL rules... done");
 
@@ -146,7 +146,7 @@ public class CamelToEplTranslator implements Translator {
 
 		// Print DAG
 		String dot = null;
-		if (properties.isExportToDotEnabled()) {
+		if (properties.getDag().isExportToDotEnabled()) {
 			log.info("Decomposition Graph:\n{}", _TC.DAG);
 			log.info("*********************************************************");
 			try {
@@ -157,14 +157,14 @@ public class CamelToEplTranslator implements Translator {
 			}
 		}
 		// Export DAG to files
-		if (properties.isExportToFileEnabled()) {
+		if (properties.getDag().isExportToFileEnabled()) {
 			log.info("*********************************************************");
 			log.info("Decomposition Graph export to file(s)");
 			try {
 				// Get graph export configuration
-				String exportPath = properties.getExportPath();
-				String[] exportFormats = properties.getExportFormats();
-				int imageWidth = properties.getExportImageWidth();
+				String exportPath = properties.getDag().getExportPath();
+				String[] exportFormats = properties.getDag().getExportFormats();
+				int imageWidth = properties.getDag().getExportImageWidth();
 
 				// Get base name and path of export files
 				if (exportPath == null) exportPath = "";

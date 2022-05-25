@@ -53,40 +53,30 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
         String password = brokerCep.getBrokerPassword();
         String passwordEncoded = passwordUtil.encodePassword(password);
         try {
-            // Publish new event to Local Broker topic
-            log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
+            // Queue new event for publishing to Local Broker topic
+            EventForwarder.getInstance().addLocalPublishTask(name, topic, eventMap, ()->countLocalPublish(true), ()->countLocalPublish(false));
+            log.trace("- Event queued for publishing to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
                     name, localBrokerUrl, username, passwordEncoded, topic, eventMap);
-            brokerCep.publishEvent(localBrokerUrl, username, password, topic, eventMap);
-            log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
-                    name, localBrokerUrl, username, passwordEncoded, topic, eventMap);
-            countLocalPublish(true);
-
         } catch (Exception ex) {
-            log.error("- New event: ERROR while publishing to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, exception=",
+            log.error("- New event: ERROR while queueing event for publishing to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, exception=",
                     name, localBrokerUrl, username, passwordEncoded, topic, ex);
             countLocalPublish(false);
         }
     }
 
     protected void forwardToGroupings(Map<String, Object> eventMap) {
-        // Send new event to the next grouping(s)
+        // Queue event for forwarding to the next grouping(s)
         log.trace("- Forwarding event to groupings: subscriber={}, forward-to-groupings={}, payload={}",
                 name, forwardToGroupings, eventMap);
         if (forwardToGroupings==null)
             return;
         for (GroupingConfiguration.BrokerConnectionConfig fwdToGrouping : forwardToGroupings) {
             try {
-                String brokerUrl = fwdToGrouping.getUrl();
-                String username = fwdToGrouping.getUsername();
-                String password = fwdToGrouping.getPassword();
-                log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, payload={}",
-                        name, fwdToGrouping, brokerUrl, username, topic, eventMap);
-                brokerCep.publishEvent(brokerUrl, username, password, topic, eventMap);
-                log.debug("- Event forwarded to grouping: subscriber={}, forwarded-to-grouping={}, url={}, username={}, topic={}, payload={}",
-                        name, fwdToGrouping, brokerUrl, username, topic, eventMap);
-                countForward(true);
+                EventForwarder.getInstance().addEventForwardTask(name, fwdToGrouping, topic, eventMap, ()->countForward(true), ()->countForward(false));
+                log.debug("- Event queued for forwarding to grouping: subscriber={}, forward-to-grouping={}, topic={}, payload={}",
+                        name, fwdToGrouping, topic, eventMap);
             } catch (Exception ex) {
-                log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, payload={}, exception: ",
+                log.error("- ERROR while queuing event in forward queue: subscriber={}, forward-to-groupings={}, payload={}, exception: ",
                         name, forwardToGroupings, eventMap, ex);
                 countForward(false);
             }

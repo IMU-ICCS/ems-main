@@ -19,9 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(exclude = {"truststorePassword", "keystorePassword"})
 public class KeystoreAndCertificateProperties implements IKeystoreAndCertificateProperties {
 
-    private String defaultIpAddress;
-    private String publicIpAddress;
-
     private String keystoreFile;
     private String keystoreType;
     private String keystorePassword;
@@ -36,39 +33,4 @@ public class KeystoreAndCertificateProperties implements IKeystoreAndCertificate
     private String keyEntryName;
     private String keyEntryDName;
     private String keyEntryExtSAN;
-
-    public String getKeyEntryNameValue() { return prepareValue(keyEntryName, this.publicIpAddress, this.defaultIpAddress, "127.0.0.1"); }
-    public String getKeyEntryDNameValue() { return prepareValue(keyEntryDName, this.publicIpAddress, this.defaultIpAddress, "127.0.0.1"); }
-    public String getKeyEntryExtSANValue() { return prepareValue(keyEntryExtSAN, this.publicIpAddress, this.defaultIpAddress, "127.0.0.1"); }
-
-    // ------------------------------------------------------------------------
-    // Helper methods
-    // ------------------------------------------------------------------------
-
-    public static String prepareUrl(String url) {
-        return prepareValue(url, "");
-    }
-
-    public static String prepareValue(String value, String defaultValue) { return prepareValue(value, null, null, ""); }
-
-    public static String prepareValue(String value, String publicIpAddress, String defaultIpAddress, String defaultValue) {
-        if (value==null) return null;
-        String pubIpAddr = "";
-        if (value.contains("%{PUBLIC_IP}%")) {
-            pubIpAddr = NetUtil.getPublicIpAddress();
-            pubIpAddr = StringUtils.isNotBlank(pubIpAddr)
-                    ? pubIpAddr
-                    : StringUtils.isNotBlank(publicIpAddress) ? publicIpAddress : defaultValue;
-        }
-        String defIpAddr = "";
-        if (value.contains("%{DEFAULT_IP}%")) {
-            defIpAddr = NetUtil.getDefaultIpAddress();
-            defIpAddr = StringUtils.isNotBlank(defIpAddr)
-                    ? defIpAddr
-                    : StringUtils.isNotBlank(defaultIpAddress) ? defaultIpAddress : defaultValue;
-        }
-        return value
-                .replace("%{PUBLIC_IP}%", pubIpAddr)
-                .replace("%{DEFAULT_IP}%", defIpAddr);
-    }
 }

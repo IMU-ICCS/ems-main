@@ -9,9 +9,10 @@
 
 package eu.melodic.event.translate.properties;
 
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -21,48 +22,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties
-@Slf4j
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "translator")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.translator.properties")
-public class CamelToEplTranslatorProperties {
+public class CamelToEplTranslatorProperties implements InitializingBean {
+    @Override
+    public void afterPropertiesSet() {
+        log.debug("CamelToEplTranslatorProperties: {}", this);
+    }
+
     // Translator parameters
-    @Value("${translator.sensor-config-annotation}")
     private String sensorConfigurationAnnotation;
-    @Value("${translator.sensor-min-interval}")
     private long sensorMinInterval;
-    @Value("${translator.sensor-default-interval}")
     private long sensorDefaultInterval;
 
-    @Value("${translator.prune-mvv:true}")
-    private boolean pruneMvv;
-    @Value("${translator.add-top-level-metrics:true}")
-    private boolean addTopLevelMetric;
-    @Value("${translator.full-name-pattern}")
+    private String leafNodeGrouping;
+    private boolean pruneMvv = true;
+    private boolean addTopLevelMetrics = true;
     private String fullNamePattern;
-    @Value("${translator.formula-check-enabled:true}")
-    private boolean formulaCheckEnabled;
+    private boolean formulaCheckEnabled = true;
 
     // Translation Results & Graph print/export Switches
-    @Value("${translator.print-results:true}")
-    private boolean printResults;
-    @Value("${dag.export-to-dot.enabled:true}")
-    private boolean exportToDotEnabled;
-    @Value("${dag.export-to-file.enabled:true}")
-    private boolean exportToFileEnabled;
+    private boolean printResults = true;
+    private Dag dag = new Dag();
 
-    // Graph rendering parameters
-    @Value("${dag.export.path:}")
-    private String exportPath;
-    @Value("${dag.export.formats:}")
-    private String[] exportFormats;
-    @Value("${dag.export.image-width:-1}")
-    private int exportImageWidth;
+    @Data
+    public static class Dag {
+        // Graph rendering/export
+        private boolean exportToDotEnabled = true;
+        private boolean exportToFileEnabled = true;
+
+        // Graph rendering parameters
+        private String exportPath;
+        private String[] exportFormats;
+        private int exportImageWidth = -1;
+    }
 
     // Active sink types
-    @Value("${active-sinks:}")
     private List<String> sinks;
 
     // Sink type configurations

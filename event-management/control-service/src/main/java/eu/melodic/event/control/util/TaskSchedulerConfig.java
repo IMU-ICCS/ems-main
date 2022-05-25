@@ -9,25 +9,24 @@
 
 package eu.melodic.event.control.util;
 
+import eu.melodic.event.control.properties.ControlServiceProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import javax.validation.constraints.Min;
-
 @Slf4j
 @Configuration
 @EnableScheduling
+@RequiredArgsConstructor
 public class TaskSchedulerConfig {
-    @Value("${control.task-scheduler.thread-pool-size:2}")
-    @Min(1)
-    private int threadPoolSize;
+    private final ControlServiceProperties properties;
 
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        int threadPoolSize = properties.getTaskScheduler().getThreadPoolSize();
         log.info("TaskSchedulerConfig: TaskScheduler thread pool size: {}", threadPoolSize);
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
         threadPoolTaskScheduler.setPoolSize(threadPoolSize);

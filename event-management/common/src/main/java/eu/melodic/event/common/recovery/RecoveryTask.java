@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.baguette.client.plugin.recovery;
+package eu.melodic.event.common.recovery;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Client-side Self-Healing task
+ * Self-Healing task
  */
 public interface RecoveryTask {
     Map getNodeInfo();

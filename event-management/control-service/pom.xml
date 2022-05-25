@@ -27,7 +27,11 @@
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-        <!--DOCKER plugin properties-->
+
+        <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
+        <docker.esperJar>esper-${esper-version}.jar</docker.esperJar>
+
+        <!-- com.spotify docker-maven-plugin properties-->
         <!--
         <docker.push>false</docker.push>
         <docker.repository></docker.repository>
@@ -36,19 +40,15 @@
         <docker.imageTag></docker.imageTag>
         -->
         <docker.imageName>ems-server</docker.imageName>
-        <docker.esperJarToInclude>esper-${esper-version}.jar</docker.esperJarToInclude>
+
+        <!-- io.fabricat8 docker-maven-plugin properties -->
+        <docker-maven-plugin.version>0.39.1</docker-maven-plugin.version>
+        <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
+        <!--<docker-image-tag>2022-devel</docker-image-tag>-->
+        <!--<build-description></build-description>-->
     </properties>
 
     <dependencies>
-        <!-- Needed to stop old JDK 1.8 compiler complains -->
-        <!--XXX: Probably remove in the future -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!-- Melodic dependencies -->
         <dependency>
             <groupId>eu.melodic</groupId>
@@ -127,6 +127,7 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <!-- Spring Boot Actuator  -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -138,11 +139,12 @@
             <version>${micrometer.registry.prometheus.version}</version>
         </dependency>
         <!-- Spring Boot Admin client  -->
-        <dependency>
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
+        <!--<dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- Jasypt Spring Boot starter  -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
@@ -171,6 +173,7 @@
         </dependency>
 
         <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
         <dependency>
             <groupId>io.hawt</groupId>
             <artifactId>hawtio-springboot</artifactId>
@@ -186,6 +189,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>*.txt</include>
+                    <include>META-INF/spring.factories</include>
                 </includes>
             </resource>
         </resources>
@@ -415,56 +419,93 @@
                 </executions>
             </plugin>
 
+            <!-- Add needed files to docker context folder -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources-to-docker-context</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/docker</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/docker</directory>
+                                </resource>
+
+                                <resource>
+                                    <targetPath>/jars</targetPath>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${docker.controlServiceJar}</include>
+                                    <include>${docker.esperJar}</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <targetPath>/bin</targetPath>
+                                    <directory>${project.basedir}/../bin/</directory>
+                                    <include>run.sh</include>
+                                    <include>sysmon.sh</include>
+                                    <include>detect.sh</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <targetPath>/config</targetPath>
+                                    <directory>${project.basedir}/../config-files</directory>
+                                    <!--<excludes>
+                                        <exclude>resources/**/*</exclude>
+                                    </excludes>-->
+                                    <filtering>false</filtering>
+                                </resource>
+
+                                <!-- Add public_resources/ folder resources to '/public_resources' -->
+                                <resource>
+                                    <targetPath>/public_resources</targetPath>
+                                    <directory>${project.basedir}/../public_resources</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+
+                                <!-- Add broker-client too -->
+                                <resource>
+                                    <targetPath>/jars</targetPath>
+                                    <directory>${project.basedir}/../broker-client/target</directory>
+                                    <include>broker-client-jar-with-dependencies.jar</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <!--
+                                  "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
+                                -->
+                                <!--<resource>
+                                    <targetPath>/config</targetPath>
+                                    <directory>${project.basedir}/../broker-client</directory>
+                                    <include>eu.melodic.event.brokerclient.properties</include>
+                                    <filtering>false</filtering>
+                                </resource>-->
+                                <resource>
+                                    <targetPath>/bin</targetPath>
+                                    <directory>${project.basedir}/../bin/</directory>
+                                    <include>client.sh</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
                 <configuration>
                     <resources>
-                        <resource>
-                            <targetPath>/jars</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${docker.jarToInclude}</include>
-                            <include>${docker.esperJarToInclude}</include>
-                        </resource>
+                        <!-- Added in order to prevent copying 'control-service.jar' to docker context dir. (We have already copied it) -->
                         <resource>
                             <targetPath>/bin</targetPath>
                             <directory>${project.basedir}/../bin/</directory>
                             <include>run.sh</include>
-                            <include>sysmon.sh</include>
-                            <include>detect.sh</include>
-                        </resource>
-                        <resource>
-                            <targetPath>/config</targetPath>
-                            <directory>${project.basedir}/../config-files</directory>
-                            <!--<excludes>
-                                <exclude>resources/**/*</exclude>
-                            </excludes>-->
-                        </resource>
-
-                        <!-- Add public_resources/ folder resources to '/public_resources' -->
-                        <resource>
-                            <targetPath>/public_resources</targetPath>
-                            <directory>${project.basedir}/../public_resources</directory>
-                        </resource>
-
-                        <!-- Add broker-client too -->
-                        <resource>
-                            <targetPath>/jars</targetPath>
-                            <directory>${project.basedir}/../broker-client/target</directory>
-                            <include>broker-client-jar-with-dependencies.jar</include>
-                        </resource>
-                        <!--
-                          "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
-                        -->
-                        <!--<resource>
-                            <targetPath>/config</targetPath>
-                            <directory>${project.basedir}/../broker-client</directory>
-                            <include>eu.melodic.event.brokerclient.properties</include>
-                        </resource>-->
-                        <resource>
-                            <targetPath>/bin</targetPath>
-                            <directory>${project.basedir}/../bin/</directory>
-                            <include>client.sh</include>
                         </resource>
                     </resources>
                 </configuration>
@@ -491,6 +532,140 @@
                     <version>${project.version}</version>
                 </dependency>
             </dependencies>
+        </profile>
+
+        <profile>
+            <id>dev-local-docker-image-build</id>
+            <activation>
+                <file>
+                    <exists>../.dev-local-docker-image-build</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Read docker plugin settings from properties file -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>properties-maven-plugin</artifactId>
+                        <version>1.1.0</version>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>read-project-properties</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <!--<keyPrefix>dev-</keyPrefix>-->
+                            <files>
+                                <file>../.dev-local-docker-image-build</file>
+                            </files>
+                        </configuration>
+                    </plugin>
+                    <!--<plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>Print Docker image dev properties</echo>
+                                        <echo>Image Tag: "${docker-image-tag}"</echo>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>-->
+
+                    <!-- Turn off com.spotify:docker-maven-plugin (same as 'without-docker' profile -->
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>execution</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Rename docker context folder to 'docker-context'. Removed previous if exists. -->
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.directory}/docker-context</directory>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>remove-old-docker-context</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.coderplus.maven.plugins</groupId>
+                        <artifactId>copy-rename-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>rename-docker-context-dir</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>rename</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceFile>${project.build.directory}/docker</sourceFile>
+                                    <destinationFile>${project.build.directory}/docker-context</destinationFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Build docker image using docker-context folder -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${docker-maven-plugin.version}</version>
+                        <configuration>
+                            <!--<dockerHost>https://localhost:2376</dockerHost>-->
+                            <verbose>true</verbose>
+                            <useColor>true</useColor>
+                            <images>
+                                <image>
+                                    <name>${docker-maven-plugin.imageName}:${docker-image-tag}</name>
+                                    <build>
+                                        <contextDir>${project.build.directory}/docker-context</contextDir>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>docker-image-build</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

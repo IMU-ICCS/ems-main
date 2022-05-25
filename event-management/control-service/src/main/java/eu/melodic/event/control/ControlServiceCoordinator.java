@@ -26,6 +26,7 @@ import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.util.KeystoreUtil;
+import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
@@ -124,6 +125,12 @@ public class ControlServiceCoordinator implements InitializingBean {
                 throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile());
             log.warn("Model translation will be skipped, and Translation Context file will be used: {}", properties.getTcLoadFile());
         }
+    }
+
+    public String getServerIpAddress() {
+        return (properties.getIpSetting() == ControlServiceProperties.IpSetting.DEFAULT_IP)
+                ? NetUtil.getDefaultIpAddress()
+                : NetUtil.getPublicIpAddress();
     }
 
     // ------------------------------------------------------------------------------------------------------------

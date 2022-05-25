@@ -42,6 +42,7 @@ import java.util.List;
         "eu.melodic.event.brokerclient", "eu.melodic.event.util"})
 @RequiredArgsConstructor
 public class BaguetteClient implements ApplicationRunner {
+    @Getter
     private final BaguetteClientProperties baguetteClientProperties;
     private final ClusterManagerProperties clusterManagerProperties;
     private final ConfigurableApplicationContext applicationContext;

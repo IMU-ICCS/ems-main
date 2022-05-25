@@ -9,6 +9,8 @@
 
 package eu.melodic.event.control.webconf;
 
+import eu.melodic.event.control.properties.StaticResourceProperties;
+import eu.melodic.event.control.properties.WebSecurityProperties;
 import eu.melodic.event.util.PasswordUtil;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
@@ -18,6 +20,8 @@ import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -26,6 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -45,6 +50,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Order(1)
@@ -53,91 +60,154 @@ import java.util.Collections;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements InitializingBean {
 
     public final static String ROLE_USER_FORM = "ROLE_USER_FORM";
     public static final String ROLE_JWT_TOKEN = "ROLE_JWT_TOKEN";
     public static final String ROLE_API_KEY = "ROLE_API_KEY";
+    public static final String ROLE_OTP = "ROLE_OTP";
 
     private final MelodicSecurityProperties melodicSecurityProperties;
+    private final StaticResourceProperties staticResourceProperties;
+    private final WebSecurityProperties properties;
+    private final PasswordUtil passwordUtil;
+
+    private final Map<String,Long> otpCache = new HashMap<>();
 
     @Value("${melodic.security.enabled:true}")
     private boolean securityEnabled;
+    private boolean propertiesCopied;
 
     // JWT Token authentication fields
-    @Value("${web.jwt-token-authentication.enabled:true}")
-    private boolean jwtTokenAuthEnabled;
-    @Value("${web.jwt-print-sample-token:false}")
+    private boolean jwtAuthEnabled;
+    private String jwtRequestParam;
     private boolean printSampleJwt;
 
     // API-Key authentication fields
-    @Value("${web.api-key-authentication.enabled:true}")
     private boolean apiKeyAuthEnabled;
-    @Value("${web.api-key.header:EMS-API-KEY}")
     private String apiKeyRequestHeader;
-    @Value("${web.api-key.parameter:ems-api-key}")
     private String apiKeyRequestParam;
-    @Value("${web.api-key.value:#{null}}")
     private String apiKeyValue;
 
-    @Autowired
-    private PasswordUtil passwordUtil;
+    // OTP authentication fields
+    private boolean otpAuthEnabled;
+    private long otpDuration;
+    private String otpRequestHeader;
+    private String otpRequestParam;
 
     // User form authentication fields
-    @Value("${web.form-authentication.enabled:true}")
     private boolean userFormAuthEnabled;
-    @Value("${web.form-authentication.username:admin}")
     private String username;
-    @Value("${web.form-authentication.password:}")
     private String password;
 
-    @Value("${web.permitted.urls:/login*,/logout*,/admin/login.html,/admin/favicon.ico,/admin/assets/**,/resources/*}")
-    private String[] permittedUrls;
-    @Value("${web.login.page:/admin/login.html}")
     private String loginPage;
-    @Value("${web.login.url:/login}")
     private String loginUrl;
-    @Value("${web.login.success.url:/}")
     private String loginSuccessUrl;
-    @Value("${web.login.failure.url:/admin/login.html?error=Invalid+username+or+password}")
     private String loginFailureUrl;
-    @Value("${web.logout.url:/logout}")
     private String logoutUrl;
-    @Value("${web.logout.success.url:/admin/login.html?message=Signed+out}")
     private String logoutSuccessUrl;
+
+    // Permitted URLs
+    private String[] permittedUrls;
 
     private final static String divider = "--------------------------------------------------------------------------------";
 
+    @Override
+    public void afterPropertiesSet() {
+        copyPropertiesToLocalFields();
+    }
+
+    private void copyPropertiesToLocalFields() {
+        if (properties==null) return;
+        if (propertiesCopied) return;
+
+        // JWT Token authentication fields
+        jwtAuthEnabled = properties.getJwtAuthentication().isEnabled();
+        jwtRequestParam = properties.getJwtAuthentication().getRequestParameter();
+        printSampleJwt = properties.getJwtAuthentication().isPrintSampleToken();
+
+        // API-Key authentication fields
+        apiKeyAuthEnabled = properties.getApiKeyAuthentication().isEnabled();
+        apiKeyRequestHeader = properties.getApiKeyAuthentication().getRequestHeader();
+        apiKeyRequestParam = properties.getApiKeyAuthentication().getRequestParameter();
+        apiKeyValue = properties.getApiKeyAuthentication().getValue();
+
+        // OTP authentication fields
+        otpAuthEnabled = properties.getOtpAuthentication().isEnabled();
+        otpDuration = properties.getOtpAuthentication().getDuration();
+        otpRequestHeader = properties.getOtpAuthentication().getRequestHeader();
+        otpRequestParam = properties.getOtpAuthentication().getRequestParam();
+
+        // User form authentication fields
+        userFormAuthEnabled = properties.getFormAuthentication().isEnabled();
+        username = properties.getFormAuthentication().getUsername();
+        password = properties.getFormAuthentication().getPassword();
+
+        loginPage = properties.getFormAuthentication().getLoginPage();
+        loginUrl = properties.getFormAuthentication().getLoginUrl();
+        loginSuccessUrl = properties.getFormAuthentication().getLoginSuccessUrl();
+        loginFailureUrl = properties.getFormAuthentication().getLoginFailureUrl();
+        logoutUrl = properties.getFormAuthentication().getLogoutUrl();
+        logoutSuccessUrl = properties.getFormAuthentication().getLogoutSuccessUrl();
+
+        // Permitted URLs
+        permittedUrls = properties.getPermittedUrls()!=null
+                ? properties.getPermittedUrls().toArray(new String[0])
+                : new String[0];
+
+        propertiesCopied = true;
+    }
+
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
-        if (userFormAuthEnabled && (StringUtils.isBlank(username) || password.isEmpty()))
+        if (securityEnabled && userFormAuthEnabled && (StringUtils.isBlank(username) || password.isEmpty()))
             throw new InvalidParameterException("User form authentication is enabled but username or password are blank");
-        if (apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
+        if (securityEnabled && apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
             throw new InvalidParameterException("API Key authentication is enabled but no API Key provided or it is blank");
         if (permittedUrls==null) permittedUrls = new String[0];
 
-        log.info("afterPropertiesSet: Admin Username: {}", username);
-        log.info("afterPropertiesSet: Admin Password: {}", passwordUtil.encodePassword(password));
-        log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
+        if (securityEnabled && userFormAuthEnabled) {
+            log.info("afterPropertiesSet: Admin Username: {}", username);
+            log.info("afterPropertiesSet: Admin Password: {}", passwordUtil.encodePassword(password));
+        }
+        if (securityEnabled && apiKeyAuthEnabled) {
+            log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
+        }
         if (printSampleJwt)
             log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
                 divider, jwtService(melodicSecurityProperties).create("USER"), divider);
 
-        log.debug("afterPropertiesSet:     securityEnabled: {}", securityEnabled);
-        log.debug("afterPropertiesSet: jwtTokenAuthEnabled: {}", jwtTokenAuthEnabled);
-        log.debug("afterPropertiesSet: apiKeyRequestHeader: {}", apiKeyRequestHeader);
-        log.debug("afterPropertiesSet:  apiKeyRequestParam: {}", apiKeyRequestParam);
-        log.debug("afterPropertiesSet:    permittedUrls: {}", Arrays.asList(permittedUrls));
+        log.debug("afterPropertiesSet: ---------------------");
+        log.debug("afterPropertiesSet:      securityEnabled: {}", securityEnabled);
+        log.debug("afterPropertiesSet: ---------------------");
+        log.debug("afterPropertiesSet:  jwtTokenAuthEnabled: {}", jwtAuthEnabled);
+        log.debug("afterPropertiesSet: jwtTokenRequestParam: {}", jwtRequestParam);
+        log.debug("afterPropertiesSet: ---------------------");
+        log.debug("afterPropertiesSet:    apiKeyAuthEnabled: {}", apiKeyAuthEnabled);
+        log.debug("afterPropertiesSet:  apiKeyRequestHeader: {}", apiKeyRequestHeader);
+        log.debug("afterPropertiesSet:   apiKeyRequestParam: {}", apiKeyRequestParam);
+        log.debug("afterPropertiesSet: ---------------------");
+        log.debug("afterPropertiesSet:       otpAuthEnabled: {}", otpAuthEnabled);
+        log.debug("afterPropertiesSet:          otpDuration: {}", otpDuration);
+        log.debug("afterPropertiesSet:     otpRequestHeader: {}", otpRequestHeader);
+        log.debug("afterPropertiesSet:      otpRequestParam: {}", otpRequestParam);
+        log.debug("afterPropertiesSet: ---------------------");
+        log.debug("afterPropertiesSet:  userFormAuthEnabled: {}", userFormAuthEnabled);
+        log.debug("afterPropertiesSet:         username: {}", username);
         log.debug("afterPropertiesSet:        loginPage: {}", loginPage);
         log.debug("afterPropertiesSet:         loginUrl: {}", loginUrl);
         log.debug("afterPropertiesSet:  loginSuccessUrl: {}", loginSuccessUrl);
         log.debug("afterPropertiesSet:     loginFailUrl: {}", loginFailureUrl);
         log.debug("afterPropertiesSet:        logoutUrl: {}", logoutUrl);
         log.debug("afterPropertiesSet: logoutSuccessUrl: {}", logoutSuccessUrl);
+        log.debug("afterPropertiesSet: ---------------------");
+        log.debug("afterPropertiesSet:        permittedUrls: {}", Arrays.asList(permittedUrls));
+        log.debug("afterPropertiesSet: ---------------------");
     }
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        copyPropertiesToLocalFields();
         if (this.userFormAuthEnabled && StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             auth.inMemoryAuthentication()
                     .withUser(username).password(passwordEncoder().encode(password)).authorities(ROLE_USER_FORM);
@@ -154,7 +224,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 // Spring Security should completely ignore the following URLs
-                .antMatchers("/favicon.ico", "/health");
+                .antMatchers(staticResourceProperties.getFaviconContext(), "/health");
     }
 
     @Override
@@ -164,9 +234,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         checkSettings();
 
         // Check if authentication is disabled
-        log.debug("WebSecurityConfig: security-enabled={}, user-form-auth-enabled={}, jwt-token-auth-enabled={}, api-key-auth-enabled={}",
-                securityEnabled, userFormAuthEnabled, jwtTokenAuthEnabled, apiKeyAuthEnabled);
-        if (!securityEnabled || !userFormAuthEnabled && !jwtTokenAuthEnabled && !apiKeyAuthEnabled) {
+        log.debug("WebSecurityConfig: security-enabled={}, user-form-auth-enabled={}, jwt-token-auth-enabled={}, api-key-auth-enabled={}, otp-auth-enabled={}",
+                securityEnabled, userFormAuthEnabled, jwtAuthEnabled, apiKeyAuthEnabled, otpAuthEnabled);
+        if (!securityEnabled || !userFormAuthEnabled && !jwtAuthEnabled && !apiKeyAuthEnabled && !otpAuthEnabled) {
             log.warn("WebSecurityConfig: Authentication is disabled");
             // Authorize all requests
             httpSecurity
@@ -217,13 +287,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .anyRequest().authenticated();
             log.debug("WebSecurityConfig: API-Key Authentication filter added");
         }
-        if (jwtTokenAuthEnabled) {
+        if (jwtAuthEnabled) {
             log.info("WebSecurityConfig: JWT-Token Authentication is enabled");
             httpSecurity
                     .addFilterAfter(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                     .authorizeRequests()
                     .anyRequest().authenticated();
             log.debug("WebSecurityConfig: JWT-Token Authentication filter added");
+        }
+        if (otpAuthEnabled) {
+            log.info("WebSecurityConfig: OTP Authentication is enabled");
+            httpSecurity
+                    .addFilterAfter(otpAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .authorizeRequests()
+                    .anyRequest().authenticated();
+            log.debug("WebSecurityConfig: OTP Authentication filter added");
         }
     }
 
@@ -247,7 +325,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (StringUtils.isBlank(apiKeyValue))
                 log.warn("WebSecurityConfig: API Key authentication is enabled but -no- API Key has been provided. It will not be possible to authenticate using API Key");
             else
-                log.warn("WebSecurityConfig: API Key authentication is enabled but -no- API Key request header or parameter have been set. It will not be possible to authenticate using API Key");
+                log.warn("WebSecurityConfig: API Key authentication is enabled but -no- API Key request header or parameter has been set. It will not be possible to authenticate using API Key");
+        }
+
+        // Check OTP authentication settings
+        boolean otpAuthEnabled = this.otpAuthEnabled
+                && (StringUtils.isNotBlank(otpRequestHeader) || StringUtils.isNotBlank(otpRequestParam));
+        if (this.otpAuthEnabled && !otpAuthEnabled) {
+            log.warn("WebSecurityConfig: OTP authentication is enabled but -no- OTP request header or parameter has been set. It will not be possible to authenticate using OTP");
         }
     }
 
@@ -260,12 +345,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (servletRequest instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest) servletRequest;
 
-                String header = req.getHeader(SecurityConstants.HEADER_STRING);
-                log.debug("jwtAuthorizationFilter: Authorization Header: {}", header);
-                if (header!=null && header.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+                // Get JWT token from Authorization header
+                String jwtValue = req.getHeader(SecurityConstants.HEADER_STRING);
+                log.debug("jwtAuthorizationFilter: Authorization Header: {}", passwordUtil.encodePassword(jwtValue));
+
+                // ...else get JWT token from 'jwt' query parameter
+                if (StringUtils.isBlank(jwtValue)) {
+                    if (StringUtils.isNotBlank(jwtRequestParam)) {
+                        log.debug("jwtAuthorizationFilter: Authorization Header is missing. Checking for '{}' parameter", jwtRequestParam);
+                        jwtValue = req.getParameter(jwtRequestParam);
+                        log.debug("jwtAuthorizationFilter: '{}' parameter value: {}", jwtRequestParam, passwordUtil.encodePassword(jwtValue));
+                        if (StringUtils.isNotBlank(jwtValue))
+                            jwtValue = SecurityConstants.TOKEN_PREFIX + jwtValue;
+                    } else {
+                        log.debug("jwtAuthorizationFilter: JWT token not found in headers and no JWT token parameter has been set");
+                    }
+                }
+
+                // Check JWT token validity
+                if (jwtValue!=null && jwtValue.startsWith(SecurityConstants.TOKEN_PREFIX)) {
                     try {
                         log.debug("jwtAuthorizationFilter: Parsing Authorization header...");
-                        Claims claims = jwtService(melodicSecurityProperties).parse(header);
+                        Claims claims = jwtService(melodicSecurityProperties).parse(jwtValue);
                         String user = claims.getSubject();
                         String audience  = claims.getAudience();
                         log.debug("jwtAuthorizationFilter: Authorization header -->     user: {}", user);
@@ -294,7 +395,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 log.warn("jwtAuthorizationFilter: Not an HttpServletRequest");
             }
 
-            // continue down the chain
+            // continue filter chain processing
             filterChain.doFilter(servletRequest, servletResponse);
         };
     }
@@ -332,18 +433,99 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                             log.debug("apiKeyAuthenticationFilter: API Key is incorrect");
                         }
                     } else {
-                        log.debug("apiKeyAuthenticationFilter: No API Key found in request header or parameters");
+                        log.debug("apiKeyAuthenticationFilter: No API Key found in request headers or parameters");
                     }
                 } else {
                     throw new IllegalArgumentException("API Key Authentication filter does not support non-HTTP requests and responses. Req-class: "
                             +servletRequest.getClass().getName()+"  Resp-class: "+servletResponse.getClass().getName());
                 }
             } else {
-                log.warn("apiKeyAuthenticationFilter: No API-Key specified. Access is granted");
+                log.warn("apiKeyAuthenticationFilter: No API-Key specified");
             }
 
             // continue down the chain
             filterChain.doFilter(servletRequest, servletResponse);
         };
+    }
+
+    public Filter otpAuthenticationFilter() {
+        return (servletRequest, servletResponse, filterChain) -> {
+            log.trace("OTPAuthenticationFilter: BEGIN: request={}", servletRequest);
+            if (otpAuthEnabled) {
+                if (servletRequest instanceof HttpServletRequest && servletResponse instanceof HttpServletResponse) {
+                    HttpServletRequest request = (HttpServletRequest) servletRequest;
+                    log.trace("OTPAuthenticationFilter: http-request={}", request);
+                    String otp = request.getHeader(otpRequestHeader);
+                    log.debug("OTPAuthenticationFilter: Request Header OTP: {}={}", otpRequestHeader, passwordUtil.encodePassword(otp));
+                    if (StringUtils.isBlank(otp)) {
+                        otp = request.getParameter(otpRequestParam);
+                        log.debug("OTPAuthenticationFilter: Request Parameter OTP: {}={}", otpRequestParam, passwordUtil.encodePassword(otp));
+                    }
+                    if (StringUtils.isNotBlank(otp)) {
+                        log.debug("OTPAuthenticationFilter: OTP provided");
+
+                        if (otpCache.containsKey(otp)) {
+                            long issueTimestamp = otpCache.remove(otp);
+                            boolean expired = (System.currentTimeMillis() - issueTimestamp) > otpDuration;
+
+                            if (!expired) {
+                                log.debug("OTPAuthenticationFilter: OTP found in cache");
+                                try {
+                                    // construct one of Spring's auth tokens
+                                    UsernamePasswordAuthenticationToken authentication =
+                                            new UsernamePasswordAuthenticationToken(otpRequestHeader, otp,
+                                                    Collections.singletonList(new SimpleGrantedAuthority(ROLE_OTP)));
+                                    // store completed authentication in security context
+                                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                                    log.debug("OTPAuthenticationFilter: Security context has been updated");
+                                } catch (Exception e) {
+                                    log.error("OTPAuthenticationFilter: EXCEPTION: ", e);
+                                }
+                            } else {
+                                log.debug("OTPAuthenticationFilter: OTP found in cache but has expired");
+                            }
+                        } else {
+                            log.debug("OTPAuthenticationFilter: OTP not found in cache");
+                        }
+                    } else {
+                        log.debug("OTPAuthenticationFilter: No OTP provided in request headers or parameters");
+                    }
+                } else {
+                    throw new IllegalArgumentException("OTP Authentication filter does not support non-HTTP requests and responses. Req-class: "
+                            +servletRequest.getClass().getName()+"  Resp-class: "+servletResponse.getClass().getName());
+                }
+            } else {
+                log.warn("OTPAuthenticationFilter: OTP is disabled");
+            }
+
+            // continue down the chain
+            filterChain.doFilter(servletRequest, servletResponse);
+        };
+    }
+
+    public String otpCreate() {
+        String newOtp = RandomStringUtils.randomAlphanumeric(32, 64);
+        otpCache.put(newOtp, System.currentTimeMillis());
+        return newOtp;
+    }
+
+    public long otpIssueTimestamp(String otp) {
+        return otpCache.get(otp);
+    }
+
+    public long otpExpirationTimestamp(String otp) {
+        return otpCache.get(otp) + otpDuration;
+    }
+
+    public long otpDuration(String otp) {
+        return otpDuration;
+    }
+
+    public void otpRemove(String otp) {
+        otpCache.remove(otp);
+    }
+
+    public void otpClearCache() {
+        otpCache.clear();
     }
 }

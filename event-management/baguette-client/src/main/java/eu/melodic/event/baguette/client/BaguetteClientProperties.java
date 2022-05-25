@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.client;
 
+import eu.melodic.event.common.client.SshClientProperties;
 import lombok.Data;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -21,25 +22,14 @@ import java.util.List;
 @Configuration
 @ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/baguette-client.properties")
-@ToString(exclude = "serverPassword")
-public class BaguetteClientProperties {
-	private long authTimeout = 60000;
-	private long execTimeout = 120000;
-	private long retryPeriod = 60000;
-
+@ToString(callSuper = true)
+public class BaguetteClientProperties extends SshClientProperties {
 	private boolean exitCommandAllowed = false;
 	private int killDelay = 5;
 
 	private List<Class<Collector>> collectorClasses;
 
-	private String clientId;
 	private String debugFakeIpAddress;
 
-	private String serverAddress = "127.0.0.1";
-	private int serverPort = 22;
-	private String serverPubkey;
-	private String serverFingerprint;
-
-	private String serverUsername;
-	private String serverPassword;
+	private long sendStatisticsDelay = 10000L;
 }

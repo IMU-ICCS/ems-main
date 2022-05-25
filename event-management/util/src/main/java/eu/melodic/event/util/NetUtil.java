@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Network Utility
@@ -22,19 +23,52 @@ import java.util.*;
 @Slf4j
 public class NetUtil {
 
-    private final static String[] addressFilter = {
-            "127.",
-            /*"192.168.", "10.", "172.16.", "172.31.", "169.254.",*/
-            "224.", "239.", "255.255.255.255"
-    };
+    private final static String[] ADDRESS_FILTERS;
 
-    private final static String DATAGRAM_ADDRESS = "8.8.8.8";
+    private final static String DATAGRAM_ADDRESS;
 
-    private final static String[][] SERVICES = {
-            { "AWS", "http://checkip.amazonaws.com" },
-            { "Ipify", "https://api.ipify.org/?format=text" },
-            { "WhatIsMyIpAddress", "http://bot.whatismyipaddress.com/" }
-    };
+    private final static String[][] PUBLIC_ADDRESS_DISCOVERY_SERVICES;
+
+    static {
+        // Configure Address Filters
+        String filtersStr = System.getenv("NET_UTIL_ADDRESS_FILTERS");
+        List<String> filtersList = new ArrayList<>();
+        if (StringUtils.isNotBlank(filtersStr)) {
+            filtersList = Arrays.stream(filtersStr.split("[;, \t]+")).map(String::trim).filter(s->!s.isEmpty()).collect(Collectors.toList());
+        } else {
+            filtersList = Arrays.asList(
+                    "127.",
+                    /*"192.168.", "10.", "172.16.", "172.31.", "169.254.",*/
+                    "224.", "239.", "255.255.255.255"
+            );
+        }
+        ADDRESS_FILTERS = filtersList.toArray(new String[0]);
+
+        // Configure Datagram address
+        String datagramAddress = System.getenv("NET_UTIL_DATAGRAM_ADDRESS");
+        DATAGRAM_ADDRESS = StringUtils.isNotBlank(datagramAddress) ? datagramAddress.trim() : "8.8.8.8";
+
+        // Configure Address discovery services
+        String servicesStr = System.getenv("NET_UTIL_ADDRESS_DISCOVERY_SERVICES");
+        List<String[]> servicesList = new ArrayList<>();
+        if (StringUtils.isNotBlank(servicesStr)) {
+            if (!"-".equals(servicesStr)) {
+                Arrays.stream(servicesStr.split("[;, \t]+"))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .map(s -> s.split("[:=]", 2))
+                        .filter(a -> a.length == 2)
+                        .peek(a->{ a[0]=a[0].trim(); a[1]=a[1].trim(); })
+                        .filter(a->!a[0].isEmpty() && !a[1].isEmpty())
+                        .forEach(servicesList::add);
+            }
+        } else {
+            servicesList.add(Arrays.asList("AWS", "http://checkip.amazonaws.com").toArray(new String[0]));
+            servicesList.add(Arrays.asList("Ipify", "https://api.ipify.org/?format=text").toArray(new String[0]));
+            servicesList.add(Arrays.asList("WhatIsMyIpAddress", "http://bot.whatismyipaddress.com/").toArray(new String[0]));
+        }
+        PUBLIC_ADDRESS_DISCOVERY_SERVICES = servicesList.toArray(new String[0][]);
+    }
 
     // ------------------------------------------------------------------------
 
@@ -58,7 +92,7 @@ public class NetUtil {
                 }
             } else
             {
-                for (String[] service : SERVICES) {
+                for (String[] service : PUBLIC_ADDRESS_DISCOVERY_SERVICES) {
                     if (service[0].equalsIgnoreCase(arg)) {
                         printAddress(queryService(service[1]));
                     }
@@ -114,7 +148,7 @@ public class NetUtil {
                 if (inet instanceof java.net.Inet4Address) {
                     String addr = inet.getHostAddress();
                     if (!inet.isLoopbackAddress() && !inet.isMulticastAddress() && inet.isSiteLocalAddress()) {
-                        boolean ok = Arrays.stream(addressFilter)
+                        boolean ok = Arrays.stream(ADDRESS_FILTERS)
                                 .noneMatch(addr::startsWith);
                         if (ok) {
                             log_debug("{}", addr);
@@ -164,7 +198,7 @@ public class NetUtil {
             return publicIpAddress;
         }
 
-        for (String[] service : SERVICES) {
+        for (String[] service : PUBLIC_ADDRESS_DISCOVERY_SERVICES) {
             log_debug("NetUtil.getPublicIpAddress(): Contacting service {}", service[0]);
             String ip = getIpAddressUsingService(service[1]);
             if (StringUtils.isNotBlank(ip)) {

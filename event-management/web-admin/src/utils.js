@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+ * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+ * If a copy of the MPL was not distributed with this file, you can obtain one at
+ * https://www.mozilla.org/en-US/MPL/2.0/
+ */
 
 const precision = 100;
 
@@ -41,6 +49,15 @@ class Utils {
         return new Date(data * mult).toISOString().substr(start, len);
     }
 
+    toDuration(data) {
+        let s = data % 60;
+        data = (data-s) / 60;
+        let m = data % 60;
+        data = (data-m) / 60;
+        let h = data;
+        return h+':'+new String(100+m).substr(1)+':'+new String(100+s).substr(1);
+    }
+
     toKB(data) {
         return (data) ? (Math.round(precision * data / 1024) / precision).toString() : data;
     }
@@ -60,6 +77,17 @@ class Utils {
             minimumFractionDigits: fragDigits,
             maximumFractionDigits: fragDigits
         }).format(num);
+    }
+
+    orderOfMagnitude(data) {
+        if (!data || typeof data !== 'number') return false;
+        let d = Math.abs(data);
+        let r = 0;
+        while (d>=1) {
+            r++;
+            d = d / 10;
+        }
+        return r;
     }
 
     /*updateSelect(newVal, targetMap, valueField, textField) {

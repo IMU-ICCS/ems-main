@@ -28,11 +28,14 @@ import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.models.interfaces.ems.*;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.List;
@@ -40,18 +43,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class ModelAnalyzer {
-    private CamelToEplTranslatorProperties properties;
+    private final CamelToEplTranslatorProperties properties;
 
     private List<Sink> EMS_SINKS;
 
     // ================================================================================================================
     // Model analysis methods
 
-    public void analyzeModel(TranslationContext _TC, String leafGrouping, CamelModel camelModel, CamelToEplTranslatorProperties properties) {
+    public void analyzeModel(TranslationContext _TC, CamelModel camelModel) {
         log.debug("ModelAnalyzer.analyzeModel():  Analyzing models...");
 
-        this.properties = properties;
+        String leafGrouping = properties.getLeafNodeGrouping();
 
         // set full-name pattern in _TC, for full-name generation
         _TC.setFullNamePattern(properties.getFullNamePattern());
@@ -943,7 +948,7 @@ public class ModelAnalyzer {
             log.debug("    _initializeSinks(): Sink type configurations: {}", properties.getSinkConfig());
 
             List<Sink> sinks = new ArrayList<>();
-            for (String sinkType : properties.getSinks()) {
+            for (String sinkType : CollectionUtils.emptyIfNull(properties.getSinks())) {
                 log.trace("    _initializeSinks(): Processing sink type: {}", sinkType);
                 Sink.TypeType sinkTypeType = Sink.TypeType.valueOf(sinkType);
                 Map<String,String> configMap = properties.getSinkConfig().get(sinkType);

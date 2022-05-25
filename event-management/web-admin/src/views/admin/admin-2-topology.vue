@@ -1,3 +1,11 @@
+<!--
+  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+  ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+  ~ If a copy of the MPL was not distributed with this file, you can obtain one at
+  ~ https://www.mozilla.org/en-US/MPL/2.0/
+  -->
 <template>
     <div class="row">
       <div class="col-7">
@@ -49,20 +57,29 @@
                       <td class="align-middle text-center">
                           <div class="row p-0 m-0">
                               <div class="col-md-3 m-0 border-left border-right">
-                                  <small>CPU:</small>
-                                  <Sparkline type="bullet" width="100%" height="10px" :values="[.7,c.stats.cpu,1]"></Sparkline>
+                                  <small>CPU: {{currentClientUsage(c.id, 'cpu', 0)+'%'}}</small>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'cpu')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'cpu')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-3 m-0 border-left border-right">
-                                  <small>Mem:</small>
-                                  <Sparkline type="bullet" width="100%" height="10px" :values="[.8,c.stats.mem,1]"></Sparkline>
+                                  <small>Mem: {{currentClientUsage(c.id, 'ram', 0)+'%'}}</small>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'ram')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'ram')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-3 m-0 border-left border-right">
-                                  <small style="white-space: pre;">#Events:</small><br/>
-                                  <Sparkline type="line" width="100%" height="20px" :values="[0,0,10,8,0]"></Sparkline>
+                                  <small style="white-space: pre;">#Events: {{currentClientUsage(c.id, 'count-total-events', 0)}}</small><br/>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'count-total-events')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'count-total-events')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-3 m-0 border-left border-right">
                                   <small style="white-space: nowrap;">Uptime:</small><br/>
-                                  <small style="white-space: nowrap;">{{c.stats.uptime ? "toIsoFormat(c.stats.uptime,'sec','time')" : '--:--:--'}}</small>
+                                  <small style="white-space: nowrap;">{{clientUptime(c.id) ?? '--:--:--'}}</small>
                               </div>
                           </div>
                       </td>
@@ -145,12 +162,15 @@
                       <td class="align-middle text-center">
                           <div class="row p-0 m-0">
                               <div class="col-md-6 m-0 border-left border-right">
-                                  <small style="white-space: pre;">#Events:</small><br/>
-                                  <Sparkline type="line" width="100%" height="20px" :values="[0,0,10,8,0]"></Sparkline>
+                                  <small style="white-space: pre;">#Events: {{currentClientUsage(c.id, 'count-total-events', 0)}}</small><br/>
+                                  <Sparkline type="line" width="100%" height="20px"
+                                             :values="clientUsageData(c.id, 'count-total-events')"
+                                             :options="{ type: 'line', lineWidth: 1, chartRangeMin: 0, chartRangeMax: sparkLineRangeMax(clientUsageData(c.id, 'count-total-events')) }"
+                                  ></Sparkline>
                               </div>
                               <div class="col-md-6 m-0 border-left border-right">
                                   <small style="white-space: nowrap;">Uptime:</small><br/>
-                                  <small style="white-space: nowrap;">{{c.stats.uptime ? 'xx:xx:xx' : '--:--:--'}}</small>
+                                  <small style="white-space: nowrap;">{{clientUptime(c.id) ?? '--:--:--'}}</small>
                               </div>
                           </div>
                       </td>
@@ -223,7 +243,12 @@
                           />
                           <br v-else/>
                       </div>
-                      <div v-if="data.tree_node_type=='vm'" :style="data.nodeStatus==='AGGREGATOR' ? 'border: 4px solid magenta; margin: 0px; padding: 3px;' : 'border: 2px solid green; margin: 0px; padding: 3px;'">
+                      <div v-if="data.tree_node_type=='vm'" :style="
+                                    data.nodeStatus==='AGGREGATOR'
+                                        ? 'border: 4px solid magenta; margin: 0px; padding: 3px;'
+                                        : data.nodeStatus==='CANDIDATE'
+                                            ? 'border: 3px solid cyan; margin: 0px; padding: 3px;'
+                                            : 'border: 2px solid green; margin: 0px; padding: 3px;'">
                           <div class="tree-node-head" style="background-color: transparent;"><i class="fas fa-server"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
                           <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
                           <br/>
@@ -298,8 +323,8 @@
                         <i class="fas fa-map-marker-alt" style="color: red;" />&nbsp;<span class="align-text-top small">EMS Server</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: magenta;"/>&nbsp;<span class="align-text-top small">Aggregator</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: cyan;"/>&nbsp;<span class="align-text-top small">Candidate</span>&nbsp;&nbsp;
-                        <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing</span>&nbsp;&nbsp;
-                        <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: orange;"/>&nbsp;<span class="align-text-top small">Not Candidate / Resource-Limited</span>&nbsp;&nbsp;
+                        <i class="fas fa-map-marker-alt" style="color: green;"/>&nbsp;<span class="align-text-top small">Initializing or Non-clustered</span>&nbsp;&nbsp;
                         <i class="fas fa-map-marker-alt" style="color: black;"/>&nbsp;<span class="align-text-top small">Ignored</span>&nbsp;&nbsp;
                         <div style="right:0; position:absolute; margin-right: 15px;">
                             <i class="fas fa-trash" role="button" title="Clear geo-locations cache" @click="clearGeolocationCache()"></i>
@@ -327,9 +352,7 @@
     </div>
 
     <!-- SSH console modal -->
-    <div id="ssh-console-dialog" title="SSH console" style="overflow: hidden; width: 90vw !important; height: 90% !important; padding: 0px; display: flex; align-items: stretch;">
-        <!--<object id="ssh-console-object" type="text/html" data="" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: 100% !important;" />-->
-    </div>
+    <div id="ssh-console-dialog" title="SSH console" style="overflow: hidden; width: 90vw !important; height: 90% !important; padding: 0px; display: flex; align-items: stretch;"></div>
 </template>
 
 <script>
@@ -346,23 +369,28 @@ import 'vue3-blocks-tree/dist/vue3-blocks-tree.css';
 import ActionsList from './widgets/node-actions-list';
 
 import JVectorMap from '@/components/jvectormap/jvectormap.vue';
-//import utils from '@/utils.js';
 
 import LeafletMap from '@/components/leaflet-map/leaflet-map.vue';
 
 import countryCoords from './country-coordinates.js';
+
+import utils from '@/utils.js';
+import { TimeWindow } from '@/components/ems/ts/ts.js';
+const TIME_WINDOW_LENGTH = 5*60;  // seconds
 
 export default {
     name: 'Admin Dashboard',
     components: { Card, Sparkline, VueBlocksTree, JVectorMap, LeafletMap, ActionsList },
     props: {
         modelValue: Object,
+        clientStats: Object,
+        sseRef: String
     },
     data() {
-        const winLocation = window.location.hostname;
+        //const winLocation = window.location.hostname;
         return {
             someVariableUnderYourControl: 0,
-            websshProxyUrl: `http://${winLocation}:2121`,
+            websshServiceUrl: '',
             treeData : {
             },
             clients: [
@@ -375,11 +403,20 @@ export default {
             },
             clientMarkers: [],
             clientConnections: [],
+            clientStatsTimeseries: { },
+            dataWindow: 60,
+            defaultChartGridValues: {
+                l0: [0, 0]
+            }
         };
     },
     watch: {
         modelValue: function() {
             this.initData();
+        },
+        clientStats: function() {
+            this.updateClientStats();
+            this.updateClusterStats();
         },
         treeData: function() {
             //console.log("TREE DATA UPDATED: ", this.treeData);
@@ -393,39 +430,64 @@ export default {
     mounted() {
         this.initData();
 
+        let _getWebsshServiceUrl = this.getWebsshServiceUrl;
+
+        this.clientStatsTimeseries = { };
+
         $('#ssh-console-dialog').dialog({
-                autoOpen : false,
-                modal : true,
-                show : "blind",
-                hide : "blind",
-                minWidth: 800,
-                minHeight: 600,
-                buttons: {
-                        Close: function() {
-                                $('#ssh-console-dialog').dialog( "close" );
-                        }
-                },
-                open: function() {
-                        let websshProxy = $(this).attr('data-webssh-proxy');
-                        let ref = $(this).attr('data-ref');
-                        let address = $(this).attr('data-address');
-                        console.log('SSH-console: open: websshProxy=', websshProxy, ', ref=', ref);
-                        if (websshProxy.trim()==='' || ref.trim()==='') {
-                                alert('ERROR: No webssh proxy or no client reference found');
-                                return;
-                        }
+            autoOpen : false,
+            modal : true,
+            show : "blind",
+            hide : "blind",
+            minWidth: 800,
+            minHeight: 600,
+            buttons: [
+                {
+                    id: 'ssh-console-open-in-new-tab',
+                    text: 'Open in a new tab',
+                    icon: 'ui-icon-extlink',
+                    click: function() {
+                        let url = _getWebsshServiceUrl(this);
+                        console.log('SSH-console in a new tab: url: ', url);
 
-                        let url = `${websshProxy}?hostname=x&username=x&cref=${ref}`;
-                        console.log('SSH-console: url: ', url);
-
-                        let h = $('#ssh-console-dialog').css('height');
-                        $('#ssh-console-dialog').html(`<object id="ssh-console-object" type="text/html" data="${url}" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: ${h}px !important;" />`);
-                        $('#ssh-console-dialog').dialog('option', "title", `SSH console: ${address}    [ref=${ref}]`);
+                        if (url==null) return;
+                        window.open(url, '_blank').focus();
+                    }
                 },
-                close: function() {
-                        $('#ssh-console-dialog').html('&nbsp;');
-                        $('#ssh-console-dialog').dialog('option', "title", "SSH console");
+                {
+                    id: 'ssh-console-clone',
+                    text: 'Close',
+                    icon: 'ui-icon-close',
+                    click: function() {
+                        $('#ssh-console-dialog').dialog( "close" );
+                    }
                 }
+            ],
+            open: function() {
+                let url = _getWebsshServiceUrl(this);
+                console.log('SSH-console dialog: url: ', url);
+                if (url==null) return;
+
+                // Set SSH console content (i.e. the webssh iframe)
+                let h = $('#ssh-console-dialog').css('height');
+                $('#ssh-console-dialog').html(`
+                    <iframe id="ssh-console-object" title="SSH console" src="${url}" style="overflow: hidden; border: 5px ridge blue; width: 100% !important; height: ${h}px !important;"></iframe>
+                `);
+
+                // Set SSH console title
+                let ref = $(this).attr('data-ref');
+                let address = $(this).attr('data-address');
+                $('#ssh-console-dialog').dialog('option', "title", `SSH console: ${address}    [ref=${ref}]`);
+
+                // Move dialog on top of other page widgets (i.e. LeafletJS map)
+                $('#ssh-console-object').parent().parent().css('z-index', 1000);
+                $(".ui-dialog-buttonpane").append('<small id="ssh-console-bottom-text" style="color: grey;">If the SSH console does not appear correctly, try the <b>Open in a new tab</b> button.</small>');
+            },
+            close: function() {
+                $('#ssh-console-dialog').html('&nbsp;');
+                $('#ssh-console-dialog').dialog('option', "title", "SSH console");
+                $("#ssh-console-bottom-text").replaceWith('');
+            }
         });
     },
 
@@ -456,15 +518,28 @@ export default {
             }
         },
 
+        getWebsshServiceUrl(elem) {
+            let websshServiceUrl = $(elem).attr('data-webssh-service-url');
+            let ref = $(elem).attr('data-ref');
+            //console.log('getWebsshServiceUrl: websshServiceUrl=', websshServiceUrl, ', ref=', ref);
+            let url = null;
+            if (!websshServiceUrl || websshServiceUrl.trim()==='' || !ref || ref.trim()==='') {
+                alert('ERROR: No webssh URL or no client reference found');
+            } else {
+                url = websshServiceUrl.replace('{0}', ref);
+            }
+            //console.log('getWebsshServiceUrl: return url: ', url);
+            return url;
+        },
         openSshConsole(ref, address) {
-            $('#ssh-console-dialog').attr("data-webssh-proxy", this.websshProxyUrl);
+            $('#ssh-console-dialog').attr("data-webssh-service-url", this.websshServiceUrl);
             $('#ssh-console-dialog').attr("data-ref", ref);
             $('#ssh-console-dialog').attr("data-address", address);
             $('#ssh-console-dialog').dialog("open");
         },
         openSshConsoleCallback(ref, address) {
-            //console.log('openSshConsoleCallback: ', this.websshProxyUrl, ref, address);
-            return (this.websshProxyUrl && this.websshProxyUrl.trim()!==''
+            //console.log('openSshConsoleCallback: ', this.websshServiceUrl, ref, address);
+            return (this.websshServiceUrl && this.websshServiceUrl.trim()!==''
                     && ref && address && ref.trim!=='' && address.trim()!=='')
                             ? ()=>this.openSshConsole(ref, address)
                             : null;
@@ -509,8 +584,8 @@ export default {
         initData() {
             if (!this.modelValue) return;
 
-            if (this.modelValue['WEBSSH-BASE-URL'])
-                this.websshProxyUrl = this.modelValue['WEBSSH-BASE-URL'];
+            if (this.modelValue['WEBSSH-SERVICE-URL'])
+                this.websshServiceUrl = this.modelValue['WEBSSH-SERVICE-URL'];
 
             if (!this.modelValue['baguette-server'] || !this.modelValue['baguette-server']['active-clients-map'])
                 return;
@@ -635,7 +710,95 @@ export default {
 
         // -------------------------------------------------------------------------------------------------------------
 
+        updateClientStats() {
+            for (const [id, data] of Object.entries(this.clientStats)) {
+                if (!this.clientStatsTimeseries[id]) {
+                    let sseInterval = this.$root.$refs[this.sseRef].getCurrentInterval();
+                    this.clientStatsTimeseries[id] = new TimeWindow(TIME_WINDOW_LENGTH, sseInterval);
+                }
+
+                if (data) this.clientStatsTimeseries[id].add(data);
+            }
+        },
+
+        updateClusterStats() {
+            if (!this.treeData) return;
+            for (const zoneObj of this.treeData.children) {
+                let zoneId = zoneObj.id;
+                if (!this.clientStatsTimeseries[zoneId]) {
+                    let sseInterval = this.$root.$refs[this.sseRef].getCurrentInterval();
+                    this.clientStatsTimeseries[zoneId] = new TimeWindow(TIME_WINDOW_LENGTH, sseInterval);
+                }
+
+                let maxUptime = -1;
+                let totalEvents = 0;
+                let clientCount = 0;
+                for (const clientObj of zoneObj.children) {
+                    let clientId = clientObj.id;
+                    let clientUptime = this.currentClientUsageData(clientId, 'uptime');
+                    let clientTotalEvents = this.currentClientUsageData(clientId, 'count-total-events');
+                    if (maxUptime < clientUptime) maxUptime = clientUptime;
+                    totalEvents += clientTotalEvents;
+                    clientCount++;
+                }
+
+                this.clientStatsTimeseries[zoneId].add({ 'uptime': maxUptime, 'count-total-events': totalEvents, 'count-clients': clientCount });
+            }
+        },
+
+        clientUptime(id) {
+            return utils.toDuration( this.currentClientUsageData(id, 'uptime') );
+        },
+
+        currentClientUsageData(id, metric, prefix) {
+            if (!id || !this.clientStatsTimeseries || !this.clientStatsTimeseries[id]) return null;
+            let v = this.clientStatsTimeseries[id].getLast();
+            if (!v || !(metric in v)) return null;
+            v = v[metric];
+            if (prefix==='KB') v = parseFloat(utils.toKB(v));
+            return v;
+        },
+        currentClientUsage(id, metric, precision, prefix) {
+            let v = this.currentClientUsageData(id, metric, prefix);
+            if (v==null) return '--';
+            if (v>=10) precision = 0;
+            //return v.toFixed(precision);
+            return utils.toNum(v, precision);
+        },
+
+        clientUsageData(id, metric, prefix) {
+            if (!id || !this.clientStatsTimeseries || !this.clientStatsTimeseries[id]) return [ 0 ];
+            var values = this.clientStatsTimeseries[id].getWindowData(this.dataWindow).map(data => (data && (metric in data)) ? data[metric] : 0);
+            if (prefix==='KB') values = values.map(x => parseFloat(utils.toKB(x)));
+            return values;
+        },
+        clientUsageDataAndLines(id, metric, gridValues) {
+            var result = {};
+            if (Array.isArray(metric)) {
+                for (let m in metric)
+                    result[m] = this.clientUsageData(id, m);
+            } else
+                result[metric] = this.clientUsageData(id, metric);
+            result = Object.assign(result, gridValues ?? this.defaultChartGridValues);
+            return result;
+        },
+
+        /*clusterUsageData(id, metric, prefix) {
+        },*/
+
+        sparkLineRangeMax(numArr) {
+            let numMax = Math.max( ...numArr );
+            let order = utils.orderOfMagnitude(numMax);
+            let order2 = Math.pow(10, order);
+            let normalized = numMax / order2;
+            let factor = Math.min(Math.ceil(10 * normalized), 10);
+            return factor * order2 / 10;
+        },
+
+        // -------------------------------------------------------------------------------------------------------------
+
         updateClientMarkers(clients) {
+            // Update markers of EMS server and clients
             let markers = [ ];
             for (let c of clients) {
                 if (!c.lat || !c.lon) {
@@ -658,7 +821,7 @@ export default {
             //console.log('NEW MARKERS: ', markers);
             this.clientMarkers = markers;
 
-            // Update connections between EMS and clients
+            // Update SSH connections between EMS server and clients
             let controlConns = this.clientMarkers.filter(cc => cc.id!=='ems' && cc.type!=='IGNORED' && cc.type!=='NOT_CANDIDATE')
                     .map(function(cc) {
                         return {
@@ -667,10 +830,11 @@ export default {
                             line: { color: '#696969', weight: 1, dashArray: '8 6' }
                         };
                     });
+            // Update broker connections between nodes (EMS server, nodes with client, and nodes without client)
             let eventConns = this.clientMarkers.filter(cc => cc.id!=='ems')
                     .map(function(cc) {
                         return {
-                            startMarker: cc.nextLevel,
+                            startMarker: cc.nextLevel ?? 'ems',
                             endMarker: cc.id,
                             line: { color: cc.nextLevel=='ems' ? 'magenta' : 'blue', weight: 0.5 }
                         };

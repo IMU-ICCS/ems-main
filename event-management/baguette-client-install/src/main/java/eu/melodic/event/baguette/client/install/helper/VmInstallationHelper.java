@@ -19,6 +19,7 @@ import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.CredentialsMap;
+import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -133,7 +134,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         Map<String, String> nodeMap = entry.getPreregistration();
         BaguetteServer baguette = entry.getBaguetteServer();
 
-        String baseUrl = nodeMap.get("BASE_URL");
+        String baseUrl = StringUtils.removeEnd(nodeMap.get("BASE_URL"), "/");
         String clientId = nodeMap.get("CLIENT_ID");
         String ipSetting = nodeMap.get("IP_SETTING");
         log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux(): Invoked: base-url={}", baseUrl);
@@ -167,7 +168,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         // Load client config. template and prepare configuration
         nodeMap.put("BAGUETTE_CLIENT_ID", clientId);
         nodeMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
-        nodeMap.put("BAGUETTE_SERVER_HOSTNAME", baguette.getConfiguration().getServerHostname());
+        nodeMap.put("BAGUETTE_SERVER_HOSTNAME", NetUtil.getHostname());
         nodeMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());
         nodeMap.put("BAGUETTE_SERVER_PUBKEY", baguette.getServerPubkey());
         nodeMap.put("BAGUETTE_SERVER_PUBKEY_FINGERPRINT", baguette.getServerPubkeyFingerprint());

@@ -9,8 +9,11 @@
 
 package eu.melodic.event.baguette.client.collector;
 
+import eu.melodic.event.baguette.client.BaguetteClientProperties;
 import eu.melodic.event.baguette.client.CommandExecutor;
+import eu.melodic.event.baguette.client.Sshc;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.common.client.SshClient;
 import eu.melodic.event.common.collector.CollectorContext;
 import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.GroupingConfiguration;
@@ -27,7 +30,7 @@ import java.util.Set;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ClientCollectorContext implements CollectorContext {
+public class ClientCollectorContext implements CollectorContext<BaguetteClientProperties> {
     private final CommandExecutor commandExecutor;
 
     public Map<String, GroupingConfiguration> getGroupings() {
@@ -53,5 +56,15 @@ public class ClientCollectorContext implements CollectorContext {
     @Override
     public boolean sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination) {
         return commandExecutor.sendEvent(connectionString, destinationName, event, createDestination);
+    }
+
+    @Override
+    public SshClient<BaguetteClientProperties> getSshClient() {
+        return new Sshc();
+    }
+
+    @Override
+    public BaguetteClientProperties getSshClientProperties() {
+        return new BaguetteClientProperties();
     }
 }

@@ -53,7 +53,7 @@ public class CepEvalFunction {
             if (entryValue instanceof String) entryValue = Double.parseDouble((String)entryValue);
             args.put(entryName, (Double) entryValue);
         }
-        log.debug(">> eval(map):   mp-args: {}", args);
+        log.debug(">> eval(map):   map-args: {}", args);
 
         double result = MathUtil.eval(formula, args);
         log.debug(">> eval(map):   result:  {}", result);
@@ -73,7 +73,7 @@ public class CepEvalFunction {
             throw new IllegalArgumentException("The num. of stream names provided is not equal to the num. of values provided");
         Map<String, Double> args = new HashMap<>();
         for (int i = 0; i < names.length; i++) args.put(names[i].trim(), v[i]);
-        log.debug(">> eval(double):   mp-args: {}", args);
+        log.debug(">> eval(double):   map-args: {}", args);
 
         double result = MathUtil.eval(formula, args);
         log.debug(">> eval(double):   result:  {}", result);

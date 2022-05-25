@@ -1,6 +1,9 @@
 .idea
 broker-client/*.js
-config-files/broker*.p12
-config-files/broker*.crt
+config-files/*.p12
+config-files/*.crt
 public_resources/**
 tcnative*
+ems.log
+server.pem
+.dev-*

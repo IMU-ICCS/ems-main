@@ -11,10 +11,7 @@ package eu.melodic.event.util;
 
 public interface IKeystoreAndCertificateProperties {
 
-    public enum KEY_ENTRY_GENERATE { YES, ALWAYS, NO, NEVER, IF_MISSING, IF_IP_CHANGED };
-
-    String getDefaultIpAddress();
-    String getPublicIpAddress();
+    enum KEY_ENTRY_GENERATE { YES, ALWAYS, NO, NEVER, IF_MISSING, IF_IP_CHANGED };
 
     String getKeystoreFile();
     String getKeystoreType();
@@ -28,8 +25,4 @@ public interface IKeystoreAndCertificateProperties {
     String getKeyEntryName();
     String getKeyEntryDName();
     String getKeyEntryExtSAN();
-
-    public String getKeyEntryNameValue();
-    public String getKeyEntryDNameValue();
-    public String getKeyEntryExtSANValue();
 }

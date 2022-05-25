@@ -17,16 +17,20 @@ import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.translate.analyze.Grouping;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class GraphTransformer {
-    private CamelToEplTranslatorProperties properties;
+    private final CamelToEplTranslatorProperties properties;
 
-    public void transformGraph(DAG dag, CamelToEplTranslatorProperties properties) {
+    public void transformGraph(DAG dag) {
         log.debug("GraphTransformer.transformGraph():  Transforming DAG...");
         if (properties.isPruneMvv()) {
             removeMVV(dag, dag.getRootNode());
@@ -34,7 +38,7 @@ public class GraphTransformer {
             log.debug("GraphTransformer.transformGraph():  MVV pruning from DAG is disabled");
         }
 
-        if (properties.isAddTopLevelMetric()) {
+        if (properties.isAddTopLevelMetrics()) {
             addTopLevelMetrics(dag);
         } else {
             log.debug("GraphTransformer.transformGraph():  Adding Metric for Top-Level Metric Contexts in DAG is disabled");

@@ -77,6 +77,15 @@
             <lineEnding>unix</lineEnding>
             <fileMode>0755</fileMode>
         </fileSet>
+        <fileSet>
+            <outputDirectory>bin</outputDirectory>
+            <directory>${project.parent.basedir}/bin</directory>
+            <includes>
+                <include>sysmon.*</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0755</fileMode>
+        </fileSet>
     </fileSets>
     <!-- use this section if you want to package dependencies -->
     <dependencySets>

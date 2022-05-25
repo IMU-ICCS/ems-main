@@ -11,11 +11,10 @@ package eu.melodic.event.baguette.server.properties;
 
 import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.util.CredentialsMap;
-import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -30,10 +29,13 @@ import java.util.Map;
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = "baguette.server")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "baguette.server")
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-server.properties")
 @Slf4j
-public class BaguetteServerProperties {
+public class BaguetteServerProperties implements InitializingBean {
+    public void afterPropertiesSet() {
+        log.debug("BaguetteServerProperties: {}", this);
+    }
 
     /*XXX: TODO: Add combinatorial properties check
     @Override
@@ -52,68 +54,37 @@ public class BaguetteServerProperties {
         }
     }*/
 
-    //@Size(min = 1, message = "Please provide a valid Coordinator class (use Fully-Qualified Class Name)")
-    @Value("${baguette.server.coordinator.class}")
     private Class<ServerCoordinator> coordinatorClass;
     private Map<String,String> coordinatorParameters = new HashMap<>();
 
-    @Value("${baguette.server.coordinator.id}")
     private List<String> coordinatorId;
     private Map<String, CoordinatorConfig> coordinatorConfig = new HashMap<>();
 
-    @Value("${baguette.server.registration-window:30000}")
     @Min(-1)
-    private long registrationWindow;
-    @Value("${baguette.server.num-of-instances:-1}")
+    private long registrationWindow = 30000;
     @Min(-1)
-    private int numberOfInstances;
-    @Value("${baguette.server.num-of-segments:-1}")
+    private int numberOfInstances = -1;
     @Min(-1)
-    private int NumberOfSegments;
+    private int NumberOfSegments = -1;
 
-    //@Value("#{ '${baguette.server.address}'!='' ? '${baguette.server.address}' : T(eu.melodic.event.util.NetUtil).getPublicIpAddress() }")
-    @Value("${baguette.server.address:}")
-    private String serverAddress;
+    private String address;
+    public String getServerAddress() { return address; }
 
-    public String getServerAddress() {
-        String oldVal = serverAddress;
-        if (StringUtils.isEmpty(serverAddress) || "%{PUBLIC_IP}%".equals(serverAddress.trim())) {
-            serverAddress = NetUtil.getPublicIpAddress();
-            log.info("BaguetteServerProperties: Set serverAddress to PUBLIC: {} -> {}", oldVal, serverAddress);
-        } else if ("%{DEFAULT_IP}%".equals(serverAddress.trim())) {
-            serverAddress = eu.melodic.event.util.NetUtil.getDefaultIpAddress();
-            log.info("BaguetteServerProperties: Set serverAddress to DEFAULT: {} -> {}", oldVal, serverAddress);
-        }
-        return serverAddress;
-    }
-
-    public String getServerHostname() {
-        return NetUtil.getHostname();
-    }
-
-    public String getCanonicalHostName() {
-        return NetUtil.getCanonicalHostName();
-    }
-
-    @Value("${baguette.server.port:2222}")
     @Min(value = 1, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
     @Max(value = 65535, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
-    private int serverPort;
+    private int port = 2222;
+    public int getServerPort() { return port; }
 
-    @Value("${baguette.server.key.file:hostkey.ser}")
-    private String serverKeyFile;
-    @Value("${baguette.server.heartbeat:false}")
+    private String keyFile = "hostkey.ser";
+    public String getServerKeyFile() { return keyFile; }
+
     private boolean heartbeatEnabled;
-    @Value("${baguette.server.heartbeat.period:60000}")
     @Min(-1)
-    private long heartbeatPeriod;
+    private long heartbeatPeriod = 60000;
 
-    @Value("${baguette.server.debug.client-address-override-allowed:false}")
     private boolean clientAddressOverrideAllowed;
-    @Value("${baguette.server.client-id-format}")
     private String clientIdFormat;
-    @Value("${baguette.server.client-id-format.escape:~}")
-    private String clientIdFormatEscape;
+    private String clientIdFormatEscape = "~";
 
     private final CredentialsMap credentials = new CredentialsMap();
 

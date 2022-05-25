@@ -25,6 +25,7 @@ import camel.scalability.NonFunctionalEvent;
 import camel.scalability.UnaryEventPattern;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import lombok.extern.slf4j.Slf4j;
@@ -48,11 +49,14 @@ import java.util.stream.Collectors;
 public class RuleGenerator {
 
     @Autowired
+    private CamelToEplTranslatorProperties properties;
+    @Autowired
     private RuleTemplateProperties ruleTemplatesRegistry;
 
     private SpringTemplateEngine templateEngine;
 
-    public RuleGenerator(RuleTemplateProperties ruleTemplatesRegistry) {
+    public RuleGenerator(CamelToEplTranslatorProperties properties, RuleTemplateProperties ruleTemplatesRegistry) {
+        this.properties = properties;
         this.ruleTemplatesRegistry = ruleTemplatesRegistry;
         initTemplateEngine();
     }
