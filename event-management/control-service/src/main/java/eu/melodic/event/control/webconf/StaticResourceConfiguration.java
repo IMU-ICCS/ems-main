@@ -40,24 +40,24 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String faviconContext = properties.getFavicon().getContext();
-        String faviconPath = properties.getFavicon().getPath();
+        String faviconContext = properties.getFaviconContext();
+        String faviconPath = properties.getFaviconPath();
         if(StringUtils.isNotBlank(faviconPath)) {
             log.info("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
             registry
                     .addResourceHandler(faviconContext)
                     .addResourceLocations(faviconPath);
         }
-        String resourceContext = properties.getResource().getContext();
-        List<String> resourcePath = properties.getResource().getPath();
+        String resourceContext = properties.getResourceContext();
+        List<String> resourcePath = properties.getResourcePath();
         if (resourcePath != null && resourcePath.size() > 0) {
             log.info("Serving static content from: {} --> {}", resourceContext, resourcePath);
             registry
                     .addResourceHandler(resourceContext)
                     .addResourceLocations(resourcePath.toArray(new String[0]));
         }
-        String logsContext = properties.getLogs().getContext();
-        List<String> logsPath = properties.getLogs().getPath();
+        String logsContext = properties.getLogsContext();
+        List<String> logsPath = properties.getLogsPath();
         if (logsPath != null && logsPath.size() > 0) {
             log.info("Serving logs from: {} --> {}", logsContext, logsPath);
             registry

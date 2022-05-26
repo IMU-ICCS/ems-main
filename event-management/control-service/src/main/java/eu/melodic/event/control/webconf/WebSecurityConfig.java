@@ -30,7 +30,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -136,7 +135,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
         otpAuthEnabled = properties.getOtpAuthentication().isEnabled();
         otpDuration = properties.getOtpAuthentication().getDuration();
         otpRequestHeader = properties.getOtpAuthentication().getRequestHeader();
-        otpRequestParam = properties.getOtpAuthentication().getRequestParam();
+        otpRequestParam = properties.getOtpAuthentication().getRequestParameter();
 
         // User form authentication fields
         userFormAuthEnabled = properties.getFormAuthentication().isEnabled();
@@ -160,8 +159,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
 
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
-        if (securityEnabled && userFormAuthEnabled && (StringUtils.isBlank(username) || password.isEmpty()))
-            throw new InvalidParameterException("User form authentication is enabled but username or password are blank");
+        if (securityEnabled && userFormAuthEnabled && (StringUtils.isBlank(username) || StringUtils.isEmpty(password)))
+            throw new InvalidParameterException("User form authentication is enabled but username or password is blank");
         if (securityEnabled && apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
             throw new InvalidParameterException("API Key authentication is enabled but no API Key provided or it is blank");
         if (permittedUrls==null) permittedUrls = new String[0];
@@ -224,7 +223,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 // Spring Security should completely ignore the following URLs
-                .antMatchers(staticResourceProperties.getFavicon().getContext(), "/health");
+                .antMatchers(staticResourceProperties.getFaviconContext(), "/health");
     }
 
     @Override

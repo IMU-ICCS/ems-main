@@ -13,6 +13,7 @@ import eu.melodic.event.util.EmsConstant;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
@@ -26,25 +27,21 @@ import java.util.Map;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "web.static")
-public class StaticResourceProperties {
-    private ResourceOneMapping favicon = ResourceOneMapping.builder().context("/favicon.ico").build();
-    private ResourceMappings resource = ResourceMappings.builder().context("/resources/**").build();
-    private ResourceMappings logs = ResourceMappings.builder().context("/logs/**").build();
+public class StaticResourceProperties implements InitializingBean {
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.debug("StaticResourceProperties: {}", this);
+    }
+
+    private String faviconContext = "/favicon.ico";
+    private String faviconPath;
+
+    private String resourceContext = "/resources/**";
+    private List<String> resourcePath;
+
+    private String logsContext = "/logs/**";
+    private List<String> logsPath;
 
     private String redirect;
     private Map<String,String> redirects = new LinkedHashMap<>();
-
-    @Data
-    @Builder
-    public static class ResourceOneMapping {
-        private String context;
-        private String path;
-    }
-
-    @Data
-    @Builder
-    public static class ResourceMappings {
-        private String context;
-        private List<String> path;
-    }
 }

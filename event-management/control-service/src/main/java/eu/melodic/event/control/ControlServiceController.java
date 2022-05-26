@@ -424,7 +424,7 @@ public class ControlServiceController {
 
     private void updateRegistrationInfo(HttpServletRequest request, NodeRegistryEntry entry) {
         // Get web server base URL
-        String staticResourceContext = staticResourceProperties.getResource().getContext();
+        String staticResourceContext = staticResourceProperties.getResourceContext();
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/*");
         if (!staticResourceContext.startsWith("/")) staticResourceContext = "/"+staticResourceContext;
