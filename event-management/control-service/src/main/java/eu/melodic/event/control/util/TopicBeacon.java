@@ -65,14 +65,21 @@ public class TopicBeacon implements InitializingBean {
         log.debug("Topic Beacon settings: init-delay={}, delay={}, heartbeat-topics={}, threshold-topics={}, instance-topics={}",
                 properties.getInitialDelay(), properties.getDelay(), properties.getHeartbeatTopics(), properties.getThresholdTopics(),
                 properties.getInstanceTopics());
-        scheduler.scheduleWithFixedDelay(() -> {
+
+        Runnable transmitInfoTask = () -> {
             try {
                 transmitInfo();
             } catch (Exception e) {
                 log.error("Topic Beacon: Exception while sending info: ", e);
             }
-        }, startTime, properties.getDelay());
-        log.info("Topic Beacon started: init-delay={}ms", properties.getInitialDelay());
+        };
+        if (properties.isUseDelay()) {
+            scheduler.scheduleWithFixedDelay(transmitInfoTask, startTime, properties.getDelay());
+            log.info("Topic Beacon started: init-delay={}ms, delay={}ms", properties.getInitialDelay(), properties.getDelay());
+        } else {
+            scheduler.scheduleAtFixedRate(transmitInfoTask, startTime, properties.getRate());
+            log.info("Topic Beacon started: init-delay={}ms, rate={}ms", properties.getInitialDelay(), properties.getRate());
+        }
     }
 
     public void transmitInfo() throws JMSException {

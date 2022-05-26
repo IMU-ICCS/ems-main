@@ -12,6 +12,7 @@ package eu.melodic.event.control.properties;
 import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
@@ -25,11 +26,12 @@ import java.util.Set;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "beacon")
-public class TopicBeaconProperties {
+public class TopicBeaconProperties implements InitializingBean {
     private boolean enabled = true;
     @Min(0) private long initialDelay = 60000;
     @Min(1) private long delay = 60000;
     @Min(1) private long rate = 60000;
+    private boolean useDelay = true;
 
     private Set<String> heartbeatTopics = new HashSet<>();
     private Set<String> thresholdTopics = new HashSet<>();
@@ -37,4 +39,9 @@ public class TopicBeaconProperties {
     private Set<String> predictionTopics = new HashSet<>();
     @Min(1) private long predictionRate = 60000;
     private Set<String> sloViolationDetectorTopics = new HashSet<>();
+
+    @Override
+    public void afterPropertiesSet() {
+        log.debug("TopicBeaconProperties: {}", this);
+    }
 }

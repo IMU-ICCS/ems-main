@@ -11,6 +11,7 @@ package eu.melodic.event.common.collector.netdata;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,7 +21,7 @@ import java.util.List;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "collector.netdata")
-public class NetdataCollectorProperties {
+public class NetdataCollectorProperties implements InitializingBean {
     private boolean enable;
     private long delay;
     private String url;
@@ -30,4 +31,9 @@ public class NetdataCollectorProperties {
     private List<String> allowedTopics;
 
     private int errorLimit;     // num of consecutive errors. Zero or negative value will immediately trigger self-healing
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.debug("NetdataCollectorProperties: {}", this);
+    }
 }
