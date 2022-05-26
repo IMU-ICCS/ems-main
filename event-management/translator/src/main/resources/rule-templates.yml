@@ -9,7 +9,7 @@
 
 # EPL Rule templates per Element-Type and Monitoring-Grouping
 
-generator:
+translator.generator:
   language: EPL
   rule-templates:
     # SCHEDULE (i.e. IUTPUT) CLAUSE

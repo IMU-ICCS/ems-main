@@ -14,8 +14,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Collections;
@@ -27,8 +27,8 @@ import java.util.Optional;
 @Data
 @Validated
 @Configuration
-@EnableConfigurationProperties
-@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "generator")
+@PropertySource("classpath:rule-templates.yml")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "translator.generator")
 public class RuleTemplateProperties implements InitializingBean {
     @Override
     public void afterPropertiesSet() {

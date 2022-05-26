@@ -43,7 +43,7 @@ if "%JASYPT_PASSWORD%"=="" (
 
 :: Check EMS configuration
 if "%EMS_CONFIG_LOCATION%"=="" (
-    set EMS_CONFIG_LOCATION=file:%MELODIC_CONFIG_DIR%\ems-server.yml,file:%MELODIC_CONFIG_DIR%\ems-server.properties,file:%MELODIC_CONFIG_DIR%\ems.yml,file:%MELODIC_CONFIG_DIR%\ems.properties
+    set EMS_CONFIG_LOCATION=classpath:rule-templates.yml,file:%MELODIC_CONFIG_DIR%\ems-server.yml,file:%MELODIC_CONFIG_DIR%\ems-server.properties,file:%MELODIC_CONFIG_DIR%\ems.yml,file:%MELODIC_CONFIG_DIR%\ems.properties
 )
 
 :: Check logger configuration

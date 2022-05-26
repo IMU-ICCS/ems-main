@@ -46,7 +46,7 @@ export JASYPT_PASSWORD
 
 # Check EMS configuration
 if [[ -z "$EMS_CONFIG_LOCATION" ]]; then
-  EMS_CONFIG_LOCATION=file:$MELODIC_CONFIG_DIR/ems-server.yml,file:$MELODIC_CONFIG_DIR/ems-server.properties,file:$MELODIC_CONFIG_DIR/ems.yml,file:$MELODIC_CONFIG_DIR/ems.properties
+  EMS_CONFIG_LOCATION=classpath:rule-templates.yml,file:$MELODIC_CONFIG_DIR/ems-server.yml,file:$MELODIC_CONFIG_DIR/ems-server.properties,file:$MELODIC_CONFIG_DIR/ems.yml,file:$MELODIC_CONFIG_DIR/ems.properties
 fi
 
 # Check logger configuration
