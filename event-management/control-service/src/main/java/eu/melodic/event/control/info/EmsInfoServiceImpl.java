@@ -154,8 +154,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             controlServiceInfo.put("prop-metrics-client-update-interval", infoServiceProperties.getMetricsClientUpdateInterval());
             controlServiceInfo.put("prop-metrics-stream-event-name", infoServiceProperties.getMetricsStreamEventName());
             controlServiceInfo.put("prop-metrics-stream-update-interval", infoServiceProperties.getMetricsStreamUpdateInterval());
-            controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreloadCamelModel());
-            controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreloadCpModel());
+            controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreload().getCamelModel());
+            controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreload().getCpModel());
             controlServiceInfo.put("prop-upperware-grouping", controlServiceProperties.getUpperwareGrouping());
             controlServiceInfo.put("prop-tc-load-file", controlServiceProperties.getTcLoadFile());
             controlServiceInfo.put("prop-tc-save-file", controlServiceProperties.getTcSaveFile());

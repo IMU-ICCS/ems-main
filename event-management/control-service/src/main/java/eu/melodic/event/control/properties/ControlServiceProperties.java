@@ -54,8 +54,7 @@ public class ControlServiceProperties {
     private String metasolverConfigurationUrl;
     private String esbUrl;
 
-    private String preloadCamelModel;
-    private String preloadCpModel;
+    private Preload preload = new Preload();
 
     private boolean skipTranslation;
     private boolean skipMvvRetrieve;
@@ -78,6 +77,12 @@ public class ControlServiceProperties {
 
     private TaskSchedulerProperties taskScheduler = new TaskSchedulerProperties();
     private AuthorizationProperties authorization = new AuthorizationProperties();
+
+    @Data
+    public static class Preload {
+        private String camelModel;
+        private String cpModel;
+    }
 
     @Data
     public static class TaskSchedulerProperties {

@@ -156,8 +156,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Async
     public void preloadModels() {
-        String preloadCamelModel = properties.getPreloadCamelModel();
-        String preloadCpModel = properties.getPreloadCpModel();
+        String preloadCamelModel = properties.getPreload().getCamelModel();
+        String preloadCpModel = properties.getPreload().getCpModel();
         if (StringUtils.isNotBlank(preloadCamelModel)) {
             log.info("===================================================================================================");
             log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}",
@@ -778,6 +778,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Process DAG top-level nodes
         Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
         HashSet<TranslationContext.MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
+        log.debug("getMetricContextsForPrediction: Translation Context found for model: {}", camelModelId);
 
         final Deque<DAGNode> q = topLevelNodes.stream()
                 .filter(x ->
@@ -797,6 +798,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             }
         }
 
+        log.debug("getMetricContextsForPrediction: END: Metrics of Top-Level nodes of model: model={}, metrics={}", camelModelId, tcMetricsOfTopLevelNodes);
         return tcMetricsOfTopLevelNodes;
     }
 
