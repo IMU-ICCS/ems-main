@@ -12,6 +12,7 @@ package eu.melodic.event.control.properties;
 import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
@@ -26,11 +27,11 @@ import java.util.List;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "info")
-public class InfoServiceProperties {
+public class InfoServiceProperties implements InitializingBean {
     @Min(1)
     private long metricsUpdateInterval = 1000;
     @Min(1)
-    private long metricsClientUpdateInterval = 500; // Not really needed since clients PUSH their statistics to server
+    private long metricsClientUpdateInterval = 500; //XXX:TODO:CHECK: Not really needed since clients PUSH their statistics to server
     @Min(1)
     private int metricsStreamUpdateInterval = 10;   // in seconds
     @NotBlank
@@ -38,4 +39,9 @@ public class InfoServiceProperties {
     private List<String> envVarPrefixes = Arrays.asList("WEBSSH_SERVICE_-^", "WEB_ADMIN_!^");
                 // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
                 // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
+
+    @Override
+    public void afterPropertiesSet() {
+        log.debug("InfoServiceProperties: {}", this);
+    }
 }
