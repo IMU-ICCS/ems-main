@@ -31,9 +31,9 @@ public class InfoServiceProperties implements InitializingBean {
     @Min(1)
     private long metricsUpdateInterval = 1000;
     @Min(1)
-    private long metricsClientUpdateInterval = 500; //XXX:TODO:CHECK: Not really needed since clients PUSH their statistics to server
+    private long metricsClientUpdateInterval = 500; //XXX:TODO: Not really needed since clients PUSH their statistics to server
     @Min(1)
-    private int metricsStreamUpdateInterval = 10;   // in seconds
+    private int metricsStreamUpdateInterval = 10;    // in seconds
     @NotBlank
     private String metricsStreamEventName = "ems-metrics-event";
     private List<String> envVarPrefixes = Arrays.asList("WEBSSH_SERVICE_-^", "WEB_ADMIN_!^");

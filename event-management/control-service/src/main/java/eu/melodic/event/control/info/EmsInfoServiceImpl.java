@@ -285,7 +285,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
         for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
             /*log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
-            Object o = baguetteServer.readFromClient(clientId, "GET-STATS", org.slf4j.event.Level.DEBUG);
+            Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS", org.slf4j.event.Level.DEBUG);
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
             if (o instanceof Map) {
                 clientMetrics.put(clientId, o);
