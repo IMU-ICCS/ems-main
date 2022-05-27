@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.install;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
@@ -26,7 +27,13 @@ import java.util.regex.Pattern;
 @Configuration
 @ConfigurationProperties(prefix = "baguette.client.install")
 //@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-client-install.properties")
-public class ClientInstallationProperties {
+public class ClientInstallationProperties implements InitializingBean {
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.debug("ClientInstallationProperties: {}", this);
+    }
+
     private final Map<String, List<String>> osFamilies = new HashMap<>();
 
     private int workers = 1;
