@@ -17,7 +17,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -34,7 +34,7 @@ public class ClientInstallationProperties implements InitializingBean {
         log.debug("ClientInstallationProperties: {}", this);
     }
 
-    private final Map<String, List<String>> osFamilies = new HashMap<>();
+    private final Map<String, List<String>> osFamilies = new LinkedHashMap<>();
 
     private int workers = 1;
 
@@ -75,8 +75,8 @@ public class ClientInstallationProperties implements InitializingBean {
     private long heartbeatInterval = 60000;
     private long commandExecutionTimeout = 60000;
 
-    private final Map<String, List<String>> instructions = new HashMap<>();
-    private final Map<String, String> parameters = new HashMap<>();
+    private final Map<String, List<String>> instructions = new LinkedHashMap<>();
+    private final Map<String, String> parameters = new LinkedHashMap<>();
 
     private boolean continueOnFail = false;
     private String sessionRecordingDir = "logs";
