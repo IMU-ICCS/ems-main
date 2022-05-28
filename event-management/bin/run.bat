@@ -42,8 +42,11 @@ if "%JASYPT_PASSWORD%"=="" (
 :: https://www.devglan.com/online-tools/jasypt-online-encryption-decryption
 
 :: Check EMS configuration
+if "%EMS_SECRETS_FILE%"=="" (
+    set EMS_SECRETS_FILE=%MELODIC_CONFIG_DIR%\secrets.properties
+)
 if "%EMS_CONFIG_LOCATION%"=="" (
-    set EMS_CONFIG_LOCATION=classpath:rule-templates.yml,file:%MELODIC_CONFIG_DIR%\ems-server.yml,file:%MELODIC_CONFIG_DIR%\ems-server.properties,file:%MELODIC_CONFIG_DIR%\ems.yml,file:%MELODIC_CONFIG_DIR%\ems.properties
+    set EMS_CONFIG_LOCATION=classpath:rule-templates.yml,file:%MELODIC_CONFIG_DIR%\ems-server.yml,file:%MELODIC_CONFIG_DIR%\ems-server.properties,file:%MELODIC_CONFIG_DIR%\ems.yml,file:%MELODIC_CONFIG_DIR%\ems.properties,file:%EMS_SECRETS_FILE%
 )
 
 :: Check logger configuration
