@@ -393,8 +393,8 @@ baguette.server:
         #cluster-detector-class: eu.melodic.event.baguette.server.coordinator.cluster.ClusterZoneDetector
         #cluster-detector-rules-type: MAP
         #cluster-detector-rules-separator: ','
-        #cluster-detector-rules: zone, zone-id, region, region-id, cloud, cloud-id, provider, provider-id   #XXX:TODO: Can be turned to Array (now it's a string)
-        #default-clusters: DEFAULT_CLUSTER_A, DEFAULT_CLUSTER_B                                             #XXX:TODO: Can be turned to Array (now it's a string)
+        #cluster-detector-rules: zone, zone-id, region, region-id, cloud, cloud-id, provider, provider-id
+        #default-clusters: DEFAULT_CLUSTER_A, DEFAULT_CLUSTER_B
         #assignment-to-default-clusters: RANDOM
     2level:
       coordinatorClass: eu.melodic.event.baguette.server.coordinator.TwoLevelCoordinator
