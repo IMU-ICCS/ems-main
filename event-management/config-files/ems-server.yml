@@ -107,12 +107,12 @@ control:
     # Key store settings
     keystore-file: ${MELODIC_CONFIG_DIR}/ems-keystore.p12
     keystore-type: PKCS12
-    keystore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'    # melodic
+    #keystore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'    # melodic
 
     # Trust store settings
     truststore-file: ${MELODIC_CONFIG_DIR}/ems-truststore.p12
     truststore-type: PKCS12
-    truststore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
+    #truststore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
 
     # Certificate settings
     certificate-file: ${MELODIC_CONFIG_DIR}/ems-cert.crt
@@ -319,7 +319,7 @@ brokercep:
   # Authentication and Authorization settings
   authentication-enabled: true
   #additional-broker-credentials: aaa/111, bbb/222, morphemic/morphemic
-  additional-broker-credentials: ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)
+  #additional-broker-credentials: ENC(axeJUxNHajYfBffUwvuT3kwTgLTpRliDMz/ZQ9hROZ3BNOv0Idw72NJsawzIZRuZ)
   authorization-enabled: false
 
   # Broker instance settings
@@ -412,9 +412,10 @@ baguette.server:
   heartbeat-enabled: true
   heartbeat-period: 60000
 
-  credentials:
-    aa: xx
-    bb: yy
+  # SSH Server additional username/passwords
+  #credentials:
+  #  aa: xx
+  #  bb: yy
 
   # Client Id generation settings
   #client-address-override-allowed: true
