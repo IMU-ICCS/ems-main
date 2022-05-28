@@ -67,8 +67,10 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         String genPassword = RandomStringUtils.randomAlphanumeric(32, 64);
         CredentialsMap credentials = config.getCredentials();
         credentials.put(genUsername, genPassword, true);
-        log.info("BaguetteServer.afterPropertiesSet(): Generated new Baguette Server username/password: username={}, password={}", genUsername,
-                credentials.getPasswordEncoder()!=null ? credentials.getPasswordEncoder().encode(genPassword) : "****");
+        log.info("BaguetteServer.afterPropertiesSet(): Generated new Baguette Server username/password: username={}, password={}",
+                genUsername, credentials.getPasswordEncoder()!=null
+                        ? credentials.getPasswordEncoder().encode(genPassword)
+                        : passwordUtil.encodePassword(genPassword));
     }
 
     // Configuration getter methods
@@ -265,7 +267,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
                 }
         );
 
-        // Start an new instance of SSH server
+        // Start a new instance of SSH server
         startServer(coordinator);
 
         log.info("BaguetteServer.setTopologyConfiguration(): END");
