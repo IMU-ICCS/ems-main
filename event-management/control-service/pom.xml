@@ -394,11 +394,11 @@
                 </executions>
             </plugin>
 
-            <!-- Copy Web Admin distribution files to /public_resources -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.2.0</version>
                 <executions>
+                    <!-- Copy Web Admin distribution files to /public_resources -->
                     <execution>
                         <id>copy-web-admin-resources</id>
                         <!-- here the phase you need -->
@@ -416,14 +416,8 @@
                             </resources>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
 
-            <!-- Add needed files to docker context folder -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
+                    <!-- Add needed files to docker context folder -->
                     <execution>
                         <id>copy-resources-to-docker-context</id>
                         <phase>package</phase>
@@ -438,14 +432,14 @@
                                 </resource>
 
                                 <resource>
-                                    <targetPath>/jars</targetPath>
+                                    <targetPath>${project.build.directory}/docker/jars</targetPath>
                                     <directory>${project.build.directory}</directory>
                                     <include>${docker.controlServiceJar}</include>
                                     <include>${docker.esperJar}</include>
                                     <filtering>false</filtering>
                                 </resource>
                                 <resource>
-                                    <targetPath>/bin</targetPath>
+                                    <targetPath>${project.build.directory}/docker/bin</targetPath>
                                     <directory>${project.basedir}/../bin/</directory>
                                     <include>run.sh</include>
                                     <include>sysmon.sh</include>
@@ -453,7 +447,7 @@
                                     <filtering>false</filtering>
                                 </resource>
                                 <resource>
-                                    <targetPath>/config</targetPath>
+                                    <targetPath>${project.build.directory}/docker/config</targetPath>
                                     <directory>${project.basedir}/../config-files</directory>
                                     <!--<excludes>
                                         <exclude>resources/**/*</exclude>
@@ -463,14 +457,14 @@
 
                                 <!-- Add public_resources/ folder resources to '/public_resources' -->
                                 <resource>
-                                    <targetPath>/public_resources</targetPath>
+                                    <targetPath>${project.build.directory}/docker/public_resources</targetPath>
                                     <directory>${project.basedir}/../public_resources</directory>
                                     <filtering>false</filtering>
                                 </resource>
 
                                 <!-- Add broker-client too -->
                                 <resource>
-                                    <targetPath>/jars</targetPath>
+                                    <targetPath>${project.build.directory}/docker/jars</targetPath>
                                     <directory>${project.basedir}/../broker-client/target</directory>
                                     <include>broker-client-jar-with-dependencies.jar</include>
                                     <filtering>false</filtering>
@@ -479,13 +473,13 @@
                                   "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
                                 -->
                                 <!--<resource>
-                                    <targetPath>/config</targetPath>
+                                    <targetPath>${project.build.directory}/docker/config</targetPath>
                                     <directory>${project.basedir}/../broker-client</directory>
                                     <include>eu.melodic.event.brokerclient.properties</include>
                                     <filtering>false</filtering>
                                 </resource>-->
                                 <resource>
-                                    <targetPath>/bin</targetPath>
+                                    <targetPath>${project.build.directory}/docker/bin</targetPath>
                                     <directory>${project.basedir}/../bin/</directory>
                                     <include>client.sh</include>
                                     <filtering>false</filtering>
