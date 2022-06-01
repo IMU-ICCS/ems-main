@@ -270,6 +270,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     TranslationContext _copyTC = new TranslationContext(false);
                     _copyTC.G2R.putAll(_TC.G2R);
                     _copyTC.G2T.putAll(_TC.G2T);
+                    _copyTC.getTopicConnections().putAll(_TC.getTopicConnections());
                     gson.toJson(_copyTC, writer);
                     writer.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
