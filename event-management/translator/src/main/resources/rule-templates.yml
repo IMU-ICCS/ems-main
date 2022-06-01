@@ -16,7 +16,7 @@ translator.generator:
     SCHEDULE:
       __ANY__:
         - |
-          OUTPUT LAST EVERY [(${period})] [(${unit})]
+          OUTPUT ALL EVERY [(${period})] [(${unit})]
     # Binary-Event-Pattern templates
     BEP-AND:
       GLOBAL:
