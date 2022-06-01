@@ -271,6 +271,15 @@ public class ControlServiceCoordinator implements InitializingBean {
                     _copyTC.G2R.putAll(_TC.G2R);
                     _copyTC.G2T.putAll(_TC.G2T);
                     _copyTC.getTopicConnections().putAll(_TC.getTopicConnections());
+
+                    _copyTC.E2A.putAll(_TC.E2A);
+                    _copyTC.SLO.addAll(_TC.SLO);
+                    _copyTC.MONS.addAll(_TC.MONS);
+                    _copyTC.CMVAR.addAll(_TC.CMVAR);
+                    _copyTC.MVV.addAll(_TC.MVV);
+                    _copyTC.MVV_CP.putAll(_TC.MVV_CP);
+                    _copyTC.addLoadAnnotatedMetrics(_TC.getLoadAnnotatedMetricsSet());
+
                     gson.toJson(_copyTC, writer);
                     writer.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);

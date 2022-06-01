@@ -524,6 +524,10 @@ public class TranslationContext {
         loadAnnotatedMetricsSet.add(metricName);
     }
 
+    public void addLoadAnnotatedMetrics(@NonNull Set<String> metricNames) {
+        loadAnnotatedMetricsSet.addAll(metricNames);
+    }
+
     public Set<String> getLoadAnnotatedMetricsSet() {
         return new HashSet<>(loadAnnotatedMetricsSet);
     }
