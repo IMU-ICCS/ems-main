@@ -549,7 +549,7 @@ translator:
 
   # Load-annotated metric settings
   loadMetricAnnotation: 'MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric'
-  loadMetricVariableFormatter: 'BUSY_METRIC_%s'
+  loadMetricVariableFormatter: 'busy.%s'
 
   ### Print results and export switches
   #print-results: true
