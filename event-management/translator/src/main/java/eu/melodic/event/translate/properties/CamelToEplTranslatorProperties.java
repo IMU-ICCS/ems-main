@@ -49,6 +49,10 @@ public class CamelToEplTranslatorProperties implements InitializingBean {
     private boolean printResults = true;
     private Dag dag = new Dag();
 
+    // Load-annotated metric settings
+    private String loadMetricAnnotation = "MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric";
+    private String loadMetricVariableFormatter = "BUSY_METRIC_%s";
+
     @Data
     public static class Dag {
         // Graph rendering/export

@@ -547,6 +547,10 @@ translator:
   sensor-min-interval: 1
   sensor-default-interval: 60
 
+  # Load-annotated metric settings
+  loadMetricAnnotation: 'MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric'
+  loadMetricVariableFormatter: 'BUSY_METRIC_%s'
+
   ### Print results and export switches
   #print-results: true
   dag:
