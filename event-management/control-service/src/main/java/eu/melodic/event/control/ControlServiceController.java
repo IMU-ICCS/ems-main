@@ -147,6 +147,28 @@ public class ControlServiceController {
         return "OK";
     }
 
+    @RequestMapping(value = "/cpConstants", method = POST,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String setConstants(@RequestBody String requestStr,
+                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        log.info("ControlServiceController.setConstants(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.setConstants(): JWT token: {}", jwtToken);
+
+        // Use Gson to get constants from request body (in JSON format)
+        Type type = new TypeToken<Map<String,Double>>(){}.getType();
+        Map<String, Double> constants = new com.google.gson.Gson().fromJson(requestStr, type);
+        log.info("ControlServiceController.setConstants(): Constants from request: {}", constants);
+
+        // Start CP model processing in a worker thread
+        coordinator.setConstants(constants, null, null, jwtToken);
+        log.debug("ControlServiceController.setConstants(): Constants set");
+
+        return "OK";
+    }
+
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/monitors", method = POST)

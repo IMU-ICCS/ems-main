@@ -265,7 +265,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
                     log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
                     java.io.Writer writer = new java.io.FileWriter(fileName);
-                    com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
+                    com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
                     // clone _TC
                     TranslationContext _copyTC = new TranslationContext(false);
                     _copyTC.G2R.putAll(_TC.G2R);
@@ -634,6 +634,70 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
+    }
+
+    public void setConstants(@NonNull Map<String,Double> constants, String notificationUri, String requestUuid, String jwtToken) {
+        log.info("ControlServiceCoordinator.setConstants(): BEGIN: constants={}, notification-uri={}, request-uuid={}", constants, notificationUri, requestUuid);
+        log.info("ControlServiceCoordinator.setConstants(): constants={}", constants);
+        TranslationContext _TC = this.currentTC;
+
+        // Retrieve Metric Variable Values (MVV) from CP model
+        if (properties.isSkipMvvRetrieve()) {
+            log.info("ControlServiceCoordinator.setConstants(): isSkipMvvRetrieve is true, but constants processing will continue");
+        }
+
+        // (Re-)Configure Broker and CEP
+        if (!properties.isSkipBrokerCep()) {
+            try {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Broker-CEP");
+
+                // Initializing Broker-CEP module if necessary
+                if (brokerCep == null) {
+                    log.info("ControlServiceCoordinator.setConstants(): Broker-CEP: Initializing...");
+                    brokerCep = applicationContext.getBean(BrokerCepService.class);
+                    log.info("ControlServiceCoordinator.setConstants(): Broker-CEP: Initializing...ok");
+                }
+
+                log.info("ControlServiceCoordinator.setConstants(): Passing constants to Broker-CEP: {}", constants);
+                brokerCep.setConstants(constants);
+            } catch (Exception ex) {
+                log.error("ControlServiceCoordinator.setConstants(): EXCEPTION while initializing Broker-CEP with constants: constants={}", constants, ex);
+            }
+        } else {
+            log.warn("ControlServiceCoordinator.setConstants(): Skipping Broker-CEP setup due to configuration");
+        }
+
+        // (Re-)Configure Baguette server
+        if (!properties.isSkipBaguette()) {
+            setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
+
+            log.info("ControlServiceCoordinator.setConstants(): Re-configuring Baguette Server with constants: {}", constants);
+            try {
+                baguette.sendConstants(constants);
+            } catch (Exception ex) {
+                log.error("ControlServiceCoordinator.setConstants(): EXCEPTION while configuring Baguette server: constants={}", constants, ex);
+            }
+        } else {
+            log.warn("ControlServiceCoordinator.setConstants(): Skipping Baguette Server setup due to configuration");
+        }
+
+        // Notify ESB, if 'notificationUri' is provided
+        if (!properties.isSkipEsbNotification()) {
+            if (StringUtils.isNotBlank(notificationUri)) {
+                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Notifying ESB");
+
+                notificationUri = notificationUri.trim();
+                log.info("ControlServiceCoordinator.setConstants(): Notifying ESB: {}", notificationUri);
+                sendSuccessNotification(null, notificationUri, requestUuid, jwtToken);
+                log.info("ControlServiceCoordinator.setConstants(): ESB notified: {}", notificationUri);
+            }
+        } else {
+            log.warn("ControlServiceCoordinator.setConstants(): Skipping ESB notification due to configuration");
+        }
+
+        log.info("ControlServiceCoordinator.setConstants(): END: constants={}", constants);
 
         setCurrentEmsState(EMS_STATE.READY, null);
     }
