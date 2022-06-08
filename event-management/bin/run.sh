@@ -74,7 +74,7 @@ fi
 
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}"
-echo "IP address=`hostname -I | sed 's/[:blank:]+/,/g'`"
+echo "IP address=`hostname -I`"
 echo "Starting EMS server..."
 if [[ -z $RESTART_EXIT_CODE ]]; then RESTART_EXIT_CODE=99; export RESTART_EXIT_CODE; fi
 retCode=$RESTART_EXIT_CODE
