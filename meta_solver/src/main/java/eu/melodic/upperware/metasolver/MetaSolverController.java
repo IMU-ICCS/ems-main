@@ -46,7 +46,7 @@ public class MetaSolverController {
 	public void setAuthenticationToken(String s) { if (StringUtils.isNotEmpty(s)) jwtToken = s.trim(); }
 
     @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
-    public ConstraintProblemEnhancementResponse selectSolver(@RequestBody ConstraintProblemEnhancementRequestImpl request,
+    public ConstraintProblemEnhancementResponse selectSolvers(@RequestBody ConstraintProblemEnhancementRequestImpl request,
                                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
 	{
@@ -56,12 +56,12 @@ public class MetaSolverController {
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
         String requestUuid = request.getWatermark().getUuid();
-        log.info("Received request: " + applicationId + " " + cdoModelsPath + " " + requestUuid);
+        log.info("Received request: app-id={}, model-path={}, request-uuid={}", applicationId, cdoModelsPath, requestUuid);
 
         // Select suitable solver
-        log.info("Selecting suitable solver: ");
-        ConstraintProblemEnhancementResponse.DesignatedSolverType selectedSolver = coordinator.selectSolver(applicationId, cdoModelsPath);
-        log.info("Selecting suitable solver: {}", selectedSolver);
+        log.info("Selecting suitable solvers: ");
+        List<String> selectedSolvers = coordinator.selectSolvers(applicationId, cdoModelsPath);
+        log.info("Selecting suitable solvers: {}", selectedSolvers);
 
         // Set metric values in CP model
         coordinator.stopUpdatingCpModel();
@@ -74,7 +74,7 @@ public class MetaSolverController {
         ConstraintProblemEnhancementResponseImpl response = new ConstraintProblemEnhancementResponseImpl();
         response.setApplicationId(applicationId);
         response.setResult(notificationResult);
-        response.setDesignatedSolver(selectedSolver);
+        response.setDesignatedSolvers(selectedSolvers);
         response.setWatermark(coordinator.prepareWatermark(requestUuid));
 
         return response;

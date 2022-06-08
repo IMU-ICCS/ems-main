@@ -10,7 +10,6 @@ package eu.melodic.upperware.metasolver;
 
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
-import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
 import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
@@ -44,6 +43,7 @@ import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -91,16 +91,19 @@ public class Coordinator implements ApplicationContextAware {
 
     /**
      * How can we select the most appropriate solver??
-     * For R2.5 it will always be CP solver
+     * For R3.0 it will be a list of pre-configured solvers
+     * @return The selected solver names (List of strings)
      */
-    public ConstraintProblemEnhancementResponse.DesignatedSolverType selectSolver(String applicationId, String cpModelPath) throws ConcurrentAccessException {
-        log.info("MetaSolver.Coordinator: selectSolver(): appId={}, model={}", applicationId, cpModelPath);
+    public List<String> selectSolvers(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        log.info("MetaSolver.Coordinator: selectSolvers(): app-id={}, model-path={}", applicationId, cpModelPath);
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
 
-        ConstraintProblemEnhancementResponse.DesignatedSolverType defaultSolver = metaSolverProperties.getDefaultSolver();
-        log.info("MetaSolver.Coordinator: selectSolver(): Solver selected: {}", defaultSolver);
-        return defaultSolver;
+        List<String> defaultSolvers = metaSolverProperties.getDefaultSolvers()
+                .stream().map(Enum::name)
+                .collect(Collectors.toList());
+        log.info("MetaSolver.Coordinator: selectSolvers(): Solvers selected: {}", defaultSolvers);
+        return defaultSolvers;
     }
 
     /**
