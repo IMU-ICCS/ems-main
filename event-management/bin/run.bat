@@ -70,6 +70,8 @@ rem set JAVA_OPTS=-Djavax.net.debug=all
 
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION%
+echo IP address:
+ipconfig  | findstr "/C:IPv4 Address"
 echo Starting EMS server...
 IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
 :_restart_ems
