@@ -48,11 +48,6 @@ public class MuleClientApi implements MuleApi {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials for Melodic");
             }
 
-            // Cloudiator service not working
-            if (processResponse.getBody() != null && processResponse.getBody().getCreateCloudsResponse() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem in connection with internal service. Please try again or restart Melodic machine.");
-            }
-
             if (processResponse.getBody() != null && processResponse.getBody().getProcessCreationResult() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Problem by creating process");
             }
