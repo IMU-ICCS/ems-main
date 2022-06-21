@@ -335,10 +335,11 @@ public class UtilCpModelImport {
 		du.setId("zzzz-du-id-1");
 		cpModel.setDeltaUtility(du);
 		*/
-            cpModel.setDeployedSolutionId(1);
-            cpModel.setCandidateSolutionId(2);
+            cpModel.setDeployedSolutionId(-1);
+            cpModel.setCandidateSolutionId(-1);
 
             CDOClientXImpl cdoClient = new CDOClientXImpl(Arrays.asList(CpPackage.eINSTANCE));// Store in CDOsession = cdoClient.getSession();
+            session = cdoClient.getSession();
             transaction = session.openTransaction();
             System.out.println("Saving to : " + resourceId);
 
