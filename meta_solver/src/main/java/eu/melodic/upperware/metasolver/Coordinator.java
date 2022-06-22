@@ -236,10 +236,8 @@ public class Coordinator implements ApplicationContextAware {
             }
         }
 
-        // Update candidate solutions index to the last solution (i.e. to the one with the highest utility)
-        if (selectedIndex>=0) {
-            helper.setSolutionIndexesInCpModel(applicationId, cpModelPath, selectedIndex, currentDeployedIndex);
-        }
+        // Update candidate solution index to the last solution (i.e. to the one with the highest utility)
+        helper.setSolutionIndexesInCpModel(applicationId, cpModelPath, solutionData.getUtilities().size() - 1, currentDeployedIndex);
 
         // Return result
         if (selectedIndex>=0) {
