@@ -44,6 +44,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -56,6 +57,7 @@ public class Coordinator implements ApplicationContextAware {
     private JWTService jwtService;
     private MelodicSecurityProperties melodicSecurityProperties;
     private double uvThresholdFactor;
+    private boolean removeRedundantCandidates;
     private RestTemplate restTemplate;
 
     private String cacheAppId;
@@ -166,8 +168,85 @@ public class Coordinator implements ApplicationContextAware {
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
 
+        // Get current candidate and deployed solution indexes, and all solutions utilities
+        CpModelHelper helper = applicationContext.getBean(CpModelHelper.class);
+        CpModelHelper.SolutionData solutionData = helper.getSolutionIndexesAndUtilitiesFromCpModel(applicationId, cpModelPath);
+
+        // Check if no new candidate solutions are available (i.e. with index > current (old) candidate index)
+        int currentCandidatesIndex = solutionData.getCandidateIndex();
+        int currentDeployedIndex = solutionData.getDeployedIndex();
+        List<Double> utilities = solutionData.getUtilities();
+        if (utilities.size() == 0) {
+            log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
+            return SolutionEvaluationResponse.EvaluationResultType.ERROR;
+        }
+        if (currentCandidatesIndex+1 >= utilities.size()) {
+            log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No new candidate solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
+            return SolutionEvaluationResponse.EvaluationResultType.ERROR;
+        }
+        log.debug("MetaSolver.Coordinator: evaluateSolution(): Solutions found in CP model and solution indexes: appId={}, model={}, num-of-solutions={}, current-candidates-index={}, deployed-index={}", applicationId, cpModelPath, utilities.size(), currentCandidatesIndex, currentDeployedIndex);
+
+        // Find new candidate solution with the highest utility (search solutions with index > current candidates index)
+        int maxUVIndex = currentCandidatesIndex+1;
+        double maxUV = utilities.get(maxUVIndex);
+        log.trace("MetaSolver.Coordinator: evaluateSolution(): First new candidate solution in CP model: appId={}, model={}, index={}, utility={}", applicationId, cpModelPath, maxUVIndex, maxUV);
+        for (int i=solutionData.getCandidateIndex()+2; i<utilities.size(); i++) {
+            log.trace("MetaSolver.Coordinator: evaluateSolution(): Checking new candidate solution in CP model: appId={}, model={}, index={}, utility={}", applicationId, cpModelPath, i, utilities.get(i));
+            if (utilities.get(i) > maxUV) {
+                maxUV = utilities.get(i);
+                maxUVIndex = i;
+            }
+        }
+        log.debug("MetaSolver.Coordinator: evaluateSolution(): Selected candidate solution with the highest utility: appId={}, model={}, index={}, utility={}", applicationId, cpModelPath, maxUVIndex, maxUV);
+        int selectedIndex = maxUVIndex;
+        double selectedUV = maxUV;
+
+        // Check if the selected candidate solution (with the highest utility) is at least X% better than the currently deployed solution
+        if (currentDeployedIndex>=0) {
+            double deployedUV = utilities.get(currentDeployedIndex);
+            String m = "";
+            if (selectedUV <= uvThresholdFactor * deployedUV) {
+                m = "NOT ";
+                selectedUV = -1;
+                selectedIndex = -1;
+            }
+            log.info("MetaSolver.Coordinator: evaluateSolution(): Selected candidate solution has {}better utility than the deployed solution: appId={}, model={}, candidate-index/utility={}/{}, deployed-index/utility={}/{}, uv-threshold-factor={}",
+                    m, applicationId, cpModelPath, selectedIndex, selectedUV, currentDeployedIndex, deployedUV, uvThresholdFactor);
+        } else {
+            log.info("MetaSolver.Coordinator: evaluateSolution(): There is no deployed solution. Selected candidate solution will be accepted: appId={}, model={}, index={}, utility={}",
+                    applicationId, cpModelPath, selectedIndex, selectedUV);
+        }
+
+        // Move selected candidate solution (if any) to the end of the list
+        if (selectedIndex>=0) {
+            helper.moveSolutionToPositionInCpModel(applicationId, cpModelPath, selectedIndex, utilities.size() - 1);
+            selectedIndex = utilities.size() - 1;
+        }
+        // Remove not selected candidate solutions
+        if (removeRedundantCandidates) {
+            helper.removeSolutionRangeFromCpModel(applicationId, cpModelPath, currentCandidatesIndex + 1, maxUVIndex-1);
+            if (selectedIndex>=0) {
+                solutionData = helper.getSolutionIndexesAndUtilitiesFromCpModel(applicationId, cpModelPath);
+                selectedIndex = solutionData.getUtilities().size() - 1;
+            }
+        }
+
+        // Update candidate solutions index to the last solution (i.e. to the one with the highest utility)
+        if (selectedIndex>=0) {
+            helper.setSolutionIndexesInCpModel(applicationId, cpModelPath, selectedIndex, currentDeployedIndex);
+        }
+
+        // Return result
+        if (selectedIndex>=0) {
+            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: Selected candidate solution is ACCEPTED: appId={}, model={}, new-solution-index={}", applicationId, cpModelPath, selectedIndex);
+            return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
+        } else {
+            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: Selected candidate solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+            return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
+        }
+
+/*
         // Update candidate solution
-        CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
         int newCanPos = helper.findAndSetCandidateSolutionIdInCpModel(applicationId, cpModelPath);
         if (newCanPos >= 0) log.debug("MetaSolver.Coordinator: candidate solution updated: id={}", newCanPos);
         else if (newCanPos == -1) log.debug("MetaSolver.Coordinator: no candidate solution found");
@@ -207,7 +286,7 @@ public class Coordinator implements ApplicationContextAware {
         } else {
             log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
             return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
-        }
+        }*/
     }
 
     /**

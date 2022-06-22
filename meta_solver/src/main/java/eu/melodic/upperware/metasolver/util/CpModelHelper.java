@@ -10,6 +10,9 @@ package eu.melodic.upperware.metasolver.util;
 
 import eu.paasage.upperware.metamodel.cp.*;
 import eu.paasage.upperware.metamodel.types.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.eresource.CDOResource;
@@ -18,6 +21,8 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.function.Function;
@@ -96,7 +101,7 @@ public class CpModelHelper extends AbstractCdoHelper {
                 }, false);
     }
 
-    public double[] getSolutionUtilities(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+    /*public double[] getSolutionUtilities(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.debug("CpModelHelper.getSolutionUtilities(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
 
         return
@@ -137,7 +142,7 @@ public class CpModelHelper extends AbstractCdoHelper {
                     log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}, solution-utilities={}", id, retUv);
                     return retUv;
                 }, null);
-    }
+    }*/
 
     public Pair<Integer,Integer> updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
         log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}, success={}", id, applicationId, cpModelPath, success);
@@ -160,12 +165,12 @@ public class CpModelHelper extends AbstractCdoHelper {
                     } else if (success) {
                         log.warn("updateSolutionIdsInCpModel(): No candidate solution found");
                     }
-                    // clear candidate solution id
-                    cpModel.setCandidateSolutionId(-1);
-                    log.trace("updateSolutionIdsInCpModel(): candidate solution id cleared: -1");
+//                    // clear candidate solution id
+//                    cpModel.setCandidateSolutionId(-1);
+//                    log.trace("updateSolutionIdsInCpModel(): candidate solution id cleared: -1");
 
                     // get new solution Ids
-                    Pair<Integer, Integer> retPos = Pair.<Integer, Integer>of(cpModel.getDeployedSolutionId(), cpModel.getCandidateSolutionId());
+                    Pair<Integer, Integer> retPos = Pair.of(cpModel.getDeployedSolutionId(), cpModel.getCandidateSolutionId());
                     log.debug("updateSolutionIdsInCpModel(): new solution id's: {}", retPos);
 
                     log.debug("CpModelHelper.updateSolutionIdsInCpModel(): END: helper-id={}, solution-id's={}", id, retPos);
@@ -173,7 +178,7 @@ public class CpModelHelper extends AbstractCdoHelper {
                 }, null);
     }
 
-    public int findAndSetCandidateSolutionIdInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+    /*public int findAndSetCandidateSolutionIdInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
 
         return
@@ -200,6 +205,95 @@ public class CpModelHelper extends AbstractCdoHelper {
                     return newId;
 
                 }, -2);
+    }*/
+
+    public SolutionData getSolutionIndexesAndUtilitiesFromCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+
+        return
+                processInTransaction(cpModelPath, "getSolutionIndexesAndUtilitiesFromCpModel()", transaction -> {
+                    // retrieve CP model
+                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
+
+                    // get current candidate solution Id
+                    int oldCandidateIndex = cpModel.getCandidateSolutionId();
+                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldCandidateIndex);
+
+                    // get current deployed solution Id
+                    int oldDeployedIndex = cpModel.getDeployedSolutionId();
+                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldDeployedIndex);
+
+                    // get solution utilities
+                    EList<Solution> solutions = cpModel.getSolution();
+                    List<Double> utilities = (solutions != null)
+                            ? solutions.stream()
+                            .map(Solution::getUtilityValue)
+                            .map(DoubleValueUpperware.class::cast)
+                            .map(DoubleValueUpperware::getValue)
+                            .map(Double.class::cast)
+                            .collect(Collectors.toList())
+                            : Collections.emptyList();
+                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, solution-utilities={}", id, utilities);
+                    return new SolutionData(oldCandidateIndex, oldDeployedIndex, utilities);
+
+                }, null);
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class SolutionData {
+        private int candidateIndex;
+        private int deployedIndex;
+        @NonNull private List<Double> utilities;
+    }
+
+    public void moveSolutionToPositionInCpModel(String applicationId, String cpModelPath, int currentIndex, int newIndex) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.moveSolutionToPositionInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+
+        processInTransaction(cpModelPath, "moveSolutionToPositionInCpModel()", transaction -> {
+            // retrieve CP model
+            ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
+
+            // move solution to index
+            EList<Solution> solutions = cpModel.getSolution();
+            Solution item = solutions.remove(currentIndex);
+            solutions.add(newIndex, item);
+            log.debug("CpModelHelper.moveSolutionToPositionInCpModel(): helper-id={}, Moved solution from index {} to {}: ", id, currentIndex, newIndex);
+            return null;
+
+        }, null);
+    }
+
+    public void removeSolutionRangeFromCpModel(String applicationId, String cpModelPath, int fromIndex, int toIndex) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.removeSolutionRangeFromCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+
+        processInTransaction(cpModelPath, "removeSolutionRangeFromCpModel()", transaction -> {
+            // retrieve CP model
+            ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
+
+            // move solution to index
+            EList<Solution> solutions = cpModel.getSolution();
+            solutions.subList(fromIndex, toIndex).clear();
+            log.debug("CpModelHelper.removeSolutionRangeFromCpModel(): helper-id={}, Removed solution range from index {} to {}: ", id, fromIndex, toIndex);
+            return null;
+
+        }, null);
+    }
+
+    public void setSolutionIndexesInCpModel(String applicationId, String cpModelPath, int candidateIndex, int deployedIndex) throws ConcurrentAccessException {
+        log.debug("CpModelHelper.setSolutionIndexesInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
+
+        processInTransaction(cpModelPath, "setSolutionIndexesInCpModel()", transaction -> {
+            // retrieve CP model
+            ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
+
+            // set solution indexes
+            cpModel.setCandidateSolutionId(candidateIndex);
+            cpModel.setDeployedSolutionId(deployedIndex);
+
+            return null;
+
+        }, null);
     }
 
     public void copyVarValuesFromDeployedSolution(String applicationId, String cpModelPath, Map<String,String> fromToMap) throws ConcurrentAccessException {
