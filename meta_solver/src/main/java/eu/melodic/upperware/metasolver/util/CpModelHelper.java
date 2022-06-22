@@ -101,49 +101,6 @@ public class CpModelHelper extends AbstractCdoHelper {
                 }, false);
     }
 
-    /*public double[] getSolutionUtilities(String applicationId, String cpModelPath) throws ConcurrentAccessException {
-        log.debug("CpModelHelper.getSolutionUtilities(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
-
-        return
-                processInTransaction(cpModelPath, "getSolutionUtilities()", transaction -> {
-                    // retrieve CP model
-                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
-
-                    // get solutions list
-                    EList<Solution> solutions = cpModel.getSolution();
-                    int size = solutions.size();
-
-                    double[] retUv = new double[2];
-
-                    // No solutions in CP model
-                    if (size == 0) {
-                        retUv[0] = retUv[1] = -2;
-                        return retUv;
-                    }
-
-                    // get deployed and candidate solution positions in list
-                    int depPos = cpModel.getDeployedSolutionId();
-                    int newPos = cpModel.getCandidateSolutionId();
-
-                    // get deployed solution's utility value, if a deployed solution exists
-                    if (depPos < size && depPos >= 0) {
-                        Solution depSol = solutions.get(depPos);
-                        retUv[0] = ((DoubleValueUpperware) depSol.getUtilityValue()).getValue();
-                    } else
-                        retUv[0] = -1;
-
-                    // get new solution's utility value
-                    if (newPos < size && newPos >= 0) {
-                        Solution newSol = solutions.get(newPos);
-                        retUv[1] = ((DoubleValueUpperware) newSol.getUtilityValue()).getValue();
-                    } else
-                        retUv[1] = -1;
-
-                    log.debug("CpModelHelper.getSolutionUtilities(): END: helper-id={}, solution-utilities={}", id, retUv);
-                    return retUv;
-                }, null);
-    }*/
-
     public Pair<Integer,Integer> updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
         log.debug("CpModelHelper.updateSolutionIdsInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}, success={}", id, applicationId, cpModelPath, success);
 
@@ -178,35 +135,6 @@ public class CpModelHelper extends AbstractCdoHelper {
                 }, null);
     }
 
-    /*public int findAndSetCandidateSolutionIdInCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
-        log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
-
-        return
-                processInTransaction(cpModelPath, "findAndSetCandidateSolutionIdInCpModel()", transaction -> {
-                    // retrieve CP model
-                    ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
-
-                    // get current candidate solution Id
-                    int oldPos = cpModel.getCandidateSolutionId();
-                    log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldPos);
-
-                    // find new candidate solution id
-                    EList<Solution> solutions = cpModel.getSolution();
-                    int size = solutions.size();
-                    int position = size - 1;
-
-                    // update candidate solution Id
-                    cpModel.setCandidateSolutionId(position);
-                    log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): helper-id={}, new-candidate-solution-position={}", id, position);
-
-                    // get new candidate solution id
-                    int newId = cpModel.getCandidateSolutionId();
-                    log.debug("CpModelHelper.findAndSetCandidateSolutionIdInCpModel(): END: helper-id={}, new-candidate-id={}", id, newId);
-                    return newId;
-
-                }, -2);
-    }*/
-
     public SolutionData getSolutionIndexesAndUtilitiesFromCpModel(String applicationId, String cpModelPath) throws ConcurrentAccessException {
         log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): BEGIN: helper-id={}, app-id={}, cp-path={}", id, applicationId, cpModelPath);
 
@@ -216,12 +144,12 @@ public class CpModelHelper extends AbstractCdoHelper {
                     ConstraintProblem cpModel = getConstraintProblemAtPath(transaction, cpModelPath);
 
                     // get current candidate solution Id
-                    int oldCandidateIndex = cpModel.getCandidateSolutionId();
-                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldCandidateIndex);
+                    int candidateIndex = cpModel.getCandidateSolutionId();
+                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, candidate-solution-index={}", id, candidateIndex);
 
                     // get current deployed solution Id
-                    int oldDeployedIndex = cpModel.getDeployedSolutionId();
-                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, old-candidate-solution-position={}", id, oldDeployedIndex);
+                    int deployedIndex = cpModel.getDeployedSolutionId();
+                    log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, deployed-solution-index={}", id, deployedIndex);
 
                     // get solution utilities
                     EList<Solution> solutions = cpModel.getSolution();
@@ -234,7 +162,7 @@ public class CpModelHelper extends AbstractCdoHelper {
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     log.debug("CpModelHelper.getSolutionIndexesAndUtilitiesFromCpModel(): helper-id={}, solution-utilities={}", id, utilities);
-                    return new SolutionData(oldCandidateIndex, oldDeployedIndex, utilities);
+                    return new SolutionData(candidateIndex, deployedIndex, utilities);
 
                 }, null);
     }
@@ -258,7 +186,7 @@ public class CpModelHelper extends AbstractCdoHelper {
             EList<Solution> solutions = cpModel.getSolution();
             Solution item = solutions.remove(currentIndex);
             solutions.add(newIndex, item);
-            log.debug("CpModelHelper.moveSolutionToPositionInCpModel(): helper-id={}, Moved solution from index {} to {}: ", id, currentIndex, newIndex);
+            log.debug("CpModelHelper.moveSolutionToPositionInCpModel(): helper-id={}, Moved solution from index {} to {}: solution-timestamp={}", id, currentIndex, newIndex, item.getTimestamp());
             return null;
 
         }, null);
@@ -274,7 +202,7 @@ public class CpModelHelper extends AbstractCdoHelper {
             // move solution to index
             EList<Solution> solutions = cpModel.getSolution();
             solutions.subList(fromIndex, toIndex).clear();
-            log.debug("CpModelHelper.removeSolutionRangeFromCpModel(): helper-id={}, Removed solution range from index {} to {}: ", id, fromIndex, toIndex);
+            log.debug("CpModelHelper.removeSolutionRangeFromCpModel(): helper-id={}, Removed solutions range from index {} to {}", id, fromIndex, toIndex);
             return null;
 
         }, null);
