@@ -296,7 +296,7 @@ public class UtilCpModelImport {
 
     }
 
-    protected static void importCpModel(String args[]) {
+    protected static void importCpModel(String[] args) {
         CDOSessionX session = null;
         CDOTransaction transaction = null;
         CDOTransaction transaction2 = null;
