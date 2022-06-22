@@ -86,9 +86,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     public void subscribe() {
         // Check if Pub/Sub should be activated
         log.info("*****   Pub/Sub is SWITCHED {}", properties.getPubsub().isOn() ? "ON" : "OFF");
-        if (!properties.getPubsub().isOn()) {
-            return;
-        }
+        if (!properties.getPubsub().isOn()) return;
 
         // Subscribe to configured topics
         log.debug("Subscribing to STARTUP topics: ");
@@ -99,6 +97,10 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     }
 
     public void subscribeToCommonTopics() {
+        // Check if Pub/Sub should be activated
+        log.info("*****   Pub/Sub is SWITCHED {}", properties.getPubsub().isOn() ? "ON" : "OFF");
+        if (!properties.getPubsub().isOn()) return;
+
         if (properties.getPubsub() != null) {
             List<MetaSolverProperties.Pubsub.Topic> topicsList = properties.getPubsub().getCommonTopics();
             if (topicsList!=null && topicsList.size()>0) {
@@ -145,10 +147,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 
     public void subscribe(String url, String username, String password, String certificate, String topicName, String clientId, TopicType type) {
         // Check if Pub/Sub should be activated
-        if (! properties.getPubsub().isOn()) {
-            log.info("*****   Pub/Sub is SWITCHED OFF");
-            return;
-        }
+        log.info("*****   Pub/Sub is SWITCHED {}", properties.getPubsub().isOn() ? "ON" : "OFF");
+        if (!properties.getPubsub().isOn()) return;
 
         // Subscribe to actual metric topic
         _do_subscribe(url, username, password, certificate, topicName, clientId, type, false);
@@ -240,10 +240,8 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     public void unsubscribe() {
         try {
             // Check if Pub/Sub should be activated
-            if (! properties.getPubsub().isOn()) {
-                log.debug("*****   Pub/Sub is SWITCHED OFF");
-                return;
-            }
+            log.info("*****   Pub/Sub is SWITCHED {}", properties.getPubsub().isOn() ? "ON" : "OFF");
+            if (!properties.getPubsub().isOn()) return;
 
             log.debug("*****   UN-SUBSCRIBE:");
 
