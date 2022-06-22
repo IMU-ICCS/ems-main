@@ -44,7 +44,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -86,6 +85,7 @@ public class Coordinator implements ApplicationContextAware {
         this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
+        this.removeRedundantCandidates = metaSolverProperties.isRemoveRedundantCandidates();
         this.restTemplate = new RestTemplate();
         this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
@@ -247,6 +247,7 @@ public class Coordinator implements ApplicationContextAware {
 
 /*
         // Update candidate solution
+        CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
         int newCanPos = helper.findAndSetCandidateSolutionIdInCpModel(applicationId, cpModelPath);
         if (newCanPos >= 0) log.debug("MetaSolver.Coordinator: candidate solution updated: id={}", newCanPos);
         else if (newCanPos == -1) log.debug("MetaSolver.Coordinator: no candidate solution found");

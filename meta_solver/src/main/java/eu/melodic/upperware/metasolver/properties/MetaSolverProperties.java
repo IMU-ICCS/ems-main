@@ -40,6 +40,7 @@ public class MetaSolverProperties {
     private Pubsub pubsub;
     @NotNull
     private double utilityThresholdFactor;
+    private boolean removeRedundantCandidates;
     private List<ConstraintProblemEnhancementResponse.DesignatedSolverType> defaultSolvers = Collections.singletonList(ConstraintProblemEnhancementResponse.DesignatedSolverType.CPSOLVER);
     private String emsUrl;
 
