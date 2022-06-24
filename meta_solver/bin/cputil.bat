@@ -7,11 +7,15 @@
 ::
 
 :: Usage:
-:: cputil.bat "file:/path/to/cp-model.xmi" "/cp-model"
+:: cputil.bat get "/cp-model"
+:: cputil.bat new "file:/path/to/cp-model.xmi" "/cp-model"
+:: cputil.bat import "file:/path/to/cp-model.xmi" "/cp-model"
+:: cputil.bat update "file:/path/to/cp-model.xmi" "/cp-model"
+:: cputil.bat delete "/cp-model"
 
 @echo off
 set BASEDIR=%~dp0\..
 IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\src\main\resources\config
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\src\main\resources\config
 
-java -cp %BASEDIR%\target\meta-solver.jar -Dloader.main=eu.melodic.upperware.metasolver.util.UtilCpModelImport org.springframework.boot.loader.PropertiesLauncher 1 "file:%1" "%2"
+java -cp %BASEDIR%\target\meta-solver.jar -Dloader.main=eu.melodic.upperware.metasolver.util.CdoCpModelUtil org.springframework.boot.loader.PropertiesLauncher %*
