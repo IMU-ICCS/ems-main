@@ -10,15 +10,15 @@ If a copy of the MPL was not distributed with this file, You can obtain one at
 https://www.mozilla.org/en-US/MPL/2.0/
 
 #### Functionality
-- selects a solver
-- evaluates a new solution
-- updates CP model metrics with current values
-- triggers application re-configuration on an SLO violation
+- Selects a solver
+- Evaluates a new solution
+- Updates CP model metrics with current values
+- Triggers application re-configuration on an SLO violation
 
 #### Requirements
- - java 7
- - linux
- - maven
+ - Java 8
+ - Linux
+ - Maven
 
 #### Building
  - mvn clean install

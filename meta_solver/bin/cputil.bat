@@ -10,8 +10,8 @@
 :: cputil.bat "file:/path/to/cp-model.xmi" "/cp-model"
 
 @echo off
-set curdir=%~dp0
-IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%curdir%\src\main\resources\config
-IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%curdir%\src\main\resources
+set BASEDIR=%~dp0\..
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\src\main\resources\config
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\src\main\resources
 
-java -cp target\meta-solver.jar -Dloader.main=eu.melodic.upperware.metasolver.util.UtilCpModelImport org.springframework.boot.loader.PropertiesLauncher 1 "file:%1" "%2"
+java -cp %BASEDIR%\target\meta-solver.jar -Dloader.main=eu.melodic.upperware.metasolver.util.UtilCpModelImport org.springframework.boot.loader.PropertiesLauncher 1 "file:%1" "%2"

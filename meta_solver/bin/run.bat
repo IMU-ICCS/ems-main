@@ -7,9 +7,9 @@
 ::
 
 @echo off
-set curdir=%~dp0
-IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%curdir%\src\main\resources\config
-IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%curdir%\src\main\resources
+set BASEDIR=%~dp0\..
+IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\src\main\resources\config
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\src\main\resources\config
 IF NOT DEFINED EXTRA_TS_DIR set EXTRA_DIR=%MELODIC_CONFIG_DIR% fi
 
 rem mvn spring-boot:run
@@ -19,5 +19,5 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=%EXTRA_TS_DIR%\broker-truststore.p12 ^
  -Djavax.net.ssl.trustStorePassword=melodic ^
  -Djavax.net.ssl.trustStoreType=pkcs12
 
-rem java %JAVA_OPTS% -Deu.paasage.configdir=. -jar target\meta-solver.jar %LOGGING%
-java %JAVA_OPTS% -jar target\meta-solver.jar %LOGGING%
+rem java %JAVA_OPTS% -Deu.paasage.configdir=. -jar %BASEDIR%\target\meta-solver.jar %LOGGING%
+java %JAVA_OPTS% -jar %BASEDIR%\target\meta-solver.jar %LOGGING%
