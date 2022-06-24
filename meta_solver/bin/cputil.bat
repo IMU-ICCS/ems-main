@@ -12,6 +12,6 @@
 @echo off
 set BASEDIR=%~dp0\..
 IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\src\main\resources\config
-IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\src\main\resources
+IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\src\main\resources\config
 
 java -cp %BASEDIR%\target\meta-solver.jar -Dloader.main=eu.melodic.upperware.metasolver.util.UtilCpModelImport org.springframework.boot.loader.PropertiesLauncher 1 "file:%1" "%2"
