@@ -57,13 +57,19 @@ public class CdoCpModelUtil {
             case GET:
                 log.info("Retrieving resource from CDO repository: {}", resourceId);
                 String xmiStr = getCpModel(resourceId);
+                boolean printit = true;
                 if (args.length>=3) {
                     fileName = args[2].trim();
                     if (!fileName.isEmpty()) {
                         try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
                             writer.println(xmiStr);
+                            log.info("Saved {} in {}", resourceId, fileName);
+                            printit = false;
                         }
                     }
+                }
+                if (printit) {
+                    log.info("Retrieved CP model: {}\n{}", resourceId, xmiStr);
                 }
                 break;
             case NEW:
