@@ -158,8 +158,10 @@ brokercep.broker-using-jmx = true
 brokercep.broker-advisory-support-enabled = true
 brokercep.broker-using-shutdown-hook = false
 
+#brokercep.broker-enable-statistics = true
+#brokercep.broker-populate-jmsx-user-id = true
+
 # Message interceptors
-#brokercep.message-interceptors = >:eu.melodic.event.brokercep.broker.SourceAddressMessageUpdateInterceptor
 brokercep.message-interceptors[0].destination = >
 brokercep.message-interceptors[0].className = eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor
 brokercep.message-interceptors[0].params[0] = #SourceAddressMessageUpdateInterceptor
@@ -182,5 +184,8 @@ brokercep.enable-advisory-watcher = true
 # Memory usage limit
 brokercep.usage.memory.jvm-heap-percentage = 20
 #brokercep.usage.memory.size = 134217728
+
+#brokercep.maxEventForwardRetries: -1
+#brokercep.maxEventForwardDuration: -1
 
 ################################################################################
