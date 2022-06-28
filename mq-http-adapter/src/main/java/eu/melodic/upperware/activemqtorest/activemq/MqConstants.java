@@ -20,4 +20,5 @@ public class MqConstants {
 
 	public static final String META_MESSAGE_IDENTIFIER = "message=";
 	public static final String META_TIMESTAMP_IDENTIFIER = ", timestamp=";
+	public static final String META_MESSAGE_END_IDENTIFIER = "}}";
 }

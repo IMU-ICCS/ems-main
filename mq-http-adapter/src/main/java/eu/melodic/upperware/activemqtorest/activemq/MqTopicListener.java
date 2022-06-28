@@ -4,7 +4,6 @@ import eu.melodic.event.brokerclient.BrokerClient;
 import eu.melodic.upperware.activemqtorest.MelodicConfiguration;
 import eu.melodic.upperware.activemqtorest.activemq.extraction.IMqDataEntryExtractor;
 import eu.melodic.upperware.activemqtorest.entry.MqBaseEntry;
-import eu.melodic.upperware.activemqtorest.entry.MqDefaultMetricEntry;
 import eu.melodic.upperware.activemqtorest.influxdb.InfluxDbConnector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQMessage;
