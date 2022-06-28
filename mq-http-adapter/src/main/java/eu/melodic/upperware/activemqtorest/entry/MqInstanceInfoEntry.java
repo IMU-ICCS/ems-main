@@ -27,20 +27,15 @@ public class MqInstanceInfoEntry extends MqBaseEntry {
 
 	@EqualsAndHashCode.Exclude
 	private long id = 42l;
-	@EqualsAndHashCode.Exclude
-	private String random;
-	private String name;
 	private String ipAddress;
-	@EqualsAndHashCode.Exclude
-	private String type;
-	@EqualsAndHashCode.Exclude
-	private String os;
-	private String baguetteClientId;
+	private String clientId;
 	@EqualsAndHashCode.Exclude
 	private String timestamp;
 	@EqualsAndHashCode.Exclude
-	private String providerId;
-	private String instanceId;
+	private String reference;
+	private String state;
+	@EqualsAndHashCode.Exclude
+	private String stateLastUpdate;
 
 
 	@Override
@@ -48,15 +43,11 @@ public class MqInstanceInfoEntry extends MqBaseEntry {
 		String timestamp = normalizeTimestamp(getTimestamp());
 		Point point = Point.measurement("_Instances")
 				.time(Long.valueOf(timestamp), TimeUnit.MILLISECONDS)
-				.addField("name", Strings.nullToEmpty(getName()))
-				.addField("random", Strings.nullToEmpty(getRandom()))
 				.addField("ipAddress", Strings.nullToEmpty(getIpAddress()))
-				.addField("countryCode", ipGeoCoder.getCountryCode(getIpAddress()))
-				.addField("type", Strings.nullToEmpty(getType()))
-				.addField("os", Strings.nullToEmpty(getOs()))
-				.addField("baguetteClientId", Strings.nullToEmpty(getBaguetteClientId()))
-				.addField("providerId", Strings.nullToEmpty(getProviderId()))
-				.addField("instanceId", Strings.nullToEmpty(getInstanceId()))
+				.addField("clientId", Strings.nullToEmpty(getClientId()))
+				.addField("reference", Strings.nullToEmpty(getReference()))
+				.addField("state", Strings.nullToEmpty(getState()))
+				.addField("stateLastUpdate", Strings.nullToEmpty(getStateLastUpdate()))
 				.build();
 		return point;
 	}
