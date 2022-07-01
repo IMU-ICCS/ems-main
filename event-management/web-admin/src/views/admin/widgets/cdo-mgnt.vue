@@ -24,7 +24,7 @@
 
                         <div class="float-right">
                             Filter:
-                            <input id="cdo-repository-tree-filter" type="checkbox" checked data-toggle="toggle" />
+                            <input id="cdo-repository-tree-filter" type="checkbox" checked data-toggle="toggle" v-on:change="cdoRefresh()" />
                             &nbsp;&nbsp;&nbsp;
                         </div>
                     </div>
@@ -237,6 +237,7 @@ export default {
         },
 
         callCdoEndpoint(url,descr,method,contentType,data,dataType,fnSuccess,fnError) {
+            url = url.replace(/\/+/gi, '/');
             this.$nextTick(() => {
                 if (descr && descr.trim()!=='') descr = ' for '+descr; else descr = '';
                 if (descr==='' && method && method.trim()!=='') descr = ' for '+method.trim();
