@@ -50,6 +50,20 @@
             </Card>
         </div>
         <!-- /.col-md-6 -->
+
+        <div class="col-6">
+            <!-- Default box -->
+            <Card bodyClasses="table-responsive p-0"
+                  header="&nbsp;CDO Repository"
+                  icon="fas fa-project-diagram"
+                  :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
+            >
+                <div style="padding: 5px 15px;">
+                    <CdoMgnt />
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-6 -->
     </div>
 
 </template>
@@ -59,11 +73,12 @@ import Card from '@/components/card/card.vue';
 import ClientCommands from './widgets/client-commands.vue';
 import ClientEvents from './widgets/client-events.vue';
 import RestCall from './widgets/rest-call.vue';
+import CdoMgnt from './widgets/cdo-mgnt.vue';
 
 export default {
     name: 'Admin Dashboard - Commands section',
     components: {
-        Card, ClientCommands, ClientEvents, RestCall
+        Card, ClientCommands, ClientEvents, RestCall, CdoMgnt
     },
     props: {
         modelValue: Object,
