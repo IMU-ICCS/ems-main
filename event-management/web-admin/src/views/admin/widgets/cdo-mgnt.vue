@@ -39,7 +39,7 @@
                         &nbsp;
                         <a v-if="getCdoItemLinkByType(type)" href="javascript:void(0)" class="link-primary" v-on:click="cdoExport(path)">{{path}}</a>
                         <span v-else>{{path}}</span>
-                        <span class="float-right text-sm font-italic" style="color:grey;"><small>{{getCdoItemTextByType(type)}}</small> <img :src="getCdoItemIconByType(type)" width="18" height="18" /></span><br/>
+                        <span class="float-right text-sm font-italic" style="color:grey;"><img :src="getCdoItemIconByType(type)" width="18" height="18" :title="getCdoItemTextByType(type)" /></span><br/>
                     </div>
                 </div>
             </div>
@@ -146,8 +146,8 @@ export default {
         },
         getCdoItemTextByType(type) {
             let text = '';
-            if (type==='CamelModel') text = 'Camel';
-            if (type==='ConstraintProblem') text = 'CP';
+            if (type==='CamelModel') text = 'Camel Model';
+            if (type==='ConstraintProblem') text = 'Constraint Problem';
             return text;
         },
 
