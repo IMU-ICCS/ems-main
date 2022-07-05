@@ -589,10 +589,13 @@ public class ControlServiceController {
         return newOtp;
     }
 
-    @RequestMapping(value = "/ems/otp/remove", method = {GET, POST})
+    @RequestMapping(value = "/ems/otp/remove/{otp}", method = {GET, POST})
     public String removeOtp(@PathVariable String otp) {
         log.info("ControlServiceController.removeOtp(): BEGIN");
-        webSecurityConfig.otpRemove(otp);
+        if ("*".equals(otp))
+            webSecurityConfig.otpClearCache();
+        else
+            webSecurityConfig.otpRemove(otp);
         log.debug("ControlServiceController.removeOtp(): Removed OTP: {}", passwordUtil.encodePassword(otp));
         return "OK";
     }
