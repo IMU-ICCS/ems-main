@@ -11,26 +11,15 @@
         <div class="row">
             <div class="col-12">
                 <div class="form-group row">
-                    <label :for="'restEndpoint_'+uid"
+                    <label :for="'formType_'+uid"
                            class="col-sm-3 col-form-label"
-                    >REST Endpoint</label>
-                    <select :id="'restEndpoint_'+uid"
+                    >Request type</label>
+                    <select :id="'formType_'+uid"
                             class="col-sm-9 form-control"
                             :aria-describedby="'restEndpointHelp_'+uid"
+                            v-on:change="changeForm"
                     >
-                        <option value="/camelModel">Send CAMEL model request</option>
-                        <option value="/cpModelJson">Send CP model request</option>
-                        <option value="/baguette/registerNode">Register Node</option>
-                        <option value="/monitors">Get Monitors/Sensors</option>
-                        <option value="/translator/currentCamelModel">Current CAMEL model</option>
-                        <option value="/translator/currentCpModel">Current CP model</option>
-                        <option value="/translator/constraintThresholds">Constraint Thresholds</option>
-                        <option value="/broker/credentials">EMS server Broker credentials</option>
-                        <option value="/baguette/stopServer">DEBUG - Stop Baguette Server</option>
-                        <option value="/ems/shutdown">DEBUG - EMS server shutdown</option>
-                        <option value="/ems/exit">DEBUG - EMS server shutdown and Exit</option>
-                        <option value="/ems/exit/99">DEBUG - EMS server shutdown and Restart</option>
-                        <option value="GET /health">Health check</option>
+                        <option v-for="opt in options" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
                     </select>
                     <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
                 </div>
@@ -39,13 +28,47 @@
         <div class="row">
             <div class="col-12">
                 <div class="form-group row">
-                    <label :for="'restRequest_'+uid"
+                    <label :for="'restEndpoint_'+uid"
+                           class="col-sm-3 col-form-label"
+                    >REST Endpoint</label>
+                    <input :id="'restEndpoint_'+uid"
+                           v-model="formData.endpoint"
+                           class="col-sm-9 form-control"
+                           :aria-describedby="'restEndpointHelp_'+uid"
+                           readonly="readonly"
+                    />
+                </div>
+            </div>
+        </div>
+        <!-- Variable form fields -->
+        <div class="row" v-for="f of form[formSelected].fields" :key="f.name">
+            <div class="col-12">
+                <div class="form-group row">
+                    <label :for="get_input_id(f)"
+                           class="col-sm-3 col-form-label"
+                    >{{f.text}}</label>
+                    <input :id="get_input_id(f)"
+                           :value="get_form_data(f)"
+                           class="col-sm-9 form-control"
+                           :aria-describedby="f.name+'_'+uid"
+                           v-on:change="updateFieldAndData(f)"
+                    />
+                </div>
+            </div>
+        </div>
+        <!-- Request payload -->
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group row">
+                    <label :for="'restRequestPayload_'+uid"
                            class="col-form-label"
-                    >REST Request (JSON)</label>
-                    <TextareaDnd :id="'restRequest_'+uid"
+                    >Request Payload (JSON)</label>
+                    <TextareaDnd :id="'restRequestPayload_'+uid"
                                  class="form-control"
                                  :aria-describedby="'restRequestHelp_'+uid"
                                  placeholder="Request body in JSON"
+                                 rows="10"
+                                 v-on:change="updateDataFromPayload()"
                     />
                     <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Provide the request body in JSON format.</small>-->
                 </div>
@@ -77,27 +100,174 @@
 const $ = require('jquery');
 import TextareaDnd from './textarea-dnd.vue';
 
+import { FORM_TYPE_OPTIONS, FORM_SPECS } from './rest-call-forms.js';
+
+
 export default {
     name: 'Call EMS REST API widget',
     components: { TextareaDnd },
+    props: {
+        rootId: String,
+    },
     data() {
         return {
             uid: Math.round(Math.random()*10000000) + new Date().getTime(),
             showRestCallResult: false,
             showRestCallResultClear: false,
+            options: FORM_TYPE_OPTIONS,
+            formSelected: '',
+            formData: {},
+            form: FORM_SPECS,
         };
     },
+    mounted: function() {
+        this.changeForm({ target: { value: 'new-camel' }});
+        this.$root[this.rootId] = this;
+    },
     methods: {
-        restCall() {
-            let method = 'POST';
-            let url = $('#restEndpoint_'+this.uid).val();
-            if (url.indexOf(' ')>0) {
-                let tmp = url.split(' ', 2);
-                method = tmp[0];
-                url = tmp[1];
+        switchToForm(form, data) {
+            if (!confirm('Update REST call pane?')) return;
+
+            if (data) {
+                let m = new Map(Object.entries(data));
+                let _this = this;
+                m.forEach((value, key) => {
+                    let _id = _this.get_input_id({ name: key });
+                    _this.formData[_id] = value;
+                });
             }
+
+            this.changeForm({ target: { value: form }})
+        },
+        changeForm(e) {
+            let selId = e.target.value;
+            for (let opt of this.options) {
+                if (opt.id===selId) {
+                    this.formSelected = opt.form;
+                    this.formData.endpoint = opt.url;
+                    break;
+                }
+            }
+            this.$nextTick(() => {
+                $('#formType_'+this.uid).val(selId);
+                $('#restRequestPayload_'+this.uid).val('');
+                this.updatePayload();
+            });
+        },
+        get_input_id(f) {
+            let _id = f.name.replace(/\./gi,'_')+'_'+this.uid;
+            return _id;
+        },
+        get_form_data(f) {
+            let _id = this.get_input_id(f);
+            let _val = this.formData[_id] ?? (typeof f.defaultValue==='function' ? f.defaultValue(this) : f.defaultValue);
+            if (!_val) _val = '';
+            this.formData[_id] = _val;
+            return _val;
+        },
+        create_UUID() {
+            var dt = new Date().getTime();
+            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = (dt + Math.random()*16)%16 | 0;
+                dt = Math.floor(dt/16);
+                return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+            });
+            return uuid;
+        },
+        updateFieldAndData(f) {
+            // Update form data
+            if (f && f!=null) {
+                let _id = this.get_input_id(f);
+                this.formData[_id] = $('#'+_id).val();
+            }
+
+            // Update payload
+            this.updatePayload();
+        },
+        updatePayload() {
+            // Update endpoint (if it contains placeholders)
+            this.updateEndpoint();
+
+            // Update request payload
+            let taPayload = $('#restRequestPayload_'+this.uid);
+            let type = $('#formType_'+this.uid).val();
+            let opt = this.options.find((opt) => opt.id===type);
+            let fields = this.form[opt.form].fields;
+            let s = taPayload.val();
+            let obj = s.trim()==='' ? {} : JSON.parse(s);
+            let _this = this;
+
+            $.each(fields, function(i, f) {
+                let v = _this.get_form_data(f);
+                let parts = f.name.split('.');
+                let _o = obj;
+                while (parts.length>1) {
+                    let _p = parts.shift();
+                    if (!_o[_p]) _o[_p] = {};
+                    _o = _o[_p];
+                }
+                _o[parts[0]] = v;
+            });
+            s = JSON.stringify(obj, null, 4);
+            taPayload.val(s);
+        },
+        updateEndpoint() {
+            let type = $('#formType_'+this.uid).val();
+            let source = this.options.find((opt) => opt.id===type).url;
+            let suffix = '_'+this.uid;
+            $.each(this.formData, function (k, v) {
+                let kk = k.endsWith(suffix) ? k.replace(suffix,'') : k;
+                source = source.replace(new RegExp(`{${kk}}`, "g"), v);
+            })
+            this.formData.endpoint = source;
+            return source;
+        },
+        updateDataFromPayload() {
+            let taPayload = $('#restRequestPayload_'+this.uid);
+            let type = $('#formType_'+this.uid).val();
+            let opt = this.options.find((opt) => opt.id===type);
+            let fields = this.form[opt.form].fields;
+            let s = taPayload.val();
+            let obj = s.trim()==='' ? {} : JSON.parse(s);
+            let _this = this;
+
+            // Update form data
+            $.each(fields, function(i, f) {
+                let parts = f.name.split('.');
+                let _o = obj;
+                while (parts.length>1) {
+                    let _p = parts.shift();
+                    if (_o[_p]) {
+                        _o = _o[_p];
+                    } else {
+                        _o = null;
+                        break;
+                    }
+                }
+                if (_o && _o!=null) {
+                    let v = _o[parts[0]];
+                    let _id = _this.get_input_id(f);
+                    _this.formData[_id] = v;
+                    $('#'+_id).val(v);
+                }
+            });
+
+            // Update endpoint
+            this.updateEndpoint();
+        },
+        restCall() {
+            let _form = $('#formType_'+this.uid).val();
+            if (!_form || _form==='') return;
+            let _opt = this.options.find(opt => opt.id===_form);
+            console.log('##### ', _opt);
+
+            let method = _opt.method;
+            let url = $('#restEndpoint_'+this.uid).val();
             //console.log(method+'  '+url);
-            let body = $('#restRequest_'+this.uid).val();
+            let body = $('#restRequestPayload_'+this.uid).val();
+            if (method.toUpperCase()!=='POST' && method.toUpperCase()!=='PUT')
+                body = null;
+
             let _this = this;
             _this.showRestCallResult = true;
             this.$nextTick(() => {

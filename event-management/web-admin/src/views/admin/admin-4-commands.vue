@@ -45,7 +45,7 @@
                   :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
             >
                 <div style="padding: 5px 15px;">
-                    <RestCall />
+                    <RestCall rootId="rest_call" />
                 </div>
             </Card>
         </div>
@@ -59,7 +59,7 @@
                   :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
             >
                 <div style="padding: 5px 15px;">
-                    <CdoMgnt />
+                    <CdoMgnt restCallRootId="rest_call" />
                 </div>
             </Card>
         </div>

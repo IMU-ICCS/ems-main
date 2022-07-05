@@ -34,10 +34,14 @@
                 <div class="form-group" id="cdo-repository-tree">
                     <div v-for="(type,path) of cdoTreeData" :key="path">
                         <a href="javascript:void(0)" class="link-danger text-danger" v-on:click="cdoDelete(path)">
-                            <i class="fas fa-times-circle"></i>
+                            <i class="fas fa-times-circle" />
                         </a>
                         &nbsp;
-                        <a v-if="getCdoItemLinkByType(type)" href="javascript:void(0)" class="link-primary" v-on:click="cdoExport(path)">{{path}}</a>
+                        <span v-if="getCdoItemLinkByType(type)">
+                            <a href="javascript:void(0)" class="link-primary" v-on:click="cdoExport(path)">{{path}}</a>
+                            &nbsp;&nbsp;
+                            <a href="javascript:void(0);" v-on:click="gotoRestPane(type, path)" style="color: green;"><small><i class="fas fa-forward" /></small></a>
+                        </span>
                         <span v-else>{{path}}</span>
                         <span class="float-right text-sm font-italic" style="color:grey;"><img :src="getCdoItemIconByType(type)" width="18" height="18" :title="getCdoItemTextByType(type)" /></span><br/>
                     </div>
@@ -106,6 +110,9 @@ import iconOther  from "./img/unknown-64.png";
 export default {
     name: 'Manage CDO repository',
     components: { TextareaDnd },
+    props: {
+        restCallRootId: String,
+    },
     data() {
         return {
             uid: Math.round(Math.random()*10000000) + new Date().getTime(),
@@ -304,6 +311,19 @@ export default {
             a.click();
             window.URL.revokeObjectURL(url);
             a.remove();
+        },
+
+        gotoRestPane(type, path) {
+            if (this.$root[this.restCallRootId]) {
+                let restCall = this.$root[this.restCallRootId];
+                if (type==='CamelModel') {
+                    restCall.switchToForm('new-camel', { 'applicationId': path });
+                } else
+                if (type==='ConstraintProblem') {
+                    restCall.switchToForm('new-cp', { 'cp-model-id': path });
+                } else
+                    console.log('Ignoring type: '+type);
+            }
         }
     }
 }
