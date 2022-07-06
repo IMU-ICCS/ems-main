@@ -251,7 +251,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
             httpSecurity
                     .csrf().disable()
                     .authorizeRequests()
-                        //.antMatchers("//broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
+                        //.antMatchers("/broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
                         //.antMatchers("/baguette/ref/**").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
                         .antMatchers(permittedUrls).permitAll()
                         .anyRequest().authenticated()
