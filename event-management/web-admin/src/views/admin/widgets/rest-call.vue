@@ -246,6 +246,11 @@ export default {
             let taPayload = $('#restRequestPayload_'+this.uid);
             let type = $('#formType_'+this.uid).val();
             let opt = this.options.find((opt) => opt.id===type);
+            if (! this.needsRequestBody(opt.method)) {
+                taPayload.val('');
+                return;
+            }
+
             let fields = this.form[opt.form].fields;
             let s = taPayload.val();
             let obj = s.trim()==='' ? {} : JSON.parse(s);
@@ -309,17 +314,23 @@ export default {
             // Update endpoint
             this.updateEndpoint();
         },
+        needsRequestBody(method) {
+            return method.toUpperCase()==='POST' || method.toUpperCase()==='PUT';
+        },
         restCall() {
             let _form = $('#formType_'+this.uid).val();
             if (!_form || _form==='') return;
             let _opt = this.options.find(opt => opt.id===_form);
             //console.log('##### ', _opt);
 
+            this.showRestCallResult = false;
+            this.showRestCallResultClear = false;
+
             let method = _opt.method;
             let url = $('#restEndpoint_'+this.uid).val();
             //console.log(method+'  '+url);
             let body = $('#restRequestPayload_'+this.uid).val();
-            if (method.toUpperCase()!=='POST' && method.toUpperCase()!=='PUT')
+            if (! this.needsRequestBody(method))
                 body = null;
 
             let _this = this;
