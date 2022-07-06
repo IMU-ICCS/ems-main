@@ -37,7 +37,7 @@
     </div>
 
     <div class="row">
-        <div class="col-6">
+        <div class="col-12">
             <!-- Default box -->
             <Card bodyClasses="table-responsive p-0"
                   header="Call EMS REST API"
@@ -45,12 +45,14 @@
                   :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
             >
                 <div style="padding: 5px 15px;">
-                    <RestCall rootId="rest_call" />
+                    <RestCall rootId="rest_call" :sseRef="sseRef" />
                 </div>
             </Card>
         </div>
-        <!-- /.col-md-6 -->
+        <!-- /.col-md-12 -->
+    </div>
 
+    <div class="row">
         <div class="col-6">
             <!-- Default box -->
             <Card bodyClasses="table-responsive p-0"
@@ -82,6 +84,7 @@ export default {
     },
     props: {
         modelValue: Object,
+        sseRef: String
     },
     data() {
         return {

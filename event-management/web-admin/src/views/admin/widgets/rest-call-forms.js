@@ -10,6 +10,7 @@
 export const FORM_TYPE_OPTIONS = [
                 { 'id': 'new-camel', 'text': 'Send CAMEL model request', 'url': '/camelModel', 'method': 'POST', 'form': 'camel-form' },
                 { 'id': 'new-cp', 'text': 'Send CP model request', 'url': '/cpModelJson', 'method': 'POST', 'form': 'cp-form' },
+                { 'id': 'const', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/cpConstants', 'method': 'POST', 'form': '' },
                 { 'id': 'new-vm', 'text': 'Register Node', 'url': '/baguette/registerNode', 'method': 'POST', 'form': 'vm-form' },
                 { 'id': 'get-mons', 'text': 'Get Monitors/Sensors', 'url': '/monitors', 'method': 'POST', 'form': 'camel-form' },
                 { 'id': 'get-camel', 'text': 'Current CAMEL model', 'url': '/translator/currentCamelModel', 'method': 'GET', 'form': '' },
@@ -20,6 +21,11 @@ export const FORM_TYPE_OPTIONS = [
 
                 { 'id': 'get-cred', 'text': 'EMS server Broker credentials', 'url': '/broker/credentials', 'method': 'GET', 'form': '' },
                 { 'id': 'get-ref', 'text': 'VM credentials by Ref', 'url': '/baguette/ref/{ref}', 'method': 'GET', 'form': 'ref-form' },
+
+                { 'id': 'client-list', 'text': 'Client list', 'url': '/client/list', 'method': 'GET', 'form': '' },
+                { 'id': 'client-map', 'text': 'Client map', 'url': '/client/list/map', 'method': 'GET', 'form': '' },
+                { 'id': 'node-info', 'text': 'Node Info by IP address', 'url': '/baguette/getNodeInfoByAddress/{ip-address}', 'method': 'GET', 'form': 'ip-form' },
+                { 'id': 'node-name', 'text': 'Node Name by IP address', 'url': '/baguette/getNodeNameByAddress/{ip-address}', 'method': 'GET', 'form': 'ip-form' },
 
                 { 'id': 'new-otp', 'text': 'New OTP', 'url': '/ems/otp/new', 'method': 'GET', 'form': '' },
                 { 'id': 'del-otp', 'text': 'Delete OTP', 'url': '/ems/otp/remove/{otp}', 'method': 'GET', 'form': 'otp-form' },
@@ -37,9 +43,10 @@ export const FORM_SPECS = {
                 'camel-form': {
                     'fields': [
                         { 'name': 'applicationId', 'text': 'CAMEL model path' },
-                        { 'name': 'watermark.user', 'text': 'User', 'defaultValue': 'unknown' },
-                        { 'name': 'watermark.system', 'text': 'System', 'defaultValue': 'Ems-Web-Admin' },
-                        { 'name': 'watermark.uuid', 'text': 'UUID', 'defaultValue': function(_this) { return _this.create_UUID(); } },
+                        { 'name': 'watermark.user', 'text': '-- User', 'defaultValue': function(_this) { return _this.authUsername ?? _this.username ?? 'unknown'; } },
+                        { 'name': 'watermark.system', 'text': '-- System', 'defaultValue': 'Ems-Web-Admin' },
+                        { 'name': 'watermark.uuid', 'text': '-- UUID', 'defaultValue': function(_this) { return _this.create_UUID(); } },
+                        { 'name': 'watermark.date', 'text': '-- Date', 'defaultValue': function() { return new Date().getTime(); } },
                     ],
                 },
                 'cp-form': {
@@ -69,6 +76,11 @@ export const FORM_SPECS = {
                 'ref-form': {
                     'fields': [
                         { 'name': 'ref', 'text': 'VM reference' },
+                    ]
+                },
+                'ip-form': {
+                    'fields': [
+                        { 'name': 'ip-address', 'text': 'IP Address' },
                     ]
                 },
                 'otp-form': {

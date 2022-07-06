@@ -7,113 +7,145 @@
   ~ https://www.mozilla.org/en-US/MPL/2.0/
   -->
 <template>
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="form-group row">
-                    <label :for="'formType_'+uid"
-                           class="col-sm-3 col-form-label"
-                    >Request type</label>
-                    <select :id="'formType_'+uid"
-                            class="col-sm-9 form-control"
-                            :aria-describedby="'restEndpointHelp_'+uid"
-                            v-on:change="changeForm"
-                    >
-                        <option v-for="opt in options" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
-                    </select>
-                    <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
+    <div class="row">
+        <div class="col-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group row">
+                            <label :for="'formType_'+uid"
+                                   class="col-sm-3 col-form-label col-form-label-sm"
+                            >Request type</label>
+                            <select :id="'formType_'+uid"
+                                    class="col-sm-9 form-control form-control-sm"
+                                    :aria-describedby="'restEndpointHelp_'+uid"
+                                    v-on:change="changeForm"
+                            >
+                                <option v-for="opt in options" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
+                            </select>
+                            <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group row">
+                            <label :for="'restEndpoint_'+uid"
+                                   class="col-sm-3 col-form-label col-form-label-sm"
+                            >REST Endpoint</label>
+                            <input :id="'restEndpoint_'+uid"
+                                   v-model="formData.endpoint"
+                                   class="col-sm-9 form-control form-control-sm"
+                                   :aria-describedby="'restEndpointHelp_'+uid"
+                                   readonly="readonly"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <!-- Variable form fields -->
+                <div class="row" v-for="f of form[formSelected].fields" :key="f.name">
+                    <div class="col-12">
+                        <div class="form-group row">
+                            <label :for="get_input_id(f)"
+                                   class="col-sm-3 col-form-label col-form-label-sm"
+                            >{{f.text}}</label>
+                            <input :id="get_input_id(f)"
+                                   :value="get_form_data(f)"
+                                   class="col-sm-8 form-control form-control-sm"
+                                   :aria-describedby="f.name+'_'+uid"
+                                   v-on:change="updateFieldAndData(f)"
+                                   v-on:input="updateFieldAndData(f)"
+                            />
+                            <small class="col-sm-1"><a href="javascript:void(0)" v-on:click="resetFieldValue(f)" class="btn btn-xs btn-link" title="Reset field value to default"><i class="fas fa-sync" /></a></small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="form-group row">
-                    <label :for="'restEndpoint_'+uid"
-                           class="col-sm-3 col-form-label"
-                    >REST Endpoint</label>
-                    <input :id="'restEndpoint_'+uid"
-                           v-model="formData.endpoint"
-                           class="col-sm-9 form-control"
-                           :aria-describedby="'restEndpointHelp_'+uid"
-                           readonly="readonly"
-                    />
+        <!-- /.col-4 -->
+        <div class="col-8">
+            <div class="container">
+                <!-- Request payload -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group row">
+                            <label :for="'restRequestPayload_'+uid"
+                                   class="col-form-label col-form-label-sm"
+                            >Request Payload (JSON)
+                                &nbsp;&nbsp;
+                                <small><a href="javascript:void(0)" v-on:click="updatePayload" class="btn btn-xs btn-link" title="Refresh payload (will discard manual changes)"><i class="fas fa-sync" /></a></small>
+                            </label>
+                            <TextareaDnd :id="'restRequestPayload_'+uid"
+                                         class="form-control form-control-sm"
+                                         :aria-describedby="'restRequestHelp_'+uid"
+                                         placeholder="Request body in JSON"
+                                         rows="8"
+                                         v-on:change="updateDataFromPayload()"
+                                         v-on:input="updateDataFromPayload()"
+                            />
+                            <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Provide the request body in JSON format.</small>-->
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-xs btn-success float-right"
+                                v-on:click="restCall"
+                        >
+                            <i class="fa fa-paper-plane" />&nbsp;Send
+                        </button>
+                        <span v-if="showRestCallResultClear"
+                              :id="'restCallResultClear_'+uid"
+                              class="btn btn-xs btn-danger float-right"
+                              v-on:click="()=>{showRestCallResult = false; showRestCallResultClear = false;}"
+                        >
+                            <i class="fa fa-trash-alt" />&nbsp;Clear
+                        </span>
+                        <div v-if="showRestCallResult"
+                              :id="'restCallResult_'+uid"
+                              class="text-muted">
+                            <b>Result:</b> <span :class="['badge', 'badge-pill', getStatusBadge(restCallResult)]">{{restCallResult}}</span><br/>
+                            <b>Status:</b> <span :style="getStatusColor(restCallStatus)">{{restCallStatus}}</span><br/>
+                            <b>Response:</b> &nbsp;&nbsp;&nbsp;<small>{{restCallMime}}</small><br/>
+                            <div v-if="! isJson(restCallMime)">{{restCallResponse}}</div>
+                            <div v-else style="border: 1px solid grey; overflow: auto; max-height: 500px; resize: vertical;">
+                                <!--<pre>{{ JSON.stringify(JSON.parse(restCallResponse), null, 4) }}</pre>-->
+                                <vue-json-pretty :data="JSON.parse(restCallResponse)" :showLength="true" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Variable form fields -->
-        <div class="row" v-for="f of form[formSelected].fields" :key="f.name">
-            <div class="col-12">
-                <div class="form-group row">
-                    <label :for="get_input_id(f)"
-                           class="col-sm-3 col-form-label"
-                    >{{f.text}}</label>
-                    <input :id="get_input_id(f)"
-                           :value="get_form_data(f)"
-                           class="col-sm-9 form-control"
-                           :aria-describedby="f.name+'_'+uid"
-                           v-on:change="updateFieldAndData(f)"
-                    />
-                </div>
-            </div>
-        </div>
-        <!-- Request payload -->
-        <div class="row">
-            <div class="col-12">
-                <div class="form-group row">
-                    <label :for="'restRequestPayload_'+uid"
-                           class="col-form-label"
-                    >Request Payload (JSON)</label>
-                    <TextareaDnd :id="'restRequestPayload_'+uid"
-                                 class="form-control"
-                                 :aria-describedby="'restRequestHelp_'+uid"
-                                 placeholder="Request body in JSON"
-                                 rows="10"
-                                 v-on:change="updateDataFromPayload()"
-                    />
-                    <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Provide the request body in JSON format.</small>-->
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <button class="btn btn-xs btn-success float-right"
-                        v-on:click="restCall"
-                >
-                    <i class="fa fa-paper-plane"></i>&nbsp;Send
-                </button>
-                <span v-if="showRestCallResultClear"
-                      :id="'restCallResultClear_'+uid"
-                      class="btn btn-xs btn-danger float-right"
-                      v-on:click="()=>{showRestCallResult = false; showRestCallResultClear = false;}"
-                >
-                    <i class="fa fa-trash-alt"></i>&nbsp;Clear
-                </span>
-                <span v-if="showRestCallResult"
-                      :id="'restCallResult_'+uid"
-                      class="text-muted"/>
-            </div>
-        </div>
+        <!-- /.col-8 -->
     </div>
 </template>
 
 <script>
 const $ = require('jquery');
 import TextareaDnd from './textarea-dnd.vue';
+import VueJsonPretty from 'vue-json-pretty';
 
 import { FORM_TYPE_OPTIONS, FORM_SPECS } from './rest-call-forms.js';
 
 
 export default {
     name: 'Call EMS REST API widget',
-    components: { TextareaDnd },
+    components: { TextareaDnd, VueJsonPretty },
     props: {
         rootId: String,
+        sseRef: String
     },
     data() {
         return {
             uid: Math.round(Math.random()*10000000) + new Date().getTime(),
             showRestCallResult: false,
             showRestCallResultClear: false,
+            restCallResult: '',
+            restCallStatus: '',
+            restCallMime: '',
+            restCallResponse: '',
+
             options: FORM_TYPE_OPTIONS,
             formSelected: '',
             formData: {},
@@ -123,6 +155,19 @@ export default {
     mounted: function() {
         this.changeForm({ target: { value: 'new-camel' }});
         this.$root[this.rootId] = this;
+    },
+    computed: {
+        username() {
+            if (this.sseRef && this.sseRef.trim()!=='' && this.$root.$refs[this.sseRef]) {
+                let emsSse = this.$root.$refs[this.sseRef];
+                if (emsSse.modelValue && emsSse.modelValue.data && emsSse.modelValue.data.ems) {
+                    let emsData = emsSse.modelValue.data.ems;
+                    if (emsData['.authentication-username'])
+                        return emsData['.authentication-username'];
+                }
+            }
+            return null;
+        }
     },
     methods: {
         switchToForm(form, data) {
@@ -160,10 +205,13 @@ export default {
         },
         get_form_data(f) {
             let _id = this.get_input_id(f);
-            let _val = this.formData[_id] ?? (typeof f.defaultValue==='function' ? f.defaultValue(this) : f.defaultValue);
+            let _val = this.formData[_id] ?? this.get_form_default(f);
             if (!_val) _val = '';
             this.formData[_id] = _val;
             return _val;
+        },
+        get_form_default(f) {
+            return (typeof f.defaultValue==='function' ? f.defaultValue(this) : f.defaultValue);
         },
         create_UUID() {
             var dt = new Date().getTime();
@@ -183,6 +231,12 @@ export default {
 
             // Update payload
             this.updatePayload();
+        },
+        resetFieldValue(f) {
+            let _val = this.get_form_default(f);
+            let _id = this.get_input_id(f);
+            $('#'+_id).val(_val);
+            this.updateFieldAndData(f);
         },
         updatePayload() {
             // Update endpoint (if it contains placeholders)
@@ -259,7 +313,7 @@ export default {
             let _form = $('#formType_'+this.uid).val();
             if (!_form || _form==='') return;
             let _opt = this.options.find(opt => opt.id===_form);
-            console.log('##### ', _opt);
+            //console.log('##### ', _opt);
 
             let method = _opt.method;
             let url = $('#restEndpoint_'+this.uid).val();
@@ -278,12 +332,34 @@ export default {
                     contentType: 'application/json',
                     data: body,
                     complete: function(xhr,status) {
-                        //console.log('Call REST API: ', url, ' => ', status, xhr);
-                        $('#restCallResult_'+_this.uid).html(`<b>Result:</b> ${status}<br/><b>Status:</b> ${xhr.status} ${xhr.statusText}<br/><b>Response:</b> ${xhr.responseText}`);
+                        //console.log('Call REST API: ', url, ' => ', status, xhr.getResponseHeader('content-type'), xhr);
+                        //$('#restCallResult_'+_this.uid).html(`<b>Result:</b> ${status} (${xhr.readyState})<br/><b>Status:</b> ${xhr.status} ${xhr.statusText}<br/><b>Response:</b> ${xhr.responseText}`);
+                        _this.restCallResult = `${status} (${xhr.readyState})`;
+                        _this.restCallStatus = `${xhr.status} ${xhr.statusText}`;
+                        _this.restCallMime = xhr.getResponseHeader('content-type');
+                        _this.restCallResponse = xhr.responseText;
                         _this.showRestCallResultClear = true;
                     }
                 });
             });
+        },
+        isJson(mime) {
+            if (!mime || mime.trim()==='') return false;
+            let m = mime.split(';')[0]
+            return m==='application/json' || m==='text/json';
+        },
+        getStatusBadge(status) {
+            status = (''+status).split(' ')[0];
+            if (status==='success') return 'badge-success';
+            if (status==='notmodified' || status==='nocontent') return 'badge-warning';
+            return 'badge-danger';
+        },
+        getStatusColor(status) {
+            status = (''+status).split(' ')[0];
+            if (status[0]==='2') return '';
+            if (status[0]==='4') return 'color: red';
+            if (status[0]==='5') return 'color: darkred';
+            return 'color: orange';
         },
     }
 }

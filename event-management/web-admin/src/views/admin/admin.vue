@@ -29,7 +29,7 @@
       </Section>-->
 
       <Section title="Commands" background="rgba(255,0,0,.5)">
-          <CommandsSection v-model="ems" />
+          <CommandsSection v-model="ems" :sseRef="sseRef" />
       </Section>
 
       <!--<Section title="Topics and CEP" background="rgba(255,0,0,.55)">
