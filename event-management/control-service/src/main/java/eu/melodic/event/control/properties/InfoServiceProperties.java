@@ -19,7 +19,9 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -39,6 +41,9 @@ public class InfoServiceProperties implements InitializingBean {
     private List<String> envVarPrefixes = Arrays.asList("WEBSSH_SERVICE_-^", "WEB_ADMIN_!^");
                 // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
                 // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
+
+    private boolean filesEnabled = true;
+    private List<Path> fileRoots = Collections.emptyList();
 
     @Override
     public void afterPropertiesSet() {
