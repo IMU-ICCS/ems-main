@@ -10,6 +10,15 @@ public class CamelInstanceNamingService {
     private static final String REQUIRED_COMMUNICATION_LABEL = "_ReqCommunicationInstance_";
     private static final String PROVIDED_COMMUNICATION_LABEL = "_ProvidedCommunicationInstance_";
 
+
+    public static int getInstanceNumberFromInstanceName(String softwareComponentInstanceName) {
+        return Integer.parseInt(StringUtils.substringAfterLast(softwareComponentInstanceName, SEPARATOR_NAME_SIGN));
+    }
+
+    public static String getSoftwareComponentNameFromInstanceName(String softwareComponentInstanceName) {
+        return removeSuffix(removeSuffix(softwareComponentInstanceName));
+    }
+    
     static String createSoftwareInstanceName(String softwareComponentName, int instanceNo) {
         String instanceName = createSoftCompInstNamePrefix(softwareComponentName) + SEPARATOR_NAME_SIGN +
                 "instance" + SEPARATOR_NAME_SIGN + instanceNo;
@@ -29,13 +38,7 @@ public class CamelInstanceNamingService {
         return createLabeledName(prefix, PROVIDED_COMMUNICATION_LABEL, providedCommunicationName, instanceNo);
     }
 
-    static int getInstanceNumberFromInstanceName(String softwareComponentInstanceName) {
-        return Integer.parseInt(StringUtils.substringAfterLast(softwareComponentInstanceName, SEPARATOR_NAME_SIGN));
-    }
 
-    static String getSoftwareComponentNameFromInstanceName(String softwareComponentInstanceName) {
-        return removeSuffix(removeSuffix(softwareComponentInstanceName));
-    }
 
     private static String createLabeledName(String prefix, String label, String name, int instanceNo) {
         String labeledName = prefix + SEPARATOR_NAME_SIGN + label + SEPARATOR_NAME_SIGN +

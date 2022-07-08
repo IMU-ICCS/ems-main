@@ -1,5 +1,6 @@
-package eu.melodic.upperware.adapter.service;
+package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,11 +12,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
     private static final Integer NO_DATA_OR_INTEGER_ALREADY_USED = null;
 
-    private ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
-    private ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
+    private final ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
+    private final ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
 
     @Override
     public Integer getNewInstanceNoForComponent(String softwareComponentName) {

@@ -17,6 +17,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -42,6 +43,21 @@ public class AdapterProperties {
   @Valid
   @NotNull
   private ProActive paConfig;
+
+  @Value("${activemq.broker.url}")
+  private String melodicMqAddress;
+
+  @Value("${activemq.restartinterval:10000}")
+  private long melodicMqRestartInterval;
+
+  @Value("${activemq.connectionretryinterval:5000}")
+  private long melodicMqConnectionRetryInterval;
+
+  @Value("${activemq.connectionretrymax:10}")
+  private long melodicMqConnectionRetryMax;
+
+  @Value("${checkIfComponentBusyActiveMQTopic}")
+  private String checkIfComponentBusyActiveMQTopic = "busy.>";
 
   @Getter
   @Setter
