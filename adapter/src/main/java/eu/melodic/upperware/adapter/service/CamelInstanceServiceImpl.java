@@ -26,10 +26,11 @@ import java.util.stream.IntStream;
 @Slf4j
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CamelInstanceServiceImpl implements CamelInstanceService {
+    private final static String SEPARATOR_NAME_SIGN = "-";
 
+    private InstanceNoProvider instanceNoProvider;
     private CamelEnricherService camelEnricherService;
     private Gson gson;
-    private final static String SEPARATOR_NAME_SIGN = "-";
 
     @Override
     public DeploymentInstanceModel createDeploymentInstanceModel(DeploymentTypeModel deploymentTypeModel, List<SoftwareInstanceDetail> softwareInstanceDetails) {
@@ -37,14 +38,12 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         CamelModel camelModel = (CamelModel) deploymentTypeModel.eContainer();
         int dmId = camelModel.getDeploymentModels().size();
 
-        Counters counters = new Counters(dmId);
-
         DeploymentInstanceModel deploymentInstanceModel = DeploymentFactory.eINSTANCE.createDeploymentInstanceModel();
         deploymentInstanceModel.setName(deploymentTypeModel.getName() + "_" + dmId);
         deploymentInstanceModel.setType(deploymentTypeModel);
 
         softwareInstanceDetails.stream()
-                .map(softwareInstanceDetail -> createSoftwareComponentInstances(softwareInstanceDetail, counters))
+                .map(this::createSoftwareComponentInstances)
                 .forEach(softwareComponentInstances -> deploymentInstanceModel.getSoftwareComponentInstances().addAll(softwareComponentInstances));
 
         deploymentTypeModel.getCommunications()
@@ -52,76 +51,65 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                 .map(communication -> createCommunicationInstanceFromDemand(communication, deploymentInstanceModel, deploymentInstanceModel.getSoftwareComponentInstances()))
                 .forEach(communicationInstances -> deploymentInstanceModel.getCommunicationInstances().addAll(communicationInstances));
 
-        changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
+        //changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
 
         return deploymentInstanceModel;
     }
 
-    private List<SoftwareComponentInstance> createSoftwareComponentInstances(SoftwareInstanceDetail softwareInstanceDetail, Counters counters){
+    private List<SoftwareComponentInstance> createSoftwareComponentInstances(SoftwareInstanceDetail softwareInstanceDetail){
         return IntStream.range(0, softwareInstanceDetail.getCardinality())
-                .mapToObj(value -> createSoftwareComponentInstance(softwareInstanceDetail.getSoftwareComponent(), counters))
+                .mapToObj(value -> createSoftwareComponentInstance(softwareInstanceDetail.getSoftwareComponent()))
                 .peek(softwareComponentInstance -> camelEnricherService.enrich(softwareComponentInstance, "nodeCandidate", gson.toJson(softwareInstanceDetail.getNodeCandidate())))
                 .collect(Collectors.toList());
     }
 
-    private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent, Counters counters) {
+    private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent) {
         // Create Instance + name + type
+        int softwareInstance = instanceNoProvider.getNewInstanceNoForComponent(softwareComponent.getName());
+        String softwareComponentName = CamelInstanceNamingService.createSoftwareInstanceName(softwareComponent.getName(), softwareInstance);
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
-        softwareComponentInstance.setName(createSoftCompInstNamePrefix(softwareComponent.getName()) + SEPARATOR_NAME_SIGN + "instance" + SEPARATOR_NAME_SIGN + counters.getGlobalCount() + SEPARATOR_NAME_SIGN + counters.getLocalCount());
+        softwareComponentInstance.setName(softwareComponentName);
         softwareComponentInstance.setType(softwareComponent);
 
         //Create ProvidedCommunicationInstance
-        softwareComponent.getProvidedCommunications()
-                .stream()
-                .map((ProvidedCommunication providedCommunication) -> createProvidedCommunicationInstance(providedCommunication, counters))
+        IntStream.range(0, softwareComponent.getProvidedCommunications().size())
+                .mapToObj(i -> createProvidedCommunicationInstance(softwareComponent.getProvidedCommunications().get(i), softwareComponentName, i))
                 .forEach(providedCommunicationInstance -> softwareComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance));
 
         //Create RequiredCommunicationInstance
-        softwareComponent.getRequiredCommunications()
-                .stream()
-                .map((RequiredCommunication requiredCommunication) -> createRequiredCommunicationInstance(requiredCommunication, counters))
+        IntStream.range(0, softwareComponent.getRequiredCommunications().size())
+                .mapToObj(i -> createRequiredCommunicationInstance(softwareComponent.getRequiredCommunications().get(i), softwareComponentName, i))
                 .forEach(requiredCommunicationInstance -> softwareComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance));
 
         //Create RequiredHostInstance
-        softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent, counters));
+        softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent.getRequiredHost(), softwareComponentName, 0));
 
         return softwareComponentInstance;
     }
 
-    private String createSoftCompInstNamePrefix(String name) {
-        // 1. add separator after each capital letter except first
-        String result = name.replaceAll("([A-Z])", SEPARATOR_NAME_SIGN + "$1");
-        result = result.startsWith(SEPARATOR_NAME_SIGN) ? result.substring(1) : result;
-        result = result.endsWith(SEPARATOR_NAME_SIGN) ? result.substring(0, result.length() - 2) : result;
-
-        // 2. to lower case
-        result = result.toLowerCase();
-
-        // 3. remove all special signs except separator, lowercase and digits
-        result = result.replaceAll("[^-a-z0-9]", "");
-
-        log.info("Created name = {} for software component instance: {}", result, name);
-        return result;
-    }
-
-    private RequiredHostInstance getRequiredHostInstance(SoftwareComponent softwareComponent, Counters counters) {
+    private RequiredHostInstance getRequiredHostInstance(RequiredHost requiredHost, String prefix, int requiredHostInstanceNo) {
         RequiredHostInstance requiredHostInstance = DeploymentFactory.eINSTANCE.createRequiredHostInstance();
-        requiredHostInstance.setType(softwareComponent.getRequiredHost());
-        requiredHostInstance.setName(softwareComponent.getName() + "_RequiredHostInstance_" +  counters.getLocalCount());
+        requiredHostInstance.setType(requiredHost);
+        requiredHostInstance.setName(CamelInstanceNamingService.createRequiredHostName(prefix,
+                requiredHostInstance.getName(), requiredHostInstanceNo));
         return requiredHostInstance;
     }
 
-    private RequiredCommunicationInstance createRequiredCommunicationInstance(RequiredCommunication requiredCommunication, Counters counters) {
+    private RequiredCommunicationInstance createRequiredCommunicationInstance(RequiredCommunication requiredCommunication,
+                                                                              String prefix, int requiredCommunicationInstanceNo) {
         RequiredCommunicationInstance requiredCommunicationInstance = DeploymentFactory.eINSTANCE.createRequiredCommunicationInstance();
         requiredCommunicationInstance.setType(requiredCommunication);
-        requiredCommunicationInstance.setName(requiredCommunication.getName() + "_ReqCommunicationInstance_" + counters.getLocalCount());
+        requiredCommunicationInstance.setName(CamelInstanceNamingService.createRequiredCommunicationName(prefix,
+                prefix, requiredCommunicationInstanceNo));
         return requiredCommunicationInstance;
     }
 
-    private ProvidedCommunicationInstance createProvidedCommunicationInstance(ProvidedCommunication providedCommunication, Counters counters) {
+    private ProvidedCommunicationInstance createProvidedCommunicationInstance(ProvidedCommunication providedCommunication,
+                                                                              String prefix, int providedCommunicationInstanceNo) {
         ProvidedCommunicationInstance providedCommunicationInstance = DeploymentFactory.eINSTANCE.createProvidedCommunicationInstance();
         providedCommunicationInstance.setType(providedCommunication);
-        providedCommunicationInstance.setName(providedCommunication.getName() + "_ProvidedCommunicationInstance_" + counters.getLocalCount());
+        providedCommunicationInstance.setName(CamelInstanceNamingService.createProvidedCommunicationName(prefix,
+                prefix, providedCommunicationInstanceNo));
         return providedCommunicationInstance;
     }
 
