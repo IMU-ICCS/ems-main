@@ -66,6 +66,20 @@
             </Card>
         </div>
         <!-- /.col-md-6 -->
+
+        <div class="col-6">
+            <!-- Default box -->
+            <Card bodyClasses="table-responsive p-0"
+                  header="&nbsp;File Manager"
+                  icon="fas fa-folder-open"
+                  :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
+            >
+                <div style="padding: 5px 15px;">
+                    <FileExplorer />
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-6 -->
     </div>
 
 </template>
@@ -76,11 +90,12 @@ import ClientCommands from './widgets/client-commands.vue';
 import ClientEvents from './widgets/client-events.vue';
 import RestCall from './widgets/rest-call.vue';
 import CdoMgnt from './widgets/cdo-mgnt.vue';
+import FileExplorer from './widgets/fileexplorer.vue';
 
 export default {
     name: 'Admin Dashboard - Commands section',
     components: {
-        Card, ClientCommands, ClientEvents, RestCall, CdoMgnt
+        Card, ClientCommands, ClientEvents, RestCall, CdoMgnt, FileExplorer
     },
     props: {
         modelValue: Object,
