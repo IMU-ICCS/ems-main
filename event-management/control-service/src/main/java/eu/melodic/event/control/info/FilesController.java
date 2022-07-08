@@ -11,6 +11,8 @@ package eu.melodic.event.control.info;
 
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.util.EmsConstant;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,7 @@ import org.hsqldb.lib.StringInputStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,46 +59,50 @@ public class FilesController {
     }
 
     @GetMapping("/files")
-    public List<String> listRoots(HttpServletRequest request) {
+    public List<FILE> listRoots(HttpServletRequest request) {
         log.debug("listRoots(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        return toStr(roots, null);
+        return toFileList(roots, null);
     }
 
     @GetMapping("/files/tree/roots")
-    public List<List<String>> listTreeRoots(HttpServletRequest request) throws IOException {
+    public List<List<FILE>> listTreeRoots(HttpServletRequest request) throws IOException {
         log.debug("listTreeRoots(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        LinkedList<List<String>> trees = new LinkedList<>();
+        LinkedList<List<FILE>> trees = new LinkedList<>();
         for (Path root : roots) {
-            trees.add( toStr(Files.walk(root).collect(Collectors.toList()), root) );
+            trees.add( toFileList(Files.walk(root).collect(Collectors.toList()), root) );
         }
         return trees;
     }
 
     @GetMapping("/files/tree/{rootId}")
-    public List<String> listTreeFiles(HttpServletRequest request, @PathVariable int rootId) throws IOException {
+    public List<FILE> listTreeFiles(HttpServletRequest request, @PathVariable int rootId) throws IOException {
         log.debug("listTreeFiles(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
         log.debug("listTreeFiles(): --- Root-Id: {}", rootId);
         Path root = roots.get(rootId);
-        return toStr(Files.walk(root).collect(Collectors.toList()), root);
+        return toFileList(Files.walk(root).collect(Collectors.toList()), root);
     }
 
     @GetMapping({"/files/dir/{rootId}", "/files/dir/{rootId}/**"})
-    public List<String> listDirFiles(HttpServletRequest request, @PathVariable int rootId, WebRequest webRequest) throws IOException {
+    public List<FILE> listDirFiles(HttpServletRequest request, @PathVariable int rootId, WebRequest webRequest) throws IOException {
         log.debug("listDirFiles(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
         String mvcPrefix = "/files/dir/" + rootId;
         log.debug("listDirFiles(): --- mvc-prefix: {}", mvcPrefix);
         String mvcPath = (String) webRequest.getAttribute(
                 HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
         log.debug("listDirFiles(): --- mvc-path: {}", mvcPath);
-        String path = mvcPath.substring(mvcPrefix.length());
-        log.debug("listDirFiles(): --- Root-Id: {}, Path: {}", rootId, path);
+        String pathStr = mvcPath.substring(mvcPrefix.length());
+        log.debug("listDirFiles(): --- Root-Id: {}, Path: {}", rootId, pathStr);
 
-        Path dir = Paths.get(roots.get(rootId).toString(), path);
-        log.debug("listDirFiles(): --- Effective Path: {}", dir);
-        if (dir.toFile().isDirectory()) {
-            return toStr(Files.list(dir).collect(Collectors.toList()), dir);
+        Path path = Paths.get(roots.get(rootId).toString(), pathStr);
+        log.debug("listDirFiles(): --- Effective Path: {}", path);
+        if (path.toFile().exists()) {
+            if (path.toFile().isDirectory()) {
+                return toFileList(Files.list(path).collect(Collectors.toList()), path);
+            } else {
+                return null;
+            }
         } else {
-            return toStr(Collections.singletonList(dir), roots.get(rootId));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: "+rootId+": "+pathStr);
         }
     }
 
@@ -106,13 +114,14 @@ public class FilesController {
         String mvcPath = (String) webRequest.getAttribute(
                 HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
         log.debug("listDirFiles(): --- mvc-path: {}", mvcPath);
-        String path = mvcPath.substring(mvcPrefix.length());
-        log.debug("listDirFiles(): --- Root-Id: {}, Path: {}", rootId, path);
+        String pathStr = mvcPath.substring(mvcPrefix.length());
+        log.debug("listDirFiles(): --- Root-Id: {}, Path: {}", rootId, pathStr);
 
-        File file = Paths.get(roots.get(rootId).toString(), path).toFile();
+        File file = Paths.get(roots.get(rootId).toString(), pathStr).toFile();
         log.debug("listDirFiles(): --- Effective Path: {}", file);
         if (!file.exists()) {
-            return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File not exists")));
+            //return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File not exists")));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: "+rootId+": "+pathStr);
         }
         if (!file.canRead()) {
             return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File cannot be read")));
@@ -144,12 +153,37 @@ public class FilesController {
         return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("Not a regular file")));
     }
 
-    private List<String> toStr(@NonNull List<Path> list, @Null Path root) {
+    private List<FILE> toFileList(@NonNull List<Path> paths, @Null Path root) {
         String prefix = (root!=null) ? root.toString() : "";
-        return list.stream()
-                .map(Path::toString)
-                .map(s-> StringUtils.removeStart(s, prefix))
-                .filter(s->!s.isEmpty())
-                .collect(Collectors.toList());
+        List<FILE> list = new LinkedList<>();
+        for (Path p : paths) {
+            String pathStr = StringUtils.removeStart(p.toString(), prefix);
+            File f = p.toFile();
+            if (StringUtils.isNotBlank(pathStr))
+                list.add(FILE.builder()
+                        .path(pathStr)
+                        .size(f.length())
+                        .lastModified(f.lastModified())
+                        .hidden(f.isHidden())
+                        .dir(f.isDirectory())
+                        .root(root==null)
+                        .read(f.canRead()).write(f.canWrite()).exec(f.canExecute())
+                        .build());
+        }
+        return list;
+    }
+
+    @Data
+    @Builder
+    public static class FILE {
+        private final String path;
+        private final long size;
+        private final long lastModified;
+        private final boolean hidden;
+        private final boolean dir;
+        private final boolean root;
+        private final boolean read;
+        private final boolean write;
+        private final boolean exec;
     }
 }
