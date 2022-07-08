@@ -14,6 +14,10 @@ public class InstanceNoProvider {
         return firstNotUsed;
     }
 
+    public void restart() {
+        this.usedNoByComponentName.clear();
+    }
+
     int getFirstNotPresent(List<Integer> integers) {
         for (int i = 0; i < integers.size(); i++) {
             if (integers.get(i) != i) {

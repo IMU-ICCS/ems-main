@@ -8,11 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
 public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
+    private static final Integer NO_DATA_OR_INTEGER_ALREADY_USED = null;
 
     private ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
     private ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
@@ -21,19 +21,26 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
     public Integer getNewInstanceNoForComponent(String softwareComponentName) {
         Integer notYetUsedInstanceNo;
         notYetUsedInstanceNo = getNoFromListIfNotYetUsed(softwareComponentName, busyInstancesByComponentName);
-        if (notYetUsedInstanceNo == null) {
+        if (notYetUsedInstanceNo == NO_DATA_OR_INTEGER_ALREADY_USED) {
             notYetUsedInstanceNo = getNoFromListIfNotYetUsed(softwareComponentName, idleInstancesByComponentName);
         }
 
         List<Integer> usedNo = super.usedNoByComponentName.computeIfAbsent(softwareComponentName, key-> new ArrayList<>());
 
-        if (notYetUsedInstanceNo == null) {
+        if (notYetUsedInstanceNo == NO_DATA_OR_INTEGER_ALREADY_USED) {
             notYetUsedInstanceNo = super.getFirstNotPresent(usedNo);
         }
 
         int indexInSortedList = Collections.binarySearch(usedNo, notYetUsedInstanceNo);
         usedNo.add( (-indexInSortedList) - 1, notYetUsedInstanceNo);
         return notYetUsedInstanceNo;
+    }
+
+    @Override
+    public void restart() {
+        super.restart();
+        this.busyInstancesByComponentName.clear();
+        this.idleInstancesByComponentName.clear();
     }
 
     private Integer getNoFromListIfNotYetUsed(String softwareComponentName, ConcurrentHashMap<String, List<Integer>> instancesByComponentName) {
@@ -50,7 +57,7 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
         if (notUsedInstanceNo.get() >= 0) {
             return notUsedInstanceNo.get();
         } else {
-            return null;
+            return NO_DATA_OR_INTEGER_ALREADY_USED;
         }
     }
 }
