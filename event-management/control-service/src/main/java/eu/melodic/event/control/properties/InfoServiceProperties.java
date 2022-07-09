@@ -42,8 +42,9 @@ public class InfoServiceProperties implements InitializingBean {
                 // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
                 // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
 
-
     private FileExplorerProperties files = new FileExplorerProperties();
+
+    private List<Path> logViewerFiles = Collections.emptyList();
 
     @Override
     public void afterPropertiesSet() {

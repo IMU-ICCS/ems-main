@@ -165,6 +165,13 @@
             <version>${commons-lang3.version}</version>
         </dependency>
 
+        <!-- See: https://github.com/sevdokimov/log-viewer/blob/master/_docs/embadded-spring-boot.md -->
+        <dependency>
+            <groupId>io.github.sevdokimov.logviewer</groupId>
+            <artifactId>log-viewer-spring-boot</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
         <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
         <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
         <dependency>

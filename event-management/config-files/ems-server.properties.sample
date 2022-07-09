@@ -61,6 +61,11 @@ logging.config=file:${MELODIC_CONFIG_DIR}/logback-conf/logback-spring.xml
 
 
 ################################################################################
+### Web Log-viewer configuration
+log-viewer.url-mapping=/log-viewer
+
+
+################################################################################
 ###                     EMS - Control Service properties                     ###
 ################################################################################
 
