@@ -11,6 +11,7 @@ package eu.melodic.event.control.info;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,8 +27,8 @@ public class FilesDisabledController {
     }
 
     @GetMapping({"/files", "/files/**"})
-    public String filesDisabled(HttpServletRequest request) {
+    public ResponseEntity<String> filesDisabled(HttpServletRequest request) {
         log.debug("filesDisabled(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        return "File browsing is disabled";
+        return ResponseEntity.badRequest().body("File browsing is disabled");
     }
 }

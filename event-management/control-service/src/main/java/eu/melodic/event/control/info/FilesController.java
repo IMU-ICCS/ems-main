@@ -47,13 +47,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@ConditionalOnProperty(value = "filesEnabled", prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "info", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(value = "enabled", prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "info.files", havingValue = "true", matchIfMissing = true)
 public class FilesController {
 
+    private final InfoServiceProperties properties;
     private final List<Path> roots;
 
     public FilesController(@NonNull InfoServiceProperties properties) {
-        List<Path> tmp = properties.getFileRoots();
+        this.properties = properties;
+        List<Path> tmp = properties.getFiles().getRoots();
         this.roots = (tmp!=null) ? tmp : Collections.emptyList();
         log.info("FilesController: File roots: {}", roots);
     }
@@ -86,12 +88,7 @@ public class FilesController {
     public List<FILE> listDirFiles(HttpServletRequest request, @PathVariable int rootId, WebRequest webRequest) throws IOException {
         log.debug("listDirFiles(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
         String mvcPrefix = "/files/dir/" + rootId;
-        log.debug("listDirFiles(): --- mvc-prefix: {}", mvcPrefix);
-        String mvcPath = (String) webRequest.getAttribute(
-                HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
-        log.debug("listDirFiles(): --- mvc-path: {}", mvcPath);
-        String pathStr = mvcPath.substring(mvcPrefix.length());
-        log.debug("listDirFiles(): --- Root-Id: {}, Path: {}", rootId, pathStr);
+        String pathStr = getPathFromRequest(request, webRequest, mvcPrefix);
 
         Path path = Paths.get(roots.get(rootId).toString(), pathStr);
         log.debug("listDirFiles(): --- Effective Path: {}", path);
@@ -106,22 +103,30 @@ public class FilesController {
         }
     }
 
-    @GetMapping("/files/get/{rootId}/**")
-    public ResponseEntity<InputStreamResource> getFile(HttpServletRequest request, @PathVariable int rootId, WebRequest webRequest) throws IOException {
-        log.debug("listDirFiles(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        String mvcPrefix = "/files/get/" + rootId + "/";
-        log.debug("listDirFiles(): --- mvc-prefix: {}", mvcPrefix);
+    private String getPathFromRequest(HttpServletRequest request, WebRequest webRequest, String mvcPrefix) {
+        log.debug("getPathFromRequest(): --- mvc-prefix: {}", mvcPrefix);
         String mvcPath = (String) webRequest.getAttribute(
                 HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
-        log.debug("listDirFiles(): --- mvc-path: {}", mvcPath);
-        String pathStr = mvcPath.substring(mvcPrefix.length());
-        log.debug("listDirFiles(): --- Root-Id: {}, Path: {}", rootId, pathStr);
+        log.debug("getPathFromRequest(): --- mvc-path: {}", mvcPath);
+        String pathStr = mvcPath!=null ? mvcPath.substring(mvcPrefix.length()) : "";
+        log.debug("getPathFromRequest(): --- Prefix: {}, Path: {}", mvcPrefix, pathStr);
+        return pathStr;
+    }
+
+    @GetMapping("/files/get/{rootId}/**")
+    public ResponseEntity<InputStreamResource> getFile(HttpServletRequest request, @PathVariable int rootId, WebRequest webRequest) throws IOException {
+        log.debug("getFile(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
+        String mvcPrefix = "/files/get/" + rootId + "/";
+        String pathStr = getPathFromRequest(request, webRequest, mvcPrefix);
 
         File file = Paths.get(roots.get(rootId).toString(), pathStr).toFile();
-        log.debug("listDirFiles(): --- Effective Path: {}", file);
+        log.debug("getFile(): --- Effective Path: {}", file);
         if (!file.exists()) {
             //return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File not exists")));
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: "+rootId+": "+pathStr);
+        }
+        if (isFileBlocked(file.toPath())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Blocked extension. Cannot download file: "+rootId+": "+pathStr);
         }
         if (!file.canRead()) {
             return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File cannot be read")));
@@ -133,16 +138,18 @@ public class FilesController {
             headers.add("Pragma", "no-cache");
             headers.add("Expires", "0");
 
-            String ext = StringUtils.substringAfterLast(file.getName(), ".").trim();
-            //String mimeType = Files.probeContentType(file.toPath());
             String mimeType = URLConnection.guessContentTypeFromName(file.getName());
-            log.debug("listDirFiles(): --- File content type: {}", mimeType);
+            if (StringUtils.isBlank(mimeType))
+                mimeType = Files.probeContentType(file.toPath());
+            log.debug("getFile(): --- File content type: {}", mimeType);
             MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
             try {
-                mediaType = MediaType.parseMediaType(mimeType);
+                if (StringUtils.isNotBlank(mimeType))
+                    mediaType = MediaType.parseMediaType(mimeType);
             } catch (Exception e) {
-                log.warn("listDirFiles(): --- Invalid File content type: {}\n", mimeType, e);
+                log.warn("getFile(): --- Invalid File content type: {}, file: {}\n", mimeType, file.getName(), e);
             }
+            log.debug("getFile(): --- Will use content type: {}", mediaType);
 
             return ResponseEntity.ok()
                     .headers(headers)
@@ -153,10 +160,21 @@ public class FilesController {
         return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("Not a regular file")));
     }
 
+    private boolean isFileBlocked(Path path) {
+        String fileName = path.toFile().getName();
+        return properties.getFiles().getExtensionsBlocked().stream()
+                .anyMatch(ext->StringUtils.endsWithIgnoreCase(fileName, ext));
+    }
+
     private List<FILE> toFileList(@NonNull List<Path> paths, @Null Path root) {
         String prefix = (root!=null) ? root.toString() : "";
+        boolean listBlocked = properties.getFiles().isListBlocked();
+        boolean listHidden = properties.getFiles().isListHidden();
         List<FILE> list = new LinkedList<>();
         for (Path p : paths) {
+            boolean blocked = isFileBlocked(p);
+            if (!listBlocked && blocked) continue;
+            if (!listHidden && p.toFile().isHidden()) continue;
             String pathStr = StringUtils.removeStart(p.toString(), prefix);
             File f = p.toFile();
             if (StringUtils.isNotBlank(pathStr))
@@ -168,6 +186,7 @@ public class FilesController {
                         .dir(f.isDirectory())
                         .root(root==null)
                         .read(f.canRead()).write(f.canWrite()).exec(f.canExecute())
+                        .noLink(blocked)
                         .build());
         }
         return list;
@@ -185,5 +204,6 @@ public class FilesController {
         private final boolean read;
         private final boolean write;
         private final boolean exec;
+        private final boolean noLink;
     }
 }

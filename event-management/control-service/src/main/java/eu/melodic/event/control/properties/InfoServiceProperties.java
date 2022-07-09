@@ -42,11 +42,20 @@ public class InfoServiceProperties implements InitializingBean {
                 // ! at the end means to trim off the prefix; - at the end means to convert '_' to '-';
                 // ^ at the end means convert to upper case; ~ at the end means convert to lower case;
 
-    private boolean filesEnabled = true;
-    private List<Path> fileRoots = Collections.emptyList();
+
+    private FileExplorerProperties files = new FileExplorerProperties();
 
     @Override
     public void afterPropertiesSet() {
         log.debug("InfoServiceProperties: {}", this);
+    }
+
+    @Data
+    public static class FileExplorerProperties {
+        private boolean enabled = true;
+        private List<Path> roots = Collections.emptyList();
+        private List<String> extensionsBlocked = Collections.emptyList();
+        private boolean listBlocked = true;
+        private boolean listHidden = true;
     }
 }

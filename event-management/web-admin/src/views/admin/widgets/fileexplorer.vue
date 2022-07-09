@@ -19,13 +19,14 @@
     </div>
     <div class="row">
         <div class="col-12">
-            <div style="margin: 10px 0px; min-height: 50px; height: 300px; border: 1px grey solid; overflow: auto; resize: vertical;">
+            <div style="margin: 10px 0px; min-height: 50px; height: 300px; border: 1px solid #ced4da; border-radius: .2rem; overflow: auto; resize: vertical;">
                 <div  v-if="!disabled" class="table-responsive-sm">
                     <!--<span v-if="isRoot()" style="padding-left: 10px; color: grey; font-style: italic;">[ {{roots[rootId]}} ]</span>-->
                     <table id="files" class="table table-striped table-hover table-sm">
                         <thead>
                             <tr>
                                 <th scope="col">File</th>
+                                <th scope="col">Type</th>
                                 <th scope="col">Size</th>
                                 <th scope="col">Modified</th>
                                 <th scope="col">Permissions</th>
@@ -37,21 +38,24 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
                             </tr>
                             <tr v-for="f in files" :key="f">
                                 <td>
-                                    <a href="javascript:void(0)" v-on:click="fileOpen(f)">{{f.path.substring(1)}}</a>
+                                    <a v-if="!f.noLink" href="javascript:void(0)" v-on:click="fileClick(f)">{{f.path.substring(1)}}</a>
+                                    <span v-else>{{f.path.substring(1)}}</span>
                                     <span v-if="f.hidden" style="color:darkred; font-size:small; font-style:italic;"> [Hidden]</span>
                                 </td>
                                 <td v-if="f.dir" style="color: grey; font-style: italic;" class="table-info">&lt;DIR&gt;</td>
-                                <td v-else style="text-align: right;">{{f.size}}</td>
+                                <td v-else style="color: grey; font-style: italic;" class="text-center">{{getFileType(f)}}</td>
+                                <td class="text-right">{{f.size}}</td>
                                 <td>{{new Date(f.lastModified).toLocaleDateString('eu-EU')+' '+new Date(f.lastModified).toLocaleTimeString('eu-EU')}}</td>
                                 <td align="center">[{{f.read?'r':'-'}}{{f.write?'w':'-'}}{{f.exec?'x':'-'}}]</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div v-else style="background-color: lightgrey; width: 100%; height: 100%;"></div>
+                <div v-else style="background-color: #e9ecef; width: 100%; height: 100%;"></div>
             </div>
         </div>
     </div>
@@ -88,7 +92,8 @@ export default {
             _this.rootId = -1;
             _this.path = _this.pathOk = '';
             _this.files = [ ];
-        });
+        },
+        (_this) => _this.disabled = true);
     },
     methods: {
         rootChange() {
@@ -146,12 +151,14 @@ export default {
             this.path = _newPath;
             this.$nextTick(() => this.refreshFiles() );
         },
-        fileOpen(file) {
+        fileClick(file) {
             let _newPath = this.normalizePath(this.path + file.path);
             if (file.dir) {
+                // Open folder
                 this.path = _newPath;
                 this.pathChange();
             } else {
+                // Download file
                 this.downloadFile(this.rootId, _newPath);
             }
         },
@@ -166,6 +173,14 @@ export default {
             } catch (e) {
                 console.error('Exception while downloading file: '+rootId+': '+path, e);
             }
+        },
+        getFileType(f) {
+            let p1 = f.path.lastIndexOf('.');
+            let p2 = f.path.lastIndexOf('/');
+            if (p1>p2 && p1>-1) {
+                return f.path.substring(p1+1).toLowerCase();
+            }
+            return '';
         },
         toPath(obj) {
             if (Array.isArray(obj))
