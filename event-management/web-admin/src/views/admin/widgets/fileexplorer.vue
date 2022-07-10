@@ -13,7 +13,10 @@
                 <option v-for="(root, index) in roots" :key="index" :value="index">[{{index}}] {{root}}</option>
             </select>
         </div>
-        <div class="col-9">
+        <div class="col-1">
+            <a href="javascript:void(0)" v-on:click="rootChange" class="btn btn-sm" title="Refresh files"><i class="fas fa-sync" /></a>
+        </div>
+        <div class="col-8">
             <input id="path" class="form-control form-control-sm" v-model="path" v-on:change="pathChange" :disabled="disabled" />
         </div>
     </div>
@@ -24,11 +27,11 @@
                     <!--<span v-if="isRoot()" style="padding-left: 10px; color: grey; font-style: italic;">[ {{roots[rootId]}} ]</span>-->
                     <table id="files" class="table table-striped table-hover table-sm">
                         <thead>
-                            <tr>
-                                <th scope="col">File</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Size</th>
-                                <th scope="col">Modified</th>
+                            <tr id="columns">
+                                <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;File</th>
+                                <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;Type</th>
+                                <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;Size</th>
+                                <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;Modified</th>
                                 <th scope="col">Permissions</th>
                             </tr>
                         </thead>
@@ -40,16 +43,16 @@
                                 <td></td>
                                 <td></td>
                             </tr>
-                            <tr v-for="f in files" :key="f">
+                            <tr v-for="f in files" :key="f" style="font-size: small;">
                                 <td>
                                     <a v-if="!f.noLink" href="javascript:void(0)" v-on:click="fileClick(f)">{{f.path.substring(1)}}</a>
                                     <span v-else>{{f.path.substring(1)}}</span>
                                     <span v-if="f.hidden" style="color:darkred; font-size:small; font-style:italic;"> [Hidden]</span>
                                 </td>
                                 <td v-if="f.dir" style="color: grey; font-style: italic;" class="table-info">&lt;DIR&gt;</td>
-                                <td v-else style="color: grey; font-style: italic;" class="text-center">{{getFileType(f)}}</td>
+                                <td v-else style="color: grey; font-style: italic;" class="text-center">{{f.type}}</td>
                                 <td class="text-right">{{f.size}}</td>
-                                <td>{{new Date(f.lastModified).toLocaleDateString('eu-EU')+' '+new Date(f.lastModified).toLocaleTimeString('eu-EU')}}</td>
+                                <td>{{new Date(f.lastModified).toLocaleDateString('sv')+' '+new Date(f.lastModified).toLocaleTimeString('sv')}}</td>
                                 <td align="center">[{{f.read?'r':'-'}}{{f.write?'w':'-'}}{{f.exec?'x':'-'}}]</td>
                             </tr>
                         </tbody>
@@ -99,6 +102,7 @@ export default {
         rootChange() {
             this.path = '';
             this.$nextTick(() => this.refreshFiles() );
+            this.clearSort();
         },
         pathChange() {
             this.refreshFiles();
@@ -129,6 +133,7 @@ export default {
                             if (Array.isArray(d)) {
                                 _this.pathOk = _path;
                                 _this.files = d;
+                                _this.addFileTypes();
                                 return;
                             }
                         } catch (e) {
@@ -174,6 +179,15 @@ export default {
                 console.error('Exception while downloading file: '+rootId+': '+path, e);
             }
         },
+
+        addFileTypes() {
+            let _this = this;
+            $(this.files).each((i,f) => {
+                if (f.dir) f.type = '<DIR>';
+                else f.type = _this.getFileType(f);
+                if (f.path==='MY_IP') alert(f.type);
+            });
+        },
         getFileType(f) {
             let p1 = f.path.lastIndexOf('.');
             let p2 = f.path.lastIndexOf('/');
@@ -188,6 +202,7 @@ export default {
             else
                 return obj.path;
         },
+
         restCall(url, fnSuccess, fnError) {
             let _this = this;
             this.$nextTick(() => {
@@ -212,6 +227,51 @@ export default {
                         }
                     }
                 });
+            });
+        },
+
+        sortColumn(e) {
+            this.clearSort();
+            let el = $(e.target);
+            let text = el.text().trim().toLowerCase();
+
+            let col = '';
+            switch (text) {
+                case 'file': col = 'path'; break;
+                case 'modified': col = 'lastModified'; break;
+                default: col = text;
+            }
+
+            let i = $(el.children().get(0));
+            i.removeClass('fa-sort');
+
+            let colSort = el.attr('data-sort');
+            if (!colSort || colSort!=='asc') {
+                colSort = 'asc';
+                i.addClass('fa-sort-up');
+                this.sortFiles(col, true);
+            } else if (colSort==='asc') {
+                colSort = 'desc';
+                i.addClass('fa-sort-down');
+                this.sortFiles(col, false);
+            }
+            el.attr('data-sort', colSort);
+        },
+        clearSort() {
+            $('#columns').children().each((index,col) => {
+                $(col).data('sort','');
+                let i = $($(col).children());
+                i.addClass('fa-sort');
+                i.removeClass('fa-sort-up');
+                i.removeClass('fa-sort-down');
+            });
+        },
+        sortFiles(col, asc) {
+            let f = asc ? 1 : -1;
+            this.files.sort((a,b) => {
+                return (typeof a[col]==='string')
+                    ? f * a[col].localeCompare(b[col])
+                    : f * (a[col] - b[col]);
             });
         },
     },
