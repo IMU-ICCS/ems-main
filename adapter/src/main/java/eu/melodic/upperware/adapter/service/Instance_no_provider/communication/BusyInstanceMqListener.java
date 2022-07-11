@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Component
 public class BusyInstanceMqListener implements MessageListener {
-    private final String topicName;
     private final Gson gson;
 
     private final ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
@@ -29,7 +28,7 @@ public class BusyInstanceMqListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            log.debug("Listener of topic {}: Received message: {}", topicName, message);
+            log.debug("Listener of topic {}: Received message: {}", message.getJMSDestination().toString(), message);
             String payload;
             if (message instanceof TextMessage) {
                 TextMessage textMessage = (TextMessage) message;
@@ -40,7 +39,7 @@ public class BusyInstanceMqListener implements MessageListener {
             } else {
                 throw new RuntimeException(String.format("Could not receive message, " + "unknown JMS message type: %s", message.getClass().getName()));
             }
-            log.debug("Listener of topic {}: payload={}", topicName, payload);
+            log.debug("Listener of topic {}: payload={}", message.getJMSDestination().toString(), payload);
             processMessage(payload);
         } catch (JMSException e) {
             log.error("Caught: {}", e.toString());
@@ -48,9 +47,9 @@ public class BusyInstanceMqListener implements MessageListener {
     }
 
     private void processMessage(String payload) {
-        log.debug("Listener of topic {}: Converting event payload to CheckIfComponentBusyMessage instance...", topicName);
+        log.debug("Converting event payload to CheckIfComponentBusyMessage instance...");
         CheckIfComponentBusyMessage checkIfComponentBusyMessage = gson.fromJson(payload, CheckIfComponentBusyMessage.class);
-        log.info("Listener of topic {}: CheckIfComponentBusyMessage instance: {}", topicName, checkIfComponentBusyMessage.toString());
+        log.info("CheckIfComponentBusyMessage instance: {}", checkIfComponentBusyMessage.toString());
 
         String softwareComponentInstanceName = checkIfComponentBusyMessage.getComponentInstanceName();
         String softwareComponentName = CamelInstanceNamingService.getSoftwareComponentNameFromInstanceName(softwareComponentInstanceName);

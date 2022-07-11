@@ -6,9 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class CamelInstanceNamingService {
     private static final String SEPARATOR_NAME_SIGN = "-";
-    private static final String REQUIRED_HOST_LABEl = "_RequiredHostInstance_";
-    private static final String REQUIRED_COMMUNICATION_LABEL = "_ReqCommunicationInstance_";
-    private static final String PROVIDED_COMMUNICATION_LABEL = "_ProvidedCommunicationInstance_";
+    private static final String REQUIRED_HOST_LABEl = "RequiredHostInstance";
+    private static final String REQUIRED_COMMUNICATION_LABEL = "ReqCommunicationInstance";
+    private static final String PROVIDED_COMMUNICATION_LABEL = "ProvidedCommunicationInstance";
 
 
     public static int getInstanceNumberFromInstanceName(String softwareComponentInstanceName) {
@@ -41,8 +41,7 @@ public class CamelInstanceNamingService {
 
 
     private static String createLabeledName(String prefix, String label, String name, int instanceNo) {
-        String labeledName = prefix + SEPARATOR_NAME_SIGN + label + SEPARATOR_NAME_SIGN +
-                name + SEPARATOR_NAME_SIGN + instanceNo;
+        String labeledName = prefix + SEPARATOR_NAME_SIGN + label + SEPARATOR_NAME_SIGN + instanceNo;
         log.info("Created name = {} for object = {}", labeledName, name);
         return labeledName;
     }
