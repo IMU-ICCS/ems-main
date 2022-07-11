@@ -35,6 +35,7 @@ public class AdapterProperties {
   @NotNull
   private Ems ems;
 
+  @NotNull
   private TaskExecutor taskExecutor;
 
   @Valid

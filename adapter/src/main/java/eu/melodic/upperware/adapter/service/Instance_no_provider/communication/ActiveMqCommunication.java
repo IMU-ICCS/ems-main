@@ -14,7 +14,7 @@ import javax.jms.JMSException;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MqTopicListener {
+public class ActiveMqCommunication {
 	private final AdapterProperties adapterProperties;
 	private final BusyInstanceMqListener busyInstanceMqListener;
 

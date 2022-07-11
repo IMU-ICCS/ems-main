@@ -2,9 +2,11 @@ package eu.melodic.upperware.adapter.service.Instance_no_provider.communication;
 
 import com.google.gson.Gson;
 import eu.melodic.upperware.adapter.service.CamelInstanceNamingService;
+import eu.melodic.upperware.adapter.service.Instance_no_provider.communication.model.CheckIfComponentBusyMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.springframework.stereotype.Component;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -16,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class BusyInstanceMqListener implements MessageListener {
     private final String topicName;
     private final Gson gson;

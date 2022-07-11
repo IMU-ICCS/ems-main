@@ -1,4 +1,4 @@
-package eu.melodic.upperware.adapter.service.Instance_no_provider.communication;
+package eu.melodic.upperware.adapter.service.Instance_no_provider.communication.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
