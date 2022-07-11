@@ -23,9 +23,8 @@ public class MqTopicListener {
 		try {
 			BrokerClient brokerClient = BrokerClient.newClient();
 			waitForActiveMq(brokerClient);
-			String topicName = adapterProperties.getCheckIfComponentBusyActiveMQTopic();
-			brokerClient.receiveEvents(adapterProperties.getMelodicMqAddress(),
-					topicName, busyInstanceMqListener);
+			String topicName = adapterProperties.getActiveMq().getCheckIfComponentBusyActiveMQTopic();
+			brokerClient.receiveEvents(null, topicName, busyInstanceMqListener);
 		} catch (Exception e) {
 			log.error("Error while using BrokerClient.", e);
 			restartAfterMqFailure();
@@ -42,19 +41,19 @@ public class MqTopicListener {
 						onApplicationReady();
 					}
 				},
-				adapterProperties.getMelodicMqRestartInterval()
+				adapterProperties.getActiveMq().getMelodicMqRestartInterval()
 		);
 	}
 
 	private void waitForActiveMq(BrokerClient brokerClient) {
-		long RETRY_MAX = adapterProperties.getMelodicMqConnectionRetryMax();
+		long RETRY_MAX = adapterProperties.getActiveMq().getMelodicMqConnectionRetryMax();
 		for (int retryCount = 1; retryCount <= RETRY_MAX; retryCount++) {
 			try {
-				brokerClient.openConnection(adapterProperties.getMelodicMqAddress());
+				brokerClient.openConnection();
 			} catch (JMSException e) {
 				log.error("Error while initiating connection with MQ. Retry {} of {}", retryCount, RETRY_MAX);
 				try {
-					Thread.sleep(adapterProperties.getMelodicMqConnectionRetryInterval());
+					Thread.sleep(adapterProperties.getActiveMq().getMelodicMqConnectionRetryInterval());
 				} catch (InterruptedException ex) {
 				}
 				continue;

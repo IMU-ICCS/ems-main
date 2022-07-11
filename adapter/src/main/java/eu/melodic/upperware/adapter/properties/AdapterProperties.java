@@ -9,24 +9,19 @@
 
 package eu.melodic.upperware.adapter.properties;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
-@Validated
 @Configuration
-@ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.adapter.properties")
 public class AdapterProperties {
 
@@ -44,39 +39,25 @@ public class AdapterProperties {
   @NotNull
   private ProActive paConfig;
 
-  @Value("${activemq.broker.url}")
-  private String melodicMqAddress;
+  @Valid
+  @NotNull
+  private ActiveMqConfig activeMq;
 
-  @Value("${activemq.restartinterval:10000}")
-  private long melodicMqRestartInterval;
-
-  @Value("${activemq.connectionretryinterval:5000}")
-  private long melodicMqConnectionRetryInterval;
-
-  @Value("${activemq.connectionretrymax:10}")
-  private long melodicMqConnectionRetryMax;
-
-  @Value("${checkIfComponentBusyActiveMQTopic}")
-  private String checkIfComponentBusyActiveMQTopic = "busy.>";
-
-  @Getter
-  @Setter
+  @Data
   public static class Esb {
 
-    @NotBlank
+    @NotNull
     private String url;
   }
 
-  @Getter
-  @Setter
+  @Data
   public static class Ems {
 
     private String url;
     private boolean enabled = true;
   }
 
-  @Getter
-  @Setter
+  @Data
   public static class TaskExecutor {
 
     private Integer corePoolSize;
@@ -85,9 +66,7 @@ public class AdapterProperties {
 
   }
 
-  @Getter
-  @Setter
-  @ToString
+  @Data
   public static class ProActive {
     @NotNull
     private String restUrl;
@@ -97,5 +76,23 @@ public class AdapterProperties {
     private String password;
     @NotNull
     private String encryptorPw;
+  }
+
+  @Data
+  public static class ActiveMqConfig {
+    @NotNull
+    @Min(1000)
+    private long melodicMqRestartInterval;
+
+    @NotNull
+    @Min(1000)
+    private long melodicMqConnectionRetryInterval;
+
+    @NotNull
+    @Min(1)
+    private long melodicMqConnectionRetryMax;
+
+    @NotNull
+    private String checkIfComponentBusyActiveMQTopic;
   }
 }
