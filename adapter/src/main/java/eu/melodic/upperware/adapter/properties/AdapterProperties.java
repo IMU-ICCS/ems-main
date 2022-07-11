@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter.properties;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -22,6 +23,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Configuration
+@ConfigurationProperties
 @PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.upperware.adapter.properties")
 public class AdapterProperties {
 
