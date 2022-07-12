@@ -1,4 +1,4 @@
-package eu.melodic.upperware.adapter.service.Instance_no_provider.communication.model;
+package eu.melodic.upperware.adapter.communication.activemq.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,11 +8,11 @@ import lombok.Data;
 @Data
 public class CheckIfComponentBusyMessage {
 
-    @JsonProperty("componentName")
+    @JsonProperty("instanceName")
     @NotNull
     private String componentInstanceName;
 
-    @JsonProperty("componentStatus")
+    @JsonProperty("instanceStatus")
     @NotNull
-    private ComponentStatus componentStatus;
+    private InstanceStatus instanceStatus;
 }

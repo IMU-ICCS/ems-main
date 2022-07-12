@@ -2,6 +2,16 @@ package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
 import java.util.*;
 
+/**
+ *  This class is responsible for providing unique instance numbers
+ *  for each component. Those numbers are important as for reconfiguration
+ *  differences between models are created. It means that this class decides which
+ *  instances will be remained and which will be deleted during reconfiguration.
+ *
+ *  This class is the simplest option, assigning numbers in the incremented order.
+ *  Class 'BusyFirstInstanceNoProvider' assigns numbers to make sure that busy
+ *  instances remains, and idle are deleted
+ */
 public class InstanceNoProvider {
 
     //prefix -> sorted ids
