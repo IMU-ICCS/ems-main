@@ -38,7 +38,7 @@ public class NetdataCollector extends eu.melodic.event.common.collector.netdata.
                             @NonNull TaskScheduler taskScheduler,
                             @NonNull EventBus<String, Object, Object> eventBus)
     {
-        super(properties, collectorContext, taskScheduler, eventBus);
+        super("NetdataCollector", properties, collectorContext, taskScheduler, eventBus);
         if (!(collectorContext instanceof ClientCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ClientCollectorContext, but got "+collectorContext.getClass().getName());
     }

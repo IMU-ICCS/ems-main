@@ -9,15 +9,31 @@
 
 package eu.melodic.event.common.collector.netdata;
 
-import eu.melodic.event.common.collector.AbstractEndpointCollectorProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Slf4j
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "collector.netdata")
-public class NetdataCollectorProperties extends AbstractEndpointCollectorProperties {
+public class NetdataCollectorProperties implements InitializingBean {
+    private boolean enable;
+    private long delay;
+    private String url;
+    private String urlOfNodesWithoutClient;
+    private boolean skipLocal = false;
+    private boolean createTopic;
+    private List<String> allowedTopics;
+
+    private int errorLimit;     // num of consecutive errors. Zero or negative value will immediately trigger self-healing
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.debug("NetdataCollectorProperties: {}", this);
+    }
 }

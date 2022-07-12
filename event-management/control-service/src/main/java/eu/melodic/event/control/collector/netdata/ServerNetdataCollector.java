@@ -30,7 +30,7 @@ public class ServerNetdataCollector extends eu.melodic.event.common.collector.ne
                                   @NonNull TaskScheduler taskScheduler,
                                   @NonNull EventBus<String, Object, Object> eventBus)
     {
-        super(properties, collectorContext, taskScheduler, eventBus);
+        super("ServerNetdataCollector", properties, collectorContext, taskScheduler, eventBus);
         if (!(collectorContext instanceof ServerCollectorContext))
             throw new IllegalArgumentException("Invalid CollectorContext provided. Expected: ServerCollectorContext, but got "+collectorContext.getClass().getName());
     }
