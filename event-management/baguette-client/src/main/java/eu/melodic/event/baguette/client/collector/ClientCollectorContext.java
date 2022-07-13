@@ -54,7 +54,7 @@ public class ClientCollectorContext implements CollectorContext<BaguetteClientPr
     }
 
     @Override
-    public boolean sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination) {
+    public PUBLISH_RESULT sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination) {
         return commandExecutor.sendEvent(connectionString, destinationName, event, createDestination);
     }
 

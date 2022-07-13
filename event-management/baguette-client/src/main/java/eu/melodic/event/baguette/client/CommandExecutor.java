@@ -18,6 +18,7 @@ import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.brokerclient.properties.BrokerClientProperties;
+import eu.melodic.event.common.collector.CollectorContext;
 import eu.melodic.event.common.misc.EventConstant;
 import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.util.*;
@@ -1098,21 +1099,22 @@ public class CommandExecutor {
         sendEvent(connectionStr, destination, event);
     }
 
-    public boolean sendEvent(String connectionStr, String destination, Map event, boolean createDestination) {
+    public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map event, boolean createDestination) {
         if (createDestination || brokerCepService.destinationExists(destination)) {
-            sendEvent(connectionStr, destination, event);
-            return true;
+            return sendEvent(connectionStr, destination, event);
         }
-        return false;
+        return CollectorContext.PUBLISH_RESULT.SKIPPED;
     }
 
-    public void sendEvent(String connectionStr, String destination, Map event) {
+    public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map event) {
         try {
             log.debug("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
             brokerCepService.publishEvent(connectionStr, destination, event);
             log.debug("sendEvent(): Event sent: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            return CollectorContext.PUBLISH_RESULT.SENT;
         } catch (Exception ex) {
             log.error("sendEvent(): Error while sending event: connection={}, destination={}, payload={}, exception: ", connectionStr, destination, event, ex);
+            return CollectorContext.PUBLISH_RESULT.ERROR;
         }
     }
 

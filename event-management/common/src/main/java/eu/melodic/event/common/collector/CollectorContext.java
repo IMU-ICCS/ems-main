@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Set;
 
 public interface CollectorContext<P extends SshClientProperties> {
+    enum PUBLISH_RESULT { SENT, SKIPPED, ERROR }
+
     List<ClientConfiguration> getNodeConfigurations();
     Set<Serializable> getNodesWithoutClient();
     boolean isAggregator();
-    boolean sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination);
+    PUBLISH_RESULT sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination);
     default SshClient<P> getSshClient() { return null; }
     default P getSshClientProperties() { return null; }
 }

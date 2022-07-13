@@ -268,8 +268,10 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
             long endTm = System.currentTimeMillis();
             log.debug("Collectors::{}: Collecting data...ok", collectorId);
-            log.info("Collectors::{}:     Metrics: extracted={}, published={}, failed={}", collectorId,
-                    stats.countSuccess + stats.countErrors, stats.countSuccess, stats.countErrors);
+            //log.info("Collectors::{}:     Metrics: extracted={}, published={}, failed={}", collectorId,
+            //        stats.countSuccess + stats.countErrors, stats.countSuccess, stats.countErrors);
+            if (log.isInfoEnabled())
+                log.info("Collectors::{}:     Metric publish statistics: {}", collectorId, stats);
             log.debug("Collectors::{}:     Durations: rest-call={}, extract+publish={}, total={}", collectorId,
                     callEndTm-startTm, endTm-callEndTm, endTm-startTm);
         } else {
@@ -277,7 +279,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         }
     }
 
-    protected boolean publishMetricEvent(String metricName, double metricValue, long timestamp, String nodeAddress) {
+    protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, double metricValue, long timestamp, String nodeAddress) {
         boolean createTopic = properties.isCreateTopic();
         try {
             boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
@@ -292,12 +294,45 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
             return collectorContext.sendEvent(null, metricName, event, createDestination);
         } catch (Exception e) {
             log.warn("Collectors::{}: Publishing metric failed: ", collectorId, e);
-            return false;
+            return CollectorContext.PUBLISH_RESULT.ERROR;
         }
+    }
+
+    protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, EventMap event, String nodeAddress) {
+        boolean createTopic = properties.isCreateTopic();
+        try {
+            boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
+            if (topicMap!=null) {
+                String targetTopic = topicMap.get(metricName);
+                if (targetTopic!=null && !targetTopic.isEmpty())
+                    metricName = targetTopic;
+            }
+            event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
+            log.debug("Collectors::{}:    Publishing metric: {}: {}", collectorId, metricName, event.getMetricValue());
+            return collectorContext.sendEvent(null, metricName, event, createDestination);
+        } catch (Exception e) {
+            log.warn("Collectors::{}:    Publishing metric failed: ", collectorId, e);
+            return CollectorContext.PUBLISH_RESULT.ERROR;
+        }
+    }
+
+    protected void updateStats(CollectorContext.PUBLISH_RESULT publishResult, ProcessingStats stats) {
+        if (publishResult==CollectorContext.PUBLISH_RESULT.SENT) stats.countSuccess++;
+        else if (publishResult==CollectorContext.PUBLISH_RESULT.SKIPPED) stats.countSuccess++;
+        else if (publishResult==CollectorContext.PUBLISH_RESULT.ERROR) stats.countErrors++;
     }
 
     protected static class ProcessingStats {
         public int countSuccess;
         public int countErrors;
+        public int countSkipped;
+
+        public int getCountTotal() {
+            return countSuccess+countSkipped+countErrors;
+        }
+
+        public String toString() {
+            return String.format("extracted: %d, published: %d, skipped: %d, failed: %d", getCountTotal(), countSuccess, countSkipped, countErrors);
+        }
     }
 }

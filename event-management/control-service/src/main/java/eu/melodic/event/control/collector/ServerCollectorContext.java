@@ -56,12 +56,12 @@ public class ServerCollectorContext implements CollectorContext {
 
     @Override
     @SneakyThrows
-    public boolean sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination) {
+    public PUBLISH_RESULT sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination) {
         assert(connectionString==null);
         if (createDestination || brokerCepService.destinationExists(destinationName)) {
             brokerCepService.publishEvent(null, destinationName, event);
-            return true;
+            return PUBLISH_RESULT.SENT;
         }
-        return false;
+        return PUBLISH_RESULT.SKIPPED;
     }
 }

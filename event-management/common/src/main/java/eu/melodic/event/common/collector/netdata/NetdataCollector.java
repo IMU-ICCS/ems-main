@@ -83,8 +83,7 @@ public class NetdataCollector extends AbstractEndpointCollector<HashMap> {
                     double metricValue = Double.parseDouble(valObj.toString());
                     log.trace("Collectors::Netdata:           {} = {}", metricName, metricValue);
 
-                    if (publishMetricEvent(metricName, metricValue, timestamp, nodeAddress)) stats.countSuccess++;
-                    else stats.countErrors++;
+                    updateStats(publishMetricEvent(metricName, metricValue, timestamp, nodeAddress), stats);
                 }
             }
 
