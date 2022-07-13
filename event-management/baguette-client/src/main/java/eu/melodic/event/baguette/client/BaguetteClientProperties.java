@@ -32,7 +32,7 @@ public class BaguetteClientProperties extends SshClientProperties {
 	private boolean exitCommandAllowed = false;
 	private int killDelay = 5;
 
-	private List<Class<Collector>> collectorClasses;
+	private List<Class<? extends Collector>> collectorClasses;
 
 	private String debugFakeIpAddress;
 

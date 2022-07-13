@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.common.collector.netdata;
+package eu.melodic.event.common.collector.prometheus;
 
 import eu.melodic.event.common.collector.AbstractEndpointCollectorProperties;
 import lombok.Data;
@@ -15,13 +15,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Set;
+
 @Slf4j
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "collector.netdata")
-public class NetdataCollectorProperties extends AbstractEndpointCollectorProperties {
+@ConfigurationProperties(prefix = "collector.prometheus")
+public class PrometheusCollectorProperties extends AbstractEndpointCollectorProperties {
+    private Set<String> allowedTags;
+    private boolean allowTagsInDestinationName;
+    private String destinationNameFormatter = "${metricName}";
+    private boolean addTagsAsEventProperties;
+    private boolean addTagsInEventPayload;
+    private boolean throwExceptionWhenExcessiveCharsOccur;
+
+    public PrometheusCollectorProperties() {
+        setUrl("http://127.0.0.1:9090/metrics");
+        setUrlOfNodesWithoutClient("http://%s:9090/metrics");
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.debug("NetdataCollectorProperties: {}", this);
+        log.debug("PrometheusCollectorProperties: {}", this);
     }
 }
