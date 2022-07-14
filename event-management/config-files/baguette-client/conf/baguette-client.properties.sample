@@ -67,6 +67,22 @@ collector.netdata.urlOfNodesWithoutClient = http://%s:19999/api/v1/allmetrics?fo
 collector.netdata.error-limit = 3
 collector.netdata.pause-period = 60
 
+collector.prometheus.enable = true
+collector.prometheus.delay = 10000
+collector.prometheus.url = http://127.0.0.1:9090/metrics
+collector.prometheus.urlOfNodesWithoutClient = http://%s:9090/metrics
+#collector.prometheus.create-topic = true
+#collector.prometheus.allowed-topics = system__cpu__user:an_alias
+collector.prometheus.error-limit = 3
+collector.prometheus.pause-period = 60
+#
+#collector.prometheus.allowedTags =
+#collector.prometheus.allowTagsInDestinationName = true
+#collector.prometheus.destinationNameFormatter = ${metricName}_${method}
+#collector.prometheus.addTagsAsEventProperties = true
+#collector.prometheus.addTagsInEventPayload = true
+#collector.prometheus.throwExceptionWhenExcessiveCharsOccur = true
+
 # -----------------------------------------------------------------------------
 # Cluster settings
 # -----------------------------------------------------------------------------
