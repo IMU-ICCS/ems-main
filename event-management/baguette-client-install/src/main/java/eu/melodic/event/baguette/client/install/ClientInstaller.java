@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client.install;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.common.plugin.PluginManager;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -35,6 +36,8 @@ public class ClientInstaller implements InitializingBean {
     private ClientInstallationProperties properties;
     @Autowired
     private BaguetteServer baguetteServer;
+    @Autowired
+    private PluginManager pluginManager;
 
     private final AtomicLong taskCounter = new AtomicLong();
     private ExecutorService executorService;
@@ -43,6 +46,10 @@ public class ClientInstaller implements InitializingBean {
     public void afterPropertiesSet() {
         singleton = this;
         executorService = Executors.newFixedThreadPool(properties.getWorkers());
+        properties.getInstallationContextProcessorPlugins().forEach(pluginClass -> {
+            log.debug("ClientInstaller: Initializing plugin: {}", pluginClass);
+            pluginManager.initializePlugin(pluginClass);
+        });
     }
 
     public static ClientInstaller instance() { return singleton; }
@@ -71,6 +78,12 @@ public class ClientInstaller implements InitializingBean {
                 //baguetteServer.handleNodeSituation(task.getAddress(), INTERNAL_ERROR);
             entry.nodeInstalling(task);
 
+            // Call InstallationContextPlugin's before installation
+            log.debug("ClientInstaller: PRE-INSTALLATION: Calling installation context processors: {}", properties.getInstallationContextProcessorPlugins());
+            pluginManager.getActivePlugins(InstallationContextProcessorPlugin.class)
+                    .forEach(plugin->((InstallationContextProcessorPlugin)plugin).processBeforeInstallation(task, taskCounter));
+
+            log.debug("ClientInstaller: INSTALLATION: Executing installation task: task-counter={}, task={}", taskCounter, task);
             boolean success = executeVmTask(task, taskCounter);
             log.debug("ClientInstaller: NODE_REGISTRY_ENTRY after installation execution: \n{}", task.getNodeRegistryEntry());
 
@@ -79,9 +92,16 @@ public class ClientInstaller implements InitializingBean {
                 entry.nodeInstallationError(null);
             }
 
+            // Call InstallationContextPlugin's after installation
+            log.debug("ClientInstaller: POST-INSTALLATION: Calling installation context processors: {}", properties.getInstallationContextProcessorPlugins());
+            pluginManager.getActivePlugins(InstallationContextProcessorPlugin.class)
+                    .forEach(plugin->((InstallationContextProcessorPlugin)plugin).processAfterInstallation(task, taskCounter, success));
+
             // Pre-register Node to baguette Server Coordinator
+            log.debug("ClientInstaller: POST-INSTALLATION: Node is being pre-registered: {}", entry);
             baguetteServer.getNodeRegistry().getCoordinator().preregister(entry);
 
+            log.debug("ClientInstaller: Installation outcome: {}", success ? "Success" : "Error");
             return success;
         } else {
             log.error("ClientInstaller: UNSUPPORTED TASK TYPE: {}", task.getType());
@@ -90,6 +110,8 @@ public class ClientInstaller implements InitializingBean {
     }
 
     private boolean executeVmTask(ClientInstallationTask task, long taskCounter) {
+        // Select the appropriate client installer plugin to run installation task.
+        // Currently, only one installer plugin is available: SshClientInstaller
         return SshClientInstaller.builder()
                 .task(task)
                 .taskCounter(taskCounter)

@@ -17,6 +17,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,4 +97,8 @@ public class ClientInstallationProperties implements InitializingBean {
     private String ignoreNodeVarName = "__EMS_IGNORE_NODE__";
     private Pattern ignoreNodePattern = Pattern.compile("^IGNORED($|[\\s:=])", Pattern.CASE_INSENSITIVE);
     private boolean ignoreNodeIfVarIsMissing = false;
+
+    // ----------------------------------------------------
+
+    private List<Class<InstallationContextProcessorPlugin>> installationContextProcessorPlugins = Collections.emptyList();
 }
