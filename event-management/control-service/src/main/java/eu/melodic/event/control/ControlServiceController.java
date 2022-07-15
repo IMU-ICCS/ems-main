@@ -490,7 +490,7 @@ public class ControlServiceController {
 
         ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
                 .createInstallationHelper(entry)
-                .createClientInstallationTask(entry);
+                .createClientInstallationTask(entry, coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId()));
         ClientInstaller.instance().addTask(installationTask);
         log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 

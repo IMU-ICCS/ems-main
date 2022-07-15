@@ -98,7 +98,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
 
         ClientInstallationTask task = InstallationHelperFactory.getInstance()
                 .createInstallationHelper(entry)
-                .createClientInstallationTask(entry);
+                .createClientInstallationTask(entry, null); //XXX: TODO: WIP
         log.debug("ClientRecoveryPlugin: runClientRecovery(): Client recovery task: {}", task);
         SshClientInstaller installer = SshClientInstaller.builder()
                 .task(task)

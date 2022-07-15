@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.install.helper;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.translate.TranslationContext;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,5 +25,5 @@ public interface InstallationHelper {
     List<InstructionsSet> prepareInstallationInstructionsForWin(NodeRegistryEntry entry);
     List<InstructionsSet> prepareInstallationInstructionsForLinux(NodeRegistryEntry entry) throws IOException;
 
-    ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws Exception;
+    ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception;
 }
