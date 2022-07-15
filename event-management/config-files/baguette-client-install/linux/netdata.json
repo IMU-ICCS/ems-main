@@ -27,8 +27,25 @@
     {
       "description": "Run Netdata kickstart.sh",
       "taskType": "CMD",
-      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S sh /tmp/netdata-kickstart.sh --dont-wait --no-updates --disable-telemetry ",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S sh /tmp/netdata-kickstart.sh --dont-wait --no-updates --disable-telemetry --dont-start-it --stable-channel --disable-cloud ",
       "executionTimeout": 600000
+    },
+    {
+      "description": "Copy Netdata configuration for prometheus to node's /tmp dir",
+      "taskType": "FILE",
+      "localFileName": "${MELODIC_CONFIG_DIR}/baguette-client-install/netdata/go.d/prometheus.conf",
+      "fileName": "/tmp",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Move prometheus config from /tmp to /etc/netdata/go.d dir",
+      "taskType": "CMD",
+      "command": "sudo mv -f /tmp/prometheus.conf /etc/netdata/go.d/",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
     }
   ]
 }

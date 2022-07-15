@@ -533,6 +533,9 @@ baguette.client.install:
   #clientInstallSuccessIfVarIsMissing: false
   #clientInstallErrorIfVarIsMissing: true
 
+  installationContextProcessorPlugins:
+    - eu.melodic.event.baguette.client.install.plugin.PrometheusProcessorPlugin
+
 
 ################################################################################
 ###                 EMS - CAMEL-to-EPL Translator properties                 ###
