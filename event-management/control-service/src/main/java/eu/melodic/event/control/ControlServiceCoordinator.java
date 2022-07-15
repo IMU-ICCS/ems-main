@@ -14,6 +14,7 @@ import camel.metric.CompositeMetric;
 import camel.metric.MetricContext;
 import camel.metric.RawMetric;
 import camel.requirement.ServiceLevelObjective;
+import com.google.gson.*;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistry;
 import eu.melodic.event.baguette.server.ServerCoordinator;
@@ -22,6 +23,7 @@ import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
@@ -320,18 +322,20 @@ public class ControlServiceCoordinator implements InitializingBean {
                 setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
 
                 try {
-                    log.info("ControlServiceCoordinator.processNewModel(): Start unserializing _TC data from file: {}", fileName);
+                    log.info("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
-                    com.google.gson.Gson gson = new com.google.gson.GsonBuilder().create();
+                    com.google.gson.Gson gson = new GsonBuilder()
+                            .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
+                            .create();
                     _TC = gson.fromJson(reader, TranslationContext.class);
                     reader.close();
-                    log.info("ControlServiceCoordinator.processNewModel(): Unserialized _TC data from file: {}", fileName);
+                    log.info("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
 
                     CamelToEplTranslator translator =
                             applicationContext.getBean(CamelToEplTranslator.class);
                     translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): FAILED to unserialize _TC from file: {} : Exception: ", fileName, ex);
+                    log.error("ControlServiceCoordinator.processNewModel(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
                 }
             } else {
                 throw new IllegalArgumentException("No translation context file has been set");
