@@ -15,6 +15,7 @@ import eu.melodic.models.interfaces.ems.KeyValuePair;
 import eu.melodic.models.interfaces.ems.Monitor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,7 +31,8 @@ import java.util.stream.Collectors;
 public class PrometheusProcessorPlugin implements InstallationContextProcessorPlugin {
     @Override
     public void processBeforeInstallation(ClientInstallationTask task, long taskCounter) {
-        log.debug("PrometheusProcessorPlugin: processBeforeInstallation: task-counter={}, task={}", taskCounter, task);
+        log.debug("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN", taskCounter);
+        log.trace("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN: task={}", taskCounter, task);
 
         StringBuilder prometheusConf = new StringBuilder("# Generated on: ").append(new Date()).append("\n\n");
 
@@ -40,27 +42,42 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
 
         prometheusConf.append("\njobs:\n");
         for (Monitor monitor : task.getTranslationContext().MON) {
-            String componentName = monitor.getComponent();
-            String metricName = monitor.getMetric();
-            log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR: component={}, metric={}", taskCounter, componentName, metricName);
-            if (monitor.getSensor().isPullSensor()) {
-                Map<String, String> config = monitor.getSensor().getPullSensor().getConfiguration().stream()
-                        .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
-                log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
-                String prometheusMetricName = config.get("prometheus.metricName");
-                String prometheusEndpoint = config.get("prometheus.endpoint");
-                prometheusConf.append("  - name: ").append(prometheusMetricName).append("\n");
-                prometheusConf.append("    url: '").append(prometheusEndpoint).append("'\n");
+            try {
+                log.trace("PrometheusProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
+                String componentName = monitor.getComponent();
+                String metricName = monitor.getMetric();
+                log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR: component={}, metric={}", taskCounter, componentName, metricName);
+                if (monitor.getSensor().isPullSensor()) {
+                    if (monitor.getSensor().getPullSensor().getConfiguration()!=null) {
+                        Map<String, String> config = monitor.getSensor().getPullSensor().getConfiguration().stream()
+                                .filter(pair->pair.getKey()!=null && pair.getValue()!=null)
+                                .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
+                        log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
+                        String prometheusMetricName = config.get("prometheus.metricName");
+                        String prometheusEndpoint = config.get("prometheus.endpoint");
+                        if (StringUtils.isNotBlank(prometheusMetricName) && StringUtils.isNotBlank(prometheusEndpoint)) {
+                            prometheusConf.append("  - name: ").append(prometheusMetricName).append("\n");
+                            prometheusConf.append("    url: '").append(prometheusEndpoint).append("'\n");
+                            log.trace("PrometheusProcessorPlugin: Task #{}: Extracted Prometheus config: metricName={}, endpoint={}",
+                                    taskCounter, prometheusMetricName, prometheusEndpoint);
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                log.error("PrometheusProcessorPlugin: Task #{}: EXCEPTION while processing monitor. Skipping it: {}\n", taskCounter, monitor, e);
             }
         }
         log.debug("PrometheusProcessorPlugin: Task #{}: Netdata Prometheus configuration: \n{}", taskCounter, prometheusConf);
 
         task.getNodeRegistryEntry().getPreregistration().put("NETDATA_PROMETHEUS_CONF", prometheusConf.toString());
+        log.debug("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: END", taskCounter);
     }
 
     @Override
     public void processAfterInstallation(ClientInstallationTask task, long taskCounter, boolean success) {
-        log.debug("PrometheusProcessorPlugin: processAfterInstallation: task-counter={}, success={}, task={}", taskCounter, success, task);
+        log.debug("PrometheusProcessorPlugin: Task #{}: processAfterInstallation: success={}", taskCounter, success);
+        log.trace("PrometheusProcessorPlugin: Task #{}: processAfterInstallation: success={}, task={}", taskCounter, success, task);
     }
 
     @Override
