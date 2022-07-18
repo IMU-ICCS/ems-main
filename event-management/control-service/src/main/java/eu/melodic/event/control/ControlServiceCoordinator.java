@@ -276,6 +276,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
                     _copyTC.E2A.putAll(_TC.E2A);
                     _copyTC.SLO.addAll(_TC.SLO);
+                    _copyTC.MON.addAll(_TC.MON);
                     _copyTC.MONS.addAll(_TC.MONS);
                     _copyTC.CMVAR.addAll(_TC.CMVAR);
                     _copyTC.MVV.addAll(_TC.MVV);
