@@ -75,7 +75,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public synchronized Object setEventProperty(@NonNull String name, Object value) {
-        if (eventProperties ==null) eventProperties = new LinkedHashMap<>();
+        if (eventProperties == null) eventProperties = new LinkedHashMap<>();
         return eventProperties.put(name, value);
     }
 
@@ -204,7 +204,9 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public String toString() {
-        return super.toString();
+        return getEventProperties()!=null
+                ? "{ payload: "+super.toString() + ", properties: " + getEventProperties().toString() + " }"
+                : super.toString();
     }
 
     public String toJsonString() {

@@ -116,7 +116,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
         log.debug("SystemResourceMonitor: processOutput: Metrics: {}", event);
 
         if (StringUtils.isBlank(systemResourceMetricsTopic)) {
-            log.debug("SystemResourceMonitor: processOutput: END: No metrics topic has been not set. Will not publish metrics event");
+            log.debug("SystemResourceMonitor: processOutput: END: No metrics topic has been set. Will not publish metrics event");
             return;
         }
 

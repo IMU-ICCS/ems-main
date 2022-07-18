@@ -1100,20 +1100,28 @@ public class CommandExecutor {
     }
 
     public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map event, boolean createDestination) {
+        if (log.isTraceEnabled())
+            log.trace("sendEvent(): connection-string={}, destination={}, create-destination={}, destination-exists={}, event={}",
+                    connectionStr, destination, createDestination, brokerCepService.destinationExists(destination), event);
+        CollectorContext.PUBLISH_RESULT result;
         if (createDestination || brokerCepService.destinationExists(destination)) {
-            return sendEvent(connectionStr, destination, event);
+            result = sendEvent(connectionStr, destination, event);
+            log.trace("sendEvent(): Event sent: destination={}, result={}, event={}", destination, result, event);
+            return result;
         }
-        return CollectorContext.PUBLISH_RESULT.SKIPPED;
+        result = CollectorContext.PUBLISH_RESULT.SKIPPED;
+        log.trace("sendEvent(): Event skipped: destination={}, result={}, event={}", destination, result, event);
+        return result;
     }
 
     public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map event) {
         try {
-            log.debug("sendEvent(): Sending event: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            log.debug("sendEvent(): Sending event: connection={}, destination={}, event={}", connectionStr, destination, event);
             brokerCepService.publishEvent(connectionStr, destination, event);
-            log.debug("sendEvent(): Event sent: connection={}, destination={}, payload={}", connectionStr, destination, event);
+            log.debug("sendEvent(): Event sent: connection={}, destination={}, event={}", connectionStr, destination, event);
             return CollectorContext.PUBLISH_RESULT.SENT;
         } catch (Exception ex) {
-            log.error("sendEvent(): Error while sending event: connection={}, destination={}, payload={}, exception: ", connectionStr, destination, event, ex);
+            log.error("sendEvent(): Error while sending event: connection={}, destination={}, event={}, exception: ", connectionStr, destination, event, ex);
             return CollectorContext.PUBLISH_RESULT.ERROR;
         }
     }

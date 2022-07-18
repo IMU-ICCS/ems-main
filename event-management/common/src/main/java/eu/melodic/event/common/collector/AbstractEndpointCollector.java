@@ -271,7 +271,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
             //log.info("Collectors::{}:     Metrics: extracted={}, published={}, failed={}", collectorId,
             //        stats.countSuccess + stats.countErrors, stats.countSuccess, stats.countErrors);
             if (log.isInfoEnabled())
-                log.info("Collectors::{}:     Metric publish statistics: {}", collectorId, stats);
+                log.info("Collectors::{}:     Publish statistics: {}", collectorId, stats);
             log.debug("Collectors::{}:     Durations: rest-call={}, extract+publish={}, total={}", collectorId,
                     callEndTm-startTm, endTm-callEndTm, endTm-startTm);
         } else {
@@ -280,27 +280,14 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
     }
 
     protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, double metricValue, long timestamp, String nodeAddress) {
-        boolean createTopic = properties.isCreateTopic();
-        try {
-            boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
-            if (topicMap!=null) {
-                String targetTopic = topicMap.get(metricName);
-                if (targetTopic!=null && !targetTopic.isEmpty())
-                    metricName = targetTopic;
-            }
-            EventMap event = new EventMap(metricValue, 1, timestamp);
-            event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
-            log.debug("Collectors::{}:     {}: {}", collectorId, metricName, metricValue);
-            return collectorContext.sendEvent(null, metricName, event, createDestination);
-        } catch (Exception e) {
-            log.warn("Collectors::{}: Publishing metric failed: ", collectorId, e);
-            return CollectorContext.PUBLISH_RESULT.ERROR;
-        }
+        EventMap event = new EventMap(metricValue, 1, timestamp);
+        return publishMetricEvent(metricName, event, nodeAddress);
     }
 
     protected CollectorContext.PUBLISH_RESULT publishMetricEvent(String metricName, EventMap event, String nodeAddress) {
         boolean createTopic = properties.isCreateTopic();
         try {
+            String originalTopic = metricName;
             boolean createDestination = (createTopic || allowedTopics!=null && allowedTopics.contains(metricName));
             if (topicMap!=null) {
                 String targetTopic = topicMap.get(metricName);
@@ -308,8 +295,12 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
                     metricName = targetTopic;
             }
             event.setEventProperty(EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS, nodeAddress);
+            event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_EFFECTIVE_DESTINATION, metricName);
+            event.getEventProperties().put(EmsConstant.EVENT_PROPERTY_ORIGINAL_DESTINATION, originalTopic);
             log.debug("Collectors::{}:    Publishing metric: {}: {}", collectorId, metricName, event.getMetricValue());
-            return collectorContext.sendEvent(null, metricName, event, createDestination);
+            CollectorContext.PUBLISH_RESULT result = collectorContext.sendEvent(null, metricName, event, createDestination);
+            log.trace("Collectors::{}:    Publishing metric: {}: {} -> result: {}", collectorId, metricName, event.getMetricValue(), result);
+            return result;
         } catch (Exception e) {
             log.warn("Collectors::{}:    Publishing metric failed: ", collectorId, e);
             return CollectorContext.PUBLISH_RESULT.ERROR;
@@ -318,7 +309,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
     protected void updateStats(CollectorContext.PUBLISH_RESULT publishResult, ProcessingStats stats) {
         if (publishResult==CollectorContext.PUBLISH_RESULT.SENT) stats.countSuccess++;
-        else if (publishResult==CollectorContext.PUBLISH_RESULT.SKIPPED) stats.countSuccess++;
+        else if (publishResult==CollectorContext.PUBLISH_RESULT.SKIPPED) stats.countSkipped++;
         else if (publishResult==CollectorContext.PUBLISH_RESULT.ERROR) stats.countErrors++;
     }
 
