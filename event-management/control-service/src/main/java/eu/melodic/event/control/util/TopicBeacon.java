@@ -149,14 +149,15 @@ public class TopicBeacon implements InitializingBean {
 
         // Convert to Translator-to-Forecasting Methods event format
         final long currVersion = modelVersion.get();
-        List<HashMap<String, Object>> payload = metricContexts.stream().map(s -> {
+        List<HashMap<String, Object>> payload = metricContexts.stream().map(mc -> {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("metric", s.getName());
+            map.put("metric", mc.getName());
+            map.put("component", mc.getComponent());
             map.put("level", 3);
             map.put("version", currVersion);
-            map.put("publish_rate", s.getSchedule()!=null
-                    ? s.getSchedule().getIntervalInMillis() :
-                    properties.getPredictionRate());
+            map.put("publish_rate", mc.getSchedule()!=null
+                    ? mc.getSchedule().getIntervalInMillis()
+                    : properties.getPredictionRate());
             return map;
         }).collect(Collectors.toList());
         log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);

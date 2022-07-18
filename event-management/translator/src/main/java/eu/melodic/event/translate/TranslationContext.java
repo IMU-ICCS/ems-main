@@ -563,10 +563,15 @@ public class TranslationContext {
     @RequiredArgsConstructor
     public static class MetricContext {
         private final String name;
+        private final String component;
         private final Schedule schedule;
 
         public MetricContext(camel.metric.MetricContext mc) {
             name = mc.getName();
+            component = mc.getObjectContext()!=null && mc.getObjectContext().getComponent()!=null
+                    && StringUtils.isNotBlank(mc.getObjectContext().getComponent().getName())
+                            ? mc.getObjectContext().getComponent().getName()
+                            : null;
             schedule = (mc.getSchedule()!=null) ? new TranslationContext.Schedule(mc.getSchedule()) : null;
         }
     }
