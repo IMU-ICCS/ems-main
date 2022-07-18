@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -135,5 +137,16 @@ public class ApplicationContext {
             adapterProperties.getPaConfig().getLogin(),
             adapterProperties.getPaConfig().getPassword(),
             adapterProperties.getPaConfig().getEncryptorPw());
+  }
+
+  //Busy Instance Number provider
+  @Bean
+  public ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName() {
+    return new ConcurrentHashMap<>();
+  }
+
+  @Bean
+  public ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName() {
+    return new ConcurrentHashMap<>();
   }
 }

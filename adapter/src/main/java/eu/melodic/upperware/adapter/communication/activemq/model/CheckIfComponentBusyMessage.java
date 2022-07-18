@@ -1,18 +1,17 @@
 package eu.melodic.upperware.adapter.communication.activemq.model;
 
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.sun.istack.NotNull;
 import lombok.Data;
 
 @Data
 public class CheckIfComponentBusyMessage {
 
-    @JsonProperty("instanceName")
+    @SerializedName("instanceName")
     @NotNull
     private String componentInstanceName;
 
-    @JsonProperty("instanceStatus")
+    @SerializedName("instanceStatus")
     @NotNull
     private InstanceStatus instanceStatus;
 }

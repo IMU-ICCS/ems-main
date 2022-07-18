@@ -25,15 +25,18 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
 
     @Override
     public Integer getNewInstanceNoForComponent(String softwareComponentName) {
+        log.debug("Providing instanceNo for instance of component: {}", softwareComponentName);
         Integer notYetUsedInstanceNo;
         notYetUsedInstanceNo = getNoFromListIfNotYetUsed(softwareComponentName, busyInstancesByComponentName);
         if (notYetUsedInstanceNo == NO_DATA_OR_INTEGER_ALREADY_USED) {
+            log.debug("Could not provide instanceId of working BUSY instance");
             notYetUsedInstanceNo = getNoFromListIfNotYetUsed(softwareComponentName, idleInstancesByComponentName);
         }
 
         List<Integer> usedNo = super.usedNoByComponentName.computeIfAbsent(softwareComponentName, key-> new ArrayList<>());
 
         if (notYetUsedInstanceNo == NO_DATA_OR_INTEGER_ALREADY_USED) {
+            log.debug("Could not provide instanceId of working IDLE instance");
             notYetUsedInstanceNo = super.getFirstNotPresent(usedNo);
         }
 
@@ -50,6 +53,7 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
     }
 
     private Integer getNoFromListIfNotYetUsed(String softwareComponentName, ConcurrentHashMap<String, List<Integer>> instancesByComponentName) {
+
         AtomicInteger notUsedInstanceNo = new AtomicInteger(-1);
         instancesByComponentName.computeIfPresent(softwareComponentName, (key, list) -> {
             for (Integer i : list) {

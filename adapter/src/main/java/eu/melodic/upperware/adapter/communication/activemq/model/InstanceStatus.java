@@ -1,12 +1,12 @@
 package eu.melodic.upperware.adapter.communication.activemq.model;
 
+import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum InstanceStatus {
-    BUSY("busy"),
-    IDLE("idle"),
-    NOT_DEFINED("notDefined");
+    @SerializedName("busy") BUSY,
+    @SerializedName("idle") IDLE,
+    NOT_DEFINED
 
-    private String type;
 }

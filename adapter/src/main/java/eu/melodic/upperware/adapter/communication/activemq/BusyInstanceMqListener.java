@@ -12,6 +12,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +69,7 @@ public class BusyInstanceMqListener implements MessageListener {
             case BUSY: {
                 this.busyInstancesByComponentName.compute(softwareComponentName, (key, list) -> {
                     if (list == null) {
-                        return new LinkedList<>();
+                        return new LinkedList<>(Collections.singletonList(softwareComponentInstanceNo));
                     } else {
                         list.add(softwareComponentInstanceNo);
                         return list;
@@ -79,7 +80,7 @@ public class BusyInstanceMqListener implements MessageListener {
             case IDLE: {
                 this.idleInstancesByComponentName.compute(softwareComponentName, (key, list) -> {
                     if (list == null) {
-                        return new LinkedList<>();
+                        return new LinkedList<>(Collections.singletonList(softwareComponentInstanceNo));
                     } else {
                         list.add(softwareComponentInstanceNo);
                         return list;
