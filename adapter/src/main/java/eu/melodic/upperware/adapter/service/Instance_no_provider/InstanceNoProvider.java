@@ -1,5 +1,7 @@
 package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
+import camel.core.CamelModel;
+
 import java.util.*;
 
 /**
@@ -24,7 +26,7 @@ public class InstanceNoProvider {
         return firstNotUsed;
     }
 
-    public void restart() {
+    public void restart(CamelModel camelModel) {
         this.usedNoByComponentName.clear();
     }
 

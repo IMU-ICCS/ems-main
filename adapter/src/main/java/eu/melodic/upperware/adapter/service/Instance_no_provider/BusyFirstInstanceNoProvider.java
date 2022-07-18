@@ -1,14 +1,16 @@
 package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
+import camel.core.CamelModel;
+import camel.deployment.DeploymentInstanceModel;
+import camel.deployment.SoftwareComponentInstance;
+import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.el.stream.Stream;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *  This class assigns numbers to make sure that busy
@@ -18,24 +20,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 @RequiredArgsConstructor
 public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
-    private static final Integer NO_DATA_OR_INTEGER_ALREADY_USED = null;
 
-    private final ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
-    private final ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
+    private final BusyInstancesRegistry busyInstancesRegistry;
 
     @Override
     public Integer getNewInstanceNoForComponent(String softwareComponentName) {
         log.debug("Providing instanceNo for instance of component: {}", softwareComponentName);
         Integer notYetUsedInstanceNo;
-        notYetUsedInstanceNo = getNoFromListIfNotYetUsed(softwareComponentName, busyInstancesByComponentName);
-        if (notYetUsedInstanceNo == NO_DATA_OR_INTEGER_ALREADY_USED) {
+        notYetUsedInstanceNo = busyInstancesRegistry.getBusyNoFromListIfNotYetUsed(softwareComponentName,
+                usedNoByComponentName);
+        if (notYetUsedInstanceNo == BusyInstancesRegistry.NO_DATA_OR_INTEGER_ALREADY_USED) {
             log.debug("Could not provide instanceId of working BUSY instance");
-            notYetUsedInstanceNo = getNoFromListIfNotYetUsed(softwareComponentName, idleInstancesByComponentName);
+            notYetUsedInstanceNo = busyInstancesRegistry.getIdleNoFromListIfNotYetUsed(softwareComponentName,
+                    usedNoByComponentName);
         }
 
         List<Integer> usedNo = super.usedNoByComponentName.computeIfAbsent(softwareComponentName, key-> new ArrayList<>());
 
-        if (notYetUsedInstanceNo == NO_DATA_OR_INTEGER_ALREADY_USED) {
+        if (notYetUsedInstanceNo == BusyInstancesRegistry.NO_DATA_OR_INTEGER_ALREADY_USED) {
             log.debug("Could not provide instanceId of working IDLE instance");
             notYetUsedInstanceNo = super.getFirstNotPresent(usedNo);
         }
@@ -46,28 +48,17 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
     }
 
     @Override
-    public void restart() {
-        super.restart();
-        this.busyInstancesByComponentName.clear();
-        this.idleInstancesByComponentName.clear();
-    }
-
-    private Integer getNoFromListIfNotYetUsed(String softwareComponentName, ConcurrentHashMap<String, List<Integer>> instancesByComponentName) {
-
-        AtomicInteger notUsedInstanceNo = new AtomicInteger(-1);
-        instancesByComponentName.computeIfPresent(softwareComponentName, (key, list) -> {
-            for (Integer i : list) {
-                if (!usedNoByComponentName.get(softwareComponentName).contains(i)) {
-                    notUsedInstanceNo.set(i);
-                    return list;
-                }
-            }
-            return list;
-        });
-        if (notUsedInstanceNo.get() >= 0) {
-            return notUsedInstanceNo.get();
-        } else {
-            return NO_DATA_OR_INTEGER_ALREADY_USED;
-        }
+    public void restart(CamelModel camelModel) {
+        super.restart(null);
+        Optional<DeploymentInstanceModel> lastDeploymentInstanceModel =
+        CdoTool.getLastElementAsOptional(camelModel.getExecutionModels())
+                .flatMap(CdoTool::getCurrentlyInstalledModel);
+        this.busyInstancesRegistry.restart(
+                lastDeploymentInstanceModel
+                        .map(DeploymentInstanceModel::getSoftwareComponentInstances)
+                        .stream()
+                        .flatMap(list -> list.stream().map(SoftwareComponentInstance::getName))
+                        .collect(Collectors.toList())
+        );
     }
 }

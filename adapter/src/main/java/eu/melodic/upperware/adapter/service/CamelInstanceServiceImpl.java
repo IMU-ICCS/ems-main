@@ -54,7 +54,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                 .forEach(communicationInstances -> deploymentInstanceModel.getCommunicationInstances().addAll(communicationInstances));
 
         //changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
-        instanceNoProvider.restart();
+        instanceNoProvider.restart(camelModel);
         return deploymentInstanceModel;
     }
 
