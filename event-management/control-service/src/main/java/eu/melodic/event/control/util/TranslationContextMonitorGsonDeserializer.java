@@ -39,6 +39,10 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
 
         // Find and initialize sensor
         JsonObject jsonSensorObject = jsonObject.getAsJsonObject("sensor");
+        if (jsonSensorObject.has("anyType") && jsonSensorObject.get("anyType").isJsonObject()) {
+            jsonSensorObject = jsonSensorObject.getAsJsonObject("anyType");
+        }
+
         boolean isPull = jsonSensorObject.has("className")
                 || jsonSensorObject.has("configuration")
                 || jsonSensorObject.has("interval");
