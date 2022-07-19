@@ -68,8 +68,8 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         this.topicMap = properties.getAllowedTopics()==null
                 ? null
                 : properties.getAllowedTopics().stream()
-                .map(s -> s.split(":", 2))
-                .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
+                        .map(s -> s.split(":", 2))
+                        .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
     }
 
     public synchronized void start() {
