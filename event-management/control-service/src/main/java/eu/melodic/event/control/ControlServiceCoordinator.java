@@ -189,8 +189,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         try {
             // Call '_processNewModels()' to do actual processing
             _processNewModels(camelModelId, cpModelId, notificationUri, requestUuid, jwtToken);
-            this.currentCamelModelId = camelModelId;
-            this.currentCpModelId = cpModelId;
+            this.currentCamelModelId = _normalizeModelId(camelModelId);
+            this.currentCpModelId = _normalizeModelId(cpModelId);
         } catch (Exception ex) {
             setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
 
@@ -224,7 +224,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         try {
             // Call '_processCpModel()' to do actual processing
             _processCpModel(cpModelId, notificationUri, requestUuid, jwtToken);
-            this.currentCpModelId = cpModelId;
+            this.currentCpModelId = _normalizeModelId(cpModelId);
         } catch (Exception ex) {
             setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
 
@@ -545,7 +545,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
         log.info("ControlServiceCoordinator.processNewModel(): Cache translation results: camel-model-id={}", camelModelId);
-        camelToTcCache.put(camelModelId, _TC);
+        camelToTcCache.put(_normalizeModelId(camelModelId), _TC);
 
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
@@ -718,6 +718,13 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     // ------------------------------------------------------------------------------------------------------------
 
+    protected String _normalizeModelId(String modelId) {
+        if (StringUtils.isBlank(modelId)) return modelId;
+        modelId = modelId.trim();
+        if (!modelId.startsWith("/")) modelId = "/"+modelId;
+        return modelId;
+    }
+
     protected Map<String, String> _prepareSubscriptionConfig(String url, String username, String password, String certificate, String topic, String clientId, String type) {
         Map<String, String> map = new HashMap<>();
         map.put("url", url);
@@ -735,24 +742,24 @@ public class ControlServiceCoordinator implements InitializingBean {
     // ------------------------------------------------------------------------------------------------------------
 
     public TranslationContext getTranslationContextOfCamelModel(String camelModelId) {
-        return camelToTcCache.get(camelModelId);
+        return camelToTcCache.get(_normalizeModelId(camelModelId));
     }
 
     public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptyList();
         List<Monitor> sensors = new ArrayList<>(_tc.MON);
         return sensors;
     }
 
     public Set getMetricConstraints(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptySet();
         return _tc.getMetricConstraints();
     }
 
     /*public Set<String> getGlobalGroupingMetrics(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptySet();
 
         // get all top-level nodes their component metrics
@@ -782,7 +789,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     public @NonNull List<Object> _getSLOMetricDecomposition(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptyList();
 
         // Get metric and logical constraints
@@ -848,7 +855,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     public @NonNull Set<TranslationContext.MetricContext> getMetricContextsForPrediction(String camelModelId) {
         log.debug("getMetricContextsForPrediction: BEGIN: {}", camelModelId);
-        TranslationContext _tc = camelToTcCache.get(camelModelId);
+        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) {
             log.debug("getMetricContextsForPrediction: END: No Translation Context found for model: {}", camelModelId);
             return Collections.emptySet();

@@ -260,7 +260,7 @@ public class ControlServiceController {
         }
 
         // Retrieve sensor information
-        String appPath = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        String appPath = coordinator._normalizeModelId(applicationId);
         Set constraints = coordinator.getMetricConstraints(appPath);
         log.info("ControlServiceController.getConstraintThresholds(): Constraints for application: {}: {}", applicationId, constraints);
 
@@ -283,7 +283,7 @@ public class ControlServiceController {
         }
 
         // Retrieve context metrics of the top-level DAG nodes
-        String camelModelId = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        String camelModelId = coordinator._normalizeModelId(applicationId);
         log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): camelModelId: {}", camelModelId);
         Set<TranslationContext.MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
         log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Result: {}", results);
