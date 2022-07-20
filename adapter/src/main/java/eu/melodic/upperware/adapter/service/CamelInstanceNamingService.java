@@ -18,9 +18,24 @@ public class CamelInstanceNamingService {
     public static String getSoftwareComponentNameFromInstanceName(String softwareComponentInstanceName) {
         return removeSuffix(removeSuffix(softwareComponentInstanceName));
     }
+
+    static String normaliseName(String name) {
+        // 1. add separator after each capital letter except first
+        String result = name.replaceAll("([A-Z])", SEPARATOR_NAME_SIGN + "$1");
+        result = result.startsWith(SEPARATOR_NAME_SIGN) ? result.substring(1) : result;
+        result = result.endsWith(SEPARATOR_NAME_SIGN) ? result.substring(0, result.length() - 2) : result;
+
+        // 2. to lower case
+        result = result.toLowerCase();
+
+        // 3. remove all special signs except separator, lowercase and digits
+        result = result.replaceAll("[^-a-z0-9]", "");
+
+        return result;
+    }
     
     static String createSoftwareInstanceName(String softwareComponentName, int instanceNo) {
-        String instanceName = createSoftCompInstNamePrefix(softwareComponentName) + SEPARATOR_NAME_SIGN +
+        String instanceName = normaliseName(softwareComponentName) + SEPARATOR_NAME_SIGN +
                 "instance" + SEPARATOR_NAME_SIGN + instanceNo;
         log.info("Created instance name = {} for software component : {}", instanceName, softwareComponentName);
         return instanceName;
@@ -44,21 +59,6 @@ public class CamelInstanceNamingService {
         String labeledName = prefix + SEPARATOR_NAME_SIGN + label + SEPARATOR_NAME_SIGN + instanceNo;
         log.info("Created name = {} for object = {}", labeledName, name);
         return labeledName;
-    }
-
-    private static String createSoftCompInstNamePrefix(String name) {
-        // 1. add separator after each capital letter except first
-        String result = name.replaceAll("([A-Z])", SEPARATOR_NAME_SIGN + "$1");
-        result = result.startsWith(SEPARATOR_NAME_SIGN) ? result.substring(1) : result;
-        result = result.endsWith(SEPARATOR_NAME_SIGN) ? result.substring(0, result.length() - 2) : result;
-
-        // 2. to lower case
-        result = result.toLowerCase();
-
-        // 3. remove all special signs except separator, lowercase and digits
-        result = result.replaceAll("[^-a-z0-9]", "");
-
-        return result;
     }
 
     private static String removeSuffix(String name) {

@@ -67,7 +67,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
 
     private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent) {
         // Create Instance + name + type
-        int softwareInstance = instanceNoProvider.getNewInstanceNoForComponent(softwareComponent.getName());
+        int softwareInstance = instanceNoProvider.getNewInstanceNoForComponent(CamelInstanceNamingService.normaliseName(softwareComponent.getName()));
         String softwareComponentName = CamelInstanceNamingService.createSoftwareInstanceName(softwareComponent.getName(), softwareInstance);
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
         softwareComponentInstance.setName(softwareComponentName);
