@@ -16,6 +16,7 @@ import eu.melodic.event.baguette.client.install.helper.AbstractInstallationHelpe
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
 import lombok.NoArgsConstructor;
@@ -51,7 +52,7 @@ public class CloudiatorInstallationHelper extends AbstractInstallationHelper {
     }
 
     @Override
-    public ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws Exception {
+    public ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception {
         return null;
     }
 
