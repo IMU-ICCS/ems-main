@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class CamelInstanceNamingService {
     private static final String SEPARATOR_NAME_SIGN = "-";
+    private static final String INSTANCE_LABEL = "instance";
     private static final String REQUIRED_HOST_LABEl = "RequiredHostInstance";
     private static final String REQUIRED_COMMUNICATION_LABEL = "ReqCommunicationInstance";
     private static final String PROVIDED_COMMUNICATION_LABEL = "ProvidedCommunicationInstance";
@@ -35,10 +36,7 @@ public class CamelInstanceNamingService {
     }
     
     static String createSoftwareInstanceName(String softwareComponentName, int instanceNo) {
-        String instanceName = normaliseName(softwareComponentName) + SEPARATOR_NAME_SIGN +
-                "instance" + SEPARATOR_NAME_SIGN + instanceNo;
-        log.info("Created instance name = {} for software component : {}", instanceName, softwareComponentName);
-        return instanceName;
+        return createLabeledName(softwareComponentName, INSTANCE_LABEL, softwareComponentName, instanceNo);
     }
 
     static String createRequiredHostName(String prefix, String requiredHostName, int instanceNo) {

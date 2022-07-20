@@ -144,7 +144,6 @@ public class ApplicationContext {
   @Bean
   public BusyInstancesRegistry busyInstancesRegistry() {
     return new BusyInstancesRegistry(
-            new ConcurrentHashMap<>(),
             new ConcurrentHashMap<>()
     );
   }

@@ -1,4 +1,4 @@
-package eu.melodic.upperware.adapter.communication.activemq.model;
+package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.AllArgsConstructor;
@@ -7,6 +7,5 @@ import lombok.AllArgsConstructor;
 public enum InstanceStatus {
     @SerializedName("busy") BUSY,
     @SerializedName("idle") IDLE,
-    NOT_DEFINED
-
+    NOT_KNOWN
 }

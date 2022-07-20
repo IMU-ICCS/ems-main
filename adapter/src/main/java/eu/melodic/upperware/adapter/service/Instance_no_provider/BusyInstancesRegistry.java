@@ -3,103 +3,78 @@ package eu.melodic.upperware.adapter.service.Instance_no_provider;
 import eu.melodic.upperware.adapter.communication.activemq.model.CheckIfComponentBusyMessage;
 import eu.melodic.upperware.adapter.service.CamelInstanceNamingService;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 public class BusyInstancesRegistry {
     static final Integer NO_DATA_OR_INTEGER_ALREADY_USED = null;
 
-    private final ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
-    private final ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
-
-    private List<String> currentDeploymentSoftwareComponentInstancesList;
+    //instanceName -> instance number -> status
+    private final ConcurrentHashMap<String, Map<Integer, InstanceStatus>> instancesByComponentName;
 
     public void processMessage(CheckIfComponentBusyMessage checkIfComponentBusyMessage) {
         String softwareComponentInstanceName = checkIfComponentBusyMessage.getComponentInstanceName();
         String softwareComponentName = CamelInstanceNamingService.getSoftwareComponentNameFromInstanceName(softwareComponentInstanceName);
         Integer softwareComponentInstanceNo = CamelInstanceNamingService.getInstanceNumberFromInstanceName(softwareComponentInstanceName);
-        log.debug("Saving instanceNo: {} for component: {}", softwareComponentInstanceNo, softwareComponentInstanceName);
-        if (!currentDeploymentSoftwareComponentInstancesList.contains(softwareComponentInstanceName)) {
-            log.error("Received softwareComponentInstance does not exist in the current deployment");
-        } else {
-            switch (checkIfComponentBusyMessage.getInstanceStatus()) {
-                case BUSY: {
-                    this.busyInstancesByComponentName.compute(softwareComponentName, (key, list) -> {
-                        if (list == null) {
-                            return new LinkedList<>(Collections.singletonList(softwareComponentInstanceNo));
-                        } else {
-                            list.add(softwareComponentInstanceNo);
-                            return list;
-                        }
-                    });
-                    break;
-                }
-                case IDLE: {
-                    this.idleInstancesByComponentName.compute(softwareComponentName, (key, list) -> {
-                        if (list == null) {
-                            return new LinkedList<>(Collections.singletonList(softwareComponentInstanceNo));
-                        } else {
-                            list.add(softwareComponentInstanceNo);
-                            return list;
-                        }
-                    });
-                    break;
-                }
-                case NOT_DEFINED: {
-                    break;
-                }
-                default: {
-                    log.error("Received message contains not recognised component status");
-                    break;
-                }
-            }
+        log.debug("Saving instanceNo: {} for component: {}", softwareComponentInstanceNo, softwareComponentName);
+        if (verifyIfExistsInCurrentDeployment(softwareComponentName, softwareComponentInstanceNo)) {
+            this.instancesByComponentName.computeIfPresent(softwareComponentName, (key, instanceStatusByInstanceNumber) -> {
+                instanceStatusByInstanceNumber.put(softwareComponentInstanceNo, checkIfComponentBusyMessage.getInstanceStatus());
+                return instanceStatusByInstanceNumber;
+            });
         }
     }
 
-    void restart(List<String> currentDeploymentSoftwareComponentInstancesList) {
-        this.busyInstancesByComponentName.clear();
-        this.idleInstancesByComponentName.clear();
-        this.currentDeploymentSoftwareComponentInstancesList = currentDeploymentSoftwareComponentInstancesList;
+    //sets current deployment model
+    void restart(Map<String, List<Integer>> usedNoByComponentName) {
+        this.instancesByComponentName.clear();
+        usedNoByComponentName.forEach((softwareComponentName, instances) -> this.instancesByComponentName.put(
+                softwareComponentName,
+                instances.stream()
+                        .collect(Collectors.toMap(Function.identity(), i -> InstanceStatus.NOT_KNOWN))
+        ));
     }
 
-    Integer getBusyNoFromListIfNotYetUsed(String softwareComponentName,
-                                          Map<String, List<Integer>> usedNoByComponentName) {
-        return getNoFromListIfNotYetUsed(softwareComponentName, busyInstancesByComponentName, usedNoByComponentName);
-    }
-
-    Integer getIdleNoFromListIfNotYetUsed(String softwareComponentName,
-                                          Map<String, List<Integer>> usedNoByComponentName) {
-        return getNoFromListIfNotYetUsed(softwareComponentName, idleInstancesByComponentName, usedNoByComponentName);
-    }
-
-    private Integer getNoFromListIfNotYetUsed(String softwareComponentName, ConcurrentHashMap<String, List<Integer>> instancesByComponentName,
-                                              Map<String, List<Integer>> usedNoByComponentName) {
+    Integer getNotUsedInstanceNoByStatus(String softwareComponentName, InstanceStatus instanceStatus) {
         AtomicInteger notUsedInstanceNo = new AtomicInteger(-1);
-        //We need to iterate instead of remove the element because the listeners are still workng
-        instancesByComponentName.computeIfPresent(softwareComponentName, (key, list) -> {
-            for (Integer i : list) {
-                log.debug("Checking if int: {} can be assigned", i);
-                if (!usedNoByComponentName.get(softwareComponentName).contains(i)) {
+        //We need to iterate instead of remove the element because the listeners are still working
+        instancesByComponentName.computeIfPresent(softwareComponentName, (key, statusByInstanceNo) -> {
+            Optional<Integer> instanceNoToAssign = statusByInstanceNo.entrySet().stream()
+                    .filter(e -> e.getValue().equals(instanceStatus))
+                    .map(Map.Entry::getKey)
+                    .sorted()
+                    .findFirst();
+            instanceNoToAssign.ifPresent(i -> {
+                if (statusByInstanceNo.remove(i, instanceStatus)) {
                     notUsedInstanceNo.set(i);
-                    return list;
                 }
-            }
-            return list;
+            });
+            return statusByInstanceNo;
         });
         if (notUsedInstanceNo.get() >= 0) {
             return notUsedInstanceNo.get();
         } else {
             return NO_DATA_OR_INTEGER_ALREADY_USED;
         }
+    }
+
+    private boolean verifyIfExistsInCurrentDeployment(String softwareComponent, Integer instanceNo) {
+        if (!instancesByComponentName.containsKey(softwareComponent)) {
+            log.error("Received softwareComponent does not exist in the current deployment");
+            return false;
+        }
+        if (!instancesByComponentName.get(softwareComponent).containsKey(instanceNo)) {
+            log.error("Received softwareComponent Instance No does not exist in the current deployment");
+            return false;
+        }
+        return true;
     }
 
 }

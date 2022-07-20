@@ -1,14 +1,11 @@
 package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
 
-import camel.deployment.DeploymentInstanceModel;
-import camel.deployment.SoftwareComponentInstance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *  This class assigns numbers to make sure that busy
@@ -25,12 +22,12 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
     public Integer getNewInstanceNoForComponent(String softwareComponentName) {
         log.debug("Providing instanceNo for instance of component: {}", softwareComponentName);
         Integer notYetUsedInstanceNo;
-        notYetUsedInstanceNo = busyInstancesRegistry.getBusyNoFromListIfNotYetUsed(softwareComponentName,
-                usedNoByComponentName);
+        notYetUsedInstanceNo = busyInstancesRegistry.getNotUsedInstanceNoByStatus(softwareComponentName,
+                InstanceStatus.BUSY);
         if (notYetUsedInstanceNo == BusyInstancesRegistry.NO_DATA_OR_INTEGER_ALREADY_USED) {
             log.debug("Could not provide instanceId of working BUSY instance");
-            notYetUsedInstanceNo = busyInstancesRegistry.getIdleNoFromListIfNotYetUsed(softwareComponentName,
-                    usedNoByComponentName);
+            notYetUsedInstanceNo = busyInstancesRegistry.getNotUsedInstanceNoByStatus(softwareComponentName,
+                    InstanceStatus.IDLE);
         }
 
         List<Integer> usedNo = super.usedNoByComponentName.computeIfAbsent(softwareComponentName, key-> new ArrayList<>());
@@ -47,14 +44,9 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
 
     @Override
     public void restart() {
+        this.busyInstancesRegistry.restart(usedNoByComponentName);
         super.restart();
-
     }
 
-    public void restartRegistry(DeploymentInstanceModel currentDeploymentInstanceModel) {
-        this.busyInstancesRegistry.restart(
-                currentDeploymentInstanceModel.getSoftwareComponentInstances().stream()
-                        .map(SoftwareComponentInstance::getName)
-                        .collect(Collectors.toList()));
-    }
+
 }

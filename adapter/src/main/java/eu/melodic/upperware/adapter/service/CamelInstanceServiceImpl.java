@@ -5,6 +5,7 @@ import camel.core.Feature;
 import camel.deployment.*;
 import com.google.gson.Gson;
 import eu.melodic.upperware.adapter.service.Instance_no_provider.BusyFirstInstanceNoProvider;
+import eu.melodic.upperware.adapter.service.Instance_no_provider.InstanceNoProvider;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +30,7 @@ import java.util.stream.IntStream;
 public class CamelInstanceServiceImpl implements CamelInstanceService {
     private final static String SEPARATOR_NAME_SIGN = "-";
 
-    private BusyFirstInstanceNoProvider instanceNoProvider;
+    private InstanceNoProvider instanceNoProvider;
     private CamelEnricherService camelEnricherService;
     private Gson gson;
 
@@ -54,7 +55,6 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
 
         //changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
         instanceNoProvider.restart();
-        instanceNoProvider.restartRegistry(deploymentInstanceModel);
         return deploymentInstanceModel;
     }
 
@@ -67,8 +67,9 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
 
     private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent) {
         // Create Instance + name + type
-        int softwareInstance = instanceNoProvider.getNewInstanceNoForComponent(CamelInstanceNamingService.normaliseName(softwareComponent.getName()));
-        String softwareComponentName = CamelInstanceNamingService.createSoftwareInstanceName(softwareComponent.getName(), softwareInstance);
+        String normalizedSoftwareComponentName = CamelInstanceNamingService.normaliseName(softwareComponent.getName());
+        int softwareInstance = instanceNoProvider.getNewInstanceNoForComponent(normalizedSoftwareComponentName);
+        String softwareComponentName = CamelInstanceNamingService.createSoftwareInstanceName(normalizedSoftwareComponentName, softwareInstance);
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
         softwareComponentInstance.setName(softwareComponentName);
         softwareComponentInstance.setType(softwareComponent);

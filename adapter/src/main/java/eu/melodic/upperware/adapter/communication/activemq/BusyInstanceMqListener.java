@@ -2,7 +2,6 @@ package eu.melodic.upperware.adapter.communication.activemq;
 
 import com.google.gson.Gson;
 import eu.melodic.upperware.adapter.communication.activemq.model.CheckIfComponentBusyMessage;
-import eu.melodic.upperware.adapter.service.CamelInstanceNamingService;
 import eu.melodic.upperware.adapter.service.Instance_no_provider.BusyInstancesRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,11 +12,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
 
 
 /**
