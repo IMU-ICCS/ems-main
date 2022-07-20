@@ -45,11 +45,16 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
         return notYetUsedInstanceNo;
     }
 
-    public void setCurrentDeploymentModel(DeploymentInstanceModel currentDeploymentInstanceModel) {
-        this.busyInstancesRegistry.setCurrentDeploymentSoftwareComponentInstancesList(
+    @Override
+    public void restart() {
+        super.restart();
+
+    }
+
+    public void restartRegistry(DeploymentInstanceModel currentDeploymentInstanceModel) {
+        this.busyInstancesRegistry.restart(
                 currentDeploymentInstanceModel.getSoftwareComponentInstances().stream()
                         .map(SoftwareComponentInstance::getName)
-                        .collect(Collectors.toList())
-        );
+                        .collect(Collectors.toList()));
     }
 }

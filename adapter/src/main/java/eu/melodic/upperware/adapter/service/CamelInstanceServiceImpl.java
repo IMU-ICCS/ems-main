@@ -43,8 +43,6 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         deploymentInstanceModel.setName(deploymentTypeModel.getName() + "_" + dmId);
         deploymentInstanceModel.setType(deploymentTypeModel);
 
-        instanceNoProvider.restart();
-
         softwareInstanceDetails.stream()
                 .map(this::createSoftwareComponentInstances)
                 .forEach(softwareComponentInstances -> deploymentInstanceModel.getSoftwareComponentInstances().addAll(softwareComponentInstances));
@@ -55,7 +53,8 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                 .forEach(communicationInstances -> deploymentInstanceModel.getCommunicationInstances().addAll(communicationInstances));
 
         //changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
-        instanceNoProvider.setCurrentDeploymentModel(deploymentInstanceModel);
+        instanceNoProvider.restart();
+        instanceNoProvider.restartRegistry(deploymentInstanceModel);
         return deploymentInstanceModel;
     }
 

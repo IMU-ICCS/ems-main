@@ -21,7 +21,7 @@ public class BusyInstancesRegistry {
     private final ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
     private final ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
 
-    @Setter private List<String> currentDeploymentSoftwareComponentInstancesList;
+    private List<String> currentDeploymentSoftwareComponentInstancesList;
 
     public void processMessage(CheckIfComponentBusyMessage checkIfComponentBusyMessage) {
         String softwareComponentInstanceName = checkIfComponentBusyMessage.getComponentInstanceName();
@@ -66,9 +66,9 @@ public class BusyInstancesRegistry {
     }
 
     void restart(List<String> currentDeploymentSoftwareComponentInstancesList) {
-        this.currentDeploymentSoftwareComponentInstancesList = currentDeploymentSoftwareComponentInstancesList;
         this.busyInstancesByComponentName.clear();
         this.idleInstancesByComponentName.clear();
+        this.currentDeploymentSoftwareComponentInstancesList = currentDeploymentSoftwareComponentInstancesList;
     }
 
     Integer getBusyNoFromListIfNotYetUsed(String softwareComponentName,
@@ -83,10 +83,11 @@ public class BusyInstancesRegistry {
 
     private Integer getNoFromListIfNotYetUsed(String softwareComponentName, ConcurrentHashMap<String, List<Integer>> instancesByComponentName,
                                               Map<String, List<Integer>> usedNoByComponentName) {
-
         AtomicInteger notUsedInstanceNo = new AtomicInteger(-1);
+        //We need to iterate instead of remove the element because the listeners are still workng
         instancesByComponentName.computeIfPresent(softwareComponentName, (key, list) -> {
             for (Integer i : list) {
+                log.debug("Checking if int: {} can be assigned", i);
                 if (!usedNoByComponentName.get(softwareComponentName).contains(i)) {
                     notUsedInstanceNo.set(i);
                     return list;
