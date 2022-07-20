@@ -29,7 +29,7 @@
     {
       "description": "Download JRE package",
       "taskType": "CMD",
-      "command": "curl -v -k ${DOWNLOAD_URL}/resources/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz --output /tmp/jre8.282.tar.gz",
+      "command": "curl -k ${DOWNLOAD_URL}/resources/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz --output /tmp/jre8.282.tar.gz",
       "executable": false,
       "exitCode": 0,
       "match": false
