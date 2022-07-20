@@ -1,12 +1,10 @@
 package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
-import camel.core.CamelModel;
+
 import camel.deployment.DeploymentInstanceModel;
 import camel.deployment.SoftwareComponentInstance;
-import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.el.stream.Stream;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -47,17 +45,10 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
         return notYetUsedInstanceNo;
     }
 
-    @Override
-    public void restart(CamelModel camelModel) {
-        super.restart(null);
-        Optional<DeploymentInstanceModel> lastDeploymentInstanceModel =
-        CdoTool.getLastElementAsOptional(camelModel.getExecutionModels())
-                .flatMap(CdoTool::getCurrentlyInstalledModel);
-        this.busyInstancesRegistry.restart(
-                lastDeploymentInstanceModel
-                        .map(DeploymentInstanceModel::getSoftwareComponentInstances)
-                        .stream()
-                        .flatMap(list -> list.stream().map(SoftwareComponentInstance::getName))
+    public void setCurrentDeploymentModel(DeploymentInstanceModel currentDeploymentInstanceModel) {
+        this.busyInstancesRegistry.setCurrentDeploymentSoftwareComponentInstancesList(
+                currentDeploymentInstanceModel.getSoftwareComponentInstances().stream()
+                        .map(SoftwareComponentInstance::getName)
                         .collect(Collectors.toList())
         );
     }

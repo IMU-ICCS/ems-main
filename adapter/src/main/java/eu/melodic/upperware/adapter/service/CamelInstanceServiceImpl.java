@@ -4,7 +4,7 @@ import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
 import com.google.gson.Gson;
-import eu.melodic.upperware.adapter.service.Instance_no_provider.InstanceNoProvider;
+import eu.melodic.upperware.adapter.service.Instance_no_provider.BusyFirstInstanceNoProvider;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 public class CamelInstanceServiceImpl implements CamelInstanceService {
     private final static String SEPARATOR_NAME_SIGN = "-";
 
-    private InstanceNoProvider instanceNoProvider;
+    private BusyFirstInstanceNoProvider instanceNoProvider;
     private CamelEnricherService camelEnricherService;
     private Gson gson;
 
@@ -43,6 +43,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
         deploymentInstanceModel.setName(deploymentTypeModel.getName() + "_" + dmId);
         deploymentInstanceModel.setType(deploymentTypeModel);
 
+        instanceNoProvider.restart();
 
         softwareInstanceDetails.stream()
                 .map(this::createSoftwareComponentInstances)
@@ -54,7 +55,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                 .forEach(communicationInstances -> deploymentInstanceModel.getCommunicationInstances().addAll(communicationInstances));
 
         //changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
-        instanceNoProvider.restart(camelModel);
+        instanceNoProvider.setCurrentDeploymentModel(deploymentInstanceModel);
         return deploymentInstanceModel;
     }
 

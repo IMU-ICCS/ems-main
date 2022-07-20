@@ -3,6 +3,7 @@ package eu.melodic.upperware.adapter.service.Instance_no_provider;
 import eu.melodic.upperware.adapter.communication.activemq.model.CheckIfComponentBusyMessage;
 import eu.melodic.upperware.adapter.service.CamelInstanceNamingService;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
@@ -20,15 +21,15 @@ public class BusyInstancesRegistry {
     private final ConcurrentHashMap<String, List<Integer>> busyInstancesByComponentName;
     private final ConcurrentHashMap<String, List<Integer>> idleInstancesByComponentName;
 
-    private List<String> currentDeploymentSoftwareComponentsList;
+    @Setter private List<String> currentDeploymentSoftwareComponentInstancesList;
 
     public void processMessage(CheckIfComponentBusyMessage checkIfComponentBusyMessage) {
         String softwareComponentInstanceName = checkIfComponentBusyMessage.getComponentInstanceName();
         String softwareComponentName = CamelInstanceNamingService.getSoftwareComponentNameFromInstanceName(softwareComponentInstanceName);
         Integer softwareComponentInstanceNo = CamelInstanceNamingService.getInstanceNumberFromInstanceName(softwareComponentInstanceName);
         log.debug("Saving instanceNo: {} for component: {}", softwareComponentInstanceNo, softwareComponentInstanceName);
-        if (!currentDeploymentSoftwareComponentsList.contains(softwareComponentName)) {
-            log.error("Received instance state concerns softwareComponent not existing in the current deployment");
+        if (!currentDeploymentSoftwareComponentInstancesList.contains(softwareComponentInstanceName)) {
+            log.error("Received softwareComponentInstance does not exist in the current deployment");
         } else {
             switch (checkIfComponentBusyMessage.getInstanceStatus()) {
                 case BUSY: {
@@ -64,8 +65,8 @@ public class BusyInstancesRegistry {
         }
     }
 
-    void restart(List<String> currentDeploymentSoftwareComponentsList) {
-        this.currentDeploymentSoftwareComponentsList = currentDeploymentSoftwareComponentsList;
+    void restart(List<String> currentDeploymentSoftwareComponentInstancesList) {
+        this.currentDeploymentSoftwareComponentInstancesList = currentDeploymentSoftwareComponentInstancesList;
         this.busyInstancesByComponentName.clear();
         this.idleInstancesByComponentName.clear();
     }
