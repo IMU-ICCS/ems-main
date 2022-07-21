@@ -51,7 +51,7 @@ public class CamelToEplTranslatorProperties implements InitializingBean {
 
     // Load-annotated metric settings
     private String loadMetricAnnotation = "MELODICMetadataSchema.UtilityNotions.UtilityRelatedProperties.Utility.BusyInstanceMetric";
-    private String loadMetricVariableFormatter = "BUSY_METRIC_%s";
+    private String loadMetricVariableFormatter = "busy.%s";
 
     @Data
     public static class Dag {
