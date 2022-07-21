@@ -4,7 +4,6 @@ import camel.core.CamelModel;
 import camel.core.Feature;
 import camel.deployment.*;
 import com.google.gson.Gson;
-import eu.melodic.upperware.adapter.service.Instance_no_provider.BusyFirstInstanceNoProvider;
 import eu.melodic.upperware.adapter.service.Instance_no_provider.InstanceNoProvider;
 import eu.passage.upperware.commons.model.tools.CdoTool;
 import lombok.AllArgsConstructor;

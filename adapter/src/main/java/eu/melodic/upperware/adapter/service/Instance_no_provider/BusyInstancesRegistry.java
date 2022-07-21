@@ -38,7 +38,7 @@ public class BusyInstancesRegistry {
         usedNoByComponentName.forEach((softwareComponentName, instances) -> this.instancesByComponentName.put(
                 softwareComponentName,
                 instances.stream()
-                        .collect(Collectors.toMap(Function.identity(), i -> InstanceStatus.NOT_KNOWN))
+                        .collect(Collectors.toMap(Function.identity(), i -> InstanceStatus.BUSY))
         ));
     }
 
