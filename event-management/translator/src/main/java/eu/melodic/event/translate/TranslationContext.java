@@ -47,10 +47,10 @@ public class TranslationContext {
     public final Set<String> SLO;
 
     // Component-to-Sensor map
-    public final Map<Component, Set<Sensor>> C2S;        //XXX:TODO-LOW: Convert to strings
+    public final Map<Component, Set<TranslationContext.Sensor>> C2S;        //XXX:TODO-LOW: Convert to strings
 
     // Data-to-Sensor map
-    public final Map<Data, Set<Sensor>> D2S;                //XXX:TODO-LOW: Convert to strings
+    public final Map<Data, Set<TranslationContext.Sensor>> D2S;             //XXX:TODO-LOW: Convert to strings
 
     // Sensor Monitors set
     public final Set<Monitor> MON;                        //XXX:TODO-LOW: Remove ??
@@ -215,14 +215,15 @@ public class TranslationContext {
         else SLO.add(slo.getName());
     }
 
-    public void addComponentSensorPair(ObjectContext objContext, Sensor sensor) {
+    public void addComponentSensorPair(ObjectContext objContext, camel.metric.Sensor sensor) {
+        TranslationContext.Sensor tcSensor = new TranslationContext.Sensor(sensor);
         if (objContext != null) {
             Component comp = objContext.getComponent();
             Data data = objContext.getData();
-            if (comp != null) _addPair(C2S, comp, sensor);
-            if (data != null) _addPair(D2S, data, sensor);
+            if (comp != null) _addPair(C2S, comp, tcSensor);
+            if (data != null) _addPair(D2S, data, tcSensor);
         } else {
-            _addPair(C2S, null, sensor);
+            _addPair(C2S, null, tcSensor);
         }
     }
 
@@ -593,6 +594,20 @@ public class TranslationContext {
         public long getIntervalInMillis() {
             if (unit==null) return interval;
             return TimeUnit.MILLISECONDS.convert(interval, TimeUnit.valueOf(unit.toUpperCase()));
+        }
+    }
+
+    @lombok.Data
+    @RequiredArgsConstructor
+    public static class Sensor {
+        private final String name;
+        private final String configuration;
+        private final boolean isPush;
+
+        public Sensor(camel.metric.Sensor sensor) {
+            this.name = sensor.getName();
+            this.configuration = sensor.getConfiguration();
+            this.isPush = sensor.isIsPush();
         }
     }
 }
