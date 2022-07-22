@@ -192,6 +192,8 @@ public class CamelToEplTranslator implements Translator {
 		log.info("*********************************************************");
 		log.info("Data-to-Sensor map:\n{}", map2string( _TC.D2S ));
 		log.info("*********************************************************");
+		log.info("Monitors:\n {}", _TC.MONS );
+		log.info("*********************************************************");
 		log.info("Grouping-to-EPL Rules map:\n{}", prettifyG2R(_TC.G2R, ""));
 		log.info("*********************************************************");
 		log.info("Grouping-to-Topics map:\n{}", _TC.G2T);

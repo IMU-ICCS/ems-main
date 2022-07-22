@@ -552,7 +552,7 @@ translator:
   formula-check-enabled: true
 
   ### Sensor settings
-  sensor-configuration-annotation:
+  sensor-configuration-annotation: 'MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT'
   sensor-min-interval: 1
   sensor-default-interval: 60
 

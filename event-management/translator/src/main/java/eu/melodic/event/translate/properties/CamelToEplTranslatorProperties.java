@@ -35,7 +35,7 @@ public class CamelToEplTranslatorProperties implements InitializingBean {
     }
 
     // Translator parameters
-    private String sensorConfigurationAnnotation;
+    private String sensorConfigurationAnnotation = "MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT";
     private long sensorMinInterval;
     private long sensorDefaultInterval;
 

@@ -746,6 +746,8 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
+        if (StringUtils.isBlank(camelModelId))
+            camelModelId = currentCamelModelId;
         TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptyList();
         List<Monitor> sensors = new ArrayList<>(_tc.MON);

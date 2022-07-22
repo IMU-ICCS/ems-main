@@ -22,6 +22,7 @@ import camel.requirement.ServiceLevelObjective;
 import camel.scalability.*;
 import camel.type.*;
 import camel.unit.Unit;
+import com.google.gson.Gson;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
@@ -39,7 +40,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelAnalyzer {
     private final CamelToEplTranslatorProperties properties;
+    private final Gson gson;
 
     private List<Sink> EMS_SINKS;
 
@@ -918,7 +919,15 @@ public class ModelAnalyzer {
             log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
             //StringBuilder annPath = new StringBuilder(ann.getName());
             StringBuilder annPath = new StringBuilder(ann.getId());
-            camel.mms.MmsConcept p = (camel.mms.MmsConcept) ann;
+            camel.mms.MmsConcept p;
+            if (ann instanceof camel.mms.MmsConceptInstance) {
+                p = (camel.mms.MmsConcept) ann.eContainer();
+                log.trace("  hasAnnotation:  Adding instance parent:   id={}, name={}", p.getId(), p.getName());
+                //annPath.insert(0, p.getName() + ".");
+                annPath.insert(0, p.getId() + ".");
+            } else {
+                p = (camel.mms.MmsConcept) ann;
+            }
             while (p.getParent() != null) {
                 p = p.getParent();
                 log.trace("  hasAnnotation:  Adding parent:   id={}, name={}", p.getId(), p.getName());
@@ -1051,31 +1060,9 @@ public class ModelAnalyzer {
             return Collections.emptySet();
         }
 
-        // Create result set
-        Set<Monitor> results = new HashSet<>();
-
-        // Get sensor type and configuration
+        // Get push or pull sensor (configured)
         eu.melodic.models.interfaces.ems.Sensor monitorSensor;
-        if (sensor.isIsPush()) {
-            PushSensor pushSensor = new PushSensorImpl();
-            String port = sensor.getConfiguration();
-            try {
-                pushSensor.setPort(Integer.parseInt(port));
-            } catch (NumberFormatException nfe) {
-                log.error("    _createMonitorsForSensor(): ERROR: Invalid port, using -1: sensor={}, port={}", sensor.getName(), port);
-                pushSensor.setPort(-1);
-            }
-            monitorSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
-            log.info("    _createMonitorsForSensor(): sensor={} :: port={}, PushSensor: {}", sensor.getName(), port, pushSensor);
-        } else {
-            PullSensor pullSensor = new PullSensorImpl();
-            String className = sensor.getConfiguration();
-            pullSensor.setClassName(className);
-            pullSensor.setConfiguration(Collections.emptyList());
-            //pullSensor.setInterval(....);
-            monitorSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
-            log.info("    _createMonitorsForSensor(): sensor={} :: class-name={}, PullSensor: {}", sensor.getName(), className, pullSensor);
-        }
+        monitorSensor = _createPushOrPullSensor(sensor);
 
         // Get monitor component
         String monitorComponent = getComponentName(objContext);
@@ -1086,7 +1073,7 @@ public class ModelAnalyzer {
         }
 
         // Get additional configuration
-        String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
+        /*String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
         List<KeyValuePair> keyValuePairs = null;
         Optional<Feature> sensorConfig = sensor.getSubFeatures().stream()
                 .filter(f -> hasAnnotation(f, sensorConfigAnnotation))
@@ -1117,11 +1104,10 @@ public class ModelAnalyzer {
                         return pair;
                     })
                     .collect(Collectors.toList());
-        }
+        }*/
 
-        // Get monitor metrics and intervals
-        boolean isPull = !sensor.isIsPush();
-        long sensorInterval = Long.MAX_VALUE;    // in seconds
+        // Create results set
+        Set<Monitor> results = new HashSet<>();
         for (DAGNode parent : _TC.DAG.getParentNodes(sensorDagNode)) {
             // Get metric name from sensor
             log.info("    + _createMonitorsForSensor(): sensor={} :: parent-node={}", sensor.getName(), parent.getName());
@@ -1134,7 +1120,7 @@ public class ModelAnalyzer {
             log.info("    + _createMonitorsForSensor(): sensor={} :: metric/topic={}, component={}", sensor.getName(), monitorMetric, monitorComponent);
 
             // Get interval (if PullSensor)
-            if (isPull) {
+            /*if (isPull) {
                 Schedule sched = rmc.getSchedule();
                 if (sched != null) {
                     long schedInterval = sched.getInterval();
@@ -1148,7 +1134,7 @@ public class ModelAnalyzer {
                     }
 //XXX:ASK: WHAT IF it is a REPETITIONS schedule????
                 }
-            }
+            }*/
 
             // Create a Monitor instance
             Monitor monitor = new MonitorImpl();
@@ -1156,27 +1142,161 @@ public class ModelAnalyzer {
             monitor.setSensor(monitorSensor);
             monitor.setComponent(monitorComponent);
             monitor.setSinks(EMS_SINKS);
-            monitor.setTags(keyValuePairs);
+//            monitor.setTags(keyValuePairs);
             // watermark will be set in Coordinator
 
             results.add(monitor);
         }
 
-        // Set sensor interval
-        if (isPull) {
-            if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE)
-            {
-                sensorInterval = properties.getSensorDefaultInterval();
-            }
-            Interval iv = new IntervalImpl();
-            iv.setPeriod((int) sensorInterval);
-            iv.setUnit(Interval.UnitType.SECONDS);
-            monitorSensor.getPullSensor().setInterval(iv);
-        }
-
         log.info("    _createMonitorsForSensor(): sensor={} :: monitors={}", sensor.getName(), results);
 
         return results;
+    }
+
+    private eu.melodic.models.interfaces.ems.Sensor _createPushOrPullSensor(Sensor sensor) {
+        log.info("    _createPushOrPullSensor(): BEGIN: sensor={} : {}", sensor.getName(), sensor);
+
+        // Process sensor configuration
+        int port = -1;
+        String className = null;
+        List<KeyValuePair> sensorConfig = null;
+        Interval interval = null;
+
+        if (hasAnnotation(sensor, properties.getSensorConfigurationAnnotation())) {
+            log.info("    _createPushOrPullSensor(): Sensor configuration string is in JSON format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
+
+            if (StringUtils.isNotBlank(sensor.getConfiguration())) {
+                Map map;
+                try {
+                    map = gson.fromJson(sensor.getConfiguration(), Map.class);
+                } catch (Exception e) {
+                    log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration does not contain a valid JSON string: sensor={}, configuration={}\n",
+                            sensor.getName(), sensor.getConfiguration(), e);
+                    throw e;
+                }
+
+                try {
+                    Map<String,String> sensorConfigMap = new LinkedHashMap<>();
+                    for (Object key : map.keySet()) {
+                        Object val = map.get(key);
+                        String keyStr = (key!=null) ? key.toString() : null;
+                        String valStr = (val!=null) ? val.toString() : null;
+                        sensorConfigMap.put(keyStr, valStr);
+                    }
+                    log.info("    _createPushOrPullSensor(): Extracted sensor configuration: sensor={}, configuration={}",
+                            sensor.getName(), sensorConfigMap);
+
+                    if (sensor.isIsPush()) {
+                        // Push sensor config
+                        String portStr = sensorConfigMap.get("port");
+                        if (StringUtils.isNotBlank(portStr)) {
+                            try {
+                                port = Integer.parseInt(portStr);
+                            } catch (NumberFormatException nfe) {
+                                log.error("    _createPushOrPullSensor(): ERROR: Invalid port, using -1: sensor={}, port={}", sensor.getName(), port);
+                            }
+                        }
+                    } else {
+                        // Pull Sensor config
+                        className = sensorConfigMap.get("className");
+                        if (className == null) className = sensorConfigMap.get("class.name");
+                        if (className == null) className = sensorConfigMap.get("class-name");
+                        if (className == null) className = sensorConfigMap.get("class_name");
+                        className = className != null ? className.trim() : null;
+
+                        sensorConfig = sensorConfigMap.entrySet().stream()
+                                .map(entry -> {
+                                    KeyValuePairImpl keyValuePair = new KeyValuePairImpl();
+                                    keyValuePair.setKey(entry.getKey());
+                                    keyValuePair.setValue(entry.getValue());
+                                    return keyValuePair;
+                                })
+                                .collect(Collectors.toList());
+
+                        String periodStr = sensorConfigMap.get("intervalPeriod");
+                        if (periodStr==null) periodStr = sensorConfigMap.get("interval.period");
+                        if (periodStr==null) periodStr = sensorConfigMap.get("interval-period");
+                        if (periodStr==null) periodStr = sensorConfigMap.get("interval_period");
+                        int period = (int) properties.getSensorDefaultInterval();
+                        if (periodStr != null) {
+                            try {
+                                period = Integer.parseInt(periodStr);
+
+                                if (period < properties.getSensorMinInterval()) {
+                                    period = (int) properties.getSensorDefaultInterval();
+                                }
+                            } catch (Exception e) {
+                                log.warn("    _createPushOrPullSensor(): Invalid interval period in configuration: sensor={}, configuration={}\n",
+                                        sensor.getName(), sensorConfigMap, e);
+                            }
+                        }
+
+                        String periodUnitStr = sensorConfigMap.get("intervalUnit");
+                        if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval.unit");
+                        if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval-unit");
+                        if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval_unit");
+                        Interval.UnitType periodUnit = Interval.UnitType.SECONDS;
+                        if (periodUnitStr != null) {
+                            try {
+                                periodUnit = Interval.UnitType.valueOf(periodUnitStr.trim().toUpperCase());
+                            } catch (Exception e) {
+                                log.warn("    _createPushOrPullSensor(): Invalid interval unit in configuration. Assuming SECONDS: sensor={}, configuration={}\n",
+                                        sensor.getName(), sensorConfigMap, e);
+                            }
+                        }
+
+                        interval = new IntervalImpl();
+                        interval.setPeriod(period);
+                        interval.setUnit(periodUnit);
+                    }
+
+                } catch (Exception e) {
+                    log.error("    _createPushOrPullSensor(): ERROR: While processing sensor configuration: sensor={}, configuration={}\n",
+                            sensor.getName(), sensor.getConfiguration(), e);
+                    throw e;
+                }
+            } else {
+                log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration string is blank. It must contain config. in JSON format: sensor={}, configuration={}",
+                        sensor.getName(), sensor.getConfiguration());
+                throw new IllegalArgumentException("Sensor configuration string is blank. It must contain config. in JSON format: sensor="+sensor.getName()+", configuration="+sensor.getConfiguration());
+            }
+        } else {
+            log.info("    _createPushOrPullSensor(): Sensor configuration string has no format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
+
+            if (sensor.isIsPush()) {
+                String portStr = sensor.getConfiguration();
+                try {
+                    port = Integer.parseInt(portStr);
+                } catch (NumberFormatException nfe) {
+                    log.error("    _createPushOrPullSensor(): ERROR: Invalid port, setting port to -1: sensor={}, port={}", sensor.getName(), port);
+                }
+            } else {
+                className = sensor.getConfiguration();
+                sensorConfig = Collections.emptyList();
+                interval = new IntervalImpl();
+                interval.setPeriod((int) properties.getSensorDefaultInterval());
+                interval.setUnit(Interval.UnitType.SECONDS);
+            }
+        }
+
+        // Create PushSensor or PullSensor
+        eu.melodic.models.interfaces.ems.Sensor pushOrPullSensor;
+        if (sensor.isIsPush()) {
+            log.info("    _createPushOrPullSensor(): PUSH sensor: sensor={}", sensor.getName());
+            PushSensor pushSensor = new PushSensorImpl();
+            pushSensor.setPort(port);
+            pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
+            log.info("    _createPushOrPullSensor(): sensor={} :: port={}, PushSensor: {}", sensor.getName(), port, pushSensor);
+        } else {
+            log.info("    _createPushOrPullSensor(): PULL sensor: sensor={}", sensor.getName());
+            PullSensor pullSensor = new PullSensorImpl();
+            pullSensor.setClassName(className);
+            pullSensor.setConfiguration(sensorConfig);
+            pullSensor.setInterval(interval);
+            pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
+            log.info("    _createPushOrPullSensor(): sensor={} :: class-name={}, PullSensor: {}", sensor.getName(), className, pullSensor);
+        }
+        return pushOrPullSensor;
     }
 
     private void _checkFormulaAndComponents(TranslationContext _TC, String formula, List<Metric> componentMetrics) {
