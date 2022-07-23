@@ -502,6 +502,10 @@ baguette.client.install.parameters.BAGUETTE_INSTALLATION_MIN_DISK_FREE=1024*1024
 #baguette.client.install.clientInstallSuccessIfVarIsMissing=false
 #baguette.client.install.clientInstallErrorIfVarIsMissing=true
 
+baguette.client.install.installationContextProcessorPlugins=\
+    eu.melodic.event.baguette.client.install.plugin.AllowedTopicsProcessorPlugin, \
+    eu.melodic.event.baguette.client.install.plugin.PrometheusProcessorPlugin
+
 
 ################################################################################
 ###                 EMS - CAMEL-to-EPL Translator properties                 ###
