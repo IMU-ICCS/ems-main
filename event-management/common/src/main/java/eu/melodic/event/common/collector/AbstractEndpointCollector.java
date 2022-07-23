@@ -10,6 +10,7 @@
 package eu.melodic.event.common.collector;
 
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.common.client.SshClientProperties;
 import eu.melodic.event.common.misc.EventConstant;
 import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.EmsConstant;
@@ -43,7 +44,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
     protected final String collectorId;
     protected final AbstractEndpointCollectorProperties properties;
-    protected final CollectorContext collectorContext;
+    protected final CollectorContext<? extends SshClientProperties> collectorContext;
     protected final TaskScheduler taskScheduler;
     protected final EventBus<String,Object,Object> eventBus;
 
@@ -63,8 +64,8 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         this.allowedTopics = properties.getAllowedTopics()==null
                 ? null
                 : properties.getAllowedTopics().stream()
-                .map(s -> s.split(":")[0])
-                .collect(Collectors.toList());
+                        .map(s -> s.split(":")[0])
+                        .collect(Collectors.toList());
         this.topicMap = properties.getAllowedTopics()==null
                 ? null
                 : properties.getAllowedTopics().stream()
