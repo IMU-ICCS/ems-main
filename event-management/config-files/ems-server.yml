@@ -534,6 +534,7 @@ baguette.client.install:
   #clientInstallErrorIfVarIsMissing: true
 
   installationContextProcessorPlugins:
+    - eu.melodic.event.baguette.client.install.plugin.AllowedTopicsProcessorPlugin
     - eu.melodic.event.baguette.client.install.plugin.PrometheusProcessorPlugin
 
 

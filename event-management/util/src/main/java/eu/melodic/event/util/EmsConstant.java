@@ -17,4 +17,8 @@ public class EmsConstant {
     public final static String EVENT_PROPERTY_SOURCE_ADDRESS = "producer-host";
     public final static String EVENT_PROPERTY_ORIGINAL_DESTINATION = "original-destination";
     public final static String EVENT_PROPERTY_EFFECTIVE_DESTINATION = "effective-destination";
+
+    public final static String COLLECTOR_DESTINATION_ALIASES = "destination-aliases";
+    public final static String COLLECTOR_DESTINATION_ALIASES_DELIMITERS = "[,;: \t\r\n]+";
+    public final static String COLLECTOR_ALLOWED_TOPICS_VAR = "COLLECTOR_ALLOWED_TOPICS";
 }

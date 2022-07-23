@@ -69,6 +69,7 @@ collector:
     urlOfNodesWithoutClient: http://%s:19999/api/v1/allmetrics?format=json
     #create-topic: true
     #allowed-topics: netdata__system__cpu__user:an_alias
+    allowed-topics: ${COLLECTOR_ALLOWED_TOPICS}
     error-limit: 3
     pause-period: 60
   prometheus:
