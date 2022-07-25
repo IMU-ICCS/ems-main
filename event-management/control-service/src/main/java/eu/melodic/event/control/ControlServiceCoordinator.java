@@ -122,10 +122,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Run configuration checks and throw exceptions early (before actually using EMS)
         if (properties.isSkipTranslation()) {
             if (StringUtils.isBlank(properties.getTcLoadFile()))
-                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file has been set. Check property: control.tc-load-file");
-            if (! Paths.get(properties.getTcLoadFile()).toFile().exists())
-                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile());
-            log.warn("Model translation will be skipped, and Translation Context file will be used: {}", properties.getTcLoadFile());
+                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file or pattern has been set. Check property: control.tc-load-file");
+            log.warn("Model translation will be skipped, and a Translation Context file will be used: tc-file-pattern={}", properties.getTcLoadFile());
         }
     }
 
@@ -265,6 +263,10 @@ public class ControlServiceCoordinator implements InitializingBean {
                 try {
                     setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
 
+                    fileName = getTcFileName(camelModelId, fileName);
+                    if (Paths.get(fileName).toFile().exists()) {
+                        log.warn("ControlServiceCoordinator.processNewModel(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
+                    }
                     log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
                     java.io.Writer writer = new java.io.FileWriter(fileName);
                     com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
@@ -323,6 +325,11 @@ public class ControlServiceCoordinator implements InitializingBean {
                 setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
 
                 try {
+                    fileName = getTcFileName(camelModelId, fileName);
+                    if (! Paths.get(fileName).toFile().exists()) {
+                        log.error("ControlServiceCoordinator.processNewModel(): The specified Translation Context file does not exist: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
+                        throw new IllegalArgumentException("The specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile() + ", file-name=" + fileName);
+                    }
                     log.info("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
                     com.google.gson.Gson gson = new GsonBuilder()
@@ -565,6 +572,11 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
 
         setCurrentEmsState(EMS_STATE.READY, null);
+    }
+
+    private String getTcFileName(@NonNull String camelModelId, @NonNull String fileName) {
+        camelModelId = StringUtils.removeStart(camelModelId, "/");
+        return String.format(fileName, camelModelId.replaceAll("[^\\p{L}\\d]", "_"));
     }
 
     protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {

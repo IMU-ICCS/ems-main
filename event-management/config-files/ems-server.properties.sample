@@ -93,8 +93,8 @@ control.log-requests = ${EMS_LOG_REQUESTS:false}
 control.upperware-grouping = GLOBAL
 
 ### Debug settings - Load/Save translation results
-control.tc-load-file = ${EMS_TC_FILE:${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/_TC.json}
-control.tc-save-file = ${EMS_TC_FILE:${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/_TC.json}
+control.tc-load-file = ${EMS_TC_LOAD_FILE:${EMS_TC_FILE:${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/_TC.json}}
+control.tc-save-file = ${EMS_TC_SAVE_FILE:${EMS_TC_FILE:${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/_TC.json}}
 
 ### Process CAMEL and CP models on start-up
 ### Process CAMEL model on start-up
