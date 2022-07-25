@@ -348,7 +348,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
                 String jwtValue = req.getHeader(SecurityConstants.HEADER_STRING);
                 log.debug("jwtAuthorizationFilter: Authorization Header: {}", passwordUtil.encodePassword(jwtValue));
 
-                // ...else get JWT token from 'jwt' query parameter
+                // ...else get JWT token from 'jwtRequestParam' query parameter
                 if (StringUtils.isBlank(jwtValue)) {
                     if (StringUtils.isNotBlank(jwtRequestParam)) {
                         log.debug("jwtAuthorizationFilter: Authorization Header is missing. Checking for '{}' parameter", jwtRequestParam);

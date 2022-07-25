@@ -123,6 +123,10 @@ export default {
         },
         refreshFiles() {
             let _rootId = this.rootId;
+            if (_rootId<0) {
+                console.warn('Web Admin: File Manager: No Root exists or no Root selected');
+                return;
+            }
             let _path = this.normalizePath(this.path);
             this.restCall(
                 '/files/dir/'+_rootId+'/'+_path,
