@@ -19,8 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Installation context processor plugin for generating 'allowed-topics' setting
@@ -37,16 +39,22 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
         log.trace("AllowedTopicsProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN: task={}", taskCounter, task);
 
         StringBuilder sbAllowedTopics = new StringBuilder();
+        Set<String> addedTopicsSet = new HashSet<>();
 
         boolean first = true;
         for (Monitor monitor : task.getTranslationContext().MON) {
             try {
                 log.trace("AllowedTopicsProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
 
-                if (first) first = false;
-                else sbAllowedTopics.append(", ");
-
                 String metricName = monitor.getMetric();
+                if (!addedTopicsSet.contains(metricName)) {
+                    if (first) first = false;
+                    else sbAllowedTopics.append(", ");
+
+                    sbAllowedTopics.append(metricName);
+                    addedTopicsSet.add(metricName);
+                }
+
                 if (monitor.getSensor().isPullSensor()) {
                     // Pull Sensor
                     List<KeyValuePair> sensorConfig = monitor.getSensor().getPullSensor().getConfiguration();
@@ -57,21 +65,16 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                                 .findAny();
 
                         if (aliases.isPresent() && StringUtils.isNotBlank(aliases.get())) {
-                            boolean first2 = true;
                             for (String alias : aliases.get().trim().split(EmsConstant.COLLECTOR_DESTINATION_ALIASES_DELIMITERS)) {
                                 if (!(alias=alias.trim()).isEmpty()) {
-                                    if (first2) first2 = false;
-                                    else sbAllowedTopics.append(", ");
-                                    sbAllowedTopics.append(alias).append(":").append(metricName);
+                                    if (!alias.equals(metricName)) {
+                                        sbAllowedTopics.append(", ");
+                                        sbAllowedTopics.append(alias).append(":").append(metricName);
+                                    }
                                 }
                             }
-                        } else {
-                            sbAllowedTopics.append(metricName);
                         }
                     }
-                } else {
-                    // Push Sensor
-                    sbAllowedTopics.append(metricName);
                 }
 
                 log.trace("AllowedTopicsProcessorPlugin: Task #{}: MONITOR: metric={}, allowed-topics={}",
