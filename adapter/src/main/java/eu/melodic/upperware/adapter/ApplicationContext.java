@@ -142,9 +142,10 @@ public class ApplicationContext {
 
   //Busy Instance Number provider
   @Bean
-  public BusyInstancesRegistry busyInstancesRegistry() {
+  public BusyInstancesRegistry busyInstancesRegistry(ProactiveClientServiceForAdapter proactiveClientServiceForAdapter) {
     return new BusyInstancesRegistry(
-            new ConcurrentHashMap<>()
+            new ConcurrentHashMap<>(),
+            proactiveClientServiceForAdapter
     );
   }
 }

@@ -3,7 +3,9 @@ package eu.melodic.upperware.adapter.communication.proactive;
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.ByonNode;
+import org.activeeon.morphemic.model.Deployment;
 import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -148,6 +150,11 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
     @Override
     public List<ByonNode> getByonNodeList(String jobId) {
         return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<Deployment> getAllNodes() {
+        return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
     }
 
 }

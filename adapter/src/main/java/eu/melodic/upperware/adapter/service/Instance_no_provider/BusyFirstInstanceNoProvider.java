@@ -43,10 +43,9 @@ public class BusyFirstInstanceNoProvider extends InstanceNoProvider {
     }
 
     @Override
-    public void restart() {
-        this.busyInstancesRegistry.restart(usedNoByComponentName);
-        super.restart();
+    public void restart(String applicationId) {
+        this.busyInstancesRegistry.restart(usedNoByComponentName, applicationId);
+        super.restart(applicationId);
     }
-
 
 }

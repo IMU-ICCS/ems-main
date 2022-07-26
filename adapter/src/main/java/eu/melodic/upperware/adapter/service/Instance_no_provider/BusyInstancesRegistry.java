@@ -1,9 +1,14 @@
 package eu.melodic.upperware.adapter.service.Instance_no_provider;
 
 import eu.melodic.upperware.adapter.communication.activemq.model.CheckIfComponentBusyMessage;
+import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.service.CamelInstanceNamingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.model.Deployment;
+import org.activeeon.morphemic.model.SubmittedJobType;
+import org.apache.commons.lang3.tuple.Pair;
+import org.ow2.proactive.scheduler.common.job.JobStatus;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,28 +23,45 @@ public class BusyInstancesRegistry {
 
     //instanceName -> instance number -> status
     private final ConcurrentHashMap<String, Map<Integer, InstanceStatus>> instancesByComponentName;
+    private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
+    private Map<String, String> instanceNameByIp;
+    private String applicationId;
 
-    public void processMessage(CheckIfComponentBusyMessage checkIfComponentBusyMessage) {
+    public void processMessage(CheckIfComponentBusyMessage checkIfComponentBusyMessage, String ip) {
         String softwareComponentInstanceName = checkIfComponentBusyMessage.getComponentInstanceName();
-        String softwareComponentName = CamelInstanceNamingService.getSoftwareComponentNameFromInstanceName(softwareComponentInstanceName);
-        Integer softwareComponentInstanceNo = CamelInstanceNamingService.getInstanceNumberFromInstanceName(softwareComponentInstanceName);
-        log.debug("Saving instanceNo: {} for component: {}", softwareComponentInstanceNo, softwareComponentName);
-        if (verifyIfExistsInCurrentDeployment(softwareComponentName, softwareComponentInstanceNo)) {
-            this.instancesByComponentName.computeIfPresent(softwareComponentName, (key, instanceStatusByInstanceNumber) -> {
-                instanceStatusByInstanceNumber.put(softwareComponentInstanceNo, checkIfComponentBusyMessage.getInstanceStatus());
-                return instanceStatusByInstanceNumber;
-            });
+        if (softwareComponentInstanceName == null) {
+            if (instanceNameByIp.isEmpty()) {
+                updateNodesByIpsMap();
+            }
+            if (instanceNameByIp.containsValue(ip)) {
+                softwareComponentInstanceName = instanceNameByIp.get(ip);
+            } else {
+                log.error("Received message contains unrecognized both instance name and ip: {}", ip);
+            }
+        }
+        if (softwareComponentInstanceName != null) {
+            String softwareComponentName = CamelInstanceNamingService.getSoftwareComponentNameFromInstanceName(softwareComponentInstanceName);
+            Integer softwareComponentInstanceNo = CamelInstanceNamingService.getInstanceNumberFromInstanceName(softwareComponentInstanceName);
+            log.debug("Saving instanceNo: {} for component: {}", softwareComponentInstanceNo, softwareComponentName);
+            if (verifyIfExistsInCurrentDeployment(softwareComponentName, softwareComponentInstanceNo)) {
+                this.instancesByComponentName.computeIfPresent(softwareComponentName, (key, instanceStatusByInstanceNumber) -> {
+                    instanceStatusByInstanceNumber.put(softwareComponentInstanceNo, checkIfComponentBusyMessage.getInstanceStatus());
+                    return instanceStatusByInstanceNumber;
+                });
+            }
         }
     }
 
     //sets current deployment model
-    void restart(Map<String, List<Integer>> usedNoByComponentName) {
+    void restart(Map<String, List<Integer>> usedNoByComponentName, String applicationId) {
         this.instancesByComponentName.clear();
+        this.applicationId = applicationId;
         usedNoByComponentName.forEach((softwareComponentName, instances) -> this.instancesByComponentName.put(
                 softwareComponentName,
                 instances.stream()
                         .collect(Collectors.toMap(Function.identity(), i -> InstanceStatus.BUSY))
         ));
+        this.instanceNameByIp = new HashMap<>();
     }
 
     Integer getNotUsedInstanceNoByStatus(String softwareComponentName, InstanceStatus instanceStatus) {
@@ -75,6 +97,24 @@ public class BusyInstancesRegistry {
             return false;
         }
         return true;
+    }
+
+    private void updateNodesByIpsMap() {
+        Optional<Pair<SubmittedJobType, JobStatus>> jobStatus = proactiveClientServiceForAdapter.getJobStatus(applicationId);
+        if (jobStatus.get().getRight().equals(JobStatus.FINISHED)) {
+            this.instanceNameByIp = proactiveClientServiceForAdapter.getAllNodes().stream().filter(Deployment::getIsDeployed)
+                    .collect(Collectors.toMap(this::createIpAddress, Deployment::getNodeName));
+            log.info("Received from the scheduler ip/nodes map: {}", instanceNameByIp);
+        } else {
+            log.info("Did not update ip/nodes map because job {} is not yet finished", applicationId);
+        }
+    }
+
+    private String createIpAddress(Deployment external) {
+        if (!Objects.isNull(external.getIpAddress())) {
+            return external.getIpAddress().getValue();
+        }
+        return null;
     }
 
 }

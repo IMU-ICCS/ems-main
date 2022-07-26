@@ -15,6 +15,7 @@ public class InstanceNoProvider {
 
     //prefix -> sorted ids
     Map<String, List<Integer>> usedNoByComponentName = new HashMap<>();
+    String applicationId;
 
     public Integer getNewInstanceNoForComponent(String softwareComponentName) {
         List<Integer> usedNo = usedNoByComponentName.computeIfAbsent(softwareComponentName, key-> new ArrayList<>());
@@ -23,7 +24,8 @@ public class InstanceNoProvider {
         return firstNotUsed;
     }
 
-    public void restart() {
+    public void restart(String applicationId) {
+        this.applicationId = applicationId;
         this.usedNoByComponentName.clear();
     }
 
