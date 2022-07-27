@@ -10,10 +10,7 @@
 package eu.melodic.event.translate.analyze;
 
 import camel.constraint.*;
-import camel.core.Action;
-import camel.core.CamelModel;
-import camel.core.MeasurableAttribute;
-import camel.core.NamedElement;
+import camel.core.*;
 import camel.data.Data;
 import camel.deployment.Component;
 import camel.metric.Sensor;
@@ -23,7 +20,7 @@ import camel.requirement.OptimisationRequirement;
 import camel.requirement.RequirementModel;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.*;
-import camel.type.ValueType;
+import camel.type.*;
 import camel.unit.Unit;
 import com.google.gson.Gson;
 import eu.melodic.event.brokercep.cep.MathUtil;
@@ -42,6 +39,7 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -1162,10 +1160,15 @@ public class ModelAnalyzer {
         int port = -1;
         String className = null;
         List<KeyValuePair> sensorConfig = null;
+        Map<String, String> sensorConfigMap = null;
         Interval interval = null;
 
         // Check if sensor is annotated as a JSON-formatted-configuration element
-        if (hasAnnotation(sensor, properties.getSensorConfigurationAnnotation())) {
+        // If the configured Sensor config. annotation is set to '*' then even non-annotated
+        // sensors will also be treated like the were annotated
+        if ("*".equals(properties.getSensorConfigurationAnnotation()) ||
+                hasAnnotation(sensor, properties.getSensorConfigurationAnnotation()))
+        {
             log.info("    _createPushOrPullSensor(): Sensor configuration string is in JSON format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
 
             if (StringUtils.isNotBlank(sensor.getConfiguration())) {
@@ -1181,7 +1184,7 @@ public class ModelAnalyzer {
 
                 try {
                     // Convert Map to Map<String,String>
-                    Map<String,String> sensorConfigMap = new LinkedHashMap<>();
+                    sensorConfigMap = new LinkedHashMap<>();
                     for (Object key : map.keySet()) {
                         Object val = map.get(key);
                         String keyStr = (key!=null) ? key.toString() : null;
@@ -1190,16 +1193,6 @@ public class ModelAnalyzer {
                     }
                     log.info("    _createPushOrPullSensor(): Extracted sensor configuration: sensor={}, configuration={}",
                             sensor.getName(), sensorConfigMap);
-
-                    // Build a list of KeyValuePair's using the configuration Map
-                    sensorConfig = sensorConfigMap.entrySet().stream()
-                            .map(entry -> {
-                                KeyValuePairImpl keyValuePair = new KeyValuePairImpl();
-                                keyValuePair.setKey(entry.getKey());
-                                keyValuePair.setValue(entry.getValue());
-                                return keyValuePair;
-                            })
-                            .collect(Collectors.toList());
 
                     // Extract sensor settings from configuration Map
                     if (sensor.isIsPush()) {
@@ -1288,6 +1281,52 @@ public class ModelAnalyzer {
                 interval.setPeriod((int) properties.getSensorDefaultInterval());
                 interval.setUnit(Interval.UnitType.SECONDS);
             }
+        }
+
+        // Process sensor attributes. Attributes will override configuration string settings
+        List<Attribute> sensorAttributes = sensor.getAttributes();
+        if (sensorAttributes!=null) {
+            log.info("    _createPushOrPullSensor(): sensor={} :: Processing attributes: {}", sensor.getName(), sensorAttributes);
+            Map<String, String> attributesConfigMap =
+                    sensorAttributes.stream().filter(Objects::nonNull)
+                            .collect(Collectors.toMap(
+                                    NamedElement::getName,
+                                    attribute -> {
+                                        if (attribute.getValue() instanceof StringValue)
+                                            return ((StringValue) attribute.getValue()).getValue();
+                                        else if (attribute.getValue() instanceof BooleanValue)
+                                            return Boolean.toString(((BooleanValue) attribute.getValue()).isValue());
+                                        else if (attribute.getValue() instanceof IntValue)
+                                            return Integer.toString(((IntValue) attribute.getValue()).getValue());
+                                        else if (attribute.getValue() instanceof FloatValue)
+                                            return Float.toString(((FloatValue) attribute.getValue()).getValue());
+                                        else if (attribute.getValue() instanceof DoubleValue)
+                                            return Double.toString(((DoubleValue) attribute.getValue()).getValue());
+                                        else
+                                            throw new ModelAnalysisException("Invalid Attribute Value type: " + attribute.getValue().getClass().getName() + " in sensor configuration: sensor=" + sensor.getName() + ", attribute=" + attribute.getName());
+                                    }
+                            ));
+            log.info("    _createPushOrPullSensor(): sensor={} :: Configuration extracted from attributes (will override config. string settings): {}", sensor.getName(), attributesConfigMap);
+
+            log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap BEFORE merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
+            if (sensorConfigMap!=null)
+                sensorConfigMap.putAll(attributesConfigMap);
+            else
+                sensorConfigMap = attributesConfigMap;
+            log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap AFTER merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
+        }
+
+        // Build a list of KeyValuePair's using the configuration Map
+        sensorConfig = Collections.emptyList();
+        if (sensorConfigMap!=null) {
+            sensorConfig = sensorConfigMap.entrySet().stream()
+                    .map(entry -> {
+                        KeyValuePairImpl keyValuePair = new KeyValuePairImpl();
+                        keyValuePair.setKey(entry.getKey());
+                        keyValuePair.setValue(entry.getValue());
+                        return keyValuePair;
+                    })
+                    .collect(Collectors.toList());
         }
 
         // Create PushSensor or PullSensor

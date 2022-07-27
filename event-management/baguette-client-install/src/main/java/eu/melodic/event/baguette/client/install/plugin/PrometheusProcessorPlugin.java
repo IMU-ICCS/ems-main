@@ -46,6 +46,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                 log.trace("PrometheusProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
                 String componentName = monitor.getComponent();
                 String metricName = monitor.getMetric();
+
                 log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR: component={}, metric={}", taskCounter, componentName, metricName);
                 if (monitor.getSensor().isPullSensor()) {
                     if (monitor.getSensor().getPullSensor().getConfiguration()!=null) {
@@ -53,13 +54,13 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                                 .filter(pair->pair.getKey()!=null && pair.getValue()!=null)
                                 .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
                         log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
-                        String prometheusMetricName = config.get("prometheus.metricName");
-                        String prometheusEndpoint = config.get("prometheus.endpoint");
-                        if (StringUtils.isNotBlank(prometheusMetricName) && StringUtils.isNotBlank(prometheusEndpoint)) {
-                            prometheusConf.append("  - name: ").append(prometheusMetricName).append("\n");
+                        String prometheusJobName = config.get("prometheus.Job-Name");
+                        String prometheusEndpoint = config.get("prometheus.Endpoint");
+                        if (StringUtils.isNotBlank(prometheusJobName) && StringUtils.isNotBlank(prometheusEndpoint)) {
+                            prometheusConf.append("  - name: ").append(prometheusJobName).append("\n");
                             prometheusConf.append("    url: '").append(prometheusEndpoint).append("'\n");
                             log.trace("PrometheusProcessorPlugin: Task #{}: Extracted Prometheus config: metricName={}, endpoint={}",
-                                    taskCounter, prometheusMetricName, prometheusEndpoint);
+                                    taskCounter, prometheusJobName, prometheusEndpoint);
                         }
                     }
                 }
