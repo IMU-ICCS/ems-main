@@ -19,10 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Installation context processor plugin for generating 'allowed-topics' setting
@@ -55,22 +52,35 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                     addedTopicsSet.add(metricName);
                 }
 
+                // Get sensor configuration (as a list of KeyValuePair's)
+                List<KeyValuePair> sensorConfig = null;
                 if (monitor.getSensor().isPullSensor()) {
                     // Pull Sensor
-                    List<KeyValuePair> sensorConfig = monitor.getSensor().getPullSensor().getConfiguration();
-                    if (sensorConfig!=null) {
-                        Optional<String> aliases = sensorConfig.stream()
-                                .filter(pair -> EmsConstant.COLLECTOR_DESTINATION_ALIASES.equals(pair.getKey()))
-                                .map(KeyValuePair::getValue)
-                                .findAny();
+                    sensorConfig = monitor.getSensor().getPullSensor().getConfiguration();
+                } else {
+                    // Push Sensor
+                    Map<String, Object> props = monitor.getSensor().getPushSensor().getAdditionalProperties();
+                    if (props!=null && props.get("configuration") instanceof List) {
+                        List list = (List) props.get("configuration");
+                        if (list.size()>0 && list.get(0) instanceof KeyValuePair) {
+                            sensorConfig = list;
+                        }
+                    }
+                }
 
-                        if (aliases.isPresent() && StringUtils.isNotBlank(aliases.get())) {
-                            for (String alias : aliases.get().trim().split(EmsConstant.COLLECTOR_DESTINATION_ALIASES_DELIMITERS)) {
-                                if (!(alias=alias.trim()).isEmpty()) {
-                                    if (!alias.equals(metricName)) {
-                                        sbAllowedTopics.append(", ");
-                                        sbAllowedTopics.append(alias).append(":").append(metricName);
-                                    }
+                // Process Destination aliases, if specified in configuration
+                if (sensorConfig!=null) {
+                    Optional<String> aliases = sensorConfig.stream()
+                            .filter(pair -> EmsConstant.COLLECTOR_DESTINATION_ALIASES.equals(pair.getKey()))
+                            .map(KeyValuePair::getValue)
+                            .findAny();
+
+                    if (aliases.isPresent() && StringUtils.isNotBlank(aliases.get())) {
+                        for (String alias : aliases.get().trim().split(EmsConstant.COLLECTOR_DESTINATION_ALIASES_DELIMITERS)) {
+                            if (!(alias=alias.trim()).isEmpty()) {
+                                if (!alias.equals(metricName)) {
+                                    sbAllowedTopics.append(", ");
+                                    sbAllowedTopics.append(alias).append(":").append(metricName);
                                 }
                             }
                         }

@@ -10,17 +10,20 @@
 package eu.melodic.event.translate.analyze;
 
 import camel.constraint.*;
-import camel.core.*;
+import camel.core.Action;
+import camel.core.CamelModel;
+import camel.core.MeasurableAttribute;
+import camel.core.NamedElement;
 import camel.data.Data;
 import camel.deployment.Component;
-import camel.metric.*;
 import camel.metric.Sensor;
+import camel.metric.*;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
 import camel.requirement.RequirementModel;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.*;
-import camel.type.*;
+import camel.type.ValueType;
 import camel.unit.Unit;
 import com.google.gson.Gson;
 import eu.melodic.event.brokercep.cep.MathUtil;
@@ -39,7 +42,6 @@ import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -1162,10 +1164,12 @@ public class ModelAnalyzer {
         List<KeyValuePair> sensorConfig = null;
         Interval interval = null;
 
+        // Check if sensor is annotated as a JSON-formatted-configuration element
         if (hasAnnotation(sensor, properties.getSensorConfigurationAnnotation())) {
             log.info("    _createPushOrPullSensor(): Sensor configuration string is in JSON format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
 
             if (StringUtils.isNotBlank(sensor.getConfiguration())) {
+                // Convert JSON-formatted configuration string to Map
                 Map map;
                 try {
                     map = gson.fromJson(sensor.getConfiguration(), Map.class);
@@ -1176,6 +1180,7 @@ public class ModelAnalyzer {
                 }
 
                 try {
+                    // Convert Map to Map<String,String>
                     Map<String,String> sensorConfigMap = new LinkedHashMap<>();
                     for (Object key : map.keySet()) {
                         Object val = map.get(key);
@@ -1186,8 +1191,19 @@ public class ModelAnalyzer {
                     log.info("    _createPushOrPullSensor(): Extracted sensor configuration: sensor={}, configuration={}",
                             sensor.getName(), sensorConfigMap);
 
+                    // Build a list of KeyValuePair's using the configuration Map
+                    sensorConfig = sensorConfigMap.entrySet().stream()
+                            .map(entry -> {
+                                KeyValuePairImpl keyValuePair = new KeyValuePairImpl();
+                                keyValuePair.setKey(entry.getKey());
+                                keyValuePair.setValue(entry.getValue());
+                                return keyValuePair;
+                            })
+                            .collect(Collectors.toList());
+
+                    // Extract sensor settings from configuration Map
                     if (sensor.isIsPush()) {
-                        // Push sensor config
+                        // Push sensor config - Get port
                         String portStr = sensorConfigMap.get("port");
                         if (StringUtils.isNotBlank(portStr)) {
                             try {
@@ -1197,22 +1213,14 @@ public class ModelAnalyzer {
                             }
                         }
                     } else {
-                        // Pull Sensor config
+                        // Pull Sensor config - Get class name
                         className = sensorConfigMap.get("className");
                         if (className == null) className = sensorConfigMap.get("class.name");
                         if (className == null) className = sensorConfigMap.get("class-name");
                         if (className == null) className = sensorConfigMap.get("class_name");
                         className = className != null ? className.trim() : null;
 
-                        sensorConfig = sensorConfigMap.entrySet().stream()
-                                .map(entry -> {
-                                    KeyValuePairImpl keyValuePair = new KeyValuePairImpl();
-                                    keyValuePair.setKey(entry.getKey());
-                                    keyValuePair.setValue(entry.getValue());
-                                    return keyValuePair;
-                                })
-                                .collect(Collectors.toList());
-
+                        // Pull Sensor config - Get interval period
                         String periodStr = sensorConfigMap.get("intervalPeriod");
                         if (periodStr==null) periodStr = sensorConfigMap.get("interval.period");
                         if (periodStr==null) periodStr = sensorConfigMap.get("interval-period");
@@ -1231,6 +1239,7 @@ public class ModelAnalyzer {
                             }
                         }
 
+                        // Pull Sensor config - Get interval unit
                         String periodUnitStr = sensorConfigMap.get("intervalUnit");
                         if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval.unit");
                         if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval-unit");
@@ -1245,6 +1254,7 @@ public class ModelAnalyzer {
                             }
                         }
 
+                        // Create an Interval instance
                         interval = new IntervalImpl();
                         interval.setPeriod(period);
                         interval.setUnit(periodUnit);
@@ -1256,11 +1266,12 @@ public class ModelAnalyzer {
                     throw e;
                 }
             } else {
-                log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration string is blank. It must contain config. in JSON format: sensor={}, configuration={}",
+                log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration string is blank. It must contain configuration in JSON format: sensor={}, configuration={}",
                         sensor.getName(), sensor.getConfiguration());
                 throw new IllegalArgumentException("Sensor configuration string is blank. It must contain config. in JSON format: sensor="+sensor.getName()+", configuration="+sensor.getConfiguration());
             }
         } else {
+            // Sensor is NOT annotated as a JSON-formatted-configuration element
             log.info("    _createPushOrPullSensor(): Sensor configuration string has no format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
 
             if (sensor.isIsPush()) {
@@ -1285,8 +1296,10 @@ public class ModelAnalyzer {
             log.info("    _createPushOrPullSensor(): PUSH sensor: sensor={}", sensor.getName());
             PushSensor pushSensor = new PushSensorImpl();
             pushSensor.setPort(port);
+            pushSensor.setAdditionalProperties(Collections.singletonMap("configuration", sensorConfig));
             pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
-            log.info("    _createPushOrPullSensor(): sensor={} :: port={}, PushSensor: {}", sensor.getName(), port, pushSensor);
+            log.info("    _createPushOrPullSensor(): sensor={} :: port={}, additional-properties={}, PushSensor: {}",
+                    sensor.getName(), port, pushSensor.getAdditionalProperties(), pushSensor);
         } else {
             log.info("    _createPushOrPullSensor(): PULL sensor: sensor={}", sensor.getName());
             PullSensor pullSensor = new PullSensorImpl();
@@ -1294,7 +1307,8 @@ public class ModelAnalyzer {
             pullSensor.setConfiguration(sensorConfig);
             pullSensor.setInterval(interval);
             pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
-            log.info("    _createPushOrPullSensor(): sensor={} :: class-name={}, PullSensor: {}", sensor.getName(), className, pullSensor);
+            log.info("    _createPushOrPullSensor(): sensor={} :: class-name={}, PullSensor: {}",
+                    sensor.getName(), className, pullSensor);
         }
         return pushOrPullSensor;
     }
