@@ -28,6 +28,7 @@ import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.util.StrUtil;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -1156,164 +1157,80 @@ public class ModelAnalyzer {
     private eu.melodic.models.interfaces.ems.Sensor _createPushOrPullSensor(Sensor sensor) {
         log.info("    _createPushOrPullSensor(): BEGIN: sensor={} : {}", sensor.getName(), sensor);
 
+        Map<String, String> sensorConfigMap;
+
+        // Get configuration from JSON-string (if Sensor is annotated as JSON-formatted string)
+        sensorConfigMap = getSensorConfigurationFromJsonString(sensor);
+
+        // Get configuration from sensor attributes (will override settings from connection string)
+        Map<String, String> attributesConfigMap = getSensorConfigurationFromAttributes(sensor);
+
+        log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap BEFORE merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
+        if (sensorConfigMap != null && attributesConfigMap != null)
+            sensorConfigMap.putAll(attributesConfigMap);
+        else if (sensorConfigMap == null)
+            sensorConfigMap = attributesConfigMap;
+        log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap AFTER merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
+
         // Process sensor configuration
         int port = -1;
         String className = null;
         List<KeyValuePair> sensorConfig = null;
-        Map<String, String> sensorConfigMap = null;
         Interval interval = null;
 
-        // Check if sensor is annotated as a JSON-formatted-configuration element
-        // If the configured Sensor config. annotation is set to '*' then even non-annotated
-        // sensors will also be treated like the were annotated
-        if ("*".equals(properties.getSensorConfigurationAnnotation()) ||
-                hasAnnotation(sensor, properties.getSensorConfigurationAnnotation()))
-        {
-            log.info("    _createPushOrPullSensor(): Sensor configuration string is in JSON format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
+        if (sensorConfigMap!=null && sensorConfigMap.size()>0) {
+            // Extract sensor settings from configuration Map
+            try {
+                if (sensor.isIsPush()) {
+                    // Push sensor config - Get port
+                    String portStr = sensorConfigMap.get("port");
+                    port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
+                            String.format("    _createPushOrPullSensor(): ERROR: Invalid port. Using -1: sensor=%s, configuration=%s\n",
+                                    sensor.getName(), sensorConfigMap));
+                } else {
+                    // Pull Sensor config - Get class name
+                    className = StrUtil.getWithVariations(sensorConfigMap, "className", "").trim();
 
-            if (StringUtils.isNotBlank(sensor.getConfiguration())) {
-                // Convert JSON-formatted configuration string to Map
-                Map map;
-                try {
-                    map = gson.fromJson(sensor.getConfiguration(), Map.class);
-                } catch (Exception e) {
-                    log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration does not contain a valid JSON string: sensor={}, configuration={}\n",
-                            sensor.getName(), sensor.getConfiguration(), e);
-                    throw e;
+                    // Pull Sensor config - Get interval period
+                    String periodStr = StrUtil.getWithVariations(sensorConfigMap, "intervalPeriod", "").trim();
+                    int period = StrUtil.strToInt(periodStr, (int)properties.getSensorDefaultInterval(), (i)->i>=properties.getSensorMinInterval(), false,
+                            String.format("    _createPushOrPullSensor(): Invalid interval period in configuration: sensor=%s, configuration=%s\n",
+                                    sensor.getName(), sensorConfigMap));
+
+                    // Pull Sensor config - Get interval unit
+                    String periodUnitStr = StrUtil.getWithVariations(sensorConfigMap, "intervalUnit", "").trim();
+                    Interval.UnitType periodUnit = StrUtil.strToEnum(periodUnitStr, Interval.UnitType.class, Interval.UnitType.SECONDS, false,
+                            String.format("    _createPushOrPullSensor(): Invalid interval unit in configuration: sensor=%s, configuration=%s\n",
+                                    sensor.getName(), sensorConfigMap));
+
+                    // Create an Interval instance
+                    interval = new IntervalImpl();
+                    interval.setPeriod(period);
+                    interval.setUnit(periodUnit);
                 }
 
-                try {
-                    // Convert Map to Map<String,String>
-                    sensorConfigMap = new LinkedHashMap<>();
-                    for (Object key : map.keySet()) {
-                        Object val = map.get(key);
-                        String keyStr = (key!=null) ? key.toString() : null;
-                        String valStr = (val!=null) ? val.toString() : null;
-                        sensorConfigMap.put(keyStr, valStr);
-                    }
-                    log.info("    _createPushOrPullSensor(): Extracted sensor configuration: sensor={}, configuration={}",
-                            sensor.getName(), sensorConfigMap);
-
-                    // Extract sensor settings from configuration Map
-                    if (sensor.isIsPush()) {
-                        // Push sensor config - Get port
-                        String portStr = sensorConfigMap.get("port");
-                        if (StringUtils.isNotBlank(portStr)) {
-                            try {
-                                port = Integer.parseInt(portStr);
-                            } catch (NumberFormatException nfe) {
-                                log.error("    _createPushOrPullSensor(): ERROR: Invalid port, using -1: sensor={}, port={}", sensor.getName(), port);
-                            }
-                        }
-                    } else {
-                        // Pull Sensor config - Get class name
-                        className = sensorConfigMap.get("className");
-                        if (className == null) className = sensorConfigMap.get("class.name");
-                        if (className == null) className = sensorConfigMap.get("class-name");
-                        if (className == null) className = sensorConfigMap.get("class_name");
-                        className = className != null ? className.trim() : null;
-
-                        // Pull Sensor config - Get interval period
-                        String periodStr = sensorConfigMap.get("intervalPeriod");
-                        if (periodStr==null) periodStr = sensorConfigMap.get("interval.period");
-                        if (periodStr==null) periodStr = sensorConfigMap.get("interval-period");
-                        if (periodStr==null) periodStr = sensorConfigMap.get("interval_period");
-                        int period = (int) properties.getSensorDefaultInterval();
-                        if (periodStr != null) {
-                            try {
-                                period = Integer.parseInt(periodStr);
-
-                                if (period < properties.getSensorMinInterval()) {
-                                    period = (int) properties.getSensorDefaultInterval();
-                                }
-                            } catch (Exception e) {
-                                log.warn("    _createPushOrPullSensor(): Invalid interval period in configuration: sensor={}, configuration={}\n",
-                                        sensor.getName(), sensorConfigMap, e);
-                            }
-                        }
-
-                        // Pull Sensor config - Get interval unit
-                        String periodUnitStr = sensorConfigMap.get("intervalUnit");
-                        if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval.unit");
-                        if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval-unit");
-                        if (periodUnitStr==null) periodUnitStr = sensorConfigMap.get("interval_unit");
-                        Interval.UnitType periodUnit = Interval.UnitType.SECONDS;
-                        if (periodUnitStr != null) {
-                            try {
-                                periodUnit = Interval.UnitType.valueOf(periodUnitStr.trim().toUpperCase());
-                            } catch (Exception e) {
-                                log.warn("    _createPushOrPullSensor(): Invalid interval unit in configuration. Assuming SECONDS: sensor={}, configuration={}\n",
-                                        sensor.getName(), sensorConfigMap, e);
-                            }
-                        }
-
-                        // Create an Interval instance
-                        interval = new IntervalImpl();
-                        interval.setPeriod(period);
-                        interval.setUnit(periodUnit);
-                    }
-
-                } catch (Exception e) {
-                    log.error("    _createPushOrPullSensor(): ERROR: While processing sensor configuration: sensor={}, configuration={}\n",
-                            sensor.getName(), sensor.getConfiguration(), e);
-                    throw e;
-                }
-            } else {
-                log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration string is blank. It must contain configuration in JSON format: sensor={}, configuration={}",
-                        sensor.getName(), sensor.getConfiguration());
-                throw new IllegalArgumentException("Sensor configuration string is blank. It must contain config. in JSON format: sensor="+sensor.getName()+", configuration="+sensor.getConfiguration());
+            } catch (Exception e) {
+                log.error("    _createPushOrPullSensor(): ERROR: While processing sensor configuration: sensor={}, configuration={}\n",
+                        sensor.getName(), sensor.getConfiguration(), e);
+                throw e;
             }
+
         } else {
-            // Sensor is NOT annotated as a JSON-formatted-configuration element
-            log.info("    _createPushOrPullSensor(): Sensor configuration string has no format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
+            // Sensor is neither annotated as a JSON-formatted-configuration element
+            // nor there are any attributes. Hence, config. Map is empty
+            log.info("    _createPushOrPullSensor(): Sensor configuration is empty or missing: sensor={}, config={}, attributes={}",
+                    sensor.getName(), sensor.getConfiguration(), sensor.getAttributes());
 
             if (sensor.isIsPush()) {
                 String portStr = sensor.getConfiguration();
-                try {
-                    port = Integer.parseInt(portStr);
-                } catch (NumberFormatException nfe) {
-                    log.error("    _createPushOrPullSensor(): ERROR: Invalid port, setting port to -1: sensor={}, port={}", sensor.getName(), port);
-                }
+                port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
+                        String.format("    _createPushOrPullSensor(): ERROR: Invalid port. Using -1: sensor=%s, port=%s\n", sensor.getName(), portStr));
             } else {
                 className = sensor.getConfiguration();
-                sensorConfig = Collections.emptyList();
                 interval = new IntervalImpl();
                 interval.setPeriod((int) properties.getSensorDefaultInterval());
                 interval.setUnit(Interval.UnitType.SECONDS);
             }
-        }
-
-        // Process sensor attributes. Attributes will override configuration string settings
-        List<Attribute> sensorAttributes = sensor.getAttributes();
-        if (sensorAttributes!=null) {
-            log.info("    _createPushOrPullSensor(): sensor={} :: Processing attributes: {}", sensor.getName(), sensorAttributes);
-            Map<String, String> attributesConfigMap =
-                    sensorAttributes.stream().filter(Objects::nonNull)
-                            .collect(Collectors.toMap(
-                                    NamedElement::getName,
-                                    attribute -> {
-                                        if (attribute.getValue() instanceof StringValue)
-                                            return ((StringValue) attribute.getValue()).getValue();
-                                        else if (attribute.getValue() instanceof BooleanValue)
-                                            return Boolean.toString(((BooleanValue) attribute.getValue()).isValue());
-                                        else if (attribute.getValue() instanceof IntValue)
-                                            return Integer.toString(((IntValue) attribute.getValue()).getValue());
-                                        else if (attribute.getValue() instanceof FloatValue)
-                                            return Float.toString(((FloatValue) attribute.getValue()).getValue());
-                                        else if (attribute.getValue() instanceof DoubleValue)
-                                            return Double.toString(((DoubleValue) attribute.getValue()).getValue());
-                                        else
-                                            throw new ModelAnalysisException("Invalid Attribute Value type: " + attribute.getValue().getClass().getName() + " in sensor configuration: sensor=" + sensor.getName() + ", attribute=" + attribute.getName());
-                                    }
-                            ));
-            log.info("    _createPushOrPullSensor(): sensor={} :: Configuration extracted from attributes (will override config. string settings): {}", sensor.getName(), attributesConfigMap);
-
-            log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap BEFORE merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
-            if (sensorConfigMap!=null)
-                sensorConfigMap.putAll(attributesConfigMap);
-            else
-                sensorConfigMap = attributesConfigMap;
-            log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap AFTER merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
         }
 
         // Build a list of KeyValuePair's using the configuration Map
@@ -1350,6 +1267,77 @@ public class ModelAnalyzer {
                     sensor.getName(), className, pullSensor);
         }
         return pushOrPullSensor;
+    }
+
+    private Map<String, String> getSensorConfigurationFromAttributes(Sensor sensor) {
+        // Process sensor attributes. Attributes will override configuration string settings
+        List<Attribute> sensorAttributes = sensor.getAttributes();
+        if (sensorAttributes!=null) {
+            log.info("    getSensorConfigurationFromAttributes(): sensor={} :: Processing attributes: {}", sensor.getName(), sensorAttributes);
+            Map<String, String> attributesConfigMap =
+                    sensorAttributes.stream().filter(Objects::nonNull)
+                            .collect(Collectors.toMap(
+                                    NamedElement::getName,
+                                    attribute -> {
+                                        if (attribute.getValue() instanceof StringValue)
+                                            return ((StringValue) attribute.getValue()).getValue();
+                                        else if (attribute.getValue() instanceof BooleanValue)
+                                            return Boolean.toString(((BooleanValue) attribute.getValue()).isValue());
+                                        else if (attribute.getValue() instanceof IntValue)
+                                            return Integer.toString(((IntValue) attribute.getValue()).getValue());
+                                        else if (attribute.getValue() instanceof FloatValue)
+                                            return Float.toString(((FloatValue) attribute.getValue()).getValue());
+                                        else if (attribute.getValue() instanceof DoubleValue)
+                                            return Double.toString(((DoubleValue) attribute.getValue()).getValue());
+                                        else
+                                            throw new ModelAnalysisException("Invalid Attribute Value type: " + attribute.getValue().getClass().getName() + " in sensor configuration: sensor=" + sensor.getName() + ", attribute=" + attribute.getName());
+                                    }
+                            ));
+            log.info("    getSensorConfigurationFromAttributes(): sensor={} :: Configuration extracted from attributes (will override config. string settings): {}", sensor.getName(), attributesConfigMap);
+            return attributesConfigMap;
+        }
+        return null;
+    }
+
+    private Map<String, String> getSensorConfigurationFromJsonString(Sensor sensor) {
+        // Check if sensor is annotated as a JSON-formatted-configuration element (Annotation is configurable)
+        // If the configured annotation is set to '*' then even non-annotated sensors will be treated like they
+        // were annotated
+        Map<String, String> sensorConfigMap = null;
+        if ("*".equals(properties.getSensorConfigurationAnnotation()) ||
+                hasAnnotation(sensor, properties.getSensorConfigurationAnnotation()))
+        {
+            log.info("    _createPushOrPullSensor(): Sensor configuration string is in JSON format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
+
+            if (StringUtils.isNotBlank(sensor.getConfiguration())) {
+                // Convert JSON-formatted configuration string to Map
+                Map map;
+                try {
+                    // Convert JSON string to Map
+                    map = gson.fromJson(sensor.getConfiguration(), Map.class);
+
+                    // Convert Map to Map<String,String>
+                    sensorConfigMap = new LinkedHashMap<>();
+                    for (Object key : map.keySet()) {
+                        Object val = map.get(key);
+                        String keyStr = (key!=null) ? key.toString() : null;
+                        String valStr = (val!=null) ? val.toString() : null;
+                        sensorConfigMap.put(keyStr, valStr);
+                    }
+                    log.info("    _createPushOrPullSensor(): Extracted sensor configuration: sensor={}, configuration={}",
+                            sensor.getName(), sensorConfigMap);
+                } catch (Exception e) {
+                    log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration does not contain a valid JSON string: sensor={}, configuration={}\n",
+                            sensor.getName(), sensor.getConfiguration(), e);
+                    throw e;
+                }
+            } else {
+                log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration string is blank. It must contain configuration in JSON format: sensor={}, configuration={}",
+                        sensor.getName(), sensor.getConfiguration());
+                throw new IllegalArgumentException("Sensor configuration string is blank. It must contain config. in JSON format: sensor="+ sensor.getName()+", configuration="+ sensor.getConfiguration());
+            }
+        }
+        return sensorConfigMap;
     }
 
     private void _checkFormulaAndComponents(TranslationContext _TC, String formula, List<Metric> componentMetrics) {
