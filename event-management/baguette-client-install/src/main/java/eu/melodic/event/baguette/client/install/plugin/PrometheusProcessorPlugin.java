@@ -11,6 +11,8 @@ package eu.melodic.event.baguette.client.install.plugin;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.InstallationContextProcessorPlugin;
+import eu.melodic.event.util.StrUtil;
+import eu.melodic.models.interfaces.ems.Interval;
 import eu.melodic.models.interfaces.ems.KeyValuePair;
 import eu.melodic.models.interfaces.ems.Monitor;
 import lombok.Data;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -29,16 +32,27 @@ import java.util.stream.Collectors;
 @Data
 @Service
 public class PrometheusProcessorPlugin implements InstallationContextProcessorPlugin {
+    public final static String SENSOR_TYPE_KEY = "sensorType";
+    public final static String SENSOR_TYPE_VALUE = "prometheus";
+    public final static String NETDATA_PROMETHEUS_JOB_NAME = "prometheus.job.name";
+    public final static String NETDATA_PROMETHEUS_ENDPOINT = "prometheus.endpoint";
+    public final static String NETDATA_PROMETHEUS_AUTODISCOVERY = "prometheus.autodiscovery";
+    public final static String NETDATA_PROMETHEUS_PRIORITY = "prometheus.priority";
+    public final static String NETDATA_PROMETHEUS_CONFIGURATION_VAR = "NETDATA_PROMETHEUS_CONF";
+    public final static long DEFAULT_PRIORITY = 70000;
+
     @Override
     public void processBeforeInstallation(ClientInstallationTask task, long taskCounter) {
         log.debug("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN", taskCounter);
         log.trace("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: BEGIN: task={}", taskCounter, task);
 
         StringBuilder prometheusConf = new StringBuilder("# Generated on: ").append(new Date()).append("\n\n");
+        int headerLength = prometheusConf.length();
 
-        prometheusConf.append("# update_every: 5\n");
-        prometheusConf.append("# autodetection_retry: 0\n");
-        prometheusConf.append("# priority: 70000\n");
+        long minCollectionInterval = Long.MAX_VALUE;
+        long minAutodiscoveryInterval = Long.MAX_VALUE;
+        long minPriority = DEFAULT_PRIORITY;
+        boolean found = false;
 
         prometheusConf.append("\njobs:\n");
         for (Monitor monitor : task.getTranslationContext().MON) {
@@ -51,16 +65,51 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                 if (monitor.getSensor().isPullSensor()) {
                     if (monitor.getSensor().getPullSensor().getConfiguration()!=null) {
                         Map<String, String> config = monitor.getSensor().getPullSensor().getConfiguration().stream()
-                                .filter(pair->pair.getKey()!=null && pair.getValue()!=null)
+                                .filter(pair -> pair.getKey() != null && pair.getValue() != null)
                                 .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
                         log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
-                        String prometheusJobName = config.get("prometheus.Job-Name");
-                        String prometheusEndpoint = config.get("prometheus.Endpoint");
-                        if (StringUtils.isNotBlank(prometheusJobName) && StringUtils.isNotBlank(prometheusEndpoint)) {
-                            prometheusConf.append("  - name: ").append(prometheusJobName).append("\n");
-                            prometheusConf.append("    url: '").append(prometheusEndpoint).append("'\n");
-                            log.trace("PrometheusProcessorPlugin: Task #{}: Extracted Prometheus config: metricName={}, endpoint={}",
-                                    taskCounter, prometheusJobName, prometheusEndpoint);
+
+                        // Get Prometheus related settings
+                        String sensorType = StrUtil.getWithNormalized(config, SENSOR_TYPE_KEY, SENSOR_TYPE_VALUE);
+                        String prometheusJobName = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_JOB_NAME);
+                        String prometheusEndpoint = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_ENDPOINT);
+                        log.trace("PrometheusProcessorPlugin: Task #{}: Prometheus Job settings: type={}, name={}, endpoint={}",
+                                taskCounter, sensorType, prometheusJobName, prometheusEndpoint);
+                        if (SENSOR_TYPE_VALUE.equals(sensorType)) {
+                            if (StringUtils.isNotBlank(prometheusJobName) && StringUtils.isNotBlank(prometheusEndpoint)) {
+                                prometheusConf.append("  - name: '").append(prometheusJobName).append("'\n");
+                                prometheusConf.append("    url: '").append(prometheusEndpoint).append("'\n");
+                                log.trace("PrometheusProcessorPlugin: Task #{}: Extracted Prometheus config: metricName={}, endpoint={}",
+                                        taskCounter, prometheusJobName, prometheusEndpoint);
+                                found = true;
+
+                                // Get monitor interval
+                                Interval interval = monitor.getSensor().getPullSensor().getInterval();
+                                if (interval != null) {
+                                    int period = interval.getPeriod();
+                                    TimeUnit unit = TimeUnit.SECONDS;
+                                    if (interval.getUnit() != null) {
+                                        unit = TimeUnit.valueOf(interval.getUnit().toString());
+                                    }
+                                    long periodInSeconds = TimeUnit.SECONDS.convert(period, unit);
+                                    if (periodInSeconds > 0)
+                                        minCollectionInterval = Math.min(minCollectionInterval, periodInSeconds);
+                                }
+
+                                // Get autodetection interval
+                                String autodiscoveryStr = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_AUTODISCOVERY);
+                                int autodiscoveryInSeconds = StrUtil.strToInt(autodiscoveryStr, 0, i -> i >= 0, false, null);
+                                if (autodiscoveryInSeconds > 0)
+                                    minAutodiscoveryInterval = Math.min(minAutodiscoveryInterval, autodiscoveryInSeconds);
+
+                                // Get priority
+                                String priorityStr = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_PRIORITY);
+                                int priority = StrUtil.strToInt(priorityStr, (int)DEFAULT_PRIORITY, i -> i >= 0, false, null);
+                                if (priority >= 0)
+                                    minPriority = Math.min(minPriority, priority);
+                            }
+                        } else {
+                            log.debug("PrometheusProcessorPlugin: Task #{}: Sensor type is not Prometheus: {}", taskCounter, sensorType);
                         }
                     }
                 }
@@ -70,9 +119,24 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
             }
         }
         log.debug("PrometheusProcessorPlugin: Task #{}: Netdata Prometheus configuration: \n{}", taskCounter, prometheusConf);
+        log.debug("PrometheusProcessorPlugin: Task #{}: Netdata Prometheus: found={}, collection-interval={}, autodiscovery={}, priority={}",
+                taskCounter, found, minCollectionInterval, minAutodiscoveryInterval, minPriority);
 
-        task.getNodeRegistryEntry().getPreregistration().put("NETDATA_PROMETHEUS_CONF", prometheusConf.toString());
-        log.debug("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: END", taskCounter);
+        if (!found) {
+            task.getNodeRegistryEntry().getPreregistration().put(NETDATA_PROMETHEUS_CONFIGURATION_VAR, "");
+            log.debug("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: END: no prometheus.conf update", taskCounter);
+        } else
+        {
+            if (minCollectionInterval < Long.MAX_VALUE)
+                prometheusConf.insert(headerLength, "update_every: " + minCollectionInterval + "\n");
+            if (minAutodiscoveryInterval < Long.MAX_VALUE)
+                prometheusConf.insert(headerLength, "autodetection_retry: " + minAutodiscoveryInterval + "\n");
+            if (minPriority != DEFAULT_PRIORITY)
+                prometheusConf.insert(headerLength, "priority: " + minPriority + "\n");
+
+            task.getNodeRegistryEntry().getPreregistration().put(NETDATA_PROMETHEUS_CONFIGURATION_VAR, prometheusConf.toString());
+            log.debug("PrometheusProcessorPlugin: Task #{}: processBeforeInstallation: END", taskCounter);
+        }
     }
 
     @Override
