@@ -19,7 +19,7 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
@@ -46,12 +46,12 @@
 
 
     <properties>
-        <melodic.version>5.0.0-SNAPSHOT</melodic.version>
+        <melodic.version>5.5.0-SNAPSHOT</melodic.version>
 
         <!-- version for all paasage components-->
         <camel.version>4.5.0-SNAPSHOT</camel.version>
 
-        <interfaces.version>5.0.0-SNAPSHOT</interfaces.version>
+        <interfaces.version>5.5.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

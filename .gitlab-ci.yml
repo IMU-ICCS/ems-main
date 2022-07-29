@@ -281,11 +281,7 @@ build:cp-parser:
 deploy:melodic-upperware:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -297,11 +293,7 @@ deploy:melodic-upperware:
 deploy:upperware-metamodel:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -313,11 +305,7 @@ deploy:upperware-metamodel:
 deploy:jwt-commons:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -329,11 +317,7 @@ deploy:jwt-commons:
 deploy:melodic-commons:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -345,11 +329,7 @@ deploy:melodic-commons:
 deploy:melodic-cache:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -361,11 +341,7 @@ deploy:melodic-cache:
 deploy:jwt-server:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -378,11 +354,7 @@ deploy:jwt-server:
 deploy:utility-generator:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -395,11 +367,7 @@ deploy:utility-generator:
 deploy:zpp-solver:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -411,11 +379,7 @@ deploy:zpp-solver:
 deploy:adapter:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -428,11 +392,7 @@ deploy:adapter:
 deploy:cp-generator:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -445,11 +405,7 @@ deploy:cp-generator:
 deploy:cp-solver:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part6:cp-solver
@@ -465,11 +421,7 @@ deploy:cp-solver:
 deploy:ems-server:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part3:ems
@@ -484,11 +436,7 @@ deploy:ems-server:
 deploy:metasolver:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -501,11 +449,7 @@ deploy:metasolver:
 deploy:mq-adapter:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -518,11 +462,7 @@ deploy:mq-adapter:
 deploy:gui-backend:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -551,11 +491,7 @@ deploy:gui-backend:
 deploy:cp-parser:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -569,11 +505,7 @@ deploy:cp-parser:
 deploy-solvers-part1:nc-solver:
   stage: deploy-solvers-part1
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -590,11 +522,7 @@ deploy-solvers-part1:nc-solver:
 deploy-solvers-part2:pt-solver:
   stage: deploy-solvers-part2
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -611,11 +539,7 @@ deploy-solvers-part2:pt-solver:
 deploy-solvers-part3:mcts-solver:
   stage: deploy-solvers-part3
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -632,11 +556,7 @@ deploy-solvers-part3:mcts-solver:
 deploy-solvers-part4:gen-solver:
   stage: deploy-solvers-part4
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
-    - proactive-dev
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
