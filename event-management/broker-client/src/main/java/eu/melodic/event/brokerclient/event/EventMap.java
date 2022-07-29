@@ -9,15 +9,16 @@
 
 package eu.melodic.event.brokerclient.event;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @Getter
 @Slf4j
-public class EventMap extends HashMap<String, Object> implements Serializable {
+public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
     public EventMap() {
         super();
     }
