@@ -24,7 +24,7 @@ public class BusyInstancesRegistry {
     //instanceName -> instance number -> status
     private final ConcurrentHashMap<String, Map<Integer, InstanceStatus>> instancesByComponentName;
     private final ProactiveClientServiceForAdapter proactiveClientServiceForAdapter;
-    private Map<String, String> instanceNameByIp;
+    private Map<String, String> instanceNameByIp = new HashMap<>();
     private String applicationId;
 
     public void processMessage(CheckIfComponentBusyMessage checkIfComponentBusyMessage, String ip) {
@@ -36,7 +36,7 @@ public class BusyInstancesRegistry {
             if (instanceNameByIp.containsValue(ip)) {
                 softwareComponentInstanceName = instanceNameByIp.get(ip);
             } else {
-                log.error("Received message contains unrecognized both instance name and ip: {}", ip);
+                log.error("Received message contains unrecognized both instance name and ip: {}. Aborting message", ip);
             }
         }
         if (softwareComponentInstanceName != null) {

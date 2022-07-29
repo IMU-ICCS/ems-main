@@ -34,7 +34,8 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     private Gson gson;
 
     @Override
-    public DeploymentInstanceModel createDeploymentInstanceModel(DeploymentTypeModel deploymentTypeModel, List<SoftwareInstanceDetail> softwareInstanceDetails) {
+    public DeploymentInstanceModel createDeploymentInstanceModel(DeploymentTypeModel deploymentTypeModel, List<SoftwareInstanceDetail> softwareInstanceDetails,
+                                                                 String applicationId) {
 
         CamelModel camelModel = (CamelModel) deploymentTypeModel.eContainer();
         int dmId = camelModel.getDeploymentModels().size();
@@ -53,7 +54,7 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
                 .forEach(communicationInstances -> deploymentInstanceModel.getCommunicationInstances().addAll(communicationInstances));
 
         //changeNames(deploymentInstanceModel.getSoftwareComponentInstances(), camelModel);
-        instanceNoProvider.restart();
+        instanceNoProvider.restart(applicationId);
         return deploymentInstanceModel;
     }
 

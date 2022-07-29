@@ -9,7 +9,6 @@ import lombok.Data;
 public class CheckIfComponentBusyMessage {
 
     @SerializedName("instanceName")
-    @NotNull
     private String componentInstanceName;
 
     @SerializedName("instanceStatus")
