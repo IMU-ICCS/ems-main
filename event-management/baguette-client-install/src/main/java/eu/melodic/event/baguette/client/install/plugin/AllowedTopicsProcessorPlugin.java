@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.install.plugin;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.InstallationContextProcessorPlugin;
 import eu.melodic.event.util.EmsConstant;
+import eu.melodic.event.util.StrUtil;
 import eu.melodic.models.interfaces.ems.KeyValuePair;
 import eu.melodic.models.interfaces.ems.Monitor;
 import lombok.Data;
@@ -71,7 +72,8 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                 // Process Destination aliases, if specified in configuration
                 if (sensorConfig!=null) {
                     Optional<String> aliases = sensorConfig.stream()
-                            .filter(pair -> EmsConstant.COLLECTOR_DESTINATION_ALIASES.equals(pair.getKey()))
+                            //.filter(pair -> EmsConstant.COLLECTOR_DESTINATION_ALIASES.equals(pair.getKey()))
+                            .filter(pair -> StrUtil.compareNormalized(pair.getKey(), EmsConstant.COLLECTOR_DESTINATION_ALIASES))
                             .map(KeyValuePair::getValue)
                             .findAny();
 
