@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server.coordinator;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.GROUPING;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,8 @@ public class TwoLevelCoordinator extends NoopCoordinator {
         this.nodeGrouping = groupings.get(1);
         log.info("TwoLevelCoordinator.initialize(): Groupings: top-level={}, node-level={}",
                 globalGrouping, nodeGrouping);
+
+        server.getSelfHealingManager().setMode(SelfHealingManager.MODE.ALL);
     }
 
     @Override

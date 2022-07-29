@@ -12,8 +12,10 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.common.recovery.RecoveryConstant;
+import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.*;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -44,6 +46,8 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
     private NodeRegistry nodeRegistry;
     @Autowired
     private EventBus<String,Object,Object> eventBus;
+    @Autowired @Getter
+    private SelfHealingManager<NodeRegistryEntry> selfHealingManager;
 
     private Sshd server;
 
