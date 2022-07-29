@@ -745,10 +745,11 @@ public class BrokerClientApp {
     protected static void usage() {
         log.info("BrokerClientApp: Usage: ");
         log.info("BrokerClientApp: client list [-U<USERNAME> [-P<PASSWORD]] <URL> ");
-        log.info("BrokerClientApp: client publish [ -U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <VALUE> <LEVEL> ");
-        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <JSON-PAYLOAD> ");
-        log.info("BrokerClientApp: client publish3 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <TEXT-PAYLOAD> ");
+        log.info("BrokerClientApp: client publish [ -U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <VALUE> <LEVEL> [<PROPERTY>]*");
+        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <JSON-PAYLOAD>  [<PROPERTY>]*");
+        log.info("BrokerClientApp: client publish3 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <TEXT-PAYLOAD>  [<PROPERTY>]*");
         log.info("BrokerClientApp:     <MSG-TYPE>: text, object, bytes, map");
+        log.info("BrokerClientApp:     <PROPERTY>: <Property name>=<Property value>  (use quotes if needed)");
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");
