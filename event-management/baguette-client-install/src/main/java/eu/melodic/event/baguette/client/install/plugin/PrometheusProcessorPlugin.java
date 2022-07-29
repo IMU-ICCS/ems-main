@@ -36,7 +36,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
     public final static String SENSOR_TYPE_VALUE = "prometheus";
     public final static String NETDATA_PROMETHEUS_JOB_NAME = "prometheus.job.name";
     public final static String NETDATA_PROMETHEUS_ENDPOINT = "prometheus.endpoint";
-    public final static String NETDATA_PROMETHEUS_AUTODISCOVERY = "prometheus.autodiscovery";
+    public final static String NETDATA_PROMETHEUS_AUTODETECTION = "prometheus.autodetection";
     public final static String NETDATA_PROMETHEUS_PRIORITY = "prometheus.priority";
     public final static String NETDATA_PROMETHEUS_CONFIGURATION_VAR = "NETDATA_PROMETHEUS_CONF";
     public final static long DEFAULT_PRIORITY = 70000;
@@ -50,7 +50,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
         int headerLength = prometheusConf.length();
 
         long minCollectionInterval = Long.MAX_VALUE;
-        long minAutodiscoveryInterval = Long.MAX_VALUE;
+        long minAutodetectionInterval = Long.MAX_VALUE;
         long minPriority = DEFAULT_PRIORITY;
         boolean found = false;
 
@@ -97,10 +97,10 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                                 }
 
                                 // Get autodetection interval
-                                String autodiscoveryStr = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_AUTODISCOVERY);
-                                int autodiscoveryInSeconds = StrUtil.strToInt(autodiscoveryStr, 0, i -> i >= 0, false, null);
-                                if (autodiscoveryInSeconds > 0)
-                                    minAutodiscoveryInterval = Math.min(minAutodiscoveryInterval, autodiscoveryInSeconds);
+                                String autodetectionStr = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_AUTODETECTION);
+                                int autodetectionInSeconds = StrUtil.strToInt(autodetectionStr, 0, i -> i >= 0, false, null);
+                                if (autodetectionInSeconds > 0)
+                                    minAutodetectionInterval = Math.min(minAutodetectionInterval, autodetectionInSeconds);
 
                                 // Get priority
                                 String priorityStr = StrUtil.getWithNormalized(config, NETDATA_PROMETHEUS_PRIORITY);
@@ -119,8 +119,8 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
             }
         }
         log.debug("PrometheusProcessorPlugin: Task #{}: Netdata Prometheus configuration: \n{}", taskCounter, prometheusConf);
-        log.debug("PrometheusProcessorPlugin: Task #{}: Netdata Prometheus: found={}, collection-interval={}, autodiscovery={}, priority={}",
-                taskCounter, found, minCollectionInterval, minAutodiscoveryInterval, minPriority);
+        log.debug("PrometheusProcessorPlugin: Task #{}: Netdata Prometheus: found={}, collection-interval={}, autodetection={}, priority={}",
+                taskCounter, found, minCollectionInterval, minAutodetectionInterval, minPriority);
 
         if (!found) {
             task.getNodeRegistryEntry().getPreregistration().put(NETDATA_PROMETHEUS_CONFIGURATION_VAR, "");
@@ -129,8 +129,8 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
         {
             if (minCollectionInterval < Long.MAX_VALUE)
                 prometheusConf.insert(headerLength, "update_every: " + minCollectionInterval + "\n");
-            if (minAutodiscoveryInterval < Long.MAX_VALUE)
-                prometheusConf.insert(headerLength, "autodetection_retry: " + minAutodiscoveryInterval + "\n");
+            if (minAutodetectionInterval < Long.MAX_VALUE)
+                prometheusConf.insert(headerLength, "autodetection_retry: " + minAutodetectionInterval + "\n");
             if (minPriority != DEFAULT_PRIORITY)
                 prometheusConf.insert(headerLength, "priority: " + minPriority + "\n");
 
