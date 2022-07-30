@@ -43,7 +43,7 @@ export const FORM_SPECS = {
                 'camel-form': {
                     'fields': [
                         { 'name': 'applicationId', 'text': 'CAMEL model path' },
-                        { 'name': 'watermark.user', 'text': '-- User', 'defaultValue': function(_this) { return _this.authUsername ?? _this.username ?? 'unknown'; } },
+                        { 'name': 'watermark.user', 'text': '-- User', 'defaultValue': function(_this) { return ('authUsername' in _this) ? _this.authUsername : ('username' in _this) ? _this.username : 'unknown'; } },
                         { 'name': 'watermark.system', 'text': '-- System', 'defaultValue': 'Ems-Web-Admin' },
                         { 'name': 'watermark.uuid', 'text': '-- UUID', 'defaultValue': function(_this) { return _this.create_UUID(); } },
                         { 'name': 'watermark.date', 'text': '-- Date', 'defaultValue': function() { return new Date().getTime(); } },
