@@ -26,6 +26,7 @@
     "vue-json-pretty": "^2.0.6",
     "vue-router": "^4.0.14",
     "vue-world-map": "^0.1.1",
+    "vue3-ace-editor": "^2.2.2",
     "vue3-blocks-tree": "^0.5.2"
   },
   "devDependencies": {
