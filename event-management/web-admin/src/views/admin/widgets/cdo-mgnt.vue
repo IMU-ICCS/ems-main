@@ -39,8 +39,8 @@
                         &nbsp;
                         <span v-if="getCdoItemLinkByType(type)">
                             <a href="javascript:void(0)" class="link-primary" v-on:click="cdoExport(path)">{{path}}</a>
-                            &nbsp;&nbsp;
-                            <a href="javascript:void(0);" v-on:click="gotoRestPane(type, path)" style="color: green;"><small><i class="fas fa-forward" /></small></a>
+                            <a href="javascript:void(0);" v-on:click="gotoRestPane(type, path)" style="color: green; margin-left: 5px;"><small><i class="fas fa-forward" /></small></a>
+                            <a href="javascript:void(0);" v-on:click="openInViewer(type, path, $event)" style="color: blue; margin-left: 5px;"><small><i class="fas fa-eye" /></small></a>
                         </span>
                         <span v-else>{{path}}</span>
                         <span class="float-right text-sm font-italic" style="color:grey;"><img :src="getCdoItemIconByType(type)" width="18" height="18" :title="getCdoItemTextByType(type)" /></span><br/>
@@ -96,11 +96,57 @@
 
         </div>
     </div>
+
+    <teleport to="body" :disabled="!showModal" v-if="showModal">
+        <Modal id="cdo-viewer" width="80%" @close-modal-request="showModal=false">
+            <template v-slot:header>
+                <div style="width:100%; display: flex; justify-content: center;">
+                    <b>[CDO] {{modalPath}}</b>
+                    <a href="#" @click="showModal=!showModal" style="position:absolute; right:0;">
+                        <span style="color: grey; font-weight: normal;"><i class="fas fa-times" /></span>
+                    </a>
+                </div>
+            </template>
+
+            <div style="width: 100%; height: 100%; box-sizing: border-box; overflow: hidden;">
+                <!--<textarea v-model="modalText" :readonly="! modalTextEditable" style="width: 100%; height: 100%; box-sizing: border-box; white-space: pre; overflow: auto;" />-->
+                <AceEditor
+                        id="ace-editor-1"
+                        v-model="modalText"
+                        mode="xml"
+                        theme="cobalt"
+                        :readonly="! modalTextEditable"
+                        style="width: 100%; height: 100%; box-sizing: border-box;"
+                        :showModeList="false"
+                        :showThemeList="false"
+                        :showReadOnly="false"
+                />
+            </div>
+
+            <template v-slot:footer>
+                <div style="width:100%; text-align: center;">
+                    <button v-on:click="saveToFile(createFileName(modalPath), modalText)" class="btn btn-outline-dark btn-sm"><i class="fas fa-download" /> Download to file</button>
+                    &nbsp;&nbsp;&nbsp;
+                    <button v-on:click="copyToClipboard(modalText)" class="btn btn-outline-dark btn-sm"><i class="fas fa-copy" /> Copy to clipboard</button>
+                    &nbsp;&nbsp;&nbsp;
+                    <button v-if="modalTextEditable" v-on:click="saveToCdo(modalPath, modalText, $event)" class="btn btn-outline-dark btn-sm"><i class="fas fa-save" /> Save to CDO</button>
+                </div>
+                <div style="width:10%; text-align: right;">
+                    &nbsp;&nbsp;&nbsp;
+                    <button v-on:click="showModal=!showModal" class="btn btn-dark btn-sm">Close</button>
+                </div>
+            </template>
+        </Modal>
+    </teleport>
+
 </template>
 
 <script>
 const $ = require('jquery');
 import TextareaDnd from './textarea-dnd.vue';
+import Modal from '@/components/modal/modal.vue';
+
+import AceEditor from '@/components/ace-editor/ace-editor';
 
 import iconCamelModel  from "./img/camel-model-32.png";
 import iconCpModel  from "./img/cp-model-32.png";
@@ -109,7 +155,7 @@ import iconOther  from "./img/unknown-64.png";
 
 export default {
     name: 'Manage CDO repository',
-    components: { TextareaDnd },
+    components: { TextareaDnd, Modal, AceEditor },
     props: {
         restCallRootId: String,
     },
@@ -121,6 +167,11 @@ export default {
             cdoTreeError: '',
             cdoImportSuccess: '',
             cdoImportError: '',
+            showModal: false,
+            modalPath: '',
+            modalText: '',
+            modalMime: '',
+            modalTextEditable: false,
         };
     },
     methods: {
@@ -243,7 +294,7 @@ export default {
             this.cdoImportError = '';
         },
 
-        callCdoEndpoint(url,descr,method,contentType,data,dataType,fnSuccess,fnError) {
+        callCdoEndpoint(url,descr,method,contentType,data,dataType,fnSuccess,fnError,fnAlways) {
             url = url.replace(/\/+/gi, '/');
             this.$nextTick(() => {
                 if (descr && descr.trim()!=='') descr = ' for '+descr; else descr = '';
@@ -253,13 +304,15 @@ export default {
                 let options = {
                     url: url,
                     complete: function(xhr, status) {
-                        status;
                         //console.log('Call completed to CDO REST endpoint'+descr+': ', url, ' => ', status, xhr);
                         if (xhr.readyState==4 && xhr.status>=200 && xhr.status<300) {
-                            fnSuccess( xhr.responseText );
+                            let contentType = xhr.getResponseHeader("content-type") || "";
+                            fnSuccess( xhr.responseText, contentType );
                         } else {
                             fnError( _this.createErrorMessage(xhr) );
                         }
+                        if (fnAlways)
+                            fnAlways(xhr, status);
                     }
                 };
                 if (method) options['type'] = method;
@@ -324,7 +377,79 @@ export default {
                 } else
                     console.log('Ignoring type: '+type);
             }
-        }
+        },
+
+        openInViewer(type, path, e) {
+            this.cdoTreeError = '';
+            let spinner;
+            $(e.target).after(spinner = $(`
+                        <div class="spinner-border spinner-border-sm text-info" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+            `));
+            $(e.target).hide();
+            this.callCdoEndpoint('/info/cdo/'+path, null, 'GET', null, null, 'text',
+                    (responseText, contentType) => {
+                        this.modalPath = path;
+                        this.modalText = responseText;
+                        this.modalMime = contentType;
+                        this.showModal = true;
+                    },
+                    (error) => this.cdoTreeError = error,
+                    () => {
+                        $(e.target).show();
+                        spinner.remove();
+                    }
+            );
+        },
+        copyToClipboard(data) {
+            navigator.clipboard.writeText(data).then(
+                function() {
+                    //console.log('Copying to clipboard was successful!');
+                },
+                function(err) {
+                    console.error('Could not copy text to clipboard: ', err);
+                    alert('Could not copy text to clipboard: ' + err);
+                }
+            );
+        },
+        saveToCdo(path, data, e) {
+            // Save current #cdo-import-form contents
+//            let oldPath = $('#cdo-import-resource-path').val();
+//            let oldOp = $('#cdo-import-operation-2').prop("checked");
+//            let oldData = $('#cdo-import-text').val();
+
+            let btSave = null;
+            let icon = null;
+            let spinner = null;
+            if (e && e.target) {
+                btSave = $(e.target);
+                icon = btSave.find('i');
+                spinner = icon.before(`
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                `);
+                icon.hide();
+                btSave.prop("disabled", true);
+            }
+
+            // Update #cdo-import-form with the given data
+            $('#cdo-import-resource-path').val(path);
+            $('#cdo-import-operation-2').prop("checked", true);
+            $('#cdo-import-text').val(data);
+
+            // Send form to CDO
+
+            // Restore #cdo-import-form with its previous contents
+//            $('#cdo-import-resource-path').val(oldPath);
+//            $(oldOp ? '#cdo-import-operation-2' : '#cdo-import-operation-1').prop("checked", true);
+//            $('#cdo-import-text').val(oldData);
+
+            if (spinner!=null) spinner.remove();
+            if (icon!=null) icon.show();
+            if (btSave!=null) btSave.prop("disabled", false);
+        },
     }
 }
 </script>
