@@ -28,6 +28,7 @@
                     <table id="files" class="table table-striped table-hover table-sm">
                         <thead>
                             <tr id="columns">
+                                <th scope="col" class="p-0">&nbsp;</th>
                                 <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;File</th>
                                 <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;Type</th>
                                 <th scope="col" v-on:click="sortColumn" style="cursor: pointer; white-space: nowrap;"><i class="fas fa-sort" />&nbsp;Size</th>
@@ -37,6 +38,7 @@
                         </thead>
                         <tbody>
                             <tr v-if="! isRoot()">
+                                <td></td>
                                 <td><a href="javascript:void(0)" v-on:click="folderUp"><i class="fas fa-arrow-up" /> ..</a></td>
                                 <td></td>
                                 <td></td>
@@ -44,6 +46,9 @@
                                 <td></td>
                             </tr>
                             <tr v-for="f in files" :key="f" style="font-size: small;">
+                                <td class="align-middle p-0 pl-1">
+                                    <small><a v-if="!f.dir" href="javascript:void(0);" v-on:click="openInViewer(f.type, f.path, $event)" style="color: green"><i class="fas fa-eye" /></a></small>
+                                </td>
                                 <td>
                                     <a v-if="!f.noLink" href="javascript:void(0)" v-on:click="fileClick(f)">{{f.path.substring(1)}}</a>
                                     <span v-else>{{f.path.substring(1)}}</span>
@@ -62,13 +67,59 @@
             </div>
         </div>
     </div>
+
+    <teleport to="body" :disabled="!showModal" v-if="showModal">
+        <Modal id="cdo-viewer" width="80%" @close-modal-request="showModal=false">
+            <template v-slot:header>
+                <div style="width:100%; display: flex; justify-content: center;">
+                    <b>[File] {{modalPath}}</b>
+                    <a href="#" @click="showModal=!showModal" style="position:absolute; right:0;">
+                        <span style="color: grey; font-weight: normal;"><i class="fas fa-times" /></span>
+                    </a>
+                </div>
+            </template>
+
+            <div style="width: 100%; height: 100%; box-sizing: border-box; overflow: hidden;">
+                <!--<textarea v-model="modalText" :readonly="! modalTextEditable" style="width: 100%; height: 100%; box-sizing: border-box; white-space: pre; overflow: auto;" />-->
+                <AceEditor
+                        id="ace-editor-1"
+                        v-model="modalText"
+                        mode="xml"
+                        theme="cobalt"
+                        :readonly="! modalTextEditable"
+                        style="width: 100%; height: 100%; box-sizing: border-box;"
+                        :showModeList="false"
+                        :showThemeList="false"
+                        :showReadOnly="false"
+                />
+            </div>
+
+            <template v-slot:footer>
+                <div style="width:100%; text-align: center;">
+                    <button v-on:click="downloadFile(rootId, modalPath)" class="btn btn-outline-dark btn-sm"><i class="fas fa-download" /> Download to file</button>
+                    &nbsp;&nbsp;&nbsp;
+                    <button v-on:click="copyToClipboard(modalText)" class="btn btn-outline-dark btn-sm"><i class="fas fa-copy" /> Copy to clipboard</button>
+                    &nbsp;&nbsp;&nbsp;
+                    <button v-if="modalTextEditable" v-on:click="saveToCdo(modalPath, modalText, $event)" class="btn btn-outline-dark btn-sm"><i class="fas fa-save" /> Save to CDO</button>
+                </div>
+                <div style="width:10%; text-align: right;">
+                    &nbsp;&nbsp;&nbsp;
+                    <button v-on:click="showModal=!showModal" class="btn btn-dark btn-sm">Close</button>
+                </div>
+            </template>
+        </Modal>
+    </teleport>
 </template>
 
 <script>
 const $ = require('jquery');
 
+import Modal from '@/components/modal/modal.vue';
+import AceEditor from '@/components/ace-editor/ace-editor';
+
 export default {
     name: 'File Explorer',
+    components: { Modal, AceEditor },
     data() {
         return {
             disabled: false,
@@ -77,6 +128,10 @@ export default {
             path: '',
             pathOk: '',
             files: [ ],
+            showModal: false,
+            modalPath: '',
+            modalText: '',
+            modalTextEditable: false,
         };
     },
     mounted() {
@@ -213,7 +268,7 @@ export default {
                 $.ajax({
                     url: url,
                     complete: function(xhr,status) {
-                        if (status==='success' && xhr.readyState==4) {
+                        if (status!=='error' && xhr.readyState==4) {
                             fnSuccess(_this, xhr.responseText);
                         } else {
                             let _show = true;
@@ -277,6 +332,46 @@ export default {
                     ? f * a[col].localeCompare(b[col])
                     : f * (a[col] - b[col]);
             });
+        },
+
+        openInViewer(type, path, e) {
+            let spinner;
+            $(e.target).after(spinner = $(`
+                        <div class="spinner-border spinner-border-sm text-success" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+            `));
+            $(e.target).hide();
+
+            this.restCall(
+                '/files/get/'+this.rootId+'/'+path,
+                (_this, d) => {
+                    $(e.target).show();
+                    spinner.remove();
+                    if (d!=null && d!==null) {
+                        this.modalPath = path;
+                        this.modalText = d;
+                        this.showModal = true;
+                        return;
+                    }
+                    alert('Error occurred while retrieving file');
+                },
+                (_this, xhr) => {
+                    $(e.target).show();
+                    spinner.remove();
+                    return this.pathNotFound(_this, xhr);
+                });
+        },
+        copyToClipboard(data) {
+            navigator.clipboard.writeText(data).then(
+                function() {
+                    //console.log('Copying to clipboard was successful!');
+                },
+                function(err) {
+                    console.error('Could not copy text to clipboard: ', err);
+                    alert('Could not copy text to clipboard: ' + err);
+                }
+            );
         },
     },
 }
