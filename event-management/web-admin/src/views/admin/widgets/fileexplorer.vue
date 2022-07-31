@@ -47,18 +47,18 @@
                             </tr>
                             <tr v-for="f in files" :key="f" style="font-size: small;">
                                 <td class="align-middle p-0 pl-1">
-                                    <small><a v-if="!f.dir" href="javascript:void(0);" v-on:click="openInViewer(f.type, f.path, $event)" style="color: green"><i class="fas fa-eye" /></a></small>
+                                    <small><a v-if="!f.dir && !f.noLink" href="javascript:void(0);" v-on:click="openInViewer(f.type, f.path, $event)" style="color: green"><i class="fas fa-eye" /></a></small>
                                 </td>
-                                <td>
+                                <td class="align-middle">
                                     <a v-if="!f.noLink" href="javascript:void(0)" v-on:click="fileClick(f)">{{f.path.substring(1)}}</a>
                                     <span v-else>{{f.path.substring(1)}}</span>
                                     <span v-if="f.hidden" style="color:darkred; font-size:small; font-style:italic;"> [Hidden]</span>
                                 </td>
-                                <td v-if="f.dir" style="color: grey; font-style: italic;" class="table-info">&lt;DIR&gt;</td>
-                                <td v-else style="color: grey; font-style: italic;" class="text-center">{{f.type}}</td>
-                                <td class="text-right">{{f.size}}</td>
-                                <td>{{new Date(f.lastModified).toLocaleDateString('sv')+' '+new Date(f.lastModified).toLocaleTimeString('sv')}}</td>
-                                <td align="center">[{{f.read?'r':'-'}}{{f.write?'w':'-'}}{{f.exec?'x':'-'}}]</td>
+                                <td v-if="f.dir" style="color: grey; font-style: italic;" class="table-info align-middle">&lt;DIR&gt;</td>
+                                <td v-else style="color: grey; font-style: italic;" class="text-center align-middle">{{f.type}}</td>
+                                <td class="text-right align-middle">{{f.size}}</td>
+                                <td class="align-middle">{{new Date(f.lastModified).toLocaleDateString('sv')+' '+new Date(f.lastModified).toLocaleTimeString('sv')}}</td>
+                                <td class="text-center align-middle">[{{f.read?'r':'-'}}{{f.write?'w':'-'}}{{f.exec?'x':'-'}}]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -72,7 +72,7 @@
         <Modal id="cdo-viewer" width="80%" @close-modal-request="showModal=false">
             <template v-slot:header>
                 <div style="width:100%; display: flex; justify-content: center;">
-                    <b>[File] {{modalPath}}</b>
+                    <b>[File] {{rootId}}: {{modalPath}}</b>
                     <a href="#" @click="showModal=!showModal" style="position:absolute; right:0;">
                         <span style="color: grey; font-weight: normal;"><i class="fas fa-times" /></span>
                     </a>
@@ -88,9 +88,11 @@
                         theme="cobalt"
                         :readonly="! modalTextEditable"
                         style="width: 100%; height: 100%; box-sizing: border-box;"
-                        :showModeList="false"
+                        :showModeList="true"
                         :showThemeList="false"
                         :showReadOnly="false"
+                        :showWrap="true"
+                        ref="fileViewer"
                 />
             </div>
 
@@ -346,13 +348,21 @@ export default {
             path = this.normalizePath(this.path + path);
             this.restCall(
                 '/files/get/'+this.rootId+'/'+path,
-                (_this, data) => {
+                (_this, data, xhr) => {
                     $(e.target).show();
                     spinner.remove();
                     if (data!=null && data!=='') {
                         this.modalPath = path;
                         this.modalText = data;
                         this.showModal = true;
+                        this.$nextTick(() => {
+                            if (this.$refs.fileViewer && this.$refs.fileViewer.setModeWithFilePath) {
+                                xhr;
+                                //let mime = xhr.getResponseHeader('content-type');
+                                //this.$refs.fileViewer.setModeWithMime(mime);
+                                this.$refs.fileViewer.setModeWithFilePath(path);
+                            }
+                        });
                         return;
                     }
                     alert('Error occurred while retrieving file');
