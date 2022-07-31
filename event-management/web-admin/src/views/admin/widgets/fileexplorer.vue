@@ -186,7 +186,7 @@ export default {
             this.restCall(
                 '/files/dir/'+_rootId+'/'+_path,
                 (_this, d) => {
-                    if (d!=null && d!==null) {
+                    if (d!=null && d!=='') {
                         try {
                             d = JSON.parse(d);
                             if (Array.isArray(d)) {
@@ -269,7 +269,7 @@ export default {
                     url: url,
                     complete: function(xhr,status) {
                         if (status!=='error' && xhr.readyState==4) {
-                            fnSuccess(_this, xhr.responseText);
+                            fnSuccess(_this, xhr.responseText, xhr, status);
                         } else {
                             let _show = true;
                             if (fnError) {
@@ -343,14 +343,15 @@ export default {
             `));
             $(e.target).hide();
 
+            path = this.normalizePath(this.path + path);
             this.restCall(
                 '/files/get/'+this.rootId+'/'+path,
-                (_this, d) => {
+                (_this, data) => {
                     $(e.target).show();
                     spinner.remove();
-                    if (d!=null && d!==null) {
+                    if (data!=null && data!=='') {
                         this.modalPath = path;
-                        this.modalText = d;
+                        this.modalText = data;
                         this.showModal = true;
                         return;
                     }
