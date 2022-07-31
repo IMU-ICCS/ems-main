@@ -20,6 +20,7 @@
     "leaflet": "^1.7.1",
     "leaflet-providers": "^1.13.0",
     "leaflet.markercluster": "^1.5.3",
+    "mime-types": "^2.1.35",
     "mitt": "^3.0.0",
     "vue": "^3.2.31",
     "vue-gauge": "^1.0.3",

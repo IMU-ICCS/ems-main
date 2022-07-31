@@ -10,6 +10,8 @@
 <!--
   See:  https://www.npmjs.com/package/vue3-ace-editor
         https://stackoverflow.com/questions/90178/make-a-div-fill-the-height-of-the-remaining-screen-space
+        https://www.npmjs.com/package/mime-types
+        https://www.npmjs.com/package/mime-db
 -->
 
 <template>
@@ -23,10 +25,11 @@
                         :lang="editorMode"
                         :readonly="editorReadonly"
                         :theme="editorTheme"
+                        :options="{ wrap: editorWrap, indentedSoftWrap: editorIndentedWrap }"
                         style="width: 100%; height: 100%; box-sizing: border-box;" />
             </div>
 
-            <div v-if="showModeList || showThemeList || showReadOnly" style="flex: 0 1 auto;">
+            <div v-if="showModeList || showThemeList || showReadOnly" style="flex: 0 1 auto; text-align: center;">
                 <span v-if="showModeList">
                     Language/Mode:
                     <select v-model="editorMode">
@@ -36,7 +39,7 @@
                     </select>
                 </span>
                 <span v-if="showThemeList">
-                    Theme:
+                    &nbsp;Theme:
                     <select v-model="editorTheme">
                         <option v-for="theme in ace_themes"
                                 :key="theme"
@@ -44,8 +47,14 @@
                     </select>
                 </span>
                 <span v-if="showReadOnly">
-                    Read Only:
+                    &nbsp;Read Only:
                     <input type="checkbox" v-model="editorReadonly" />
+                </span>
+                <span v-if="showWrap">
+                    &nbsp;Wrap:
+                    <input type="checkbox" v-model="editorWrap" />
+                    &nbsp;Indented:
+                    <input type="checkbox" v-model="editorIndentedWrap" :disabled="!editorWrap" />
                 </span>
             </div>
         </div>
@@ -60,6 +69,8 @@ import 'file-loader?esModule=false!ace-builds/src-noconflict/worker-xml.js'; // 
 const modelist = require('ace-builds/src-noconflict/ext-modelist');
 const themelist = require('ace-builds/src-noconflict/ext-themelist');
 
+const mimeTypes = require('mime-types');
+
 export default {
     name: 'ace-editor',
     components:  { VAceEditor },
@@ -69,10 +80,12 @@ export default {
         mode: { type: String, required: true },
         theme: { type: String, default: 'chrome' },
         readonly: { type: Boolean, default: false },
+        wrap: { type: Boolean, default: false },
         style: { type: Object },
         showModeList: { type: Boolean, default: false },
         showThemeList: { type: Boolean, default: false },
         showReadOnly: { type: Boolean, default: false },
+        showWrap: { type: Boolean, default: false },
     },
 
     beforeMount() {
@@ -111,9 +124,12 @@ export default {
 
     data() {
         return {
+            editor: null,
             editorMode: this.mode || 'xml',
             editorTheme: this.theme || 'chrome',
             editorReadonly: this.readonly,
+            editorWrap: this.wrap,
+            editorIndentedWrap: true,
             ace_modes: Object.keys(modelist.modesByName).sort(),
             ace_themes: Object.keys(themelist.themesByName).sort(),
         };
@@ -124,8 +140,37 @@ export default {
             let name = themeId.replaceAll('_', ' ');
             return name[0].toUpperCase() + name.slice(1);
         },
-        editorInit(/*ace*/) {
+        editorInit(ace) {
             //console.log('ACE: editorInit: ', ace);
+            this.editor = ace;
+        },
+        setModeWithMime(mime) {
+            let ext = mimeTypes.extension( mime.split(';')[0] );
+            console.log('ACE: setModeWithMime: mime=', mime, 'ext=', ext);
+            this.setModeWithFilePath(ext);
+        },
+        setModeWithFilePath(filePath) {
+            let ext = filePath.substring(filePath.lastIndexOf('.')+1, filePath.length) || filePath;
+            ext = ext.substring(ext.lastIndexOf('/')+1, ext.length) || ext;
+
+            let mode = modelist.modesByName.text;
+            if (ext!=='') {
+                if (ext in modelist.modesByName) {
+                    mode = modelist.modesByName[ext];
+                } else {
+                    for (let m of modelist.modes) {
+                        if (m.extensions) {
+                            let extArr = m.extensions.split('|');
+                            for (let s of extArr) {
+                                if (s===ext)
+                                    mode = m;
+                            }
+                        }
+                    }
+                }
+            }
+            console.log('ACE: setModeWithFileName: ', filePath, mode);
+            this.editorMode = mode.name;
         }
     }
 };
