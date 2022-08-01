@@ -29,7 +29,7 @@
                         style="width: 100%; height: 100%; box-sizing: border-box;" />
             </div>
 
-            <div v-if="showModeList || showThemeList || showReadOnly" style="flex: 0 1 auto; text-align: center;">
+            <div v-if="showModeList || showThemeList || showReadOnly || showWrap" style="flex: 0 1 auto; text-align: center;">
                 <span v-if="showModeList">
                     Language/Mode:
                     <select v-model="editorMode">
@@ -88,6 +88,31 @@ export default {
         showWrap: { type: Boolean, default: false },
     },
 
+    data() {
+        return {
+            editor: null,
+            editorMode: this.mode || 'xml',
+            editorTheme: this.theme || 'chrome',
+            editorReadonly: this.readonly,
+            editorWrap: this.wrap,
+            editorIndentedWrap: true,
+            ace_modes: Object.keys(modelist.modesByName).sort(),
+            ace_themes: Object.keys(themelist.themesByName).sort(),
+        };
+    },
+
+    emits: [ 'update:modelValue' ],
+    computed: {
+        editorText: {
+            get: function() {
+                return this.modelValue
+            },
+            set: function(value) {
+                this.$emit('update:modelValue', value)
+            }
+        }
+    },
+
     beforeMount() {
         // Register editor modes
         for (let m of this.ace_modes) {
@@ -108,31 +133,6 @@ export default {
                 console.debug('ACE: Theme not found: ', t, e);
             }
         }
-    },
-
-    emits: [ 'update:modelValue' ],
-    computed: {
-        editorText: {
-            get: function() {
-                return this.modelValue
-            },
-            set: function(value) {
-                this.$emit('update:modelValue', value)
-            }
-        }
-    },
-
-    data() {
-        return {
-            editor: null,
-            editorMode: this.mode || 'xml',
-            editorTheme: this.theme || 'chrome',
-            editorReadonly: this.readonly,
-            editorWrap: this.wrap,
-            editorIndentedWrap: true,
-            ace_modes: Object.keys(modelist.modesByName).sort(),
-            ace_themes: Object.keys(themelist.themesByName).sort(),
-        };
     },
 
     methods: {

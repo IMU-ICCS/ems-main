@@ -120,6 +120,7 @@
                         :showModeList="false"
                         :showThemeList="false"
                         :showReadOnly="false"
+                        :showWrap="true"
                 />
             </div>
 
@@ -172,6 +173,7 @@ export default {
             modalText: '',
             modalMime: '',
             modalTextEditable: false,
+            modalWrap: true,
         };
     },
     methods: {
