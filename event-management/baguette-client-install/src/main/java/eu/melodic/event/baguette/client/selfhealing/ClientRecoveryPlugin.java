@@ -69,84 +69,88 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
     @Override
     public void onMessage(String topic, Object message, Object sender) {
         log.debug("ClientRecoveryPlugin: onMessage(): BEGIN: topic={}, message={}, sender={}", topic, message, sender);
+
+        // Check if Self-Healing is enabled
         if (! baguetteServer.getSelfHealingManager().isEnabled()) {
             log.debug("ClientRecoveryPlugin: onMessage(): Self-Healing manager is disabled: message={}, sender={}", message, sender);
             return;
         }
+
+        // Only process messages of ClientShellCommand type are accepted (sent by CSC instances)
+        if (! (message instanceof ClientShellCommand)) {
+            log.warn("ClientRecoveryPlugin: onMessage(): Message is not a {} object. Will ignore it.", ClientShellCommand.class.getSimpleName());
+            return;
+        }
+
+        // Get NodeRegistryEntry from ClientShellCommand passed with event
+        ClientShellCommand csc = (ClientShellCommand)message;
+        String clientId = csc.getId();
+        String address = csc.getClientIpAddress();
+        log.warn("ClientRecoveryPlugin: onMessage(): client-id={}, client-address={}", clientId, address);
+
+        NodeRegistryEntry nodeInfo = csc.getNodeRegistryEntry();    //or = nodeRegistry.getNodeByAddress(address);
+        log.debug("ClientRecoveryPlugin: onMessage(): client-node-info={}", nodeInfo);
+        log.trace("ClientRecoveryPlugin: onMessage(): node-registry.node-addresses={}", nodeRegistry.getNodeAddresses());
+        log.trace("ClientRecoveryPlugin: onMessage(): node-registry.nodes={}", nodeRegistry.getNodes());
+
+        // Check if node is monitored by Self-Healing manager
+        if (! baguetteServer.getSelfHealingManager().isMonitored(nodeInfo)) {
+            log.warn("ClientRecoveryPlugin: processExitEvent(): Node is not monitored by Self-Healing manager: client-id={}, client-address={}", clientId, address);
+            return;
+        }
+
+        // Process event
         if (CLIENT_EXIT_TOPIC.equals(topic)) {
             log.debug("ClientRecoveryPlugin: onMessage(): CLIENT EXITED: message={}", message);
-            processExitEvent(message, sender);
+            processExitEvent(nodeInfo);
         }
         if (CLIENT_REGISTERED_TOPIC.equals(topic)) {
             log.debug("ClientRecoveryPlugin: onMessage(): CLIENT REGISTERED_TOPIC: message={}", message);
-            processRegisteredEvent(message, sender);
+            processRegisteredEvent(nodeInfo);
         }
     }
 
-    private void processExitEvent(Object message, Object sender) {
-        log.debug("ClientRecoveryPlugin: processExitEvent(): BEGIN: message={}", message);
-        if (message instanceof ClientShellCommand) {
-            ClientShellCommand csc = (ClientShellCommand)message;
-            String clientId = csc.getId();
-            String address = csc.getClientIpAddress();
-            log.warn("ClientRecoveryPlugin: processExitEvent(): client-id={}, client-address={}", clientId, address);
-            NodeRegistryEntry nodeInfo = nodeRegistry.getNodeByAddress(address);
-            log.debug("ClientRecoveryPlugin: processExitEvent(): client-node-info={}", nodeInfo);
-            log.trace("ClientRecoveryPlugin: processExitEvent(): node-registry.node-addresses={}", nodeRegistry.getNodeAddresses());
-            log.trace("ClientRecoveryPlugin: processExitEvent(): node-registry.nodes={}", nodeRegistry.getNodes());
+    private void processExitEvent(NodeRegistryEntry nodeInfo) {
+        log.debug("ClientRecoveryPlugin: processExitEvent(): BEGIN: client-id={}, client-address={}", nodeInfo.getClientId(), nodeInfo.getIpAddress());
 
-            if (! baguetteServer.getSelfHealingManager().isMonitored(nodeInfo)) {
-                log.warn("ClientRecoveryPlugin: processExitEvent(): Node is not monitored by Self-Healing manager: client-id={}, client-address={}", clientId, address);
-                return;
-            }
-            baguetteServer.getSelfHealingManager().setNodeSelfHealingState(nodeInfo, SelfHealingManager.NODE_STATE.DOWN, message!=null ? message.toString() : null);
+        // Set node state to DOWN
+        baguetteServer.getSelfHealingManager().setNodeSelfHealingState(nodeInfo, SelfHealingManager.NODE_STATE.DOWN);
 
-            ScheduledFuture<?> future = taskScheduler.schedule(() -> {
-                try {
-                    baguetteServer.getSelfHealingManager().setNodeSelfHealingState(nodeInfo, SelfHealingManager.NODE_STATE.RECOVERING);
-                    runClientRecovery(nodeInfo);
-                } catch (Exception e) {
-                    log.error("ClientRecoveryPlugin: processExitEvent(): EXCEPTION: while recovering node: node-info={} -- Exception: ", nodeInfo, e);
-                }
-            }, Instant.now().plusMillis(clientRecoveryDelay));
-            ScheduledFuture<?> old = pendingTasks.put(nodeInfo, future);
-            log.info("ClientRecoveryPlugin: processExitEvent(): Add recovery task in the queue: client-id={}, client-address={}", clientId, address);
-            if (old!=null && ! old.isDone() && ! old.isCancelled()) {
-                log.warn("ClientRecoveryPlugin: processExitEvent(): Cancelled previous recovery task: client-id={}, client-address={}", clientId, address);
-                old.cancel(false);
+        // Schedule a recovery task for node
+        ScheduledFuture<?> future = taskScheduler.schedule(() -> {
+            try {
+                // Set node state to RECOVERING
+                baguetteServer.getSelfHealingManager().setNodeSelfHealingState(nodeInfo, SelfHealingManager.NODE_STATE.RECOVERING);
+                // Run recovery task
+                runClientRecovery(nodeInfo);
+            } catch (Exception e) {
+                log.error("ClientRecoveryPlugin: processExitEvent(): EXCEPTION: while recovering node: node-info={} -- Exception: ", nodeInfo, e);
             }
-        } else {
-            log.warn("ClientRecoveryPlugin: processExitEvent(): Message is not a {} object. Will ignore it.", ClientShellCommand.class.getSimpleName());
+        }, Instant.now().plusMillis(clientRecoveryDelay));
+
+        // Register the recovery task's future in pending list
+        ScheduledFuture<?> old = pendingTasks.put(nodeInfo, future);
+        log.info("ClientRecoveryPlugin: processExitEvent(): Added recovery task in the queue: client-id={}, client-address={}", nodeInfo.getClientId(), nodeInfo.getIpAddress());
+
+        // Cancel any previous recovery task (for the node) that is still pending
+        if (old!=null && ! old.isDone() && ! old.isCancelled()) {
+            log.warn("ClientRecoveryPlugin: processExitEvent(): Cancelled previous recovery task: client-id={}, client-address={}", nodeInfo.getClientId(), nodeInfo.getIpAddress());
+            old.cancel(false);
         }
     }
 
-    private void processRegisteredEvent(Object message, Object sender) {
-        log.debug("ClientRecoveryPlugin: processRegisteredEvent(): BEGIN: message={}", message);
-        if (message instanceof ClientShellCommand) {
-            ClientShellCommand csc = (ClientShellCommand)message;
-            String clientId = csc.getId();
-            String address = csc.getClientIpAddress();
-            log.warn("ClientRecoveryPlugin: processRegisteredEvent(): client-id={}, client-address={}", clientId, address);
-            NodeRegistryEntry nodeInfo = nodeRegistry.getNodeByAddress(address);
-            log.debug("ClientRecoveryPlugin: processRegisteredEvent(): client-node-info={}", nodeInfo);
-            log.trace("ClientRecoveryPlugin: processRegisteredEvent(): node-registry.node-addresses={}", nodeRegistry.getNodeAddresses());
-            log.trace("ClientRecoveryPlugin: processRegisteredEvent(): node-registry.nodes={}", nodeRegistry.getNodes());
+    private void processRegisteredEvent(NodeRegistryEntry nodeInfo) {
+        log.debug("ClientRecoveryPlugin: processRegisteredEvent(): BEGIN: client-id={}, client-address={}", nodeInfo.getClientId(), nodeInfo.getIpAddress());
 
-            if (! baguetteServer.getSelfHealingManager().isMonitored(nodeInfo)) {
-                log.warn("ClientRecoveryPlugin: processRegisteredEvent(): Node is not monitored by Self-Healing manager: client-id={}, client-address={}", clientId, address);
-                return;
-            }
-
-            ScheduledFuture<?> future = pendingTasks.remove(nodeInfo);
-            if (future!=null && ! future.isDone() && ! future.isCancelled()) {
-                log.warn("ClientRecoveryPlugin: processRegisteredEvent(): Cancelled recovery task: client-id={}, client-address={}", clientId, address);
-                future.cancel(false);
-            }
-            baguetteServer.getSelfHealingManager().setNodeSelfHealingState(nodeInfo, SelfHealingManager.NODE_STATE.UP, message.toString());
-
-        } else {
-            log.warn("ClientRecoveryPlugin: processRegisteredEvent(): Message is not a {} object. Will ignore it.", ClientShellCommand.class.getSimpleName());
+        // Cancel any pending recovery task (for the node)
+        ScheduledFuture<?> future = pendingTasks.remove(nodeInfo);
+        if (future!=null && ! future.isDone() && ! future.isCancelled()) {
+            log.warn("ClientRecoveryPlugin: processRegisteredEvent(): Cancelled recovery task: client-id={}, client-address={}", nodeInfo.getClientId(), nodeInfo.getIpAddress());
+            future.cancel(false);
         }
+
+        // Set node state to UP
+        baguetteServer.getSelfHealingManager().setNodeSelfHealingState(nodeInfo, SelfHealingManager.NODE_STATE.UP);
     }
 
     public void runClientRecovery(NodeRegistryEntry entry) throws Exception {

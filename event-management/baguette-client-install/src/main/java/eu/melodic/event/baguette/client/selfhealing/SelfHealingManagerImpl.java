@@ -48,13 +48,13 @@ public class SelfHealingManagerImpl implements SelfHealingManager<NodeRegistryEn
     }
 
     @Override
-    public boolean containsNode(NodeRegistryEntry node) {
+    public boolean containsNode(@NonNull NodeRegistryEntry node) {
         check();
         return nodes.containsKey(node.getIpAddress());
     }
 
     @Override
-    public boolean isMonitored(NodeRegistryEntry node) {
+    public boolean isMonitored(@NonNull NodeRegistryEntry node) {
         check();
         return mode==MODE.ALL ||
                 mode==MODE.INCLUDED && containsNode(node) ||
