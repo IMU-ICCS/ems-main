@@ -54,6 +54,7 @@ public class TwoLevelCoordinator extends NoopCoordinator {
         log.info("TwoLevelCoordinator.initialize(): Groupings: top-level={}, node-level={}",
                 globalGrouping, nodeGrouping);
 
+        // Configure Self-Healing manager
         server.getSelfHealingManager().setMode(SelfHealingManager.MODE.ALL);
     }
 
