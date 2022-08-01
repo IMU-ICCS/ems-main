@@ -86,7 +86,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
         ClientShellCommand csc = (ClientShellCommand)message;
         String clientId = csc.getId();
         String address = csc.getClientIpAddress();
-        log.warn("ClientRecoveryPlugin: onMessage(): client-id={}, client-address={}", clientId, address);
+        log.debug("ClientRecoveryPlugin: onMessage(): client-id={}, client-address={}", clientId, address);
 
         NodeRegistryEntry nodeInfo = csc.getNodeRegistryEntry();    //or = nodeRegistry.getNodeByAddress(address);
         log.debug("ClientRecoveryPlugin: onMessage(): client-node-info={}", nodeInfo);
@@ -167,9 +167,12 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
                 .task(task)
                 .properties(clientInstallationProperties)
                 .build();
-        log.warn("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", entry);
+
+        log.info("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: client-id={}, client-address={}", entry.getClientId(), entry.getIpAddress());
+        log.debug("ClientRecoveryPlugin: runClientRecovery(): Starting client recovery: node-info={}", entry);
         boolean result = installer.execute();
         pendingTasks.remove(entry);
-        log.warn("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, entry);
+        log.info("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, client-id={}, client-address={}", result, entry.getClientId(), entry.getIpAddress());
+        log.debug("ClientRecoveryPlugin: runClientRecovery(): Client recovery completed: result={}, node-info={}", result, entry);
     }
 }
