@@ -171,9 +171,8 @@ export default {
             showModal: false,
             modalPath: '',
             modalText: '',
-            modalMime: '',
             modalTextEditable: false,
-            modalWrap: true,
+            modalMime: '',
         };
     },
     methods: {
