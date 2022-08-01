@@ -36,20 +36,22 @@ public class CdoServiceController {
 
     @GetMapping(MAPPING_PREFIX)
     public Mono<Map<String,String>> cdoTree(HttpServletRequest request, @RequestParam(defaultValue="true") boolean filter) {
-        log.info("cdoTree(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
+        log.debug("cdoTree(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
         Map<String,String> resources = cdoCpModelUtil.getResourceTree(filter);
-        log.info("cdoTree(): --- Resources:\n{}", resources);
+        log.info("cdoTree(): --- Retrieved resource tree");
+        log.debug("cdoTree(): --- Resource tree:\n{}", resources);
         return Mono.just(resources);
     }
 
     @GetMapping(value = MAPPING_PREFIX + "/**", produces = MediaType.TEXT_XML_VALUE)
     public Mono<String> cdoGet(HttpServletRequest request) {
         String resourceId = StringUtils.removeStart(request.getRequestURI(), request.getContextPath()+MAPPING_PREFIX);
-        log.info("cdoGet(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        log.info("cdoGet(): --- Resource path: {}", resourceId);
+        log.debug("cdoGet(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
+        log.debug("cdoGet(): --- Resource path: {}", resourceId);
         try {
             String modelStr = cdoCpModelUtil.getResource(resourceId.trim());
-            log.info("cdoGet(): --- Resource contents:\n{}", modelStr);
+            log.info("cdoGet(): --- Retrieved resource: {}", resourceId);
+            log.debug("cdoGet(): --- Resource contents:\n{}", modelStr);
             return Mono.just(modelStr);
         } catch (Exception e) {
             log.error("cdoGet(): --- Exception \n", e);
@@ -60,9 +62,9 @@ public class CdoServiceController {
     @RequestMapping(value = MAPPING_PREFIX + "/**", consumes = MediaType.TEXT_XML_VALUE, method = {POST, PUT})
     public Mono<String> cdoPostPut(@RequestBody String contentsStr, HttpServletRequest request) {
         String resourceId = StringUtils.removeStart(request.getRequestURI(), request.getContextPath()+MAPPING_PREFIX);
-        log.info("cdoPostPut(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        log.info("cdoPostPut(): --- Resource path: {} {}", request.getMethod(), resourceId);
-        log.info("cdoPostPut(): --- Resource content:\n{}", contentsStr);
+        log.debug("cdoPostPut(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
+        log.debug("cdoPostPut(): --- Resource path: {} {}", request.getMethod(), resourceId);
+        log.debug("cdoPostPut(): --- Resource content:\n{}", contentsStr);
         try {
             CdoCpModelUtil.IMPORT_OP op = request.getMethod().equalsIgnoreCase("POST")
                     ? CdoCpModelUtil.IMPORT_OP.GET_OR_CREATE : CdoCpModelUtil.IMPORT_OP.CREATE;
@@ -78,8 +80,8 @@ public class CdoServiceController {
     @DeleteMapping(value = MAPPING_PREFIX + "/**")
     public Mono<String> cdoDelete(HttpServletRequest request, @RequestParam(defaultValue="false") boolean force) {
         String resourceId = StringUtils.removeStart(request.getRequestURI(), request.getContextPath()+MAPPING_PREFIX);
-        log.info("cdoDelete(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        log.info("cdoDelete(): --- Resource path: {}", resourceId);
+        log.debug("cdoDelete(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
+        log.debug("cdoDelete(): --- Resource path: {}", resourceId);
         try {
             boolean result = cdoCpModelUtil.deleteResource(resourceId, force);
             log.info("cdoDelete(): --- Resource deleted: {}", resourceId);
