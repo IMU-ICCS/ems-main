@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
 @Data
 @Service
 public class PrometheusProcessorPlugin implements InstallationContextProcessorPlugin {
-    public final static String SENSOR_TYPE_KEY = "sensorType";
+    public final static String SENSOR_TYPE_KEY = "pull.sensor.type";
     public final static String SENSOR_TYPE_VALUE = "prometheus";
-    public final static String NETDATA_PROMETHEUS_JOB_NAME = "prometheus.job.name";
-    public final static String NETDATA_PROMETHEUS_ENDPOINT = "prometheus.endpoint";
-    public final static String NETDATA_PROMETHEUS_AUTODETECTION = "prometheus.autodetection";
-    public final static String NETDATA_PROMETHEUS_PRIORITY = "prometheus.priority";
+    public final static String NETDATA_PROMETHEUS_JOB_NAME = "pull.prometheus.job.name";
+    public final static String NETDATA_PROMETHEUS_ENDPOINT = "pull.prometheus.endpoint";
+    public final static String NETDATA_PROMETHEUS_AUTODETECTION = "pull.prometheus.autodetection";
+    public final static String NETDATA_PROMETHEUS_PRIORITY = "pull.prometheus.priority";
     public final static String NETDATA_PROMETHEUS_CONFIGURATION_VAR = "NETDATA_PROMETHEUS_CONF";
     public final static long DEFAULT_PRIORITY = 70000;
 
