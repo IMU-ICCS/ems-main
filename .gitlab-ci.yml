@@ -451,6 +451,8 @@ deploy:mq-adapter:
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
+  dependencies:
+    - build-required-part3:ems
   services:
     - $DOCKER_DIND_SERVICE
   script:
