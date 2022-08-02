@@ -3,7 +3,7 @@ variables:
   LOCAL_REPO: "127.0.0.1:5000"
   DOCKER_REPO: "gitlab.ow2.org:4567"
   MAVEN_IMAGE: "maven:3.6.3-jdk-8"
-  DOCKER_DIND_IMAGE: "docker:19.03.1"
+  DOCKER_DIND_IMAGE: "docker:20.10.17"
   DOCKER_DIND_SERVICE: "$DOCKER_DIND_IMAGE-dind"
   DOCKER_DRIVER: overlay
   DOCKER_TLS_CERTDIR: "/certs"
