@@ -421,10 +421,7 @@ deploy:cp-solver:
 deploy:ems:
   stage: deploy
   only:
-    - master
-    - rc3.0
-    - rc3.1
-    - morphemic-rc2.5
+    - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
