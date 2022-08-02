@@ -159,6 +159,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     }
 
     public void run() {
+        // Check if session has been marked for immediate close
         if (closeConnection) {
             log.warn("{}--> Exiting immediately because 'closeConnection' flag is set", id);
             eventBus.send("BAGUETTE_SERVER_CLIENT_SESSION_CLOSING_IMMEDIATELY", this);
@@ -179,6 +180,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             return;
         }
 
+        // Add this CSC in active list
         synchronized (activeCmdList) {
             if (activeCmdMap.containsKey(getClientIpAddress()) || activeCmdMap.containsValue(this))
                 throw new IllegalArgumentException("ClientShellCommand has already been registered");
@@ -187,12 +189,14 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         }
         eventBus.send("BAGUETTE_SERVER_CLIENT_STARTING", this);
 
+        // Process client input
         try {
             log.info("{}==> Thread started", id);
             out.printf("CLIENT (%s) : START\n", id);
 
             this.clientIpAddress = getClientIpAddress();
 
+            // Enter the main processing loop
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             String line;
             boolean helloReceived = false;
@@ -200,129 +204,28 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 line = line.trim();
                 log.debug("{}--> {}", id, line);
 
+                // Echo command (if configured)
                 //if (echoOn) out.printf("CLIENT (%s) : ECHO : %s\n", id, line);
                 if (echoOn) out.printf("ECHO %s\n", line);
                 //if (line.equalsIgnoreCase("exit")) break;
 
                 if (!helloReceived && line.startsWith("-HELLO FROM CLIENT:")) {
+                    // Process the Greeting line from client -- It must be the first line received
                     helloReceived = true;
                     getClientInfoFromGreeting(line.substring("-HELLO FROM CLIENT:".length()));
+
+                    // Register CSC to Coordinator
                     coordinator.register(this);
                     eventBus.send("BAGUETTE_SERVER_CLIENT_REGISTERED", this);
 
+                    // Instruct client to start sending statistics
                     sendCommand("SEND-STATS START");
-                } else if (line.startsWith("-INPUT:")) {
-                    String input = line.substring("-INPUT:".length());
-                    String[] part = input.split(":",2 );
-                    inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
-                } else if (StringUtils.startsWithIgnoreCase(line, "SERVER-")) {
-                    String[] lineArgs = line.split(" ", 2);
-                    if ("SERVER-GET-NODE-SSH-CREDENTIALS".equalsIgnoreCase(lineArgs[0].trim()) && lineArgs.length>1) {
-                        String nodeAddress = lineArgs[1].trim();
-                        if (!nodeAddress.isEmpty()) {
-                            NodeRegistryEntry entry = nodeRegistry.getNodeByAddress(nodeAddress);
-                            if (entry!=null) {
-                                Map<String, String> preregInfo = entry.getPreregistration();
-                                log.debug("{}--> NODE PRE-REGISTRATION INFO: address={}\n{}", getId(), nodeAddress, preregInfo);
-
-                                if (preregInfo!=null) {
-                                    String preregInfoStr = new Gson().toJson(preregInfo);
-                                    log.trace("{}--> NODE PRE-REGISTRATION INFO STRING: STR={}\n{}", getId(), nodeAddress, preregInfoStr);
-                                    sendToClient(preregInfoStr);
-                                } else {
-                                    log.warn("{}--> NO PRE-REGISTRATION INFO FOR NODE: {}", getId(), nodeAddress);
-                                    sendToClient("{}");
-                                }
-                            } else {
-                                log.warn("{}--> UNKNOWN NODE: {}", getId(), nodeAddress);
-                                sendToClient("{}");
-                            }
-                        }
-                    }
-                } else if (line.startsWith("-NOTIFY-GROUPING-CHANGE:")) {
-                    String newGrouping = line.substring("-NOTIFY-GROUPING-CHANGE:".length()).trim();
-                    log.info("{}--> Client grouping changed: {} --> {}", getId(), clientGrouping, newGrouping);
-                    if (StringUtils.isNotBlank(newGrouping) && ! StringUtils.equals(clientGrouping, newGrouping))
-                        this.clientGrouping = newGrouping;
-                } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
-                    String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();
-                    log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
-                    if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
-                        this.clientNodeStatus = newNodeStatus;
-                } else if (line.startsWith("-NOTIFY-X:")) {
-                    String message = line.substring("-NOTIFY-X:".length()).trim();
-                    String[] part = message.split(" ", 2);
-                    String command = part[0].trim();
-                    String args = part.length>1 ? part[1] : null;
-                    log.info("{}--> Client notification: CMD={}, ARGS={}", getId(), command, args);
-
-                    if ("DEBUG".equalsIgnoreCase(command)) {
-                        log.debug("{}--> {}", getId(), args);
-                    } else
-                    if ("INFO".equalsIgnoreCase(command)) {
-                        log.info("{}--> {}", getId(), args);
-                    } else
-                    if ("WARN".equalsIgnoreCase(command)) {
-                        log.warn("{}--> {}", getId(), args);
-                    } else
-                    if ("ERROR".equalsIgnoreCase(command)) {
-                        log.error("{}--> {}", getId(), args);
-                    } else
-                    if ("RECOVERY".equalsIgnoreCase(command)) {
-                        args = args==null ? "" : args;
-                        part = args.split(" ", 2);
-                        String notificationType = part[0].trim();
-                        String clientData = part.length>1 ? part[1] : null;
-                        if (StringUtils.isNotBlank(notificationType) && StringUtils.isNotBlank(clientData)) {
-                            log.info("{}--> Client Recovery Notification: {}: {}", getId(), notificationType, clientData);
-                            if ("GIVE_UP".equalsIgnoreCase(notificationType)) {
-                                String[] tmp = clientData.split("@", 2);
-                                String nodeId = tmp[0].trim();
-                                String nodeAddress = tmp.length>1 ? tmp[1].trim() : null;
-                                if (StringUtils.isNotBlank(nodeAddress))
-                                    eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress, "Client_" + getId());
-                                else
-                                    log.warn("{}--> Missing Node Address in Client Recovery Notification: {}", getId(), args);
-                            } else
-                                log.warn("{}--> UNKNOWN Client Recovery Notification: {}", getId(), args);
-                        } else {
-                            log.warn("{}--> INVALID Client Recovery Notification: {}", getId(), args);
-                        }
-                    } else
-                    {
-                        log.warn("{}--> UNKNOWN Client Notification type: {}", getId(), message);
-                    }
-
-                } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
-                    String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
-                    String propertyName = part[0];
-                    String propertyValue = part.length > 1 ? part[1] : null;
-                    String oldValue = clientProperties.getProperty(propertyName);
-                    if (StringUtils.isNotBlank(propertyName)) {
-                        log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
-                        clientProperties.put(propertyName.trim(), propertyValue);
-                    } else {
-                        log.warn("{}--> Invalid Client property: input line: ", line);
-                    }
-                } else if (line.startsWith("-STATS:")) {
-                    String statsStr = line.substring("-STATS:".length());
-                    Object statsObj = deserializeFromString(statsStr);
-                    if (statsObj instanceof Map) {
-                        Map<String, Object> statsMap = (Map<String, Object>) statsObj;
-                        statsMap.put("_received_at_server_timestamp", System.currentTimeMillis());
-                        log.debug("{}--> Client STATS received: {}", getId(), statsMap);
-                        this.clientStatistics = statsMap;
-                    } else if (statsObj==null) {
-                        log.debug("{}--> Client STATS object is NULL", getId());
-                    } else {
-                        log.error("{}--> Unsupported Client STATS object: class={}, object={}", getId(), statsObj.getClass().getName(), statsObj);
-                    }
-                } else if (line.equalsIgnoreCase("READY")) {
-                    coordinator.clientReady(this);
                 } else {
-                    coordinator.processClientInput(this, line);
+                    // Process the subsequent lines from client -- After the Greeting line
+                    processClientInput(line);
                 }
             }
+            // Client connection closed
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXITING", this);
 
             log.info("{}==> Signaling client to exit", id);
@@ -334,17 +237,136 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             this.lastException = ex;
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXCEPTION", this);
         } finally {
+            // Remove CSC from active list
             synchronized (activeCmdList) {
                 activeCmdList.remove(this);
                 activeCmdMap.remove(getClientIpAddress());
             }
             log.info("{}--> Thread stops", id);
+
+            // Unregister from Coordinator
             coordinator.unregister(this);
             eventBus.send("BAGUETTE_SERVER_CLIENT_UNREGISTERED", this);
+
+            // Invoke callback if provided
             if (!callbackCalled.getAndSet(true)) {
                 callback.onExit(0);
             }
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXITED", this);
+        }
+    }
+
+    private void processClientInput(String line) {
+        if (line.startsWith("-INPUT:")) {
+            String input = line.substring("-INPUT:".length());
+            String[] part = input.split(":",2 );
+            inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
+        } else if (StringUtils.startsWithIgnoreCase(line, "SERVER-")) {
+            String[] lineArgs = line.split(" ", 2);
+            if ("SERVER-GET-NODE-SSH-CREDENTIALS".equalsIgnoreCase(lineArgs[0].trim()) && lineArgs.length>1) {
+                String nodeAddress = lineArgs[1].trim();
+                if (!nodeAddress.isEmpty()) {
+                    NodeRegistryEntry entry = nodeRegistry.getNodeByAddress(nodeAddress);
+                    if (entry!=null) {
+                        Map<String, String> preregInfo = entry.getPreregistration();
+                        log.debug("{}--> NODE PRE-REGISTRATION INFO: address={}\n{}", getId(), nodeAddress, preregInfo);
+
+                        if (preregInfo!=null) {
+                            String preregInfoStr = new Gson().toJson(preregInfo);
+                            log.trace("{}--> NODE PRE-REGISTRATION INFO STRING: STR={}\n{}", getId(), nodeAddress, preregInfoStr);
+                            sendToClient(preregInfoStr);
+                        } else {
+                            log.warn("{}--> NO PRE-REGISTRATION INFO FOR NODE: {}", getId(), nodeAddress);
+                            sendToClient("{}");
+                        }
+                    } else {
+                        log.warn("{}--> UNKNOWN NODE: {}", getId(), nodeAddress);
+                        sendToClient("{}");
+                    }
+                }
+            }
+        } else if (line.startsWith("-NOTIFY-GROUPING-CHANGE:")) {
+            String newGrouping = line.substring("-NOTIFY-GROUPING-CHANGE:".length()).trim();
+            log.info("{}--> Client grouping changed: {} --> {}", getId(), clientGrouping, newGrouping);
+            if (StringUtils.isNotBlank(newGrouping) && ! StringUtils.equals(clientGrouping, newGrouping))
+                this.clientGrouping = newGrouping;
+        } else if (line.startsWith("-NOTIFY-STATUS-CHANGE:")) {
+            String newNodeStatus = line.substring("-NOTIFY-STATUS-CHANGE:".length()).trim();
+            log.info("{}--> Client status changed: {} --> {}", getId(), clientNodeStatus, newNodeStatus);
+            if (StringUtils.isNotBlank(newNodeStatus) && ! StringUtils.equals(clientNodeStatus, newNodeStatus))
+                this.clientNodeStatus = newNodeStatus;
+        } else if (line.startsWith("-NOTIFY-X:")) {
+            String message = line.substring("-NOTIFY-X:".length()).trim();
+            String[] part = message.split(" ", 2);
+            String command = part[0].trim();
+            String args = part.length>1 ? part[1] : null;
+            log.info("{}--> Client notification: CMD={}, ARGS={}", getId(), command, args);
+
+            if ("DEBUG".equalsIgnoreCase(command)) {
+                log.debug("{}--> {}", getId(), args);
+            } else
+            if ("INFO".equalsIgnoreCase(command)) {
+                log.info("{}--> {}", getId(), args);
+            } else
+            if ("WARN".equalsIgnoreCase(command)) {
+                log.warn("{}--> {}", getId(), args);
+            } else
+            if ("ERROR".equalsIgnoreCase(command)) {
+                log.error("{}--> {}", getId(), args);
+            } else
+            if ("RECOVERY".equalsIgnoreCase(command)) {
+                args = args==null ? "" : args;
+                part = args.split(" ", 2);
+                String notificationType = part[0].trim();
+                String clientData = part.length>1 ? part[1] : null;
+                if (StringUtils.isNotBlank(notificationType) && StringUtils.isNotBlank(clientData)) {
+                    log.info("{}--> Client Recovery Notification: {}: {}", getId(), notificationType, clientData);
+                    if ("GIVE_UP".equalsIgnoreCase(notificationType)) {
+                        String[] tmp = clientData.split("@", 2);
+                        String nodeId = tmp[0].trim();
+                        String nodeAddress = tmp.length>1 ? tmp[1].trim() : null;
+                        if (StringUtils.isNotBlank(nodeAddress))
+                            eventBus.send(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, nodeAddress, "Client_" + getId());
+                        else
+                            log.warn("{}--> Missing Node Address in Client Recovery Notification: {}", getId(), args);
+                    } else
+                        log.warn("{}--> UNKNOWN Client Recovery Notification: {}", getId(), args);
+                } else {
+                    log.warn("{}--> INVALID Client Recovery Notification: {}", getId(), args);
+                }
+            } else
+            {
+                log.warn("{}--> UNKNOWN Client Notification type: {}", getId(), message);
+            }
+
+        } else if (line.startsWith("-CLIENT-PROPERTY-CHANGE:")) {
+            String[] part = line.substring("-CLIENT-PROPERTY-CHANGE:".length()).trim().split(" ", 2);
+            String propertyName = part[0];
+            String propertyValue = part.length > 1 ? part[1] : null;
+            String oldValue = clientProperties.getProperty(propertyName);
+            if (StringUtils.isNotBlank(propertyName)) {
+                log.info("{}--> Client property changed: {} = {} --> {}", getId(), propertyName, oldValue, propertyValue);
+                clientProperties.put(propertyName.trim(), propertyValue);
+            } else {
+                log.warn("{}--> Invalid Client property: input line: ", line);
+            }
+        } else if (line.startsWith("-STATS:")) {
+            String statsStr = line.substring("-STATS:".length());
+            Object statsObj = deserializeFromString(statsStr);
+            if (statsObj instanceof Map) {
+                Map<String, Object> statsMap = (Map<String, Object>) statsObj;
+                statsMap.put("_received_at_server_timestamp", System.currentTimeMillis());
+                log.debug("{}--> Client STATS received: {}", getId(), statsMap);
+                this.clientStatistics = statsMap;
+            } else if (statsObj==null) {
+                log.debug("{}--> Client STATS object is NULL", getId());
+            } else {
+                log.error("{}--> Unsupported Client STATS object: class={}, object={}", getId(), statsObj.getClass().getName(), statsObj);
+            }
+        } else if (line.equalsIgnoreCase("READY")) {
+            coordinator.clientReady(this);
+        } else {
+            coordinator.processClientInput(this, line);
         }
     }
 
