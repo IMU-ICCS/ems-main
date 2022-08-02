@@ -33,7 +33,7 @@ public class BusyInstancesRegistry {
             if (instanceNameByIp.isEmpty()) {
                 updateNodesByIpsMap();
             }
-            if (instanceNameByIp.containsValue(ip)) {
+            if (instanceNameByIp.containsKey(ip)) {
                 softwareComponentInstanceName = instanceNameByIp.get(ip);
             } else {
                 log.error("Received message contains unrecognized both instance name and ip: {}. Aborting message", ip);
