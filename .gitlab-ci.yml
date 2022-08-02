@@ -451,8 +451,6 @@ deploy:mq-adapter:
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
-  dependencies:
-    - build-required-part3:ems
   services:
     - $DOCKER_DIND_SERVICE
   script:
@@ -460,8 +458,6 @@ deploy:mq-adapter:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/mq-http-adapter:unknown $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
-  variables:
-    GIT_CLEAN_FLAGS: none
 
 deploy:gui-backend:
   stage: deploy
