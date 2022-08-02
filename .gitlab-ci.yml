@@ -418,6 +418,21 @@ deploy:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
+deploy:ems:
+  stage: deploy
+  only:
+    - master
+    - rc3.0
+    - rc3.1
+    - morphemic-rc2.5
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part3:ems
+  script:
+    - $DOCKER_CLI $EMS_CLI deploy
+
 deploy:ems-server:
   stage: deploy
   only:
