@@ -35,7 +35,7 @@ public class BusyInstanceMqListener implements MessageListener {
         try {
             log.debug("Listener of topic {}: Received message: {}", message.getJMSDestination().toString(), message);
             String payload;
-            String ip = message.getStringProperty("ip");
+            String ip = message.getStringProperty("producer-host");
             if (message instanceof TextMessage) {
                 TextMessage textMessage = (TextMessage) message;
                 payload = textMessage.getText();
