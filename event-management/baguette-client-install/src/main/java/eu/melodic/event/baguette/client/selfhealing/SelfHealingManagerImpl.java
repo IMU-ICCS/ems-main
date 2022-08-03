@@ -54,6 +54,12 @@ public class SelfHealingManagerImpl implements SelfHealingManager<NodeRegistryEn
     }
 
     @Override
+    public boolean containsAny(@NonNull Collection<NodeRegistryEntry> nodes) {
+        check();
+        return Collections.disjoint(this.nodes.values(), nodes);
+    }
+
+    @Override
     public boolean isMonitored(@NonNull NodeRegistryEntry node) {
         check();
         return mode==MODE.ALL ||

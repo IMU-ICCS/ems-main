@@ -130,6 +130,14 @@ public class ClusterZone implements IClusterZone {
         return nodes.get(address);
     }
 
+    public List<NodeRegistryEntry> findAggregatorCapableNodes() {
+        return this.nodes.values().stream()
+                .map(ClientShellCommand::getNodeRegistryEntry)
+                .filter(Objects::nonNull)
+                .filter(entry -> entry.getState()==NodeRegistryEntry.STATE.REGISTERED || entry.getState()==NodeRegistryEntry.STATE.REGISTERING)
+                .collect(Collectors.toList());
+    }
+
     // Nodes-without-Clients management
     public void addNodeWithoutClient(@NonNull NodeRegistryEntry entry) {
         synchronized (Objects.requireNonNull(entry)) {

@@ -23,6 +23,7 @@ public interface SelfHealingManager<T> {
 
     Collection<T> getNodes();
     boolean containsNode(T node);
+    boolean containsAny(Collection<T> nodes);
     boolean isMonitored(T node);
     void addNode(T node);
     void addAllNodes(Collection<T> nodes);

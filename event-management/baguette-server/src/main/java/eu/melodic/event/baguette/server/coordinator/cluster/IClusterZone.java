@@ -26,6 +26,8 @@ public interface IClusterZone {
     List<ClientShellCommand> getNodes();
     ClientShellCommand getNodeByAddress(String address);
 
+    List<NodeRegistryEntry> findAggregatorCapableNodes();
+
     void addNodeWithoutClient(@NonNull NodeRegistryEntry entry);
     void removeNodeWithoutClient(@NonNull NodeRegistryEntry entry);
     Set<String> getNodeWithoutClientAddresses();
