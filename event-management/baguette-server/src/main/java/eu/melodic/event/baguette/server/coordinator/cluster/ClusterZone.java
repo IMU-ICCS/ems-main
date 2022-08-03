@@ -22,6 +22,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Data
@@ -112,6 +113,8 @@ public class ClusterZone implements IClusterZone {
                 csc.setClientZone(null);
             if (csc.getNodeRegistryEntry()!=null && csc.getNodeRegistryEntry().getClusterZone()==this)
                 csc.getNodeRegistryEntry().setClusterZone(null);
+            if (aggregator==csc)
+                setAggregator(null);
         }
     }
 
