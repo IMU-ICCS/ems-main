@@ -133,6 +133,23 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 			String username = session.getUsername();
 			log.info("{}--> Client session username: {}", username);
 		} catch (Exception ex) {}*/
+
+        // Initialize NodeRegistryEntry for this CSC
+        initNodeRegistryEntry();
+    }
+
+    private void initNodeRegistryEntry() {
+        String address = getClientIpAddress();
+        NodeRegistryEntry entry = coordinator.getServer().getNodeRegistry().getNodeByAddress(address);
+        log.debug("{}--> initNodeRegistryEntry: Node registry entry for CSC: address={}, entry={}", id, address, entry);
+        log.trace("{}--> initNodeRegistryEntry: Current nodeRegistryEntry: {}", id, entry);
+        if (entry!=null) {
+            setNodeRegistryEntry(entry);
+        } else {
+            log.error("{}--> initNodeRegistryEntry: No node registry entry found for client: address={}", id, address);
+            log.error("{}--> initNodeRegistryEntry: Marked client session for immediate close: address={}", id, address);
+            setCloseConnection(true);
+        }
     }
 
     public void setInputStream(InputStream in) {
@@ -188,6 +205,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             activeCmdMap.put(getClientIpAddress(), this);
         }
         eventBus.send("BAGUETTE_SERVER_CLIENT_STARTING", this);
+        getNodeRegistryEntry().nodeRegistering(null);
 
         // Process client input
         try {
@@ -217,6 +235,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                     // Register CSC to Coordinator
                     coordinator.register(this);
                     eventBus.send("BAGUETTE_SERVER_CLIENT_REGISTERED", this);
+                    getNodeRegistryEntry().nodeRegistered(null);
 
                     // Instruct client to start sending statistics
                     sendCommand("SEND-STATS START");
@@ -227,6 +246,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             }
             // Client connection closed
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXITING", this);
+            getNodeRegistryEntry().nodeExiting(null);
 
             log.info("{}==> Signaling client to exit", id);
             out.println("EXIT");
@@ -236,6 +256,9 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             out.printf("EXCEPTION %s\n", ex);
             this.lastException = ex;
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXCEPTION", this);
+            NodeRegistryEntry entry = getNodeRegistryEntry();
+            if (entry.getState()==NodeRegistryEntry.STATE.REGISTERING) entry.nodeRegistrationError(ex);
+            else entry.nodeDisconnected(ex);
         } finally {
             // Remove CSC from active list
             synchronized (activeCmdList) {
@@ -253,6 +276,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                 callback.onExit(0);
             }
             eventBus.send("BAGUETTE_SERVER_CLIENT_EXITED", this);
+            if (getNodeRegistryEntry().getState()==NodeRegistryEntry.STATE.EXITING)
+                getNodeRegistryEntry().nodeExited(null);
         }
     }
 

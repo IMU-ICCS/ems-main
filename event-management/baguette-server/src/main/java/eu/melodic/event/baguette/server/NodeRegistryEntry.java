@@ -14,17 +14,14 @@ import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class NodeRegistryEntry {
     public enum STATE { PREREGISTERED, IGNORE_NODE, INSTALLING, NOT_INSTALLED, INSTALLED, INSTALL_ERROR,
-        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR, DISCONNECTED, NODE_FAILED
+        WAITING_REGISTRATION, REGISTERING, REGISTERED, REGISTRATION_ERROR, DISCONNECTED, EXITING, EXITED, NODE_FAILED
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
@@ -107,10 +104,53 @@ public class NodeRegistryEntry {
         return this;
     }
 
-    public NodeRegistryEntry nodeRegistration(Map<String,Object> nodeInfo) {
+    public NodeRegistryEntry nodeRegistering(Map<String,Object> nodeInfo) {
         registration.clear();
         registration.putAll(processMap("", nodeInfo));
+        setState(STATE.REGISTERING);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeRegistered(Map<String,Object> nodeInfo) {
+        //registration.clear();
+        registration.putAll(processMap("", nodeInfo));
         setState(STATE.REGISTERED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeRegistrationError(Map<String,Object> nodeInfo) {
+        registration.putAll(processMap("", nodeInfo));
+        setState(STATE.REGISTRATION_ERROR);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeRegistrationError(Throwable t) {
+        registration.putAll(processMap("", Collections.singletonMap("exception", t)));
+        setState(STATE.REGISTRATION_ERROR);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeDisconnected(Map<String,Object> nodeInfo) {
+        registration.putAll(processMap("", nodeInfo));
+        setState(STATE.DISCONNECTED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeDisconnected(Throwable t) {
+        registration.putAll(processMap("", Collections.singletonMap("exception", t)));
+        setState(STATE.DISCONNECTED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeExiting(Map<String,Object> nodeInfo) {
+        registration.putAll(processMap("", nodeInfo));
+        setState(STATE.EXITING);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeExited(Map<String,Object> nodeInfo) {
+        registration.putAll(processMap("", nodeInfo));
+        setState(STATE.EXITED);
         return this;
     }
 
@@ -135,6 +175,7 @@ public class NodeRegistryEntry {
     }
 
     private Map<String,String> processMap(String prefix, Map<String,Object> inMap) {
+        if (inMap==null) return Collections.emptyMap();
         Map<String,String> outMap = new LinkedHashMap<>();
         for (Map.Entry<String,Object> entry : inMap.entrySet()) {
             String newKey = prefix.isEmpty()
