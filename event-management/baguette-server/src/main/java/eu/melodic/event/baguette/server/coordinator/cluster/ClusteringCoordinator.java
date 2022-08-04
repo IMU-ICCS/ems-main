@@ -45,6 +45,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private GROUPING lastLevelGrouping;
 
     private final Map<String,NodeRegistryEntry> ignoredNodes = new LinkedHashMap<>();
+    private ClusterSelfHealing clusterSelfHealing;
 
     public Collection<String> getClusterIdSet() { return topologyMap.keySet(); }
     public Collection<IClusterZone> getClusters() { return topologyMap.values().stream().map(c->(IClusterZone)c).collect(Collectors.toList()); }
@@ -87,6 +88,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
                 topLevelGrouping, aggregatorGrouping, lastLevelGrouping);
 
         // Configure Self-Healing manager
+        clusterSelfHealing = new ClusterSelfHealing(server.getSelfHealingManager());
         server.getSelfHealingManager().setMode(SelfHealingManager.MODE.INCLUDED);
     }
 
@@ -327,49 +329,14 @@ public class ClusteringCoordinator extends NoopCoordinator {
         zoneManagementStrategy.nodeAdded(csc, this, csc.getClientZone());
         log.info("addNodeInTopology: Client added in topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
 
-        // Self-healing-related actions
         if (csc.getClientZone()!=null) {
             IClusterZone zone = csc.getClientZone();
             log.trace("addNodeInTopology: CSC is in zone: client={}, address={}, zone={}", csc.getId(), csc.getClientIpAddress(), zone.getId());
 
-            // If zone has >1 full nodes then stop monitoring them for self-healing
-            List<NodeRegistryEntry> aggregatorCapableNodes = zone.findAggregatorCapableNodes();
-            log.trace("addNodeInTopology: nodes={}", zone.getNodes().stream().map(ClientShellCommand::getNodeRegistryEntry).collect(Collectors.toList()));
-            log.trace("addNodeInTopology: aggregatorCapableNodes={}", aggregatorCapableNodes);
-            if (aggregatorCapableNodes.size()>1) {
-                List<NodeRegistryEntry> nodes = zone.getNodes().stream().map(ClientShellCommand::getNodeRegistryEntry).collect(Collectors.toList());
-                log.info("addNodeInTopology: Stop self-healing monitor for zone nodes: zone={}, clients={}",
-                        zone.getId(), nodes.stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList()));
-                server.getSelfHealingManager().removeAllNodes(nodes);
-            } else if (aggregatorCapableNodes.size()==1) {
-                NodeRegistryEntry lastNode = aggregatorCapableNodes.get(0);
-                log.info("addNodeInTopology: Start self-healing monitor for the first node of zone: zone={}, client={}, address={}", zone.getId(), lastNode.getClientId(), lastNode.getIpAddress());
-                server.getSelfHealingManager().addNode(lastNode);
-            }
-
-            // Remove self-healing responsibility of RL nodes from EMS server, if there are nodes with EMS client in the zone (since one will become Aggregator)
-            List<NodeRegistryEntry> clientlessNodes;
-            if (! (clientlessNodes = zone.getNodesWithoutClient()).isEmpty() && ! (aggregatorCapableNodes=zone.findAggregatorCapableNodes()).isEmpty()) {
-                log.warn(">>>>   addNodeInTopology: clientlessNodes={}", clientlessNodes);
-                if (log.isTraceEnabled()) {
-                    log.trace("addNodeInTopology: Zone has node(s) capable to be Aggregators and nodes without client: zone={}, nodes-without-client={}, aggregator-capable-nodes={}",
-                            zone.getId(), clientlessNodes.stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList()),
-                            aggregatorCapableNodes.stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList()));
-                }
-
-                boolean containsNodesWithoutClient = server.getSelfHealingManager().containsAny(zone.getNodesWithoutClient());
-                log.warn(">>>>   addNodeInTopology: nodesWithoutClient={}", zone.getNodesWithoutClient());
-                log.warn(">>>>   addNodeInTopology: containsAny={}", containsNodesWithoutClient);
-                if (containsNodesWithoutClient) {
-                    // Remove RL nodes self-healing responsibility from EMS server
-                    List<String> zoneNodesWithoutClient = zone.getNodesWithoutClient().stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList());
-                    log.info("addNodeInTopology: Zone has members without client. Will remove self-healing responsibility from EMS server: {}", zoneNodesWithoutClient);
-                    server.getSelfHealingManager().removeAllNodes(zone.getNodesWithoutClient());
-                    log.debug("addNodeInTopology: Removed self-healing responsibility from EMS server, for zone nodes without client: {}", zoneNodesWithoutClient);
-                } else {
-                    log.trace("addNodeInTopology: Zone nodes without client have not been assigned to EMS server: zone={}", zone.getId());
-                }
-            }
+            // Self-healing-related actions
+            List<NodeRegistryEntry> aggregatorCapableNodes = clusterSelfHealing.getAggregatorCapableNodesInZone(zone);
+            clusterSelfHealing.updateNodesSelfHealingMonitoring(zone, aggregatorCapableNodes);
+            clusterSelfHealing.removeResourceLimitedNodeSelfHealingMonitoring(zone, aggregatorCapableNodes);
         }
     }
 
@@ -392,32 +359,10 @@ public class ClusteringCoordinator extends NoopCoordinator {
             zoneManagementStrategy.nodeRemoved(csc, this, zone);
             log.info("removeNodeFromTopology: Client removed from topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
 
-            // If zone has only one full node (i.e. the Aggregator) then start monitoring it for self-healing
-            log.trace("removeNodeFromTopology: node-states={}", zone.getNodes().stream().map(c->c.getId()+"/"+c.getNodeRegistryEntry().getState()).collect(Collectors.toList()));
-            List<NodeRegistryEntry> aggregatorCapableNodes = zone.findAggregatorCapableNodes();
-            log.trace("removeNodeFromTopology: aggregatorCapableNodes={}", zone.getNodes().stream().map(c->c.getNodeRegistryEntry().getState()).collect(Collectors.toList()));
-            if (aggregatorCapableNodes.size()==1) {
-                NodeRegistryEntry lastNode = aggregatorCapableNodes.get(0);
-                log.info("removeNodeFromTopology: Start self-healing monitor for the last remaining node of zone: zone={}, client={}, address={}", zone.getId(), lastNode.getClientId(), lastNode.getIpAddress());
-                server.getSelfHealingManager().addNode(lastNode);
-            }
-
-            // Add self-healing responsibility of RL nodes to EMS server, if there are no nodes with EMS client in the zone
-            List<NodeRegistryEntry> clientlessNodes = zone.getNodesWithoutClient();
-            if (! clientlessNodes.isEmpty() && (zone.getNodes().isEmpty() || aggregatorCapableNodes.isEmpty())) {
-                if (log.isTraceEnabled()) {
-                    log.trace("removeNodeFromTopology: Zone has no nodes capable to be Aggregators but has nodes without client: zone={}, nodes-without-client={}, aggregator-capable-nodes={}, node={}",
-                            zone.getId(), clientlessNodes.stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList()),
-                            aggregatorCapableNodes.stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList()),
-                            zone.getNodes().stream().map(ClientShellCommand::getId).collect(Collectors.toList()));
-                }
-
-                // Add RL nodes self-healing responsibility to EMS server
-                List<String> zoneNodesWithoutClient = zone.getNodesWithoutClient().stream().map(NodeRegistryEntry::getIpAddress).collect(Collectors.toList());
-                log.info("removeNodeFromTopology: Zone has only members without client. Will move self-healing responsibility to EMS server: {}", zoneNodesWithoutClient);
-                server.getSelfHealingManager().addAllNodes(zone.getNodesWithoutClient());
-                log.debug("removeNodeFromTopology: Moved self-healing responsibility to EMS server, for nodes without client: {}", zoneNodesWithoutClient);
-            }
+            // Self-healing-related actions
+            List<NodeRegistryEntry> aggregatorCapableNodes = clusterSelfHealing.getAggregatorCapableNodesInZone(zone);
+            clusterSelfHealing.updateNodesSelfHealingMonitoring(zone, aggregatorCapableNodes);
+            clusterSelfHealing.addResourceLimitedNodeSelfHealingMonitoring(zone, aggregatorCapableNodes);
         }
     }
 
