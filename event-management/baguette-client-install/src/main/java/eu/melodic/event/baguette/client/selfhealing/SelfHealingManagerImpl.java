@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Data
 @Service
 public class SelfHealingManagerImpl implements SelfHealingManager<NodeRegistryEntry>, InitializingBean {
+    private final ServerSelfHealingProperties properties;
     private boolean enabled;
     private MODE mode;
     private Map<String, NodeRegistryEntry> nodes = new LinkedHashMap<>();
@@ -34,7 +35,8 @@ public class SelfHealingManagerImpl implements SelfHealingManager<NodeRegistryEn
     @Override
     public void afterPropertiesSet() throws Exception {
         log.info("Self-Healing Manager initialized");
-        setEnabled(true);
+        setEnabled( properties.isEnabled() );
+        setMode( properties.getMode() );
     }
 
     private void check() {

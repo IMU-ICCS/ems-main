@@ -18,11 +18,11 @@ import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistry;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.common.selfhealing.SelfHealingManager;
+import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.EventBus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -33,20 +33,19 @@ import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
 @Service
-@ConditionalOnProperty(name = "CLIENT_RECOVERY_ENABLED", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "enabled", prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "self.healing", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventConsumer<String,Object,Object> {
     private final EventBus<String,Object,Object> eventBus;
     private final NodeRegistry nodeRegistry;
     private final TaskScheduler taskScheduler;
     private final ClientInstallationProperties clientInstallationProperties;
+    private final ServerSelfHealingProperties selfHealingProperties;
     private final BaguetteServer baguetteServer;
 
     private final HashMap<NodeRegistryEntry, ScheduledFuture<?>> pendingTasks = new HashMap<>();
 
-    @Value("${CLIENT_RECOVERY_DELAY:10000}")
     private long clientRecoveryDelay;
-    @Value("${CLIENT_RECOVERY_INSTRUCTIONS_FILES:file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/recover-baguette.json}")
     private String recoveryInstructionsFile;
 
     private final static String CLIENT_EXIT_TOPIC = "BAGUETTE_SERVER_CLIENT_EXITED";
@@ -54,6 +53,9 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        clientRecoveryDelay = selfHealingProperties.getRecovery().getDelay();
+        recoveryInstructionsFile = selfHealingProperties.getRecovery().getFile().get(0);
+
         eventBus.subscribe(CLIENT_EXIT_TOPIC, this);
         log.info("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
         eventBus.subscribe(CLIENT_REGISTERED_TOPIC, this);
