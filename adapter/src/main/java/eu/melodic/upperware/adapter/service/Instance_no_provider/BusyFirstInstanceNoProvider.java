@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
- *  This class assigns numbers to make sure that busy
+ *  This class assigns instance numbers to make sure that busy
  *  instances remains, and idle are deleted
  */
 @Slf4j

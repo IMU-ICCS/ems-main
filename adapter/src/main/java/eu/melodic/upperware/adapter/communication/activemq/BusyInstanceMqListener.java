@@ -19,7 +19,7 @@ import javax.jms.TextMessage;
     This listener is responsible for receiving messages from EMS on activemq. It gathers information if
     the instances of each component are busy or idle.
     Maps 'busyInstancesByComponentName' and 'idleInstancesByComponentName'
-    are autowired to 'BusyFirstInstanceNoProvider' class as well where they will be used
+    are autowired to 'BusyFirstInstanceNoProvider' class too, where they will be used
     during (re)deploying of the application.
  */
 @Slf4j
@@ -55,7 +55,7 @@ public class BusyInstanceMqListener implements MessageListener {
     private void processMessage(String payload, String ip) {
         log.debug("Converting event payload to CheckIfComponentBusyMessage instance...");
         CheckIfComponentBusyMessage checkIfComponentBusyMessage = gson.fromJson(payload, CheckIfComponentBusyMessage.class);
-        log.info("CheckIfComponentBusyMessage instance: {}", checkIfComponentBusyMessage.toString());
+        log.debug("CheckIfComponentBusyMessage instance: {}", checkIfComponentBusyMessage.toString());
 
         busyInstancesRegistry.processMessage(checkIfComponentBusyMessage, ip);
     }

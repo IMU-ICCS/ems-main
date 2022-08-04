@@ -51,8 +51,6 @@ public class CamelInstanceNamingService {
         return createLabeledName(prefix, PROVIDED_COMMUNICATION_LABEL, providedCommunicationName, instanceNo);
     }
 
-
-
     private static String createLabeledName(String prefix, String label, String name, int instanceNo) {
         String labeledName = prefix + SEPARATOR_NAME_SIGN + label + SEPARATOR_NAME_SIGN + instanceNo;
         log.info("Created name = {} for object = {}", labeledName, name);

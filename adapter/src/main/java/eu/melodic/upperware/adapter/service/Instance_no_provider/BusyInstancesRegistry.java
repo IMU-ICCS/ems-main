@@ -42,8 +42,9 @@ public class BusyInstancesRegistry {
         if (softwareComponentInstanceName != null) {
             String softwareComponentName = CamelInstanceNamingService.getSoftwareComponentNameFromInstanceName(softwareComponentInstanceName);
             Integer softwareComponentInstanceNo = CamelInstanceNamingService.getInstanceNumberFromInstanceName(softwareComponentInstanceName);
-            log.debug("Saving instanceNo: {} for component: {}", softwareComponentInstanceNo, softwareComponentName);
             if (verifyIfExistsInCurrentDeployment(softwareComponentName, softwareComponentInstanceNo)) {
+                log.debug("Updating instance with instanceNo: {} for component: {} to state: {}", softwareComponentInstanceNo,
+                        softwareComponentName, checkIfComponentBusyMessage.getInstanceStatus());
                 this.instancesByComponentName.computeIfPresent(softwareComponentName, (key, instanceStatusByInstanceNumber) -> {
                     instanceStatusByInstanceNumber.put(softwareComponentInstanceNo, checkIfComponentBusyMessage.getInstanceStatus());
                     return instanceStatusByInstanceNumber;
@@ -93,7 +94,7 @@ public class BusyInstancesRegistry {
             return false;
         }
         if (!instancesByComponentName.get(softwareComponent).containsKey(instanceNo)) {
-            log.error("Received softwareComponent Instance No does not exist in the current deployment");
+            log.error("Received softwareComponent Instance Number does not exist in the current deployment");
             return false;
         }
         return true;
@@ -102,11 +103,12 @@ public class BusyInstancesRegistry {
     private void updateNodesByIpsMap() {
         Optional<Pair<SubmittedJobType, JobStatus>> jobStatus = proactiveClientServiceForAdapter.getJobStatus(applicationId);
         if (jobStatus.get().getRight().equals(JobStatus.FINISHED)) {
-            this.instanceNameByIp = proactiveClientServiceForAdapter.getAllNodes().stream().filter(Deployment::getIsDeployed)
+            this.instanceNameByIp = proactiveClientServiceForAdapter.getAllNodes().stream()
+                    .filter(Deployment::getIsDeployed)
                     .collect(Collectors.toMap(this::createIpAddress, Deployment::getNodeName));
             log.info("Received from the scheduler ip/nodes map: {}", instanceNameByIp);
         } else {
-            log.info("Did not update ip/nodes map because job {} is not yet finished", applicationId);
+            log.info("Did not update ip/nodes map because deploy job of {} is not yet finished", applicationId);
         }
     }
 
