@@ -506,6 +506,15 @@ baguette.client.install.installationContextProcessorPlugins=\
     eu.melodic.event.baguette.client.install.plugin.AllowedTopicsProcessorPlugin, \
     eu.melodic.event.baguette.client.install.plugin.PrometheusProcessorPlugin
 
+### Server-side Self-Healing. Recovers monitoring functionality of registered nodes (i.e. EMS client and/or Netdata agent)
+self.healing.enabled=true
+self.healing.mode=INCLUDED
+self.healing.recovery.delay=10000
+self.healing.recovery.retryDelay=10000
+self.healing.recovery.maxRetries=3
+self.healing.recovery.file.baguette=file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/recover-baguette.json
+#self.healing.recovery.file.netdata=
+
 
 ################################################################################
 ###                 EMS - CAMEL-to-EPL Translator properties                 ###
