@@ -151,6 +151,7 @@ build-required-part3:ems:
   image: $MAVEN_IMAGE
   script:
     - $EMS_CLI -Pwithout-docker clean install
+    - $DOCKER_CLI mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml deploy
   artifacts:
     expire_in: 1 week
     paths:
@@ -428,7 +429,7 @@ deploy:ems:
   dependencies:
     - build-required-part3:ems
   script:
-    - $DOCKER_CLI $EMS_CLI deploy
+    - $DOCKER_CLI mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml deploy
 
 deploy:ems-server:
   stage: deploy
@@ -444,6 +445,7 @@ deploy:ems-server:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
+#    - mvn deploy:deploy-file -DgroupId=eu.melodic.event -DartifactId=broker-client -Dversion=$CI_COMMIT_BRANCH -DgeneratePom=true -Dpackaging=jar -Dfile=./broker-client/target/broker-client-jar-with-dependencies.jar
 
 deploy:metasolver:
   stage: deploy
