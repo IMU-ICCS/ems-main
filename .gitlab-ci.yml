@@ -151,7 +151,7 @@ build-required-part3:ems:
   image: $MAVEN_IMAGE
   script:
     - $EMS_CLI -Pwithout-docker clean install
-    - $DOCKER_CLI mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml deploy
+    - mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml deploy
   artifacts:
     expire_in: 1 week
     paths:
@@ -419,7 +419,7 @@ deploy:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
-deploy:ems:
+deploy:broker-client:
   stage: deploy
   only:
     - morphemic-rc3.0
