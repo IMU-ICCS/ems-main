@@ -68,24 +68,24 @@ public class CamelInstanceServiceImpl implements CamelInstanceService {
     private SoftwareComponentInstance createSoftwareComponentInstance(SoftwareComponent softwareComponent) {
         // Create Instance + name + type
         String normalizedSoftwareComponentName = CamelInstanceNamingService.normaliseName(softwareComponent.getName());
-        int softwareInstance = instanceNoProvider.getNewInstanceNoForComponent(normalizedSoftwareComponentName);
-        String softwareComponentName = CamelInstanceNamingService.createSoftwareInstanceName(normalizedSoftwareComponentName, softwareInstance);
+        int instanceNo = instanceNoProvider.getNewInstanceNoForComponent(normalizedSoftwareComponentName);
+        String softwareInstanceName = CamelInstanceNamingService.createSoftwareInstanceName(normalizedSoftwareComponentName, instanceNo);
         SoftwareComponentInstance softwareComponentInstance = DeploymentFactory.eINSTANCE.createSoftwareComponentInstance();
-        softwareComponentInstance.setName(softwareComponentName);
+        softwareComponentInstance.setName(softwareInstanceName);
         softwareComponentInstance.setType(softwareComponent);
 
         //Create ProvidedCommunicationInstance
         IntStream.range(0, softwareComponent.getProvidedCommunications().size())
-                .mapToObj(i -> createProvidedCommunicationInstance(softwareComponent.getProvidedCommunications().get(i), softwareComponentName, i))
+                .mapToObj(i -> createProvidedCommunicationInstance(softwareComponent.getProvidedCommunications().get(i), softwareInstanceName, i))
                 .forEach(providedCommunicationInstance -> softwareComponentInstance.getProvidedCommunicationInstances().add(providedCommunicationInstance));
 
         //Create RequiredCommunicationInstance
         IntStream.range(0, softwareComponent.getRequiredCommunications().size())
-                .mapToObj(i -> createRequiredCommunicationInstance(softwareComponent.getRequiredCommunications().get(i), softwareComponentName, i))
+                .mapToObj(i -> createRequiredCommunicationInstance(softwareComponent.getRequiredCommunications().get(i), softwareInstanceName, i))
                 .forEach(requiredCommunicationInstance -> softwareComponentInstance.getRequiredCommunicationInstances().add(requiredCommunicationInstance));
 
         //Create RequiredHostInstance
-        softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent.getRequiredHost(), softwareComponentName, 0));
+        softwareComponentInstance.setRequiredHostInstance(getRequiredHostInstance(softwareComponent.getRequiredHost(), softwareInstanceName, 0));
 
         return softwareComponentInstance;
     }
