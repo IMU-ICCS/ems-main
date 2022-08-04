@@ -34,6 +34,7 @@ variables:
   MCTS_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/mcts-solver/pom.xml"
 
   EMS_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/pom.xml"
+  EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
   #EMS_UTIL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/util/pom.xml"
   #EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
   #EMS_BROKER_CEP_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-cep/pom.xml"
@@ -151,7 +152,7 @@ build-required-part3:ems:
   image: $MAVEN_IMAGE
   script:
     - $EMS_CLI -Pwithout-docker clean install
-    - mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml deploy
+    - $EMS_BROKER_CLIENT_CLI deploy
   artifacts:
     expire_in: 1 week
     paths:
@@ -429,7 +430,7 @@ deploy:broker-client:
   dependencies:
     - build-required-part3:ems
   script:
-    - $DOCKER_CLI mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml deploy
+    - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
 
 deploy:ems-server:
   stage: deploy
