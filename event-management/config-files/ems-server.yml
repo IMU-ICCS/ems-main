@@ -547,7 +547,7 @@ self.healing:
     maxRetries: 3
     file:
       baguette: file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/recover-baguette.json
-#      netdata:
+      netdata:
 
 
 ################################################################################
