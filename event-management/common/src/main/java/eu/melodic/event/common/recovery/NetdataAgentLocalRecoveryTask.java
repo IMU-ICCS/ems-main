@@ -31,11 +31,11 @@ public class NetdataAgentLocalRecoveryTask extends ShellRecoveryTask {
     @Getter
     private final List<RECOVERY_COMMAND> recoveryCommands = Collections.unmodifiableList(Arrays.asList(
             new RECOVERY_COMMAND("Initial wait...",
-                    "pwd",0, 5000),
+                    "pwd", 0, 0),
             new RECOVERY_COMMAND("Sending Netdata agent kill command...",
-                    "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ",0, 2000),
+                    "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ", 0, 2000),
             new RECOVERY_COMMAND("Sending Netdata agent start command...",
-                    "sudo netdata",0, 10000)
+                    "sudo netdata", 0, 10000)
     ));
 
     public NetdataAgentLocalRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull SelfHealingProperties selfHealingProperties) {
