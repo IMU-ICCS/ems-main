@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.apache.activemq.command.ActiveMQMessage;
+import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,11 +43,11 @@ public abstract class MqDataEntryBaseExtractor {
 	}
 
 	Optional<JsonObject> extractJsonPayload(ActiveMQMessage activeMQMessage) {
-		String rawPayload = new String(activeMQMessage.getContent().getData());
-		int messageBegin = rawPayload.indexOf(MqConstants.META_MESSAGE_IDENTIFIER);
-		int messageEnd = rawPayload.indexOf(MqConstants.META_TIMESTAMP_IDENTIFIER);
-
-		String payload = rawPayload.substring(messageBegin + MqConstants.META_MESSAGE_IDENTIFIER.length(), messageEnd);
+        String rawPayload = new String(activeMQMessage.getContent().getData());
+        int messageBegin = rawPayload.indexOf(MqConstants.META_MESSAGE_IDENTIFIER);
+        int messageEnd = rawPayload.indexOf(MqConstants.META_MESSAGE_END_IDENTIFIER);
+        String payload = rawPayload.substring(messageBegin + MqConstants.META_MESSAGE_IDENTIFIER.length(), messageEnd + 1);
+        log.debug("Payload: {}", payload);
 		try {
 			JsonObject jsonObject = new JsonParser().parse(payload).getAsJsonObject();
 			return Optional.of(jsonObject);

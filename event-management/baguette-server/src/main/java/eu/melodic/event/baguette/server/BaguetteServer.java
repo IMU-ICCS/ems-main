@@ -44,6 +44,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
     private PasswordUtil passwordUtil;
     @Autowired
     private NodeRegistry nodeRegistry;
+
     @Autowired
     private EventBus<String,Object,Object> eventBus;
     @Autowired @Getter

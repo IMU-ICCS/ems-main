@@ -7,7 +7,7 @@
     <parent>
         <artifactId>upperware</artifactId>
         <groupId>org.ow2.paasage</groupId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.5.0-SNAPSHOT</version>
     </parent>
 
     <groupId>eu.melodic</groupId>
@@ -17,7 +17,7 @@
     <properties>
         <java.version>1.8</java.version>
         <cdo.version>3.1.0-SNAPSHOT</cdo.version>
-        <upperware.version>5.0.0-SNAPSHOT</upperware.version>
+        <upperware.version>5.5.0-SNAPSHOT</upperware.version>
         <!--DOCKER plugin properties-->
         <docker.imageName>gui-backend</docker.imageName>
     </properties>
@@ -118,7 +118,7 @@
         <dependency>
             <groupId>cloud.morphemic.connectors</groupId>
             <artifactId>proactive_client</artifactId>
-            <version>2.5-SNAPSHOT</version>
+            <version>3.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

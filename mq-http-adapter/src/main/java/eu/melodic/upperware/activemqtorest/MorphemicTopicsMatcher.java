@@ -17,6 +17,10 @@ public class MorphemicTopicsMatcher {
         return "topic://training_models".equals(topic);
     }
 
+    public static boolean isStartEnsembler(String topic) {
+        return "topic://start_ensembler".equals(topic);
+    }
+
     public static boolean isMetricsToPredict(String topic) {
         return "topic://metrics_to_predict".equals(topic);
     }
@@ -31,6 +35,9 @@ public class MorphemicTopicsMatcher {
 
     public static boolean isMetricTopic(String topic) {
         Pattern pattern = Pattern.compile("topic://\\w+");
-        return (!isTrainingModels(topic)) && (!isMetricsToPredict(topic)) && pattern.matcher(topic).matches();
+        return (!isTrainingModels(topic)) && (!isMetricsToPredict(topic)) &&
+                (!isThresholdTopic(topic)) && (!isInstanceInfoTopic(topic)) &&
+                (!isStartEnsembler(topic)) &&
+                pattern.matcher(topic).matches();
     }
 }
