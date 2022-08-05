@@ -54,7 +54,8 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
     @Override
     public void afterPropertiesSet() throws Exception {
         clientRecoveryDelay = selfHealingProperties.getRecovery().getDelay();
-        recoveryInstructionsFile = selfHealingProperties.getRecovery().getFile().get(0);
+        recoveryInstructionsFile = selfHealingProperties.getRecovery().getFile().getOrDefault("baguette", "");
+        log.debug("ClientRecoveryPlugin: recovery-delay={}, recovery-instructions-file (for baguette)={}", clientRecoveryDelay, recoveryInstructionsFile);
 
         eventBus.subscribe(CLIENT_EXIT_TOPIC, this);
         log.info("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
@@ -159,6 +160,7 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
         log.debug("ClientRecoveryPlugin: runClientRecovery(): node-info={}", entry);
         if (entry==null) return;
 
+        log.trace("ClientRecoveryPlugin: runClientRecovery(): recoveryInstructionsFile={}", recoveryInstructionsFile);
         entry.getPreregistration().put("instruction-files", recoveryInstructionsFile);
 
         ClientInstallationTask task = InstallationHelperFactory.getInstance()
