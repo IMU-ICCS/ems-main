@@ -419,18 +419,6 @@ deploy:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
-deploy:broker-client:
-  stage: deploy
-  only:
-    - morphemic-rc3.0
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part3:ems
-  script:
-    - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
-
 deploy:ems-server:
   stage: deploy
   only:
@@ -442,6 +430,7 @@ deploy:ems-server:
     - $DOCKER_DIND_SERVICE
   script:
     - $DOCKER_CLI $EMS_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
