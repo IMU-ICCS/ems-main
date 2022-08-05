@@ -20,6 +20,7 @@ import io.atomix.cluster.ClusterMembershipEvent;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.TaskScheduler;
@@ -263,6 +264,8 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         if (nodeInfo!=null && nodeInfo.size()>0)
             recoveryTask.setNodeInfo(nodeInfo);
         final AtomicInteger retries = new AtomicInteger(0);
+        Instant firstAttempt;
+        Duration retryDelay;
         ScheduledFuture<?> future = taskScheduler.scheduleWithFixedDelay(
                 () -> {
                     try {
@@ -282,11 +285,12 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
                         commandExecutor.notifyEmsServer("RECOVERY GIVE_UP "+nodeId+" @ "+nodeAddress);
                     }
                 },
-                Instant.now().plusMillis(selfHealingProperties.getRecovery().getDelay()),
-                Duration.ofMillis(selfHealingProperties.getRecovery().getRetryDelay())
+                firstAttempt = Instant.now().plusMillis(selfHealingProperties.getRecovery().getDelay()),
+                retryDelay = Duration.ofMillis(selfHealingProperties.getRecovery().getRetryDelay())
         );
         waitingTasks.put(nodeKey, future);
-        log.info("SelfHealingPlugin: createRecoveryTask(): Created recovery task for Node: id={}, address={}", nodeId, nodeAddress);
+        log.info("SelfHealingPlugin: createRecoveryTask(): Created recovery task for Node: id={}, address={}, first-attempt-at={}, retry-delay={}",
+                nodeId, nodeAddress, firstAttempt, DurationFormatUtils.formatDurationHMS(retryDelay.toMillis()));
     }
 
     private void cancelRecoveryTask(String nodeId, @NonNull String nodeAddress, @NonNull Class<? extends RecoveryTask> recoveryTaskClass, boolean retainNodeKey) {

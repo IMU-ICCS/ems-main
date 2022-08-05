@@ -26,7 +26,7 @@ public class SelfHealingProperties {
 
 	@Data
 	public static class Recovery {
-		private long delay = 10000;
+		private long delay = 1000;
 		private long retryDelay = 60000;
 		private int maxRetries = 3;
 
