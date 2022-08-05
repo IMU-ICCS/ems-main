@@ -227,7 +227,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             // Read installation instructions from JSON file
             List<String> jsonFiles = null;
             if (nodeMap.containsKey("instruction-files")) {
-                jsonFiles = Arrays.stream(nodeMap.getOrDefault("instruction-files", "").toString().split(","))
+                jsonFiles = Arrays.stream(nodeMap.getOrDefault("instruction-files", "").split(","))
                         .filter(StringUtils::isNotBlank)
                         .map(String::trim)
                         .collect(Collectors.toList());
