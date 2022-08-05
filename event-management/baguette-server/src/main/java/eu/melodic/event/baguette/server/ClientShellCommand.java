@@ -10,16 +10,18 @@
 package eu.melodic.event.baguette.server;
 
 import com.google.gson.Gson;
+import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.EventBus;
-import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sshd.common.session.Session;
+import org.apache.sshd.common.session.SessionListener;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
@@ -133,6 +135,17 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
 			String username = session.getUsername();
 			log.info("{}--> Client session username: {}", username);
 		} catch (Exception ex) {}*/
+
+        session.addSessionListener(new SessionListener() {
+            @Override
+            public void sessionException(Session session, Throwable t) {
+                log.warn("{}--> SessionListener: sessionException Throwable: ", id, t);
+            }
+            @Override
+            public void sessionClosed(Session session) {
+                log.info("{}--> SessionListener: sessionClosed", id);
+            }
+        });
 
         // Initialize NodeRegistryEntry for this CSC
         initNodeRegistryEntry();
