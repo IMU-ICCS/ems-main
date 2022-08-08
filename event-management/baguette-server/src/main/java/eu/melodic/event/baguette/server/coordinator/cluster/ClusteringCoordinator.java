@@ -359,9 +359,20 @@ public class ClusteringCoordinator extends NoopCoordinator {
             zoneManagementStrategy.nodeRemoved(csc, this, zone);
             log.info("removeNodeFromTopology: Client removed from topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
 
+            ClientShellCommand aggregator = zone.getAggregator();
+            if (aggregator==csc || aggregator==null) {
+                if (aggregator==csc) zone.setAggregator(null);
+                log.warn("removeNodeFromTopology: Zone without aggregator: zone-id={}, old-aggregator-id={}, address={}", zone.getId(), csc.getId(), csc.getClientIpAddress());
+
+                // Nothing to do. Client-side self-healing must elect a new Aggregator
+                // Optionally, we can start a timer so that if no Aggregator is elected within a period, then we can appoint one or trigger Server-side self-healing
+            }
+
             // Self-healing-related actions
             List<NodeRegistryEntry> aggregatorCapableNodes = clusterSelfHealing.getAggregatorCapableNodesInZone(zone);
             clusterSelfHealing.updateNodesSelfHealingMonitoring(zone, aggregatorCapableNodes);
+            if (aggregatorCapableNodes.isEmpty())
+                ; //XXX: TODO: ??Reconfigure non-candidate nodes to forward their events to EMS server??
             clusterSelfHealing.addResourceLimitedNodeSelfHealingMonitoring(zone, aggregatorCapableNodes);
         }
     }

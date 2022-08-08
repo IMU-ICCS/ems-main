@@ -132,6 +132,7 @@ public class ClusterZone implements IClusterZone {
 
     public List<NodeRegistryEntry> findAggregatorCapableNodes() {
         return this.nodes.values().stream()
+                .filter(Objects::nonNull)
                 .map(ClientShellCommand::getNodeRegistryEntry)
                 .filter(Objects::nonNull)
                 .filter(entry -> entry.getState()==NodeRegistryEntry.STATE.REGISTERED || entry.getState()==NodeRegistryEntry.STATE.REGISTERING)
