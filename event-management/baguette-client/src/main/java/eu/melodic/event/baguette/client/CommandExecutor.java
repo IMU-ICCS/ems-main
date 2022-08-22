@@ -721,32 +721,10 @@ public class CommandExecutor {
         return null;
     }*/
 
-    /**
-     * Read the object from Base64 string.
-     */
-    protected Object deserializeFromString(String s) throws IOException, ClassNotFoundException {
-        byte[] data = Base64.getDecoder().decode(s);
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-        Object o = ois.readObject();
-        ois.close();
-        return o;
-    }
-
-    /**
-     * Write the object to Base64 string.
-     */
-    protected String serializeToString(Object o) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream( baos );
-        oos.writeObject( o );
-        oos.close();
-        return Base64.getEncoder().encodeToString(baos.toByteArray());
-    }
-
     protected synchronized void setClientConfiguration(String configStr) {
         try {
             log.debug("Received serialization of client configuration: {}", configStr);
-            ClientConfiguration config = (ClientConfiguration) deserializeFromString(configStr);
+            ClientConfiguration config = (ClientConfiguration) SerializationUtil.deserializeFromString(configStr);
             ClientConfiguration oldConfig = clientConfiguration;
             if (oldConfig!=null) {
                 log.debug("Old client config.: {}", oldConfig);
@@ -768,7 +746,7 @@ public class CommandExecutor {
     protected synchronized void setGroupingConfiguration(String configStr) {
         try {
             log.debug("Received serialization of Grouping configuration: {}", configStr);
-            GroupingConfiguration grouping = (GroupingConfiguration) deserializeFromString(configStr);
+            GroupingConfiguration grouping = (GroupingConfiguration) SerializationUtil.deserializeFromString(configStr);
             GroupingConfiguration oldGrouping = groupings.get(grouping.getName());
             if (oldGrouping!=null) {
                 log.debug("Old grouping config.: {}", oldGrouping);
@@ -786,7 +764,7 @@ public class CommandExecutor {
     protected synchronized void setConstants(String configStr) {
         try {
             log.debug("Received serialization of Constants: {}", configStr);
-            HashMap all = (HashMap) deserializeFromString(configStr);
+            HashMap all = (HashMap) SerializationUtil.deserializeFromString(configStr);
             Map<String, Double> constants = (Map<String, Double>) all.get("constants");
             log.debug("Received Constants: {}", constants);
 
@@ -1267,7 +1245,7 @@ public class CommandExecutor {
     private void getStatistics(String inputUuid) {
         Map<String,Object> statsMap = brokerCepService.getBrokerCepStatistics();
         log.debug("Statistics: {}", statsMap);
-        if (out!=null) out.println("-INPUT:"+inputUuid+":"+serializeToString(statsMap));
+        if (out!=null) out.println("-INPUT:"+inputUuid+":"+SerializationUtil.serializeToString(statsMap));
     }
 
     @SneakyThrows
@@ -1282,7 +1260,7 @@ public class CommandExecutor {
                 Map<String, Object> clientStats = new HashMap<>();
                 if (statsMap!=null) clientStats.putAll(statsMap);
                 if (sysMap!=null) clientStats.putAll(sysMap);
-                if (out != null) out.println("-STATS:" + serializeToString(clientStats));
+                if (out != null) out.println("-STATS:" + SerializationUtil.serializeToString(clientStats));
             } catch (Exception ex) {
                 log.error("Exception while sending Statistics to server: ", ex);
             }

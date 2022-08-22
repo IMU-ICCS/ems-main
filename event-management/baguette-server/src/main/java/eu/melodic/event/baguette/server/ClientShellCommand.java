@@ -15,6 +15,7 @@ import eu.melodic.event.common.recovery.RecoveryConstant;
 import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.GroupingConfiguration;
+import eu.melodic.event.util.SerializationUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -294,11 +295,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         }
     }
 
-    private void processClientInput(String line) {
+    private void processClientInput(String line) throws IOException, ClassNotFoundException {
         if (line.startsWith("-INPUT:")) {
             String input = line.substring("-INPUT:".length());
             String[] part = input.split(":",2 );
-            inputsMap.put(part[0].trim(), deserializeFromString(part[1]));
+            inputsMap.put(part[0].trim(), SerializationUtil.deserializeFromString(part[1]));
         } else if (StringUtils.startsWithIgnoreCase(line, "SERVER-")) {
             String[] lineArgs = line.split(" ", 2);
             if ("SERVER-GET-NODE-SSH-CREDENTIALS".equalsIgnoreCase(lineArgs[0].trim()) && lineArgs.length>1) {
@@ -390,7 +391,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             }
         } else if (line.startsWith("-STATS:")) {
             String statsStr = line.substring("-STATS:".length());
-            Object statsObj = deserializeFromString(statsStr);
+            Object statsObj = SerializationUtil.deserializeFromString(statsStr);
             if (statsObj instanceof Map) {
                 Map<String, Object> statsMap = (Map<String, Object>) statsObj;
                 statsMap.put("_received_at_server_timestamp", System.currentTimeMillis());
@@ -405,18 +406,6 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             coordinator.clientReady(this);
         } else {
             coordinator.processClientInput(this, line);
-        }
-    }
-
-    protected Object deserializeFromString(String s) {
-        try {
-            byte[] data = Base64.getDecoder().decode(s);
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-            Object o = ois.readObject();
-            ois.close();
-            return o;
-        } catch (Exception ex) {
-            return ex;
         }
     }
 
