@@ -143,8 +143,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         controlServiceInfo.put("current-ems-state", controlServiceCoordinator.getCurrentEmsState());
         controlServiceInfo.put("current-ems-state-message", controlServiceCoordinator.getCurrentEmsStateMessage());
         controlServiceInfo.put("current-ems-state-change-timestamp", controlServiceCoordinator.getCurrentEmsStateChangeTimestamp());
-        controlServiceInfo.put("current-camel-model-id", controlServiceCoordinator.getCurrentCamelModelId());
-        controlServiceInfo.put("current-cp-model-id", controlServiceCoordinator.getCurrentCpModelId());
+        controlServiceInfo.put("current-camel-model-path", controlServiceCoordinator.getCamelModelPath());
+        controlServiceInfo.put("current-cp-model-path", controlServiceCoordinator.getCpModelPath());
         if (controlServiceProperties!=null && infoServiceProperties!=null) {
             controlServiceInfo.put("prop-ip-setting", controlServiceProperties.getIpSetting());
             controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
@@ -221,9 +221,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         // Destinations per grouping and min/max grouping
         Map<String,Object> translatorInfo = new LinkedHashMap<>();
         metrics.put(TRANSLATOR_INFO_PROVIDER, translatorInfo);
-        String camelModelId = controlServiceCoordinator.getCurrentCamelModelId();
-        if (StringUtils.isNotBlank(camelModelId)) {
-            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelId);
+        String camelModelPath = controlServiceCoordinator.getCamelModelPath();
+        if (StringUtils.isNotBlank(camelModelPath)) {
+            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelPath);
             Set<String> groupings = _TC.G2T.keySet();
             ArrayList<String> orderedGroupings = new ArrayList<>(groupings);
             orderedGroupings.sort((o1, o2) -> {
@@ -231,7 +231,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
                 GROUPING g2 = GROUPING.valueOf(o2);
                 return g1.compareTo(g2);
             });
-            translatorInfo.put("camel-model-id", camelModelId);
+            translatorInfo.put("camel-model-path", camelModelPath);
             translatorInfo.put("groupings", orderedGroupings);
             translatorInfo.put("actions-per-event", _TC.E2A);
             translatorInfo.put("slo", _TC.SLO);
