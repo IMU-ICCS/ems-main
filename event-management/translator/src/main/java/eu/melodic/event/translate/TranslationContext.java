@@ -19,6 +19,7 @@ import camel.deployment.Component;
 import camel.metric.*;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.Event;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.util.FunctionDefinition;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TranslationContext {
     // Decomposition DAG
+    @JsonIgnore
     public final DAG DAG;
 
     // Event-to-Action map
