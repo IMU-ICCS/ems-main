@@ -6,7 +6,7 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-FROM java:8-alpine
+FROM openjdk:8-alpine
 VOLUME /tmp
 RUN /bin/sh -c "apk add --no-cache bash"
 
