@@ -1,4 +1,4 @@
-FROM java:8-alpine
+FROM openjdk:8-alpine
 ADD cp-solver.jar cp-solver.jar
 RUN /bin/sh -c "apk add --no-cache bash"
 RUN apk update && apk add ca-certificates wget && update-ca-certificates

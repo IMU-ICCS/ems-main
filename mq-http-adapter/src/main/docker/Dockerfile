@@ -1,4 +1,4 @@
-FROM java:8-alpine
+FROM openjdk:8-alpine
 VOLUME /tmp
 ADD mq-http-adapter.jar mq-http-adapter.jar
 ADD eu.melodic.event.brokerclient.properties eu.melodic.event.brokerclient.properties
