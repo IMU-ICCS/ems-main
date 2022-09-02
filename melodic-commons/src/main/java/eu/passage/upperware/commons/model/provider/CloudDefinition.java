@@ -21,4 +21,7 @@ public class CloudDefinition {
     private Credential credential;
 
     private CloudConfiguration cloudConfiguration;
+
+    private SSHCredentials sshCredentials;
+
 }

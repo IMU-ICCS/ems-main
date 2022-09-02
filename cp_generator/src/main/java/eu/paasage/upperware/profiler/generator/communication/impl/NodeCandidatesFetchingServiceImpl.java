@@ -45,7 +45,7 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
     private static final String LOCATION_CLASS = "location";
     private static final String CLOUD_CLASS = "cloud";
     private static final String FAAS_ENVIRONMENT_CLASS = "environment";
-
+    private static final String NAME_CLASS = "name";
     private final ProactiveClientServiceForGenerator proactiveClientServiceForGenerator;
 
     @Override
@@ -105,7 +105,13 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         List<org.activeeon.morphemic.model.NodeType> nodeTypesProactive = new ArrayList<>();
         nodeTypes.forEach(nodeType -> nodeTypesProactive.add(org.activeeon.morphemic.model.NodeType.getByName(nodeType.name())));
         nodeTypeRequirement.setNodeTypes(nodeTypesProactive);
-        nodeTypeRequirement.setJobIdForBYON(resourceName);
+        nodeTypesProactive.forEach(nodeType -> {
+            if(nodeType.name().equals("EDGE")) {
+                nodeTypeRequirement.setJobIdForEDGE(resourceName);
+            } else if (nodeType.name().equals("BYON")) {
+                nodeTypeRequirement.setJobIdForBYON(resourceName);
+            }
+        });
         log.info("NodeCandidatesFetchingServiceImpl->createNodeTypeRequirement: created nodeTypeRequirement: {}", nodeTypeRequirement);
         return nodeTypeRequirement;
     }
@@ -123,8 +129,10 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         if (nodeType.isPresent()) {
             result.add(createNodeTypeRequirement(Collections.singletonList(NodeType.valueOf(getValueAsString(nodeType.get().getValue()))), resourceName));
         } else {
-            result.add(createNodeTypeRequirement(Arrays.asList(NodeType.IAAS, NodeType.BYON), resourceName));
+            result.add(createNodeTypeRequirement(Arrays.asList(NodeType.IAAS, NodeType.BYON, NodeType.EDGE), resourceName));
         }
+
+        getAttribute(requirementsMap, "placementName").ifPresent(attribute -> result.add(createRequirement(NAME_CLASS, "placementName", RequirementOperator.EQ, getValueAsString(attribute.getValue()))));
 
         getAttribute(requirementsMap, "totalMemoryHasMin").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getValue()))));
         getAttribute(requirementsMap, "totalMemoryHasMax").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.LEQ, getValueAsString(attribute.getValue()))));

@@ -4,5 +4,6 @@ public enum CloudType {
     PRIVATE,
     PUBLIC,
     SIMULATION,
+    EDGE,
     BYON;
 }

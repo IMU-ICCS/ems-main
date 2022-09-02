@@ -6,8 +6,6 @@ import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.NodeCandidate;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,6 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import static org.activeeon.morphemic.model.NodeCandidate.NodeCandidateTypeEnum.EDGE;
+
 
 @Slf4j
 public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
@@ -44,6 +45,10 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
                 case BYON:
                     log.info("NodeTaskExecutor->create: [application id: {}] adding BYON node", applicationId);
                     addBYONNode(taskBody);
+                    break;
+                case EDGE:
+                    log.info("NodeTaskExecutor->create: [application id: {}] adding EDGE node", applicationId);
+                    addEDGENode(taskBody);
                     break;
             }
         }
@@ -94,6 +99,21 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
         log.info("NodeTaskExecutor->addBYONNode: [application id: {}] addByonNodes status= {}", applicationId, status);
     }
 
+    private void addEDGENode(AdapterRequirement taskBody) {
+        String edgeId = proactiveClientServiceForAdapter.getEdgeNodeList(applicationId).stream()
+                .filter(edgeNode -> edgeNode.getNodeCandidate().getId().equals(taskBody.getNodeCandidate().getId()))
+                .findFirst()
+                .orElseThrow(() -> new AdapterException(String.format("Could not find EDGE with associated NodeCandidate id=%s", taskBody.getNodeCandidate().getId())))
+                .getId();
+
+        final Map<String, String> edgeIdPerComponent = Collections.singletonMap(edgeId,
+                taskBody.getTaskName());
+        log.info("NodeTaskExecutor->addEDGENode: [application id: {}] ProActive edgeIdPerComponent= {}", applicationId, edgeIdPerComponent);
+
+        int status = proactiveClientServiceForAdapter.addEdgeNodes(edgeIdPerComponent, applicationId);
+
+        log.info("NodeTaskExecutor->addEDGENode: [application id: {}] addEDGENodes status= {}", applicationId, status);
+    }
     @Override
     public void delete(AdapterRequirement taskBody) {
         try {
