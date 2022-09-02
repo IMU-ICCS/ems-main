@@ -5,6 +5,7 @@ import eu.melodic.models.interfaces.security.UserRequest;
 import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
+import eu.paasage.upperware.security.server.controller.request.UpdateExistingUserRequest;
 import eu.paasage.upperware.security.server.controller.response.ExceptionResponse;
 import eu.paasage.upperware.security.server.controller.response.UserDataResponse;
 import eu.paasage.upperware.security.server.controller.response.UserResponse;
@@ -31,8 +32,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 
 @Slf4j
@@ -68,6 +71,12 @@ public class UserController {
         log.info("New user account for user {} with role {} successfully created", userRequest.getUsername(), userRequest.getUserRole());
         return userResponse;
     }
+    @GetMapping("/auth/username")
+    @ResponseBody
+    public String getUserFullName(HttpServletRequest request) {
+        User user = (User) request.getUserPrincipal();
+        return user.getFullName();
+    }
 
     @DeleteMapping("/auth/user/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -87,6 +96,17 @@ public class UserController {
         userService.changePassword(changePasswordRequest);
         log.info("Password for user: {} successfully changed", changePasswordRequest.getUsername());
     }
+
+    @PutMapping("/auth/user")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("#newUserRequest.username.equals(authentication.name)")
+    public void updateUser(@RequestBody @Valid UpdateExistingUserRequest updateExistingUserRequest)
+            throws AuthenticationException {
+        log.info("PUT request for change user info from user: {}", updateExistingUserRequest.getUsername());
+        userService.updateUser(updateExistingUserRequest);
+        log.info("user info for user: {} successfully changed", updateExistingUserRequest.getUsername());
+    }
+
 
     @PutMapping("/auth/user/unlock/{username}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

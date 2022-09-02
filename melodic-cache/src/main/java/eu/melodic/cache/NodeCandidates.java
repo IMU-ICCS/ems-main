@@ -62,7 +62,7 @@ public class NodeCandidates implements Serializable {
         }
 
         //boolean iaasOrByonOnly = checkIfOnlyVmTypes(nodeCandidates, IAAS) || checkIfOnlyVmTypes(nodeCandidates, BYON);
-        boolean iaasOrByonOnly = checkIfOnlyNodeCandidateTypes(nodeCandidates, Arrays.asList(IAAS, BYON));
+        boolean iaasOrByonOnly = checkIfOnlyNodeCandidateTypes(nodeCandidates, Arrays.asList(IAAS, BYON, EDGE));
         log.info("NodeCandidates->getCheapest: iaasOrByonOnly: {}", iaasOrByonOnly);
         boolean faasOnly = checkIfOnlyVmTypes(nodeCandidates, FAAS);
 

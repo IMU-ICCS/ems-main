@@ -22,4 +22,6 @@ public interface JwtServerApi {
     void unlockUserAccount(String username, String token);
 
     void deleteUser(String username, String token);
+
+    UserResponse updateExistingUser(NewUserRequest newUserRequest, String token);
 }
