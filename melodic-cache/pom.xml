@@ -39,7 +39,7 @@
         <dependency>
             <groupId>cloud.morphemic.connectors</groupId>
             <artifactId>proactive_client</artifactId>
-            <version>2.6-SNAPSHOT</version>
+            <version>2.5-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.squareup.okio</groupId>
