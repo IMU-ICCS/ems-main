@@ -29,7 +29,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 
         <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
-        <docker.esperJar>esper-${esper-version}.jar</docker.esperJar>
+        <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
 
         <!-- com.spotify docker-maven-plugin properties-->
         <!--
@@ -269,7 +269,7 @@
                                 <artifactItem>
                                     <groupId>com.espertech</groupId>
                                     <artifactId>esper</artifactId>
-                                    <version>${esper-version}</version>
+                                    <version>${esper.version}</version>
                                     <type>jar</type>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>

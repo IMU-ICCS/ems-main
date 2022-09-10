@@ -64,14 +64,14 @@
         <dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
-            <version>${esper-version}</version>
+            <version>${esper.version}</version>
         </dependency>
 
         <!-- MathParser dependencies -->
         <dependency>
             <groupId>org.mariuszgromada.math</groupId>
             <artifactId>MathParser.org-mXparser</artifactId>
-            <version>${mathparser-version}</version>
+            <version>${mathparser.version}</version>
         </dependency>
 
         <!-- Lombok project -->
