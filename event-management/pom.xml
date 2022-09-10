@@ -46,13 +46,13 @@
 
     <modules>
         <module>util</module>
-        <module>translator</module>
         <module>broker-client</module>
         <module>broker-cep</module>
+        <module>translator</module>
         <module>common</module>
         <module>baguette-client</module>
-        <module>baguette-client-install</module>
         <module>baguette-server</module>
+        <module>baguette-client-install</module>
         <module>control-service</module>
     </modules>
 
