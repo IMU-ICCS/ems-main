@@ -18,13 +18,13 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public class SourceAddressMessageUpdateInterceptor extends AbstractMessageInterceptor {
-    private final String sourceAddressPropertyName = EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS;
+    private final String SOURCE_ADDRESS_PROPERTY_NAME = EmsConstant.EVENT_PROPERTY_SOURCE_ADDRESS;
 
     @Override
     public void intercept(Message message) {
         log.trace("SourceAddressMessageUpdateInterceptor:  Message: {}", message);
         try {
-            Object sourceProperty = message.getProperty(sourceAddressPropertyName);
+            Object sourceProperty = message.getProperty(SOURCE_ADDRESS_PROPERTY_NAME);
             if (sourceProperty!=null && StringUtils.isNotBlank(sourceProperty.toString())) {
                 log.trace("SourceAddressMessageUpdateInterceptor:  Message has Producer Host property set: {}", sourceProperty);
                 return;
@@ -53,13 +53,13 @@ public class SourceAddressMessageUpdateInterceptor extends AbstractMessageInterc
             }
 
             // get message remote address old value (if any)
-            String oldAddress = (String) message.getProperty(sourceAddressPropertyName);
+            String oldAddress = (String) message.getProperty(SOURCE_ADDRESS_PROPERTY_NAME);
             log.trace("SourceAddressMessageUpdateInterceptor:  Producer host property in message: {}", oldAddress);
 
             // set new remote address value, if needed
             if (StringUtils.isBlank(oldAddress) && StringUtils.isNotBlank(address)) {
                 log.trace("SourceAddressMessageUpdateInterceptor:  Setting producer host property in message: host={}, message={}", address, message);
-                message.setProperty(sourceAddressPropertyName, address);
+                message.setProperty(SOURCE_ADDRESS_PROPERTY_NAME, address);
                 log.debug("SourceAddressMessageUpdateInterceptor:  Set producer host property in message: host={}, message={}", address, message);
             } else if (StringUtils.isNotBlank(oldAddress)) {
                 log.debug("SourceAddressMessageUpdateInterceptor:  Producer host property already set (keeping previous value): host={}, message={}", oldAddress, message);
