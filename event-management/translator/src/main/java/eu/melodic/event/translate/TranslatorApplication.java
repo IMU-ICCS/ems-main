@@ -35,9 +35,9 @@ public class TranslatorApplication implements CommandLineRunner {
         log.info("Testing CAMEL-to-EPL Translator");
         log.info("Args: {}", java.util.Arrays.asList(args));
 
-        String camelModelId = (args.length > 0 && !args[0].trim().isEmpty()) ? args[0].trim() : "/camel-new";
+        String camelModelPath = (args.length > 0 && !args[0].trim().isEmpty()) ? args[0].trim() : "/camel-new";
         log.info("Models to use...");
-        log.info("  Camel-model: {}", camelModelId);
-        translator.translate(camelModelId);
+        log.info("  Camel-model: {}", camelModelPath);
+        translator.translate(camelModelPath);
     }
 }

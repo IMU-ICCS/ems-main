@@ -64,8 +64,8 @@ public class CamelToEplTranslator implements Translator {
 	// ================================================================================================================
 	// Public API
 
-	public TranslationContext translate(String camelId) {
-		log.debug("CamelToEplTranslator.translate():  BEGIN: camel-model-id={}", camelId);
+	public TranslationContext translate(String camelModelPath) {
+		log.debug("CamelToEplTranslator.translate():  BEGIN: camel-model-path: {}", camelModelPath);
 		initCdoClient();
 		CDOSessionX session = null;
 		CDOView view = null;
@@ -77,11 +77,11 @@ public class CamelToEplTranslator implements Translator {
 			// Retrieve CAMEL and CP models
 			log.debug("CamelToEplTranslator.translate():  Retrieving models...");
 			CamelModel camelModel = null;
-			if (!StringUtils.isBlank(camelId)) {
-				CDOResource camelModelRes = view.getResource(camelId);
+			if (!StringUtils.isBlank(camelModelPath)) {
+				CDOResource camelModelRes = view.getResource(camelModelPath);
 				EList<EObject> contents = camelModelRes.getContents();
 				camelModel = (CamelModel) contents.get(contents.size()-1);
-				log.debug("CamelToEplTranslator.translate():  Retrieved CAMEL model: id={}", camelId);
+				log.debug("CamelToEplTranslator.translate():  Retrieved CAMEL model at path: {}", camelModelPath);
 			}
 			
 			// Process models
@@ -93,7 +93,7 @@ public class CamelToEplTranslator implements Translator {
 		} finally {
 			if (view!=null) view.close();
 			if (session!=null) session.closeSession();
-			log.debug("CamelToEplTranslator.translate():  END: camel-model-id={}", camelId);
+			log.debug("CamelToEplTranslator.translate():  END: camel-model-path: {}", camelModelPath);
 		}
 	}
 	

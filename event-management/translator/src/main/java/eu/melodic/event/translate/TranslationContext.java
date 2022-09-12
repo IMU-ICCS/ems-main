@@ -240,6 +240,10 @@ public class TranslationContext {
         return MONS.contains(sensorName);
     }
 
+    public Set<Monitor> getMonitors() {
+        return Collections.unmodifiableSet(MON);
+    }
+
     public void addGroupingTopicPair(String grouping, String topic) {
         _addPair(G2T, grouping, topic);
     }
