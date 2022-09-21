@@ -128,5 +128,7 @@ public class NodeRegistry {
         return registry.values();
     }
 
-    public Collection<String> getNodeReferences() { return registry.values().stream().map(NodeRegistryEntry::getReference).collect(Collectors.toList()); }
+    public Collection<String> getNodeReferences() {
+        return registry.values().stream().map(NodeRegistryEntry::getReference).collect(Collectors.toList());
+    }
 }
