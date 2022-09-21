@@ -17,11 +17,11 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.TopicBeaconProperties;
 import eu.melodic.event.translate.TranslationContext;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -35,16 +35,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @EnableScheduling
+@RequiredArgsConstructor
 public class TopicBeacon implements InitializingBean {
-    @Autowired
-    private TopicBeaconProperties properties;
+    private final TopicBeaconProperties properties;
 
-    @Autowired
-    private ControlServiceCoordinator coordinator;
-    @Autowired
-    private BrokerCepService brokerCepService;
-    @Autowired
-    private TaskScheduler scheduler;
+    private final ControlServiceCoordinator coordinator;
+    private final BrokerCepService brokerCepService;
+    private final TaskScheduler scheduler;
 
     private Gson gson;
     private String previousModelId = "";
