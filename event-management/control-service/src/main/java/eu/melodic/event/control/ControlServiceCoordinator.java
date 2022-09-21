@@ -133,6 +133,14 @@ public class ControlServiceCoordinator implements InitializingBean {
                 : NetUtil.getPublicIpAddress();
     }
 
+    public String getCamelModelPath() {
+        return currentCamelModelId;
+    }
+
+    public String getCpModelPath() {
+        return currentCpModelId;
+    }
+
     // ------------------------------------------------------------------------------------------------------------
 
     public ControlServiceProperties getControlServiceProperties() {
