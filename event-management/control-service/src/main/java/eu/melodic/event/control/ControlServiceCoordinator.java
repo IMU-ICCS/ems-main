@@ -41,6 +41,7 @@ import eu.melodic.models.services.ems.CamelModelNotificationRequest;
 import eu.melodic.models.services.ems.CamelModelNotificationRequestImpl;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
@@ -49,7 +50,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
@@ -73,48 +73,35 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ControlServiceCoordinator implements InitializingBean {
 
-    @Autowired
-    private ApplicationContext applicationContext;
-    @Autowired
-    private ControlServiceProperties properties;
-    @Autowired
-    private BaguetteServer baguette;
-    @Autowired
-    @Getter
-    private BrokerCepService brokerCep;
-    @Autowired
-    private NodeRegistry nodeRegistry;
-    @Autowired
-    private RestTemplate restTemplate;
-    @Autowired
-    private PasswordUtil passwordUtil;
+    private final ApplicationContext applicationContext;
+    private final ControlServiceProperties properties;
+    private final BaguetteServer baguette;
+    private final NodeRegistry nodeRegistry;
+    private final RestTemplate restTemplate;
+    private final PasswordUtil passwordUtil;
+    @Getter private BrokerCepService brokerCep;
 
-    private AtomicBoolean inUse = new AtomicBoolean();
-    private Map<String, TranslationContext> camelToTcCache = new HashMap<>();
+    private final AtomicBoolean inUse = new AtomicBoolean();
+    private final Map<String, TranslationContext> camelToTcCache = new HashMap<>();
 
-    @Getter
-    private String currentCamelModelId;
-    @Getter
-    private String currentCpModelId;
+    @Getter private final String reference = UUID.randomUUID().toString();
+
+    @Getter private String currentCamelModelId;
+    @Getter private String currentCpModelId;
     private TranslationContext currentTC;
 
     private ServerNetdataCollector netdataCollector;
-
-    @Getter
-    private String reference = UUID.randomUUID().toString();
 
     public enum EMS_STATE {
         IDLE, INITIALIZING, RECONFIGURING, READY, ERROR
     }
 
-    @Getter
-    private EMS_STATE currentEmsState = EMS_STATE.IDLE;
-    @Getter
-    private String currentEmsStateMessage;
-    @Getter
-    private long currentEmsStateChangeTimestamp;
+    @Getter private EMS_STATE currentEmsState = EMS_STATE.IDLE;
+    @Getter private String currentEmsStateMessage;
+    @Getter private long currentEmsStateChangeTimestamp;
 
 
     @Override

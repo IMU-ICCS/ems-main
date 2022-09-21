@@ -25,12 +25,11 @@ import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,25 +52,19 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor
 public class ControlServiceController {
 
     private final static String ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY =
             "hasAnyRole('"+WebSecurityConfig.ROLE_JWT_TOKEN+"','"+WebSecurityConfig.ROLE_API_KEY+"')";
 
-    @Autowired
-    private ControlServiceProperties properties;
-    @Autowired
-    private StaticResourceProperties staticResourceProperties;
-    @Autowired
-    private ControlServiceCoordinator coordinator;
-    @Autowired
-    private WebSecurityConfig webSecurityConfig;
-    @Autowired
-    private PasswordUtil passwordUtil;
+    private final ControlServiceProperties properties;
+    private final StaticResourceProperties staticResourceProperties;
+    private final ControlServiceCoordinator coordinator;
+    private final WebSecurityConfig webSecurityConfig;
+    private final PasswordUtil passwordUtil;
 
-    @Autowired
-    private RequestMappingHandlerMapping mvcHandlerMapping;
+    private final RequestMappingHandlerMapping mvcHandlerMapping;
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB and Upperware interfacing methods
