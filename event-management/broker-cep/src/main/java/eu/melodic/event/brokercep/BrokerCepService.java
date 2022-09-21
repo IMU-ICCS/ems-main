@@ -257,7 +257,7 @@ public class BrokerCepService {
         if (_isLocalBrokerUrl(connectionString)) {
             username = brokerConfig.getBrokerLocalAdminUsername();
             password = brokerConfig.getBrokerLocalAdminPassword();
-            log.debug("BrokerCepService._publishEvent(): Setting LOCAL BROKER credentials: {} / {}",
+            log.debug("BrokerCepService._publishEvent(): Using LOCAL BROKER credentials: {} / {}",
                     username, passwordUtil.encodePassword(password));
         }
         _publishEvent(connectionString, username, password, destinationName, event, convertToJson);
