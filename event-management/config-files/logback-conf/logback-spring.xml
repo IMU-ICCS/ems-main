@@ -18,6 +18,7 @@
 
     <logger name="eu.melodic.upperware.zppsolver" level = "INFO"/>
     <logger name="eu.melodic.upperware.cpsolver" level="INFO"/>
+
     <!-- choco solver begin -->
     <logger name="choco" level="WARN"/>
     <logger name="choco.util" level="INFO"/>
