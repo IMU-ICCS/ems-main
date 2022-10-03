@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -18,20 +16,24 @@ public class MelodicCacheController {
 
     private final MelodicCacheCoordinator melodicCacheCoordinator;
 
-    @GetMapping(value = "/getCheapest/{providerId}/{cdoResourcePath}/{softwareComponentName}/{shouldReload}", consumes = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/getCheapest/{providerId}/{cdoResourcePath}/{softwareComponentName}/{shouldReload}")
     public NodeCandidate getCheapest(@PathVariable int providerId,
                                      @PathVariable String cdoResourcePath,
                                      @PathVariable String softwareComponentName,
                                      @PathVariable boolean shouldReload) {
+        log.info("Received on 'getCheapest': providerId={} cdoResourcePath={}, softwareComponentName={} shouldReload={}",
+                providerId, cdoResourcePath, softwareComponentName, shouldReload);
         melodicCacheCoordinator.reloadNodeCandidatesIfNeeded(cdoResourcePath, shouldReload);
         return melodicCacheCoordinator.getCheapest(softwareComponentName, providerId, cdoResourcePath);
     }
 
-    @GetMapping(value = "/getNodeCandidates/{providerId}/{cdoResourcePath}/{softwareComponentName}/{shouldReload}", consumes = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/getNodeCandidates/{providerId}/{cdoResourcePath}/{softwareComponentName}/{shouldReload}")
     public List<NodeCandidate> getNodeCandidates(@PathVariable int providerId,
                                                  @PathVariable String cdoResourcePath,
                                                  @PathVariable String softwareComponentName,
                                                  @PathVariable boolean shouldReload) {
+        log.info("Received on 'getNodeCandidates': providerId={} cdoResourcePath={}, softwareComponentName={} shouldReload={}",
+                providerId, cdoResourcePath, softwareComponentName, shouldReload);
         melodicCacheCoordinator.reloadNodeCandidatesIfNeeded(cdoResourcePath, shouldReload);
         return melodicCacheCoordinator.getNodeCandidates(softwareComponentName, providerId, cdoResourcePath);
     }
