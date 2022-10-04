@@ -1,12 +1,10 @@
 package eu.melodic.upperware.guibackend.service.deployment;
 
+import com.google.protobuf.TextFormatParseInfoTree;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.services.frontend.DeploymentProcessRequest;
 import eu.melodic.models.services.frontend.DeploymentProcessRequestImpl;
-import eu.melodic.upperware.guibackend.communication.mule.deployment.ApiRequest;
-import eu.melodic.upperware.guibackend.communication.mule.deployment.CloudConfigurationRequest;
-import eu.melodic.upperware.guibackend.communication.mule.deployment.CloudDefinitionRequest;
-import eu.melodic.upperware.guibackend.communication.mule.deployment.CredentialRequest;
+import eu.melodic.upperware.guibackend.communication.mule.deployment.*;
 import eu.melodic.upperware.guibackend.controller.deployment.request.DeploymentRequest;
 import eu.passage.upperware.commons.model.provider.*;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -32,12 +30,13 @@ public class DeploymentMapper {
 
     private List<Object> mapCloudDefinitionsToRequest(List<CloudDefinition> cloudDefinitions) {
         return cloudDefinitions.stream().map(cloudDefinition -> CloudDefinitionRequest.builder()
+                .SSHCredentials(mapSSHCredentialToRequest(cloudDefinition.getSshCredentials()))
                 .cloudConfiguration(mapCloudConfigurationToRequest(cloudDefinition.getCloudConfiguration()))
                 .cloudType(cloudDefinition.getCloudType())
                 .api(mapApiToRequest(cloudDefinition.getApi()))
                 .credential(mapCredentialToRequest(cloudDefinition.getCredential()))
                 .endpoint(StringUtils.isBlank(cloudDefinition.getEndpoint().trim()) ? null : cloudDefinition.getEndpoint())
-                .id(RandomStringUtils.random(16, true, true))
+                .id(RandomStringUtils.random(8, true, true))
                 .build()).collect(Collectors.toList());
     }
 
@@ -70,6 +69,14 @@ public class DeploymentMapper {
                 .map(ParentProperty::getProperties)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toMap(SingleProperty::getKey, SingleProperty::getValue));
+    }
+
+    private SSHCredentialsRequest mapSSHCredentialToRequest(SSHCredentials sshCredentials) {
+        return SSHCredentialsRequest.builder()
+                .username(sshCredentials.getUsername())
+                .keyPairName(sshCredentials.getKeyPairName())
+                .privateKey(sshCredentials.getPrivateKey())
+                .build();
     }
 
 }

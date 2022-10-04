@@ -28,6 +28,7 @@ public class SecureStoreDBService {
     private final static String SECURE_VARIABLE_SECURE_SUFFIX = "-SECRET";
     private final static String SECURE_VARIABLE_PASSWORD_SUFFIX = "-password";
     private final static String SECURE_VARIABLE_BYON_PREFIX = "byon-";
+    private final static String SECURE_VARIABLE_EDGE_PREFIX = "edge-";
     private final static String SECURE_VARIABLE_KEY_SUFFIX = "-key";
 
     private static final Pattern SECURE_VARIABLE_PATTERN = Pattern.compile("\\{\\{(.*?)}}");
@@ -179,5 +180,17 @@ public class SecureStoreDBService {
 
     private SecureVariable fillSecureVariableOrSetEmpty(String secureKey) {
         return new SecureVariable(secureKey, this.getSecureVariable(secureKey));
+    }
+
+    public Pair<String, String> createKeyLabelForEdgePassword(LoginCredential loginCredential) {
+        String keyForEdgePassword = SECURE_VARIABLE_EDGE_PREFIX + loginCredential.getId() + SECURE_VARIABLE_PASSWORD_SUFFIX;
+        String labelForEdgeKey = SECURE_VARIABLE_PREFIX + keyForEdgePassword + SECURE_VARIABLE_SUFFIX;
+        return Pair.of(keyForEdgePassword, labelForEdgeKey);
+    }
+
+    public Pair<String, String> createKeyLabelForEdgeKey(LoginCredential loginCredential) {
+        String keyForEdgeKey = SECURE_VARIABLE_EDGE_PREFIX + loginCredential.getId() + SECURE_VARIABLE_KEY_SUFFIX;
+        String labelForEdgeKey = SECURE_VARIABLE_PREFIX + keyForEdgeKey + SECURE_VARIABLE_SUFFIX;
+        return Pair.of(keyForEdgeKey, labelForEdgeKey);
     }
 }

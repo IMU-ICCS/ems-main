@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
 import cloud.morphemic.connectors.proactive.IProactiveClientServiceConnector;
+
 import org.activeeon.morphemic.model.*;
 
 import java.util.List;
@@ -17,7 +18,11 @@ public interface ProactiveClientServiceGUI extends IProactiveClientServiceConnec
 
     List<Location> getAllLocation();
 
+    EdgeNode registerNewEdgeNode(EdgeDefinition edgeDefinition, String jobId);
+
     ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId, boolean automate);
+
+    List<EdgeNode> getEdgeNodeList(String jobId);
 
     List<ByonNode> getByonNodeList(String jobId);
 
