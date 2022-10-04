@@ -4,6 +4,7 @@ import eu.paasage.upperware.security.authapi.SecurityConstants;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.server.controller.request.ChangePasswordRequest;
 import eu.paasage.upperware.security.server.controller.request.NewUserRequest;
+import eu.paasage.upperware.security.server.controller.request.UpdateExistingUserRequest;
 import eu.paasage.upperware.security.server.controller.response.UserDataResponse;
 import eu.paasage.upperware.security.server.controller.response.UserResponse;
 import eu.paasage.upperware.security.server.data.repository.User;
@@ -120,6 +121,14 @@ public class UserService {
         User user = userLdapRepository.findByUsernameAndPassword(changePasswordRequest.getUsername(), digestSHA(changePasswordRequest.getOldPassword()))
                 .orElseThrow(UserNotFoundException::new);
         user.setPassword(digestSHA(changePasswordRequest.getNewPassword()));
+        userLdapRepository.save(user);
+    }
+
+    public void updateUser(UpdateExistingUserRequest updateExistingUserRequest) {
+        User user = userLdapRepository.findByUsername(updateExistingUserRequest.getUsername())
+                .orElseThrow(UserNotFoundException::new);
+        user.setFullName(updateExistingUserRequest.getFullName());
+        user.setMail(updateExistingUserRequest.getMail());
         userLdapRepository.save(user);
     }
 

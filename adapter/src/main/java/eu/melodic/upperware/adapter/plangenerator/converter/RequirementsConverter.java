@@ -48,7 +48,8 @@ public class RequirementsConverter implements ModelConverter<DeploymentInstanceM
 
     private void clearNodeCandidate(NodeCandidate nodeCandidate) {
         //clear NodeCandidate from unnecessary Cloud in case of BYON
-        if (nodeCandidate != null && NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType())) {
+        if (nodeCandidate != null && NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType()) ||
+                (nodeCandidate != null && NodeCandidate.NodeCandidateTypeEnum.EDGE.equals(nodeCandidate.getNodeCandidateType()))) {
             nodeCandidate.setCloud(null);
         }
     }

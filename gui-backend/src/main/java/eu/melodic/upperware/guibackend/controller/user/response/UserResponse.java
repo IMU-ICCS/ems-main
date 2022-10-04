@@ -14,4 +14,11 @@ import lombok.Setter;
 public class UserResponse {
     private String username;
     private UserRole userRole;
+    private String mail;
+    private String fullName;
+
+    public UserResponse(String username, UserRole userRole) {
+        this.username = username;
+        this.userRole = userRole;
+    }
 }
