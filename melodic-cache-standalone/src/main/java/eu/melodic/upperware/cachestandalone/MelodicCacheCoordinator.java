@@ -1,11 +1,11 @@
 package eu.melodic.upperware.cachestandalone;
 
 import eu.melodic.cache.CacheService;
-import eu.melodic.cache.CacheUtils;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.cachestandalone.exception.NodeCandidatesNotFound;
 import lombok.RequiredArgsConstructor;
 import org.activeeon.morphemic.model.NodeCandidate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class MelodicCacheCoordinator {
 
+    @Qualifier("memcacheService")
     private final CacheService<NodeCandidates> cacheService;
 
     //cdoResourcePath -> nodeCandidates
@@ -38,7 +39,7 @@ public class MelodicCacheCoordinator {
 
     void reloadNodeCandidatesIfNeeded(String cdoResourcePath, boolean shouldReload) {
         if (shouldReload || !nodeCandidatesByPath.containsKey(cdoResourcePath)) {
-            NodeCandidates nodeCandidates = cacheService.load(CacheUtils.createCacheKey(cdoResourcePath));
+            NodeCandidates nodeCandidates = cacheService.load(cdoResourcePath);
             if (nodeCandidates == null) {
                 throw new NodeCandidatesNotFound();
             }
