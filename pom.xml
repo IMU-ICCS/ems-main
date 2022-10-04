@@ -25,21 +25,21 @@
     <name>Upperware</name>
 
     <modules>
-        <module>upperware_metamodel</module>
+<!--        <module>upperware_metamodel</module>-->
         <module>jwt-commons</module>
-        <module>jwt-server</module>
-        <module>melodic-commons</module>
+<!--        <module>jwt-server</module>-->
+<!--        <module>melodic-commons</module>-->
         <module>melodic-cache</module>
-        <module>adapter</module>
-        <module>cp_generator</module>
-        <module>gui-backend</module>
-        <module>meta_solver</module>
-        <module>utility-generator</module>
-        <module>cp-solver</module>
-        <module>la_converter</module>
-        <module>event-management</module>
-        <module>mq-http-adapter</module>
-        <module>zpp-solver</module>
+<!--        <module>adapter</module>-->
+<!--        <module>cp_generator</module>-->
+<!--        <module>gui-backend</module>-->
+<!--        <module>meta_solver</module>-->
+<!--        <module>utility-generator</module>-->
+<!--        <module>cp-solver</module>-->
+<!--        <module>la_converter</module>-->
+<!--        <module>event-management</module>-->
+<!--        <module>mq-http-adapter</module>-->
+<!--        <module>zpp-solver</module>-->
         <module>melodic-cache-standalone</module>
         <!--functionizer-testing-tool is to uncomment when proactive will support FAAS-->
         <!--<module>functionizer-testing-tool</module>-->
