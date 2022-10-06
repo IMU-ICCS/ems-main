@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_RECOVERY_STARTED;
 import static eu.melodic.event.common.recovery.RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED;
 
 /**
@@ -44,6 +45,9 @@ public class ShellRecoveryTask extends AbstractRecoveryTask {
 
     public void runNodeRecovery(List<RECOVERY_COMMAND> recoveryCommands) throws Exception {
         log.debug("ShellRecoveryTask: runNodeRecovery(): node-info={}", nodeInfo);
+
+        // Send recovery start event
+        eventBus.send(SELF_HEALING_RECOVERY_STARTED, "");
 
         // Carrying out recovery commands
         log.info("ShellRecoveryTask: runNodeRecovery(): Executing {} recovery commands", recoveryCommands.size());

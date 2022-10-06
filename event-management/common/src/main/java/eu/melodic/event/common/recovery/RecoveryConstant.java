@@ -13,6 +13,7 @@ package eu.melodic.event.common.recovery;
  * Recovery Constant
  */
 public class RecoveryConstant {
+    public final static String SELF_HEALING_RECOVERY_STARTED = "SELF_HEALING_RECOVERY_STARTED";
     public final static String SELF_HEALING_RECOVERY_FAILED = "SELF_HEALING_RECOVERY_FAILED";
     public final static String SELF_HEALING_RECOVERY_GIVE_UP = "SELF_HEALING_RECOVERY_GIVE_UP";
     public final static String SELF_HEALING_RECOVERY_COMPLETED = "SELF_HEALING_RECOVERY_COMPLETED";

@@ -28,6 +28,11 @@ import java.util.Map;
  */
 @Slf4j
 public class NetdataCollector extends AbstractEndpointCollector<HashMap> {
+    public final static String NETDATA_COLLECTION_START = "NETDATA_COLLECTION_START";
+    public final static String NETDATA_COLLECTION_OK = "NETDATA_COLLECTION_OK";
+    public final static String NETDATA_COLLECTION_ERROR = "NETDATA_COLLECTION_ERROR";
+    public final static String NETDATA_CONN_OK = "NETDATA_CONN_OK";
+    public final static String NETDATA_CONN_ERROR = "NETDATA_CONN_ERROR";
     public final static String NETDATA_NODE_OK = "NETDATA_NODE_OK";
     public final static String NETDATA_NODE_FAILED = "NETDATA_NODE_FAILED";
 
@@ -54,6 +59,9 @@ public class NetdataCollector extends AbstractEndpointCollector<HashMap> {
                 .setConnectTimeout(Duration.ofSeconds(5))
                 .setReadTimeout(Duration.ofSeconds(5))
                 .build();
+
+        registerInternalEvents(NETDATA_COLLECTION_START, NETDATA_COLLECTION_OK, NETDATA_COLLECTION_ERROR,
+                NETDATA_CONN_OK, NETDATA_CONN_ERROR, NETDATA_NODE_OK, NETDATA_NODE_FAILED);
     }
 
     protected ResponseEntity<HashMap> getData(String url) {

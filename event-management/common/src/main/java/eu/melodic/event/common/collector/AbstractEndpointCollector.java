@@ -35,18 +35,28 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractEndpointCollector<T> implements InitializingBean, Runnable, EventBus.EventConsumer<String,Object,Object> {
-    public final static String ABSTRACT_ENDPOINT_COLLECTION_START = "ABSTRACT_ENDPOINT_COLLECTION_START";
-    public final static String ABSTRACT_ENDPOINT_COLLECTION_END = "ABSTRACT_ENDPOINT_COLLECTION_END";
-    public final static String ABSTRACT_ENDPOINT_CONN_OK = "ABSTRACT_ENDPOINT_CONN_OK";
-    public final static String ABSTRACT_ENDPOINT_CONN_ERROR = "ABSTRACT_ENDPOINT_CONN_ERROR";
-    public final static String ABSTRACT_ENDPOINT_NODE_OK = "ABSTRACT_ENDPOINT_NODE_OK";
-    public final static String ABSTRACT_ENDPOINT_NODE_FAILED = "ABSTRACT_ENDPOINT_NODE_FAILED";
+    private final static String EVENT_COLLECTION_START = "EVENT_COLLECTION_START";
+    private final static String EVENT_COLLECTION_END = "EVENT_COLLECTION_END";
+    private final static String EVENT_COLLECTION_ERROR = "EVENT_COLLECTION_ERROR";
+    private final static String EVENT_CONN_OK = "EVENT_CONN_OK";
+    private final static String EVENT_CONN_ERROR = "EVENT_CONN_ERROR";
+    private final static String EVENT_NODE_OK = "EVENT_NODE_OK";
+    private final static String EVENT_NODE_FAILED = "EVENT_NODE_FAILED";
+
+    private final static String BASE_COLLECTION_START = "_COLLECTION_START";
+    private final static String BASE_COLLECTION_END = "_COLLECTION_END";
+    private final static String BASE_COLLECTION_ERROR = "_COLLECTION_ERROR";
+    private final static String BASE_CONN_OK = "_CONN_OK";
+    private final static String BASE_CONN_ERROR = "_CONN_ERROR";
+    private final static String BASE_NODE_OK = "_NODE_OK";
+    private final static String BASE_NODE_FAILED = "_NODE_FAILED";
 
     protected final String collectorId;
     protected final AbstractEndpointCollectorProperties properties;
     protected final CollectorContext<? extends SshClientProperties> collectorContext;
     protected final TaskScheduler taskScheduler;
     protected final EventBus<String,Object,Object> eventBus;
+    protected final Map<Class<? extends AbstractEndpointCollector<T>>, Map<String, String>> nodeToNodeEventsMap = new HashMap<>();
 
     protected boolean started;
     protected ScheduledFuture<?> runner;
@@ -71,6 +81,8 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
                 : properties.getAllowedTopics().stream()
                         .map(s -> s.split(":", 2))
                         .collect(Collectors.toMap(a -> a[0], a -> a.length>1 ? a[1]: ""));
+
+        registerInternalEvents("ABSTRACT");
     }
 
     public synchronized void start() {
@@ -183,19 +195,62 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         log.trace("Collectors::{}: run(): END", collectorId);
     }
 
+    protected void registerInternalEvents(@NonNull String prefix) {
+        registerInternalEvents(
+                prefix + BASE_COLLECTION_START,
+                prefix + BASE_COLLECTION_END,
+                prefix + BASE_COLLECTION_ERROR,
+                prefix + BASE_CONN_OK,
+                prefix + BASE_CONN_ERROR,
+                prefix + BASE_NODE_OK,
+                prefix + BASE_NODE_FAILED);
+    }
+
+    protected void registerInternalEvents(@NonNull String collectionStartEvent,
+                                          @NonNull String collectionEndEvent,
+                                          @NonNull String collectionErrorEvent,
+                                          @NonNull String connectionOkEvent,
+                                          @NonNull String connectionErrorEvent,
+                                          @NonNull String nodeOkEvent,
+                                          @NonNull String nodeFailedEvent) {
+        Map<String, String> collectorEvents = new LinkedHashMap<>();
+        collectorEvents.put(EVENT_COLLECTION_START, collectionStartEvent);
+        collectorEvents.put(EVENT_COLLECTION_END, collectionEndEvent);
+        collectorEvents.put(EVENT_COLLECTION_ERROR, collectionErrorEvent);
+        collectorEvents.put(EVENT_CONN_OK, connectionOkEvent);
+        collectorEvents.put(EVENT_CONN_ERROR, connectionErrorEvent);
+        collectorEvents.put(EVENT_NODE_OK, nodeOkEvent);
+        collectorEvents.put(EVENT_NODE_FAILED, nodeFailedEvent);
+        log.debug("Collectors::{}: registerInternalEvents: BEFORE REGISTRATION: collector-class={}, events={}", collectorId, getClass(), collectorEvents);
+
+        Class<? extends AbstractEndpointCollector<T>> clazz = (Class<? extends AbstractEndpointCollector<T>>) getClass();
+        nodeToNodeEventsMap.put(clazz, collectorEvents);
+        log.debug("Collectors::{}: registerInternalEvents: AFTER REGISTRATION: collector-class={}, events={}", collectorId, clazz, collectorEvents);
+    }
+
+    private Map<String, String> getInternalEvents() {
+        log.debug("Collectors::{}: getInternalEvents: BEGIN: collector-class={}", collectorId, getClass());
+        Class<? extends AbstractEndpointCollector<T>> clazz = (Class<? extends AbstractEndpointCollector<T>>) getClass();
+        Map<String, String> collectorEvents = nodeToNodeEventsMap.get(clazz);
+        log.debug("Collectors::{}: getInternalEvents: END: collector-class={}, events={}", collectorId, clazz, collectorEvents);
+        return collectorEvents;
+    }
+
     private COLLECTION_RESULT collectAndPublishData(@NonNull String nodeAddress) {
         if (ignoredNodes.containsKey(nodeAddress)) {
             log.info("Collectors::{}:   Node is in ignore list: {}", collectorId, nodeAddress);
             return COLLECTION_RESULT.IGNORED;
         }
+
+        Map<String,String> nodeEvents = getInternalEvents();
         try {
-            sendEvent(ABSTRACT_ENDPOINT_COLLECTION_START, nodeAddress);
+            sendEvent(nodeEvents.get(EVENT_COLLECTION_START), nodeAddress);
             _collectAndPublishData(nodeAddress);
-            sendEvent(ABSTRACT_ENDPOINT_COLLECTION_END, nodeAddress);
+            sendEvent(nodeEvents.get(EVENT_COLLECTION_END), nodeAddress);
 
             //if (Optional.ofNullable(errorsMap.put(nodeAddress, 0)).orElse(0)>0) sendEvent(ABSTRACT_ENDPOINT_CONN_OK, nodeAddress);
-            sendEvent(ABSTRACT_ENDPOINT_CONN_OK, nodeAddress);
-            sendEvent(ABSTRACT_ENDPOINT_NODE_OK, nodeAddress);
+            sendEvent(nodeEvents.get(EVENT_CONN_OK), nodeAddress);
+            sendEvent(nodeEvents.get(EVENT_NODE_OK), nodeAddress);
             errorsMap.put(nodeAddress, 0);
             return COLLECTION_RESULT.OK;
         } catch (Throwable t) {
@@ -205,13 +260,14 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
                     collectorId, nodeAddress, errors, getExceptionMessages(t));
             log.debug("Collectors::{}: Exception while collecting metrics from node: {}, #errors={}\n", collectorId, nodeAddress, errors, t);
 
-            sendEvent(ABSTRACT_ENDPOINT_CONN_ERROR, nodeAddress, "errors="+errors);
+            sendEvent(nodeEvents.get(EVENT_COLLECTION_ERROR), nodeAddress, "errors="+errors);
+            sendEvent(nodeEvents.get(EVENT_CONN_ERROR), nodeAddress, "errors="+errors);
 
             if (errorLimit<=0 || errors >= errorLimit) {
                 log.warn("Collectors::{}: Too many consecutive errors occurred while attempting to collect metrics from node: {}, num-of-errors={}", collectorId, nodeAddress, errors);
                 log.warn("Collectors::{}: Pausing collection from Node: {}", collectorId, nodeAddress);
                 ignoredNodes.put(nodeAddress, null);
-                sendEvent(ABSTRACT_ENDPOINT_NODE_FAILED, nodeAddress);
+                sendEvent(nodeEvents.get(EVENT_NODE_FAILED), nodeAddress);
             }
             return COLLECTION_RESULT.ERROR;
         }
