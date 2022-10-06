@@ -1,6 +1,7 @@
 package eu.passage.upperware.commons.model;
 
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
+import eu.passage.upperware.commons.model.edge.EdgeDefinition;
 import eu.passage.upperware.commons.model.provider.CloudDefinition;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,4 +18,6 @@ public class GuiYamlData {
 
     private List<CloudDefinition> cloudDefinitions;
     private List<ByonDefinition> byonDefinitions;
+    private List<EdgeDefinition> edgeDefinitions;
+
 }
