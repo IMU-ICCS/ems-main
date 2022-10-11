@@ -93,7 +93,7 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
                 .getId();
 
         final Map<String, Pair<String, String>> byonIdPerComponent = Collections.singletonMap(byonId,
-                new ImmutablePair<>(taskBody.getName(), taskBody.getTaskName()));
+                new ImmutablePair<>(taskBody.getNodeName(), taskBody.getTaskName()));
         log.info("NodeTaskExecutor->addBYONNode: [application id: {}] ProActive byonIdPerComponent= {}", applicationId, byonIdPerComponent);
 
         int status = proactiveClientServiceForAdapter.addByonNodes(byonIdPerComponent, applicationId);
