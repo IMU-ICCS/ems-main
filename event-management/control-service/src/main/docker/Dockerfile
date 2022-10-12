@@ -49,4 +49,10 @@ RUN bash -c 'chmod +rx ${BIN_DIR}/*.sh'
 # RUN chown -R emsuser:emsuser ${BASEDIR}
 # USER emsuser
 
+EXPOSE 2222
+EXPOSE 8111
+EXPOSE 61610
+EXPOSE 61616
+EXPOSE 61617
+
 ENTRYPOINT ["dumb-init", "./bin/run.sh"]
