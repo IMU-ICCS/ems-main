@@ -69,7 +69,7 @@ public class ApplyCoordinator {
 			Solution solution = CPModelTool.searchLastSolution(constraintProblem.getSolution());
 
 			try {
-				DeploymentInstanceModel newDeploymentInstanceModel = dataUtils.computeDatasToRegister(camelModel, solution, nodeCandidates);
+				DeploymentInstanceModel newDeploymentInstanceModel = dataUtils.computeDatasToRegister(camelModel, solution, nodeCandidates, camelModelId);
 
 				if (newDeploymentInstanceModel == null) {
 					applySolutionNotificationSender.notifySolutionNotApplied(camelModelId, notificationUri, requestUuid);
