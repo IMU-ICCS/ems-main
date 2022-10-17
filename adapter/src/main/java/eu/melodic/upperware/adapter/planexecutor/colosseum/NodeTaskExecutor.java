@@ -7,6 +7,8 @@ import eu.melodic.upperware.adapter.plangenerator.model.AdapterRequirement;
 import eu.melodic.upperware.adapter.plangenerator.tasks.NodeTask;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -90,8 +92,8 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
                 .orElseThrow(() -> new AdapterException(String.format("Could not find BYON with associated NodeCandidate id=%s", taskBody.getNodeCandidate().getId())))
                 .getId();
 
-        final Map<String, String> byonIdPerComponent = Collections.singletonMap(byonId,
-                taskBody.getTaskName());
+        final Map<String, Pair<String, String>> byonIdPerComponent = Collections.singletonMap(byonId,
+                new ImmutablePair<>(taskBody.getNodeName(), taskBody.getTaskName()));
         log.info("NodeTaskExecutor->addBYONNode: [application id: {}] ProActive byonIdPerComponent= {}", applicationId, byonIdPerComponent);
 
         int status = proactiveClientServiceForAdapter.addByonNodes(byonIdPerComponent, applicationId);
@@ -106,8 +108,8 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
                 .orElseThrow(() -> new AdapterException(String.format("Could not find EDGE with associated NodeCandidate id=%s", taskBody.getNodeCandidate().getId())))
                 .getId();
 
-        final Map<String, String> edgeIdPerComponent = Collections.singletonMap(edgeId,
-                taskBody.getTaskName());
+        final Map<String, Pair<String, String>> edgeIdPerComponent = Collections.singletonMap(edgeId,
+                new ImmutablePair<>(taskBody.getNodeName(), taskBody.getTaskName()));
         log.info("NodeTaskExecutor->addEDGENode: [application id: {}] ProActive edgeIdPerComponent= {}", applicationId, edgeIdPerComponent);
 
         int status = proactiveClientServiceForAdapter.addEdgeNodes(edgeIdPerComponent, applicationId);
