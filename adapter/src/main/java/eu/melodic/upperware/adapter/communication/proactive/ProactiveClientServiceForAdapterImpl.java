@@ -5,6 +5,7 @@ import eu.melodic.upperware.adapter.exception.AdapterException;
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.ByonNode;
+import org.activeeon.morphemic.model.EdgeNode;
 import org.activeeon.morphemic.model.Deployment;
 import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
@@ -150,6 +151,16 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
     @Override
     public List<ByonNode> getByonNodeList(String jobId) {
         return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public List<EdgeNode> getEdgeNodeList(String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.getEdgeNodeList(jobId)).orElse(Collections.emptyList());
+    }
+
+    @Override
+    public int addEdgeNodes(Map<String, String> edgeIdPerComponent, String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.addEdgeNodes(edgeIdPerComponent, jobId)).orElse(-1);
     }
 
     @Override

@@ -18,5 +18,7 @@ public class CloudDefinitionRequest {
 
     private CloudConfigurationRequest cloudConfiguration;
 
+    private SSHCredentialsRequest SSHCredentials;
+
     private String id;
 }

@@ -29,28 +29,6 @@ public class UserController {
     private JwtServerApi jwtServerApi;
     private UserService userService;
 
-
-    @PostMapping("/user/userProfile")
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserProfile getUserProfile() {
-        UserProfile userProfile = new UserProfile();
-        return userProfile;
-    }
-
-    @PostMapping("/user/resources")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Resources getResources() {
-        Resources resources = new Resources();
-        return resources;
-    }
-
-    @PostMapping("/user/activities")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Activities getActivities() {
-        Activities activities = new Activities();
-        return activities;
-    }
-
     @PostMapping("/user/login")
     @ResponseStatus(HttpStatus.CREATED)
     public LoginResponse loginUser(@RequestBody UserRequest loginRequest) {
@@ -80,6 +58,16 @@ public class UserController {
                 .userResponse(newUser)
                 .password(newUserRequest.getPassword())
                 .build();
+    }
+
+    @PutMapping("/auth/user")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse updateExistingUser(@RequestHeader(value = HttpHeaders.AUTHORIZATION) String token,
+                                      @RequestBody NewUserRequest newUserRequest) {
+        log.info("POST request for create new user account: username: {} and role: {}", newUserRequest.getUsername(), newUserRequest.getUserRole());
+        UserResponse newUser = jwtServerApi.updateExistingUser(newUserRequest, token);
+        log.info("Account for user {} with role {} successfully created", newUserRequest.getUsername(), newUserRequest.getUserRole());
+        return newUser;
     }
 
     @DeleteMapping("/auth/user/{username}")

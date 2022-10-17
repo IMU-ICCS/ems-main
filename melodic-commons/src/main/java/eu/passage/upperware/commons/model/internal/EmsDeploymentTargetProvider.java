@@ -5,5 +5,6 @@ public enum EmsDeploymentTargetProvider {
     AZUREVM,
     GCE,
     OPENSTACKNOVA,
-    BYON
+    BYON,
+    EDGE
 }

@@ -1,6 +1,7 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
+
 import lombok.extern.slf4j.Slf4j;
 import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.*;
@@ -41,8 +42,18 @@ public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnect
     }
 
     @Override
+    public EdgeNode registerNewEdgeNode(EdgeDefinition edgeDefinition, String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.registerNewEdgeNode(edgeDefinition,jobId)).orElse(null);
+    }
+
+    @Override
     public ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId, boolean automate) {
         return getPAGateway().map(paGateway -> paGateway.registerNewByonNode(byonNodeDefinition, jobId, automate)).orElse(null);
+    }
+
+    @Override
+    public List<EdgeNode> getEdgeNodeList(String jobId) {
+        return getPAGateway().map(paGateway -> paGateway.getEdgeNodeList(jobId)).orElse(Collections.emptyList());
     }
 
     @Override

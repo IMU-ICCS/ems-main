@@ -1,4 +1,4 @@
-FROM java:8-alpine
+FROM openjdk:8-alpine
 VOLUME /tmp
 ADD jwt-server.jar jwt-server.jar
 RUN /bin/sh -c "apk add --no-cache bash"

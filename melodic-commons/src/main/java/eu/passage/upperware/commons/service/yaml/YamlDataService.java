@@ -1,6 +1,7 @@
 package eu.passage.upperware.commons.service.yaml;
 
 import eu.passage.upperware.commons.model.byon.ByonDefinition;
+import eu.passage.upperware.commons.model.edge.EdgeDefinition;
 import eu.passage.upperware.commons.model.provider.CloudDefinition;
 import eu.passage.upperware.commons.model.GuiYamlData;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,12 @@ public class YamlDataService {
         saveDataInYamlFile(guiYamlData);
     }
 
+    public void updateEdgeDefinitionInYamlFile(List<EdgeDefinition> edgeDefinitionsList) {
+        GuiYamlData guiYamlData = getDataFromYaml();
+        guiYamlData.setEdgeDefinitions(edgeDefinitionsList);
+        saveDataInYamlFile(guiYamlData);
+    }
+
     private void saveDataInYamlFile(GuiYamlData guiYamlData) {
         Yaml yaml = new Yaml();
         FileWriter writer = null;
@@ -61,4 +68,5 @@ public class YamlDataService {
         }
         yaml.dump(guiYamlData, writer);
     }
+
 }
