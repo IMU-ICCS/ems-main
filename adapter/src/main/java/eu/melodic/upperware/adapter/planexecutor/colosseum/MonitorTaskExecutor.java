@@ -48,6 +48,7 @@ public class MonitorTaskExecutor extends RunnableTaskExecutor<AdapterMonitor> {
 
         } catch (RuntimeException e) {
             log.error("MonitorTaskExecutor->create: [application id: {}] Could not add Monitor. Error: {}", applicationId, e.getMessage());
+            e.printStackTrace();
             // TODO: LSZ - dev only ! uncomment for prod when Monitors will be fully functional on proactive side
             //throw new AdapterException(String.format("Problem during adding Monitor [application id: %s]: %s", applicationId, e.getMessage()), e);
         }
