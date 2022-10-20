@@ -8,9 +8,9 @@ import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequest;
 import eu.melodic.models.services.cpSolver.ConstraintProblemSolutionNotificationRequestImpl;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTOFactory;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.*;
@@ -97,8 +97,7 @@ public class CPSolverCoordinator {
                 return;
             }
 
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
-                    melodicSecurityProperties, jwtService);
+            UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates);
 
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();
@@ -238,8 +237,7 @@ public class CPSolverCoordinator {
                 return;
             }
 
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, melodicSecurityProperties, jwtService);
+            UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(applicationId, cpModelFilePath, true, nodeCandidates);
 
             double maxUtility = 0.0;
             List<VariableValueDTO> bestSolution = Collections.emptyList();

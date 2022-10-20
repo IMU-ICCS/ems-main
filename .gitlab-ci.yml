@@ -20,6 +20,7 @@ variables:
 
   JWT_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f jwt-server/pom.xml"
   UTILITY_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f utility-generator/pom.xml"
+  UG_STANDALONE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f utility-generator-standalone/pom.xml"
 
   ZPP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f zpp-solver/pom.xml"
 
@@ -166,6 +167,17 @@ build-required-part6:cp-solver:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/
 
+build-required-part6:utility-generator-standalone:
+  stage: build-required-part6
+  image: $MAVEN_IMAGE
+  script:
+    - $UG_STANDALONE_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/utility-generator-standalone/
+
+
 build:cp-parser:
   stage: build
   image: $MAVEN_IMAGE
@@ -252,7 +264,7 @@ deploy:jwt-server:
 deploy:utility-generator:
   stage: deploy
   only:
-    - morphemic-rc3.0
+    - morphemic-rc3.0-facade
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -261,6 +273,25 @@ deploy:utility-generator:
     - build-required-part3:melodic-cache
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
+
+deploy:utility-generator-standalone:
+  stage: deploy-solvers-part1
+  only:
+    - morphemic-rc3.0
+    - morphemic-rc3.0-facade
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part5:utility-generator
+    - build-required-part3:melodic-cache
+    - build-required-part6:utility-generator-standalone
+    - deploy:utility-generator
+  script:
+    - $DOCKER_CLI $UG_STANDALONE_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/ug-standalone:unknown $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
 
 deploy:zpp-solver:
   stage: deploy
@@ -304,6 +335,7 @@ deploy:cp-solver:
   stage: deploy
   only:
     - morphemic-rc3.0
+    - morphemic-rc3.0-facade
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part6:cp-solver

@@ -1,19 +1,19 @@
 package eu.melodic.upperware.cp_wrapper.utility_provider.implementations;
 
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class ParallelUtilityProviderImpl implements UtilityProvider {
-    final private List<UtilityGeneratorApplication> utility;
+    final private List<UtilityFunctionEvaluator> utility;
     final private List<Boolean> occupied;
     final private ReentrantLock mutex = new ReentrantLock();
 
-    public ParallelUtilityProviderImpl(List<UtilityGeneratorApplication> utility) {
+    public ParallelUtilityProviderImpl(List<UtilityFunctionEvaluator> utility) {
         this.utility = utility;
         occupied = utility
                 .stream()
