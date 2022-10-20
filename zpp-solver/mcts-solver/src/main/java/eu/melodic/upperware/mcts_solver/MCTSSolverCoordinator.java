@@ -11,8 +11,8 @@ import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionRe
 import eu.melodic.upperware.mcts_solver.solver.MCTSSolver;
 import eu.melodic.upperware.mcts_solver.solver.mcts.cp_wrapper.MCTSWrapperFactoryImpl;
 import eu.melodic.upperware.mcts_solver.solver.mcts.tree_impl.policy.AvailablePolicies;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -79,8 +79,8 @@ public class MCTSSolverCoordinator {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
-            List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, NUM_THREADS).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, melodicSecurityProperties, jwtService)).collect(Collectors.toList());
+            List<UtilityFunctionEvaluator> utilityGenerator = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpModelFilePath,
+                    true, nodeCandidates)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + NUM_THREADS + " threads for " + seconds + " seconds");
             solve(cp, utilityGenerator, seconds, nodeCandidates);
 
@@ -101,8 +101,8 @@ public class MCTSSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
-                    melodicSecurityProperties, jwtService)).collect(Collectors.toList());
+            List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates))
+                    .collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds, nodeCandidates);
 
@@ -118,7 +118,7 @@ public class MCTSSolverCoordinator {
         }
     }
 
-    private void solve(ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators, int seconds, NodeCandidates nodeCandidates) throws InterruptedException {
+    private void solve(ConstraintProblem cp, List<UtilityFunctionEvaluator> utilityGenerators, int seconds, NodeCandidates nodeCandidates) throws InterruptedException {
         CpSolution solution = mctsSolver.solve(seconds, new MCTSWrapperFactoryImpl(new UtilityProviderFromCDOFactory(utilityGenerators), cp, nodeCandidates));
         log.info("Found solution with utility: " + solution.getUtility());
 

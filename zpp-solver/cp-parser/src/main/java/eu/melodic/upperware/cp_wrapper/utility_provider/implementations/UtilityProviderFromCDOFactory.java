@@ -2,15 +2,15 @@ package eu.melodic.upperware.cp_wrapper.utility_provider.implementations;
 
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProviderFactory;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 
 import java.util.List;
 
 public class UtilityProviderFromCDOFactory implements UtilityProviderFactory {
-    private List<UtilityGeneratorApplication> utilityGenerators;
+    private List<UtilityFunctionEvaluator> utilityGenerators;
     private int firstFreeGenerator = 0;
 
-    public UtilityProviderFromCDOFactory(List<UtilityGeneratorApplication> utilityGenerators) {
+    public UtilityProviderFromCDOFactory(List<UtilityFunctionEvaluator> utilityGenerators) {
         this.utilityGenerators = utilityGenerators;
     }
 

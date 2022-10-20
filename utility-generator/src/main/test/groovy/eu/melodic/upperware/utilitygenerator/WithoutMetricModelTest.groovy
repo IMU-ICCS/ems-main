@@ -2,8 +2,8 @@
 package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
 import org.activeeon.morphemic.model.NodeCandidate
@@ -62,7 +62,7 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModel.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, securityProperties, jwtService)
+        UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(path, cpmodelPath, true, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -82,7 +82,7 @@ class WithoutMetricModelTest extends Specification{
 
         String path = "src/main/test/resources/TwoComponentAppnew.xmi"
         String cpmodelPath = "src/main/test/resources/TwoComponentAppCPModelWithSolution.xmi"
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpmodelPath, true, mockNodeCandidates, securityProperties, jwtService)
+        UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(path, cpmodelPath, true, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

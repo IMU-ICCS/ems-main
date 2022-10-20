@@ -102,8 +102,7 @@ public class NodeCandidatesConverter implements ArgumentConverter {
             if (NodeCandidate.NodeCandidateTypeEnum.FAAS.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPricePerInvocation();
             } else if (NodeCandidate.NodeCandidateTypeEnum.IAAS.equals(nodeCandidate.getNodeCandidateType()) ||
-                    NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType()) ||
-                    NodeCandidate.NodeCandidateTypeEnum.EDGE.equals(nodeCandidate.getNodeCandidateType())) {
+                    NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPrice();
             } else {
                 throw new IllegalStateException("Type of Node Candidate: " + nodeCandidate.getNodeCandidateType() + "is not supported");

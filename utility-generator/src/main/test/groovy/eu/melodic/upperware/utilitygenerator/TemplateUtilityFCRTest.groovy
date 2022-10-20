@@ -2,6 +2,7 @@ package eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator
 import eu.melodic.upperware.utilitygenerator.utility_function.utility_templates_provider.TemplateProvider
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
@@ -103,11 +104,11 @@ class TemplateUtilityFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(lbCoresName, 2))
         newConfiguration.add(new IntVariableValueDTO(lbRamName, 1000))
         newConfiguration.add(new IntVariableValueDTO(lbStorageName, 10))
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
+        UtilityFunctionEvaluator utilityGenerator =
+                new UtilityFunctionEvaluator("src/main/test/resources/FCRForTemplates-CP.xmi",
                         mockNodeCandidates, Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
-        UtilityGeneratorApplication utilityGenerator2 =
-                new UtilityGeneratorApplication("src/main/test/resources/FCRForTemplates-CP.xmi",
+        UtilityFunctionEvaluator utilityGenerator2 =
+                new UtilityFunctionEvaluator("src/main/test/resources/FCRForTemplates-CP.xmi",
                         mockNodeCandidates,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
                                 new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
@@ -145,13 +146,13 @@ class TemplateUtilityFCRTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(lbRamName, 1000))
         newConfiguration.add(new IntVariableValueDTO(lbStorageName, 10))
 
-        UtilityGeneratorApplication utilityGenerator =
-                new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, securityProperties, jwtService,
+        UtilityFunctionEvaluator utilityGenerator =
+                new UtilityFunctionEvaluator(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
+                        mockNodeCandidates,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 1.0d)))
-        UtilityGeneratorApplication utilityGenerator2 =
-                new UtilityGeneratorApplication(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
-                        mockNodeCandidates, securityProperties, jwtService,
+        UtilityFunctionEvaluator utilityGenerator2 =
+                new UtilityFunctionEvaluator(path, "src/main/test/resources/FCRForTemplates-CP.xmi", true,
+                        mockNodeCandidates,
                         Arrays.asList(new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.COST, 0.5d),
                                 new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.CORES, 0.5d*0.333d),
                                 new AbstractMap.SimpleEntry<TemplateProvider.AvailableTemplates, Double>(TemplateProvider.AvailableTemplates.DISK, 0.5d*0.333d),
