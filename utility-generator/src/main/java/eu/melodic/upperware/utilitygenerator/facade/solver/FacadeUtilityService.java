@@ -53,9 +53,8 @@ public class FacadeUtilityService {
         else {
             String cpModelFilePath = (String) data.get(CamundaFacadeImpl.CP_MODEL_FILE_PATH_PROPERTY_NAME);
             boolean readFromFile = data.get(CamundaFacadeImpl.READ_FROM_FILE_PROPERTY_NAME) != null && Boolean.parseBoolean((String) data.get(CamundaFacadeImpl.READ_FROM_FILE_PROPERTY_NAME));
-            String nodeCandidatesFilePath = (String) data.get(CamundaFacadeImpl.NODE_CANDIDATES_FILE_PATH_PROPERTY_NAME);
 
-            NodeCandidates nodeCandidates = cacheService.load(createCacheKey(nodeCandidatesFilePath));
+            NodeCandidates nodeCandidates = cacheService.load(createCacheKey(cpModelFilePath));
 
             UtilityFunctionEvaluator evaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates);
             utilityGenerators.put(camelModelFilePath, evaluator);
