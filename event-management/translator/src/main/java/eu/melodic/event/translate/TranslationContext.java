@@ -23,6 +23,7 @@ import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.models.interfaces.ems.Monitor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -87,6 +88,9 @@ public class TranslationContext {
     // If-Then-Else Constraints
     protected Set<IfThenConstraint> ifThenConstraints;
 
+    // Load-annotated Metric
+    protected Set<String> loadAnnotatedMetricsSet;
+
 
     // ====================================================================================================================================================
     // Constructors
@@ -131,6 +135,9 @@ public class TranslationContext {
         this.logicalConstraints = new HashSet<>();
         // If-Then-Else Constraints
         this.ifThenConstraints = new HashSet<>();
+
+        // Load-annotated Metric
+        this.loadAnnotatedMetricsSet = new HashSet<>();
     }
 
     // ====================================================================================================================================================
@@ -435,17 +442,27 @@ public class TranslationContext {
     }
 
     public String getFullName(NamedElement elem) {
+        log.trace("  getFullName: BEGIN: {}", elem);
         if (elem == null) return null;
+        log.trace("  getFullName: NULL check OK: name={}", elem.getName());
 
         // return cached full-name for element
         String fullName = E2N.get(elem);
+        log.trace("  getFullName: Cached Name: {}", fullName);
         if (fullName != null) return fullName;
+        log.trace("  getFullName: NO Cached Name:...");
 
         // else generate full-name for element (and cache it)
         String elemName = elem.getName();
+        log.trace("  getFullName:   elem-name={}", elemName);
         String elemType = _getElementType(elem);
+        log.trace("  getFullName:   elem-type={}", elemType);
+        log.trace("  getFullName:   elem-eContainer={}", elem.eContainer());
         String modelName = ((NamedElement) elem.eContainer()).getName();
+        log.trace("  getFullName:   model-name={}", modelName);
+        log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.eContainer().eContainer());
         String camelName = ((NamedElement) elem.eContainer().eContainer()).getName();
+        log.trace("  getFullName:   camel-name={}", camelName);
 
         fullName = fullNamePattern
                 .replace("{TYPE}", elemType)
@@ -455,10 +472,16 @@ public class TranslationContext {
                 .replace("{HASH}", Integer.toString(elemName.hashCode()))
                 .replace("{COUNT}", Long.toString(elementsCount.getAndIncrement()))
         ;
+        log.trace("  getFullName:   New Full name={}", fullName);
 
         E2N.put(elem, fullName);
+        log.trace("  getFullName: END: Cached new FULL name: {}", fullName);
 
         return fullName;
+    }
+
+    public void addElementToNamePair(@NonNull NamedElement elem, @NonNull String fullName) {
+        E2N.put(elem, fullName);
     }
 
     protected String _getElementType(NamedElement e) {
@@ -492,6 +515,17 @@ public class TranslationContext {
 
     public Set<FunctionDefinition> getFunctionDefinitions() {
         return new HashSet<>(FUNC);
+    }
+
+    // ====================================================================================================================================================
+    // Load-Metrics-related helper methods
+
+    public void addLoadAnnotatedMetric(@NonNull String metricName) {
+        loadAnnotatedMetricsSet.add(metricName);
+    }
+
+    public Set<String> getLoadAnnotatedMetricsSet() {
+        return new HashSet<>(loadAnnotatedMetricsSet);
     }
 
     // ====================================================================================================================================================

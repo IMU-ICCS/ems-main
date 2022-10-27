@@ -210,6 +210,8 @@ public class CamelToEplTranslator implements Translator {
 		log.info("*********************************************************");
 		log.info("Metric Constraints:\n{}", _TC.getMetricConstraints());
 		log.info("*********************************************************");
+		log.info("Load-Annotated Metrics:\n{}", _TC.getLoadAnnotatedMetricsSet());
+		log.info("*********************************************************");
 	}
 
 	public String prettifyG2R(Map<String, Map<String, Set<String>>> map, String startIdent) {

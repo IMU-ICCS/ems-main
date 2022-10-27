@@ -24,10 +24,10 @@ import camel.type.*;
 import camel.unit.Unit;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
-import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
-import eu.melodic.models.interfaces.ems.*;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
+import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.models.interfaces.ems.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -872,6 +872,63 @@ public class ModelAnalyzer {
         } else {
             throw new ModelAnalysisException(String.format("Invalid Metric Context type occurred: %s  class=%s", context.getName(), context.getClass().getName()));
         }
+
+        // Check if it is a LOAD-annotated metric
+        log.trace("  _decomposeMetricContext(): Checking if it is a LOAD METRIC: metric={}", metric.getName());
+        log.trace("  _decomposeMetricContext(): LOAD METRIC annotation: {}", properties.getLoadMetricAnnotation());
+        if (StringUtils.isNotBlank(properties.getLoadMetricAnnotation())) {
+            if (hasAnnotation(metric, properties.getLoadMetricAnnotation().trim())) {
+                log.trace("  _decomposeMetricContext(): It is a LOAD METRIC: metric-name={}, context-name={}, element-name={}",
+                        metric.getName(), context.getName(), getElementName(context));
+                _TC.addLoadAnnotatedMetric(getElementName(context));
+                log.trace("  _decomposeMetricContext(): Updated LOAD METRICS set: {}", _TC.getLoadAnnotatedMetricsSet());
+
+                // Also add connection to LOAD metrics root node
+                log.trace("  _decomposeMetricContext(): Adding a new Metric Variable for LOAD METRIC topic: context-name={}", context.getName());
+                String newMvName =
+                        String.format(properties.getLoadMetricVariableFormatter(), metric.getName());
+                MetricVariable newMv = new MetricVariableImpl() {};
+                newMv.setName(newMvName);
+                newMv.setMetricTemplate(metric.getMetricTemplate());
+                newMv.setFormula(metric.getName());
+                log.debug("  _decomposeMetricContext(): New LOAD Metric Variable: {}", newMv.getName());
+
+                _TC.addElementToNamePair(newMv, newMvName);
+                DAGNode newMvNode = _TC.DAG.addTopLevelNode(newMv).setGrouping(getGrouping(newMv));
+                log.trace("  _decomposeMetricContext(): Added LOAD Metric Variable as a TOP-LEVEL DAG node: {}", newMvNode);
+
+                newMv.getComponentMetrics().add(context.getMetric());
+                log.trace("  _decomposeMetricContext(): Added LOAD Metric as component metric of LOAD Metric Variable: context-name={}, metric-name={}, variable-name={}",
+                        context.getName(), metric.getName(), newMv.getName());
+
+                _TC.DAG.addNode(newMv, context).setGrouping(getGrouping(context));
+                log.trace("  _decomposeMetricContext(): Added LOAD Metric Context under (new) LOAD Metric Variable: context-name={}, variable-name={}",
+                        context.getName(), newMv.getName());
+            } else {
+                log.debug("  _decomposeMetricContext(): No LOAD METRIC annotation found in metric: {}", metric.getName());
+            }
+        } else {
+            log.debug("  _decomposeMetricContext(): LOAD METRIC annotation not set in configuration");
+        }
+    }
+
+    private boolean hasAnnotation(NamedElement elem, String annotation) {
+        log.trace("  hasAnnotation: BEGIN: elem={}, looking-for-annotation={}", elem.getName(), annotation);
+        return elem.getAnnotations().stream().anyMatch(ann -> {
+            log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
+            //StringBuilder annPath = new StringBuilder(ann.getName());
+            StringBuilder annPath = new StringBuilder(ann.getId());
+            camel.mms.MmsConcept p = (camel.mms.MmsConcept) ann;
+            while (p.getParent() != null) {
+                p = p.getParent();
+                log.trace("  hasAnnotation:  Adding parent:   id={}, name={}", p.getId(), p.getName());
+                //annPath.insert(0, p.getName() + ".");
+                annPath.insert(0, p.getId() + ".");
+            }
+            log.trace("  hasAnnotation: Annotation: {}", annPath);
+            log.trace("  hasAnnotation: Annotation matches to looking-for-annotation: {}", annPath.toString().equals(annotation));
+            return annPath.toString().equals(annotation);
+        });
     }
 
     private void _decomposeMetric(TranslationContext _TC, Metric metric, ObjectContext objContext) {
@@ -1032,18 +1089,7 @@ public class ModelAnalyzer {
         String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
         List<KeyValuePair> keyValuePairs = null;
         Optional<Feature> sensorConfig = sensor.getSubFeatures().stream()
-                .filter(f ->
-                        f.getAnnotations().stream().anyMatch(ann -> {
-                            camel.mms.MmsConcept o = (camel.mms.MmsConcept) ann;
-                            //StringBuilder annPath = new StringBuilder(ann.getName());
-                            StringBuilder annPath = new StringBuilder(ann.getId());
-                            while (o.getParent() != null) {
-                                o = o.getParent();
-                                annPath.insert(0, o.getName() + ".");
-                            }
-                            return annPath.toString().equals(sensorConfigAnnotation);
-                        })
-                )
+                .filter(f -> hasAnnotation(f, sensorConfigAnnotation))
                 .findFirst();
         if (sensorConfig.isPresent()) {
             log.info("    _createMonitorsForSensor(): sensor={} :: Configuration found in sub-feature: {}", sensor.getName(), sensorConfig.get().getName());
