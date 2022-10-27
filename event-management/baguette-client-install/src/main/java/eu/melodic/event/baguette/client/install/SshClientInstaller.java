@@ -67,6 +67,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private final long taskCounter;
 
     private final int maxRetries;
+    private final long retryDelay;
+    private final double retryBackoffFactor;
     private final long connectTimeout;
     private final long authenticationTimeout;
     private final long heartbeatInterval;
@@ -103,7 +105,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         this.task = task;
         this.taskCounter = taskCounter;
 
-        this.maxRetries = properties.getMaxRetries()>0 ? properties.getMaxRetries() : 5;
+        this.maxRetries = properties.getMaxRetries()>=0 ? properties.getMaxRetries() : 5;
+        this.retryDelay = properties.getRetryDelay()>0 ? properties.getRetryDelay() : 1000L;
+        this.retryBackoffFactor = properties.getRetryBackoffFactor()>0 ? properties.getRetryBackoffFactor() : 1.0;
+
         this.connectTimeout = properties.getConnectTimeout()>0 ? properties.getConnectTimeout() : 60000;
         this.authenticationTimeout = properties.getAuthenticateTimeout()>0 ? properties.getAuthenticateTimeout() : 60000;
         this.heartbeatInterval = properties.getHeartbeatInterval()>0 ? properties.getHeartbeatInterval() : 10000;
@@ -130,6 +135,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 success = false;
                 log.error("SshClientInstaller: Failed executing task #{}, Exception: ", taskCounter, ex);
                 retries++;
+                if (retries<=maxRetries)
+                    waitToRetry(retries);
             }
         }
         if (!success) {
@@ -154,6 +161,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         } catch (Exception ex) {
             log.error("SshClientInstaller: Exception while disconnecting. Task #{}, Exception: ", taskCounter, ex);
             return false;
+        }
+    }
+
+    private void waitToRetry(int retries) {
+        long delay = Math.max(1, (long)(retryDelay * Math.pow(retryBackoffFactor, retries-1)));
+        try {
+            log.debug("SshClientInstaller: waitToRetry: Waiting for {}ms to retry", delay);
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            log.warn("SshClientInstaller: waitToRetry: Waiting to retry interrupted: ", e);
         }
     }
 

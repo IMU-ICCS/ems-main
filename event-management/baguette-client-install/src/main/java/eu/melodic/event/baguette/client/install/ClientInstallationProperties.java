@@ -71,6 +71,9 @@ public class ClientInstallationProperties implements InitializingBean {
     private boolean simulateExecution;
 
     private int maxRetries = 5;
+    private long retryDelay = 1000L;
+    private double retryBackoffFactor = 1.0;
+
     private long connectTimeout = 10000;
     private long authenticateTimeout = 60000;
     private long heartbeatInterval = 60000;

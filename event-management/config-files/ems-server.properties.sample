@@ -452,6 +452,8 @@ baguette.client.install.keepTempFiles=false
 
 ### SSH connection settings
 #baguette.client.install.maxRetries = 5
+#baguette.client.install.retryDelay = 1000
+#baguette.client.install.retryBackoffFactor = 1.0
 #baguette.client.install.connectTimeout = 10000
 #baguette.client.install.authenticateTimeout = 60000
 #baguette.client.install.heartbeatInterval = 60000

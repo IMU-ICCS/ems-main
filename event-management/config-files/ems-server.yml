@@ -480,6 +480,8 @@ baguette.client.install:
 
   ### SSH connection settings
   #maxRetries: 5
+  #retryDelay: 1000
+  #retryBackoffFactor: 1.0
   #connectTimeout: 10000
   #authenticateTimeout: 60000
   #heartbeatInterval: 60000
