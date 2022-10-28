@@ -80,7 +80,7 @@ public class NCSolverCoordinator {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, numThreads)
-                    .mapToObj( index -> new UtilityFunctionEvaluator(applicationId, cpModelFilePath, true, nodeCandidates))
+                    .mapToObj( index -> new UtilityFunctionEvaluator(applicationId, cpModelFilePath, true, nodeCandidates, melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
             log.info("Starting NC Solver with " + numThreads + " threads for " + seconds + " seconds");
             solve(nodeCandidates, cp, utilityGenerators, seconds);
@@ -104,7 +104,7 @@ public class NCSolverCoordinator {
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
             List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, numThreads)
-                    .mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates))
+                    .mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates, melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
 
             solve(nodeCandidates, cp, utilityGenerators, seconds);

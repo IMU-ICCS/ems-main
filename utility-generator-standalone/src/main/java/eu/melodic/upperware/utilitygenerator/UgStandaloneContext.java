@@ -49,4 +49,9 @@ public class UgStandaloneContext {
         return new JWTServiceImpl(melodicSecurityProperties);
     }
 
+    @Bean
+    public CDOClientX cDOClientX() {
+        return new CDOClientXImpl(Arrays.asList(TypesPackage.eINSTANCE, CpPackage.eINSTANCE));
+    }
+
 }
