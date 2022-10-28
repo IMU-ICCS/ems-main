@@ -80,7 +80,7 @@ public class MCTSSolverCoordinator {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
             List<UtilityFunctionEvaluator> utilityGenerator = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpModelFilePath,
-                    true, nodeCandidates)).collect(Collectors.toList());
+                    true, nodeCandidates, melodicSecurityProperties, jwtService)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + NUM_THREADS + " threads for " + seconds + " seconds");
             solve(cp, utilityGenerator, seconds, nodeCandidates);
 
@@ -101,7 +101,8 @@ public class MCTSSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates))
+            List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, NUM_THREADS).mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath,
+                            false, nodeCandidates, melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds, nodeCandidates);
