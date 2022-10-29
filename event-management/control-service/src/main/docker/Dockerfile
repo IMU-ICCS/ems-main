@@ -29,8 +29,9 @@ RUN apt-get update && apt-get install -y \
 
 # Download a JRE8 suitable for running EMS clients, and
 # offer it for download during EMS client installations
+ENV JRE8_LINUX_X64_PACKAGE zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz
 RUN mkdir -p ${PUBLIC_DIR}/resources
-RUN curl https://cdn.azul.com/zulu/bin/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz --output ${PUBLIC_DIR}/resources/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz
+RUN curl https://cdn.azul.com/zulu/bin/${JRE8_LINUX_X64_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE8_LINUX_X64_PACKAGE}
 
 ADD bin ${BIN_DIR}
 ADD jars ${JARS_DIR}
