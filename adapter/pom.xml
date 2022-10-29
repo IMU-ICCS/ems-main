@@ -198,6 +198,12 @@
       <groupId>io.github.cloudiator.client</groupId>
       <artifactId>java-rest</artifactId>
     </dependency>
+      <dependency>
+          <groupId>eu.melodic.event</groupId>
+          <artifactId>broker-client</artifactId>
+          <version>5.0.0-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>

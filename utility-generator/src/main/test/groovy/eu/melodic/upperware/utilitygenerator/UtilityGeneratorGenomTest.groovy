@@ -1,9 +1,9 @@
 package groovy.eu.melodic.upperware.utilitygenerator
 
 import eu.melodic.cache.NodeCandidates
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.IntVariableValueDTO
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties
 import eu.paasage.upperware.security.authapi.token.JWTService
 import org.activeeon.morphemic.model.GeoLocation
@@ -73,7 +73,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 405 ))
 
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelPath, true, mockNodeCandidates,securityProperties, jwtService)
+        UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(path, cpModelPath, true, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)
@@ -94,7 +94,7 @@ class UtilityGeneratorGenomTest extends Specification{
         newConfiguration.add(new IntVariableValueDTO(latitudeName, 47))
         newConfiguration.add(new IntVariableValueDTO(longitudeName, 509))
 
-        UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(path, cpModelWithSolutionPath, true, mockNodeCandidates, securityProperties, jwtService)
+        UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(path, cpModelWithSolutionPath, true, mockNodeCandidates)
 
         when:
         double result = utilityGenerator.evaluate(newConfiguration)

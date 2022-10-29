@@ -29,7 +29,8 @@ public class DataUtils {
 
     private CamelInstanceService camelInstanceService;
 
-    public DeploymentInstanceModel computeDatasToRegister(CamelModel camelModel, Solution solution, NodeCandidates nodeCandidates) {
+    public DeploymentInstanceModel computeDatasToRegister(CamelModel camelModel, Solution solution, NodeCandidates nodeCandidates,
+                                                          String applicationId) {
 
         EList<DeploymentModel> deploymentModels = camelModel.getDeploymentModels();
         DeploymentTypeModel deploymentTypeModel = (DeploymentTypeModel) CdoTool.getFirstElement(deploymentModels);
@@ -84,7 +85,7 @@ public class DataUtils {
                             .build());
             }
 
-            return camelInstanceService.createDeploymentInstanceModel(deploymentTypeModel, softwareInstanceDetails);
+            return camelInstanceService.createDeploymentInstanceModel(deploymentTypeModel, softwareInstanceDetails, applicationId);
 
         } catch (Exception e) {
             log.error("Problem with Applying Solution: ", e);

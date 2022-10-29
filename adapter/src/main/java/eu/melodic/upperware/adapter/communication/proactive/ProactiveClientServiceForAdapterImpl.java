@@ -3,8 +3,10 @@ package eu.melodic.upperware.adapter.communication.proactive;
 import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import lombok.extern.slf4j.Slf4j;
+import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.ByonNode;
 import org.activeeon.morphemic.model.EdgeNode;
+import org.activeeon.morphemic.model.Deployment;
 import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
@@ -142,7 +144,7 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
     }
 
     @Override
-    public int addByonNodes(Map<String, String> byonIdPerComponent, String jobId) {
+    public int addByonNodes(Map<String, Pair<String, String>> byonIdPerComponent, String jobId) {
         return getPAGateway().map(paGateway -> paGateway.addByonNodes(byonIdPerComponent, jobId)).orElse(-1);
     }
 
@@ -157,8 +159,13 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
     }
 
     @Override
-    public int addEdgeNodes(Map<String, String> edgeIdPerComponent, String jobId) {
+    public int addEdgeNodes(Map<String, Pair<String, String>> edgeIdPerComponent, String jobId) {
         return getPAGateway().map(paGateway -> paGateway.addEdgeNodes(edgeIdPerComponent, jobId)).orElse(-1);
+    }
+
+    @Override
+    public List<Deployment> getAllNodes() {
+        return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
     }
 
 }

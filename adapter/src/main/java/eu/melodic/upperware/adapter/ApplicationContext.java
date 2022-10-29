@@ -19,6 +19,7 @@ import eu.melodic.security.authorization.util.properties.AuthorizationServiceCli
 import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapterImpl;
 import eu.melodic.upperware.adapter.properties.AdapterProperties;
+import eu.melodic.upperware.adapter.service.Instance_no_provider.BusyInstancesRegistry;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
@@ -43,6 +44,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
@@ -135,5 +138,14 @@ public class ApplicationContext {
             adapterProperties.getPaConfig().getLogin(),
             adapterProperties.getPaConfig().getPassword(),
             adapterProperties.getPaConfig().getEncryptorPw());
+  }
+
+  //Busy Instance Number provider
+  @Bean
+  public BusyInstancesRegistry busyInstancesRegistry(ProactiveClientServiceForAdapter proactiveClientServiceForAdapter) {
+    return new BusyInstancesRegistry(
+            new ConcurrentHashMap<>(),
+            proactiveClientServiceForAdapter
+    );
   }
 }

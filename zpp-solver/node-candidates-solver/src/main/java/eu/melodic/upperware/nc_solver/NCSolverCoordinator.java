@@ -8,8 +8,8 @@ import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.Parallel
 import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
 import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.nc_solver.nc_solver.NCSolver;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -79,9 +79,8 @@ public class NCSolverCoordinator {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
-            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
-                    .mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, melodicSecurityProperties, jwtService))
+            List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, numThreads)
+                    .mapToObj( index -> new UtilityFunctionEvaluator(applicationId, cpModelFilePath, true, nodeCandidates, melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
             log.info("Starting NC Solver with " + numThreads + " threads for " + seconds + " seconds");
             solve(nodeCandidates, cp, utilityGenerators, seconds);
@@ -104,9 +103,8 @@ public class NCSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
-                    .mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
-                    melodicSecurityProperties, jwtService))
+            List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, numThreads)
+                    .mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates, melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
 
             solve(nodeCandidates, cp, utilityGenerators, seconds);
@@ -123,7 +121,7 @@ public class NCSolverCoordinator {
         }
     }
 
-    private void solve(NodeCandidates nodeCandidates, ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators, int seconds) {
+    private void solve(NodeCandidates nodeCandidates, ConstraintProblem cp, List<UtilityFunctionEvaluator> utilityGenerators, int seconds) {
         NCSolver solver = new NCSolver(minTemp, maxTemp, numThreads, cp, new ParallelUtilityProviderImpl(utilityGenerators), nodeCandidates);
         Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
         log.info("Found solution with utility: " + solution.getValue1());
