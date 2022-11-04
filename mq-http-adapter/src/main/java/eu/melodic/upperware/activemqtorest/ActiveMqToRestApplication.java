@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @EnableScheduling
-@ComponentScan(basePackages = {"eu.melodic.upperware.activemqtorest"})
+@ComponentScan(basePackages = {"eu.melodic.upperware.activemqtorest", "cloud.morphemic.connectors"})
 public class ActiveMqToRestApplication {
 
 	public static void main(String[] args) {

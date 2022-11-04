@@ -1,7 +1,5 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
-import cloud.morphemic.connectors.proactive.IProactiveClientServiceConnector;
-
-public interface ProactiveClientService extends IProactiveClientServiceConnector {
+public interface ProactiveClientService {
     Long stopJob(String jobId);
 }

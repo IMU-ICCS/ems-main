@@ -18,7 +18,7 @@ import java.util.TimeZone;
 @Slf4j
 @EnableAsync
 @EnableRetry
-@ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache"})
+@ComponentScan(basePackages = {"eu.paasage.upperware.profiler.generator", "eu.melodic.cache", "cloud.morphemic.connectors"})
 @EnableConfigurationProperties({MelodicSecurityProperties.class, CacheProperties.class})
 public class GeneratorRestApp {
 

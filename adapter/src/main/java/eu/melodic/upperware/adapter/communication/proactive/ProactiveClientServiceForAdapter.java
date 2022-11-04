@@ -1,6 +1,5 @@
 package eu.melodic.upperware.adapter.communication.proactive;
 
-import cloud.morphemic.connectors.proactive.IProactiveClientServiceConnector;
 import org.activeeon.morphemic.model.ByonNode;
 import org.activeeon.morphemic.model.EdgeNode;
 import org.activeeon.morphemic.model.Deployment;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface ProactiveClientServiceForAdapter extends IProactiveClientServiceConnector {
+public interface ProactiveClientServiceForAdapter {
     int createJob(JSONObject job);
     int addNodes(JSONArray nodes, String jobId);
     int removeNodes(List<String> nodeNames);

@@ -1,17 +1,23 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
-import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
-import eu.melodic.upperware.guibackend.controller.common.UndeployState;
-import eu.melodic.upperware.guibackend.controller.process.response.UndeployResponse;
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
+import cloud.morphemic.connectors.exception.ProactiveClientException;
+import lombok.RequiredArgsConstructor;
 
-public class ProactiveClientServiceImpl extends ProactiveClientServiceConnector implements ProactiveClientService {
+import java.util.Collections;
 
-    protected ProactiveClientServiceImpl(String restUrl, String login, String password, String encryptorPassword) {
-        super(restUrl, login, password, encryptorPassword);
-    }
+@RequiredArgsConstructor
+public class ProactiveClientServiceImpl implements ProactiveClientService {
+
+    private final ProactiveClientConnectorService proactiveClientConnectorService;
 
     @Override
     public Long stopJob(String jobId) {
-         return getPAGateway().map(paGateway -> paGateway.stopJob(jobId)).orElse(0L);
+        try {
+            return proactiveClientConnectorService.stopJob(Collections.singletonList(jobId));
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1L;
+        }
     }
 }

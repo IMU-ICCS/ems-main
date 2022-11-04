@@ -22,7 +22,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ComponentScan(basePackages = {
         "eu.melodic.upperware.adapter",
         "eu.melodic.security.authorization.util.properties",
-        "eu.melodic.cache"})
+        "eu.melodic.cache",
+        "cloud.morphemic.connectors"})
 @SpringBootApplication
 @EnableConfigurationProperties({MelodicSecurityProperties.class, AuthorizationServiceClientProperties.class, CacheProperties.class})
 public class AdapterApplication {

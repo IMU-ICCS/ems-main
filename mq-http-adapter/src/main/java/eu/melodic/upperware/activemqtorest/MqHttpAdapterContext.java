@@ -1,8 +1,8 @@
 package eu.melodic.upperware.activemqtorest;
 
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import eu.melodic.upperware.activemqtorest.proactive.ProactiveClientServiceForMqHttpAdapter;
 import eu.melodic.upperware.activemqtorest.proactive.ProactiveClientServiceForMqHttpAdapterImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,10 +17,7 @@ import org.springframework.context.annotation.Configuration;
 public class MqHttpAdapterContext {
 
     @Bean
-    public ProactiveClientServiceForMqHttpAdapter proactiveClientServiceForMqHttpAdapter(MelodicConfiguration melodicConfiguration) {
-        return new ProactiveClientServiceForMqHttpAdapterImpl(melodicConfiguration.getRestUrl(),
-                melodicConfiguration.getLogin(),
-                melodicConfiguration.getPassword(),
-                melodicConfiguration.getEncryptorPw());
+    public ProactiveClientServiceForMqHttpAdapter proactiveClientServiceForMqHttpAdapter(ProactiveClientConnectorService proactiveClientConnectorService) {
+        return new ProactiveClientServiceForMqHttpAdapterImpl(proactiveClientConnectorService);
     }
 }

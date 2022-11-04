@@ -1,22 +1,27 @@
 package eu.melodic.upperware.activemqtorest.proactive;
 
-import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
+import cloud.morphemic.connectors.exception.ProactiveClientException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.Deployment;
 
 import java.util.Collections;
 import java.util.List;
 
 @Slf4j
-public class ProactiveClientServiceForMqHttpAdapterImpl extends ProactiveClientServiceConnector implements ProactiveClientServiceForMqHttpAdapter {
+@RequiredArgsConstructor
+public class ProactiveClientServiceForMqHttpAdapterImpl implements ProactiveClientServiceForMqHttpAdapter {
 
-    public ProactiveClientServiceForMqHttpAdapterImpl(String restUrl, String login, String password, String encryptorPassword) {
-        super(restUrl, login, password, encryptorPassword);
-    }
+    private final ProactiveClientConnectorService proactiveClientConnectorService;
 
     @Override
     public List<Deployment> getAllNodes() {
-        return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchNodes();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 }

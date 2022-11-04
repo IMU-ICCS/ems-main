@@ -56,7 +56,6 @@ public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
 
             log.info("JobTaskExecutor->create: [application id: {}] ProActive job (JSONObject): \n{}", applicationId, jobJSON);
 
-            log.info("JobTaskExecutor->create: [application id: {}] ProActive Connection State={}", applicationId, proactiveClientServiceForAdapter.getConnectionState());
             int status = proactiveClientServiceForAdapter.createJob(jobJSON);
 
             log.info("JobTaskExecutor->create: [application id: {}] createJob status= {}", applicationId, status);

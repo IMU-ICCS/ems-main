@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @ComponentScan(basePackages = {
         "eu.melodic.upperware.guibackend",
+        "cloud.morphemic.connectors",
         "eu.passage.upperware.commons.cloudiator"})
 @SpringBootApplication
 @EnableConfigurationProperties({MelodicSecurityProperties.class})

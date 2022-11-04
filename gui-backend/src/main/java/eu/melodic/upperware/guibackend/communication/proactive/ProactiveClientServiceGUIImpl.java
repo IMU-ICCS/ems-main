@@ -1,83 +1,147 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
-import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
+import cloud.morphemic.connectors.exception.ProactiveClientException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.*;
 
 import java.util.Collections;
 import java.util.List;
 
 @Slf4j
-public class ProactiveClientServiceGUIImpl extends ProactiveClientServiceConnector implements ProactiveClientServiceGUI {
+@RequiredArgsConstructor
+public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI {
 
-    public ProactiveClientServiceGUIImpl(String restUrl, String login, String password, String encryptorPassword) {
-        super(restUrl, login, password, encryptorPassword);
-    }
+    private final ProactiveClientConnectorService proactiveClientConnectorService;
 
     @Override
     public int getNumberOfCurrentOffers() {
-        return getPAGateway().map(PAGateway::getLengthOfNodeCandidates).orElse(0);
+        try {
+            return proactiveClientConnectorService.getLengthOfNodeCandidates().intValue();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public List<PACloud> getAllClouds() {
-        return getPAGateway().map(PAGateway::getAllClouds).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchClouds();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<Image> getAllCloudImages(String cloudID) {
-        return getPAGateway().map(paGateway -> paGateway.getAllCloudImages(cloudID)).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchImages(cloudID);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<Hardware> getAllHardware() {
-        return getPAGateway().map(PAGateway::getHardwareList).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchHardware();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<Location> getAllLocation() {
-        return getPAGateway().map(PAGateway::getLocationList).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchLocations();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public EdgeNode registerNewEdgeNode(EdgeDefinition edgeDefinition, String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.registerNewEdgeNode(edgeDefinition,jobId)).orElse(null);
+        try {
+            return proactiveClientConnectorService.registerNewEdgeNode(edgeDefinition, jobId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public ByonNode registerNewByonNode(ByonDefinition byonNodeDefinition, String jobId, boolean automate) {
-        return getPAGateway().map(paGateway -> paGateway.registerNewByonNode(byonNodeDefinition, jobId, automate)).orElse(null);
-    }
-
-    @Override
-    public List<EdgeNode> getEdgeNodeList(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.getEdgeNodeList(jobId)).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.registerNewByonNode(byonNodeDefinition, jobId,automate);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public List<ByonNode> getByonNodeList(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchByonNodes(jobId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<EdgeNode> getEdgeNodeList(String jobId) {
+        try {
+            return proactiveClientConnectorService.fetchEdgeNodes(jobId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<Job> getAllJobs() {
-        return getPAGateway().map(PAGateway::getAllJobs).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchJobs();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<Deployment> getAllNodes() {
-        return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchNodes();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<EmsDeploymentRequest> getAllMonitors() {
-        return getPAGateway().map(PAGateway::getMonitorsList).orElse(Collections.emptyList());
-    }
+        try {
+            return proactiveClientConnectorService.fetchMonitors();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }    }
 
     @Override
     public boolean deleteByonNode(String byonId) {
-        return getPAGateway().map(paGateway -> paGateway.deleteByonNode(byonId)).orElse(false);
+        try {
+            return proactiveClientConnectorService.deleteByonNodes(byonId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

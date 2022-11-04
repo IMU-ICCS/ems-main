@@ -1,13 +1,15 @@
 package eu.melodic.upperware.adapter.communication.proactive;
 
-import cloud.morphemic.connectors.proactive.ProactiveClientServiceConnector;
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
+import cloud.morphemic.connectors.exception.ProactiveClientException;
 import eu.melodic.upperware.adapter.exception.AdapterException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.PAGateway;
 import org.activeeon.morphemic.model.ByonNode;
 import org.activeeon.morphemic.model.EdgeNode;
 import org.activeeon.morphemic.model.Deployment;
 import org.activeeon.morphemic.model.SubmittedJobType;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,69 +21,100 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class ProactiveClientServiceForAdapterImpl extends ProactiveClientServiceConnector implements ProactiveClientServiceForAdapter {
+@RequiredArgsConstructor
+public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServiceForAdapter {
 
     private final long TIMEOUT_SECONDS = 5;
 
-    public ProactiveClientServiceForAdapterImpl(String restUrl, String login, String password, String encryptorPassword) {
-        super(restUrl, login, password, encryptorPassword);
-    }
+    private final ProactiveClientConnectorService proactiveClientConnectorService;
 
     @Override
     public int createJob(JSONObject job) {
-        return getPAGateway().map(paGateway -> {
-            paGateway.createJob(job);
+        try {
+            proactiveClientConnectorService.createJob(job);
             return 0;
-        }).orElse(-1);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public int addNodes(JSONArray nodes, String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.addNodes(nodes, jobId)).orElse(-1);
+        try {
+            return BooleanUtils.toInteger(proactiveClientConnectorService.addNodes(nodes, jobId));
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public int removeNodes(List<String> nodeNames) {
-        return getPAGateway().map(paGateway -> {
-            paGateway.removeNodes(nodeNames, true);
+        try {
+            proactiveClientConnectorService.removeNodes(nodeNames, true);
             return 0;
-        }).orElse(-1);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public long submitJob(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.submitJob(jobId)).orElse(-1L);
+        try {
+            return proactiveClientConnectorService.submitJob(jobId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public int addScaleOutTask(List<String> nodeNames, String jobId, String taskName) {
-        return getPAGateway().map(paGateway -> paGateway.addScaleOutTask(nodeNames, jobId, taskName)).orElse(-1);
+        try {
+            return BooleanUtils.toInteger(proactiveClientConnectorService.addScaleOutTask(jobId, taskName, nodeNames));
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public int addScaleInTask(List<String> nodeNames, String jobId, String taskName) {
-        return getPAGateway().map(paGateway -> paGateway.addScaleInTask(nodeNames, jobId, taskName)).orElse(-1);
+        try {
+            return BooleanUtils.toInteger(proactiveClientConnectorService.addScaleInTask(jobId, taskName, nodeNames));
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public Optional<Pair<SubmittedJobType, JobStatus>> getJobStatus(String jobId) {
-        return getPAGateway().map(paGateway -> {
-            try {
-                Optional<Pair<SubmittedJobType, JobState>> jobState = Optional.ofNullable(paGateway.getJobState(jobId));
-                if(jobState.isPresent()) {
-                    return Optional.of(Pair.of(jobState.get().getLeft(), jobState.get().getRight().getJobInfo().getStatus()));
-                }
-                log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: ProActive client has not returned JobState for jobId={}", jobId);
-            } catch (Exception e) {
-                log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: Exception has been caught while retrieving JobState for jobId={} from ProActive Scheduler, message: {}", jobId, e.getMessage());
+        try {
+            Optional<Pair<SubmittedJobType, JobState>> jobState = Optional.ofNullable(proactiveClientConnectorService.getJobState(jobId));
+            if (jobState.isPresent()) {
+                return Optional.of(Pair.of(jobState.get().getLeft(), jobState.get().getRight().getJobInfo().getStatus()));
             }
-            return Optional.<Pair<SubmittedJobType, JobStatus>>empty();
-        }).orElse(Optional.empty());
+            log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: ProActive client has not returned JobState for jobId={}", jobId);
+        } catch (ProactiveClientException e) {
+            log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: Exception has been caught while retrieving JobState for jobId={} from ProActive Scheduler, message: {}", jobId, e.getMessage());
+            e.printStackTrace();
+        }
+
+        return Optional.empty();
     }
+
 
     @Override
     public int addMonitors(List<String> nodeNames, String authorizationBearer) {
-        return getPAGateway().map(paGateway -> paGateway.addEmsDeployment(nodeNames, authorizationBearer)).orElse(-1);
+        try {
+            return proactiveClientConnectorService.addEmsDeployment(nodeNames, authorizationBearer);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
@@ -145,27 +178,52 @@ public class ProactiveClientServiceForAdapterImpl extends ProactiveClientService
 
     @Override
     public int addByonNodes(Map<String, Pair<String, String>> byonIdPerComponent, String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.addByonNodes(byonIdPerComponent, jobId)).orElse(-1);
+        try {
+            return BooleanUtils.toInteger(proactiveClientConnectorService.addByonNodes(byonIdPerComponent, jobId));
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public List<ByonNode> getByonNodeList(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.getByonNodeList(jobId)).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchByonNodes(jobId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<EdgeNode> getEdgeNodeList(String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.getEdgeNodeList(jobId)).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchEdgeNodes(jobId);
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public int addEdgeNodes(Map<String, Pair<String, String>> edgeIdPerComponent, String jobId) {
-        return getPAGateway().map(paGateway -> paGateway.addEdgeNodes(edgeIdPerComponent, jobId)).orElse(-1);
+        try {
+            return BooleanUtils.toInteger(proactiveClientConnectorService.addEdgeNodes(edgeIdPerComponent, jobId));
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     @Override
     public List<Deployment> getAllNodes() {
-        return getPAGateway().map(PAGateway::getAllNodes).orElse(Collections.emptyList());
+        try {
+            return proactiveClientConnectorService.fetchNodes();
+        } catch (ProactiveClientException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
     }
 
 }

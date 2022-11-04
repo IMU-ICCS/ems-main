@@ -1,5 +1,6 @@
 package eu.melodic.upperware.guibackend;
 
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientService;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUI;
 import eu.melodic.upperware.guibackend.communication.proactive.ProactiveClientServiceGUIImpl;
@@ -80,21 +81,13 @@ public class ApplicationContext {
     }
 
     @Bean
-    public ProactiveClientServiceGUI proactiveClientServiceForGUI(final GuiBackendProperties guiBackendProperties) {
-        return new ProactiveClientServiceGUIImpl(guiBackendProperties.getPaConfig().getRestUrl(),
-                guiBackendProperties.getPaConfig().getLogin(),
-                guiBackendProperties.getPaConfig().getPassword(),
-                guiBackendProperties.getPaConfig().getEncryptorPw()) {
-        };
+    public ProactiveClientServiceGUI proactiveClientServiceForGUI(ProactiveClientConnectorService proactiveClientConnectorService) {
+        return new ProactiveClientServiceGUIImpl(proactiveClientConnectorService);
     }
 
     @Bean
-    public ProactiveClientService proactiveClientService(final GuiBackendProperties guiBackendProperties) {
-        return new ProactiveClientServiceImpl(guiBackendProperties.getPaConfig().getRestUrl(),
-                guiBackendProperties.getPaConfig().getLogin(),
-                guiBackendProperties.getPaConfig().getPassword(),
-                guiBackendProperties.getPaConfig().getEncryptorPw()) {
-        };
+    public ProactiveClientService proactiveClientService(ProactiveClientConnectorService proactiveClientConnectorService) {
+        return new ProactiveClientServiceImpl(proactiveClientConnectorService);
     }
 
     @Bean(name = "locationConverter")

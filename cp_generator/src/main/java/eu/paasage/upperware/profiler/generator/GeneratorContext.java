@@ -1,5 +1,6 @@
 package eu.paasage.upperware.profiler.generator;
 
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import eu.melodic.cache.properties.CacheProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
@@ -105,10 +106,7 @@ public class GeneratorContext {
     }
 
     @Bean
-    public ProactiveClientServiceForGenerator proactiveClientServiceForGenerator(GeneratorProperties generatorProperties) {
-        return new ProactiveClientServiceForGeneratorImpl(generatorProperties.getPaConfig().getRestUrl(),
-                generatorProperties.getPaConfig().getLogin(),
-                generatorProperties.getPaConfig().getPassword(),
-                generatorProperties.getPaConfig().getEncryptorPw());
+    public ProactiveClientServiceForGenerator proactiveClientServiceForGenerator(ProactiveClientConnectorService proactiveClientConnectorService) {
+        return new ProactiveClientServiceForGeneratorImpl(proactiveClientConnectorService);
     }
 }
