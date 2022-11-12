@@ -150,8 +150,13 @@ public class CamelToEplTranslator implements Translator {
 			log.info("Decomposition Graph:\n{}", _TC.DAG);
 			log.info("*********************************************************");
 			try {
-				dot = _TC.DAG.exportToDot();
-				log.info("Decomposition Graph in DOT format:\n{}", dot);
+				if (_TC.DAG.getRootNode()!=null) {
+					dot = _TC.DAG.exportToDot();
+					log.info("Decomposition Graph in DOT format:\n{}", dot);
+				} else {
+					log.warn("Decomposition Graph is empty.");
+					log.warn("Translation Context loaded from cache?");
+				}
 			} catch (Exception ex) {
 				log.error("Decomposition Graph in DOT format: EXCEPTION: ", ex);
 			}

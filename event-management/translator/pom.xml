@@ -21,29 +21,14 @@
 
     <properties>
         <!-- Dependencies versions -->
-        <jgrapht.version>1.2.1-SNAPSHOT</jgrapht.version>
-        <graphviz-java.version>0.5.4</graphviz-java.version>
-        <hibernate-validator.version>6.0.16.Final</hibernate-validator.version>
+        <jgrapht.version>1.4.0</jgrapht.version>
+        <graphviz-java.version>0.18.1</graphviz-java.version>
+        <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
 
         <!-- Required in order to compile with Thymeleaf -->
-        <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
+        <thymeleaf.version>3.0.15.RELEASE</thymeleaf.version>
         <thymeleaf-layout-dialect.version>2.3.0</thymeleaf-layout-dialect.version>
     </properties>
-
-    <!-- repository for JGraphT -->
-    <repositories>
-        <repository>
-            <id>maven-snapshots</id>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <dependencies>
         <!-- PaaSage and Melodic dependencies -->
@@ -120,22 +105,23 @@
             <version>${jgrapht.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/guru.nidi/graphviz-java -->
+        <!-- See also: https://github.com/nidi3/graphviz-java -->
         <dependency>
             <groupId>guru.nidi</groupId>
-            <artifactId>graphviz-java</artifactId>
+            <artifactId>graphviz-java-all-j2v8</artifactId>
             <version>${graphviz-java.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.2</version>
+            <version>4.4</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.8.1</version>
+            <version>3.12.0</version>
         </dependency>
     </dependencies>
 

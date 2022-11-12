@@ -13,14 +13,16 @@ import camel.core.NamedElement;
 import eu.melodic.event.translate.TranslationContext;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
+import guru.nidi.graphviz.engine.GraphvizV8Engine;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.jgrapht.graph.DirectedAcyclicGraph;
-import org.jgrapht.io.ComponentNameProvider;
-import org.jgrapht.io.DOTExporter;
-import org.jgrapht.io.ExportException;
-import org.jgrapht.io.GraphExporter;
+import org.jgrapht.nio.Attribute;
+import org.jgrapht.nio.AttributeType;
+import org.jgrapht.nio.DefaultAttribute;
+import org.jgrapht.nio.dot.DOTExporter;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -330,32 +332,36 @@ public class DAG {
     // ====================================================================================================================================================
     // Export methods
 
-    public String exportToDot() throws ExportException {
-        // use helper classes to define how vertices should be rendered,
-        // adhering to the DOT language restrictions
-        ComponentNameProvider<DAGNode> vertexIdProvider =
-                new ComponentNameProvider<DAGNode>() {
-                    public String getName(DAGNode node) {
-                        return "NODE_" + node.getId();
-                    }
-                };
-        ComponentNameProvider<DAGNode> vertexLabelProvider =
-                new ComponentNameProvider<DAGNode>() {
-                    public String getName(DAGNode node) {
-                        if (node.element != null) {
-                            //return String.format("%s\n[%s]", node.getName(), (node.getGrouping()==null ? "?" : node.getGrouping().toString()));
-                            if (node.getGrouping() != null) {
-                                return String.format("%s\n[%s]", node.getName(), "" + node.getGrouping());
-                            } else {
-                                return node.getName();
-                            }
-                        } else {
-                            return "<ROOT>";
-                        }
-                    }
-                };
+    public String exportToDot() {
+        if (_graph==null) {
+            log.warn("DAG.exportToDot(): Cannot export: DAG has not been initialized");
+            return null;
+        }
 
-        GraphExporter<DAGNode, DAGEdge> exporter = new DOTExporter<>(vertexIdProvider, vertexLabelProvider, null);
+        DOTExporter<DAGNode, DAGEdge> exporter = new DOTExporter<>(node -> "NODE_" + node.getId());
+        exporter.setVertexAttributeProvider(node -> {
+            LinkedHashMap<String, Attribute> vertexAttributes = new LinkedHashMap<>();
+            String label;
+            if (node.element != null) {
+                if (node.getGrouping() != null) {
+                    label = String.format("%s\n[%s]", node.getName(), "" + node.getGrouping());
+                } else {
+                    label = node.getName();
+                }
+            } else {
+                label = "<ROOT>";
+            }
+            // See: https://graphviz.org/doc/info/attrs.html
+            vertexAttributes.put("label", new DefaultAttribute<>(label, AttributeType.STRING));
+            /*
+            vertexAttributes.put("color", new DefaultAttribute<>("red", AttributeType.STRING));
+            vertexAttributes.put("fontcolor", new DefaultAttribute<>("yellow", AttributeType.STRING));
+            vertexAttributes.put("fillcolor", new DefaultAttribute<>("cyan:green;0.3", AttributeType.STRING));
+            vertexAttributes.put("style", new DefaultAttribute<>("radial", AttributeType.STRING));
+            vertexAttributes.put("gradientangle", new DefaultAttribute<>(60, AttributeType.INT));
+            */
+            return vertexAttributes;
+        });
         Writer writer = new StringWriter();
         exporter.exportGraph(_graph, writer);
         return writer.toString();
@@ -368,6 +374,10 @@ public class DAG {
             // Export DAG in DOT format (can be viewd with GraphViz tool)
             String dot = exportToDot();
             log.debug("DAG.exportDAG(): Results of exportToDot(): Graph in DOT format:\n{}", dot);
+            if (dot==null) {
+                log.warn("DAG.exportDAG(): Cannot export: DAG has not been initialized");
+                return;
+            }
 
             // Export DOT into specified formats and save to file(s)
             exportDAG(dot, baseFileName, exportFormats, imageWidth);
@@ -377,12 +387,16 @@ public class DAG {
         }
     }
 
-    public void exportDAG(String dot, String baseFileName, String[] exportFormats, int imageWidth) {
+    public void exportDAG(@NonNull String dot, String baseFileName, String[] exportFormats, int imageWidth) {
         try {
             if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return;
 
+            // Configure Graphviz rendering engine to V8. It's faster
+            // See also: https://github.com/nidi3/graphviz-java
+            Graphviz.useEngine(new GraphvizV8Engine());
+
             // Export DOT into specified formats and save to file(s)
-            MutableGraph mg = Parser.read(dot);
+            MutableGraph mg = new Parser().read(dot);
             for (String f : exportFormats) {
                 Format fmt = Format.valueOf(f.toUpperCase());
                 String exportFile = baseFileName + "." + f;
