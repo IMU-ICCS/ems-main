@@ -172,7 +172,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
+        <!--<repository>
             <id>eu.7bulls</id>
             <layout>default</layout>
             <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
@@ -182,7 +182,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
+        </repository>-->
         <repository>
             <id>ossrh.snapshots</id>
             <layout>default</layout>
