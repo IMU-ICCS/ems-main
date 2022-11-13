@@ -839,11 +839,10 @@ public class ModelAnalyzer {
 
         // Get common Metric Context parameters
         Metric metric = context.getMetric();
-        Window window = context.getWindow();
         Schedule schedule = context.getSchedule();
         ObjectContext objContext = context.getObjectContext();
-        log.info("  _decomposeMetricContext(): common fields: {} :: metric={}, window={}, schedule={}, object={}",
-                context.getName(), metric.getName(), getElementName(window), getElementName(schedule), getElementName(objContext));
+        log.info("  _decomposeMetricContext(): common fields: {} :: metric={}, schedule={}, object={}",
+                context.getName(), metric.getName(), getElementName(schedule), getElementName(objContext));
 
         // Commented addition in DAG and decomposition of Metrics
         /*_TC.DAG.addNode(context, metric).setGrouping(getGrouping(metric));
@@ -852,10 +851,11 @@ public class ModelAnalyzer {
 
         if (context instanceof CompositeMetricContext) {
             CompositeMetricContext cmc = (CompositeMetricContext) context;
+            Window window = cmc.getWindow();
             GroupingType grouping = cmc.getGroupingType();
             EList<MetricContext> composingMetricContexts = cmc.getComposingMetricContexts();
-            log.info("  _decomposeMetricContext(): CompositeMetricContext: {} :: grouping={}, composing-metric-contexts={}",
-                    cmc.getName(), grouping != null ? grouping.getName() : null, getListElementNames(composingMetricContexts));
+            log.info("  _decomposeMetricContext(): CompositeMetricContext: {} :: window={}, grouping={}, composing-metric-contexts={}",
+                    cmc.getName(), getElementName(window), grouping != null ? grouping.getName() : null, getListElementNames(composingMetricContexts));
 
             for (MetricContext mctx : composingMetricContexts) {
                 _TC.DAG.addNode(context, mctx).setGrouping(getGrouping(mctx));
