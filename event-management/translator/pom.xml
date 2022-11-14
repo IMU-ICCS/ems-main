@@ -36,6 +36,7 @@
             <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
             <classifier>repackaged</classifier>
+            <version>${cdo-client.version}</version>
         </dependency>
         <!--<dependency>
             <groupId>org.ow2.paasage</groupId>
@@ -46,6 +47,12 @@
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
             <version>${melodic.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>eu.melodic.cdo</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>camel</groupId>
@@ -61,6 +68,12 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
             <!--<version>${interfaces.version}</version>-->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>
@@ -126,6 +139,17 @@
     </dependencies>
 
     <repositories>
+        <!-- Repositories for CAMEL and CDO client dependencies -->
+        <repository>
+            <id>gitlab-maven-camel</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1227/packages/maven</url>
+        </repository>
+        <repository>
+            <id>gitlab-maven-cdo-client</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
+        </repository>
+
+        <!-- Deactivate unneeded repositories inherited -->
         <repository>
             <id>paasage.repo</id>
             <layout>default</layout>

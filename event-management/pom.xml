@@ -29,8 +29,9 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Melodic component versions -->
         <!--<melodic.version>5.5.0-SNAPSHOT</melodic.version>
-        <interfaces.version>5.5.0-SNAPSHOT</interfaces.version>
-        <camel.version>4.5.0-SNAPSHOT</camel.version>-->
+        <interfaces.version>5.5.0-SNAPSHOT</interfaces.version>-->
+        <camel.version>5.5.0-SNAPSHOT</camel.version>
+        <cdo-client.version>5.5.0-SNAPSHOT</cdo-client.version>
         <authorization.version>4.5.0-SNAPSHOT</authorization.version>
         <!-- Gson version -->
         <gson.version>2.8.9</gson.version>
@@ -117,6 +118,7 @@
     </profiles>
 
     <repositories>
+        <!-- Deactivate unneeded repositories inherited -->
         <repository>
             <id>paasage.repo</id>
             <layout>default</layout>
