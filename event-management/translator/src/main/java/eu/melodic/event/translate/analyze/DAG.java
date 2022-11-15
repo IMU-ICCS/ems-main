@@ -367,45 +367,50 @@ public class DAG {
         return writer.toString();
     }
 
-    public void exportDAG(String baseFileName, String[] exportFormats, int imageWidth) {
+    public List<String> exportDAG(String baseFileName, String[] exportFormats, int imageWidth) {
         try {
-            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return;
+            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return null;
 
             // Export DAG in DOT format (can be viewd with GraphViz tool)
             String dot = exportToDot();
             log.debug("DAG.exportDAG(): Results of exportToDot(): Graph in DOT format:\n{}", dot);
             if (dot==null) {
                 log.warn("DAG.exportDAG(): Cannot export: DAG has not been initialized");
-                return;
+                return null;
             }
 
             // Export DOT into specified formats and save to file(s)
-            exportDAG(dot, baseFileName, exportFormats, imageWidth);
+            return exportDAG(dot, baseFileName, exportFormats, imageWidth);
 
         } catch (Exception ex) {
             log.error("DAG.exportDAG(): Graph export FAILED: ", ex);
+            return null;
         }
     }
 
-    public void exportDAG(@NonNull String dot, String baseFileName, String[] exportFormats, int imageWidth) {
+    public List<String> exportDAG(@NonNull String dot, String baseFileName, String[] exportFormats, int imageWidth) {
         try {
-            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return;
+            if (!checkExportConfiguration(baseFileName, exportFormats, imageWidth)) return null;
 
             // Configure Graphviz rendering engine to V8. It's faster
             // See also: https://github.com/nidi3/graphviz-java
             Graphviz.useEngine(new GraphvizV8Engine());
 
             // Export DOT into specified formats and save to file(s)
+            List<String> exportFilesList = new LinkedList<>();
             MutableGraph mg = new Parser().read(dot);
             for (String f : exportFormats) {
                 Format fmt = Format.valueOf(f.toUpperCase());
                 String exportFile = baseFileName + "." + f;
                 Graphviz.fromGraph(mg).width(imageWidth).render(fmt).toFile(new File(exportFile));
+                exportFilesList.add(exportFile);
                 log.info("DAG.exportDAG(): Graph exported in {} format: {}", fmt, exportFile);
             }
+            return exportFilesList;
 
         } catch (Exception ex) {
             log.error("DAG.exportDAG(): Graph export FAILED: ", ex);
+            return null;
         }
     }
 

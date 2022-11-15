@@ -24,9 +24,7 @@ import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.models.interfaces.ems.Monitor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -92,6 +90,10 @@ public class TranslationContext {
 
     // Load-annotated Metric
     protected Set<String> loadAnnotatedMetricsSet;
+
+    // Export files
+    @Getter @Setter
+    protected List<String> exportFiles;
 
 
     // ====================================================================================================================================================
