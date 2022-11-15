@@ -54,6 +54,12 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
             <!--<version>${interfaces.version}</version>-->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
@@ -96,6 +102,18 @@
             <groupId>eu.melodic.event</groupId>
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>eu.melodic.cdo</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.cdo</groupId>
+            <artifactId>client</artifactId>
+            <version>${cdo-client.version}</version>
+            <classifier>repackaged</classifier>
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>
