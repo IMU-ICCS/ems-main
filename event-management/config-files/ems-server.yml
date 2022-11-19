@@ -560,7 +560,7 @@ self.healing:
 translator:
   #translatorType: CAMEL_FILE
   #translatorProperties:
-  #  CamelToEplTranslatorFile:
+  #  camelFile:
   #    modelsDir: /models/
 
   leaf-node-grouping: PER_INSTANCE

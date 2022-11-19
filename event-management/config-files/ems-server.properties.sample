@@ -524,7 +524,7 @@ self.healing.recovery.file.netdata=
 
 ### Translator configuration
 #translator.translatorType=CAMEL_FILE
-#translator.translatorProperties.CamelToEplTranslatorFile.modelsDir=/models/
+#translator.translatorProperties.camelFile.modelsDir=/models/
 
 translator.leaf-node-grouping = PER_INSTANCE
 translator.prune-mvv=true
