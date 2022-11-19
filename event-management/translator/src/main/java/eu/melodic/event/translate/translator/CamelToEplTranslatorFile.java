@@ -33,7 +33,7 @@ public class CamelToEplTranslatorFile extends AbstractCamelTranslator implements
 
 		String path = modelsDir;
 		if (properties.getTranslatorProperties()!=null)
-			path = properties.getTranslatorProperties().get("CamelToEplTranslatorFile.modelsDir");
+			path = properties.getTranslatorProperties().get("camelFile.modelsDir");
 		if (StringUtils.isBlank(path))
 			log.warn("CamelToEplTranslatorFile: Translator property 'CamelToEplTranslatorFile.modelsDir' is empty. Using default 'modelDir'");
 		path = path==null ? modelsDir : path.trim();
