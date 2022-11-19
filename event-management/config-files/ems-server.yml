@@ -558,6 +558,11 @@ self.healing:
 
 ### Translator configuration
 translator:
+  #translatorType: CAMEL_FILE
+  #translatorProperties:
+  #  CamelToEplTranslatorFile:
+  #    modelsDir: /models/
+
   leaf-node-grouping: PER_INSTANCE
   prune-mvv: true
   add-top-level-metrics: true
