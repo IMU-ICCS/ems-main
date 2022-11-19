@@ -35,7 +35,7 @@ public class CamelToEplTranslatorProperties implements InitializingBean {
         log.debug("CamelToEplTranslatorProperties: {}", this);
     }
 
-    public enum TRANSLATOR_TYPE { CAMEL_CDO, CAMEL_FILE, JSON }
+    public enum TRANSLATOR_TYPE { CAMEL_CDO, CAMEL_FILE, CAMEL_WEB }
     private TRANSLATOR_TYPE translatorType = TRANSLATOR_TYPE.CAMEL_CDO;
     private Map<String, String> translatorProperties = new LinkedHashMap<>();
 

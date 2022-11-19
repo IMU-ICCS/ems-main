@@ -11,31 +11,32 @@ package eu.melodic.event.translate.translator;
 
 import camel.core.CamelModel;
 import eu.melodic.event.translate.TranslationContext;
-import lombok.NoArgsConstructor;
+import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Paths;
 
 @Slf4j
-@Component
-@NoArgsConstructor
-public class CamelToEplTranslatorFile extends AbstractCamelTranslator implements InitializingBean {
+public class CamelToEplTranslatorFile extends AbstractCamelTranslator {
 
 	private String modelsDir = "./";
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		super.afterPropertiesSet();
+	public CamelToEplTranslatorFile(ApplicationContext applicationContext, CamelToEplTranslatorProperties properties, RuleTemplateProperties ruleTemplates) {
+		super(applicationContext, properties, ruleTemplates);
+		modelsDir = getModelsDir("camelFile.modelsDir", modelsDir);
+		log.info("CamelToEplTranslatorFile: modelDir: {}", modelsDir);
+	}
 
-		String path = modelsDir;
+	protected String getModelsDir(String propertyName, String path) {
 		if (properties.getTranslatorProperties()!=null)
-			path = properties.getTranslatorProperties().get("camelFile.modelsDir");
+			path = properties.getTranslatorProperties().getOrDefault(propertyName, path);
 		if (StringUtils.isBlank(path))
-			log.warn("CamelToEplTranslatorFile: Translator property 'CamelToEplTranslatorFile.modelsDir' is empty. Using default 'modelDir'");
+			log.warn("CamelToEplTranslatorFile: Translator property '{}' is empty. Using default", propertyName);
 		path = path==null ? modelsDir : path.trim();
 		if (!path.endsWith("/")) path += "/";
 
@@ -43,9 +44,7 @@ public class CamelToEplTranslatorFile extends AbstractCamelTranslator implements
 			throw new IllegalArgumentException("Model dir. does not exist: "+path);
 		if (!Paths.get(path).toFile().canRead())
 			throw new IllegalArgumentException("Model dir. is not accessible: "+path);
-
-		modelsDir = path;
-		log.info("CamelToEplTranslatorFile: modelDir: {}", modelsDir);
+		return path;
 	}
 
 	// ================================================================================================================
@@ -72,21 +71,7 @@ public class CamelToEplTranslatorFile extends AbstractCamelTranslator implements
 				throw new IllegalArgumentException("Model file is not readable: "+modelFile);
 
 			// Retrieve CAMEL model
-			log.debug("CamelToEplTranslatorFile.translate():  Retrieving model...");
-			final org.eclipse.emf.ecore.resource.ResourceSet rs =
-					new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl();
-			org.eclipse.emf.ecore.resource.Resource resIn =
-					rs.getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile), true);
-			log.debug("CamelToEplTranslatorFile.translate():  Resource: {}", resIn);
-
-			if (resIn.getContents().size()==0)
-				throw new IllegalArgumentException("Model file is empty: "+modelFile);
-			if (resIn.getContents().size()>1)
-				throw new IllegalArgumentException("Model file contains >1 models: "+modelFile);
-			EObject contents = resIn.getContents().get(0);
-			log.debug("CamelToEplTranslatorFile.translate():  Contents: {}", contents);
-			CamelModel camelModel = (CamelModel) contents;
-			log.debug("CamelToEplTranslatorFile.translate():  Retrieved CAMEL model at path: {}", camelModelPath);
+			CamelModel camelModel = readModelFromFile(camelModelPath, modelFile);
 
 			// Process model
 			return translate(camelModel);
@@ -97,5 +82,24 @@ public class CamelToEplTranslatorFile extends AbstractCamelTranslator implements
 		} finally {
 			log.debug("CamelToEplTranslatorFile.translate():  END: camel-model-path: {}", camelModelPath);
 		}
+	}
+
+	protected CamelModel readModelFromFile(String camelModelPath, String modelFile) {
+		log.debug("CamelToEplTranslatorFile.translate():  Reading model from file: {}...", modelFile);
+		final org.eclipse.emf.ecore.resource.ResourceSet rs =
+				new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl();
+		org.eclipse.emf.ecore.resource.Resource resIn =
+				rs.getResource(org.eclipse.emf.common.util.URI.createFileURI(modelFile), true);
+		log.debug("CamelToEplTranslatorFile.translate():  Resource: {}", resIn);
+
+		if (resIn.getContents().size()==0)
+			throw new IllegalArgumentException("Model file is empty: "+ modelFile);
+		if (resIn.getContents().size()>1)
+			throw new IllegalArgumentException("Model file contains more than one models: "+ modelFile);
+		EObject contents = resIn.getContents().get(0);
+		log.debug("CamelToEplTranslatorFile.translate():  Contents: {}", contents);
+		CamelModel camelModel = (CamelModel) contents;
+		log.debug("CamelToEplTranslatorFile.translate():  CAMEL model read from path: {}", camelModelPath);
+		return camelModel;
 	}
 }
