@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,10 @@ public class CamelToEplTranslatorProperties implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("CamelToEplTranslatorProperties: {}", this);
     }
+
+    public enum TRANSLATOR_TYPE { CAMEL_CDO, CAMEL_FILE, JSON }
+    private TRANSLATOR_TYPE translatorType = TRANSLATOR_TYPE.CAMEL_CDO;
+    private Map<String, String> translatorProperties = new LinkedHashMap<>();
 
     // Translator parameters
     private String sensorConfigurationAnnotation = "MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT";
