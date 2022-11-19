@@ -11,8 +11,10 @@ package eu.melodic.event.translate;
 
 import camel.core.CamelModel;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import eu.melodic.event.translate.translator.CamelToEplTranslatorCdo;
 import eu.melodic.event.translate.translator.CamelToEplTranslatorFile;
+import eu.melodic.event.translate.translator.CamelToEplTranslatorWeb;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -26,20 +28,26 @@ public class CamelToEplTranslator implements Translator, InitializingBean {
 
 	private final ApplicationContext applicationContext;
 	private final CamelToEplTranslatorProperties properties;
+	private final RuleTemplateProperties ruleTemplates;
 
 	private Translator translator;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		translator = getTranslator();
+		log.info("CamelToEplTranslator: {} initialized", translator.getClass().getSimpleName());
+	}
+
+	private Translator getTranslator() {
 		switch (properties.getTranslatorType()) {
 			case CAMEL_CDO:
-				translator = applicationContext.getBean(CamelToEplTranslatorCdo.class); break;
+				return new CamelToEplTranslatorCdo(applicationContext, properties, ruleTemplates);
 			case CAMEL_FILE:
-				translator = applicationContext.getBean(CamelToEplTranslatorFile.class); break;
-			default:
-				throw new CamelToEplTranslationException("Unsupported translator type: "+properties.getTranslatorType());
+				return new CamelToEplTranslatorFile(applicationContext, properties, ruleTemplates);
+			case CAMEL_WEB:
+				return new CamelToEplTranslatorWeb(applicationContext, properties, ruleTemplates);
 		}
-		log.info("CamelToEplTranslator: {} initialized", translator.getClass().getSimpleName());
+		throw new CamelToEplTranslationException("Unsupported translator type: "+properties.getTranslatorType());
 	}
 
 	// ================================================================================================================

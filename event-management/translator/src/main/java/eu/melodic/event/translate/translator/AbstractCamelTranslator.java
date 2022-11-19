@@ -19,29 +19,25 @@ import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import eu.melodic.event.translate.transform.GraphTransformer;
 import eu.melodic.event.util.FunctionDefinition;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
-public abstract class AbstractCamelTranslator implements Translator, InitializingBean {
+@RequiredArgsConstructor
+public abstract class AbstractCamelTranslator implements Translator {
 
-	@Autowired
-	protected ApplicationContext applicationContext;
-	@Autowired
-	protected CamelToEplTranslatorProperties properties;
-	@Autowired
-	protected RuleTemplateProperties ruleTemplatesRegistry;
+	protected final ApplicationContext applicationContext;
+	protected final CamelToEplTranslatorProperties properties;
+	protected final RuleTemplateProperties ruleTemplatesRegistry;
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+	@PostConstruct
+	public void printConfig() {
 		log.debug("AbstractCamelTranslator: properties: {}", properties);
 		log.debug("AbstractCamelTranslator: rule-templates: {}", ruleTemplatesRegistry);
 	}

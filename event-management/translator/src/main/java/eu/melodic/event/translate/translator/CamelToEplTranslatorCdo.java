@@ -12,38 +12,35 @@ package eu.melodic.event.translate.translator;
 import camel.core.CamelModel;
 import camel.core.CorePackage;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.springframework.stereotype.Component;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 @Slf4j
-@Component
-@NoArgsConstructor
 public class CamelToEplTranslatorCdo extends AbstractCamelTranslator {
 
 	private CDOClientX cdoClient;
 
-	public CamelToEplTranslatorCdo(CDOClientX client) {
-		this.cdoClient = Objects.requireNonNull(client, "CamelToEplTranslator(CDOClientX) : Argument cannot be null");
-		log.debug("CamelToEplTranslator.<init>():  Set cdo-client");
+	public CamelToEplTranslatorCdo(ApplicationContext applicationContext, CamelToEplTranslatorProperties properties, RuleTemplateProperties ruleTemplates) {
+		super(applicationContext, properties, ruleTemplates);
 	}
 
 	private void initCdoClient() {
 		if (cdoClient!=null) return;
 		this.cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE, CpPackage.eINSTANCE));
-		log.debug("CamelToEplTranslator.initCdoClient():  Initialized cdo-client");
+		log.debug("CamelToEplTranslatorCdo.initCdoClient():  Initialized cdo-client");
 	}
 
 	// ================================================================================================================

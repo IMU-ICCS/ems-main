@@ -562,6 +562,10 @@ translator:
   #translatorProperties:
   #  camelFile:
   #    modelsDir: /models/
+  #  camelWeb:
+  #    baseUrl: http://localhost/models/
+  #    modelsDir: /models/
+  #    deleteFile: false
 
   leaf-node-grouping: PER_INSTANCE
   prune-mvv: true
