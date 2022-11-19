@@ -31,18 +31,20 @@ public class CamelToEplTranslatorFile extends AbstractCamelTranslator implements
 	public void afterPropertiesSet() throws Exception {
 		super.afterPropertiesSet();
 
+		String path = modelsDir;
 		if (properties.getTranslatorProperties()!=null)
-			modelsDir = properties.getTranslatorProperties().get("CamelToEplTranslatorFile.modelsDir");
-		if (StringUtils.isBlank(modelsDir))
+			path = properties.getTranslatorProperties().get("CamelToEplTranslatorFile.modelsDir");
+		if (StringUtils.isBlank(path))
 			log.warn("CamelToEplTranslatorFile: Translator property 'CamelToEplTranslatorFile.modelsDir' is empty. Using default 'modelDir'");
-		modelsDir = modelsDir.trim();
-		if (!modelsDir.endsWith("/")) modelsDir += "/";
+		path = path==null ? modelsDir : path.trim();
+		if (!path.endsWith("/")) path += "/";
 
-		if (!Paths.get(modelsDir).toFile().exists())
-			throw new IllegalArgumentException("Model dir. does not exist: "+modelsDir);
-		if (!Paths.get(modelsDir).toFile().canRead())
-			throw new IllegalArgumentException("Model dir. is not accessible: "+modelsDir);
+		if (!Paths.get(path).toFile().exists())
+			throw new IllegalArgumentException("Model dir. does not exist: "+path);
+		if (!Paths.get(path).toFile().canRead())
+			throw new IllegalArgumentException("Model dir. is not accessible: "+path);
 
+		modelsDir = path;
 		log.info("CamelToEplTranslatorFile: modelDir: {}", modelsDir);
 	}
 
