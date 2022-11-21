@@ -52,10 +52,6 @@ public class GuiBackendProperties {
     @NotNull
     private SecureStore secureStore;
 
-    @Valid
-    @NotNull
-    private ProActive paConfig;
-
     @Getter
     @Setter
     public static class Mule extends ExternalService {
@@ -92,20 +88,6 @@ public class GuiBackendProperties {
         @NotBlank
         private String dbPassword;
 
-    }
-
-    @Getter
-    @Setter
-    @ToString
-    public static class ProActive {
-        @NotNull
-        private String restUrl;
-        @NotNull
-        private String login;
-        @NotNull
-        private String password;
-        @NotNull
-        private String encryptorPw;
     }
 
 }
