@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokerclient.properties;
 
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "brokerclient")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "brokerclient")
 //@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokerclient.properties")
 @Slf4j
 public class BrokerClientProperties {

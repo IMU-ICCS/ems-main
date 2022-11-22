@@ -10,6 +10,7 @@
 package eu.melodic.event.common.collector.netdata;
 
 import eu.melodic.event.common.collector.AbstractEndpointCollectorProperties;
+import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -18,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "collector.netdata")
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "collector.netdata")
 public class NetdataCollectorProperties extends AbstractEndpointCollectorProperties {
     @Override
     public void afterPropertiesSet() throws Exception {
