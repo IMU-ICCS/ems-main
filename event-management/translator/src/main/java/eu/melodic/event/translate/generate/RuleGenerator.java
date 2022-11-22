@@ -113,10 +113,12 @@ public class RuleGenerator {
     }
 
     protected String _generateWindowClause(Window win) {
-        if (win == null) return ".std:lastevent()";
+        if (win == null)
+            return ".std:lastevent()";
 
-        String winType = win.getWindowType().toString();    // FIXED, SLIDING
-        if ("FIXED".equalsIgnoreCase(winType)) winType = "_batch";
+        // WindowType: FIXED or SLIDING
+        String winType;
+        if (WindowType.FIXED==win.getWindowType()) winType = "_batch";
         else winType = "";
 
         String winSizeType = win.getSizeType().toString();    // MEASUREMENTS_ONLY, TIME_ONLY, FIRST_MATCH, BOTH_MATCH
