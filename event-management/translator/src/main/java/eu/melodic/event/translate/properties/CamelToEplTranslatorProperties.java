@@ -9,9 +9,12 @@
 
 package eu.melodic.event.translate.properties;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -32,12 +35,28 @@ import java.util.Map;
 public class CamelToEplTranslatorProperties implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
+        // Convert string in 'translatorPropertiesJson' into a Map<String,String> and put it into 'translatorProperties'
+        log.trace("CamelToEplTranslatorProperties: translatorPropertiesJson: string: {}", translatorPropertiesJson);
+        if (StringUtils.isNotBlank(translatorPropertiesJson)) {
+            Map<String, String> map = new Gson().fromJson(translatorPropertiesJson, new TypeToken<Map<String, String>>(){}.getType());
+            log.trace("CamelToEplTranslatorProperties: translatorPropertiesJson: map: {}", map);
+            if (map!=null && map.size()>0) {
+                log.debug("CamelToEplTranslatorProperties: translatorProperties: Before adding translatorPropertiesJson map: {}", translatorProperties);
+                if (translatorProperties != null)
+                    translatorProperties.putAll(map);
+                else
+                    translatorProperties = map;
+                log.trace("CamelToEplTranslatorProperties: translatorProperties: After adding translatorPropertiesJson map: {}", translatorProperties);
+            }
+        }
+
         log.debug("CamelToEplTranslatorProperties: {}", this);
     }
 
     public enum TRANSLATOR_TYPE { CAMEL_CDO, CAMEL_FILE, CAMEL_WEB }
     private TRANSLATOR_TYPE translatorType = TRANSLATOR_TYPE.CAMEL_CDO;
     private Map<String, String> translatorProperties = new LinkedHashMap<>();
+    private String translatorPropertiesJson;
 
     // Translator parameters
     private String sensorConfigurationAnnotation = "MELODICMetadataSchema.ContextAwareSecurityModel.SecurityContextElement.Object.DataArtefact.Configuration.ConfigurationFormat.JSON_FORMAT";
