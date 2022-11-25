@@ -151,7 +151,7 @@ public class ModelAnalyzer {
         // for every metric type model...
         metricModels.forEach(mm -> {
             // get current-config metric variables
-            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}... (1)", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
@@ -206,7 +206,7 @@ public class ModelAnalyzer {
         // for every metric type model...
         for (MetricTypeModel mm : metricModels) {
             // get metric variables
-            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}... (2)", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
@@ -460,7 +460,7 @@ public class ModelAnalyzer {
         // for every metric type model...
         metricModels.forEach(mm -> {
             // get metric variables
-            log.info("  Extracting current-config Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting current-config Metric Variables from Metric Type model {}... (3)", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)

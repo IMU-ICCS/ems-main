@@ -51,7 +51,12 @@ public class CamelMetadataTool {
     }
 
     private static boolean isVariableFromGroup(MetricVariableImpl metricVariable, List<CamelMetadata> metadata) {
-        return metricVariable.getMetricTemplate().getAttribute().getAnnotations().stream().anyMatch(mmsObject -> checkAnnotation(mmsObject, metadata));
+        try {
+            return metricVariable.getMetricTemplate().getAttribute().getAnnotations().stream().anyMatch(mmsObject -> checkAnnotation(mmsObject, metadata));
+        } catch (Exception e) {
+            log.error("isVariableFromGroup: EXCEPTION: Metric-variable={} -- Exception: ", metricVariable.getName(), e);
+            throw e;
+        }
     }
 
     private static boolean checkAnnotation(MmsObject mmsObject, List<CamelMetadata> metadata) {
@@ -61,8 +66,10 @@ public class CamelMetadataTool {
     private static String getAnnotationOfMetricVariable(MetricVariableImpl metricVariable) {
         EList<MmsObject> annotations = metricVariable.getMetricTemplate().getAttribute().getAnnotations();
         if (annotations.isEmpty()) {
-            log.warn("Metric Variable {} has not definied annotation, returning empty String", metricVariable.getName());
-            return "";
+            log.error("Metric Variable {} has no annotation defined", metricVariable.getName());
+            throw new IllegalArgumentException("Missing annotation in Metric Variable " + metricVariable.getName());
+            //log.warn("Metric Variable {} has not defined annotation, returning empty String", metricVariable.getName());
+            //return "";
         }
         String annotation = annotations.get(0).getId();
         log.debug("Found annotation {} for metric: {}", metricVariable.getName(), annotation);
