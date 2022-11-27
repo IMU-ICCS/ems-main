@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.cep;
 
+import com.espertech.esper.client.EventBean;
 import eu.melodic.event.brokercep.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
 
@@ -119,4 +120,27 @@ public class CepEvalFunction {
 		log.debug(">>>>>>>>>>>>>>>>>>   EVAL RESULT: {}", value);
 		return value;
 	}*/
+
+    public static Object prop(EventBean eventBean, String propertyName) {
+        Object eventObj = eventBean.getUnderlying();
+        EventMap event = eventObj instanceof EventMap ? ((EventMap) eventObj) : null;
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> prop:   event-bean: {}", eventBean);
+        log.debug(">> prop:   event-obj:  {}", eventObj);
+        log.debug(">> prop:   event-map:  {}", event);
+        log.debug(">> prop:    property:  {}", propertyName);
+
+        // Retrieve event property
+        Object ret = null;
+        if (event!=null) {
+            Map<String, Object> props = event.getEventProperties();
+            if (props != null) {
+                log.debug(">> prop:   properties: {}", props);
+                ret = props.get(propertyName);
+            }
+        }
+
+        log.debug(">> prop:       value: {}", ret);
+        return ret;
+    }
 }

@@ -30,6 +30,7 @@ public class CepExtensions {
         CepService cepService = appContext.getBean(CepService.class);
         cepService.addSingleRowFunction("EVAL", CepEvalFunction.class.getName(), "eval");
         cepService.addSingleRowFunction("NEWEVENT", CepEvalFunction.class.getName(), "newEvent");
+        cepService.addSingleRowFunction("PROP", CepEvalFunction.class.getName(), "prop");
         cepService.addAggregatorFunction("EVALAGG", CepEvalAggregatorFactory.class.getName());
     }
 }
