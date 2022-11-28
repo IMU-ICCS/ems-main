@@ -46,6 +46,9 @@
         <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
         <!--<docker-image-tag>2022-devel</docker-image-tag>-->
         <!--<build-description></build-description>-->
+
+        <!-- EMS server main class -->
+        <start-class>eu.melodic.event.control.ControlServiceApplication</start-class>
     </properties>
 
     <dependencies>
