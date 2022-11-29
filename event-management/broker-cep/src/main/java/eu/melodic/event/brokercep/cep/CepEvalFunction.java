@@ -125,7 +125,7 @@ public class CepEvalFunction {
         EventMap event = eventObj instanceof EventMap ? ((EventMap) eventObj) : null;
         log.warn(">> ---------------------------------------------------------------------------");
         log.warn(">> prop:   event-object:  {}", eventObj);
-        log.warn(">> prop:    event-class:  {}", eventObj);
+        log.warn(">> prop:    event-class:  {}", eventObj!=null ? eventObj.getClass() : null);
         log.warn(">> prop:      event-map:  {}", event);
         log.warn(">> prop:       property:  {}", propertyName);
 
