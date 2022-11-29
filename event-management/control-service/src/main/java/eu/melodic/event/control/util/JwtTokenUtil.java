@@ -17,7 +17,7 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Run:
@@ -26,7 +26,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * java -cp .\target\control-service.jar  -Dloader.main=eu.melodic.event.control.util.JwtTokenUtil -Dlogging.level.ROOT=WARN -Dlogging.level.eu.melodic.event.control.util.JwtTokenUtil=INFO org.springframework.boot.loader.PropertiesLauncher parser [TOKEN]
  */
 @Slf4j
-@SpringBootApplication(scanBasePackages = { "eu.paasage.upperware.security.authapi" })
+@ComponentScan(basePackages = { "eu.paasage.upperware.security.authapi" })
 @RequiredArgsConstructor
 public class JwtTokenUtil implements CommandLineRunner {
     private final JWTService jwtService;
