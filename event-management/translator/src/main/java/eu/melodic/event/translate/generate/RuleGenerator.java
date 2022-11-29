@@ -13,6 +13,8 @@ import camel.constraint.Constraint;
 import camel.constraint.IfThenConstraint;
 import camel.constraint.LogicalConstraint;
 import camel.constraint.MetricConstraint;
+import camel.core.Attribute;
+import camel.core.Feature;
 import camel.core.NamedElement;
 import camel.data.Data;
 import camel.deployment.Component;
@@ -23,6 +25,7 @@ import camel.requirement.ServiceLevelObjective;
 import camel.scalability.BinaryEventPattern;
 import camel.scalability.NonFunctionalEvent;
 import camel.scalability.UnaryEventPattern;
+import camel.type.StringValue;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
@@ -39,16 +42,15 @@ import org.thymeleaf.spring5.dialect.SpringStandardDialect;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class RuleGenerator {
+    private final static String TRANSLATION_CONFIG = "translation_config";
+    private final static String EPL_VALUE = "epl_value";
 
     @Autowired
     private CamelToEplTranslatorProperties properties;
@@ -92,7 +94,30 @@ public class RuleGenerator {
         return camelStr.toUpperCase().trim();
     }
 
-    protected void _generateRule(TranslationContext _TC, String type, String grouping, String elemName, Context context) {
+    protected void _generateRule(TranslationContext _TC, String type, String grouping, NamedElement elem, Context context) {
+        String elemName = elem.getName();
+
+        // Check for sub-feature attribute 'translation_config.epl_value'. If it exists then the rule EPL statement is
+        // taken from its value (provided it is not null or blank, and it is a string value).
+        // Further rule generation actions are skipped.
+        log.trace("RuleGenerator._generateRule():      Checking if element is a feature: {} -- {}", elemName, elem.getClass());
+        if (elem instanceof Feature) {
+            log.trace("RuleGenerator._generateRule():      Checking element for overriding translation sub-feature: {}", elemName);
+            String eplStmt = getEplValueFromSubfeatures((Feature) elem);
+            log.trace("RuleGenerator._generateRule():      Element overriding translation sub-feature: {} -- sub-feature: {}", elemName, eplStmt);
+
+            if (StringUtils.isNotBlank(eplStmt)) {
+                log.info("RuleGenerator._generateRule():      Element '{}' has '{}' set. EPL statement: {}", elemName, EPL_VALUE, eplStmt = eplStmt.trim());
+
+                // Store the generated rule in _TC
+                _TC.addGroupingRulePair(grouping, elemName, eplStmt);
+                log.info("RuleGenerator._generateRule():      + Added EPL statement at Grouping {}: {}", grouping, eplStmt);
+                log.trace("RuleGenerator._generateRule():      Skipping further element rule processing: {}", elemName);
+                return;
+            }
+        }
+
+        // Generate rule EPL statement using the configured templates
         log.info("RuleGenerator._generateRule():      Generating rules for Graph node: {} {} at Grouping: {}", type, elemName, grouping != null ? grouping : "-");
         String[] groupingLabels = {grouping, "__ANY__"};
         for (String label : groupingLabels) {
@@ -114,6 +139,159 @@ public class RuleGenerator {
         }
     }
 
+    protected String _generateWindowClause(Window win) {
+        // No window specified
+        if (win==null)
+            return ".std:lastevent()";
+            //return "";
+
+        // Sub-feature attribute 'translation_config.epl_value' value provides EPL statement
+        // and overrides Window processing
+        String eplStmt = getEplValueFromSubfeatures(win);
+        if (StringUtils.isNotBlank(eplStmt)) {
+            log.info("RuleGenerator._generateWindowClause(): Window '{}' has 'epl_value' set. EPL value: {}", win.getName(), eplStmt = eplStmt.trim());
+            return eplStmt;
+        }
+
+        // Process Window settings for generating EPL statement
+        StringBuilder sb = new StringBuilder();
+
+        // Process 'groupwin' window group processings
+        win.getProcessings().stream()
+                .filter(p->p.getProcessingType()==WindowProcessingType.GROUP)
+                .filter(this::groupingMustBeBeforeSizeOrTimeView)
+                .forEach(p->{
+                    _processGroupWindowProcessing(sb, p);
+                });
+
+        // Process 'time/size' window specifications
+        _processSizeOrTimeView(sb, win);
+
+        // Process 'non-groupwin' window group processings
+        win.getProcessings().stream()
+                .filter(p->p.getProcessingType()==WindowProcessingType.GROUP)
+                .filter(this::groupingMustBeAfterSizeOrTimeView)
+                .forEach(p->{
+                    _processGroupWindowProcessing(sb, p);
+                });
+
+        // Process window sort and rank processings
+        win.getProcessings().stream()
+                .filter(p->p.getProcessingType()==WindowProcessingType.SORT || p.getProcessingType()==WindowProcessingType.RANK)
+                .filter(this::groupingMustBeAfterSizeOrTimeView)
+                .forEach(p->{
+                    if (p.getProcessingType()==WindowProcessingType.SORT)
+                        _processSortWindowProcessing(sb, p);
+                    else if (p.getProcessingType()==WindowProcessingType.RANK)
+                        _processRankWindowProcessing(sb, p);
+                });
+
+        String eplValue = sb.toString();
+        log.info("RuleGenerator._generateWindowClause(): Window '{}' generated EPL value: {}", win.getName(), eplValue);
+        return eplValue;
+    }
+
+    private boolean groupingMustBeBeforeSizeOrTimeView(WindowProcessing windowProcessing) {
+        String eplView = getEplValueFromSubfeatures(windowProcessing);
+        log.debug("RuleGenerator.groupingMustBeBeforeSizeOrTimeView: processing={}, epl-view={}", windowProcessing.getName(), eplView);
+        boolean result = StringUtils.isBlank(eplView);
+        log.debug("RuleGenerator.groupingMustBeBeforeSizeOrTimeView: processing={}, result={}", windowProcessing.getName(), result);
+        return result;
+    }
+
+    private boolean groupingMustBeAfterSizeOrTimeView(WindowProcessing windowProcessing) {
+        boolean result = !groupingMustBeBeforeSizeOrTimeView(windowProcessing);
+        log.debug("RuleGenerator.groupingMustBeAfterSizeOrTimeView(): processing={}, result={}", windowProcessing.getName(), result);
+        return result;
+    }
+
+    private static String getEplValueFromSubfeatures(Feature feature) {
+        String result = feature.getSubFeatures().stream()
+                .peek(p->log.trace("RuleGenerator.getEplViewFromSubfeatures(): ..... feature--BEFORE-FILTER: {}", p.getName()))
+                .filter(f -> TRANSLATION_CONFIG.equals(f.getName()))
+                .peek(p->log.trace("RuleGenerator.getEplViewFromSubfeatures(): ..... feature--AFTER-FILTER: {}", p.getName()))
+                .map(Feature::getAttributes)
+                .peek(a->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  attribute--BEFORE-FLATMAP: {}", a))
+                .flatMap(Collection::stream)
+                .peek(a->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  attribute--AFTER-FLATMAP: {}", a))
+                .filter(a -> EPL_VALUE.equals(a.getName()))
+                .peek(a->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  attribute--AFTER-FILTER: {}", a))
+                .map(Attribute::getValue)
+                .peek(o->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  value--BEFORE-FILTERS: {}", o))
+                .filter(Objects::nonNull)
+                .peek(o->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  value--MID-FILTERS: {}", o))
+                .filter(o -> o instanceof StringValue)
+                .peek(o->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  value--AFTER-FILTERS: {}", o))
+                .map(o -> (StringValue) o)
+                .peek(o->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  string-value: {}", o))
+                .map(StringValue::getValue)
+                .peek(o->log.trace("RuleGenerator.getEplViewFromSubfeatures(): .....  value: {}", o))
+                .findFirst().orElse(null);
+        log.debug("RuleGenerator.getEplViewFromSubfeatures(): Processing={}, epl-view={}", feature.getName(), result);
+        return result;
+    }
+
+    private void _processSizeOrTimeView(StringBuilder sb, Window win) {
+        // WindowType: FIXED (Batch) or SLIDING
+        boolean isBatchWin = (WindowType.FIXED==win.getWindowType());
+        boolean isSlidingWin = ! isBatchWin;
+
+        // WindowSizeType: MEASUREMENTS_ONLY, TIME_ONLY, FIRST_MATCH, BOTH_MATCH
+        WindowSizeType winSizeType = win.getSizeType();
+        boolean isFirstMatch = winSizeType==WindowSizeType.FIRST_MATCH;
+        boolean isBothMatch = winSizeType==WindowSizeType.BOTH_MATCH;
+        boolean isTimeOnly = winSizeType==WindowSizeType.TIME_ONLY;
+        boolean isEventsOnly = winSizeType==WindowSizeType.MEASUREMENTS_ONLY;
+
+        // Window size(s)
+        long winTimeSize = win.getTimeSize();
+        long winMeasurementSize = win.getMeasurementSize();
+
+        // Checks
+        String winTimeUnit = null;
+        if (isFirstMatch || isBothMatch || isTimeOnly) {
+            winTimeUnit = win.getTimeUnit() != null ? win.getTimeUnit().getName() : null;
+            if (StringUtils.isBlank(winTimeUnit) || winTimeSize <= 0) {
+                log.error("RuleGenerator._processSizeOrTimeView(): ERROR: Invalid or missing window-time-size or window-time-unit: window={}, window-time-size={}, window-time-unit={}", win.getName(), winTimeSize, winTimeUnit);
+                throw new IllegalArgumentException(String.format("ERROR: Invalid or missing window-time-size or window-time-unit: window=%s, window-time-size=%d, window-time-unit=%s", win.getName(), winTimeSize, winTimeUnit));
+            }
+            winTimeUnit = camelToRule(MapType.UNIT, ElemType.TIME, winTimeUnit);
+        }
+
+        if (isFirstMatch || isBothMatch || isEventsOnly) {
+            if (winMeasurementSize <= 0) {
+                log.error("RuleGenerator._processSizeOrTimeView(): ERROR: Invalid window-measurement-size: window={}, window-measurement-size={}", win.getName(), winMeasurementSize);
+                throw new IllegalArgumentException(String.format("ERROR: Invalid window-measurement-size: window=%s, window-measurement-size=%s", win.getName(), winMeasurementSize));
+            }
+        }
+
+        // Generate the window length or time view
+        String s;
+        if (isFirstMatch) {
+            if (isSlidingWin) {    // Sliding window
+                long millis = _winTimeToMillis(winTimeSize, winTimeUnit);
+                s = String.format(".win:expr(oldest_timestamp > newest_timestamp - %d and current_count <= %d)", millis, winMeasurementSize);
+//                s = String.format(".win:expr(oldest_event.includes(newest_event, %d %s) and current_count <= %d)%s", winTimeSize, winTimeUnit, winMeasurementSize, winViews);
+            } else {    // Batch window
+                s = String.format(".win:time_length_batch(%d %s, %d)", winTimeSize, winTimeUnit, winMeasurementSize);
+            }
+        } else if (isBothMatch) {
+            long millis = _winTimeToMillis(winTimeSize, winTimeUnit);
+            s = String.format(".win:expr%s(oldest_timestamp > newest_timestamp - %d or current_count <= %d)", isBatchWin?"_batch":"", millis, winMeasurementSize);
+//            s = String.format(".win:expr%s(oldest_event.includes(newest_event, %d %s) or current_count <= %d)", isBatchWin?"_batch":"", winTimeSize, winTimeUnit, winMeasurementSize);
+        } else if (isTimeOnly) {
+            s = String.format(".win:time%s(%d %s)", isBatchWin?"_batch":"", winTimeSize, winTimeUnit);
+        } else if (isEventsOnly) {
+            s = String.format(".win:length%s(%d)", isBatchWin?"_batch":"", winMeasurementSize);
+        } else {
+            log.error("RuleGenerator._processSizeOrTimeView(): ERROR: Invalid or Unsupported window-size-type: window={}, window-size-type={}", win.getName(), winSizeType);
+            throw new IllegalArgumentException(String.format("ERROR: Invalid or Unsupported window-size-type: window=%s, window-size-type=%s", win.getName(), winSizeType));
+        }
+
+        sb.append(s);
+    }
+
+    /*// Old implementation....
     protected String _generateWindowClause(Window win) {
         if (win == null)
             return ".std:lastevent()";
@@ -199,7 +377,7 @@ public class RuleGenerator {
             log.error("RuleGenerator._generateWindowClause(): ERROR: Invalid or Unsupported window-size-type: window={}, window-size-type={}", win.getName(), winSizeType);
             throw new IllegalArgumentException(String.format("ERROR: Invalid or Unsupported window-size-type: window=%s, window-size-type=%s", win.getName(), winSizeType));
         }
-    }
+    }*/
 
     private long _winTimeToMillis(long time, String unit) {
         switch (unit.toLowerCase()) {
@@ -239,7 +417,13 @@ public class RuleGenerator {
 
     private void _processGroupWindowProcessing(StringBuilder sb, WindowProcessing p) {
         if (p.getGroupingCriteria()!=null && p.getGroupingCriteria().size()>0) {
-            sb.append(".std:groupwin(");
+            // Get grouping view from annotations
+            String view = getEplValueFromSubfeatures(p);
+            if (StringUtils.isBlank(view)) view = ".std:groupwin";
+            else if (! view.trim().startsWith(".")) view = "."+view.trim();
+            else view = view.trim();
+
+            sb.append(view).append("(");
             final boolean[] first = {true};
             p.getGroupingCriteria().forEach(c->{
                 if (first[0]) first[0] = false; else sb.append(", ");
@@ -452,7 +636,7 @@ public class RuleGenerator {
                 context.setVariable("operator", ruleOp);
                 context.setVariable("leftEvent", leName);
                 context.setVariable("rightEvent", reName);
-                _generateRule(_TC, "BEP-" + ruleOp, grouping, elemName, context);
+                _generateRule(_TC, "BEP-" + ruleOp, grouping, elem, context);
             } else if (elem instanceof camel.scalability.UnaryEventPattern) {
                 log.warn("RuleGenerator.generateRules():      Found a Unary-Event-Pattern element: node={}, elem-name={}", node, elemName);
                 UnaryEventPattern uep = (UnaryEventPattern) elem;
@@ -471,7 +655,7 @@ public class RuleGenerator {
                 Context context = new Context();
                 context.setVariable("operator", ruleOp);
                 context.setVariable("event", eventName);
-                _generateRule(_TC, "UEP-" + ruleOp, grouping, elemName, context);
+                _generateRule(_TC, "UEP-" + ruleOp, grouping, elem, context);
             } else if (elem instanceof camel.scalability.NonFunctionalEvent) {
                 log.warn("RuleGenerator.generateRules():      Found a Non-Functional-Event element: node={}, elem-name={}", node, elemName);
                 NonFunctionalEvent nfe = (NonFunctionalEvent) elem;
@@ -486,7 +670,7 @@ public class RuleGenerator {
                 // Write rule for NFE
                 Context context = new Context();
                 context.setVariable("metricConstraint", constr.getName());
-                _generateRule(_TC, "NFE", grouping, elemName, context);
+                _generateRule(_TC, "NFE", grouping, elem, context);
             } else
 
             // Generate rules for Constraints
@@ -511,7 +695,7 @@ public class RuleGenerator {
                 context.setVariable("metricContext", mc.getName());
                 context.setVariable("operator", ruleOp);
                 context.setVariable("threshold", threshold);
-                _generateRule(_TC, "CONSTR-MET", grouping, elemName, context);
+                _generateRule(_TC, "CONSTR-MET", grouping, elem, context);
             } else if (elem instanceof camel.constraint.IfThenConstraint) {
                 log.warn("RuleGenerator.generateRules():      Found an If-Then-Constraint element: node={}, elem-name={}", node, elemName);
                 IfThenConstraint constr = (IfThenConstraint) elem;
@@ -532,7 +716,7 @@ public class RuleGenerator {
                 context.setVariable("ifConstraint", ifConstr);
                 context.setVariable("thenConstraint", thenConstr);
                 context.setVariable("elseConstraint", elseConstr);
-                _generateRule(_TC, "CONSTR-IF-THEN", grouping, elemName, context);
+                _generateRule(_TC, "CONSTR-IF-THEN", grouping, elem, context);
             } else if (elem instanceof camel.constraint.MetricVariableConstraint) {
                 // Not used in EMS
                 log.warn("RuleGenerator.generateRules():      Found an Metric-Variable-Constraint element and ignoring it: node={}, elem-name={}", node, elemName);
@@ -554,7 +738,7 @@ public class RuleGenerator {
                 Context context = new Context();
                 context.setVariable("operator", ruleOp);
                 context.setVariable("constraints", componentConstraintsNamesList);
-                _generateRule(_TC, "CONSTR-LOG", grouping, elemName, context);
+                _generateRule(_TC, "CONSTR-LOG", grouping, elem, context);
             } else
 
             // Generate rules for Metrics Contexts
@@ -610,7 +794,7 @@ public class RuleGenerator {
                 context.setVariable("contexts", composingCtxNamesList);
                 context.setVariable("windowClause", winClause);
                 context.setVariable("scheduleClause", schedClause);
-                _generateRule(_TC, ruleTag, grouping, elemName, context);
+                _generateRule(_TC, ruleTag, grouping, elem, context);
             } else if (elem instanceof camel.metric.RawMetricContext) {
                 log.warn("RuleGenerator.generateRules():      Found a Raw-Metric-Context element: node={}, elem-name={}", node, elemName);
                 RawMetricContext rmc = (RawMetricContext) elem;
@@ -640,7 +824,7 @@ public class RuleGenerator {
                 context.setVariable("metric", metric.getName());
                 context.setVariable("sensor", sensorName);
                 context.setVariable("scheduleClause", schedClause);
-                _generateRule(_TC, "RAW-CTX", grouping, elemName, context);
+                _generateRule(_TC, "RAW-CTX", grouping, elem, context);
             } else
 
             // Generate rules for Metrics and Metric Variables
@@ -667,7 +851,7 @@ public class RuleGenerator {
                 // Write rule for MET
                 Context context = new Context();
                 context.setVariable("context", cmc.getName());
-                _generateRule(_TC, "TL-MET", grouping, elemName, context);
+                _generateRule(_TC, "TL-MET", grouping, elem, context);
 
             } else if (elem instanceof camel.metric.CompositeMetric) {
                 log.warn("RuleGenerator.generateRules():      Found a Composite-Metric element: node={}, elem-name={}", node, elemName);
@@ -739,7 +923,7 @@ public class RuleGenerator {
                         context.setVariable("variable", mvar.getName());
                         context.setVariable("components", metricNames);
                         context.setVariable("contexts", contextNames);
-                        _generateRule(_TC, ruleTag, grouping, elemName, context);
+                        _generateRule(_TC, ruleTag, grouping, elem, context);
                     } else {
                         // All component metrics for this metric variable do not have related metric contexts (i.e. the metric variable is MVV)
                         // No rules will be generated
@@ -771,12 +955,12 @@ public class RuleGenerator {
                 if (mc != null) {
                     Context context = new Context();
                     context.setVariable("context", mc.getName());
-                    _generateRule(_TC, "OPT-REQ-CTX", grouping, elemName, context);
+                    _generateRule(_TC, "OPT-REQ-CTX", grouping, elem, context);
                 }
                 if (mv != null) {
                     Context context = new Context();
                     context.setVariable("variable", mv.getName());
-                    _generateRule(_TC, "OPT-REQ-VAR", grouping, elemName, context);
+                    _generateRule(_TC, "OPT-REQ-VAR", grouping, elem, context);
                 }
             } else if (elem instanceof camel.requirement.ServiceLevelObjective) {
                 log.warn("RuleGenerator.generateRules():      Found a Service-Level-Objective element: node={}, elem-name={}", node, elemName);
@@ -786,7 +970,7 @@ public class RuleGenerator {
                 // Write rule for SLO
                 Context context = new Context();
                 context.setVariable("constraint", constr.getName());
-                _generateRule(_TC, "SLO", grouping, elemName, context);
+                _generateRule(_TC, "SLO", grouping, elem, context);
             } else
 
             {
@@ -795,7 +979,7 @@ public class RuleGenerator {
             }
 
             // Add provided topic (i.e. this node generates the rule(s) that will create the events to be published in topic)
-            if (providesTopic && elem != null) {
+            if (providesTopic) {
                 _TC.provideGroupingTopicPair(grouping, elem.getName());
             }
         });
@@ -807,8 +991,8 @@ public class RuleGenerator {
         else if ((list1 != null && list2 == null) || (list1 == null && list2 != null) || (list1.size() != list2.size()))
             return false;
         //else
-        List<String> sorted1 = new java.util.ArrayList(list1);
-        List<String> sorted2 = new java.util.ArrayList(list2);
+        List<String> sorted1 = new ArrayList<>(list1);
+        List<String> sorted2 = new ArrayList<>(list2);
         java.util.Collections.sort(sorted1);
         java.util.Collections.sort(sorted2);
         return sorted1.equals(sorted2);

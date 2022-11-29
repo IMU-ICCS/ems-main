@@ -121,26 +121,25 @@ public class CepEvalFunction {
 		return value;
 	}*/
 
-    public static Object prop(EventBean eventBean, String propertyName) {
-        Object eventObj = eventBean.getUnderlying();
+    public static Object prop(Object eventObj, String propertyName) {
         EventMap event = eventObj instanceof EventMap ? ((EventMap) eventObj) : null;
-        log.debug(">> ---------------------------------------------------------------------------");
-        log.debug(">> prop:   event-bean: {}", eventBean);
-        log.debug(">> prop:   event-obj:  {}", eventObj);
-        log.debug(">> prop:   event-map:  {}", event);
-        log.debug(">> prop:    property:  {}", propertyName);
+        log.warn(">> ---------------------------------------------------------------------------");
+        log.warn(">> prop:   event-object:  {}", eventObj);
+        log.warn(">> prop:    event-class:  {}", eventObj);
+        log.warn(">> prop:      event-map:  {}", event);
+        log.warn(">> prop:       property:  {}", propertyName);
 
         // Retrieve event property
         Object ret = null;
         if (event!=null) {
             Map<String, Object> props = event.getEventProperties();
             if (props != null) {
-                log.debug(">> prop:   properties: {}", props);
+                log.warn(">> prop:   properties: {}", props);
                 ret = props.get(propertyName);
             }
         }
 
-        log.debug(">> prop:       value: {}", ret);
+        log.warn(">> prop:       value: {}", ret);
         return ret;
     }
 }
