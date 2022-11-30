@@ -71,7 +71,7 @@ public class ClientInstaller implements InitializingBean {
         if (baguetteServer.getNodeRegistry().getCoordinator()==null)
             throw new IllegalStateException("Baguette Server Coordinator has not yet been initialized");
 
-        if ("VM".equalsIgnoreCase(task.getType())) {
+        if ("VM".equalsIgnoreCase(task.getType()) || "baremetal".equalsIgnoreCase(task.getType())) {
             NodeRegistryEntry entry = baguetteServer.getNodeRegistry().getNodeByAddress(task.getAddress());
             if (entry==null)
                 throw new IllegalStateException("Node entry has been removed from Node Registry before installation: Node IP address: "+task.getAddress());
