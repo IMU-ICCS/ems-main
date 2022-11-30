@@ -12,15 +12,14 @@ package eu.melodic.event.brokercep;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -35,7 +34,7 @@ public class EventForwarder implements InitializingBean, Runnable {
     private final BrokerCepService brokerCepService;
     private final LinkedBlockingDeque<EventForwardTask> eventForwardingQueue = new LinkedBlockingDeque<>();
 
-    public void addEventForwardTask(String senderName, GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig, String topic, Map<String,Object> eventMap, Runnable success, Runnable failure) {
+    public void addEventForwardTask(@NonNull String senderName, @NonNull GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
         boolean isLocalPublish =
                 brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer()
                         .equals(brokerConnectionConfig.getUrl());
@@ -43,13 +42,13 @@ public class EventForwarder implements InitializingBean, Runnable {
         log.debug("EventForwarder: {} task in the queue", eventForwardingQueue.size());
     }
 
-    public void addEventForwardTask(String senderName, String brokerUrl, String certificate, String username, String password, String topic, Map<String,Object> eventMap, Runnable success, Runnable failure) {
+    public void addEventForwardTask(@NonNull String senderName, String brokerUrl, String certificate, String username, String password, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
         GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig =
                 new GroupingConfiguration.BrokerConnectionConfig(null, brokerUrl, certificate, username, password);
         addEventForwardTask(senderName, brokerConnectionConfig, topic, eventMap, success, failure);
     }
 
-    public void addLocalPublishTask(String senderName, String topic, Map<String,Object> eventMap, Runnable success, Runnable failure) {
+    public void addLocalPublishTask(@NonNull String senderName, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
         String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
         String username = brokerCepService.getBrokerUsername();
         String password = brokerCepService.getBrokerPassword();
