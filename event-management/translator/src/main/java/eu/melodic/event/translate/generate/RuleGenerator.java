@@ -254,11 +254,20 @@ public class RuleGenerator {
         // Window size(s)
         long winTimeSize = win.getTimeSize();
         long winMeasurementSize = win.getMeasurementSize();
+        String winTimeUnit = win.getTimeUnit() != null ? win.getTimeUnit().getName() : null;
+
+        // Check for negative window sizes
+        if (winTimeSize<0 && ! isEventsOnly) {
+            log.warn("RuleGenerator._processSizeOrTimeView(): Time-based or First/Both-match window has NEGATIVE time. Skipping time window: window={}, type={}, window-time-size={}, window-time-unit={}", win.getName(), winSizeType, winTimeSize, winTimeUnit);
+            return;
+        }
+        if (winMeasurementSize<0 && ! isTimeOnly) {
+            log.warn("RuleGenerator._processSizeOrTimeView(): Event-based or First/Both-match window has NEGATIVE length. Skipping event window: window={}, type={}, window-measurement-size={}", win.getName(), winSizeType, winTimeSize);
+            return;
+        }
 
         // Checks
-        String winTimeUnit = null;
         if (isFirstMatch || isBothMatch || isTimeOnly) {
-            winTimeUnit = win.getTimeUnit() != null ? win.getTimeUnit().getName() : null;
             if (StringUtils.isBlank(winTimeUnit) || winTimeSize <= 0) {
                 log.error("RuleGenerator._processSizeOrTimeView(): ERROR: Invalid or missing window-time-size or window-time-unit: window={}, window-time-size={}, window-time-unit={}", win.getName(), winTimeSize, winTimeUnit);
                 throw new IllegalArgumentException(String.format("ERROR: Invalid or missing window-time-size or window-time-unit: window=%s, window-time-size=%d, window-time-unit=%s", win.getName(), winTimeSize, winTimeUnit));
