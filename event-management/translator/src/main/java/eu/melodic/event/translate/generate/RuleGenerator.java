@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 public class RuleGenerator {
     private final static String TRANSLATION_CONFIG = "translation_config";
     private final static String EPL_VALUE = "epl_value";
+    public final static String EPL_FORMULA_TAG = "%EPL%>";
 
     @Autowired
     private CamelToEplTranslatorProperties properties;
@@ -115,6 +116,14 @@ public class RuleGenerator {
                 log.trace("RuleGenerator._generateRule():      Skipping further element rule processing: {}", elemName);
                 return;
             }
+        }
+
+        // Set selectMode based on 'formula's initial tag
+        String fml = Optional.ofNullable(context.getVariable("formula")).orElse("").toString();
+        if (StringUtils.startsWithIgnoreCase(fml, EPL_FORMULA_TAG)) {
+            fml = fml.substring(EPL_FORMULA_TAG.length());
+            context.setVariable("formula", fml);
+            context.setVariable("selectMode", "epl");
         }
 
         // Generate rule EPL statement using the configured templates
@@ -306,9 +315,14 @@ public class RuleGenerator {
         if (criteriaList!=null && criteriaList.size()>0) {
             // Get view from translation overriding sub-feature
             String view = getEplValueFromSubfeatures(p);
-            if (StringUtils.isBlank(view)) view = openView;
-            else if (! view.trim().startsWith(".")) view = "."+view.trim();
-            else view = view.trim();
+            if (StringUtils.isBlank(view)) {
+                view = openView;
+            } else
+            if (! view.trim().startsWith(".") && ! view.trim().startsWith("#")) {
+                view = view.contains(":") ? "."+view.trim() : "#"+view.trim();
+            } else {
+                view = view.trim();
+            }
 
             // Add view opening
             sb.append(view);
@@ -336,19 +350,19 @@ public class RuleGenerator {
                     }
                 } else
                 if (CriterionType.INSTANCE==c.getType()) {
-                    sb.append("prop(*, 'producer-source')");
+                    sb.append("prop(*, 'instance')");
                 } else
                 if (CriterionType.HOST==c.getType()) {
-                    sb.append("prop(*, 'producer-source')");
+                    sb.append("prop(*, 'host')");
                 } else
                 if (CriterionType.ZONE==c.getType()) {
-                    sb.append("prop(*, 'producer-source')");
+                    sb.append("prop(*, 'zone')");
                 } else
                 if (CriterionType.REGION==c.getType()) {
-                    sb.append("prop(*, 'producer-source')");
+                    sb.append("prop(*, 'region')");
                 } else
                 if (CriterionType.CLOUD==c.getType()) {
-                    sb.append("prop(*, 'producer-source')");
+                    sb.append("prop(*, 'cloud')");
                 } else
                 {
                     log.error("RuleGenerator._processWindowProcessingCriteria(): Unsupported Processing Criterion type: {}", c.getType());

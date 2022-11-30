@@ -110,20 +110,22 @@ translator.generator:
     COMP-CTX:
       __ANY__:
         - |
-          /* COMP-CTX-any */ /*INSERT INTO [(${outputStream})]*/
+          /* COMP-CTX-any */ /*INSERT INTO [(${outputStream})]*/ [# th:switch="${selectMode}"] [# th:case="'epl'"]
+          SELECT [(${formula})] [/] [# th:case="*"]
           SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
-                 current_timestamp AS timestamp
+                 current_timestamp AS timestamp [/] [/]
           FROM [# th:each="ctx,iterStat : ${contexts}" th:utext="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
           [(${scheduleClause})]
           
     AGG-COMP-CTX:
       __ANY__:
         - |
-          /* COMP-CTX-AGG-any */ /*INSERT INTO [(${outputStream})]*/
+          /* COMP-CTX-AGG-any */ /*INSERT INTO [(${outputStream})]*/ [# th:switch="${selectMode}"] [# th:case="'epl'"]
+          SELECT [(${formula})] [/] [# th:case="*"]
           SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
-                 current_timestamp AS timestamp
+                 current_timestamp AS timestamp [/] [/]
           FROM [# th:each="ctx,iterStat : ${contexts}" th:utext="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
           [(${scheduleClause})]
           
@@ -144,19 +146,21 @@ translator.generator:
     VAR:
       __ANY__:
         - |
-          /* VAR-any */ /*INSERT INTO [(${outputStream})]*/
+          /* VAR-any */ /*INSERT INTO [(${outputStream})]*/ [# th:switch="${selectMode}"] [# th:case="'epl'"]
+          SELECT [(${formula})] [/] [# th:case="*"]
           SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
-                 current_timestamp AS timestamp
+                 current_timestamp AS timestamp [/] [/]
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
           
     AGG-VAR:
       __ANY__:
         - |
-          /* VAR-AGG-any */ /*INSERT INTO [(${outputStream})]*/
+          /* VAR-AGG-any */ /*INSERT INTO [(${outputStream})]*/ [# th:switch="${selectMode}"] [# th:case="'epl'"]
+          SELECT [(${formula})] [/] [# th:case="*"]
           SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
-                 current_timestamp AS timestamp
+                 current_timestamp AS timestamp [/] [/]
           FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+' AS '+${ctx} + ', ' : ${ctx}+' AS '+${ctx}"] [/]
           
     # Optimisation-Requirement templates
