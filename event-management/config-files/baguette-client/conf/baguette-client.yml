@@ -27,11 +27,11 @@ IP_SETTING: ${IP_SETTING}
 EMS_CLIENT_ADDRESS: ${${IP_SETTING}}
 
 node-properties:
-  public-ip: ${BAGUETTE_SERVER_ADDRESS}
-  private-ip: ${BAGUETTE_SERVER_ADDRESS}
   node-id: ${NODE_CLIENT_ID}
-  instance: ${BAGUETTE_SERVER_ADDRESS}
-  host: ${BAGUETTE_SERVER_ADDRESS}
+  public-ip: ${NODE_ADDRESS}
+  private-ip: ${NODE_ADDRESS}
+  instance: ${NODE_ADDRESS}
+  host: ${NODE_ADDRESS}
   zone: ${zone-id}
   region: ${zone-id}
   cloud: ${provider}
