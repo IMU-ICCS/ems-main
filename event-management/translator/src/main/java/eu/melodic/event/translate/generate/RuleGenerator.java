@@ -178,7 +178,6 @@ public class RuleGenerator {
         // Process window sort and rank processings
         win.getProcessings().stream()
                 .filter(p->p.getProcessingType()==WindowProcessingType.SORT || p.getProcessingType()==WindowProcessingType.RANK)
-                .filter(this::groupingMustBeAfterSizeOrTimeView)
                 .forEach(p->{
                     if (p.getProcessingType()==WindowProcessingType.SORT)
                         _processSortWindowProcessing(sb, p);
@@ -193,8 +192,8 @@ public class RuleGenerator {
 
     private boolean groupingMustBeBeforeSizeOrTimeView(WindowProcessing windowProcessing) {
         String eplView = getEplValueFromSubfeatures(windowProcessing);
-        log.debug("RuleGenerator.groupingMustBeBeforeSizeOrTimeView: processing={}, epl-view={}", windowProcessing.getName(), eplView);
-        boolean result = StringUtils.isBlank(eplView);
+        log.debug("RuleGenerator.groupingMustBeBeforeSizeOrTimeView: processing={}, epl-value={}", windowProcessing.getName(), eplView);
+        boolean result = StringUtils.isBlank(eplView) || StringUtils.containsIgnoreCase(eplView, "groupwin");
         log.debug("RuleGenerator.groupingMustBeBeforeSizeOrTimeView: processing={}, result={}", windowProcessing.getName(), result);
         return result;
     }
@@ -291,6 +290,105 @@ public class RuleGenerator {
         sb.append(s);
     }
 
+    private void _processGroupWindowProcessing(StringBuilder sb, WindowProcessing p) {
+        _processWindowProcessingCriteria(sb, p, p.getGroupingCriteria(), ".std:groupwin(", null, false);
+    }
+
+    private void _processSortWindowProcessing(StringBuilder sb, WindowProcessing p) {
+        _processWindowProcessingCriteria(sb, p, p.getRankingCriteria(), ".ext:sort("+Integer.MAX_VALUE+", ", null, true);
+    }
+
+    private void _processRankWindowProcessing(StringBuilder sb, WindowProcessing p) {
+        _processWindowProcessingCriteria(sb, p, p.getRankingCriteria(), ".ext:rank(", Integer.MAX_VALUE+")", true);
+    }
+
+    private void _processWindowProcessingCriteria(StringBuilder sb, WindowProcessing p, EList<WindowCriterion> criteriaList, String openView, String closeView, boolean allowTimestampType) {
+        if (criteriaList!=null && criteriaList.size()>0) {
+            // Get view from translation overriding sub-feature
+            String view = getEplValueFromSubfeatures(p);
+            if (StringUtils.isBlank(view)) view = openView;
+            else if (! view.trim().startsWith(".")) view = "."+view.trim();
+            else view = view.trim();
+
+            // Add view opening
+            sb.append(view);
+            if (!view.trim().endsWith("(") && !view.trim().endsWith(",")) sb.append("(");
+
+            final boolean[] first = {true};
+            criteriaList.forEach(c->{
+                if (first[0]) first[0] = false; else sb.append(", ");
+                log.debug("RuleGenerator._processWindowProcessingCriteria(): {} processing criterion: processing={}, criterion={}, type={}, custom={}, metric={}",
+                        p.getProcessingType(), p.getName(), c.getName(), c.getType(), c.getCustom(), c.getMetric());
+                if (CriterionType.CUSTOM==c.getType()) {
+                    if (StringUtils.isNotBlank(c.getCustom())) {
+                        sb.append(c.getCustom().trim());
+                    } else {
+                        log.error("RuleGenerator._processWindowProcessingCriteria(): CUSTOM group processing Criterion type must provide 'custom' property: {}", c.getName());
+                        throw new IllegalArgumentException("CUSTOM group processing Criterion type must provide 'custom' property: " + c.getName());
+                    }
+                } else
+                if (CriterionType.TIMESTAMP==c.getType()) {
+                    if (allowTimestampType) {
+                        sb.append("timestamp");
+                    } else {
+                        log.error("RuleGenerator._processWindowProcessingCriteria(): TIMESTAMP processing Criterion type MUST NOT be used for grouping: {}", c.getName());
+                        throw new IllegalArgumentException("TIMESTAMP processing Criterion type MUST NOT be used for grouping: " + c.getName());
+                    }
+                } else
+                if (CriterionType.INSTANCE==c.getType()) {
+                    sb.append("prop(*, 'producer-source')");
+                } else
+                if (CriterionType.HOST==c.getType()) {
+                    sb.append("prop(*, 'producer-source')");
+                } else
+                if (CriterionType.ZONE==c.getType()) {
+                    sb.append("prop(*, 'producer-source')");
+                } else
+                if (CriterionType.REGION==c.getType()) {
+                    sb.append("prop(*, 'producer-source')");
+                } else
+                if (CriterionType.CLOUD==c.getType()) {
+                    sb.append("prop(*, 'producer-source')");
+                } else
+                {
+                    log.error("RuleGenerator._processWindowProcessingCriteria(): Unsupported Processing Criterion type: {}", c.getType());
+                    throw new IllegalArgumentException("Unsupported Processing Criterion type: " + c.getType());
+                }
+            });
+
+            // Add view close
+            if (StringUtils.isNotBlank(closeView)) sb.append(closeView); else sb.append(")");
+
+        } else {
+            log.warn("RuleGenerator._processWindowProcessingCriteria: {} window processing with NO grouping criteria. Processing is ignored: {}", p.getProcessingType(), p.getName());
+        }
+    }
+
+    private long _winTimeToMillis(long time, String unit) {
+        switch (unit.toLowerCase()) {
+            case "msec": case "millisecond": case "milliseconds":
+                return time;
+            case "sec": case "second": case "seconds":
+                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.SECONDS);
+            case "min": case "minute": case "minutes":
+                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.MINUTES);
+            case "hour": case "hours":
+                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.HOURS);
+            case "day": case "days":
+                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.DAYS);
+            case "week": case "weeks":
+                return TimeUnit.MILLISECONDS.convert(7 * time, TimeUnit.DAYS);
+            case "month": case "months":
+                log.warn("RuleGenerator._winTimeToMillis: NOTE: 'Months' time unit equals to 30 days!");
+                return TimeUnit.MILLISECONDS.convert(30 * time, TimeUnit.DAYS);
+            case "year": case "years":
+                log.warn("RuleGenerator._winTimeToMillis: NOTE: 'Years' time unit equals to 365 days!");
+                return TimeUnit.MILLISECONDS.convert(365 * time, TimeUnit.DAYS);
+            default:
+                throw new RuntimeException("Unsupported time unit: \"" + unit + "\"");
+        }
+    }
+
     /*// Old implementation....
     protected String _generateWindowClause(Window win) {
         if (win == null)
@@ -378,187 +476,6 @@ public class RuleGenerator {
             throw new IllegalArgumentException(String.format("ERROR: Invalid or Unsupported window-size-type: window=%s, window-size-type=%s", win.getName(), winSizeType));
         }
     }*/
-
-    private long _winTimeToMillis(long time, String unit) {
-        switch (unit.toLowerCase()) {
-            case "msec":
-            case "millisecond":
-            case "milliseconds":
-                return time;
-            case "sec":
-            case "second":
-            case "seconds":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.SECONDS);
-            case "min":
-            case "minute":
-            case "minutes":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.MINUTES);
-            case "hour":
-            case "hours":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.HOURS);
-            case "day":
-            case "days":
-                return TimeUnit.MILLISECONDS.convert(time, TimeUnit.DAYS);
-            case "week":
-            case "weeks":
-                return TimeUnit.MILLISECONDS.convert(7 * time, TimeUnit.DAYS);
-            case "month":
-            case "months":
-                log.warn("RuleGenerator._winTimeToMillis: NOTE: 'Months' time unit equals to 30 days!");
-                return TimeUnit.MILLISECONDS.convert(30 * time, TimeUnit.DAYS);
-            case "year":
-            case "years":
-                log.warn("RuleGenerator._winTimeToMillis: NOTE: 'Years' time unit equals to 365 days!");
-                return TimeUnit.MILLISECONDS.convert(365 * time, TimeUnit.DAYS);
-            default:
-                throw new RuntimeException("Unsupported time unit: \"" + unit + "\"");
-        }
-    }
-
-    private void _processGroupWindowProcessing(StringBuilder sb, WindowProcessing p) {
-        if (p.getGroupingCriteria()!=null && p.getGroupingCriteria().size()>0) {
-            // Get grouping view from annotations
-            String view = getEplValueFromSubfeatures(p);
-            if (StringUtils.isBlank(view)) view = ".std:groupwin";
-            else if (! view.trim().startsWith(".")) view = "."+view.trim();
-            else view = view.trim();
-
-            sb.append(view).append("(");
-            final boolean[] first = {true};
-            p.getGroupingCriteria().forEach(c->{
-                if (first[0]) first[0] = false; else sb.append(", ");
-                log.debug("RuleGenerator._processGroupWindowProcessing(): Group processing criterion: group-processing={}, group-criterion={}, type={}, custom={}, metric={}",
-                        p.getName(), c.getName(), c.getType(), c.getCustom(), c.getMetric());
-                if (CriterionType.CUSTOM==c.getType()) {
-                    if (StringUtils.isNotBlank(c.getCustom())) {
-                        sb.append(c.getCustom().trim());
-                    } else {
-                        log.error("RuleGenerator._processGroupWindowProcessing(): CUSTOM group processing Criterion type must provide 'custom' property: {}", c.getName());
-                        throw new IllegalArgumentException("CUSTOM group processing Criterion type must provide 'custom' property: " + c.getName());
-                    }
-                } else
-                /*if (CriterionType.INSTANCE==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.HOST==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.ZONE==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.REGION==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.CLOUD==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else*/
-                if (CriterionType.TIMESTAMP==c.getType()) {
-                    log.error("RuleGenerator._generateWindowClause(): TIMESTAMP processing Criterion type MUST NOT be used for grouping: {}", c.getName());
-                    throw new IllegalArgumentException("TIMESTAMP processing Criterion type MUST NOT be used for grouping: " + c.getName());
-                } else
-                {
-                    log.error("RuleGenerator._processGroupWindowProcessing(): Unsupported Processing Criterion type: {}", c.getType());
-                    throw new IllegalArgumentException("Unsupported Processing Criterion type: " + c.getType());
-                }
-            });
-            sb.append(")");
-        } else {
-            log.warn("RuleGenerator._processGroupWindowProcessing: GROUP window processing with NO grouping criteria. Processing is ignored: {}", p.getName());
-        }
-    }
-
-    private void _processSortWindowProcessing(StringBuilder sb, WindowProcessing p) {
-        if (p.getRankingCriteria()!=null && p.getRankingCriteria().size()>0) {
-            sb.append(".ext:sort(").append(Integer.MAX_VALUE);
-            p.getRankingCriteria().forEach(c-> {
-                sb.append(", ");
-                log.debug("RuleGenerator._processSortWindowProcessing(): Sort processing criterion: sort-processing={}, sort-criterion={}, type={}, custom={}, metric={}",
-                        p.getName(), c.getName(), c.getType(), c.getCustom(), c.getMetric());
-                if (CriterionType.CUSTOM==c.getType()) {
-                    if (StringUtils.isNotBlank(c.getCustom())) {
-                        sb.append(c.getCustom().trim());
-                    } else {
-                        log.error("RuleGenerator._processSortWindowProcessing(): CUSTOM sort processing Criterion type must provide 'custom' property: {}", c.getName());
-                        throw new IllegalArgumentException("CUSTOM sort processing Criterion type must provide 'custom' property: " + c.getName());
-                    }
-                } else
-                /*if (CriterionType.INSTANCE==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.HOST==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.ZONE==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.REGION==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.CLOUD==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else*/
-                if (CriterionType.TIMESTAMP==c.getType()) {
-                    sb.append("timestamp");
-                } else
-                {
-                    log.error("RuleGenerator._processSortWindowProcessing(): Unsupported Processing Criterion type: {}", c.getType());
-                    throw new IllegalArgumentException("Unsupported Processing Criterion type: " + c.getType());
-                }
-                sb.append(c.isAscending() ? " ASC" : " DESC");
-            });
-            sb.append(")");
-        } else {
-            log.warn("RuleGenerator._processSortWindowProcessing: SORT window processing with NO ranking criteria. Processing is ignored: {}", p.getName());
-        }
-    }
-
-    private void _processRankWindowProcessing(StringBuilder sb, WindowProcessing p) {
-        if (p.getRankingCriteria()!=null && p.getRankingCriteria().size()>0) {
-            sb.append(".ext:rank(");
-            // Unique criteria
-            p.getRankingCriteria().forEach(c-> {
-                log.debug("RuleGenerator._processRankWindowProcessing(): Rank processing criterion: rank-processing={}, rank-criterion={}, type={}, custom={}, metric={}",
-                        p.getName(), c.getName(), c.getType(), c.getCustom(), c.getMetric());
-                if (CriterionType.CUSTOM==c.getType()) {
-                    if (StringUtils.isNotBlank(c.getCustom())) {
-                        sb.append(c.getCustom().trim());
-                    } else {
-                        log.error("RuleGenerator._processSortWindowProcessing(): CUSTOM rank processing Criterion type must provide 'custom' property: {}", c.getName());
-                        throw new IllegalArgumentException("CUSTOM rank processing Criterion type must provide 'custom' property: " + c.getName());
-                    }
-                } else
-                /*if (CriterionType.INSTANCE==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.HOST==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.ZONE==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.REGION==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else
-                if (CriterionType.CLOUD==c.getType()) {
-                    sb.append("propext('producer-source')");
-                } else*/
-                if (CriterionType.TIMESTAMP==c.getType()) {
-                    sb.append("timestamp");
-                } else
-                {
-                    log.error("RuleGenerator._processRankWindowProcessing(): Unsupported Processing Criterion type: {}", c.getType());
-                    throw new IllegalArgumentException("Unsupported Processing Criterion type: " + c.getType());
-                }
-                sb.append(", ");
-            });
-            // Size
-            sb.append(Integer.MAX_VALUE);
-            // Sort criteria
-            sb.append(")");
-        } else {
-            log.warn("RuleGenerator._processRankWindowProcessing: RANK window processing with NO ranking criteria. Processing is ignored: {}", p.getName());
-        }
-    }
 
     protected String _generateScheduleClause(Schedule sched) {
         if (sched == null) return "";
@@ -766,7 +683,7 @@ public class RuleGenerator {
                 // Get composite metric context's composing metric contexts (just the names)
                 EList<MetricContext> composingCtxList = cmc.getComposingMetricContexts();
                 List<String> composingMetricNamesList = composingCtxList.stream().map(item -> item.getMetric().getName()).collect(Collectors.toList());
-                List<String> composingCtxNamesList = composingCtxList.stream().map(item -> item.getName()).collect(Collectors.toList());
+                List<String> composingCtxNamesList = composingCtxList.stream().map(NamedElement::getName).collect(Collectors.toList());
 
                 // Check that component metrics' names (from composite metric) and metric names from component contexts match
                 if (checkIfListsAreEqual(componentNames, composingCtxNamesList)) {

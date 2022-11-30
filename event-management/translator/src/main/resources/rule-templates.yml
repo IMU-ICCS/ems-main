@@ -114,7 +114,7 @@ translator.generator:
           SELECT EVAL( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
                  current_timestamp AS timestamp
-          FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
+          FROM [# th:each="ctx,iterStat : ${contexts}" th:utext="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
           [(${scheduleClause})]
           
     AGG-COMP-CTX:
@@ -124,7 +124,7 @@ translator.generator:
           SELECT EVALAGG( '[(${formula})]', '[# th:each="ctx,iterStat : ${components}" th:text="!${iterStat.last} ? ${ctx} + ',' : ${ctx}"] [/]', [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx} + ', ' : ${ctx}"] [/] ) AS metricValue,
                  3 AS level,
                  current_timestamp AS timestamp
-          FROM [# th:each="ctx,iterStat : ${contexts}" th:text="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
+          FROM [# th:each="ctx,iterStat : ${contexts}" th:utext="!${iterStat.last} ? ${ctx}+${windowClause}+' AS '+${ctx} + ', ' : ${ctx}+${windowClause}+' AS '+${ctx}"] [/]
           [(${scheduleClause})]
           
     RAW-CTX:
