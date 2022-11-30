@@ -26,6 +26,8 @@ exit-command-allowed = false
 IP_SETTING=${IP_SETTING}
 EMS_CLIENT_ADDRESS=${${IP_SETTING}}
 
+node-properties=
+
 # -----------------------------------------------------------------------------
 # Client Id and Baguette Server credentials
 # -----------------------------------------------------------------------------
@@ -177,14 +179,19 @@ brokercep.broker-using-jmx = true
 brokercep.broker-advisory-support-enabled = true
 brokercep.broker-using-shutdown-hook = false
 
+#brokercep.broker-enable-statistics = true
+#brokercep.broker-populate-jmsx-user-id = true
+
 # Message interceptors
 brokercep.message-interceptors[0].destination = >
 brokercep.message-interceptors[0].className = eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor
 brokercep.message-interceptors[0].params[0] = #SourceAddressMessageUpdateInterceptor
 brokercep.message-interceptors[0].params[1] = #MessageForwarderInterceptor
+brokercep.message-interceptors[0].params[2] = #NodePropertiesMessageUpdateInterceptor
 
 brokercep.message-interceptors-specs.SourceAddressMessageUpdateInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
 brokercep.message-interceptors-specs.MessageForwarderInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
+brokercep.message-interceptors-specs.NodePropertiesMessageUpdateInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
 
 # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
 #brokercep.message-forward-destinations[0].connection-string = tcp://localhost:51515
@@ -200,5 +207,8 @@ brokercep.enable-advisory-watcher = true
 # Memory usage limit
 brokercep.usage.memory.jvm-heap-percentage = 20
 #brokercep.usage.memory.size = 134217728
+
+#brokercep.maxEventForwardRetries: -1
+#brokercep.maxEventForwardDuration: -1
 
 ################################################################################

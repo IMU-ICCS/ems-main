@@ -26,6 +26,16 @@ exit-command-allowed: false
 IP_SETTING: ${IP_SETTING}
 EMS_CLIENT_ADDRESS: ${${IP_SETTING}}
 
+node-properties:
+  public-ip: ${BAGUETTE_SERVER_ADDRESS}
+  private-ip: ${BAGUETTE_SERVER_ADDRESS}
+  node-id: ${NODE_CLIENT_ID}
+  instance: ${BAGUETTE_SERVER_ADDRESS}
+  host: ${BAGUETTE_SERVER_ADDRESS}
+  zone: ${zone-id}
+  region: ${zone-id}
+  cloud: ${provider}
+
 # -----------------------------------------------------------------------------
 # Client Id and Baguette Server credentials
 # -----------------------------------------------------------------------------
@@ -152,8 +162,7 @@ brokercep:
   # Broker connectors
   broker-url:
     - ${brokercep.broker-protocol}://0.0.0.0:${brokercep.broker-port}?${BROKER_URL_PROPERTIES}
-    #- tcp://127.0.0.1:61616?${BROKER_URL_PROPERTIES}
-    - tcp://0.0.0.0:61616?${BROKER_URL_PROPERTIES}
+    - tcp://127.0.0.1:61616?${BROKER_URL_PROPERTIES}
 
   # Broker URLs for (EMS) consumer and clients
   broker-url-for-consumer: tcp://127.0.0.1:61616?${CLIENT_URL_PROPERTIES}
@@ -202,12 +211,15 @@ brokercep:
       params:
         - '#SourceAddressMessageUpdateInterceptor'
         - '#MessageForwarderInterceptor'
+        - '#NodePropertiesMessageUpdateInterceptor'
 
   message-interceptors-specs:
     SourceAddressMessageUpdateInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
     MessageForwarderInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
+    NodePropertiesMessageUpdateInterceptor:
+      className: eu.melodic.event.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
 
   # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
   #message-forward-destinations:

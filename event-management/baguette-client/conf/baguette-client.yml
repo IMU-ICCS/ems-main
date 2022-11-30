@@ -26,6 +26,16 @@ exit-command-allowed: false
 IP_SETTING: ${IP_SETTING}
 EMS_CLIENT_ADDRESS: ${${IP_SETTING}}
 
+node-properties:
+  public-ip: ${BAGUETTE_SERVER_ADDRESS}
+  private-ip: ${BAGUETTE_SERVER_ADDRESS}
+  node-id: ${NODE_CLIENT_ID}
+  instance: ${BAGUETTE_SERVER_ADDRESS}
+  host: ${BAGUETTE_SERVER_ADDRESS}
+  zone: ${zone-id}
+  region: ${zone-id}
+  cloud: ${provider}
+
 # -----------------------------------------------------------------------------
 # Client Id and Baguette Server credentials
 # -----------------------------------------------------------------------------
@@ -69,8 +79,26 @@ collector:
     urlOfNodesWithoutClient: http://%s:19999/api/v1/allmetrics?format=json
     #create-topic: true
     #allowed-topics: netdata__system__cpu__user:an_alias
+    allowed-topics: ${COLLECTOR_ALLOWED_TOPICS}
     error-limit: 3
     pause-period: 60
+  prometheus:
+    enable: true
+    delay: 10000
+    url: http://127.0.0.1:9090/metrics
+    urlOfNodesWithoutClient: http://%s:9090/metrics
+    #create-topic: true
+    #allowed-topics: system__cpu__user:an_alias
+    allowed-topics: ${COLLECTOR_ALLOWED_TOPICS}
+    error-limit: 3
+    pause-period: 60
+    #
+    #allowedTags: []
+    #allowTagsInDestinationName: true
+    #destinationNameFormatter: '${metricName}_${method}'
+    #addTagsAsEventProperties: true
+    #addTagsInEventPayload: true
+    #throwExceptionWhenExcessiveCharsOccur: true
 
 # -----------------------------------------------------------------------------
 # Cluster settings
@@ -183,12 +211,15 @@ brokercep:
       params:
         - '#SourceAddressMessageUpdateInterceptor'
         - '#MessageForwarderInterceptor'
+        - '#NodePropertiesMessageUpdateInterceptor'
 
   message-interceptors-specs:
     SourceAddressMessageUpdateInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
     MessageForwarderInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
+    NodePropertiesMessageUpdateInterceptor:
+      className: eu.melodic.event.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
 
   # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
   #message-forward-destinations:
