@@ -9,14 +9,11 @@
 
 package eu.melodic.event.brokercep.cep;
 
-import com.espertech.esper.client.EventBean;
 import eu.melodic.event.brokercep.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
-
-//import eu.melodic.event.brokercep.event.MetricEvent;
 
 @Slf4j
 public class CepEvalFunction {
@@ -82,18 +79,27 @@ public class CepEvalFunction {
         return result;
     }
 
-    public static EventMap/*MetricEvent*/ newEvent(double metricValue, String... params) {
-        return newEvent(metricValue, 1);
+    public static double evalMath(String formula, Map<String,Double> args) {
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> evalMath:   formula: {}", formula);
+        log.debug(">> evalMath:  args-map: {}", args);
+
+        double result = MathUtil.eval(formula, args);
+        log.debug(">> evalMath:   result:  {}", result);
+        return result;
     }
 
-    public static EventMap/*MetricEvent*/ newEvent(double metricValue, int level, String... params) {
+    public static EventMap newEvent(double metricValue, String... params) {
+        return newEvent(metricValue, 1, params);
+    }
+
+    public static EventMap newEvent(double metricValue, int level, String... params) {
         log.debug(">> ---------------------------------------------------------------------------");
         log.debug(">> newEvent:   metric-value:  {}", metricValue);
         log.debug(">> newEvent:   params-length: {}", params.length);
 
         // Add metric value
         EventMap event = new EventMap(metricValue, level, System.currentTimeMillis());
-        //MetricEvent event = new MetricEvent(metricValue, level, System.currentTimeMillis());
 
         // Add extra parameters
         for (int i = 0; i < params.length; i += 2) {
