@@ -380,7 +380,7 @@ public class ModelAnalyzer {
 
     private Set<Metric> _extractMetricsFromFormula(TranslationContext _TC, String formula) {
         log.debug("    Extracting metrics from formula: {}", formula);
-        List<String> argNames = MathUtil.getFormulaArguments(formula);
+        Set<String> argNames = MathUtil.getFormulaArguments(formula);
         log.debug("    Formula arguments: {}", argNames);
 
         // find formula component metrics
@@ -1347,12 +1347,12 @@ public class ModelAnalyzer {
         if (componentMetrics == null) componentMetrics = new ArrayList<>();
         List<String> metricNames = getListElementNames(componentMetrics);
         log.debug("    _checkFormulaAndComponents(): formula={}, component-metrics={}", formula, metricNames);
-        List<String> argNames = MathUtil.getFormulaArguments(formula);
+        Set<String> argNames = MathUtil.getFormulaArguments(formula);
         log.debug("    _checkFormulaAndComponents(): formula={}, arguments={}", formula, argNames);
 
         // check if all arguments are found in component metrics - Detailed report
         Set<String> diff1 = new HashSet<>(argNames);
-        diff1.removeAll(metricNames);
+        metricNames.forEach(diff1::remove);
         log.debug("    _checkFormulaAndComponents(): diff1={}", diff1);
         if (diff1.size() > 0) {
             log.error("    _checkFormulaAndComponents(): ERROR: Formula arguments not found in component metrics: formula={}, arguments-not-found={}, component-metrics={}", formula, diff1, metricNames);

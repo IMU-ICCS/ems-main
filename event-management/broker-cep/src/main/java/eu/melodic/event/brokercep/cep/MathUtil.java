@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.cep;
 
 import eu.melodic.event.util.FunctionDefinition;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.mariuszgromada.math.mxparser.Constant;
@@ -66,11 +67,11 @@ public class MathUtil {
 
     // ------------------------------------------------------------------------
 
-    public static List<String> getFormulaArguments(String formula) {
+    public static @NonNull Set<String> getFormulaArguments(String formula) {
         log.debug("MathUtil: getFormulaArguments: formula={}", formula);
         if (StringUtils.isBlank(formula)) {
             log.debug("MathUtil: getFormulaArguments: Formula is null or empty");
-            return null;
+            return Collections.emptySet();
         }
 
         // Create MathParser expression
@@ -78,34 +79,50 @@ public class MathUtil {
         //e.setVerboseMode();
         log.trace("MathUtil: getFormulaArguments: expression={}", e.getExpressionString());
 
+        Set<String> argNames = extractArgNames(e);
+        log.debug("MathUtil: getFormulaArguments: arguments={}", argNames);
+
+        return argNames;
+    }
+
+    private static @NonNull Set<String> extractArgNames(Expression e) {
+
+        List<Token> initTokens = extractFormulaTokens(e);
+
+        Set<String> argNames = initTokens.stream()
+                .filter(t -> t.tokenTypeId == Token.NOT_MATCHED)
+                .filter(t -> "argument".equals(t.looksLike))
+                .map(t -> t.tokenStr)
+                .collect(Collectors
+                        .toCollection(LinkedHashSet::new));
+        log.debug("MathUtil: initial-token-names: {}", argNames);
+
+        return argNames;
+    }
+
+    private static @NonNull List<Token> extractFormulaTokens(Expression e) {
         // Add constants
-        e.addConstants(new ArrayList(constants.values()));
+        e.addConstants(new ArrayList<>(constants.values()));
 
         // Add functions
         for (Function f : functions.values()) e.addFunctions(f);
 
-        // Get argument names
+        // Check syntax
         boolean lexSyntax = e.checkLexSyntax();
         boolean genSyntax = e.checkSyntax();
         if (log.isTraceEnabled()) {
-            log.trace("MathUtil: getFormulaArguments: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
-            log.trace("MathUtil: getFormulaArguments: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
+            log.trace("MathUtil: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
+            log.trace("MathUtil: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
         }
 
+        // Get token names
         List<Token> initTokens = e.getCopyOfInitialTokens();
-        log.trace("MathUtil: getFormulaArguments: initial-tokens={}", initTokens);
+        log.debug("MathUtil: initial-tokens={}", initTokens);
         if (log.isTraceEnabled()) {
             mXparser.consolePrintTokens(initTokens);
         }
 
-        List<String> argNames = initTokens.stream()
-                .filter(t -> t.tokenTypeId == Token.NOT_MATCHED)
-                .filter(t -> "argument".equals(t.looksLike))
-                .map(t -> t.tokenStr)
-                .collect(Collectors.toList());
-        log.debug("MathUtil: getFormulaArguments: arguments={}", argNames);
-
-        return argNames;
+        return initTokens;
     }
 
     // ------------------------------------------------------------------------
@@ -122,33 +139,22 @@ public class MathUtil {
         //e.setVerboseMode();
         log.trace("MathUtil: containsAggregator: expression={}", e.getExpressionString());
 
-        // Add constants
-        e.addConstants(new ArrayList(constants.values()));
+        // Get formula tokens
+        List<Token> initTokens = extractFormulaTokens(e);
 
-        // Add functions
-        for (Function f : functions.values()) e.addFunctions(f);
-
-        // Get argument names
-        boolean lexSyntax = e.checkLexSyntax();
-        boolean genSyntax = e.checkSyntax();
-        log.trace("MathUtil: containsAggregator: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
-        log.trace("MathUtil: containsAggregator: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
-
-        List<Token> initTokens = e.getCopyOfInitialTokens();
-        log.trace("MathUtil: containsAggregator: initial-tokens={}", initTokens);
-        if (log.isTraceEnabled()) {
-            mXparser.consolePrintTokens(initTokens);
-        }
-        List<String> aggNames = initTokens.stream()
+        // Select 'function' names from tokens
+        List<String> names = initTokens.stream()
                 .filter(t -> t.tokenTypeId == FunctionVariadic.TYPE_ID)
                 .map(t -> t.tokenStr)
                 .collect(Collectors.toList());
-        log.trace("MathUtil: containsAggregator: formula-aggregator-functions: {}", aggNames);
+        log.trace("MathUtil: containsAggregator: formula-aggregator-functions: {}", names);
 
-        boolean containsAgg = aggNames.size() > 0;
+        // Check if aggregators exist
+        boolean containsAgg = names.size() > 0;
         if (containsAgg)
-            log.debug("MathUtil: containsAggregator: Formula contains aggregators: aggregators={}, formula={}", aggNames, formula);
-        else log.debug("MathUtil: containsAggregator: Formula does not contain aggregators: {}", formula);
+            log.debug("MathUtil: containsAggregator: Formula contains aggregators: aggregators={}, formula={}", names, formula);
+        else
+            log.debug("MathUtil: containsAggregator: Formula does not contain aggregators: {}", formula);
         return containsAgg;
     }
 
@@ -207,31 +213,9 @@ public class MathUtil {
         //e.setVerboseMode();
         log.debug("MathUtil: formula={}", e.getExpressionString());
 
-        // Add constants
-        e.addConstants(new ArrayList(constants.values()));
-
-        // Add functions
-        for (Function f : functions.values()) e.addFunctions(f);
-
         // Get argument names
-        boolean lexSyntax = e.checkLexSyntax();
-        boolean genSyntax = e.checkSyntax();
-        if (log.isTraceEnabled()) {
-            log.trace("MathUtil: lexSyntax={}, genSyntax: {}", lexSyntax, genSyntax);
-            log.trace("MathUtil: syntax-status={}, error={}", e.getSyntaxStatus(), e.getErrorMessage());
-        }
-
-        List<Token> initTokens = e.getCopyOfInitialTokens();
-        log.debug("MathUtil: initial-tokens={}", initTokens);
-        if (log.isTraceEnabled()) {
-            mXparser.consolePrintTokens(initTokens);
-        }
-        Set<String> argNames = initTokens.stream()
-                .filter(t -> t.tokenTypeId == Token.NOT_MATCHED)
-                .filter(t -> "argument".equals(t.looksLike))
-                .map(t -> t.tokenStr)
-                .collect(Collectors.toSet());
-        log.debug("MathUtil: initial-token-names: {}", argNames);
+        Set<String> argNames = extractArgNames(e);
+        boolean genSyntax;
 
         // Define expression arguments with user provided values
         //e.removeAllArguments();

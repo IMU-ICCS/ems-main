@@ -14,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CepEvalFunction {
@@ -76,6 +79,33 @@ public class CepEvalFunction {
         double result = MathUtil.eval(formula, args);
         log.debug(">> eval(double):   result:  {}", result);
 
+        return result;
+    }
+
+    public static double evalMath(String formula, double...values) {
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> evalMath:   formula: {}", formula);
+        log.debug(">> evalMath:    values: {}", values);
+
+        // Get formula arguments
+        Set<String> argNames = MathUtil.getFormulaArguments(formula);
+        log.debug(">> evalMath: arg-names: {}", argNames);
+
+        // Check the number of arguments and the number of provided values match
+        if (argNames.size() != values.length)
+            throw new IllegalArgumentException(String.format(
+                    "evalMath: The number of provided values do not match the number of formula arguments: #args=%d != #values=%d",
+                    argNames.size(), values.length));
+
+        // Map values onto arguments, using the order of appearance (i.e. 1st value->1st arg, 2nd value->2nd arg...)
+        final AtomicInteger i = new AtomicInteger(0);
+        Map<String, Double> map = argNames.stream().collect(Collectors.toMap(
+                arg -> arg, arg -> values[ i.getAndIncrement() ]
+        ));
+        log.debug(">> evalMath:  args-map: {}", map);
+
+        double result = evalMath(formula, map);
+        log.debug(">> evalMath:   result:  {}", result);
         return result;
     }
 
