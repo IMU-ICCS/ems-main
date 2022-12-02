@@ -67,12 +67,24 @@ public class EventForwarder implements InitializingBean, Runnable {
 
     @Override
     public void run() {
+        long delay = properties.getEventForwarderLoopDelay();
+        if (delay<10L) delay = 100L;
+
         while (true) {
             try {
                 processEventForwardTask(eventForwardingQueue.take());
+                waitFor(delay);
             } catch (Throwable t) {
                 log.warn("EventForwarder: Exception thrown in task processing loop: ", t);
             }
+        }
+    }
+
+    private void waitFor(long delayInMillis) {
+        try {
+            Thread.sleep(delayInMillis);
+        } catch (InterruptedException e) {
+            log.warn("EventForwarder: waitFor: Interrupted: ", e);
         }
     }
 

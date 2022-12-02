@@ -46,6 +46,7 @@ public class BrokerCepProperties implements InitializingBean {
 
     private int managementConnectorPort = -1;
     private boolean bypassLocalBroker;
+    private long eventForwarderLoopDelay = 100L;
 
     // brokercep.ssl.** settings
     private KeystoreAndCertificateProperties ssl;
