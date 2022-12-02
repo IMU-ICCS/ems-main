@@ -54,7 +54,7 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
         String passwordEncoded = passwordUtil.encodePassword(password);
         try {
             // Queue new event for publishing to Local Broker topic
-            EventForwarder.getInstance().addLocalPublishTask(name, topic, eventMap, ()->countLocalPublish(true), ()->countLocalPublish(false));
+            EventForwarder.getInstance().addLocalPublishTask(this, topic, eventMap, ()->countLocalPublish(true), ()->countLocalPublish(false));
             log.trace("- Event queued for publishing to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, payload={}",
                     name, localBrokerUrl, username, passwordEncoded, topic, eventMap);
         } catch (Exception ex) {
@@ -72,7 +72,7 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
             return;
         for (GroupingConfiguration.BrokerConnectionConfig fwdToGrouping : forwardToGroupings) {
             try {
-                EventForwarder.getInstance().addEventForwardTask(name, fwdToGrouping, topic, eventMap, ()->countForward(true), ()->countForward(false));
+                EventForwarder.getInstance().addEventForwardTask(this, fwdToGrouping, topic, eventMap, ()->countForward(true), ()->countForward(false));
                 log.debug("- Event queued for forwarding to grouping: subscriber={}, forward-to-grouping={}, topic={}, payload={}",
                         name, fwdToGrouping, topic, eventMap);
             } catch (Exception ex) {

@@ -12,15 +12,14 @@ package eu.melodic.event.brokercep;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.GroupingConfiguration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -35,35 +34,35 @@ public class EventForwarder implements InitializingBean, Runnable {
     private final BrokerCepService brokerCepService;
     private final LinkedBlockingDeque<EventForwardTask> eventForwardingQueue = new LinkedBlockingDeque<>();
 
-    public void addEventForwardTask(String senderName, GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig, String topic, Map<String,Object> eventMap, Runnable success, Runnable failure) {
-        boolean isLocalPublish =
-                brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer()
-                        .equals(brokerConnectionConfig.getUrl());
-        eventForwardingQueue.add(new EventForwardTask(senderName, isLocalPublish, brokerConnectionConfig, topic, eventMap, success, failure));
-        log.debug("EventForwarder: {} task in the queue", eventForwardingQueue.size());
-    }
-
-    public void addEventForwardTask(String senderName, String brokerUrl, String certificate, String username, String password, String topic, Map<String,Object> eventMap, Runnable success, Runnable failure) {
-        GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig =
-                new GroupingConfiguration.BrokerConnectionConfig(null, brokerUrl, certificate, username, password);
-        addEventForwardTask(senderName, brokerConnectionConfig, topic, eventMap, success, failure);
-    }
-
-    public void addLocalPublishTask(String senderName, String topic, Map<String,Object> eventMap, Runnable success, Runnable failure) {
-        String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
-        String username = brokerCepService.getBrokerUsername();
-        String password = brokerCepService.getBrokerPassword();
-        GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig =
-                new GroupingConfiguration.BrokerConnectionConfig(null, brokerUrl, null, username, password);
-        eventForwardingQueue.add(new EventForwardTask(senderName, true, brokerConnectionConfig, topic, eventMap, success, failure));
-        log.debug("EventForwarder: {} task in the queue", eventForwardingQueue.size());
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception {
         if (instance==null) instance = this;
         Executors.newFixedThreadPool(1).submit(this);
         log.info("EventForwarder: Starting event publish/forward worker");
+    }
+
+    public void addEventForwardTask(@NonNull BrokerCepStatementSubscriber sender, @NonNull GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
+        boolean isLocalPublish =
+                brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer()
+                        .equals(brokerConnectionConfig.getUrl());
+        eventForwardingQueue.add(new EventForwardTask(sender, isLocalPublish, brokerConnectionConfig, topic, eventMap, success, failure));
+        log.debug("EventForwarder: {} task in the queue", eventForwardingQueue.size());
+    }
+
+    public void addEventForwardTask(@NonNull BrokerCepStatementSubscriber sender, String grouping,  String brokerUrl, String certificate, String username, String password, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
+        GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig =
+                new GroupingConfiguration.BrokerConnectionConfig(grouping, brokerUrl, certificate, username, password);
+        addEventForwardTask(sender, brokerConnectionConfig, topic, eventMap, success, failure);
+    }
+
+    public void addLocalPublishTask(@NonNull BrokerCepStatementSubscriber sender, @NonNull String topic, @NonNull Map<String,Object> eventMap, Runnable success, Runnable failure) {
+        String brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
+        String username = brokerCepService.getBrokerUsername();
+        String password = brokerCepService.getBrokerPassword();
+        GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig =
+                new GroupingConfiguration.BrokerConnectionConfig(null, brokerUrl, null, username, password);
+        eventForwardingQueue.add(new EventForwardTask(sender, true, brokerConnectionConfig, topic, eventMap, success, failure));
+        log.debug("EventForwarder: {} task in the queue", eventForwardingQueue.size());
     }
 
     @Override
@@ -78,7 +77,7 @@ public class EventForwarder implements InitializingBean, Runnable {
     }
 
     private void processEventForwardTask(EventForwardTask task) {
-        String senderName = task.getSenderName();
+        String senderName = task.getSender().getName();
         String topic = task.getTopic();
         Map<String, Object> eventMap = task.getEventMap();
 
@@ -99,17 +98,72 @@ public class EventForwarder implements InitializingBean, Runnable {
             String password = task.getBrokerConnectionConfig().getPassword();
 
             if (task.isLocalPublish()) {
+                // Log start of event send to the local broker
                 log.trace("- Publishing event to local broker: subscriber={}, local-broker={}, username={}, password={}, topic={}, retry={}, payload={}",
                         senderName, brokerUrl, username, "passwordEncoded", topic, task.getRetries(), eventMap);
             } else {
-                log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, retry={}, payload={}",
-                        senderName, task.getBrokerConnectionConfig(), brokerUrl, username, topic, task.getRetries(), eventMap);
+                log.trace("- Checking forward broker configuration before event send: subscriber={}, local-broker={}, username={}, password={}, topic={}, retry={}, payload={}",
+                        senderName, brokerUrl, username, "passwordEncoded", topic, task.getRetries(), eventMap);
+                String targetGrouping = task.getBrokerConnectionConfig().getGrouping();
+                log.trace("-   Target grouping: {}", targetGrouping);
+
+                // Check if sender forwards have been cleared (indicating that this node became an aggregator)
+                boolean configChanged = false;
+                boolean forwardsExist = task.getSender().getForwardToGroupings() != null && task.getSender().getForwardToGroupings().size() > 0;
+                log.trace("-   Forwards exist: {}", forwardsExist);
+
+                if (forwardsExist) {
+                    // Get forward broker configuration from the sender
+                    GroupingConfiguration.BrokerConnectionConfig bcc =
+                            task.getSender().getForwardToGroupings().stream()
+                                    .filter(f -> f.getGrouping().equals(targetGrouping))
+                                    .findAny().orElse(null);
+                    log.trace("-   Selected BrokerConnectionConfig: {}", bcc);
+
+                    // Log any changes in forward broker config
+                    String brokerUrl2 = bcc.getUrl();
+                    String username2 = bcc.getUsername();
+                    String password2 = bcc.getPassword();
+
+                    if (!brokerUrl.equals(brokerUrl2)) {
+                        log.warn("-   Forward broker config changed: sender: {}, broker-url: {} -> {}, event: {}", senderName, brokerUrl, brokerUrl2, task.getEventMap());
+                        brokerUrl = brokerUrl2;
+                        configChanged = true;
+                    }
+                    if (!username.equals(username2)) {
+                        log.warn("-   Forward broker config changed: sender: {}, username: {} -> {}, event: {}", senderName, username, username2, task.getEventMap());
+                        username = username2;
+                        configChanged = true;
+                    }
+                    if (!password.equals(password2)) {
+                        log.warn("-   Forward broker config changed: sender: {}, password: ******** -> ********, event: {}", senderName, task.getEventMap());
+                        password = password2;
+                        configChanged = true;
+                    }
+                } else {
+                    log.warn("-   Forwards removed for topic and grouping. Using local broker: topic={}, grouping={}, sender={}, event={}", task.getTopic(), targetGrouping, senderName, task.getEventMap());
+
+                    brokerUrl = brokerCepService.getBrokerCepProperties().getBrokerUrlForConsumer();
+                    username = brokerCepService.getBrokerUsername();
+                    password = brokerCepService.getBrokerPassword();
+                    configChanged = true;
+                }
+
+                // Log start of event send to forward broker
+                if (configChanged)
+                    log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, retry={}, payload={}",
+                            senderName, task.getBrokerConnectionConfig(), brokerUrl, username, topic, task.getRetries(), eventMap);
+                else
+                    log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, retry={}, payload={}",
+                            senderName, task.getBrokerConnectionConfig(), brokerUrl, username, topic, task.getRetries(), eventMap);
             }
 
+            // Update retry info and try sending event
             task.newRetry();
             brokerCepService.publishEvent(brokerUrl, username, password, topic, eventMap);
             task.completed();
 
+            // Log successful event send
             if (task.isLocalPublish()) {
                 log.debug("- Event published to local broker: subscriber={}, local-broker={}, username={}, topic={}, payload={}, duration={}ms",
                         senderName, brokerUrl, username, topic, eventMap, task.getTotalDuration());
@@ -118,13 +172,16 @@ public class EventForwarder implements InitializingBean, Runnable {
                         senderName, task.brokerConnectionConfig, brokerUrl, username, topic, eventMap, task.getTotalDuration());
             }
 
+            // Run successful event send callback
             runIfNotNull(task.getSuccess());
 
         } catch (Exception ex) {
+            // Increase retry count and log failed event send
             task.increaseRetries();
             log.error("- Error while sending event: subscriber={}, forward-to-groupings={}, topic={}, retry={}, duration={}ms, payload={}, exception: ",
                     senderName, task.getBrokerConnectionConfig(), topic, task.getRetries()-1, task.getTotalDuration(), eventMap, ex);
 
+            // Check if retries exceeded limits. If not then put event back in the queue.
             if (properties.getMaxEventForwardRetries()>=0 && task.getRetries() > properties.getMaxEventForwardRetries()) {
                 log.error("- Max event publish/forward retries exceeded. Dropping event: subscriber={}, forward-to-groupings={}, topic={}, payload={}",
                         senderName, task.getBrokerConnectionConfig(), topic, eventMap);
@@ -139,6 +196,7 @@ public class EventForwarder implements InitializingBean, Runnable {
                 runIfNotNull(task.getFailure());
 
             } else {
+                // Retry limits not exceeded. Put event back in the queue
                 eventForwardingQueue.add(task);
                 log.debug("- Event placed back in queue: subscriber={}, forward-to-groupings={}, topic={}, payload={}",
                         senderName, task.getBrokerConnectionConfig(), topic, eventMap);
@@ -154,14 +212,14 @@ public class EventForwarder implements InitializingBean, Runnable {
     @Getter
     @RequiredArgsConstructor
     protected static class EventForwardTask {
-        private final String senderName;
-        private final boolean localPublish;
-        private final GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig;
-        private final String topic;
-        private final Map<String,Object> eventMap;
+        @NonNull private final BrokerCepStatementSubscriber sender;
+        @NonNull private final boolean localPublish;
+        @NonNull private final GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig;
+        @NonNull private final String topic;
+        @NonNull private final Map<String,Object> eventMap;
         private final Runnable success;
         private final Runnable failure;
-        private final long creation = System.currentTimeMillis();
+        @NonNull private final long creation = System.currentTimeMillis();
 
         private long lastRetryStart;
         private long lastRetryEnd;
