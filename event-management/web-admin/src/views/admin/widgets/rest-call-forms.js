@@ -64,8 +64,8 @@ export const FORM_SPECS = {
                         { 'name': 'address', 'text': 'IP address' },
                         { 'name': 'ssh.port', 'text': 'SSH port', 'defaultValue': '22' },
                         { 'name': 'ssh.username', 'text': 'SSH username' },
-                        { 'name': 'ssh.password', 'text': 'SSH password' },
-                        { 'name': 'ssh.key', 'text': 'SSH key' },
+                        { 'name': 'ssh.password', 'text': 'SSH password', 'type': 'password' },
+                        { 'name': 'ssh.key', 'text': 'SSH key', 'type': 'password' },
                     ]
                 },
                 'app-id-form': {

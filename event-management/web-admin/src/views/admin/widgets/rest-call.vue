@@ -50,6 +50,7 @@
                                    class="col-sm-3 col-form-label col-form-label-sm"
                             >{{f.text}}</label>
                             <input :id="get_input_id(f)"
+                                   :type="f.type"
                                    :value="get_form_data(f)"
                                    class="col-sm-8 form-control form-control-sm"
                                    :aria-describedby="f.name+'_'+uid"
@@ -244,11 +245,20 @@ export default {
 
             // Update request payload
             let taPayload = $('#restRequestPayload_'+this.uid);
+            let payload = this.getPayload(true);
+            if (payload==null) {
+                taPayload.val('');
+            } else {
+                taPayload.val(payload);
+            }
+        },
+        getPayload(makePasswords) {
+            // Get request payload
+            let taPayload = $('#restRequestPayload_'+this.uid);
             let type = $('#formType_'+this.uid).val();
             let opt = this.options.find((opt) => opt.id===type);
             if (! this.needsRequestBody(opt.method)) {
-                taPayload.val('');
-                return;
+                return null;
             }
 
             let fields = this.form[opt.form].fields;
@@ -266,9 +276,10 @@ export default {
                     _o = _o[_p];
                 }
                 _o[parts[0]] = v;
+                if (makePasswords && f.type && f.type==='password') _o[parts[0]] = '********';
             });
             s = JSON.stringify(obj, null, 4);
-            taPayload.val(s);
+            return s;
         },
         updateEndpoint() {
             let type = $('#formType_'+this.uid).val();
@@ -329,7 +340,7 @@ export default {
             let method = _opt.method;
             let url = $('#restEndpoint_'+this.uid).val();
             //console.log(method+'  '+url);
-            let body = $('#restRequestPayload_'+this.uid).val();
+            let body = this.getPayload(false);
             if (! this.needsRequestBody(method))
                 body = null;
 
