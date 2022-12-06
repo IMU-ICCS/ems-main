@@ -16,6 +16,7 @@ import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.*;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,12 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.event.Level;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,18 +39,16 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<String, Object, Object> {
-    @Autowired
-    private BaguetteServerProperties config;
-    @Autowired
-    private PasswordUtil passwordUtil;
-    @Autowired
-    private NodeRegistry nodeRegistry;
+    private final BaguetteServerProperties config;
+    private final PasswordUtil passwordUtil;
+    private final NodeRegistry nodeRegistry;
 
-    @Autowired
-    private EventBus<String,Object,Object> eventBus;
-    @Autowired @Getter
-    private SelfHealingManager<NodeRegistryEntry> selfHealingManager;
+    private final EventBus<String,Object,Object> eventBus;
+    @Getter
+    private final SelfHealingManager<NodeRegistryEntry> selfHealingManager;
+    private final TaskScheduler taskScheduler;
 
     private Sshd server;
 
@@ -467,23 +467,34 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
     }
 
     private Map<String, String> prepareClientMap(ClientShellCommand c, NodeRegistryEntry entry) {
+        // Get node hostname
         String address = entry!=null ? entry.getIpAddress() : c.getClientIpAddress();
         String hostname = entry!=null ? entry.getHostname() : null;
         if (StringUtils.isBlank(hostname)) {
             if (c!=null)
                 hostname = c.getClientClusterNodeHostname();
-            if (StringUtils.isBlank(hostname)) {
-                try {
-                    hostname = InetAddress.getByName(address).getHostName();
-                } catch (Exception e) {
-                    log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
-                }
-            }
             if (StringUtils.isNotBlank(hostname)) {
                 if (c!=null) c.setClientClusterNodeHostname(hostname);
                 if (entry!=null) entry.setHostname(hostname);
             }
+
+            // Resolve hostname in a separate thread to avoid blocking this method (and the Web Admin updates)
+            if (config.isResolveHostname() && StringUtils.isBlank(hostname)) {
+                taskScheduler.schedule(()->{
+                    try {
+                        String _hostname = InetAddress.getByName(address).getHostName();
+                        if (StringUtils.isNotBlank(_hostname)) {
+                            if (c!=null) c.setClientClusterNodeHostname(_hostname);
+                            if (entry!=null) entry.setHostname(_hostname);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
+                    }
+                }, Instant.now());
+            }
         }
+
+        // Prepare node info map
         Map<String,String> properties = new LinkedHashMap<>();
         properties.put("id", c!=null ? c.getId() : entry.getClientId());
         properties.put("ip-address", address);
