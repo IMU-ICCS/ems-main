@@ -1360,7 +1360,7 @@ public class ModelAnalyzer {
 
         // check if all component metrics are found in arguments - Detailed report
         Set<String> diff2 = new HashSet<>(metricNames);
-        diff2.removeAll(argNames);
+        argNames.forEach(diff2::remove);
         log.debug("    _checkFormulaAndComponents(): diff2={}", diff2);
         if (diff2.size() > 0) {
             log.error("    _checkFormulaAndComponents(): ERROR: Formula component metrics not found in formula arguments: formula={}, metrics-not-found={}, arguments={}", formula, diff2, argNames);

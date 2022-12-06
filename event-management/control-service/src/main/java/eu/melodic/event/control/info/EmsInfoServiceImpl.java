@@ -216,6 +216,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         baguetteServerInfo.put("active-clients-map", controlServiceCoordinator.clientMap());
         baguetteServerInfo.put("passive-clients-list", controlServiceCoordinator.passiveClientList());
         baguetteServerInfo.put("passive-clients-map", controlServiceCoordinator.passiveClientMap());
+        baguetteServerInfo.put("all-clients-list", controlServiceCoordinator.allClientList());
+        baguetteServerInfo.put("all-clients-map", controlServiceCoordinator.allClientMap());
         metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
 
         // Destinations per grouping and min/max grouping

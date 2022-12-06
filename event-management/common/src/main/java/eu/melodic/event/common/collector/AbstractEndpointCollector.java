@@ -146,7 +146,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
             ignoredNodes.remove(nodeAddress);
         } else
         if (RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP.equals(topic)) {
-            log.info("Collectors::{}: Giving up collection from Node: {}", collectorId, nodeAddress);
+            log.warn("Collectors::{}: Giving up collection from Node: {}", collectorId, nodeAddress);
             ignoredNodes.put(nodeAddress, null);
         } else
         if (EventConstant.EVENT_CLIENT_CONFIG_UPDATED.equals(topic)) {
@@ -171,7 +171,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
         // collect data from local node
         if (! properties.isSkipLocal()) {
-            log.info("Collectors::{}: Collecting metrics from local node...", collectorId);
+            log.debug/*info*/("Collectors::{}: Collecting metrics from local node...", collectorId);
             collectAndPublishData("");
         } else {
             log.debug("Collectors::{}: Collection from local node is disabled", collectorId);
@@ -182,7 +182,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         log.trace("Collectors::{}: Is Aggregator: {}", collectorId, collectorContext.isAggregator());
         if (collectorContext.isAggregator()) {
             if (collectorContext.getNodesWithoutClient().size()>0) {
-                log.info("Collectors::{}: Collecting metrics from remote nodes (without EMS client): {}", collectorId,
+                log.debug/*info*/("Collectors::{}: Collecting metrics from remote nodes (without EMS client): {}", collectorId,
                         collectorContext.getNodesWithoutClient());
                 for (Object nodeAddress : collectorContext.getNodesWithoutClient()) {
                     // collect data from remote node
@@ -238,7 +238,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
 
     private COLLECTION_RESULT collectAndPublishData(@NonNull String nodeAddress) {
         if (ignoredNodes.containsKey(nodeAddress)) {
-            log.info("Collectors::{}:   Node is in ignore list: {}", collectorId, nodeAddress);
+            log.debug/*info*/("Collectors::{}:   Node is in ignore list: {}", collectorId, nodeAddress);
             return COLLECTION_RESULT.IGNORED;
         }
 
@@ -307,7 +307,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
             // Remote node data collection URL
             url = String.format(properties.getUrlOfNodesWithoutClient(), nodeAddress);
         }
-        log.info("Collectors::{}:   Collecting data from url: {}", collectorId, url);
+        log.debug/*info*/("Collectors::{}:   Collecting data from url: {}", collectorId, url);
 
         log.debug("Collectors::{}: Collecting data: {}...", collectorId, url);
         long startTm = System.currentTimeMillis();
@@ -328,7 +328,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
             //log.info("Collectors::{}:     Metrics: extracted={}, published={}, failed={}", collectorId,
             //        stats.countSuccess + stats.countErrors, stats.countSuccess, stats.countErrors);
             if (log.isInfoEnabled())
-                log.info("Collectors::{}:     Publish statistics: {}", collectorId, stats);
+                log.debug/*info*/("Collectors::{}:     Publish statistics: {}", collectorId, stats);
             log.debug("Collectors::{}:     Durations: rest-call={}, extract+publish={}, total={}", collectorId,
                     callEndTm-startTm, endTm-callEndTm, endTm-startTm);
         } else {

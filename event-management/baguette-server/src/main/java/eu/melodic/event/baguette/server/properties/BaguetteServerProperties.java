@@ -69,6 +69,7 @@ public class BaguetteServerProperties implements InitializingBean {
 
     private String address;
     public String getServerAddress() { return address; }
+    private boolean resolveHostname = true;
 
     @Min(value = 1, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
     @Max(value = 65535, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
