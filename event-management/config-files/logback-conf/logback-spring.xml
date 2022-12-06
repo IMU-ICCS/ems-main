@@ -13,6 +13,8 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
     <logger name="eu.melodic.upperware.adapter" level="INFO"/>
+    <logger name="eu.melodic.upperware.melodiccachestandalone" level="INFO"/>
+    <logger name="eu.melodic.upperware.activemqtorest" level="INFO"/>
 
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
 
