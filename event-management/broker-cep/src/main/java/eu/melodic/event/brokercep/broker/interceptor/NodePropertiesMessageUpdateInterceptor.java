@@ -10,16 +10,12 @@
 package eu.melodic.event.brokercep.broker.interceptor;
 
 import eu.melodic.event.brokercep.properties.NodeProperties;
-import eu.melodic.event.util.EmsConstant;
-import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.broker.Connection;
 import org.apache.activemq.command.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Map;
 
 @Slf4j
@@ -31,7 +27,7 @@ public class NodePropertiesMessageUpdateInterceptor extends AbstractMessageInter
     @Override
     public void initialized() {
         this.nodeProperties = applicationContext.getBean(NodeProperties.class);
-        log.warn(">>>>>>>>>>  NodePropertiesMessageUpdateInterceptor: Node properties: {}", nodeProperties);
+        log.debug("NodePropertiesMessageUpdateInterceptor: Node properties: {}", nodeProperties);
         assert (nodeProperties != null);
     }
 
