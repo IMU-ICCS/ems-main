@@ -1214,6 +1214,16 @@ public class ControlServiceCoordinator implements InitializingBean {
         return baguette.isServerRunning() ? baguette.getPassiveNodesMap() : Collections.emptyMap();
     }
 
+    public List<String> allClientList() {
+        log.debug("ControlServiceCoordinator.allClientList(): BEGIN:");
+        return baguette.isServerRunning() ? baguette.getAllNodes() : Collections.emptyList();
+    }
+
+    public Map<String, Map<String, String>> allClientMap() {
+        log.debug("ControlServiceCoordinator.allClientMap(): BEGIN:");
+        return baguette.isServerRunning() ? baguette.getAllNodesMap() : Collections.emptyMap();
+    }
+
     public String clientCommandSend(String clientId, String command) {
         log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
         return eventSendCommandToClient("clientCommandSend", clientId, command);

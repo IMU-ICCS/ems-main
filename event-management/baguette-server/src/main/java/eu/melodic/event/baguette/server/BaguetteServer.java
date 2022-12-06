@@ -418,6 +418,14 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         return createClientMap(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.NOT_INSTALLED, NodeRegistryEntry.STATE.IGNORE_NODE)));
     }
 
+    public List<String> getAllNodes() {
+        return createClientList(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.values())));
+    }
+
+    public Map<String, Map<String, String>> getAllNodesMap() {
+        return createClientMap(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.values())));
+    }
+
     private List<String> createClientList(Set<NodeRegistryEntry.STATE> states) {
         return nodeRegistry.getNodes().stream()
                 .filter(entry->states.contains(entry.getState()))
@@ -487,6 +495,12 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         properties.put("reference", entry!=null ? entry.getReference() : null);
         properties.put("node-id", c!=null ? c.getClientProperty("node-id") : null);
         properties.put("node-state", entry!=null && entry.getState()!=null ? entry.getState().toString() : null);
+        properties.put("errors", entry!=null && entry.getErrors()!=null
+                ? entry.getErrors().stream()
+                        .filter(Objects::nonNull)
+                        .map(Object::toString)
+                        .collect(Collectors.joining(" | "))
+                : null);
         return properties;
     }
 

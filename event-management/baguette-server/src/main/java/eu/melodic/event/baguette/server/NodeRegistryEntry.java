@@ -31,6 +31,7 @@ public class NodeRegistryEntry {
     @Getter private STATE state = null;
     @Getter private Date stateLastUpdate;
     @Getter private String reference = UUID.randomUUID().toString();
+    @Getter private List<Object> errors = new LinkedList<>();
     @JsonIgnore
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
     @JsonIgnore

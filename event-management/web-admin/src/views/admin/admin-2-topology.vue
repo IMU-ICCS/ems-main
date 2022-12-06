@@ -284,6 +284,48 @@
                                        :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
                           />
                       </div>
+
+                      <div v-if="data.tree_node_type=='installing'" style="border: 2px dashed green; margin: 0px; padding: 3px;'">
+                          <div class="tree-node-head" style="background-color: transparent;"><i class="far fa-hourglass"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                          <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
+                          <span style="color: grey; font-size: 30px; padding: 0px; margin: 0px;"><i class="fas fa-cog fa-spin"></i></span>
+                          <br/>
+                          <small style="color: grey; font-style: italic;">{{data.nodeState}}...</small>
+                          <br/>
+                          <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                          <br/>
+                          <ActionsList id="" :nodeType="data.tree_node_type"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
+                          />
+                      </div>
+                      <div v-if="data.tree_node_type=='error'" style="border: 4px solid red; margin: 0px; padding: 3px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgo8cmVjdCB3aWR0aD0nNScgaGVpZ2h0PSc1JyBmaWxsPScjZmZmJy8+CjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNjY2MnLz4KPC9zdmc+'); background-repeat: repeat;">
+                          <div class="tree-node-head" style="background-color: pink;"><i class="fa fa-radiation"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                          <small style="color: lightred; font-style: italic;">{{data.nodeId}}</small>
+                          <br/>
+                          <a href="javascript: void(0)" class="blink" style="color: red; font-weight: bold; font-style: italic; font-size: 18px;"
+                             @click="showNodeErrors(data)"
+                             >** ERROR **</a>
+                          <br/>
+                          <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                          <br/>
+                          <ActionsList id="" :nodeType="data.tree_node_type"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
+                          />
+                      </div>
+                      <div v-if="data.tree_node_type=='unknown' || data.tree_node_type==''" style="border: 4px solid grey; margin: 0px; padding: 3px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgo8cmVjdCB3aWR0aD0nNScgaGVpZ2h0PSc1JyBmaWxsPScjZmZmJy8+CjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNjY2MnLz4KPC9zdmc+'); background-repeat: repeat;">
+                          <div class="tree-node-head" style="background-color: #eeeeee;"><i class="far fa-times-circle"></i>&nbsp;{{getShorterNodeName(data.label)}}</div>
+                          <small style="color: lightgrey; font-style: italic;">{{data.nodeId}}</small>
+                          <br/>
+                          <span style="color: grey; font-weight: bold; font-style: italic; font-size: 16px;">Status Unknown</span>
+                          <br/>
+                          <small>&nbsp;&nbsp;&nbsp;&nbsp;Address: {{data.address}}&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                          <br/>
+                          <span :class="['badge', 'badge-pill', getClusterStatusClass(data.nodeStatus)]">{{getClusterStatus(data.nodeStatus)}}</span>
+                          <br/>
+                          <ActionsList id="" :nodeType="data.tree_node_type"
+                                       :fnSshConsole="openSshConsoleCallback(data.reference, data.address)"
+                          />
+                      </div>
                     </template>
                 </vue-blocks-tree>
             </p>
@@ -578,6 +620,10 @@ export default {
             });
             console.log('callEmsServer: command sent: ', url);
         },
+        showNodeErrors(node) {
+            let mesg = node!=null && node.nodeErrors && node.nodeErrors!=='' ? node.nodeErrors.replace('|', '\n') : 'No errors';
+            alert(mesg);
+        },
 
         // -------------------------------------------------------------------------------------------------------------
 
@@ -590,9 +636,10 @@ export default {
             if (!this.modelValue['baguette-server'] || !this.modelValue['baguette-server']['active-clients-map'])
                 return;
 
-            let activeClients = this.modelValue['baguette-server']['active-clients-map'];
-            let passiveClients = this.modelValue['baguette-server']['passive-clients-map'];
-            let allClients = { ...passiveClients, ...activeClients };
+            //let activeClients = this.modelValue['baguette-server']['active-clients-map'];
+            //let passiveClients = this.modelValue['baguette-server']['passive-clients-map'];
+            //let allClients = {  ...allClients_0, ...passiveClients, ...activeClients };
+            let allClients = this.modelValue['baguette-server']['all-clients-map'];
             let _zones = { };
             let _clients = [ ];
 
@@ -612,6 +659,7 @@ export default {
                     reference: clientData['reference'],
                     nodeId: clientData['node-id'],
                     nodeState: clientData['node-state'],
+                    nodeErrors: clientData['errors'],
                     loc: 'Unknown',
                     status: 'Up',
                     stats: {}
@@ -672,7 +720,13 @@ export default {
                     _cdata.tree_node_type =
                             _cdata.nodeState==='IGNORE_NODE' ? 'ignore' :
                             _cdata.nodeState==='NOT_INSTALLED' ? 'edge' :
-                            'vm';
+                            _cdata.nodeState==='REGISTERED' ? 'vm' :
+                            _cdata.nodeState==='INSTALLING' || _cdata.nodeState==='INSTALLED'
+                                || _cdata.nodeState==='WAITING_REGISTRATION' || _cdata.nodeState==='REGISTERING'
+                                ? 'installing' :
+                            _cdata.nodeState==='INSTALL_ERROR' || _cdata.nodeState==='REGISTRATION_ERROR'
+                                || _cdata.nodeState==='NODE_FAILED' ? 'error' :
+                            'unknown';
                     _zdata.children.push(_cdata);
 
                     if (_cdata.nodeStatus && _cdata.nodeStatus.toLowerCase()==='aggregator')
@@ -932,5 +986,18 @@ export default {
     margin: 0px;
     padding: 5px;
     width:100%;
+}
+
+.blink {
+  animation: blinker 2s step-start infinite;
+}
+@keyframes blinker {
+  0%   { opacity: 1; }
+  30%  { opacity: 1; }
+  40%  { opacity: .5; }
+  50%  { opacity: .0; }
+  60%  { opacity: .5; }
+  70%  { opacity: 1; }
+  100% { opacity: 1; }
 }
 </style>

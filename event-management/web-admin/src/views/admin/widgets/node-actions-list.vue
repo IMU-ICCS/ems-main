@@ -25,6 +25,9 @@
     <div :id="id" v-if="nodeType==='edge' || nodeType==='ignore'">
         <span :style="style('fnSshConsole')" @click="fnSshConsole" title="SSH console"><i class="fas fa-terminal"/></span>&nbsp;&nbsp;
     </div>
+    <div :id="id" v-if="nodeType==='installing' || nodeType==='error' || nodeType==='unknown' || nodeType===''">
+        <span :style="style('fnSshConsole')" @click="fnSshConsole" title="SSH console"><i class="fas fa-terminal"/></span>&nbsp;&nbsp;
+    </div>
 </template>
 
 <script>
