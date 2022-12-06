@@ -939,12 +939,12 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     @Async
-    synchronized void emsExit() {
+    void emsExit() {
         emsExit(properties.getExitCode());
     }
 
     @Async
-    synchronized void emsExit(int exitCode) {
+    void emsExit(int exitCode) {
         if (properties.isExitAllowed()) {
             // Signal SpringBootApp to exit
             log.info("ControlServiceCoordinator.emsExit(): Signaling exit...");
