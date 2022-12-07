@@ -9,12 +9,36 @@
 
 package eu.melodic.event.translate;
 
+import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/*
+ * Run the 'TranslatorApplication' from command line
+ *
+ * 1) Compile application and retrieve dependencies:
+ *      mvn clean package
+ *      mvn dependency:copy-dependencies
+ *
+ * 2) Start CDO server and set its address (+ other settings) in CDO client config:
+ *      File: eu.paasage.mddb.cdo.client.properties
+ *      Property: host
+ *
+ * 3) Set environment variables:
+ *      PAASAGE_CONFIG_DIR=....
+ *      MELODIC_CONFIG_DIR=....
+ *      SPRING_CONFIG_LOCATION=classpath:rule-templates.yml,file:${MELODIC_CONFIG_DIR}/ems-server.yml
+ *
+ * 4) Run the application:
+ *    Windows:
+ *      java -cp target\classes;target\dependency\* eu.melodic.event.translate.TranslatorApplication ...<<MODEL_NAME>>...
+ *    Linux:
+ *      java -cp target/classes:target/dependency/* eu.melodic.event.translate.TranslatorApplication ...<<MODEL_NAME>>...
+ */
 @Slf4j
 @SpringBootApplication
 public class TranslatorApplication implements CommandLineRunner {
@@ -22,6 +46,10 @@ public class TranslatorApplication implements CommandLineRunner {
     private static boolean standalone = false;
     @Autowired
     private CamelToEplTranslator translator;
+    @Autowired
+    private CamelToEplTranslatorProperties properties;
+    @Autowired
+    private RuleTemplateProperties ruleTemplates;
 
     public static void main(String[] args) {
         standalone = true;
@@ -34,10 +62,11 @@ public class TranslatorApplication implements CommandLineRunner {
 
         log.info("Testing CAMEL-to-EPL Translator");
         log.info("Args: {}", java.util.Arrays.asList(args));
+        log.info("Properties: {}", properties);
+        log.info("Rule Templates: {}", ruleTemplates);
 
-        String camelModelPath = (args.length > 0 && !args[0].trim().isEmpty()) ? args[0].trim() : "/camel-new";
-        log.info("Models to use...");
-        log.info("  Camel-model: {}", camelModelPath);
+        String camelModelPath = (args.length > 0 && !args[0].trim().isEmpty()) ? args[0].trim() : "/camel-model";
+        log.info("Camel-model: {}", camelModelPath);
         translator.translate(camelModelPath);
     }
 }
