@@ -916,7 +916,7 @@ public class ModelAnalyzer {
 
     private boolean hasAnnotation(NamedElement elem, String annotation) {
         log.trace("  hasAnnotation: BEGIN: elem={}, looking-for-annotation={}", elem.getName(), annotation);
-        if (elem.getAnnotations()==null) return false;
+        if (elem.getAnnotations()==null || elem.getAnnotations().size()==0) return false;
         return elem.getAnnotations().stream().anyMatch(ann -> {
             log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
             //StringBuilder annPath = new StringBuilder(ann.getName());
