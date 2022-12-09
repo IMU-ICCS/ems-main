@@ -918,27 +918,32 @@ public class ModelAnalyzer {
         log.trace("  hasAnnotation: BEGIN: elem={}, looking-for-annotation={}", elem.getName(), annotation);
         if (elem.getAnnotations()==null || elem.getAnnotations().size()==0) return false;
         return elem.getAnnotations().stream().anyMatch(ann -> {
-            log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
-            //StringBuilder annPath = new StringBuilder(ann.getName());
-            StringBuilder annPath = new StringBuilder(ann.getId());
-            camel.mms.MmsConcept p;
-            if (ann instanceof camel.mms.MmsConceptInstance) {
-                p = (camel.mms.MmsConcept) ann.eContainer();
-                log.trace("  hasAnnotation:  Adding instance parent:   id={}, name={}", p.getId(), p.getName());
-                //annPath.insert(0, p.getName() + ".");
-                annPath.insert(0, p.getId() + ".");
-            } else {
-                p = (camel.mms.MmsConcept) ann;
+            try {
+                log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
+                //StringBuilder annPath = new StringBuilder(ann.getName());
+                StringBuilder annPath = new StringBuilder(ann.getId());
+                camel.mms.MmsConcept p;
+                if (ann instanceof camel.mms.MmsConceptInstance) {
+                    p = (camel.mms.MmsConcept) ann.eContainer();
+                    log.trace("  hasAnnotation:  Adding instance parent:   id={}, name={}", p.getId(), p.getName());
+                    //annPath.insert(0, p.getName() + ".");
+                    annPath.insert(0, p.getId() + ".");
+                } else {
+                    p = (camel.mms.MmsConcept) ann;
+                }
+                while (p.getParent() != null) {
+                    p = p.getParent();
+                    log.trace("  hasAnnotation:  Adding parent:   id={}, name={}", p.getId(), p.getName());
+                    //annPath.insert(0, p.getName() + ".");
+                    annPath.insert(0, p.getId() + ".");
+                }
+                log.trace("  hasAnnotation: Annotation: {}", annPath);
+                log.trace("  hasAnnotation: Annotation matches to looking-for-annotation: {}", annPath.toString().equals(annotation));
+                return annPath.toString().equals(annotation);
+            } catch (Exception e) {
+                log.error("  hasAnnotation: Annotation: EXCEPTION: elem={}, looking-for-annotation={}", elem.getName(), annotation);
+                throw e;
             }
-            while (p.getParent() != null) {
-                p = p.getParent();
-                log.trace("  hasAnnotation:  Adding parent:   id={}, name={}", p.getId(), p.getName());
-                //annPath.insert(0, p.getName() + ".");
-                annPath.insert(0, p.getId() + ".");
-            }
-            log.trace("  hasAnnotation: Annotation: {}", annPath);
-            log.trace("  hasAnnotation: Annotation matches to looking-for-annotation: {}", annPath.toString().equals(annotation));
-            return annPath.toString().equals(annotation);
         });
     }
 
