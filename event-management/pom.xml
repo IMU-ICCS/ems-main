@@ -106,14 +106,6 @@
             <modules>
                 <module>web-admin</module>
             </modules>
-            <dependencies>
-                <dependency>
-                    <groupId>eu.melodic.event</groupId>
-                    <artifactId>web-admin</artifactId>
-                    <version>${project.version}</version>
-                    <type>pom</type>
-                </dependency>
-            </dependencies>
         </profile>
     </profiles>
 

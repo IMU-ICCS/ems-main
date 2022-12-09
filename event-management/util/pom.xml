@@ -101,4 +101,24 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>build-web-admin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <missing>.dev-skip-build-web-admin</missing>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>eu.melodic.event</groupId>
+                    <artifactId>web-admin</artifactId>
+                    <version>${project.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
 </project>
