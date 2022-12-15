@@ -13,7 +13,15 @@ export default {
   name: 'Header',
   props: {
     links: Array,
-    showClock: { type: Boolean, default: false }
+    showClock: { type: Boolean, default: false },
+    emsData: Object
   },
   components: { Clock },
+  computed: {
+    dagExportFiles() {
+      if (!this.emsData || !this.emsData.ems || !this.emsData.ems.translator) return [];
+      if (!this.emsData.ems.translator['export-files']) return [];
+      return this.emsData.ems.translator['export-files'];
+    }
+  },
 }

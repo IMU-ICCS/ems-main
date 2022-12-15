@@ -246,6 +246,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             translatorInfo.put("destination-connections", _TC.getTopicConnections());
             translatorInfo.put("function-definitions", _TC.FUNC.stream()
                     .map(FunctionDefinition::toString).collect(Collectors.toList()));
+            translatorInfo.put("export-files", _TC.getExportFiles());
         }
 
         log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);

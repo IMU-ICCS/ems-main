@@ -26,8 +26,9 @@
           <a class="dropdown-item disabled" href="#" target="_new">Old EMS Server logs</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logs/_TC.json" target="_new">Translation context</a>
-          <a class="dropdown-item disabled" href="#" target="_new">DAG as SVG</a>
-          <a class="dropdown-item disabled" href="#" target="_new">DAG as PNG</a>
+          <div v-if="dagExportFiles.length>0" class="dropdown-divider"></div>
+          <a v-if="dagExportFiles.length>0" class="dropdown-item disabled" href="#">DAG as...</a>
+          <a v-for="item in dagExportFiles"  class="dropdown-item" :href="'/files/getpath'+item" target="_new">&nbsp;&nbsp;&nbsp;&nbsp;{{item.slice(item.lastIndexOf('.')+1).toLowerCase()}}</a>
         </div>
       </li>
 
