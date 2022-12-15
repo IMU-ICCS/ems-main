@@ -2,6 +2,8 @@
 // Date: 2022-01-18
 package eu.melodic.event.translate.model.tools.metadata;
 
+import camel.core.MeasurableAttribute;
+import camel.metric.MetricTemplate;
 import camel.metric.impl.MetricVariableImpl;
 import camel.mms.MmsObject;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +54,14 @@ public class CamelMetadataTool {
 
     private static boolean isVariableFromGroup(MetricVariableImpl metricVariable, List<CamelMetadata> metadata) {
         try {
-            return metricVariable.getMetricTemplate().getAttribute().getAnnotations().stream().anyMatch(mmsObject -> checkAnnotation(mmsObject, metadata));
+            MetricTemplate tpl = metricVariable.getMetricTemplate();
+            MeasurableAttribute att = tpl==null ? null : tpl.getAttribute();
+            EList<MmsObject> annList = att==null ? null : att.getAnnotations();
+            if (annList==null || annList.size()==0) {
+                log.error("isVariableFromGroup: Metric-variable={}, template={}, attribute={}, annotations={}", metricVariable.getName(), tpl, att, annList);
+                return false;
+            }
+            return annList.stream().anyMatch(mmsObject -> checkAnnotation(mmsObject, metadata));
         } catch (Exception e) {
             log.error("isVariableFromGroup: EXCEPTION: Metric-variable={} -- Exception: ", metricVariable.getName(), e);
             throw e;

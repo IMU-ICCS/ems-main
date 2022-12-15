@@ -23,7 +23,7 @@
 
   <!-- Site wrapper -->
   <div class="wrapper" style="min-height: 100vh;">
-    <Header :links="menuItems" :showClock="true">
+    <Header :links="menuItems" :showClock="true" v-model:emsData="emsSseData.data">
       <!--<SearchForm />-->
       <template v-slot:right-side>
         <!--<HealthInfo />

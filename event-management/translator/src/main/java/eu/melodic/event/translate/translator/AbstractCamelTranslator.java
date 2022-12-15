@@ -124,11 +124,13 @@ public abstract class AbstractCamelTranslator implements Translator {
 				exportName = StringUtils.stripToEmpty(exportName);
 				if (exportName.isEmpty()) exportName = "noname";
 				String baseFileName = String.format("%s/%s-%d", exportPath, exportName, System.currentTimeMillis());
+				List<String> exportFiles;
 				if (dot!=null) {
-					_TC.DAG.exportDAG(dot, baseFileName, exportFormats, imageWidth);
+					exportFiles = _TC.DAG.exportDAG(dot, baseFileName, exportFormats, imageWidth);
 				} else {
-					_TC.DAG.exportDAG(baseFileName, exportFormats, imageWidth);
+					exportFiles = _TC.DAG.exportDAG(baseFileName, exportFormats, imageWidth);
 				}
+				_TC.setExportFiles(exportFiles);
 				//log.info("Decomposition Graph export to file(s): ok");
 			} catch (Exception ex) {
 				log.error("Decomposition Graph export to file(s): EXCEPTION: ", ex);
@@ -166,6 +168,8 @@ public abstract class AbstractCamelTranslator implements Translator {
 		log.info("Metric Constraints:\n{}", _TC.getMetricConstraints());
 		log.info("*********************************************************");
 		log.info("Load-Annotated Metrics:\n{}", _TC.getLoadAnnotatedMetricsSet());
+		log.info("*********************************************************");
+		log.info("Export files:\n{}", _TC.getExportFiles());
 		log.info("*********************************************************");
 	}
 

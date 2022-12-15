@@ -279,6 +279,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     _copyTC.MVV.addAll(_TC.MVV);
                     _copyTC.MVV_CP.putAll(_TC.MVV_CP);
                     _copyTC.addLoadAnnotatedMetrics(_TC.getLoadAnnotatedMetricsSet());
+                    _copyTC.setExportFiles(_TC.getExportFiles());
 
                     gson.toJson(_copyTC, writer);
                     writer.close();

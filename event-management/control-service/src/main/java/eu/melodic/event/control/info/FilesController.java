@@ -160,6 +160,72 @@ public class FilesController {
         return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("Not a regular file")));
     }
 
+    @GetMapping("/files/getpath/**")
+    public ResponseEntity<InputStreamResource> getFileFromPath(HttpServletRequest request, WebRequest webRequest) throws IOException {
+        log.debug("getFileFromPath(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
+        String mvcPrefix = "/files/getpath/";
+        String pathStr = getPathFromRequest(request, webRequest, mvcPrefix);
+        log.debug("getFileFromPath(): --- pathStr: {}", pathStr);
+        if (!pathStr.startsWith(File.separator)) pathStr = File.separator+pathStr;
+
+        String filePath = null;
+        for (Path r : roots) {
+            log.trace("getFileFromPath(): --- Checking pathStr against root: pathStr={}, root={}", pathStr, r);
+            if (pathStr.startsWith(r.toFile().getAbsolutePath())) {
+                log.debug("getFileFromPath(): --- pathStr is under root: pathStr={}, root={}", pathStr, r);
+                filePath = pathStr;
+                if (!filePath.startsWith(File.separator)) filePath = File.separator+filePath;
+                break;
+            }
+        }
+        log.debug("getFileFromPath(): --- filePath: {}", filePath);
+        if (filePath==null) {
+            log.warn("getFileFromPath(): --- FORBIDDEN: Specified path is not under any allowed root: {}", filePath);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Specified path is not under any allowed root: "+filePath);
+        }
+
+        File file = Paths.get(pathStr).toFile();
+        log.debug("getFileFromPath(): --- Effective Path: {}", file);
+        if (!file.exists()) {
+            //return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File not exists")));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: "+pathStr);
+        }
+        if (isFileBlocked(file.toPath())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Blocked extension. Cannot download file: "+pathStr);
+        }
+        if (!file.canRead()) {
+            return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File cannot be read")));
+        }
+        if (file.isFile()) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            headers.add("Pragma", "no-cache");
+            headers.add("Expires", "0");
+
+            String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+            if (StringUtils.isBlank(mimeType))
+                mimeType = Files.probeContentType(file.toPath());
+            log.debug("getFileFromPath(): --- File content type: {}", mimeType);
+            MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            try {
+                if (StringUtils.isNotBlank(mimeType))
+                    mediaType = MediaType.parseMediaType(mimeType);
+            } catch (Exception e) {
+                log.warn("getFileFromPath(): --- Invalid File content type: {}, file: {}\n", mimeType, file.getName(), e);
+            }
+            log.debug("getFileFromPath(): --- Will use content type: {}", mediaType);
+            if (mediaType==MediaType.APPLICATION_OCTET_STREAM)
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+file.getName());
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(file.length())
+                    .contentType(mediaType)
+                    .body(new InputStreamResource(Files.newInputStream(file.toPath())));
+        }
+        return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("Not a regular file")));
+    }
+
     private boolean isFileBlocked(Path path) {
         String fileName = path.toFile().getName();
         return properties.getFiles().getExtensionsBlocked().stream()
