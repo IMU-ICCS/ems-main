@@ -352,7 +352,6 @@ deploy:ems-server:
   stage: deploy
   only:
     - morphemic-rc3.0
-    - ems/morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part3:ems
