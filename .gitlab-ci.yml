@@ -361,7 +361,7 @@ deploy:ems-server:
   script:
     - $DOCKER_CLI $EMS_CLI -Ddocker.imagePrefix=melodic/ clean install
     - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
-    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
