@@ -525,8 +525,8 @@ self.healing.recovery.file.netdata=
 ### Translator configuration
 #translator.translatorType=CAMEL_FILE
 #translator.translatorProperties.camelFile.modelsDir=/models/
-#translator.translatorProperties.camelWeb.baseUrl=http://localhost/models/
-#translator.translatorProperties.camelWeb.modelsDir=false
+#translator.translatorProperties.camelWeb.baseUrl=http://models-server:8080/
+#translator.translatorProperties.camelWeb.modelsDir=/models/web
 #translator.translatorProperties.camelWeb.deleteFile=false
 
 translator.leaf-node-grouping = PER_INSTANCE

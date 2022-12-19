@@ -563,8 +563,8 @@ translator:
   #  camelFile:
   #    modelsDir: /models/
   #  camelWeb:
-  #    baseUrl: http://localhost/models/
-  #    modelsDir: /models/
+  #    baseUrl: http://models-server:8080/
+  #    modelsDir: /models/web
   #    deleteFile: false
 
   leaf-node-grouping: PER_INSTANCE
