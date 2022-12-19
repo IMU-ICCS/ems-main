@@ -74,7 +74,8 @@ public class MetaSolverController {
         ConstraintProblemEnhancementResponseImpl response = new ConstraintProblemEnhancementResponseImpl();
         response.setApplicationId(applicationId);
         response.setResult(notificationResult);
-        response.setDesignatedSolvers(selectedSolvers);
+//        response.setDesignatedSolvers(selectedSolvers);
+        response.setDesignatedSolver(ConstraintProblemEnhancementResponse.DesignatedSolverType.valueOf(selectedSolvers.get(0)));
         response.setWatermark(coordinator.prepareWatermark(requestUuid));
 
         return response;
