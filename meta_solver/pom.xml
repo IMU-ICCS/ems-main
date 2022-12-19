@@ -21,6 +21,11 @@
     <name>Upperware - MetaSolver</name>
 
     <properties>
+        <!-- Melodic component versions -->
+        <!--<melodic.version>5.5.0-SNAPSHOT</melodic.version>
+        <interfaces.version>5.5.0-SNAPSHOT</interfaces.version>-->
+        <cdo-client.version>5.5.0-SNAPSHOT</cdo-client.version>
+        <lombok.version>1.18.24</lombok.version>
         <!--DOCKER plugin properties-->
         <docker.imageName>metasolver</docker.imageName>
     </properties>
@@ -31,14 +36,33 @@
             <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
             <classifier>repackaged</classifier>
+            <version>${cdo-client.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
+            <!--<version>${interfaces.version}</version>-->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>eu.melodic.cdo</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
