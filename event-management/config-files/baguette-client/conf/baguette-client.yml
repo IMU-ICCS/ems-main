@@ -83,7 +83,7 @@ collector:
     error-limit: 3
     pause-period: 60
   prometheus:
-    enable: true
+    enable: false
     delay: 10000
     url: http://127.0.0.1:9090/metrics
     urlOfNodesWithoutClient: http://%s:9090/metrics
