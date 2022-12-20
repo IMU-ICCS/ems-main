@@ -19,6 +19,23 @@
       "message": "Netdata is already installed at Node"
     },
     {
+      "description": "Log Wait if apt is being updated",
+      "taskType": "LOG",
+      "message": "Wait if apt is being updated"
+    },
+    {
+      "description": "Start unattended-upgrade if available",
+      "taskType": "CMD",
+      "command": "if command -v unattended-upgrade &> /dev/null ; then unattended-upgrade -d ; else echo \"Command 'unattended-upgrade' is not available\" ; fi",
+      "executionTimeout": 600000
+    },
+    {
+      "description": "Wait if apt is being updated",
+      "taskType": "CMD",
+      "command": "while [ `ps aux | grep -i lock_is_held | grep -v grep | wc -l` != 0 ]; do echo \"Lock_is_held...\"; ps aux | grep -i lock_is_held ; sleep 10 ; done",
+      "executionTimeout": 600000
+    },
+    {
       "description": "Download Netdata kickstart.sh",
       "taskType": "CMD",
       "command": "curl https://my-netdata.io/kickstart-static64.sh > /tmp/netdata-kickstart.sh",
