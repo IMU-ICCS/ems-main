@@ -619,25 +619,21 @@
                         </executions>
                     </plugin>
 
-                    <!-- Rename docker context folder to 'docker-context'. Removed previous if exists. -->
+                    <!-- Rename docker context folder to 'docker-context'. Remove previous if exists. -->
                     <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <configuration>
-                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                            <filesets>
-                                <fileset>
-                                    <directory>${project.build.directory}/docker-context</directory>
-                                    <followSymlinks>false</followSymlinks>
-                                </fileset>
-                            </filesets>
-                        </configuration>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
-                                <id>remove-old-docker-context</id>
                                 <phase>install</phase>
                                 <goals>
-                                    <goal>clean</goal>
+                                    <goal>run</goal>
                                 </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.build.directory}/docker-context"/>
+                                    </target>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
