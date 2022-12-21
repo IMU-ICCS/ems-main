@@ -923,9 +923,9 @@ public class ModelAnalyzer {
                 //StringBuilder annPath = new StringBuilder(ann.getName());
                 StringBuilder annPath = new StringBuilder(ann.getId());
                 camel.mms.MmsConcept p;
-                if (ann instanceof camel.mms.MmsConceptInstance) {
+                if (ann instanceof camel.mms.MmsConceptInstance || ann instanceof camel.mms.MmsProperty) {
                     p = (camel.mms.MmsConcept) ann.eContainer();
-                    log.trace("  hasAnnotation:  Adding instance parent:   id={}, name={}", p.getId(), p.getName());
+                    log.trace("  hasAnnotation:  Adding {} parent:   id={}, name={}", ann.getClass().getSimpleName(), p.getId(), p.getName());
                     //annPath.insert(0, p.getName() + ".");
                     annPath.insert(0, p.getId() + ".");
                 } else {
