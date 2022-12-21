@@ -133,9 +133,9 @@ public class EventForwarder implements InitializingBean, Runnable {
                     log.trace("-   Selected BrokerConnectionConfig: {}", bcc);
 
                     // Log any changes in forward broker config
-                    String brokerUrl2 = bcc.getUrl();
-                    String username2 = bcc.getUsername();
-                    String password2 = bcc.getPassword();
+                    String brokerUrl2 = bcc!=null ? bcc.getUrl() : null;
+                    String username2 = bcc!=null ? bcc.getUsername() : null;
+                    String password2 = bcc!=null ? bcc.getPassword() : null;
 
                     if (!brokerUrl.equals(brokerUrl2)) {
                         log.warn("-   Forward broker config changed: sender: {}, broker-url: {} -> {}, event: {}", senderName, brokerUrl, brokerUrl2, task.getEventMap());
@@ -163,7 +163,7 @@ public class EventForwarder implements InitializingBean, Runnable {
 
                 // Log start of event send to forward broker
                 if (configChanged)
-                    log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, retry={}, payload={}",
+                    log.debug("- Forwarding event to grouping: CONFIG-CHANGED: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, retry={}, payload={}",
                             senderName, task.getBrokerConnectionConfig(), brokerUrl, username, topic, task.getRetries(), eventMap);
                 else
                     log.debug("- Forwarding event to grouping: subscriber={}, forward-to-grouping={}, url={}, username={}, topic={}, retry={}, payload={}",
