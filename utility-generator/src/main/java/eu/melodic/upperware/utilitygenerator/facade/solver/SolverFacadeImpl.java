@@ -70,6 +70,7 @@ public class SolverFacadeImpl extends AbstractTextResponderFacade implements App
 		else { // return utility value
 			result.put(UTILITY_VALUE_PROPERTY_NAME, utilityValue);
 		}
+		log.info("UG finished event processed. Result data: {}", resultData);
 		sendReply(result);
 	}
 }

@@ -39,7 +39,7 @@ public class FacadeUtilityService {
     }
 
     public Map<String, Object> processCamundaRequest(Map<String, Object> data) {
-        log.info("asynch processCamundaRequest: {}", data);
+        log.info("processCamundaRequest: {}", data);
         Map<String, Object> result = new HashMap<>();
         result.put(CamundaFacadeImpl.PROCESS_ID, data.get(CamundaFacadeImpl.PROCESS_ID));
 
@@ -58,6 +58,7 @@ public class FacadeUtilityService {
 
             UtilityFunctionEvaluator evaluator = new UtilityFunctionEvaluator(camelModelFilePath, cpModelFilePath, readFromFile, nodeCandidates);
             utilityGenerators.put(camelModelFilePath, evaluator);
+            log.info("UG instance created for app-id {}", camelModelFilePath);
             result.put(RESULT_PROPERTY_NAME, "success");
         }
 

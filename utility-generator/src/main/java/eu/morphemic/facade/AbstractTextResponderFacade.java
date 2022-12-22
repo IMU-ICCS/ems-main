@@ -32,7 +32,7 @@ public abstract class AbstractTextResponderFacade extends AbstractFacade {
 		try {
 			connection = initializeConnection();
 			session = initializeSession(connection);
-			log.info("!!!!!!!!  Setting up responding side...");
+			log.info("Setting up responding side...");
 
 			Destination requestTopic = createTopic(getRequestTopic(), session);
 			MessageConsumer consumer = createConsumer(requestTopic, session);
@@ -60,7 +60,7 @@ public abstract class AbstractTextResponderFacade extends AbstractFacade {
 		try {
 			connection = initializeConnection();
 			session = initializeSession(connection);
-			log.info("!!!!!!!!  Setting up responding side...");
+			log.info("Setting up responding side...");
 
 			Destination requestTopic = createTopic(getRequestTopic(), session);
 			MessageConsumer consumer = createConsumer(requestTopic, session);
@@ -88,7 +88,7 @@ public abstract class AbstractTextResponderFacade extends AbstractFacade {
 		try {
 			connection = initializeConnection();
 			session = initializeSession(connection);
-			log.info("!!!!!!!!  Setting up reply...");
+			log.info("Setting up reply...");
 
 			createAndSendReplyMessage(data, session);
 		}
@@ -126,10 +126,10 @@ public abstract class AbstractTextResponderFacade extends AbstractFacade {
 	 * @throws JMSException In case of errors during JMS communication.
 	 */
 	protected Map<String,Object> listenForRequestMessage(MessageConsumer consumer) throws JMSException {
-		log.info("!!!!!!!!  Listening to topic: {}", getRequestTopic());
+		log.info("Listening to topic: {}", getRequestTopic());
 		TextMessage replyMessage = (TextMessage) consumer.receive();
 		Map<String,Object> request =	readJsonTextMessage(replyMessage);
-		log.info("!!!!!!!!  Message received:\n{}", request.toString());
+		log.info("Message received:\n{}", request.toString());
 		return request;
 	}
 
@@ -141,11 +141,11 @@ public abstract class AbstractTextResponderFacade extends AbstractFacade {
 	 */
 	protected void createAndSendReplyMessage(Map<String, Object> data, Session session) throws JMSException {
 		TextMessage replyMessage = createJsonTextMessage(data, session);
-		log.info("!!!!!!!!  Sending to topic: {}", getReplyTopic());
-		log.info("!!!!!!!!  Message: \n{}", replyMessage.getText());
+		log.info("Sending to topic: {}", getReplyTopic());
+		log.info("Message: \n{}", replyMessage.getText());
 		Topic replyTopic = createTopic(getReplyTopic(), session);
 		sendMessage(replyMessage, replyTopic, session);
-		log.info("!!!!!!!!  Message sent");
+		log.info("Message sent");
 	}
 
 	// TODO make double-abstract somehow nicer

@@ -153,10 +153,6 @@
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>jwt-commons</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>javax.jms</groupId>
@@ -167,11 +163,6 @@
             <artifactId>activemq-core</artifactId>
             <version>5.7.0</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.19.2</version>
         </dependency>
 
     </dependencies>
