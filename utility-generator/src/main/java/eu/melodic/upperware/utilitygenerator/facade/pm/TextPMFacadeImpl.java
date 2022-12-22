@@ -96,7 +96,7 @@ public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMF
 		metricsFromConstraintProblem.add(new MetricDTO("hw", "cpu"));
 
 		Map<String, Double> result = pmFacade.callPmPredictionText(data, "genome", variablesFromConstraintProblem, metricsFromConstraintProblem);
-		log.info("!!!!!!!!  FINAL RESULT = {}", result);
+		log.info("FINAL RESULT = {}", result);
 		// just here to keep the VM up until all is logged
 		try {
 			Thread.sleep(1000);

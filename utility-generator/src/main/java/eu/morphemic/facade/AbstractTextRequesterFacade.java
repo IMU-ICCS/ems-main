@@ -44,7 +44,7 @@ public abstract class AbstractTextRequesterFacade extends AbstractFacade {
 		try {
 			connection = initializeConnection();
 			session = initializeSession(connection);
-			log.info("!!!!!!!!  Setting up requesting side...");
+			log.info("Setting up requesting side...");
 
 			String id = generateNextId();
 			data.put(SENDER_ID_PROPERTY_NAME, id);
@@ -79,7 +79,7 @@ public abstract class AbstractTextRequesterFacade extends AbstractFacade {
 		try {
 			connection = initializeConnection();
 			session = initializeSession(connection);
-			log.info("!!!!!!!!  Setting up requesting side...");
+			log.info("Setting up requesting side...");
 
 			String id = generateNextId();
 			data.put(SENDER_ID_PROPERTY_NAME, id);
@@ -136,11 +136,11 @@ public abstract class AbstractTextRequesterFacade extends AbstractFacade {
 	 */
 	protected void createAndSendRequestMessage(Map<String, Object> data, Session session) throws JMSException {
 		TextMessage requestMessage = createJsonTextMessage(data, session);
-		log.info("!!!!!!!!  Sending to topic: {}", getRequestTopic());
-		log.info("!!!!!!!!  Message: \n{}", requestMessage.getText());
+		log.info("Sending to topic: {}", getRequestTopic());
+		log.info("Message: \n{}", requestMessage.getText());
 		Destination requestTopic = createTopic(getRequestTopic(), session);
 		sendMessage(requestMessage, requestTopic, session);
-		log.info("!!!!!!!!  Message sent");
+		log.info("Message sent");
 	}
 
 	/**
@@ -155,7 +155,7 @@ public abstract class AbstractTextRequesterFacade extends AbstractFacade {
 	protected Map<String, Object> listenForReplyMessage(MessageConsumer consumer, String id, int timeoutSeconds) throws JMSException {
 		int timeoutSec = (timeoutSeconds <= 0) ? 60 : timeoutSeconds;
 
-		log.info("!!!!!!!!  Listening to topic: {}", getReplyTopic());
+		log.info("Listening to topic: {}", getReplyTopic());
 		TextMessage replyMessage = null;
 
 		ExecutorService executor = Executors.newCachedThreadPool();
@@ -177,7 +177,7 @@ public abstract class AbstractTextRequesterFacade extends AbstractFacade {
 		}
 
 		Map<String,Object> result = readJsonTextMessage(replyMessage);
-		log.info("!!!!!!!!  Message received:\n{}", result.toString());
+		log.info("Message received:\n{}", result.toString());
 
 		String replyId = (String) result.get(SENDER_ID_PROPERTY_NAME);
 		if(isIdPresent(id) && id.equals(replyId)) {
