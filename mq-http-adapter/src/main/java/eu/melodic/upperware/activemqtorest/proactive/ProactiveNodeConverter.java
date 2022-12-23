@@ -2,7 +2,7 @@ package eu.melodic.upperware.activemqtorest.proactive;
 
 import eu.passage.upperware.commons.model.internal.*;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Deployment;
+import org.ow2.proactive.sal.model.Deployment;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;

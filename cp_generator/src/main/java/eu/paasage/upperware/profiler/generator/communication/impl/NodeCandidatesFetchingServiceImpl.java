@@ -18,12 +18,12 @@ import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataForTaskInt
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadataToolForTaskInterfaces;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Runtime;
-import org.activeeon.morphemic.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
+import org.ow2.proactive.sal.model.*;
+import org.ow2.proactive.sal.model.Runtime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -102,8 +102,8 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
     private Requirement createNodeTypeRequirement(List<NodeType> nodeTypes, String resourceName) {
         log.info("NodeCandidatesFetchingServiceImpl->createNodeTypeRequirement: list of NodeType: {}", nodeTypes);
         NodeTypeRequirement nodeTypeRequirement = new NodeTypeRequirement();
-        List<org.activeeon.morphemic.model.NodeType> nodeTypesProactive = new ArrayList<>();
-        nodeTypes.forEach(nodeType -> nodeTypesProactive.add(org.activeeon.morphemic.model.NodeType.getByName(nodeType.name())));
+        List<org.ow2.proactive.sal.model.NodeType> nodeTypesProactive = new ArrayList<>();
+        nodeTypes.forEach(nodeType -> nodeTypesProactive.add(org.ow2.proactive.sal.model.NodeType.getByName(nodeType.name())));
         nodeTypeRequirement.setNodeTypes(nodeTypesProactive);
         nodeTypesProactive.forEach(nodeType -> {
             if(nodeType.name().equals("EDGE")) {
@@ -307,12 +307,12 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
     }
 
     private Requirement createRequirement(String requirementClass, String requirementAttribute, RequirementOperator requirementOperator, String value) {
-        return new AttributeRequirement()
-                .requirementClass(requirementClass)
-                .requirementAttribute(requirementAttribute)
-                .requirementOperator(requirementOperator)
-                .value(value)
-                .type("AttributeRequirement");
+        return new AttributeRequirement(
+                requirementClass,
+                requirementAttribute,
+                requirementOperator,
+                value
+              );
     }
 
 

@@ -3,7 +3,7 @@ package eu.melodic.upperware.guibackend.domain.converter;
 import eu.passage.upperware.commons.model.internal.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Job;
+import org.ow2.proactive.sal.model.Job;
 import org.springframework.lang.NonNull;
 
 import java.math.BigDecimal;
@@ -29,7 +29,7 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
                 .build();
     }
 
-    private List<Task> createTasksList(List<org.activeeon.morphemic.model.Task> tasks) {
+    private List<Task> createTasksList(List<org.ow2.proactive.sal.model.Task> tasks) {
         if(Objects.isNull(tasks)){
             return Collections.emptyList();
         }
@@ -49,7 +49,7 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
                 .collect(Collectors.toList());
     }
 
-    private List<Deployment> createDeploymentsList(List<org.activeeon.morphemic.model.Deployment> deployments) {
+    private List<Deployment> createDeploymentsList(List<org.ow2.proactive.sal.model.Deployment> deployments) {
         if(Objects.isNull(deployments)){
             return Collections.emptyList();
         }
@@ -70,7 +70,7 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
 
     }
 
-    private DockerEnvironment createDockerEnvironment(org.activeeon.morphemic.model.DockerEnvironment environment) {
+    private DockerEnvironment createDockerEnvironment(org.ow2.proactive.sal.model.DockerEnvironment environment) {
         if(Objects.isNull(environment)){
             return null;
         }
@@ -82,7 +82,7 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
                 .build();
     }
 
-    private List<Port> createPortsList(List<org.activeeon.morphemic.model.Port> portsToOpen) {
+    private List<Port> createPortsList(List<org.ow2.proactive.sal.model.Port> portsToOpen) {
         if(Objects.isNull(portsToOpen)){
             return Collections.emptyList();
         }
@@ -96,7 +96,7 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
                 .collect(Collectors.toList());
     }
 
-    private CommandsInstallation createInstallation(org.activeeon.morphemic.model.CommandsInstallation installation) {
+    private CommandsInstallation createInstallation(org.ow2.proactive.sal.model.CommandsInstallation installation) {
         if(Objects.isNull(installation)){
             return null;
         }

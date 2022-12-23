@@ -3,10 +3,10 @@ package eu.melodic.cache.impl;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.exception.CacheException;
-import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 

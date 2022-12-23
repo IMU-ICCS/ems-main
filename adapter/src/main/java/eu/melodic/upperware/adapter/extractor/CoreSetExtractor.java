@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service

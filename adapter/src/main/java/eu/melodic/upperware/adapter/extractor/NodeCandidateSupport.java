@@ -6,7 +6,7 @@ import camel.deployment.SoftwareComponentInstance;
 import camel.type.StringValue;
 import camel.type.Value;
 import com.google.gson.Gson;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.util.HashMap;
 import java.util.Map;

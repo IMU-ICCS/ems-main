@@ -6,9 +6,9 @@ import java.util.Set;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.activeeon.morphemic.model.GeoLocation;
-import org.activeeon.morphemic.model.Location;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.GeoLocation;
+import org.ow2.proactive.sal.model.Location;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service

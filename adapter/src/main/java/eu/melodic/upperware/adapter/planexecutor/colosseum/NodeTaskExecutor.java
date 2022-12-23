@@ -18,9 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static org.activeeon.morphemic.model.NodeCandidate.NodeCandidateTypeEnum.EDGE;
-
-
 @Slf4j
 public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
 

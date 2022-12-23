@@ -1,6 +1,6 @@
 package eu.melodic.upperware.activemqtorest.proactive;
 
-import org.activeeon.morphemic.model.Deployment;
+import org.ow2.proactive.sal.model.Deployment;
 
 import java.util.List;
 

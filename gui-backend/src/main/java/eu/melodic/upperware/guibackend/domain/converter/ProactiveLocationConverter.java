@@ -4,7 +4,7 @@ import eu.passage.upperware.commons.model.internal.DiscoveryItemState;
 import eu.passage.upperware.commons.model.internal.GeoLocation;
 import eu.passage.upperware.commons.model.internal.LocationScope;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Location;
+import org.ow2.proactive.sal.model.Location;
 import org.springframework.lang.NonNull;
 
 import java.util.Objects;

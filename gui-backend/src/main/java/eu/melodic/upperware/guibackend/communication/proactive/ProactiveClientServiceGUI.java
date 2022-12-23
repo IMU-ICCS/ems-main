@@ -1,6 +1,6 @@
 package eu.melodic.upperware.guibackend.communication.proactive;
 
-import org.activeeon.morphemic.model.*;
+import org.ow2.proactive.sal.model.*;
 
 import java.util.List;
 

@@ -4,7 +4,7 @@ import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import cloud.morphemic.connectors.exception.ProactiveClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Deployment;
+import org.ow2.proactive.sal.model.Deployment;
 
 import java.util.Collections;
 import java.util.List;

@@ -12,7 +12,7 @@ import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Job;
+import org.ow2.proactive.sal.model.Job;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,9 +137,9 @@ public class EdgeService {
                 .filter(edgeDefinition -> edgeDefinition.getId() == edgeDefinitionId)
                 .findFirst()
                 .orElseThrow(() -> new EdgeDefinitionNotFoundException(edgeDefinitionId));
-        final org.activeeon.morphemic.model.EdgeDefinition edgeDefinitionProactive = edgeMapper.mapEdgeDefinitionToProactive(edgeDefinitionForNode);
+        final org.ow2.proactive.sal.model.EdgeDefinition edgeDefinitionProactive = edgeMapper.mapEdgeDefinitionToProactive(edgeDefinitionForNode);
         log.info("JM DEV[EdgeService]: createEdgeNode: EdgeDefinitionProactive={}", edgeDefinitionProactive);
-        final Optional<org.activeeon.morphemic.model.EdgeNode> EdgeNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewEdgeNode(edgeDefinitionProactive, applicationId));
+        final Optional<org.ow2.proactive.sal.model.EdgeNode> EdgeNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewEdgeNode(edgeDefinitionProactive, applicationId));
         log.info("JM DEV[EdgeService]: createEdgeNode: EdgeNodeProactive={}", EdgeNodeProactive);
         EdgeNode EdgeNode = null;
         if(EdgeNodeProactive.isPresent()) {
@@ -186,7 +186,7 @@ public class EdgeService {
 
     public List<EdgeNode> getEdgeNodesList(String applicationId) {
         log.info("JM DEV[EdgeService]: getEdgeNodesList: applicationId={}", applicationId);
-        final List<org.activeeon.morphemic.model.EdgeNode> EdgeNodeList = proactiveClientServiceGUI.getEdgeNodeList(applicationId);
+        final List<org.ow2.proactive.sal.model.EdgeNode> EdgeNodeList = proactiveClientServiceGUI.getEdgeNodeList(applicationId);
         log.info("JM DEV[EdgeService]: getEdgeNodesList: EdgeNodeList={}", EdgeNodeList);
         return EdgeNodeList.stream()
                 .map(edgeMapper::mapProactiveEdgeNodeToInternal)

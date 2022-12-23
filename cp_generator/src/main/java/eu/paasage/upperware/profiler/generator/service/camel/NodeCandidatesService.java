@@ -1,7 +1,7 @@
 package eu.paasage.upperware.profiler.generator.service.camel;
 
-import org.activeeon.morphemic.model.NodeCandidate;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.util.List;
 import java.util.Map;

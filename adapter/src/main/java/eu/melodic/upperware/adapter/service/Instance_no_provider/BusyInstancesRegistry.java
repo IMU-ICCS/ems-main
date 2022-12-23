@@ -5,9 +5,9 @@ import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServi
 import eu.melodic.upperware.adapter.service.CamelInstanceNamingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Deployment;
-import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ow2.proactive.sal.model.Deployment;
+import org.ow2.proactive.sal.model.SubmittedJobType;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
 
 import java.util.*;

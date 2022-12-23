@@ -64,7 +64,7 @@
         <dependency>
             <groupId>cloud.morphemic.connectors</groupId>
             <artifactId>proactive_client</artifactId>
-            <version>2.5-SNAPSHOT</version>
+            <version>3.0-salaas-20221216.091020-13</version>
         </dependency>
     </dependencies>
 

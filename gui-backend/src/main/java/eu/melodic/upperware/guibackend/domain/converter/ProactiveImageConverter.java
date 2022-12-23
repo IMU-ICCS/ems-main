@@ -6,8 +6,8 @@ import eu.passage.upperware.commons.model.internal.OperatingSystemArchitecture;
 import eu.passage.upperware.commons.model.internal.OperatingSystemFamily;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Image;
 import org.apache.commons.lang3.ObjectUtils;
+import org.ow2.proactive.sal.model.Image;
 import org.springframework.lang.NonNull;
 
 @Slf4j

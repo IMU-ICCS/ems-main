@@ -1,12 +1,12 @@
 package eu.melodic.upperware.adapter.communication.proactive;
 
-import org.activeeon.morphemic.model.ByonNode;
-import org.activeeon.morphemic.model.EdgeNode;
-import org.activeeon.morphemic.model.Deployment;
-import org.activeeon.morphemic.model.SubmittedJobType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.ow2.proactive.sal.model.ByonNode;
+import org.ow2.proactive.sal.model.Deployment;
+import org.ow2.proactive.sal.model.EdgeNode;
+import org.ow2.proactive.sal.model.SubmittedJobType;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
 
 import java.util.List;

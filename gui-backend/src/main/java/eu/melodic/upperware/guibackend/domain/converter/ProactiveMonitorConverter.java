@@ -4,7 +4,7 @@ import eu.passage.upperware.commons.model.internal.EmsDeploymentTargetProvider;
 import eu.passage.upperware.commons.model.internal.EmsDeploymentTargetType;
 import eu.passage.upperware.commons.model.internal.OperatingSystemFamily;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.EmsDeploymentRequest;
+import org.ow2.proactive.sal.model.EmsDeploymentRequest;
 
 import java.util.Objects;
 

@@ -1,9 +1,9 @@
 package eu.melodic.upperware.adapter.service;
 
 import camel.deployment.SoftwareComponent;
-import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.Builder;
 import lombok.Getter;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 @Getter
 @Builder
