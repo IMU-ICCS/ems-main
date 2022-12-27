@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.utilitygenerator.evaluator;
 
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

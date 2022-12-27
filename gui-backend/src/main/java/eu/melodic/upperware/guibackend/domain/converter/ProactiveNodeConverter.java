@@ -18,7 +18,7 @@ public class ProactiveNodeConverter implements GenericConverter<Deployment, Node
                 .name(external.getNodeName())
                 .id(external.getInstanceId())
                 .nodeProperties(NodeProperties.builder().providerId(external.getPaCloud().getCloudProviderName()).build())
-                .originId(external.getLocationName()+"/"+external.getPaCloud().getCloudProviderName())
+                .originId(external.getNode().getNodeCandidate().getLocation().getName() + "/"+external.getPaCloud().getCloudProviderName())
                 .state(decideOnNodeState(external))
                 .diagnostic(createNodeInfo(external))
                 .ipAddresses(createIpAddress(external))
@@ -44,11 +44,11 @@ public class ProactiveNodeConverter implements GenericConverter<Deployment, Node
         return "CloudID: " +
                 external.getPaCloud().getCloudID() +
                 " | HardwareProviderId: " +
-                external.getHardwareProviderId() +
+                external.getNode().getNodeCandidate().getHardware().getProviderId() +
                 " | ImageProviderId: " +
-                external.getImageProviderId() +
+                external.getNode().getNodeCandidate().getImage().getProviderId() +
                 " | LocationName: " +
-                external.getLocationName() +
+                external.getNode().getNodeCandidate().getLocation().getName() +
                 " | NodeAccessToken: " +
                 external.getNodeAccessToken();
     }
