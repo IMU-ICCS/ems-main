@@ -524,6 +524,7 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.10</version>
                 <configuration>
                     <resources>
                         <!-- Added in order to prevent copying 'control-service.jar' to docker context dir. (We have already copied it) -->

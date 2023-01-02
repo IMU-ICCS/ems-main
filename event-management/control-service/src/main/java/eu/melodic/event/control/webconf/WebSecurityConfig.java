@@ -250,12 +250,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
             log.info("WebSecurityConfig: User form Authentication is enabled");
             httpSecurity
                     .csrf().disable()
-                    .authorizeRequests()
-                        //.antMatchers("/broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
-                        //.antMatchers("/baguette/ref/**").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
-                        .antMatchers(permittedUrls).permitAll()
-                        .anyRequest().authenticated()
-                        .and()
                     .formLogin()
                         .loginPage(loginPage).permitAll()
                         .loginProcessingUrl(loginUrl).permitAll()
@@ -272,35 +266,40 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
             log.debug("WebSecurityConfig: User form Authentication has been configured");
         } else {
             httpSecurity
-                    .csrf().disable()
-                    .authorizeRequests()
-                    .anyRequest().authenticated();
+                    .csrf().disable();
         }
 
         // Add configured authentication filters
         if (apiKeyAuthEnabled) {
             log.info("WebSecurityConfig: API-Key Authentication is enabled");
             httpSecurity
-                    .addFilterAfter(apiKeyAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                    .authorizeRequests()
-                    .anyRequest().authenticated();
+                    .addFilterAfter(apiKeyAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
             log.debug("WebSecurityConfig: API-Key Authentication filter added");
         }
         if (jwtAuthEnabled) {
             log.info("WebSecurityConfig: JWT-Token Authentication is enabled");
             httpSecurity
-                    .addFilterAfter(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
-                    .authorizeRequests()
-                    .anyRequest().authenticated();
+                    .addFilterAfter(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
             log.debug("WebSecurityConfig: JWT-Token Authentication filter added");
         }
         if (otpAuthEnabled) {
             log.info("WebSecurityConfig: OTP Authentication is enabled");
             httpSecurity
-                    .addFilterAfter(otpAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .addFilterAfter(otpAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            log.debug("WebSecurityConfig: OTP Authentication filter added");
+        }
+
+        if (userFormAuthEnabled) {
+            httpSecurity
+                    .authorizeRequests()
+                    //.antMatchers("/broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
+                    //.antMatchers("/baguette/ref/**").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
+                    .antMatchers(permittedUrls).permitAll()
+                    .anyRequest().authenticated();
+        } else {
+            httpSecurity
                     .authorizeRequests()
                     .anyRequest().authenticated();
-            log.debug("WebSecurityConfig: OTP Authentication filter added");
         }
     }
 
