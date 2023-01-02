@@ -57,7 +57,7 @@
         <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <!--<version>${interfaces.version}</version>-->
+            <version>${interfaces.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -68,6 +68,7 @@
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>jwt-commons</artifactId>
+            <version>${melodic.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.melodic.security.authorization</groupId>
