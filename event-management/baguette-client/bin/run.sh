@@ -14,7 +14,7 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
 MELODIC_CONFIG_DIR=${BASEDIR}/conf
 PAASAGE_CONFIG_DIR=${BASEDIR}/conf
-EMS_CONFIG_LOCATION=file:$MELODIC_CONFIG_DIR/ems-client.yml,file:$MELODIC_CONFIG_DIR/ems-client.properties,file:$MELODIC_CONFIG_DIR/baguette-client.yml,file:$MELODIC_CONFIG_DIR/baguette-client.properties
+EMS_CONFIG_LOCATION=optional:file:$MELODIC_CONFIG_DIR/ems-client.yml,optional:file:$MELODIC_CONFIG_DIR/ems-client.properties,optional:file:$MELODIC_CONFIG_DIR/baguette-client.yml,optional:file:$MELODIC_CONFIG_DIR/baguette-client.properties
 LOG_FILE=${BASEDIR}/logs/output.txt
 TEE_FILE=${BASEDIR}/logs/tee.txt
 JASYPT_PASSWORD=password
