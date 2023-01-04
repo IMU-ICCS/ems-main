@@ -14,7 +14,6 @@ import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.KeystoreUtil;
-import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.tomcat.util.net.SSLHostConfig;
+import org.apache.tomcat.util.net.SSLHostConfigCertificate;
 import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,10 +36,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,16 +91,24 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
 
         if (isServerSecure) {
             SSLHostConfig[] sslHostConfigArr = tomcat.getTomcat().getConnector().findSslHostConfigs();
-            log.debug("AbstractInstallationHelper.initServerCertificate(): Tomcat SSL host config array: length={}",
-                    sslHostConfigArr.length);
+            if (log.isDebugEnabled())
+                log.debug("AbstractInstallationHelper.initServerCertificate(): Tomcat SSL host config array: {}", Arrays.asList(sslHostConfigArr));
             if (sslHostConfigArr.length!=1)
                 throw new RuntimeException("Embedded Tomcat has zero or more than one SSL host configurations: "+sslHostConfigArr.length);
 
-            SSLHostConfig sslHostConfig = sslHostConfigArr[0];
-            String keystoreFile = sslHostConfig.getCertificateKeystoreFile();
-            String keystorePassword = sslHostConfig.getCertificateKeystorePassword();
-            String keystoreType = sslHostConfig.getCertificateKeystoreType();
-            String keyAlias = sslHostConfig.getCertificateKeyAlias();
+            Set<SSLHostConfigCertificate> sslCertificatesSet = sslHostConfigArr[0].getCertificates();
+            log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificates set: {}", sslCertificatesSet);
+            if (sslCertificatesSet.size()!=1)
+                throw new RuntimeException("Embedded Tomcat has zero or more than one SSL certificates: "+sslCertificatesSet.size());
+
+            SSLHostConfigCertificate sslCertificate = sslCertificatesSet.iterator().next();
+            log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate: {}", sslCertificate);
+            String keystoreFile = sslCertificate.getCertificateKeystoreFile();
+            String keystorePassword = sslCertificate.getCertificateKeystorePassword();
+            String keystoreType = sslCertificate.getCertificateKeystoreType();
+            String keyAlias = sslCertificate.getCertificateKeyAlias();
+            log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate: keystore={}, type={}, key-alias={}",
+                    keystoreFile, keystoreType, keyAlias);
 
             if (StringUtils.startsWith(keystoreFile, "file:"))
                 keystoreFile = StringUtils.substringAfter(keystoreFile, "file:");
@@ -112,16 +117,16 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
 
             String certFileName = properties.getServerCertFileAtServer();
             if (StringUtils.isNotEmpty(certFileName)) {
-                log.debug("AbstractInstallationHelper.initServerCertificate(): Exporting server certificate to file: {}", certFileName);
+                log.debug("AbstractInstallationHelper.initServerCertificate(): Exporting server PEM certificate to file: {}", certFileName);
                 KeystoreUtil
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
                         .passwordUtil(passwordUtil)
                         .exportCertToFile(keyAlias, certFileName);
-                log.debug("AbstractInstallationHelper.initServerCertificate(): Server certificate exported");
+                log.info("AbstractInstallationHelper.initServerCertificate(): Server PEM certificate exported to file: {}", certFileName);
 
                 File certFile = new File(certFileName);
                 if (! certFile.exists())
-                    throw new RuntimeException("Server certificate file not found: "+certFile);
+                    throw new RuntimeException("Server PEM certificate file not found: "+certFile);
                 this.serverCert = new String(Files.readAllBytes(Paths.get(certFile.getAbsolutePath())));
             } else {
                 this.serverCert = KeystoreUtil

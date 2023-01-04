@@ -64,7 +64,7 @@ public class ControlServiceController {
     private final WebSecurityConfig webSecurityConfig;
     private final PasswordUtil passwordUtil;
 
-    private final RequestMappingHandlerMapping mvcHandlerMapping;
+//    private final RequestMappingHandlerMapping mvcHandlerMapping;
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB and Upperware interfacing methods
@@ -658,7 +658,7 @@ public class ControlServiceController {
         return (s != null && s.startsWith("\"") && s.endsWith("\"")) ? s.substring(1, s.length() - 1) : s;
     }
 
-    public Stream<String> getControllerEndpoints() {
+    /*public Stream<String> getControllerEndpoints() {
         return mvcHandlerMapping.getHandlerMethods().keySet().stream()
                 .filter(Objects::nonNull)
                 .map(k -> k.getPatternsCondition().getPatterns())
@@ -672,5 +672,5 @@ public class ControlServiceController {
                 .map(e -> "/" + e.replaceAll("\\{.*", "**"))
                 .distinct()
                 .toArray(String[]::new);
-    }
+    }*/
 }
