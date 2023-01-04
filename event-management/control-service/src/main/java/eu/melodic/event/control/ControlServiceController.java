@@ -25,16 +25,21 @@ import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -43,6 +48,7 @@ import javax.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
@@ -64,7 +70,10 @@ public class ControlServiceController {
     private final WebSecurityConfig webSecurityConfig;
     private final PasswordUtil passwordUtil;
 
-//    private final RequestMappingHandlerMapping mvcHandlerMapping;
+    @Getter
+    private List<String> controllerEndpoints;
+    @Getter
+    private List<String> controllerEndpointsShort;
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB and Upperware interfacing methods
@@ -673,4 +682,36 @@ public class ControlServiceController {
                 .distinct()
                 .toArray(String[]::new);
     }*/
+
+    @org.springframework.context.event.EventListener
+    public void handleContextRefresh(ContextRefreshedEvent event) {
+        ApplicationContext applicationContext = event.getApplicationContext();
+        RequestMappingHandlerMapping requestMappingHandlerMapping = applicationContext
+                .getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
+        Map<RequestMappingInfo, HandlerMethod> map = requestMappingHandlerMapping
+                .getHandlerMethods();
+        //map.forEach((key, value) -> log.info("..... {} {}", key, value));
+
+        controllerEndpoints = map.keySet().stream()
+                .peek(k->log.warn("...... {}", k))
+                .filter(Objects::nonNull)
+                .peek(k->log.warn("       {}  NON-NULL", k))
+                .filter(k -> k. != null)
+                .peek(k->log.warn("       {}  HAS-PATTERN-CONDITION", k))
+                .map(k -> k.getPatternsCondition().getPatterns())
+                .peek(p->log.warn("------ PATTERNS: {}", p))
+                .flatMap(Set::stream)
+                .peek(p->log.warn("////// PATTERNS: {}", p))
+                .collect(Collectors.toList());
+        log.warn(">>>>>>>> ENDPOINTS: {}", controllerEndpoints);
+
+        controllerEndpointsShort = controllerEndpoints.stream()
+                .map(s -> s.startsWith("/") ? s.substring(1) : s)
+                .map(s -> s.indexOf("/") > 0 ? s.split("/", 2)[0] + "/**" : s)
+                .map(e -> "/" + e.replaceAll("\\{.*", "**"))
+                .distinct()
+                //.toArray(String[]::new);
+                .collect(Collectors.toList());
+        log.warn(">>>>>>>> ENDPOINTS-SHORT: {}", controllerEndpoints);
+    }
 }
