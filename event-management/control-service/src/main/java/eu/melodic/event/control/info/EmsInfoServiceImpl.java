@@ -173,8 +173,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         }
         if (staticResourceProperties!=null) {
             Map<String,Object> staticResourceCfg = new LinkedHashMap<>();
-            staticResourceCfg.put("favicon-context",  staticResourceProperties.getFaviconContext());
-            staticResourceCfg.put("favicon-path",  staticResourceProperties.getFaviconPath());
+            /*staticResourceCfg.put("favicon-context",  staticResourceProperties.getFaviconContext());
+            staticResourceCfg.put("favicon-path",  staticResourceProperties.getFaviconPath());*/
             staticResourceCfg.put("resource-context",  staticResourceProperties.getResourceContext());
             staticResourceCfg.put("resource-path",  staticResourceProperties.getResourcePath());
             staticResourceCfg.put("resource-redirect",  staticResourceProperties.getRedirect());

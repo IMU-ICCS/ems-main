@@ -302,7 +302,7 @@ public class WebSecurityConfig implements InitializingBean {
                     //.authorizeRequests(
                     //        authorize -> authorize.mvcMatchers("/broker/credentials", "/baguette/ref/**").hasAnyRole(ROLE_JWT_TOKEN, ROLE_API_KEY))
                     .authorizeRequests(
-                            authorize -> authorize.mvcMatchers(staticResourceProperties.getFaviconContext(), "/health").permitAll())
+                            authorize -> authorize.mvcMatchers("/favicon.ico", "/health").permitAll())
                     .authorizeRequests(
                             authorize -> authorize.mvcMatchers(permittedUrls).permitAll())
                     .authorizeRequests(

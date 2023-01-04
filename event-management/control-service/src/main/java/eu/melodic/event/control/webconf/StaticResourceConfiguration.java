@@ -9,12 +9,11 @@
 
 package eu.melodic.event.control.webconf;
 
-import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.properties.StaticResourceProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,11 +27,9 @@ import java.util.Map;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class StaticResourceConfiguration implements WebMvcConfigurer, InitializingBean {
-    @Autowired
-    private StaticResourceProperties properties;
-    @Autowired
-    private ControlServiceProperties controlServiceProperties;
+    private final StaticResourceProperties properties;
 
     public void afterPropertiesSet() {
         log.debug("StaticResourceConfiguration: afterPropertiesSet: {}", properties);
@@ -40,14 +37,15 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String faviconContext = properties.getFaviconContext();
+        /*String faviconContext = properties.getFaviconContext();
         String faviconPath = properties.getFaviconPath();
         if(StringUtils.isNotBlank(faviconPath)) {
             log.info("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
             registry
                     .addResourceHandler(faviconContext)
                     .addResourceLocations(faviconPath);
-        }
+        }*/
+
         String resourceContext = properties.getResourceContext();
         List<String> resourcePath = properties.getResourcePath();
         if (resourcePath != null && resourcePath.size() > 0) {
@@ -56,6 +54,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
                     .addResourceHandler(resourceContext)
                     .addResourceLocations(resourcePath.toArray(new String[0]));
         }
+
         String logsContext = properties.getLogsContext();
         List<String> logsPath = properties.getLogsPath();
         if (logsPath != null && logsPath.size() > 0) {

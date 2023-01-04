@@ -10,7 +10,6 @@
 package eu.melodic.event.control.properties;
 
 import eu.melodic.event.util.EmsConstant;
-import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,12 +28,12 @@ import java.util.Map;
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "web.static")
 public class StaticResourceProperties implements InitializingBean {
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         log.debug("StaticResourceProperties: {}", this);
     }
 
-    private String faviconContext = "/favicon.ico";
-    private String faviconPath;
+    /*private String faviconContext = "/favicon.ico";
+    private String faviconPath;*/
 
     private String resourceContext = "/resources/**";
     private List<String> resourcePath;
