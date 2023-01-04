@@ -9,7 +9,7 @@
 
 package eu.melodic.event.util.password;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class PresentPasswordEncoder implements PasswordEncoder {
     public String encode(String password) {

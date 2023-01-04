@@ -19,10 +19,9 @@ import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,16 +30,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.Filter;
@@ -59,7 +60,7 @@ import java.util.Map;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements InitializingBean {
+public class WebSecurityConfig implements InitializingBean {
 
     public final static String ROLE_USER_FORM = "ROLE_USER_FORM";
     public static final String ROLE_JWT_TOKEN = "ROLE_JWT_TOKEN";
@@ -204,14 +205,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
         log.debug("afterPropertiesSet: ---------------------");
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    @Bean
+    public InMemoryUserDetailsManager userDetailsService() {
         copyPropertiesToLocalFields();
+        UserDetails userDetails;
         if (this.userFormAuthEnabled && StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
-            auth.inMemoryAuthentication()
-                    .withUser(username).password(passwordEncoder().encode(password)).authorities(ROLE_USER_FORM);
+            userDetails = User.builder()
+                    .username(username)
+                    .password(passwordEncoder().encode(password))
+                    .authorities(ROLE_USER_FORM)
+                    .build();
             log.info("WebSecurityConfig: User Form Admin credentials have been set: username={}", username);
+        } else {
+            userDetails = User.builder().build();
+            log.warn("WebSecurityConfig: No Form Admin credentials provided");
         }
+        return new InMemoryUserDetailsManager(userDetails);
     }
 
     @Bean
@@ -219,15 +228,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
         return new BCryptPasswordEncoder();
     }
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring()
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
                 // Spring Security should completely ignore the following URLs
                 .antMatchers(staticResourceProperties.getFaviconContext(), "/health");
     }
 
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
+    @Bean
+    protected SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
         // Check configuration settings
         checkSettings();
@@ -242,7 +251,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
                     .csrf().disable()
                     .authorizeRequests()
                     .anyRequest().permitAll();
-            return;
+            return httpSecurity.build();
         }
 
         // Add and Configure User Form authentication
@@ -301,6 +310,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
                     .authorizeRequests()
                     .anyRequest().authenticated();
         }
+
+        return httpSecurity.build();
     }
 
     private void checkSettings() {

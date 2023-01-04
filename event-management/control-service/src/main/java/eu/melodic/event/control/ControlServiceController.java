@@ -93,7 +93,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/camelModelJson", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newCamelModel(@RequestBody String requestStr,
                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
@@ -118,7 +118,7 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/cpModelJson", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newCpModel(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
@@ -139,7 +139,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/cpConstants", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public String setConstants(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
@@ -238,7 +238,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = { "/translator/constraintThresholds/{appId}", "/translator/constraintThresholds" }, method = {GET,POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection getConstraintThresholds(@PathVariable("appId") Optional<String> optAppId,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -261,7 +261,7 @@ public class ControlServiceController {
     }
 
     @GetMapping(value = {"/translator/getTopLevelNodesMetricContexts/{appId}", "/translator/getTopLevelNodesMetricContexts"},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Collection<?> getTopLevelNodesMetricContexts(@PathVariable("appId") Optional<String> optAppId,
                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -316,7 +316,7 @@ public class ControlServiceController {
 
 //    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
     @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -396,7 +396,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/baguette/registerNode", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) throws Exception {
         log.info("ControlServiceController.baguetteRegisterNode(): Invoked");
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
@@ -491,7 +491,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
         log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
 
@@ -542,7 +542,7 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/client/list", method = GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> listClients() {
         List<String> clients = coordinator.clientList();
         log.info("ControlServiceController.listClients(): {}", clients);
@@ -550,7 +550,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/client/list/map", method = GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Map<String, String>> listClientMaps() {
         Map<String, Map<String, String>> clients = coordinator.clientMap();
         log.info("ControlServiceController.listClientMaps(): {}", clients);
@@ -618,7 +618,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/ems/status", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String emsStatus() {
         log.info("ControlServiceController.emsStatus(): BEGIN");
 
@@ -627,7 +627,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/ems/topology", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public String emsTopology() {
         log.info("ControlServiceController.emsTopology(): BEGIN");
 
