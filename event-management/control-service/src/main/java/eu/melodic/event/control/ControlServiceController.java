@@ -696,7 +696,7 @@ public class ControlServiceController {
                 .peek(k->log.warn("...... {}", k))
                 .filter(Objects::nonNull)
                 .peek(k->log.warn("       {}  NON-NULL", k))
-                .filter(k -> k. != null)
+                .filter(k -> k.getPatternsCondition() != null)
                 .peek(k->log.warn("       {}  HAS-PATTERN-CONDITION", k))
                 .map(k -> k.getPatternsCondition().getPatterns())
                 .peek(p->log.warn("------ PATTERNS: {}", p))
