@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -49,7 +50,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -667,23 +667,7 @@ public class ControlServiceController {
         return (s != null && s.startsWith("\"") && s.endsWith("\"")) ? s.substring(1, s.length() - 1) : s;
     }
 
-    /*public Stream<String> getControllerEndpoints() {
-        return mvcHandlerMapping.getHandlerMethods().keySet().stream()
-                .filter(Objects::nonNull)
-                .map(k -> k.getPatternsCondition().getPatterns())
-                .flatMap(Set::stream);
-    }
-
-    public String[] getControllerEndpointsShort() {
-        return getControllerEndpoints()
-                .map(s -> s.startsWith("/") ? s.substring(1) : s)
-                .map(s -> s.indexOf("/") > 0 ? s.split("/", 2)[0] + "/**" : s)
-                .map(e -> "/" + e.replaceAll("\\{.*", "**"))
-                .distinct()
-                .toArray(String[]::new);
-    }*/
-
-    @org.springframework.context.event.EventListener
+    @EventListener
     public void handleContextRefresh(ContextRefreshedEvent event) {
         ApplicationContext applicationContext = event.getApplicationContext();
         RequestMappingHandlerMapping requestMappingHandlerMapping = applicationContext
@@ -693,25 +677,18 @@ public class ControlServiceController {
         //map.forEach((key, value) -> log.info("..... {} {}", key, value));
 
         controllerEndpoints = map.keySet().stream()
-                .peek(k->log.warn("...... {}", k))
                 .filter(Objects::nonNull)
-                .peek(k->log.warn("       {}  NON-NULL", k))
-                .filter(k -> k.getPatternsCondition() != null)
-                .peek(k->log.warn("       {}  HAS-PATTERN-CONDITION", k))
-                .map(k -> k.getPatternsCondition().getPatterns())
-                .peek(p->log.warn("------ PATTERNS: {}", p))
+                .map(RequestMappingInfo::getPatternValues)
                 .flatMap(Set::stream)
-                .peek(p->log.warn("////// PATTERNS: {}", p))
                 .collect(Collectors.toList());
-        log.warn(">>>>>>>> ENDPOINTS: {}", controllerEndpoints);
+        log.debug("ControlServiceController.handleContextRefresh: controller-endpoints: {}", controllerEndpoints);
 
         controllerEndpointsShort = controllerEndpoints.stream()
                 .map(s -> s.startsWith("/") ? s.substring(1) : s)
                 .map(s -> s.indexOf("/") > 0 ? s.split("/", 2)[0] + "/**" : s)
                 .map(e -> "/" + e.replaceAll("\\{.*", "**"))
                 .distinct()
-                //.toArray(String[]::new);
                 .collect(Collectors.toList());
-        log.warn(">>>>>>>> ENDPOINTS-SHORT: {}", controllerEndpoints);
+        log.debug("ControlServiceController.handleContextRefresh: controller-endpoints-short: {}", controllerEndpointsShort);
     }
 }
