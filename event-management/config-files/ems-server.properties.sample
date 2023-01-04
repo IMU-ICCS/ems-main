@@ -136,8 +136,6 @@ control.ssl.key-entry-ext-san = dns:localhost,ip:127.0.0.1,ip:${DEFAULT_IP},ip:$
 ################################################################################
 ### Web configuration - Static resources
 
-spring.mvc.favicon.enabled=false
-
 ### Static Web Resources and Redirects
 
 ### Favicon settings

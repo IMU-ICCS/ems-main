@@ -133,8 +133,6 @@ control:
 ################################################################################
 ### Web configuration - Static resources
 
-spring.mvc.favicon.enabled: false
-
 ### Static Web Resources and Redirects
 web.static:
 

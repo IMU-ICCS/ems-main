@@ -12,9 +12,10 @@ package eu.melodic.event.control.webconf;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterceptor;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,19 +40,17 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 @ComponentScan(basePackages={"eu.melodic.security.authorization.util.properties"})
+@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
     public final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
     public final static String[] DEFAULT_PATHS_EXCLUDED = { };
 
-    @Autowired
-    private AuthorizationServiceClientProperties authProperties;
-    @Autowired
-    private ControlServiceProperties controlServiceProperties;
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final AuthorizationServiceClientProperties authProperties;
+    private final ControlServiceProperties controlServiceProperties;
+    private final ApplicationContext applicationContext;
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+    public void addInterceptors(@NonNull InterceptorRegistry registry) {
         // Add authorization interceptor (if configured)
         boolean authEnabled = controlServiceProperties.getAuthorization().isEnabled();
         String[] authPathsProtected = controlServiceProperties.getAuthorization().getPathsProtected().toArray(new String[0]);
@@ -97,10 +96,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
             log.trace("contentCachingFilter(): request={}", servletRequest);
             HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
             //HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+
             ServletRequest contentCachingRequestWrapper = new ContentCachingRequestWrapper(httpRequest);
             //ServletResponse contentCachingResponseWrapper = new ContentCachingResponseWrapper(httpResponse);
             log.trace("contentCachingFilter(): request={}, content-caching-request={}", servletRequest, contentCachingRequestWrapper);
             //log.trace("contentCachingFilter(): response={}, content-caching-response={}", servletResponse, contentCachingResponseWrapper);
+
             filterChain.doFilter(contentCachingRequestWrapper, servletResponse);
             //filterChain.doFilter(contentCachingRequestWrapper, contentCachingResponseWrapper);
         };
