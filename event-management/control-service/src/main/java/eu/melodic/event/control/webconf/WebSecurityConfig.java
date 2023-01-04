@@ -33,7 +33,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -228,12 +227,12 @@ public class WebSecurityConfig implements InitializingBean {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    /*@Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
                 // Spring Security should completely ignore the following URLs
                 .antMatchers(staticResourceProperties.getFaviconContext(), "/health");
-    }
+    }*/
 
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -249,8 +248,8 @@ public class WebSecurityConfig implements InitializingBean {
             // Authorize all requests
             httpSecurity
                     .csrf().disable()
-                    .authorizeRequests()
-                    .anyRequest().permitAll();
+                    .authorizeRequests(
+                            authorize -> authorize.anyRequest().permitAll());
             return httpSecurity.build();
         }
 
@@ -300,15 +299,18 @@ public class WebSecurityConfig implements InitializingBean {
 
         if (userFormAuthEnabled) {
             httpSecurity
-                    .authorizeRequests()
-                    //.antMatchers("/broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
-                    //.antMatchers("/baguette/ref/**").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
-                    .antMatchers(permittedUrls).permitAll()
-                    .anyRequest().authenticated();
+                    //.authorizeRequests(
+                    //        authorize -> authorize.mvcMatchers("/broker/credentials", "/baguette/ref/**").hasAnyRole(ROLE_JWT_TOKEN, ROLE_API_KEY))
+                    .authorizeRequests(
+                            authorize -> authorize.mvcMatchers(staticResourceProperties.getFaviconContext(), "/health").permitAll())
+                    .authorizeRequests(
+                            authorize -> authorize.mvcMatchers(permittedUrls).permitAll())
+                    .authorizeRequests(
+                            authorize -> authorize.anyRequest().authenticated());
         } else {
             httpSecurity
-                    .authorizeRequests()
-                    .anyRequest().authenticated();
+                    .authorizeRequests(
+                            authorize -> authorize.anyRequest().authenticated());
         }
 
         return httpSecurity.build();

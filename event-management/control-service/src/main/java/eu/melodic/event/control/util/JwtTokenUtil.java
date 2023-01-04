@@ -14,10 +14,10 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.Banner;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
@@ -30,19 +30,18 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan(basePackages = { "eu.paasage.upperware.security.authapi" })
 @RequiredArgsConstructor
-public class JwtTokenUtil implements CommandLineRunner {
-    private final JWTService jwtService;
-
+public class JwtTokenUtil {
     public static void main(String[] args) {
         SpringApplication springApplication = new SpringApplication(JwtTokenUtil.class);
         springApplication.setBannerMode(Banner.Mode.OFF);
         springApplication.setWebApplicationType(WebApplicationType.NONE);
         springApplication.setLogStartupInfo(false);
-        springApplication.run(args);
+        ConfigurableApplicationContext ctx = springApplication.run(args);
+
+        execCommand( ctx.getBean(JWTService.class), args );
     }
 
-    @Override
-    public void run(String... args) {
+    public static void execCommand(JWTService jwtService, String... args) {
         if (args.length>0) {
             String token;
             if ("create".equalsIgnoreCase(args[0].trim())) {

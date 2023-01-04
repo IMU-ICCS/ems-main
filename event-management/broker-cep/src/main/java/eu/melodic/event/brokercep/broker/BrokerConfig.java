@@ -279,7 +279,7 @@ public class BrokerConfig implements InitializingBean {
         }
 
         // Configure broker service instance
-        log.warn("BrokerConfig: Broker configuration: persistence={}, use-jmx={}, advisory-support={}, use-shutdown-hook={}",
+        log.info("BrokerConfig: Broker configuration: persistence={}, use-jmx={}, advisory-support={}, use-shutdown-hook={}",
                 properties.isBrokerPersistenceEnabled(), properties.isBrokerUsingJmx(), properties.isBrokerAdvisorySupportEnabled(), properties.isBrokerUsingShutdownHook());
         brokerService.setPersistent(properties.isBrokerPersistenceEnabled());
         brokerService.setUseJmx(properties.isBrokerUsingJmx());
