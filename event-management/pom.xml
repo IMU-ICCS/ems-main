@@ -15,6 +15,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.7</version>
+        <relativePath></relativePath>
     </parent>
 
     <groupId>eu.melodic.event</groupId>
@@ -305,16 +306,25 @@
     </profiles>
 
     <repositories>
+        <!-- Re-define 'central' repository -->
         <repository>
-            <id>eu.7bulls</id>
+            <id>central</id>
+            <name>Default Repository</name>
             <layout>default</layout>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+            <url>https://repo1.maven.org/maven2</url>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
+        </repository>
+
+        <!-- Repositories for CAMEL and CDO client dependencies -->
+        <repository>
+            <id>gitlab-maven-camel</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1227/packages/maven</url>
+        </repository>
+        <repository>
+            <id>gitlab-maven-cdo-client</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
         </repository>
 
         <!-- Deactivate unneeded repositories inherited -->
@@ -362,7 +372,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
+        <!--<repository>
             <id>central</id>
             <layout>default</layout>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -372,7 +382,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
+        </repository>-->
         <!--<repository>
             <id>eu.7bulls</id>
             <layout>default</layout>

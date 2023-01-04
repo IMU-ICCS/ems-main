@@ -144,16 +144,6 @@
     </dependencies>
 
     <repositories>
-        <!-- Repositories for CAMEL and CDO client dependencies -->
-        <repository>
-            <id>gitlab-maven-camel</id>
-            <url>https://gitlab.ow2.org/api/v4/projects/1227/packages/maven</url>
-        </repository>
-        <repository>
-            <id>gitlab-maven-cdo-client</id>
-            <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
-        </repository>
-
         <!-- Deactivate unneeded repositories inherited -->
         <repository>
             <id>paasage.repo</id>
@@ -199,7 +189,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
+        <!--<repository>
             <id>central</id>
             <layout>default</layout>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -209,7 +199,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
+        </repository>-->
         <!--<repository>
             <id>eu.7bulls</id>
             <layout>default</layout>
