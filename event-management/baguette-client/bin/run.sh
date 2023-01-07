@@ -18,10 +18,11 @@ EMS_CONFIG_LOCATION=optional:file:$MELODIC_CONFIG_DIR/ems-client.yml,optional:fi
 LOG_FILE=${BASEDIR}/logs/output.txt
 TEE_FILE=${BASEDIR}/logs/tee.txt
 JASYPT_PASSWORD=password
-export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD
+JAVA_HOME=${BASEDIR}/jre
+export MELODIC_CONFIG_DIR PAASAGE_CONFIG_DIR LOG_FILE JASYPT_PASSWORD JAVA_HOME
 
 # Update path
-PATH=${BASEDIR}/jre8/bin:$PATH
+PATH=${JAVA_HOME}/bin:$PATH
 
 # Check if baguette client is already running
 #PID=`jps | grep BaguetteClient | cut -d " " -f 1`

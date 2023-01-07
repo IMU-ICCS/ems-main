@@ -10,7 +10,7 @@
     {
       "description": "Check if 'java' is installed at Node",
       "taskType": "CHECK",
-      "command": "/opt/baguette-client/jre8/bin/java -version",
+      "command": "/opt/baguette-client/jre/bin/java -version",
       "executable": false,
       "exitCode": 0,
       "match": false,

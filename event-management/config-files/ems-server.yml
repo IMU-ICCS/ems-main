@@ -493,7 +493,7 @@ baguette.client.install:
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/check-ignore.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/detect.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/netdata.json
-      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/jre8.json
+      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/jre.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/baguette.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/baguette-skip.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/start-agents.json

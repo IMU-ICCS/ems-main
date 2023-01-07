@@ -14,4 +14,4 @@ JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.tr
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 
-java $JAVA_OPTS -jar jars/broker-client-jar-with-dependencies.jar $*
+./jre/bin/java $JAVA_OPTS -jar jars/broker-client-jar-with-dependencies.jar $*

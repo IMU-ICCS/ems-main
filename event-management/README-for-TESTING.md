@@ -10,7 +10,7 @@
 ## Definitions
 We distinguish between ***Resource-Limited (RL)*** nodes and ***Normal or Non-RL*** nodes.
 
-- **Normal nodes** are VMs have enough resources, where an EMS client will be installed, along with JRE8 and Netdata.
+- **Normal nodes** are VMs have enough resources, where an EMS client will be installed, along with JRE and Netdata.
 - **RL nodes** are VMs with few resources, where only Netdata will be installed.
 - Currently, EMS will classify a VM as an RL node if:
     * it has 1 or 2 cores, or
@@ -51,7 +51,7 @@ We also distinguish between ***Monitoring Topologies***:
 
 ## A) <u>Support for Resource-Limited nodes</u>
 > Feature Quick Notes:
-> - EMS server will NOT install EMS client and JRE8 in RL nodes.
+> - EMS server will NOT install EMS client and JRE in RL nodes.
 > - EMS server will install Netdata in RL nodes.
 > - EMS server or an Aggregator will periodically query Netdata agents of RL nodes for metrics.
 > - Normal nodes will periodically query their Local Netdata agent for metrics.

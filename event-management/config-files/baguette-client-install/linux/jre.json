@@ -1,21 +1,21 @@
 {
   "os": "LINUX",
-  "description": "JRE 8u282 installation instruction set at VM node",
+  "description": "JRE installation instruction set at VM node",
   "condition": "! ${SKIP_JRE_INSTALLATION:-false} && ! '${OS_ARCHITECTURE:-x}'.startsWith('arm') && ${CPU_PROCESSORS:-0} > ${BAGUETTE_INSTALLATION_MIN_PROCESSORS:-0} && ${RAM_AVAILABLE_KB:-0} > ${BAGUETTE_INSTALLATION_MIN_RAM:-0} && ${DISK_FREE_KB:-0} > ${BAGUETTE_INSTALLATION_MIN_DISK_FREE:-0}",
   "instructions": [
     {
-      "description": "Check if JRE 8u282 is already installed at Node",
+      "description": "Check if JRE is already installed at Node",
       "taskType": "CHECK",
-      "command": "[[ -f /opt/baguette-client/jre8/bin/java ]] && exit 99",
+      "command": "[[ -f /opt/baguette-client/jre/bin/java ]] && exit 99",
       "executable": false,
       "exitCode": 99,
       "match": true,
-      "message": "JRE 8u282 is already installed at Node"
+      "message": "JRE is already installed at Node"
     },
     {
-      "description": "Install JRE 8u282...",
+      "description": "Install JRE...",
       "taskType": "LOG",
-      "message": "Install JRE 8u282..."
+      "message": "Install JRE..."
     },
     {
       "description": "Mkdir Baguette Client installation folder",
@@ -37,8 +37,8 @@
     {
       "description": "Copy JRE package",
       "taskType": "COPY",
-      "fileName": "/tmp/jre8.282.tar.gz",
-      "localFileName": "${EMS_PUBLIC_DIR}/resources/${JRE8_LINUX_X64_PACKAGE}",
+      "fileName": "/tmp/${JRE_LINUX_PACKAGE}",
+      "localFileName": "${EMS_PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE}",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -46,7 +46,7 @@
     {
       "description": "Extract JRE package into installation folder",
       "taskType": "CMD",
-      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S tar zxvf /tmp/jre8.282.tar.gz -C /opt/baguette-client",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S tar zxvf /tmp/${JRE_LINUX_PACKAGE} -C /opt/baguette-client",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -54,7 +54,7 @@
     {
       "description": "Rename JRE directory",
       "taskType": "CMD",
-      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S mv /opt/baguette-client/zulu* /opt/baguette-client/jre8",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S mv /opt/baguette-client/zulu* /opt/baguette-client/jre",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -70,7 +70,7 @@
     {
       "description": "Print JRE version",
       "taskType": "CMD",
-      "command": "/opt/baguette-client/jre8/bin/java -version",
+      "command": "/opt/baguette-client/jre/bin/java -version",
       "executable": false,
       "exitCode": 0,
       "match": false
