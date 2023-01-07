@@ -19,6 +19,9 @@ EMS_SERVER_ADDRESS=${${control.IP_SETTING}}
 #password-encoder-class = eu.melodic.event.util.password.IdentityPasswordEncoder
 #password-encoder-class = eu.melodic.event.util.password.PresentPasswordEncoder
 
+### Misc
+spring.output.ansi.enabled=ALWAYS
+
 
 ################################################################################
 ### Web server port and TLS settings

@@ -68,6 +68,8 @@ IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %MELODIC_CONFIG_DIR%\wait-for-cdo.ba
 rem Uncomment next line to set JAVA runtime options
 rem set JAVA_OPTS=-Djavax.net.debug=all
 
+set JAVA_ADD_OPENS=--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED
+
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION%
 echo IP address:
@@ -77,10 +79,10 @@ IF NOT DEFINED RESTART_EXIT_CODE set RESTART_EXIT_CODE=99
 :_restart_ems
 
 rem Use when Esper is packaged in control-service.jar
-rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar --logging.config=file:%LOG_CONFIG_FILE%
+rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"
 
 rem Use when Esper is NOT packaged in control-service.jar
-java %EMS_DEBUG_OPTS% %JAVA_OPTS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"  %*
+echo java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"  %*
 
 if errorlevel %RESTART_EXIT_CODE% (
     echo Restarting EMS server...

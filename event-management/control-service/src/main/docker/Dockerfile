@@ -7,7 +7,7 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-FROM adoptopenjdk:8-jre
+FROM eclipse-temurin:17.0.5_8-jre
 
 ENV BASEDIR /opt/ems-server
 ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
 
 # Download a JRE suitable for running EMS clients, and
 # offer it for download during EMS client installations
-ENV JRE_LINUX_PACKAGE zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz
+ENV JRE_LINUX_PACKAGE zulu17.38.21-ca-jre17.0.5-linux_x64.tar.gz
 RUN mkdir -p ${PUBLIC_DIR}/resources
 RUN curl https://cdn.azul.com/zulu/bin/${JRE_LINUX_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE_LINUX_PACKAGE}
 
