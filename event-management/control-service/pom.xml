@@ -475,6 +475,7 @@
                                     <include>run.sh</include>
                                     <include>sysmon.sh</include>
                                     <include>detect.sh</include>
+                                    <include>jwtutil.sh</include>
                                     <filtering>false</filtering>
                                 </resource>
                                 <resource>

@@ -122,7 +122,8 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
                         .getKeystore(keystoreFile, keystoreType, keystorePassword)
                         .passwordUtil(passwordUtil)
                         .exportCertToFile(keyAlias, certFileName);
-                log.info("AbstractInstallationHelper.initServerCertificate(): Server PEM certificate exported to file: {}", certFileName);
+                log.debug("AbstractInstallationHelper.initServerCertificate(): Server PEM certificate exported to file: {}", certFileName);
+                log.info("Server PEM certificate exported to file: {}", certFileName);
 
                 File certFile = new File(certFileName);
                 if (! certFile.exists())
