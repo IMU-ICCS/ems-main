@@ -82,7 +82,7 @@ rem Use when Esper is packaged in control-service.jar
 rem java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -jar %JARS_DIR%\control-service.jar -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"
 
 rem Use when Esper is NOT packaged in control-service.jar
-echo java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"  %*
+java %EMS_DEBUG_OPTS% %JAVA_OPTS% %JAVA_ADD_OPENS% -Djasypt.encryptor.password=%JASYPT_PASSWORD% -Djava.security.egd=file:/dev/urandom -cp %JARS_DIR%\control-service.jar -Dloader.path=%JARS_DIR%\esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher -nolog "--spring.config.location=%EMS_CONFIG_LOCATION%" "--logging.config=file:%LOG_CONFIG_FILE%"  %*
 
 if errorlevel %RESTART_EXIT_CODE% (
     echo Restarting EMS server...
