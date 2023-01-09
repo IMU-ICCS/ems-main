@@ -37,6 +37,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicLong;
@@ -1264,7 +1265,7 @@ public class CommandExecutor {
             } catch (Exception ex) {
                 log.error("Exception while sending Statistics to server: ", ex);
             }
-        }, baguetteClient.getBaguetteClientProperties().getSendStatisticsDelay());
+        }, Duration.ofMillis(baguetteClient.getBaguetteClientProperties().getSendStatisticsDelay()));
         log.info("Start sending STATS to server");
     }
 

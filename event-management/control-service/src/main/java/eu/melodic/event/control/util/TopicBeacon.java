@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -71,10 +72,10 @@ public class TopicBeacon implements InitializingBean {
             }
         };
         if (properties.isUseDelay()) {
-            scheduler.scheduleWithFixedDelay(transmitInfoTask, startTime, properties.getDelay());
+            scheduler.scheduleWithFixedDelay(transmitInfoTask, startTime.toInstant(), Duration.ofMillis(properties.getDelay()));
             log.info("Topic Beacon started: init-delay={}ms, delay={}ms", properties.getInitialDelay(), properties.getDelay());
         } else {
-            scheduler.scheduleAtFixedRate(transmitInfoTask, startTime, properties.getRate());
+            scheduler.scheduleAtFixedRate(transmitInfoTask, startTime.toInstant(), Duration.ofMillis(properties.getRate()));
             log.info("Topic Beacon started: init-delay={}ms, rate={}ms", properties.getInitialDelay(), properties.getRate());
         }
     }

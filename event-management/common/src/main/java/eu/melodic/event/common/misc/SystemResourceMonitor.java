@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -61,7 +62,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
             log.warn("SystemResourceMonitor is already running");
             return;
         }
-        future = scheduler.scheduleAtFixedRate(this, period);
+        future = scheduler.scheduleAtFixedRate(this, Duration.ofMillis(period));
         log.info("SystemResourceMonitor started");
     }
 

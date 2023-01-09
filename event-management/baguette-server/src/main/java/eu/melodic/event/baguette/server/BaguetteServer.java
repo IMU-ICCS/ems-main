@@ -323,7 +323,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         log.debug("createServerCoordinator: Instantiating coordinator with id: {}", id);
 
         // Initialize coordinator instance
-        ServerCoordinator coordinator = coordinatorClass.newInstance();
+        ServerCoordinator coordinator = coordinatorClass.getConstructor().newInstance();
 
         // Set coordinator parameters
         coordinator.setProperties(coordinatorParams);

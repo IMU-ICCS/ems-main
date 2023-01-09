@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         // Schedule collection execution
         errorsMap.clear();
         ignoredNodes.clear();
-        runner = taskScheduler.scheduleWithFixedDelay(this, properties.getDelay());
+        runner = taskScheduler.scheduleWithFixedDelay(this, Duration.ofMillis(properties.getDelay()));
         started = true;
 
         log.info("Collectors::{}: Started", collectorId);

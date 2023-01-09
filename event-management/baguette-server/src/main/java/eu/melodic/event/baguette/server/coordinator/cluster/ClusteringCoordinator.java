@@ -96,7 +96,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     public void setProperties(Map<String, String> zoneConfig) {
         log.debug("Zone configuration: {}", zoneConfig);
         zoneManagementStrategy = zoneConfig.containsKey("zone-management-strategy-class")
-                ? (IZoneManagementStrategy) Class.forName(zoneConfig.get("zone-management-strategy-class")).newInstance()
+                ? (IZoneManagementStrategy) Class.forName(zoneConfig.get("zone-management-strategy-class")).getConstructor().newInstance()
                 : new DefaultZoneManagementStrategy();
         zoneStartPort = zoneConfig.containsKey("zone-port-start")
                 ? Integer.parseInt(zoneConfig.get("zone-port-start")) : zoneStartPort;
@@ -110,7 +110,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
         if (StringUtils.isNotBlank(clusterDetectorClass)) {
             Class<?> clazz = Class.forName(clusterDetectorClass);
             if (clazz.isAssignableFrom(IClusterZoneDetector.class))
-                clusterZoneDetector = (IClusterZoneDetector) clazz.newInstance();
+                clusterZoneDetector = (IClusterZoneDetector) clazz.getConstructor().newInstance();
             else
                 throw new IllegalArgumentException("Invalid Cluster Detector class. Not implementing IClusterZoneDetector interface: "+clazz.getName());
         } else {

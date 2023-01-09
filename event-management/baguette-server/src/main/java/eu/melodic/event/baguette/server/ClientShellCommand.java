@@ -474,7 +474,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
                                 .getBrokerCepService()
                                 .addOrReplaceCertificateInTruststore(alias, clientCertificate);
                         log.info("{}--> Added/Replaced client certificate in Truststore: alias={}, CN={}, certificate-names={}",
-                                id, alias, cert.getSubjectDN().getName(), CertUtil.subjectNames(cert));
+                                id, alias, cert.getSubjectX500Principal().getName(), CertUtil.subjectNames(cert));
                     } catch (Exception e) {
                         log.warn("{}--> EXCEPTION while adding/replacing certificate in Trust store: alias={}, exception: ",
                                 clientId, alias, e);

@@ -47,7 +47,7 @@ public class PluginManager implements InitializingBean {
 
     @SneakyThrows
     public synchronized void initializePlugin(Class<? extends Plugin> pluginClass) {
-        Plugin plugin = pluginClass.newInstance();
+        Plugin plugin = pluginClass.getConstructor().newInstance();
         activePlugins.add(plugin);
         plugin.start();
     }

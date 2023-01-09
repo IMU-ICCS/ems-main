@@ -219,7 +219,7 @@ public class ClusterManager extends AbstractLogBase {
 					brokerUtil.checkBrokerNumber();
 				else
 					log_warn("CLM: Cluster checker: BrokerUtil is NULL  (is it a BUG?)");
-			}, delay);
+			}, Duration.ofMillis(delay));
 		} else {
 			log_warn("CLM: Cluster checker is DISABLED");
 		}

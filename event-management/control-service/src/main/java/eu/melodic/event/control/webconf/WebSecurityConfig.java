@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -56,7 +56,7 @@ import java.util.Map;
 @Order(1)
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
 public class WebSecurityConfig implements InitializingBean {
@@ -265,7 +265,7 @@ public class WebSecurityConfig implements InitializingBean {
             // Authorize all requests
             httpSecurity
                     .csrf().disable()
-                    .authorizeRequests(
+                    .authorizeHttpRequests(
                             authorize -> authorize.anyRequest().permitAll());
             return httpSecurity.build();
         }
