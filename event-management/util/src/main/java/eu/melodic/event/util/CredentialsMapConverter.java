@@ -18,8 +18,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesBindin
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
 /**
  *  Converts a String to a CredentialsMap
  */
@@ -29,8 +27,7 @@ import javax.annotation.PostConstruct;
 public class CredentialsMapConverter implements Converter<String, CredentialsMap> {
     private Gson gson;
 
-    @PostConstruct
-    public void initObjectMapper() {
+    public CredentialsMapConverter() {
         gson = new Gson();
     }
 

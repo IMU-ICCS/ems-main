@@ -28,9 +28,18 @@
         </dependency>
 
         <!-- Spring-boot dependencies -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-activemq</artifactId>
+        </dependency>-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-client</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
 
         <dependency>
@@ -42,22 +51,27 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-broker</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-kahadb-store</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-jaas</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-stomp</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-pool</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
 
         <!-- Esper dependencies -->

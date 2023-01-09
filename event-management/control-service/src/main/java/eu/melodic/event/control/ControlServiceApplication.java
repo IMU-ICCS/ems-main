@@ -9,18 +9,20 @@
 
 package eu.melodic.event.control;
 
+import com.ulisesbocchio.jasyptspringboot.environment.StandardEncryptableEnvironment;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
@@ -36,34 +38,40 @@ import java.util.TimerTask;
 @EnableAsync
 @Configuration
 @SpringBootApplication(
-        scanBasePackages = {"eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
+        scanBasePackages = { "eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
                 "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep", "eu.melodic.event.control",
-                "eu.melodic.event.translate", "eu.melodic.event.common", "eu.melodic.event.util"},
+                "eu.melodic.event.translate", "eu.melodic.event.common", "eu.melodic.event.util" },
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
+@RequiredArgsConstructor
 public class ControlServiceApplication {
     private static ConfigurableApplicationContext applicationContext;
     private static Timer exitTimer;
 
-    @Autowired
-    private ControlServiceProperties properties;
-    @Autowired
-    private PasswordUtil passwordUtil;
+    private final ControlServiceProperties properties;
+    private final PasswordUtil passwordUtil;
 
     public static void main(String[] args) {
         // Start EMS server
-        SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
+        SpringApplication springApplication = new SpringApplicationBuilder()
+                .environment(new StandardEncryptableEnvironment())
+                .sources(ControlServiceApplication.class)
+                .build();
+        //SpringApplication springApplication = new SpringApplication(ControlServiceApplication.class);
         springApplication.setBannerMode(Banner.Mode.LOG);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
     }
 
     @Bean
-    public ServletWebServerFactory servletWebServerFactory() throws Exception {
-        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+    public ServletWebServerFactory servletWebServerFactory() {
+        return new TomcatServletWebServerFactory() {
             protected void customizeConnector(Connector connector) {
                 if (this.getSsl() != null && this.getSsl().isEnabled()) {
                     try {
                         log.debug("TomcatServletWebServerFactory: ControlServiceProperties: {}", properties);
+                        log.debug("TomcatServletWebServerFactory: Keystore password: {}", passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()));
+                        log.debug("TomcatServletWebServerFactory: Truststore password: {}", passwordUtil.encodePassword(properties.getSsl().getTruststorePassword()));
+
                         log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate...");
                         KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
                         log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate... done");
@@ -74,7 +82,6 @@ public class ControlServiceApplication {
                 super.customizeConnector(connector);
             }
         };
-        return tomcat;
     }
 
     synchronized static void exitApp(int exitCode, long gracePeriod) {
