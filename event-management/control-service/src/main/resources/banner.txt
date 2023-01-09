@@ -1,15 +1,15 @@
 
-${AnsiColor.87}  ______ __  __  _____    _____            _             _
-${AnsiColor.87} |  ____|  \/  |/ ____|  / ____|          | |           | |
-${AnsiColor.87} | |__  | \  / | (___   | |     ___  _ __ | |_ _ __ ___ | |
-${AnsiColor.87} |  __| | |\/| |\___ \  | |    / _ \| '_ \| __| '__/ _ \| |
-${AnsiColor.87} | |____| |  | |____) | | |___| (_) | | | | |_| | | (_) | |
-${AnsiColor.87} |______|_|  |_|_____/   \_____\___/|_| |_|\__|_|  \___/|_|
+${AnsiColor.051} ███████╗███╗   ███╗███████╗     ██████╗ ██████╗ ███╗   ██╗████████╗██████╗  ██████╗ ██╗
+${AnsiColor.051} ██╔════╝████╗ ████║██╔════╝    ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██╔══██╗██╔═══██╗██║
+${AnsiColor.051} █████╗  ██╔████╔██║███████╗    ██║     ██║   ██║██╔██╗ ██║   ██║   ██████╔╝██║   ██║██║
+${AnsiColor.039} ██╔══╝  ██║╚██╔╝██║╚════██║    ██║     ██║   ██║██║╚██╗██║   ██║   ██╔══██╗██║   ██║██║
+${AnsiColor.039} ███████╗██║ ╚═╝ ██║███████║    ╚██████╗╚██████╔╝██║ ╚████║   ██║   ██║  ██║╚██████╔╝███████╗
+${AnsiColor.039} ╚══════╝╚═╝     ╚═╝╚══════╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝
 
-${AnsiColor.46} :: EMS Control :: ${AnsiColor.87}                      ${application.formatted-version}
-${AnsiColor.46} :: Spring Boot :: ${AnsiColor.87}                      ${spring-boot.formatted-version}
-${AnsiColor.46} :: Java (TM)   :: ${AnsiColor.87}                       (${java.version})
-${AnsiColor.46} :: Build Num.  :: ${AnsiColor.11}@buildNumber@
-${AnsiColor.46} :: Build Date  :: ${AnsiColor.11}@timestamp@
-${AnsiColor.46} :: SCM Branch  :: ${AnsiColor.11}@scmBranch@
-${AnsiColor.46} :: Description :: ${AnsiColor.11}@build-description@ ${AnsiColor.DEFAULT}${AnsiStyle.NORMAL}
+${AnsiColor.046} :: EMS Control :: ${AnsiColor.87}                      ${application.formatted-version}
+${AnsiColor.046} :: Spring Boot :: ${AnsiColor.87}                      ${spring-boot.formatted-version}
+${AnsiColor.046} :: Java (TM)   :: ${AnsiColor.87}                       (${java.version})
+${AnsiColor.046} :: Build Num.  :: ${AnsiColor.11}@buildNumber@
+${AnsiColor.046} :: Build Date  :: ${AnsiColor.11}@timestamp@
+${AnsiColor.046} :: SCM Branch  :: ${AnsiColor.11}@scmBranch@
+${AnsiColor.046} :: Description :: ${AnsiColor.11}@build-description@ ${AnsiColor.DEFAULT}${AnsiStyle.NORMAL}
