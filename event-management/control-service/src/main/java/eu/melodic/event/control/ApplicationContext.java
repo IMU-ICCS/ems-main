@@ -9,25 +9,31 @@
 
 package eu.melodic.event.control;
 
+import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.util.WebClientUtil;
 import eu.melodic.event.util.EventBus;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Configuration
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor
 public class ApplicationContext {
+    private final ControlServiceProperties properties;
+
     @Bean
-    public RestTemplate getRestTemplate() {
-        return new RestTemplate();
+    @SneakyThrows
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public WebClient webClient() {
+        return new WebClientUtil().createInstance(properties.getSsl());
     }
 
     @Bean

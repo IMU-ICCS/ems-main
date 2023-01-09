@@ -14,7 +14,7 @@ import camel.metric.CompositeMetric;
 import camel.metric.MetricContext;
 import camel.metric.RawMetric;
 import camel.requirement.ServiceLevelObjective;
-import com.google.gson.*;
+import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistry;
 import eu.melodic.event.baguette.server.ServerCoordinator;
@@ -27,7 +27,6 @@ import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
-import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.NotificationResult;
@@ -44,11 +43,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -57,15 +51,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -80,7 +75,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private final ControlServiceProperties properties;
     private final BaguetteServer baguette;
     private final NodeRegistry nodeRegistry;
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     private final PasswordUtil passwordUtil;
     @Getter private BrokerCepService brokerCep;
 
@@ -531,10 +526,24 @@ public class ControlServiceCoordinator implements InitializingBean {
                 try {
                     log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}", metaSolverEndpoint);
                     //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
+                    /*
                     HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
                     final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
                     String metaSolverResponse = response.getBody();
-                    log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, response={}", metaSolverEndpoint, metaSolverResponse);
+                    */
+                    ResponseEntity<String> response = webClient.post().
+                            uri(metaSolverEndpoint)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .header(HttpHeaders.AUTHORIZATION, jwtToken)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                            .bodyValue(json)
+                            .retrieve()
+                            .toEntity(String.class)
+                            .block();
+                    String metaSolverResponse = (response!=null && response.getStatusCode().is2xxSuccessful()) ? response.getBody() : null;
+                    log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, status={},  message={}",
+                            metaSolverEndpoint, response!=null ? response.getStatusCode() : null, metaSolverResponse);
                 } catch (Exception ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, EXCEPTION: ", metaSolverEndpoint, ex);
                 }
@@ -559,6 +568,8 @@ public class ControlServiceCoordinator implements InitializingBean {
                 log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
                 sendSuccessNotification(camelModelId, notificationUri, requestUuid, jwtToken);
                 log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
+            } else {
+                log.warn("ControlServiceCoordinator.processNewModel(): Notification URI is blank");
             }
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
@@ -1039,14 +1050,25 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.info("ControlServiceCoordinator.sendCamelModelNotification(): Invoking ESB endpoint: {}", url);
         log.trace("ControlServiceCoordinator.sendCamelModelNotification(): JWT token: {}", jwtToken);
         //String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
-        HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(CamelModelNotificationRequest.class, notification, jwtToken);
+        //HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(CamelModelNotificationRequest.class, notification, jwtToken);
 
         ResponseEntity<String> response;
-        if (url.toLowerCase().startsWith("http:")) {
+        response = webClient.post().
+                uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, jwtToken)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .bodyValue(notification)
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+
+        /*if (url.toLowerCase().startsWith("http:")) {
             response = restTemplate.postForEntity(url, entity, String.class);
         } else {
 
-            /*TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+            *//*TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
             SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
             SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
                     NoopHostnameVerifier.INSTANCE);
@@ -1066,7 +1088,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     new HttpComponentsClientHttpRequestFactory(httpClient);
 
             response = new RestTemplate(requestFactory)
-                    .postForEntity(url, entity, String.class);*/
+                    .postForEntity(url, entity, String.class);*//*
 
             // Load keystore and truststore
             KeyStore keyStore = KeystoreUtil.readKeystore(
@@ -1098,10 +1120,14 @@ public class ControlServiceCoordinator implements InitializingBean {
             RestTemplate restTemplate = new RestTemplate(requestFactory);
             response = restTemplate
                     .postForEntity(url, entity, String.class);
-        }
+        }*/
 
-        String responseStatus = response.getStatusCode().toString();
-        log.info("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, response={}", url, responseStatus);
+        if (response!=null) {
+            String responseStatus = response.getStatusCode().toString();
+            log.info("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, status={}, message={}", url, responseStatus, response.getBody());
+        } else {
+            log.warn("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, response is NULL", url);
+        }
     }
 
     public <T> HttpEntity<T> createHttpEntity(Class<T> notifType, Object notification, String jwtToken) {
