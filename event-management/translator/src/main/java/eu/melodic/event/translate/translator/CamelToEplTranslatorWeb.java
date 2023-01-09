@@ -17,15 +17,15 @@ import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 @Slf4j
 public class CamelToEplTranslatorWeb extends CamelToEplTranslatorFile {
@@ -85,7 +85,7 @@ public class CamelToEplTranslatorWeb extends CamelToEplTranslatorFile {
 
 			// Download model
 			ResponseEntity<String> response;
-			HttpStatus responseStatus;
+			HttpStatusCode responseStatus;
 			try {
 				log.info("CamelToEplTranslatorWeb.translate():  Downloading Model from: {}", modelUrl);
 				response = restTemplate.getForEntity(modelUrl, String.class);
@@ -116,7 +116,7 @@ public class CamelToEplTranslatorWeb extends CamelToEplTranslatorFile {
 					? Files.createTempFile(Paths.get(modelsDir), main, ext)
 					: Files.createTempFile(main, ext) ;
 
-			Files.write(modelFile, response.getBody().getBytes(StandardCharsets.UTF_8));
+			Files.writeString(modelFile, Objects.requireNonNull(response.getBody()));
 			log.debug("CamelToEplTranslatorWeb.translate():  Model stored in: {}", modelFile);
 
 			// Read CAMEL model

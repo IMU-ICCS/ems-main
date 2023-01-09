@@ -12,6 +12,11 @@ package eu.melodic.event.control.webconf;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterceptor;
 import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
+import jakarta.servlet.Filter;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +33,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +90,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public javax.servlet.Filter contentCachingFilter() {
+    public Filter contentCachingFilter() {
         log.debug("contentCachingFilter(): Registering content caching request filter");
         return (servletRequest, servletResponse, filterChain) -> {
             log.trace("contentCachingFilter(): request={}", servletRequest);

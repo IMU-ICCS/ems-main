@@ -11,6 +11,7 @@ package eu.melodic.event.control.info;
 
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.translate.util.CdoCpModelUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;

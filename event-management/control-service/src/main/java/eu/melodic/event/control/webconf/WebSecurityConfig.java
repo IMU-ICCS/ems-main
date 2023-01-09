@@ -17,6 +17,9 @@ import eu.paasage.upperware.security.authapi.properties.MelodicSecurityPropertie
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.jsonwebtoken.*;
+import jakarta.servlet.Filter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -43,9 +46,6 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.servlet.Filter;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -299,17 +299,17 @@ public class WebSecurityConfig implements InitializingBean {
 
         if (userFormAuthEnabled) {
             httpSecurity
-                    //.authorizeRequests(
-                    //        authorize -> authorize.mvcMatchers("/broker/credentials", "/baguette/ref/**").hasAnyRole(ROLE_JWT_TOKEN, ROLE_API_KEY))
-                    .authorizeRequests(
-                            authorize -> authorize.mvcMatchers("/favicon.ico", "/health").permitAll())
-                    .authorizeRequests(
-                            authorize -> authorize.mvcMatchers(permittedUrls).permitAll())
-                    .authorizeRequests(
+                    //.authorizeHttpRequests(
+                    //        authorize -> authorize.requestMatchers("/broker/credentials", "/baguette/ref/**").hasAnyRole(ROLE_JWT_TOKEN, ROLE_API_KEY))
+                    .authorizeHttpRequests(
+                            authorize -> authorize.requestMatchers("/favicon.ico", "/health").permitAll())
+                    .authorizeHttpRequests(
+                            authorize -> authorize.requestMatchers(permittedUrls).permitAll())
+                    .authorizeHttpRequests(
                             authorize -> authorize.anyRequest().authenticated());
         } else {
             httpSecurity
-                    .authorizeRequests(
+                    .authorizeHttpRequests(
                             authorize -> authorize.anyRequest().authenticated());
         }
 

@@ -11,6 +11,7 @@ package eu.melodic.event.control.info;
 
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.util.EmsConstant;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -31,7 +32,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerMapping;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Null;
 import java.io.File;
 import java.io.FileInputStream;

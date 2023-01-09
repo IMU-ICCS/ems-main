@@ -25,6 +25,7 @@ import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -44,15 +45,11 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -649,13 +646,6 @@ public class ControlServiceController {
     @RequestMapping(value = "/health", method = GET)
     public String health() {
         return "OK";
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(BAD_REQUEST)
-    public String handleException(BadRequestException exception) {
-        log.error(format("Returning error response: invalid request (%s) ", exception.getMessage()));
-        return exception.getMessage();
     }
 
 
