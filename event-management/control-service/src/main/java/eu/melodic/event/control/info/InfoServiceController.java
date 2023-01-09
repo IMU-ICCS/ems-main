@@ -9,11 +9,13 @@
 
 package eu.melodic.event.control.info;
 
-import com.logviewer.data2.LogFormat;
-import com.logviewer.logLibs.LogConfigurationLoader;
-import com.logviewer.springboot.LogViewerSpringBootConfig;
+//XXX: TODO: Temporarily disabled logviewer: import com.logviewer.data2.LogFormat;
+//XXX: TODO: Temporarily disabled logviewer: import com.logviewer.logLibs.LogConfigurationLoader;
+//XXX: TODO: Temporarily disabled logviewer: import com.logviewer.springboot.LogViewerSpringBootConfig;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.InfoServiceProperties;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.QueryParam;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
@@ -39,13 +39,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Import(LogViewerSpringBootConfig.class)
+//XXX: TODO: Temporarily disabled logviewer: @Import(LogViewerSpringBootConfig.class)
 public class InfoServiceController {
 
     private final InfoServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
     private final IEmsInfoService emsInfoService;
 
+    /*XXX: TODO: Temporarily disabled logviewer
     @Bean
     public LogConfigurationLoader getLogConfigurationLoader() {
         // Initialize Log-Viewer log paths
@@ -58,7 +59,7 @@ public class InfoServiceController {
             log.info("LogConfigurationLoader: log-paths: {}", logConf);
             return logConf;
         };
-    }
+    }*/
 
     @GetMapping("/info/metrics/get")
     public Mono<Map<String,Object>> serverMetricsGet(HttpServletRequest request, @AuthenticationPrincipal UserDetails user) {
