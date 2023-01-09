@@ -408,16 +408,14 @@ public class KeystoreUtil {
     public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil) throws Exception {
         if (passwordUtil==null)
             passwordUtil = new PasswordUtil();
-        String keystorePassword = passwordUtil.encodePassword(properties.getKeystorePassword());
-        String truststorePassword = passwordUtil.encodePassword(properties.getTruststorePassword());
         log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate");
         log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Key pair and Certificate settings:");
         log.debug("    Keystore file: {}", properties.getKeystoreFile());
         log.debug("    Keystore type: {}", properties.getKeystoreType());
-        log.debug("    Keystore password: {}", keystorePassword);
+        log.debug("    Keystore password: {}", passwordUtil.encodePassword(properties.getKeystorePassword()));
         log.debug("    Trust store file: {}", properties.getTruststoreFile());
         log.debug("    Trust store type: {}", properties.getTruststoreType());
-        log.debug("    Trust store password: {}", truststorePassword);
+        log.debug("    Trust store password: {}", passwordUtil.encodePassword(properties.getTruststorePassword()));
         log.debug("    Certificate file: {}", properties.getCertificateFile());
         log.debug("    Entry name:  {}", properties.getKeyEntryName());
         log.debug("    Entry DName: {}", properties.getKeyEntryDName());

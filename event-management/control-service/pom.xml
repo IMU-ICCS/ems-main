@@ -20,11 +20,11 @@
     <name>Upperware - EMS - Control Service</name>
 
     <properties>
-        <hawtio.version>2.4.0</hawtio.version>
+        <hawtio.version>2.16.3</hawtio.version>
         <spring.boot.admin.version>2.3.1</spring.boot.admin.version>
-        <jasypt.starter.version>2.1.0</jasypt.starter.version>
-        <micrometer.registry.prometheus.version>1.9.0</micrometer.registry.prometheus.version>
-        <openapi-ui.version>1.6.13</openapi-ui.version>
+        <jasypt.starter.version>2.1.2</jasypt.starter.version>  <!-- XXX: NOTE: latest version 3.0.5 fails -->
+        <micrometer.registry.prometheus.version>1.10.2</micrometer.registry.prometheus.version>
+        <openapi-ui.version>1.6.14</openapi-ui.version>
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>

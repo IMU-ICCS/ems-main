@@ -35,7 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.jms.ConnectionFactory;
@@ -159,12 +158,16 @@ public class BrokerConfig implements InitializingBean {
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
         KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
 
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}...",
+                properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
+                passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
+                properties.getSsl().getKeyEntryName());
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
                 .passwordUtil(passwordUtil)
                 .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryName());
-        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieved certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
                 properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
                 passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
                 properties.getSsl().getKeyEntryName(), this.brokerCert);
@@ -480,15 +483,5 @@ public class BrokerConfig implements InitializingBean {
     public ConnectionFactory getConnectionFactoryFor(String connectionString) {
         return connectionFactoryCache
                 .computeIfAbsent(connectionString, this::connectionFactory);
-    }
-
-    /**
-     * Creates a new JMS template for client-side connections
-     */
-    @Bean
-    public JmsTemplate jmsTemplate() {
-        JmsTemplate template = new JmsTemplate();
-        template.setConnectionFactory(connectionFactory());
-        return template;
     }
 }

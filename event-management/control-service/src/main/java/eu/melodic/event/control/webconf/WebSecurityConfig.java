@@ -172,9 +172,26 @@ public class WebSecurityConfig implements InitializingBean {
         if (securityEnabled && apiKeyAuthEnabled) {
             log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
         }
-        if (printSampleJwt)
-            log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
-                divider, jwtService(melodicSecurityProperties).create("USER"), divider);
+        if (printSampleJwt) {
+            try {
+                log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
+                        divider, jwtService(melodicSecurityProperties).create("USER"), divider);
+            } catch (Throwable e) {
+                Throwable throwable = e;
+                StringBuilder sb = new StringBuilder();
+                String sep = "";
+                while (throwable != null) {
+                    sb.append(sep)
+                            .append(throwable.getClass().getName())
+                            .append(": ")
+                            .append(throwable.getMessage());
+                    throwable = throwable.getCause();
+                    if (sep.isEmpty()) sep = " -> ";
+                }
+                log.error("afterPropertiesSet: Failed to generate sample JWT Token: {}", sb);
+                log.debug("afterPropertiesSet: Failed to generate sample JWT Token: EXCEPTION:\n", e);
+            }
+        }
 
         log.debug("afterPropertiesSet: ---------------------");
         log.debug("afterPropertiesSet:      securityEnabled: {}", securityEnabled);
