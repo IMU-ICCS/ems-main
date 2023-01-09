@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-//import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -28,7 +27,6 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
         log.info("RestControllerExceptionHandler initialized");
     }
 
-    //@ExceptionHandler(value = { Throwable.class, Exception.class, NullPointerException.class })
     protected ResponseEntity<Object> handleMethodArgumentNotValid(RuntimeException ex, WebRequest request) {
         log.error("Returning error response: Invalid request: {}", ex.getMessage());
         log.debug("Returning error response: Invalid request: EXCEPTION:\n", ex);
