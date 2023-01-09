@@ -14,10 +14,10 @@
     <!-- NOTE: Use this appender for simpler logging messages (only level and message) during development -->
     <!-- Change ref="CONSOLE" to ref="STDOUT" in the logger entries -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</Pattern>
-            <!--<Pattern>BC> %msg%n</Pattern>-->
-        </layout>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] %msg%n</pattern>
+            <!--<pattern>BC> %msg%n</pattern>-->
+        </encoder>
     </appender>
 
     <logger name="root" level="ERROR">

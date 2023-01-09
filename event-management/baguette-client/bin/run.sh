@@ -46,7 +46,7 @@ JAVA_OPTS="${JAVA_OPTS} -Djavax.net.ssl.trustStorePassword=melodic -Djavax.net.s
 JAVA_OPTS="${JAVA_OPTS} -Djasypt.encryptor.password=$JASYPT_PASSWORD"
 #JAVA_OPTS="-Djavax.net.debug=all ${JAVA_OPTS}"
 #JAVA_OPTS="-Dlogging.level.eu.melodic.event=TRACE ${JAVA_OPTS}"
-JAVA_OPTS="${JAVA_OPTS} --add-opens=java.base/java.lang=ALL-UNNAMED"
+JAVA_OPTS="${JAVA_OPTS} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED"
 
 echo "Starting baguette client..."
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"

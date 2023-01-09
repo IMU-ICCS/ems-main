@@ -31,7 +31,7 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=%MELODIC_CONFIG_DIR%\client-broker-tru
  -Djavax.net.ssl.trustStorePassword=melodic ^
  -Djavax.net.ssl.trustStoreType=pkcs12 ^
  -Djasypt.encryptor.password=%JASYPT_PASSWORD% ^
- --add-opens=java.base/java.lang=ALL-UNNAMED
+ --add-opens=java.base/java.lang=ALL-UNNAMED  --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
 ::set JAVA_OPTS=-Djavax.net.debug=all %JAVA_OPTS%
 ::set JAVA_OPTS=-Dlogging.level.eu.melodic.event=TRACE %JAVA_OPTS%
 
