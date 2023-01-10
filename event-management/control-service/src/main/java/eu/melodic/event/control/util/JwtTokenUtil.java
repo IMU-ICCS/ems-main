@@ -9,7 +9,7 @@
 
 package eu.melodic.event.control.util;
 
-import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.melodic.event.control.webconf.JwtTokenService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @Slf4j
 @SpringBootApplication
-@ComponentScan(basePackages = { "eu.paasage.upperware.security.authapi" })
+@ComponentScan//(basePackages = { "eu.paasage.upperware.security.authapi" })
 @RequiredArgsConstructor
 public class JwtTokenUtil {
     public static void main(String[] args) {
@@ -38,19 +38,19 @@ public class JwtTokenUtil {
         springApplication.setLogStartupInfo(false);
         ConfigurableApplicationContext ctx = springApplication.run(args);
 
-        execCommand( ctx.getBean(JWTService.class), args );
+        execCommand( ctx.getBean(JwtTokenService.class), args );
     }
 
-    public static void execCommand(JWTService jwtService, String... args) {
+    public static void execCommand(JwtTokenService jwtService, String... args) {
         if (args.length>0) {
             String token;
             if ("create".equalsIgnoreCase(args[0].trim())) {
                 String user = args.length > 1 && !args[1].trim().isEmpty() ? args[1].trim() : "USER";
-                token = jwtService.create(user);
+                token = jwtService.createToken(user);
                 log.info("New JWT token for user '{}':\n{}", user, token);
             } else if ("parse".equalsIgnoreCase(args[0].trim())) {
                 token = args[1];
-                Claims claims = jwtService.parse(token);
+                Claims claims = jwtService.parseToken(token);
                 log.info("Token claims: {}", claims);
             } else {
                 log.warn("Unknown command: {}", args[0]);

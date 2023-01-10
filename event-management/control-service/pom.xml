@@ -25,6 +25,7 @@
         <jasypt.starter.version>2.1.2</jasypt.starter.version>  <!-- XXX: NOTE: latest version 3.0.5 fails -->
         <micrometer.registry.prometheus.version>1.10.2</micrometer.registry.prometheus.version>
         <springdoc.version>2.0.2</springdoc.version>
+        <jjwt.version>0.11.5</jjwt.version>
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
@@ -65,11 +66,28 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- XXX: NOTE: Removed because it uses dependencies incompatible to SB 3, and also uses old/weak JWT algorithms
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>jwt-commons</artifactId>
             <version>${melodic.version}</version>
+        </dependency>-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
+            <version>${jjwt.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>eu.melodic.security.authorization</groupId>
             <artifactId>authorization-service-client</artifactId>
@@ -78,6 +96,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.jsonwebtoken</groupId>
+                    <artifactId>jjwt</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

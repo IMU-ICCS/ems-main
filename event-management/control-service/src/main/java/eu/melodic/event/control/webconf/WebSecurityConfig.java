@@ -12,10 +12,6 @@ package eu.melodic.event.control.webconf;
 import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.properties.WebSecurityProperties;
 import eu.melodic.event.util.PasswordUtil;
-import eu.paasage.upperware.security.authapi.SecurityConstants;
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.paasage.upperware.security.authapi.token.JWTService;
-import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.jsonwebtoken.*;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -57,7 +52,6 @@ import java.util.Map;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableConfigurationProperties(MelodicSecurityProperties.class)
 @RequiredArgsConstructor
 public class WebSecurityConfig implements InitializingBean {
 
@@ -66,10 +60,10 @@ public class WebSecurityConfig implements InitializingBean {
     public static final String ROLE_API_KEY = "ROLE_API_KEY";
     public static final String ROLE_OTP = "ROLE_OTP";
 
-    private final MelodicSecurityProperties melodicSecurityProperties;
     private final StaticResourceProperties staticResourceProperties;
     private final WebSecurityProperties properties;
     private final PasswordUtil passwordUtil;
+    private final JwtTokenService jwtTokenService;
 
     private final Map<String,Long> otpCache = new HashMap<>();
 
@@ -175,7 +169,7 @@ public class WebSecurityConfig implements InitializingBean {
         if (printSampleJwt) {
             try {
                 log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
-                        divider, jwtService(melodicSecurityProperties).create("USER"), divider);
+                        divider, jwtTokenService.createToken("USER"), divider);
             } catch (Throwable e) {
                 Throwable throwable = e;
                 StringBuilder sb = new StringBuilder();
@@ -364,17 +358,13 @@ public class WebSecurityConfig implements InitializingBean {
         }
     }
 
-    public JWTService jwtService(MelodicSecurityProperties melodicSecurityProperties) {
-        return new JWTServiceImpl(melodicSecurityProperties);
-    }
-
     public Filter jwtAuthorizationFilter() {
         return (servletRequest, servletResponse, filterChain) -> {
             if (servletRequest instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest) servletRequest;
 
                 // Get JWT token from Authorization header
-                String jwtValue = req.getHeader(SecurityConstants.HEADER_STRING);
+                String jwtValue = req.getHeader(JwtTokenService.HEADER_STRING);
                 log.debug("jwtAuthorizationFilter: Authorization Header: {}", passwordUtil.encodePassword(jwtValue));
 
                 // ...else get JWT token from 'jwtRequestParam' query parameter
@@ -384,23 +374,23 @@ public class WebSecurityConfig implements InitializingBean {
                         jwtValue = req.getParameter(jwtRequestParam);
                         log.debug("jwtAuthorizationFilter: '{}' parameter value: {}", jwtRequestParam, passwordUtil.encodePassword(jwtValue));
                         if (StringUtils.isNotBlank(jwtValue))
-                            jwtValue = SecurityConstants.TOKEN_PREFIX + jwtValue;
+                            jwtValue = JwtTokenService.TOKEN_PREFIX + jwtValue;
                     } else {
                         log.debug("jwtAuthorizationFilter: JWT token not found in headers and no JWT token parameter has been set");
                     }
                 }
 
                 // Check JWT token validity
-                if (jwtValue!=null && jwtValue.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+                if (jwtValue!=null && jwtValue.startsWith(JwtTokenService.TOKEN_PREFIX)) {
                     try {
                         log.debug("jwtAuthorizationFilter: Parsing Authorization header...");
-                        Claims claims = jwtService(melodicSecurityProperties).parse(jwtValue);
+                        Claims claims = jwtTokenService.parseToken(jwtValue);
                         String user = claims.getSubject();
                         String audience  = claims.getAudience();
                         log.debug("jwtAuthorizationFilter: Authorization header -->     user: {}", user);
                         log.debug("jwtAuthorizationFilter: Authorization header --> audience: {}", audience);
                         if (user!=null && audience!=null) {
-                            if (SecurityConstants.AUDIENCE_UPPERWARE.equals(audience)) {
+                            if (JwtTokenService.AUDIENCE_UPPERWARE.equals(audience)) {
                                 log.debug("jwtAuthorizationFilter: JWT token is valid");
                                 UsernamePasswordAuthenticationToken authentication =
                                         new UsernamePasswordAuthenticationToken(user, null,
@@ -413,7 +403,7 @@ public class WebSecurityConfig implements InitializingBean {
                         } else {
                             log.debug("jwtAuthorizationFilter: JWT token does not contain claim Audience");
                         }
-                    } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException ex) {
+                    } catch (Exception ex) {
                         log.debug("jwtAuthorizationFilter: JWT token is not valid: EXCEPTION: ", ex);
                     }
                 } else {
