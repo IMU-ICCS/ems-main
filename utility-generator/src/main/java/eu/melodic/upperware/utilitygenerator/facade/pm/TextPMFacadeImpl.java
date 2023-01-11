@@ -20,6 +20,8 @@ import java.util.Map;
 public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMFacade {
 
 	private static final String APPLICATION_PROPERTY_NAME = "application";
+	private static final String TARGET_PROPERTY_NAME = "target";
+	private static final String VARIABLES_PROPERTY_NAME = "variables";
 
 	public TextPMFacadeImpl() {
 		super(PM_PREDICT_REQUEST_TOPIC, PM_PREDICT_REPLY_TOPIC);
@@ -31,15 +33,22 @@ public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMF
 			throw new RuntimeException("Solution and variables do not match");
 		}
 
-		Map<String, Object> features = new HashMap<>();
+		Map<String, Object> variablesMap = new HashMap<>(metricsFromConstraintProblem.size());
 		for(VariableValueDTO dto : solution) {
-			features.put(dto.getName(), dto.getValue());
+			variablesMap.put(dto.getName(), dto.getValue());
 		}
 
+		Map<String, Object> features = new HashMap<>();
 		for(MetricDTO dto : metricsFromConstraintProblem) {
-			features.put(dto.getName(), dto.getValue());
+			if(TARGET_PROPERTY_NAME.equals(dto.getName())) {
+				features.put(TARGET_PROPERTY_NAME, dto.getValue()); // put target on the same level as variables
+			}
+			else {
+				variablesMap.put(dto.getName(), dto.getValue());
+			}
 		}
 
+		features.put(VARIABLES_PROPERTY_NAME, variablesMap);
  		features.put(APPLICATION_PROPERTY_NAME, applicationId);
 
 		Map<String, Object> result = sendRequestAndAwaitReply(features, 15);
