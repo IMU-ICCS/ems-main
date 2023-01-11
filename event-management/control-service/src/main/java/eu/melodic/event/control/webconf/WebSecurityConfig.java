@@ -11,6 +11,7 @@ package eu.melodic.event.control.webconf;
 
 import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.properties.WebSecurityProperties;
+import eu.melodic.event.control.util.jwt.JwtTokenService;
 import eu.melodic.event.util.PasswordUtil;
 import io.jsonwebtoken.*;
 import jakarta.servlet.Filter;

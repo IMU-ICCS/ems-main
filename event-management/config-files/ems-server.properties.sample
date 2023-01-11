@@ -51,6 +51,13 @@ server.ssl.key-alias=${control.ssl.key-entry-name}
 
 
 ################################################################################
+### JWT settings
+jwt.secret=ENC(I0mRWgH2FVDDNs4OBcdh7Z+o3lOQDa3ztaEtmnXT2HN0aClkChp/lqm9zM5HyTk0stJ7v2Di75U=)
+#jwt.expirationTime=86400000
+#jwt.refreshTokenExpirationTime=86400000
+
+
+################################################################################
 ### Authorization settings
 ### NOTE: More authorization settings in 'authorization-client.properties'
 

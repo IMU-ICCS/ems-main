@@ -7,9 +7,8 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.control.webconf;
+package eu.melodic.event.control.util.jwt;
 
-import eu.melodic.event.control.properties.JwtTokenProperties;
 import eu.melodic.event.util.PasswordUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
