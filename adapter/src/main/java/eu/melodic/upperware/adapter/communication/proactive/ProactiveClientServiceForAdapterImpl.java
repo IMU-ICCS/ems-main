@@ -9,12 +9,9 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.ow2.proactive.sal.model.ByonNode;
-import org.ow2.proactive.sal.model.Deployment;
-import org.ow2.proactive.sal.model.EdgeNode;
-import org.ow2.proactive.sal.model.SubmittedJobType;
-import org.ow2.proactive.scheduler.common.job.JobState;
+import org.ow2.proactive.sal.model.*;
 import org.ow2.proactive.scheduler.common.job.JobStatus;
+import org.ow2.proactive_grid_cloud_portal.scheduler.dto.JobStateData;
 import org.springframework.lang.NonNull;
 
 import java.util.*;
@@ -93,9 +90,9 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
     @Override
     public Optional<Pair<SubmittedJobType, JobStatus>> getJobStatus(String jobId) {
         try {
-            Optional<Pair<SubmittedJobType, JobState>> jobState = Optional.ofNullable(proactiveClientConnectorService.getJobState(jobId));
-            if (jobState.isPresent()) {
-                return Optional.of(Pair.of(jobState.get().getLeft(), jobState.get().getRight().getJobInfo().getStatus()));
+            Optional<JobState> jobStateData = Optional.ofNullable(proactiveClientConnectorService.getJobState(jobId));
+            if (jobStateData.isPresent()) {
+                return Optional.of(Pair.of(jobStateData.get().getSubmittedJobType(), jobStateData.get().getJobStatus()));
             }
             log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: ProActive client has not returned JobState for jobId={}", jobId);
         } catch (ProactiveClientException e) {
