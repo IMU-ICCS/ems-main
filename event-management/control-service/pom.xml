@@ -20,8 +20,8 @@
     <name>Upperware - EMS - Control Service</name>
 
     <properties>
-        <hawtio.version>2.16.3</hawtio.version>
-        <spring.boot.admin.version>3.0.0-M8</spring.boot.admin.version> <!-- XXX: NOTE: This is not GA release -->
+        <hawtio.version>2.17.0</hawtio.version>
+        <spring.boot.admin.version>3.0.0-M8</spring.boot.admin.version>  <!-- XXX: NOTE: This is not GA release -->
         <jasypt.starter.version>2.1.2</jasypt.starter.version>  <!-- XXX: NOTE: latest version 3.0.5 fails -->
         <micrometer.registry.prometheus.version>1.10.2</micrometer.registry.prometheus.version>
         <springdoc.version>2.0.2</springdoc.version>
