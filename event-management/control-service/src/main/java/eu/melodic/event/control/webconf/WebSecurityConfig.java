@@ -13,7 +13,7 @@ import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.properties.WebSecurityProperties;
 import eu.melodic.event.control.util.jwt.JwtTokenService;
 import eu.melodic.event.util.PasswordUtil;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,6 +32,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -265,16 +266,18 @@ public class WebSecurityConfig implements InitializingBean {
             return httpSecurity.build();
         }
 
+        // Common security settings
+        httpSecurity
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+
         // Add and Configure User Form authentication
         if (userFormAuthEnabled) {
             log.info("WebSecurityConfig: User form Authentication is enabled");
             httpSecurity
-                    .csrf().disable()
                     .formLogin()
                         .loginPage(loginPage).permitAll()
                         .loginProcessingUrl(loginUrl).permitAll()
-                        //.usernameParameter("username")
-                        //.passwordParameter("password")
                         .defaultSuccessUrl(loginSuccessUrl, false)
                         .failureUrl(loginFailureUrl).permitAll()
                         .and()
@@ -284,29 +287,49 @@ public class WebSecurityConfig implements InitializingBean {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID");
             log.debug("WebSecurityConfig: User form Authentication has been configured");
-        } else {
-            httpSecurity
-                    .csrf().disable();
         }
 
         // Add configured authentication filters
+        Class<? extends Filter> lastAuthFilterClass = UsernamePasswordAuthenticationFilter.class;
+        Filter f;
         if (apiKeyAuthEnabled) {
             log.info("WebSecurityConfig: API-Key Authentication is enabled");
             httpSecurity
-                    .addFilterAfter(apiKeyAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterAfter(f=apiKeyAuthenticationFilter(), lastAuthFilterClass);
+            lastAuthFilterClass = f.getClass();
             log.debug("WebSecurityConfig: API-Key Authentication filter added");
         }
         if (jwtAuthEnabled) {
             log.info("WebSecurityConfig: JWT-Token Authentication is enabled");
             httpSecurity
-                    .addFilterAfter(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterAfter(f=jwtAuthorizationFilter(), lastAuthFilterClass);
+            lastAuthFilterClass = f.getClass();
             log.debug("WebSecurityConfig: JWT-Token Authentication filter added");
         }
         if (otpAuthEnabled) {
             log.info("WebSecurityConfig: OTP Authentication is enabled");
             httpSecurity
-                    .addFilterAfter(otpAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterAfter(f=otpAuthenticationFilter(), lastAuthFilterClass);
+            lastAuthFilterClass = f.getClass();
             log.debug("WebSecurityConfig: OTP Authentication filter added");
+        }
+        if (apiKeyAuthEnabled || jwtAuthEnabled || otpAuthEnabled) {
+            httpSecurity
+                    .addFilterAfter((servletRequest, servletResponse, filterChain) -> {
+                        boolean isAuthenticated = SecurityContextHolder.getContext() != null
+                                && SecurityContextHolder.getContext().getAuthentication() != null
+                                && SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
+                        log.trace("WebSecurityConfig: Redirection filters: authenticated={}", isAuthenticated);
+                        if (isAuthenticated && (servletRequest instanceof HttpServletRequest)) {
+                            String uri = ((HttpServletRequest)servletRequest).getRequestURI();
+                            log.trace("WebSecurityConfig: Redirection filters: Request uri={}", uri);
+                            if (StringUtils.startsWithAny(uri, loginUrl, loginPage)) {
+                                log.debug("WebSecurityConfig: Redirection filter: Redirecting {} to {}...", uri, loginSuccessUrl);
+                                ((HttpServletResponse)servletResponse).sendRedirect(loginSuccessUrl);
+                            }
+                        }
+                        filterChain.doFilter(servletRequest, servletResponse);
+                    }, lastAuthFilterClass);
         }
 
         if (userFormAuthEnabled) {
