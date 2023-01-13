@@ -81,7 +81,7 @@
             <groupId>eu.melodic</groupId>
             <artifactId>utility-generator</artifactId>
             <!--<version>${project.version}</version>-->
-            <version>5.0.1-SNAPSHOT</version>
+            <version>5.5.2-SNAPSHOT</version>
         </dependency>
 
         <dependency>
