@@ -9,17 +9,22 @@
 
 package eu.melodic.event.control.webconf;
 
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.LocalDateTime;
+
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class RestControllerExceptionHandler extends ResponseEntityExceptionHandler implements InitializingBean {
 
     @Override
@@ -27,10 +32,22 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
         log.info("RestControllerExceptionHandler initialized");
     }
 
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(RuntimeException ex, WebRequest request) {
-        log.error("Returning error response: Invalid request: {}", ex.getMessage());
-        log.debug("Returning error response: Invalid request: EXCEPTION:\n", ex);
-        String bodyOfResponse = "Invalid request: "+ex.getMessage();
-        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler(Throwable.class)
+    private ResponseEntity<ErrorType> handleAnyException(Throwable ex, WebRequest request) {
+        log.warn("RestControllerExceptionHandler: EXCEPTION: {}", ex.getMessage());
+        log.debug("RestControllerExceptionHandler: EXCEPTION:\n", ex);
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        ErrorType error = new ErrorType(httpStatus.value(), httpStatus, "Invalid request: "+ex.getClass().getName(), ex.getMessage());
+        return new ResponseEntity<>(error, error.getReason());
+    }
+
+    @Data
+    @Setter(AccessLevel.NONE)
+    public static class ErrorType {
+        private final int status;
+        private final HttpStatus reason;
+        private final LocalDateTime timestamp = LocalDateTime.now();
+        private final String message;
+        private final String details;
     }
 }
