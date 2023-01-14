@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.webconf;
 
+import eu.melodic.event.util.StrUtil;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
@@ -36,8 +37,18 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
     private ResponseEntity<ErrorType> handleAnyException(Throwable ex, WebRequest request) {
         log.warn("RestControllerExceptionHandler: EXCEPTION: {}", ex.getMessage());
         log.debug("RestControllerExceptionHandler: EXCEPTION:\n", ex);
+        if (ex instanceof RestControllerException subEx) {
+            HttpStatus httpStatus = HttpStatus.resolve(subEx.getStatusCode());
+            if (httpStatus!=null) {
+                // Return exception-specific response
+                ErrorType error = new ErrorType(httpStatus, ex);
+                return new ResponseEntity<>(error, error.getReason());
+            }
+        }
+
+        // Return '400 Bad Request' response
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-        ErrorType error = new ErrorType(httpStatus.value(), httpStatus, "Invalid request: "+ex.getClass().getName(), ex.getMessage());
+        ErrorType error = new ErrorType(httpStatus, ex);
         return new ResponseEntity<>(error, error.getReason());
     }
 
@@ -47,7 +58,16 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
         private final int status;
         private final HttpStatus reason;
         private final LocalDateTime timestamp = LocalDateTime.now();
+        private final String exception;
         private final String message;
         private final String details;
+
+        public ErrorType(HttpStatus httpStatus, Throwable error) {
+            status = httpStatus.value();
+            reason = httpStatus;
+            exception = error.getClass().getSimpleName();
+            message = error.getMessage();
+            details = StrUtil.exceptionToDetailsString(error);
+        }
     }
 }

@@ -236,6 +236,25 @@ public class StrUtil {
     }
 
     // ------------------------------------------------------------------------
+    // Serialize Exception
+    // ------------------------------------------------------------------------
+
+    public static String exceptionToDetailsString(Throwable t) {
+        StringBuilder s = new StringBuilder(t.getClass().getName()).append(": ").append(t.getMessage());
+        Throwable _t = t.getCause();
+        if (_t==null) return null;
+        while (_t!=null) {
+            String _m = _t.getMessage();
+            if (StringUtils.isNotBlank(_m))
+                s.insert(0, "; ").insert(0, _m).insert(0, ": ").insert(0, _t.getClass().getName());
+            else
+                s.insert(0, "; ").insert(0, _t.getClass().getName());
+            _t = _t.getCause();
+        }
+        return s.toString();
+    }
+
+    // ------------------------------------------------------------------------
     // Main for command-line use
     // ------------------------------------------------------------------------
 
