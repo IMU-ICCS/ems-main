@@ -236,20 +236,59 @@ public class StrUtil {
     }
 
     // ------------------------------------------------------------------------
-    // Serialize Exception
+    // Convert Exceptions to details string
     // ------------------------------------------------------------------------
 
     public static String exceptionToDetailsString(Throwable t) {
-        StringBuilder s = new StringBuilder(t.getClass().getName()).append(": ").append(t.getMessage());
+        return exceptionToDetailsString(t, true, true, false, "; ", ": ");
+    }
+
+    public static String exceptionToDetailsString(Throwable t, boolean printRootCauseFirst) {
+        return exceptionToDetailsString(t, true, true, printRootCauseFirst, "; ", ": ");
+    }
+
+    public static String exceptionToDetailsString(Throwable t,
+                                                  boolean printExceptionClass,
+                                                  boolean printExceptionMessage,
+                                                  boolean printRootCauseFirst,
+                                                  String exceptionDelimiter,
+                                                  String messageDelimiter)
+    {
+        if (!printExceptionClass && !printExceptionMessage)
+            return null;
+
+        StringBuilder s = new StringBuilder();
+        String _m = t.getMessage();
+        String _d = null;
+        if (printExceptionMessage && StringUtils.isNotBlank(_m))
+            s.append(_d = _m);
+        if (printExceptionClass)
+            s.insert(0, _d == null ? "" : messageDelimiter).insert(0, t.getClass().getName());
+
         Throwable _t = t.getCause();
-        if (_t==null) return null;
-        while (_t!=null) {
-            String _m = _t.getMessage();
-            if (StringUtils.isNotBlank(_m))
-                s.insert(0, "; ").insert(0, _m).insert(0, ": ").insert(0, _t.getClass().getName());
-            else
-                s.insert(0, "; ").insert(0, _t.getClass().getName());
-            _t = _t.getCause();
+        //if (_t==null) return null;
+        if (printRootCauseFirst) {
+            while (_t != null) {
+                _m = _t.getMessage();
+                _d = null;
+                s.insert(0, exceptionDelimiter);
+                if (printExceptionMessage && StringUtils.isNotBlank(_m))
+                    s.insert(0, _d = _m);
+                if (printExceptionClass)
+                    s.insert(0, _d == null ? "" : messageDelimiter).insert(0, _t.getClass().getName());
+                _t = _t.getCause();
+            }
+        } else {
+            while (_t != null) {
+                _m = _t.getMessage();
+                _d = null;
+                s.append(exceptionDelimiter);
+                if (printExceptionClass)
+                    s.append(_d = _t.getClass().getName());
+                if (printExceptionMessage && StringUtils.isNotBlank(_m))
+                    s.append(_d==null ? "" : messageDelimiter).append(_m);
+                _t = _t.getCause();
+            }
         }
         return s.toString();
     }
