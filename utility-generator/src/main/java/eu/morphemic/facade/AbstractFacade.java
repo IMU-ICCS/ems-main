@@ -145,6 +145,7 @@ public abstract class AbstractFacade<Q extends GeneratedMessageV3, Y extends Gen
 		}
 		Connection connection = activeMQConnectionFactory.createConnection();
 		connection.start();
+		log.info("connection to AMQ started");
 		return connection;
 	}
 
