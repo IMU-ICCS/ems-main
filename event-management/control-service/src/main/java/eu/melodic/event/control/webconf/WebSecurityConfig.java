@@ -13,6 +13,7 @@ import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.properties.WebSecurityProperties;
 import eu.melodic.event.control.util.jwt.JwtTokenService;
 import eu.melodic.event.util.PasswordUtil;
+import eu.melodic.event.util.StrUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -173,18 +174,8 @@ public class WebSecurityConfig implements InitializingBean {
                 log.info("afterPropertiesSet:\n{}\nSample JWT Token: \nBearer {}\n{}",
                         divider, jwtTokenService.createToken("USER"), divider);
             } catch (Throwable e) {
-                Throwable throwable = e;
-                StringBuilder sb = new StringBuilder();
-                String sep = "";
-                while (throwable != null) {
-                    sb.append(sep)
-                            .append(throwable.getClass().getName())
-                            .append(": ")
-                            .append(throwable.getMessage());
-                    throwable = throwable.getCause();
-                    if (sep.isEmpty()) sep = " -> ";
-                }
-                log.error("afterPropertiesSet: Failed to generate sample JWT Token: {}", sb);
+                String s = StrUtil.exceptionToDetailsString(e);
+                log.error("afterPropertiesSet: Failed to generate sample JWT Token: {}", s);
                 log.debug("afterPropertiesSet: Failed to generate sample JWT Token: EXCEPTION:\n", e);
             }
         }
