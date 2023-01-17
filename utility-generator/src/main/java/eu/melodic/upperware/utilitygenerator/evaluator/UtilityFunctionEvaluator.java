@@ -159,6 +159,7 @@ public class UtilityFunctionEvaluator {
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
+        log.info("UG status message: version for MOR-285");
         printSolution(variablesFromConstraintProblem, solution);
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
@@ -179,7 +180,12 @@ public class UtilityFunctionEvaluator {
             predictionResult = facade.callPmPredictionText(solution, applicationId, variablesFromConstraintProblem, metricsFromConstraintProblem);
         }
 
-        injectResultIntoConverter(predictionResult);
+        if(predictionResult == null) {
+            log.warn("PM returned empty prediction");
+        }
+        else {
+            injectResultIntoConverter(predictionResult);
+        }
 
         Collection<Argument> allArguments = this.converters.stream()
                 .map(converter -> converter.convertToArguments(solution, newConfiguration))
