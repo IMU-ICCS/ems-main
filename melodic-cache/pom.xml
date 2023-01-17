@@ -39,7 +39,7 @@
         <dependency>
             <groupId>cloud.morphemic.connectors</groupId>
             <artifactId>proactive_client</artifactId>
-            <version>3.0-salaas-20221216.091020-13</version>
+            <version>3.0-salaas-20230111.133801-23</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.squareup.okio</groupId>
