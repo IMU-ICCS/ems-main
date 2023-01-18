@@ -289,7 +289,6 @@ deployDockerRegistry:utility-generator-standalone:
     - build-required-part5:utility-generator
     - build-required-part3:melodic-cache
     - build-required-part6:utility-generator-standalone
-    - deploy:utility-generator
   script:
     - $DOCKER_CLI $UG_STANDALONE_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
