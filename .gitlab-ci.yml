@@ -73,7 +73,8 @@ stages:
   #  - build-required-part7
   #  - build-required-part8
   - build
-  - deploy
+  - deployMavenRegistry
+  - deployDockerRegistry
   - deploy-solvers-part1
   - deploy-solvers-part2
   - deploy-solvers-part3
@@ -152,7 +153,6 @@ build-required-part5:utility-generator:
   image: $MAVEN_IMAGE
   script:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
-    - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
   artifacts:
     expire_in: 1 week
     paths:
@@ -189,7 +189,7 @@ build:cp-parser:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
 
-deploy:melodic-upperware:
+deployMavenRegistry:melodic-upperware:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -201,7 +201,7 @@ deploy:melodic-upperware:
   script:
     - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
 
-deploy:upperware-metamodel:
+deployMavenRegistry:upperware-metamodel:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -213,7 +213,7 @@ deploy:upperware-metamodel:
   script:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
 
-deploy:jwt-commons:
+deployMavenRegistry:jwt-commons:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -225,7 +225,7 @@ deploy:jwt-commons:
   script:
     - $DOCKER_CLI $JWT_COMMONS_CLI deploy
 
-deploy:melodic-commons:
+deployMavenRegistry:melodic-commons:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -237,7 +237,7 @@ deploy:melodic-commons:
   script:
     - $DOCKER_CLI $MELODIC_COMMONS_CLI deploy
 
-deploy:melodic-cache:
+deployMavenRegistry:melodic-cache:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -249,7 +249,20 @@ deploy:melodic-cache:
   script:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
 
-deploy:jwt-server:
+deployMavenRegistry:utility-generator:
+  stage: deploy
+  only:
+    - morphemic-rc3.0
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part5:utility-generator
+    - build-required-part3:melodic-cache
+  script:
+    - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
+
+deployDockerRegistry:jwt-server:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -262,20 +275,9 @@ deploy:jwt-server:
     - docker tag $LOCAL_REPO/melodic/jwtserver:unknown $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
 
-deploy:utility-generator:
-  stage: deploy
-  only:
-    - morphemic-rc3.0-facade
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
-  dependencies:
-    - build-required-part5:utility-generator
-    - build-required-part3:melodic-cache
-  script:
-    - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
-deploy:utility-generator-standalone:
+
+deployDockerRegistry:utility-generator-standalone:
   stage: deploy-solvers-part1
   only:
     - morphemic-rc3.0
@@ -294,7 +296,7 @@ deploy:utility-generator-standalone:
     - docker tag $LOCAL_REPO/melodic/ug-standalone:unknown $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
 
-deploy:zpp-solver:
+deployMavenRegistry:zpp-solver:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -306,7 +308,7 @@ deploy:zpp-solver:
   script:
     - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
 
-deploy:adapter:
+deployDockerRegistry:adapter:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -319,7 +321,7 @@ deploy:adapter:
     - docker tag $LOCAL_REPO/melodic/adapter:unknown $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
 
-deploy:cp-generator:
+deployDockerRegistry:cp-generator:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -332,7 +334,7 @@ deploy:cp-generator:
     - docker tag $LOCAL_REPO/melodic/generator:unknown $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
 
-deploy:cp-solver:
+deployDockerRegistry:cp-solver:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -347,9 +349,8 @@ deploy:cp-solver:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/cpsolver:unknown $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
-    - $DOCKER_CLI $CP_SOLVER_CLI deploy
 
-deploy:ems-server:
+deployDockerRegistry:ems-server:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -365,7 +366,7 @@ deploy:ems-server:
     - docker tag $LOCAL_REPO/melodic/ems-server:UNKNOWN $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
-deploy:metasolver:
+deployDockerRegistry:metasolver:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -378,7 +379,7 @@ deploy:metasolver:
     - docker tag $LOCAL_REPO/melodic/metasolver:unknown $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
 
-deploy:mq-adapter:
+deployDockerRegistry:mq-adapter:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -391,7 +392,7 @@ deploy:mq-adapter:
     - docker tag $LOCAL_REPO/melodic/mq-http-adapter:unknown $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
 
-deploy:gui-backend:
+deployDockerRegistry:gui-backend:
   stage: deploy
   only:
     - morphemic-rc3.0
@@ -420,7 +421,7 @@ deploy:gui-backend:
 #    - docker tag $LOCAL_REPO/melodic/functionizer-testing-tool:unknown $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
 #    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
 
-deploy:cp-parser:
+deployMavenRegistry:cp-parser:
   stage: deploy
   only:
     - morphemic-rc3.0
