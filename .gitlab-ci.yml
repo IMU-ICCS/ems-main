@@ -190,7 +190,7 @@ build:cp-parser:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
 
 deployMavenRegistry:melodic-upperware:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -202,7 +202,7 @@ deployMavenRegistry:melodic-upperware:
     - $DOCKER_CLI $MELODIC_UPPERWARE_CLI deploy
 
 deployMavenRegistry:upperware-metamodel:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -214,7 +214,7 @@ deployMavenRegistry:upperware-metamodel:
     - $DOCKER_CLI $UPPERWARE_METAMODEL_CLI deploy
 
 deployMavenRegistry:jwt-commons:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -226,7 +226,7 @@ deployMavenRegistry:jwt-commons:
     - $DOCKER_CLI $JWT_COMMONS_CLI deploy
 
 deployMavenRegistry:melodic-commons:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -238,7 +238,7 @@ deployMavenRegistry:melodic-commons:
     - $DOCKER_CLI $MELODIC_COMMONS_CLI deploy
 
 deployMavenRegistry:melodic-cache:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -250,7 +250,7 @@ deployMavenRegistry:melodic-cache:
     - $DOCKER_CLI $MELODIC_CACHE_CLI deploy
 
 deployMavenRegistry:utility-generator:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -263,7 +263,7 @@ deployMavenRegistry:utility-generator:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
 deployDockerRegistry:jwt-server:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -297,7 +297,7 @@ deployDockerRegistry:utility-generator-standalone:
     - docker push $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
 
 deployMavenRegistry:zpp-solver:
-  stage: deploy
+  stage: deployMavenRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -309,7 +309,7 @@ deployMavenRegistry:zpp-solver:
     - $DOCKER_CLI $ZPP_SOLVER_CLI deploy
 
 deployDockerRegistry:adapter:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -322,7 +322,7 @@ deployDockerRegistry:adapter:
     - docker push $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
 
 deployDockerRegistry:cp-generator:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -335,7 +335,7 @@ deployDockerRegistry:cp-generator:
     - docker push $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
 
 deployDockerRegistry:cp-solver:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
     - morphemic-rc3.0-facade
@@ -351,7 +351,7 @@ deployDockerRegistry:cp-solver:
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
 
 deployDockerRegistry:ems-server:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -367,7 +367,7 @@ deployDockerRegistry:ems-server:
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
 deployDockerRegistry:metasolver:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -380,7 +380,7 @@ deployDockerRegistry:metasolver:
     - docker push $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
 
 deployDockerRegistry:mq-adapter:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -393,7 +393,7 @@ deployDockerRegistry:mq-adapter:
     - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
 
 deployDockerRegistry:gui-backend:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
@@ -422,7 +422,7 @@ deployDockerRegistry:gui-backend:
 #    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
 
 deployMavenRegistry:cp-parser:
-  stage: deploy
+  stage: deployDockerRegistry
   only:
     - morphemic-rc3.0
   image: $DOCKER_DIND_IMAGE
