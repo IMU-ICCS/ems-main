@@ -26,6 +26,6 @@ public class ServerSelfHealingProperties extends SelfHealingProperties implement
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		log.info("ServerSelfHealingProperties: {}", this);
+		log.debug("ServerSelfHealingProperties: {}", this);
 	}
 }
