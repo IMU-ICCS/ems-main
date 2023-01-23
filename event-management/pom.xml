@@ -60,6 +60,8 @@
         <lombok.version>1.18.24</lombok.version>
         <!-- ActiveMQ (classic) version -->
         <activemq.version>5.17.3</activemq.version>
+        <!-- Jasypt version -->
+        <jasypt.starter.version>3.0.5</jasypt.starter.version>
     </properties>
 
     <modules>
