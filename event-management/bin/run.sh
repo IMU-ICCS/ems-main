@@ -78,7 +78,7 @@ export LANG=C.UTF-8
 JAVA_ADD_OPENS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED"
 
 java -version
-echo $LANG
+echo "LANG=$LANG"
 #locale
 echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
 echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}"
