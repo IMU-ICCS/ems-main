@@ -156,7 +156,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<descriptor>src/main/assembly/baguette-client-installation-package.xml</descriptor>
+					<descriptors>
+						<descriptor>src/main/assembly/baguette-client-installation-package.xml</descriptor>
+					</descriptors>
 					<finalName>baguette-client</finalName>
 				</configuration>
 				<executions>

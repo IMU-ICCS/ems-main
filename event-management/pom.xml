@@ -329,6 +329,13 @@
             <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
         </repository>
 
+        <!-- 7Bulls repository -->
+        <repository>
+            <id>eu.7bulls</id>
+            <layout>default</layout>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
+        </repository>
+
         <!-- Deactivate unneeded repositories inherited -->
         <repository>
             <id>paasage.repo</id>
