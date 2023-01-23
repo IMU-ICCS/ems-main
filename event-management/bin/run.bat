@@ -64,6 +64,9 @@ IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %MELODIC_CONFIG_DIR%\wait-for-cdo.ba
     %MELODIC_CONFIG_DIR%\wait-for-cdo.bat
 )
 
+:: Set shell encoding to UTF-8 (in order to display banner correctly)
+chcp 65001
+
 :: Run EMS server
 rem Uncomment next line to set JAVA runtime options
 rem set JAVA_OPTS=-Djavax.net.debug=all
@@ -71,6 +74,7 @@ rem set JAVA_OPTS=-Djavax.net.debug=all
 set JAVA_ADD_OPENS=--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED
 
 java -version
+chcp
 echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
 echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION%
 echo IP address:
