@@ -159,7 +159,6 @@ public class UtilityFunctionEvaluator {
     }
 
     public double evaluate(Collection<VariableValueDTO> solution) {
-        log.info("UG status message: version for MOR-285");
         printSolution(variablesFromConstraintProblem, solution);
         Collection<ConfigurationElement> newConfiguration = convertSolutionToNodeCandidates(this.variablesFromConstraintProblem, this.nodeCandidates, solution);
 
