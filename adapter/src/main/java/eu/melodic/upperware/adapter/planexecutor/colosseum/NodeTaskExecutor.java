@@ -11,11 +11,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.ow2.proactive.sal.model.IaasDefinition;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 
 @Slf4j
@@ -58,26 +56,17 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
     }
 
     private void addIAASNode(AdapterRequirement taskBody) {
-        JSONArray nodesJSONArray = new JSONArray();
-        JSONObject nodeJSON = new JSONObject();
-        nodeJSON.put("taskName", taskBody.getTaskName());
-        nodeJSON.put("nodeName", taskBody.getNodeName());
-        JSONObject nodeCandidateInformationJSON = new JSONObject();
-        if(taskBody.getNodeCandidate().getCloud().getApi().getProviderName().equals("openstack")){
-            nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId().substring(4), "hardwareProviderId"));
-        }else{
-            nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
-        }
-        nodeCandidateInformationJSON.put("hardwareProviderId", checkEmptiness(taskBody.getNodeCandidate().getHardware().getProviderId(), "hardwareProviderId"));
-        nodeCandidateInformationJSON.put("ID", checkEmptiness(taskBody.getNodeCandidate().getId(), "ID"));
-        nodeCandidateInformationJSON.put("cloudID", checkEmptiness(taskBody.getNodeCandidate().getCloud().getId(), "cloudID"));
-        nodeCandidateInformationJSON.put("locationName", checkEmptiness(taskBody.getNodeCandidate().getLocation().getName(), "locationName"));
-        nodeCandidateInformationJSON.put("imageProviderId", checkEmptiness(taskBody.getNodeCandidate().getImage().getProviderId(), "imageProviderId"));
-        nodeJSON.put("nodeCandidateInformation", nodeCandidateInformationJSON);
-        nodesJSONArray.put(nodeJSON);
-        log.info("NodeTaskExecutor->addIAASNode: [application id: {}] ProActive node(s) (JSONArray): \n{}", applicationId, nodesJSONArray);
+        List<IaasDefinition> iaasDefinitionList = new LinkedList<>();
+        IaasDefinition iaasDefinition = new IaasDefinition(
+                taskBody.getNodeName(),
+                taskBody.getTaskName(),
+                checkEmptiness(taskBody.getNodeCandidate().getId(), "nodeCandidateId"),
+                checkEmptiness(taskBody.getNodeCandidate().getCloud().getId(), "cloudID")
+        );
+        iaasDefinitionList.add(iaasDefinition);
+        log.info("NodeTaskExecutor->addIAASNode: [application id: {}] ProActive node(s) (JSONArray): \n{}", applicationId, Arrays.toString(iaasDefinitionList.toArray()));
 
-        int status = proactiveClientServiceForAdapter.addNodes(nodesJSONArray, applicationId);
+        int status = proactiveClientServiceForAdapter.addNodes(iaasDefinitionList, applicationId);
 
         log.info("NodeTaskExecutor->addIAASNode: [application id: {}] addNodes status= {}", applicationId, status);
     }
