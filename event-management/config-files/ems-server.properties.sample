@@ -20,6 +20,10 @@ DOLLAR=$
 #password-encoder-class = eu.melodic.event.util.password.IdentityPasswordEncoder
 #password-encoder-class = eu.melodic.event.util.password.PresentPasswordEncoder
 
+### Jasypt encryptor settings (using old settings until encrypted texts are updated)
+jasypt.encryptor.algorithm = PBEWithMD5AndDES
+jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
+
 ### Misc
 spring.output.ansi.enabled=ALWAYS
 
