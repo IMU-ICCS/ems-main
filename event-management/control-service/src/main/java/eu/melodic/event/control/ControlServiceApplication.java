@@ -51,6 +51,8 @@ public class ControlServiceApplication {
     private final PasswordUtil passwordUtil;
 
     public static void main(String[] args) {
+        long initStartTime = System.currentTimeMillis();
+
         // Start EMS server
         SpringApplication springApplication = new SpringApplicationBuilder()
                 .environment(new StandardEncryptableEnvironment())
@@ -60,6 +62,9 @@ public class ControlServiceApplication {
         springApplication.setBannerMode(Banner.Mode.LOG);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
+
+        long initEndTime = System.currentTimeMillis();
+        log.info("EMS server initialized in {}ms", initEndTime-initStartTime);
     }
 
     @Bean
