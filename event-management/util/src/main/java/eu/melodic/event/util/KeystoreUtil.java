@@ -90,12 +90,12 @@ public class KeystoreUtil {
 
     public PasswordUtil passwordUtil() {
         if (this.passwordUtil==null)
-            this.passwordUtil = new PasswordUtil();
+            this.passwordUtil = PasswordUtil.getInstance();
         return this.passwordUtil;
     }
 
     public KeystoreUtil passwordUtil(PasswordUtil passwordUtil) {
-        this.passwordUtil = passwordUtil!=null ? passwordUtil : new PasswordUtil();
+        this.passwordUtil = passwordUtil!=null ? passwordUtil : PasswordUtil.getInstance();
         return this;
     }
 
@@ -407,7 +407,7 @@ public class KeystoreUtil {
     // Keystore, Trust store and Certificate initialization based on a properties source
     public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil) throws Exception {
         if (passwordUtil==null)
-            passwordUtil = new PasswordUtil();
+            passwordUtil = PasswordUtil.getInstance();
         log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate");
         log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Key pair and Certificate settings:");
         log.debug("    Keystore file: {}", properties.getKeystoreFile());

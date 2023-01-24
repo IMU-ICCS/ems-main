@@ -11,10 +11,13 @@ package eu.melodic.event.util;
 
 import eu.melodic.event.util.password.AsterisksPasswordEncoder;
 import eu.melodic.event.util.password.PasswordEncoder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -24,18 +27,34 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PasswordUtil implements InitializingBean {
     private final static Supplier<PasswordEncoder> passwordEncoderSupplier = AsterisksPasswordEncoder::new;
     private final static AtomicReference<PasswordEncoder> defaultPasswordEncoder = new AtomicReference<>();
 
-    @Value("${" + EmsConstant.EMS_PROPERTIES_PREFIX + "password-encoder-class:}")
-    private String passwordEncoderClassName;
+    private final static Object LOCK = new Object();
+    private static volatile PasswordUtil instance;
+
+    private final PasswordUtilProperties properties;
     private PasswordEncoder passwordEncoder;
+
+    public static PasswordUtil getInstance() {
+        if (instance==null) {
+            synchronized (LOCK) {
+                if (instance==null) {
+                    instance = new PasswordUtil(new PasswordUtilProperties());
+                    instance.afterPropertiesSet();
+                }
+            }
+        }
+        return instance;
+    }
 
     @Override
     public void afterPropertiesSet() {
+        String passwordEncoderClassName = properties.getPasswordEncoderClass();
         log.debug("PasswordUtil: password-encoder-class: {}", passwordEncoderClassName);
-        this.setPasswordEncoder(passwordEncoderClassName.trim());
+        this.setPasswordEncoder(StringUtils.trim(passwordEncoderClassName));
         if (passwordEncoder!=null)
             if (defaultPasswordEncoder.compareAndSet(null, passwordEncoder))
                 log.info("PasswordUtil: Initialized default Password Encoder: {}", defaultPasswordEncoder.get().getClass().getName());
@@ -77,5 +96,18 @@ public class PasswordUtil implements InitializingBean {
     public static PasswordEncoder getDefaultPasswordEncoder() {
         return Optional.ofNullable(defaultPasswordEncoder.get())
                 .orElse(passwordEncoderSupplier.get());
+    }
+
+    @Slf4j
+    @Data
+    @Configuration
+    @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX)
+    public static class PasswordUtilProperties implements InitializingBean {
+        private String passwordEncoderClass;
+
+        @Override
+        public void afterPropertiesSet() throws Exception {
+            log.debug("PasswordUtilProperties: {}", this);
+        }
     }
 }

@@ -104,7 +104,7 @@ public class BrokerClient {
         }
 
         // initialize broker client
-        BrokerClient client = new BrokerClient(p, new PasswordUtil());
+        BrokerClient client = new BrokerClient(p, PasswordUtil.getInstance());
         log.info("BrokerClient: Default Configuration:\n{}", client.properties);
 
         return client;
