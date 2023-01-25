@@ -11,6 +11,8 @@ package eu.melodic.event.control.info;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.web.WebEndpointResponse;
 import org.springframework.boot.actuate.endpoint.web.annotation.EndpointWebExtension;
@@ -25,10 +27,16 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @EndpointWebExtension(endpoint = InfoEndpoint.class)
-public class ControlServiceInfoEndpointExtension {
+@ConditionalOnAvailableEndpoint(endpoint = InfoEndpoint.class /*, exposure = org.springframework.boot.actuate.autoconfigure.endpoint.expose.EndpointExposure.WEB*/)
+public class ControlServiceInfoEndpointExtension implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final InfoEndpoint delegate;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.info("Info endpoint is enabled and exposed. Added EMS info extension.");
+    }
 
     @ReadOperation
     public WebEndpointResponse<Map> info() {
