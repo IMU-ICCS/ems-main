@@ -179,7 +179,12 @@ public class UtilityFunctionEvaluator {
             predictionResult = facade.callPmPredictionText(solution, applicationId, variablesFromConstraintProblem, metricsFromConstraintProblem);
         }
 
-        injectResultIntoConverter(predictionResult);
+        if(predictionResult == null) {
+            log.warn("PM returned empty prediction");
+        }
+        else {
+            injectResultIntoConverter(predictionResult);
+        }
 
         Collection<Argument> allArguments = this.converters.stream()
                 .map(converter -> converter.convertToArguments(solution, newConfiguration))

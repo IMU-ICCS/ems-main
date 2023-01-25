@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>upperware</artifactId>
-        <version>5.5.0-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.ow2.paasage.upperware.metasolver</groupId>
@@ -22,8 +22,8 @@
 
     <properties>
         <!-- Melodic component versions -->
-        <!--<melodic.version>5.5.0-SNAPSHOT</melodic.version>
-        <interfaces.version>5.5.0-SNAPSHOT</interfaces.version>-->
+        <!--<melodic.version>6.0.0-SNAPSHOT</melodic.version>
+        <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>-->
         <cdo-client.version>5.5.0-SNAPSHOT</cdo-client.version>
         <lombok.version>1.18.24</lombok.version>
         <!--DOCKER plugin properties-->
