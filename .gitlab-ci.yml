@@ -192,7 +192,7 @@ build:cp-parser:
 deployMavenRegistry:melodic-upperware:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -204,7 +204,7 @@ deployMavenRegistry:melodic-upperware:
 deployMavenRegistry:upperware-metamodel:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -216,7 +216,7 @@ deployMavenRegistry:upperware-metamodel:
 deployMavenRegistry:jwt-commons:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -228,7 +228,7 @@ deployMavenRegistry:jwt-commons:
 deployMavenRegistry:melodic-commons:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -240,7 +240,7 @@ deployMavenRegistry:melodic-commons:
 deployMavenRegistry:melodic-cache:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -252,7 +252,7 @@ deployMavenRegistry:melodic-cache:
 deployMavenRegistry:utility-generator:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -265,7 +265,7 @@ deployMavenRegistry:utility-generator:
 deployDockerRegistry:jwt-server:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -280,8 +280,7 @@ deployDockerRegistry:jwt-server:
 deployDockerRegistry:utility-generator-standalone:
   stage: deploy-solvers-part1
   only:
-    - morphemic-rc3.0
-    - morphemic-rc3.0-facade
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -298,7 +297,7 @@ deployDockerRegistry:utility-generator-standalone:
 deployMavenRegistry:zpp-solver:
   stage: deployMavenRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -310,7 +309,7 @@ deployMavenRegistry:zpp-solver:
 deployDockerRegistry:adapter:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -323,7 +322,7 @@ deployDockerRegistry:adapter:
 deployDockerRegistry:cp-generator:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -336,8 +335,7 @@ deployDockerRegistry:cp-generator:
 deployDockerRegistry:cp-solver:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
-    - morphemic-rc3.0-facade
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part6:cp-solver
@@ -352,7 +350,7 @@ deployDockerRegistry:cp-solver:
 deployDockerRegistry:ems-server:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   dependencies:
     - build-required-part3:ems
@@ -368,7 +366,7 @@ deployDockerRegistry:ems-server:
 deployDockerRegistry:metasolver:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -381,7 +379,7 @@ deployDockerRegistry:metasolver:
 deployDockerRegistry:mq-adapter:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -394,7 +392,7 @@ deployDockerRegistry:mq-adapter:
 deployDockerRegistry:gui-backend:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -423,7 +421,7 @@ deployDockerRegistry:gui-backend:
 deployMavenRegistry:cp-parser:
   stage: deployDockerRegistry
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -437,7 +435,7 @@ deployMavenRegistry:cp-parser:
 deploy-solvers-part1:nc-solver:
   stage: deploy-solvers-part1
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -454,7 +452,7 @@ deploy-solvers-part1:nc-solver:
 deploy-solvers-part2:pt-solver:
   stage: deploy-solvers-part2
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -471,7 +469,7 @@ deploy-solvers-part2:pt-solver:
 deploy-solvers-part3:mcts-solver:
   stage: deploy-solvers-part3
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -488,7 +486,7 @@ deploy-solvers-part3:mcts-solver:
 deploy-solvers-part4:gen-solver:
   stage: deploy-solvers-part4
   only:
-    - morphemic-rc3.0
+    - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
