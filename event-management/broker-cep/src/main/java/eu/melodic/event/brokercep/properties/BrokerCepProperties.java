@@ -16,6 +16,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
 
@@ -49,6 +50,7 @@ public class BrokerCepProperties implements InitializingBean {
     private long eventForwarderLoopDelay = 100L;
 
     // brokercep.ssl.** settings
+    @NestedConfigurationProperty
     private KeystoreAndCertificateProperties ssl;
 
     private boolean authenticationEnabled;

@@ -14,6 +14,7 @@ import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
@@ -73,6 +74,7 @@ public class ControlServiceProperties {
     private int exitCode = 0;
 
     // control.ssl.** settings
+    @NestedConfigurationProperty
     private KeystoreAndCertificateProperties ssl;
 
     private TaskSchedulerProperties taskScheduler = new TaskSchedulerProperties();
