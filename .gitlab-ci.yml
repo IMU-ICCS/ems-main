@@ -262,6 +262,19 @@ deployMavenRegistry:utility-generator:
   script:
     - $DOCKER_CLI $UTILITY_GENERATOR_CLI deploy
 
+deployMavenRegistry:cp-solver:
+  stage: deployMavenRegistry
+  only:
+    - morphemic-rc4.0
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part5:utility-generator
+    - build-required-part3:melodic-cache
+  script:
+    - $DOCKER_CLI $CP_SOLVER_CLI deploy
+
 deployDockerRegistry:jwt-server:
   stage: deployDockerRegistry
   only:
@@ -419,7 +432,7 @@ deployDockerRegistry:gui-backend:
 #    - docker push $CI_REGISTRY_IMAGE/functionizer-testing-tool:$CI_COMMIT_BRANCH
 
 deployMavenRegistry:cp-parser:
-  stage: deployDockerRegistry
+  stage: deployMavenRegistry
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
