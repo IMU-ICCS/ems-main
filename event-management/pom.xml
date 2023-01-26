@@ -36,8 +36,8 @@
         <melodic.version>6.0.0-SNAPSHOT</melodic.version>
         <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>
 
-        <camel.version>5.5.0-SNAPSHOT</camel.version>
-        <cdo-client.version>5.5.0-SNAPSHOT</cdo-client.version>
+        <camel.version>6.0.0-SNAPSHOT</camel.version>
+        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
         <authorization.version>4.5.0-SNAPSHOT</authorization.version>
 
         <!-- Versions for common plugins -->
