@@ -126,7 +126,7 @@ build-required-part1:cp-parser:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-parser/
 
 build-required-part1:ems-util:
-  stage: build-required-part2
+  stage: build-required-part1
   image: $MAVEN_IMAGE
   script:
     - $EMS_UTIL_CLI -Pwithout-docker clean install
@@ -336,6 +336,22 @@ deployDockerRegistry:gui-backend:
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag $LOCAL_REPO/melodic/gui-backend:unknown $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
+
+deployDockerRegistry:jwt-server:
+  stage: deployDockerRegistry
+  only:
+    - morphemic-rc4.0
+  image: $DOCKER_DIND_IMAGE
+  services:
+    - $DOCKER_DIND_SERVICE
+  dependencies:
+    - build-required-part1:jwt-commons
+    - build-required-part1:upperware-metamodel
+  script:
+    - $DOCKER_CLI $JWT_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
+    - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
+    - docker tag $LOCAL_REPO/melodic/jwtserver:unknown $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
+    - docker push $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
 
 
 deployDockerRegistry-solvers:nc-solver:
