@@ -73,7 +73,8 @@ export LANG=C.UTF-8
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
 #JAVA_OPTS=-Djavax.net.debug=all
-#JAVA_OPTS=-agentlib:native-image-agent=config-output-dir=/mnt/ems/control-service/agent-output
+#JAVA_OPTS=-agentlib:native-image-agent=config-output-dir=/mnt/ems/control-service/src/main/resources/META-INF/native-image
+#JAVA_OPTS=-agentlib:native-image-agent=config-merge-dir=/mnt/ems/control-service/src/main/resources/META-INF/native-image
 #export JAVA_OPTS
 
 JAVA_ADD_OPENS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED"
