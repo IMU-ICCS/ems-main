@@ -240,6 +240,7 @@ deployDockerRegistry:adapter:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part2:melodic-commons
+    - build-required-part2:ems-broker-client
   script:
     - $DOCKER_CLI $ADAPTER_SERVER_CLI -Ddocker.imagePrefix=melodic/ clean install
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
