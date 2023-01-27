@@ -8,6 +8,7 @@
 #
 
 FROM eclipse-temurin:17.0.5_8-jre
+#FROM vegardit/graalvm-maven:latest-java17
 
 ENV BASEDIR /opt/ems-server
 ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
@@ -25,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     netcat \
     vim \
     iputils-ping \
+#    libfreetype6 fontconfig fonts-dejavu \
     && rm -rf /var/lib/apt/lists/*
 
 # Download a JRE suitable for running EMS clients, and
