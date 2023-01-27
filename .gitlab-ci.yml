@@ -180,7 +180,7 @@ deployMavenRegistry:broker-client:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
   dependencies:
-    - build:ems
+    - build-required-part2:ems-broker-client
   services:
     - $DOCKER_DIND_SERVICE
   script:
