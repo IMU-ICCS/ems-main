@@ -134,6 +134,16 @@ build-required-part1:ems-util:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/util/
 
+# Note that we use non-recusrsive flag
+build-required-part1:ems:
+  stage: build-required-part1
+  image: $MAVEN_IMAGE
+  script:
+    - $EMS_CLI -N -Pwithout-docker -P!build-web-admin clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/event-management/
+
 build-required-part2:ems-broker-client:
   stage: build-required-part2
   image: $MAVEN_IMAGE
@@ -179,10 +189,10 @@ deployMavenRegistry:broker-client:
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
-
   services:
     - $DOCKER_DIND_SERVICE
   dependencies:
+    - build-required-part1:ems
     - build-required-part2:ems-broker-client
   script:
     - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
