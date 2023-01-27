@@ -129,7 +129,7 @@ build-required-part1:ems-util:
   stage: build-required-part1
   image: $MAVEN_IMAGE
   script:
-    - $EMS_UTIL_CLI -Pwithout-docker clean install
+    - $EMS_UTIL_CLI -Pwithout-docker -P!build-web-admin clean install
   artifacts:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/util/
@@ -140,7 +140,7 @@ build-required-part2:ems-broker-client:
   dependencies:
     - build-required-part1:ems-util
   script:
-    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker clean install
+    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker -P!build-web-admin  clean install
   artifacts:
     paths:
       - /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event-management/broker-client/
