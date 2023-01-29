@@ -36,7 +36,8 @@
         <module>meta_solver</module>
         <module>utility-generator</module>
         <module>cp-solver</module>
-        <module>la_converter</module>
+        <!--Currently not used, disabled for morphemic-rc4.0-->
+        <!--module>la_converter</module>-->
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>zpp-solver</module>
@@ -370,6 +371,11 @@
             <name>Melodic 7bulls repository</name>
             <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
         </repository>
+        <snapshotRepository>
+            <id>eu.7bulls</id>
+            <name>Melodic 7bulls repository</name>
+            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <scm>
