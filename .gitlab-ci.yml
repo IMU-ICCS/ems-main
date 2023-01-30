@@ -56,6 +56,19 @@ before_script:
     xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
     https://maven.apache.org/xsd/settings-1.0.0.xsd">
     <localRepository>'$CI_PROJECT_DIR'/maven_repo</localRepository>
+      <servers>
+        <server>
+          <id>gitlab-maven</id>
+          <configuration>
+            <httpHeaders>
+              <property>
+                <name>Job-Token</name>
+                <value>${CI_JOB_TOKEN}</value>
+              </property>
+            </httpHeaders>
+          </configuration>
+        </server>
+      </servers>
     </settings>' > $HOME/.m2/settings.xml
   - echo "MAVEN_OPTS=$MAVEN_OPTS" > $CI_PROJECT_DIR/.env.list
 
