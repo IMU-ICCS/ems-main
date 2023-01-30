@@ -189,14 +189,11 @@ deployMavenRegistry:broker-client:
   stage: deployMavenRegistry
   only:
     - morphemic-rc4.0
-  image: $DOCKER_DIND_IMAGE
-  services:
-    - $DOCKER_DIND_SERVICE
   dependencies:
     - build-required-part1:ems
     - build-required-part2:ems-broker-client
   script:
-    - $DOCKER_CLI $EMS_BROKER_CLIENT_CLI deploy
+    - $EMS_BROKER_CLIENT_CLI deploy
 
 # In this section we build modules, fetch libraries from earlier stages, build and push docker images
 
