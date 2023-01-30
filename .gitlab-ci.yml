@@ -183,7 +183,8 @@ build-required-part2:utility-generator:
       - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/utility-generator/
 
 
-# In this section we deploy libraries built earlier to maven repository
+# In this section we deploy libraries
+# Note that they are rebuilt so if you don'tneed them later in the pipeline, there is no need to have building stage
 
 deployMavenRegistry:broker-client:
   stage: deployMavenRegistry
