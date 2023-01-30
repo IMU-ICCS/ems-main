@@ -194,7 +194,7 @@ deployMavenRegistry:broker-client:
     - build-required-part1:ems
     - build-required-part2:ems-broker-client
   script:
-    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker deploy
+    - $EMS_BROKER_CLIENT_CLI -Pwithout-docker -P!build-web-admin deploy
 
 # In this section we build modules, fetch libraries from earlier stages, build and push docker images
 
