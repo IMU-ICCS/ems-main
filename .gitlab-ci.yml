@@ -150,6 +150,7 @@ build-required-part2:ems-broker-client:
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker -P!build-web-admin  clean install
   dependencies:
+    - build-required-part1:ems
     - build-required-part1:ems-util
   artifacts:
     paths:
