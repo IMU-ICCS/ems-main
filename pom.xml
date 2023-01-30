@@ -376,6 +376,16 @@
             <name>Melodic 7bulls repository</name>
             <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
         </snapshotRepository>
+
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1234/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1234/packages/maven</url>
+        </snapshotRepository>
+
     </distributionManagement>
 
     <scm>
