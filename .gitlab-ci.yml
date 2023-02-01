@@ -186,7 +186,7 @@ build-required-part3:utility-generator:
   artifacts:
     expire_in: 1 week
     paths:
-      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/utility-generator/
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/utility-generator/
 
 build-required-part4:cp-parser:
   stage: build-required-part4
@@ -293,6 +293,7 @@ buildJars:mq-adapter:
   dependencies:
     - build-required-part2:ems-broker-client
     - build-required-part1:ems
+    - build-required-part2:melodic-commons
   script:
     - $MQ_ADAPTER_CLI -Pwithout-docker clean install
 
