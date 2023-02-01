@@ -34,7 +34,7 @@ IF NOT DEFINED PUBLIC_DIR set PUBLIC_DIR=%BASEDIR%\public_resources
 ::CALL bin\initialize-keystores.bat
 
 :: Read JASYPT password (decrypts encrypted configuration settings)
-set JASYPT_PASSWORD=password
+::set JASYPT_PASSWORD=password
 if "%JASYPT_PASSWORD%"=="" (
     set /p JASYPT_PASSWORD="Configuration Password: "
 )

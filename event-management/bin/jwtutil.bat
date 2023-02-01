@@ -20,7 +20,7 @@ if NOT DEFINED EMS_SECRETS_FILE set EMS_SECRETS_FILE=%MELODIC_CONFIG_DIR%\secret
 if NOT DEFINED EMS_CONFIG_LOCATION set EMS_CONFIG_LOCATION=optional:file:%MELODIC_CONFIG_DIR%\ems-server.yml,optional:file:%MELODIC_CONFIG_DIR%\ems-server.properties,optional:file:%MELODIC_CONFIG_DIR%\ems.yml,optional:file:%MELODIC_CONFIG_DIR%\ems.properties,optional:file:%EMS_SECRETS_FILE%
 
 :: Read JASYPT password (decrypts encrypted configuration settings)
-set JASYPT_PASSWORD=password
+::set JASYPT_PASSWORD=password
 if "%JASYPT_PASSWORD%"=="" (
     set /p JASYPT_PASSWORD="Configuration Password: "
 )

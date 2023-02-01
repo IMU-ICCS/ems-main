@@ -34,7 +34,7 @@ if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLI
 #./bin/initialize-keystores.sh
 
 # Read JASYPT password (decrypts encrypted configuration settings)
-JASYPT_PASSWORD=password
+#JASYPT_PASSWORD=password
 if [[ -z "$JASYPT_PASSWORD" ]]; then
     printf "Configuration Password: "
     read -s JASYPT_PASSWORD
