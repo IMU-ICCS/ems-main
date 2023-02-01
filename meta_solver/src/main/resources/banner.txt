@@ -6,4 +6,6 @@
  | |  | |  __/ || (_| |  ____) | (_) | |\ V /  __/ |   
  |_|  |_|\___|\__\__,_| |_____/ \___/|_| \_/ \___|_|   
                                                        
-                                                       
+ :: Meta-Solver ::                       ${application.formatted-version}
+ :: Spring Boot ::                       ${spring-boot.formatted-version}
+ :: Java (TM)   ::                        (${java.version})

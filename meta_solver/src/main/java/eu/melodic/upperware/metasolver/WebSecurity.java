@@ -48,19 +48,22 @@ public class WebSecurity {
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
+        httpSecurity
+                .cors().and().csrf().disable()
+                .formLogin().disable()
+                .httpBasic().disable()
+                // this disables session creation on Spring Security
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
         if (securityEnabled) {
             log.info("Running WITH security");
             httpSecurity
-                    .cors().and().csrf().disable()
                     .authorizeHttpRequests(
                             authorize -> authorize.anyRequest().authenticated())
-                    .addFilterAfter(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
-                    // this disables session creation on Spring Security
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    .addFilterAfter(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         } else {
             log.info("Running WITHOUT security");
             httpSecurity
-                    .csrf().disable()
                     .authorizeHttpRequests(
                             authorize -> authorize.anyRequest().permitAll());
         }
