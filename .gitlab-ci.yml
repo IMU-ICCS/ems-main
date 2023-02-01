@@ -373,8 +373,8 @@ buildAndDeployJars:broker-client:
 
 # In this section we build modules, fetch libraries from earlier stages, build and push docker images
 
-deployDockerRegistry:utility-generator-standalone:
-  stage: deployDockerRegistry
+deployDocker:utility-generator-standalone:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -390,8 +390,8 @@ deployDockerRegistry:utility-generator-standalone:
     - docker tag ug-standalone:latest $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:melodic-cache-standalone:
-  stage: deployDockerRegistry
+deployDocker:melodic-cache-standalone:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -407,8 +407,8 @@ deployDockerRegistry:melodic-cache-standalone:
     - docker tag melodiccachestandalone:latest $CI_REGISTRY_IMAGE/melodiccachestandalone:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/melodiccachestandalone:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:adapter:
-  stage: deployDockerRegistry
+deployDocker:adapter:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -424,8 +424,8 @@ deployDockerRegistry:adapter:
     - docker tag adapter:latest $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:cp-generator:
-  stage: deployDockerRegistry
+deployDocker:cp-generator:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -441,8 +441,8 @@ deployDockerRegistry:cp-generator:
     - docker tag generator:latest $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:cp-solver:
-  stage: deployDockerRegistry
+deployDocker:cp-solver:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -458,8 +458,8 @@ deployDockerRegistry:cp-solver:
     - docker tag cpsolver:latest $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:ems-server:
-  stage: deployDockerRegistry
+deployDocker:ems-server:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -475,8 +475,8 @@ deployDockerRegistry:ems-server:
     - docker tag ems-server:latest $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:metasolver:
-  stage: deployDockerRegistry
+deployDocker:metasolver:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -492,8 +492,8 @@ deployDockerRegistry:metasolver:
     - docker tag metasolver:latest $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:mq-adapter:
-  stage: deployDockerRegistry
+deployDocker:mq-adapter:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -509,8 +509,8 @@ deployDockerRegistry:mq-adapter:
     - docker tag mq-http-adapter:latest $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:gui-backend:
-  stage: deployDockerRegistry
+deployDocker:gui-backend:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
@@ -526,8 +526,8 @@ deployDockerRegistry:gui-backend:
     - docker tag gui-backend:latest $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
     - docker push $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
 
-deployDockerRegistry:jwt-server:
-  stage: deployDockerRegistry
+deployDocker:jwt-server:
+  stage: deployDocker
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
