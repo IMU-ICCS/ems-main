@@ -324,7 +324,7 @@ buildSolversJars:nc-solver:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
   dependencies:
-    - build-required-part1:cp-parser
+    - build-required-part3:cp-parser
   script:
     - $NC_SOLVER_CLI -Pwithout-docker clean install
 
@@ -334,7 +334,7 @@ buildSolversJars:pt-solver:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
   dependencies:
-    - build-required-part1:cp-parser
+    - build-required-part3:cp-parser
   script:
     - $PT_SOLVER_CLI -Pwithout-docker clean install
 
@@ -344,7 +344,7 @@ buildSolversJars:mcts-solver:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
   dependencies:
-    - build-required-part1:cp-parser
+    - build-required-part3:cp-parser
   script:
     - $MCTS_SOLVER_CLI -Pwithout-docker clean install
 
@@ -354,7 +354,7 @@ buildSolversJars:gen-solver:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
   dependencies:
-    - build-required-part1:cp-parser
+    - build-required-part3:cp-parser
   script:
     - $GEN_SOLVER_CLI -Pwithout-docker clean install
 
