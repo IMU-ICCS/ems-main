@@ -49,7 +49,7 @@ public class WebSecurity {
     protected SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity
-                .cors().and().csrf().disable()
+                .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
                 // this disables session creation on Spring Security
