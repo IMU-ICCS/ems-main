@@ -50,6 +50,8 @@
         <activemq.version>5.17.3</activemq.version>
         <!-- jjwt version -->
         <jjwt.version>0.11.5</jjwt.version>
+        <!-- Jasypt version -->
+        <jasypt.starter.version>3.0.5</jasypt.starter.version>
 
         <!--DOCKER plugin properties-->
         <docker.imageName>metasolver</docker.imageName>
@@ -140,6 +142,12 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Jasypt Spring Boot starter  -->
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>${jasypt.starter.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/javax.jms/javax.jms-api -->

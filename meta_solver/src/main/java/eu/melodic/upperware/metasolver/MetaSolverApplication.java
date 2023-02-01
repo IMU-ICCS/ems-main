@@ -16,10 +16,13 @@ This provides application with the properties (in that way can be provided exter
 
 package eu.melodic.upperware.metasolver;
 
+import com.ulisesbocchio.jasyptspringboot.environment.StandardEncryptableEnvironment;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -30,6 +33,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class MetaSolverApplication {
 
     public static void main(String[] args) {
+        SpringApplication springApplication = new SpringApplicationBuilder()
+                .environment(new StandardEncryptableEnvironment())
+                .sources(MetaSolverApplication.class)
+                .build();
+        springApplication.setBannerMode(Banner.Mode.LOG);
         SpringApplication.run(MetaSolverApplication.class, args);
     }
 }

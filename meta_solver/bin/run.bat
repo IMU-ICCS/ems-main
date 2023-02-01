@@ -20,4 +20,4 @@ set JAVA_OPTS= -Djavax.net.ssl.trustStore=%EXTRA_TS_DIR%\broker-truststore.p12 ^
  -Djavax.net.ssl.trustStoreType=pkcs12
 
 rem java %JAVA_OPTS% -Deu.paasage.configdir=. -jar %BASEDIR%\target\meta-solver.jar %LOGGING%
-java %JAVA_OPTS% -jar %BASEDIR%\target\meta-solver.jar %LOGGING%
+java %JAVA_OPTS% "-Djasypt.encryptor.password=%JASYPT_PASSWORD%" -jar %BASEDIR%\target\meta-solver.jar %LOGGING%
