@@ -233,6 +233,7 @@ buildJars:adapter:
     - build-required-part2:melodic-commons
     - build-required-part2:ems-broker-client
     - build-required-part1:ems
+    - build-required-part1:melodic-cache
   script:
     - $ADAPTER_SERVER_CLI -Pwithout-docker clean install
 
