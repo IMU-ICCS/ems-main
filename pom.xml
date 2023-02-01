@@ -36,7 +36,8 @@
         <module>meta_solver</module>
         <module>utility-generator</module>
         <module>cp-solver</module>
-        <module>la_converter</module>
+        <!--Currently not used, disabled for morphemic-rc4.0-->
+        <!--module>la_converter</module>-->
         <module>event-management</module>
         <module>mq-http-adapter</module>
         <module>zpp-solver</module>
@@ -313,18 +314,6 @@
         </pluginManagement>
     </build>
     <repositories>
-        <repository>
-            <id>eu.7bulls</id>
-            <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-
         <!--        CDO rand Camel epository-->
         <repository>
             <id>gitlab-maven-cdo</id>
@@ -337,20 +326,18 @@
         </repository>
 
         <repository>
-            <id>maven-central</id>
-            <url>https://repo1.maven.org/maven2/</url>
+            <id>gitlab-maven-melodic-integration</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1230/packages/maven</url>
         </repository>
 
         <repository>
-            <id>ow2</id>
-            <name>OW2 repository</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>gitlab-maven-melodic-security</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1235/packages/maven</url>
+        </repository>
+
+        <repository>
+            <id>maven-central</id>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
         <repository>
             <id>ossrh.snapshots</id>
@@ -366,10 +353,13 @@
     </repositories>
     <distributionManagement>
         <repository>
-            <id>eu.7bulls</id>
-            <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1234/packages/maven</url>
         </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1234/packages/maven</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <scm>
