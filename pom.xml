@@ -331,6 +331,11 @@
         </repository>
 
         <repository>
+            <id>gitlab-maven-melodic-security</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1235/packages/maven</url>
+        </repository>
+
+        <repository>
             <id>maven-central</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
