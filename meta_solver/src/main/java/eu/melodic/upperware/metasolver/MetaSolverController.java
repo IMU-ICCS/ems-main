@@ -36,9 +36,12 @@ public class MetaSolverController {
 
     private final Coordinator coordinator;
 
-    @RequestMapping(value = "/", method = GET)
-    public String test(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken) {
-        return "OK "+ (StringUtils.isNotBlank(jwtToken) ? "JWT present" : "No JWT found");
+    @RequestMapping(value = "/", method = { GET, POST })
+    public String test(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken,
+                       @RequestParam(name = "jwt", required = false) String jwtTokenParam)
+    {
+        boolean jwtExists = StringUtils.isNotBlank(jwtToken) || StringUtils.isNotBlank(jwtTokenParam);
+        return "OK " + (jwtExists ? "JWT present" : "No JWT found");
     }
 
     @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
