@@ -20,9 +20,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
@@ -34,11 +33,11 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MetricValueMonitorBean implements ApplicationContextAware {
+public class MetricValueMonitorBean implements InitializingBean {
 
-    private MetaSolverProperties properties;
-    private Coordinator coordinator;
-    private PredictionHelper predictionHelper;
+    private final MetaSolverProperties properties;
+    private final Coordinator coordinator;
+    private final PredictionHelper predictionHelper;
     private MessageProducer debugEventProducer = null;
 
     private final HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
@@ -52,10 +51,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
 	private String brokerCertificate;
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.properties = applicationContext.getBean(MetaSolverProperties.class);
-        this.coordinator = applicationContext.getBean(Coordinator.class);
-        this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
+    public void afterPropertiesSet() throws BeansException {
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
 

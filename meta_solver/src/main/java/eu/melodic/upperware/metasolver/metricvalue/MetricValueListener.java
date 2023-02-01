@@ -11,7 +11,9 @@ package eu.melodic.upperware.metasolver.metricvalue;
 import com.google.gson.Gson;
 import eu.melodic.upperware.metasolver.Coordinator;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
@@ -21,29 +23,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@RequiredArgsConstructor
 public class MetricValueListener implements MessageListener {
 
-    private Topic topic;
-    private String topicName;
-    private TopicType type;
+    private final Coordinator coordinator;
+    private final Topic topic;
+    private final TopicType type;
+    private final MetricValueRegistry<Object> registry;
     private final boolean isPrediction;
-    private double reconfigurationProbabilityThreshold;
-    private MetricValueRegistry<Object> registry;
-    private Gson gson;
-    private Coordinator coordinator;
-    private MetaSolverProperties metaSolverProperties;
+    private final MetaSolverProperties metaSolverProperties;
 
-    public MetricValueListener(Coordinator coordinator, Topic topic, TopicType type, MetricValueRegistry<Object> registry, boolean isPrediction, MetaSolverProperties metaSolverProperties) throws JMSException {
-        log.debug("MetricValueListener.<init>: type={}", type);
-        this.coordinator = coordinator;
-        this.topic = topic;
+    private String topicName;
+    private double reconfigurationProbabilityThreshold;
+
+    private final Gson gson = new Gson();
+
+    @PostConstruct
+    public void init() throws JMSException {
+        log.debug("MetricValueListener.init(): type={}", type);
         this.topicName = topic.getTopicName();
-        this.type = type;
-        this.registry = registry;
-        this.isPrediction = isPrediction;
         this.reconfigurationProbabilityThreshold = coordinator.getMetaSolverProperties().getReconfigurationProbabilityThreshold();
-        gson = new Gson();
-        this.metaSolverProperties = metaSolverProperties;
     }
 
     public void onMessage(Message message) {
@@ -54,19 +53,16 @@ public class MetricValueListener implements MessageListener {
             log.debug("Listener of topic {}: metric={}, type={}, payload={}", topicName, metricName, type, payload);
 
             switch (type) {
-                case MVV:
+                case MVV -> {
                     log.debug("Listener of topic {}: Got an MVV event: {}", topicName, payload);
                     processMetricValueEvent(metricName, payload);
-                    break;
-                case SCALE:
+                }
+                case SCALE -> {
                     log.debug("Listener of topic {}: Got a SCALE event: {}", topicName, payload);
                     processScaleEvent(metricName, payload);
-                    break;
-                case DEBUG_EVENT:
-                    log.debug("Listener of topic {}: Got a DEBUG event: {}", topicName, payload);
-                    break;
-                default:
-                    log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it: {}", topicName, message);
+                }
+                case DEBUG_EVENT -> log.debug("Listener of topic {}: Got a DEBUG event: {}", topicName, payload);
+                default -> log.debug("Listener of topic {}: Got a UNKNOWN event: Ignoring it: {}", topicName, message);
             }
 
         } catch (JMSException e) {

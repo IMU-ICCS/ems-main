@@ -22,15 +22,15 @@ import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import eu.melodic.upperware.metasolver.util.jwt.JwtTokenService;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.*;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -46,34 +46,32 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class Coordinator implements ApplicationContextAware {
+@RequiredArgsConstructor
+public class Coordinator implements InitializingBean {
 
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
     @Getter
-    private MetaSolverProperties metaSolverProperties;
-    private JwtTokenService jwtTokenService;
-    private double uvThresholdFactor;
-    private boolean removeRedundantCandidates;
-    private RestTemplate restTemplate;
+    private final MetaSolverProperties metaSolverProperties;
+    private final JwtTokenService jwtTokenService;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     private String cacheAppId;
     private String cacheCpModelPath;
     private Map<String,String> mvvToCurrentConfigVarsMap;
 
     private Timer updateTimer;
-    private AtomicBoolean updateLocked = new AtomicBoolean(false);
+    private final AtomicBoolean updateLocked = new AtomicBoolean(false);
     private String updateAppId;
     private String updatePath;
 
     private long previousReconfigurationTimestamp = 0;
-    private Semaphore reconfigurationRunning = new Semaphore(1);
+    private final Semaphore reconfigurationRunning = new Semaphore(1);
     private ScheduledFuture<?> reconfigurationRunningTimeoutFuture;
-    @Autowired
-    private TaskScheduler taskScheduler;
+    private final TaskScheduler taskScheduler;
 
     @Getter
-    private PredictionHelper predictionHelper;
+    private final PredictionHelper predictionHelper;
 
     @Value("${user.username}")
     private String username;
@@ -81,14 +79,7 @@ public class Coordinator implements ApplicationContextAware {
     private String password;
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        this.jwtTokenService = applicationContext.getBean(JwtTokenService.class);
-        this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
-        this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
-        this.removeRedundantCandidates = metaSolverProperties.isRemoveRedundantCandidates();
-        this.restTemplate = new RestTemplate();
-        this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
+    public void afterPropertiesSet() throws BeansException {
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
     }
 
@@ -208,6 +199,7 @@ public class Coordinator implements ApplicationContextAware {
         // Check if the selected candidate solution (with the highest utility) is at least X% better than the currently deployed solution
         if (currentDeployedIndex>=0) {
             double deployedUV = utilities.get(currentDeployedIndex);
+            double uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
             if (selectedUV <= uvThresholdFactor * deployedUV) {
                 log.info("MetaSolver.Coordinator: evaluateSolution(): Selected candidate solution has NOT better utility than the deployed solution: appId={}, model={}, candidate-index/utility={}/{}, deployed-index/utility={}/{}, uv-threshold-factor={}",
                         applicationId, cpModelPath, selectedIndex, selectedUV, currentDeployedIndex, deployedUV, uvThresholdFactor);
@@ -228,7 +220,7 @@ public class Coordinator implements ApplicationContextAware {
             selectedIndex = utilities.size() - 1;
         }
         // Remove not selected candidate solutions
-        if (removeRedundantCandidates) {
+        if (metaSolverProperties.isRemoveRedundantCandidates()) {
             int limit = selectedIndex>=0 ? selectedIndex : utilities.size();
             helper.removeSolutionRangeFromCpModel(applicationId, cpModelPath, currentCandidatesIndex + 1, limit);
             if (selectedIndex>=0) {

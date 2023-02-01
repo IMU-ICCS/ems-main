@@ -16,12 +16,6 @@ import java.util.HashMap;
 @Getter
 @ToString(doNotUseGetters = true)
 public class MetricValueEvent extends HashMap<String,Object> {
-    //private String metricValue;
-    //private String cloudName;
-    //private List<String> componentName;
-    //private int level;
-    //private long timestamp;
-
     public String getMetricValue() { return getAsString("metricValue"); }
 
     public String getAsString(String key) {
