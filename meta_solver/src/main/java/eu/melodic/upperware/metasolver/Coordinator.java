@@ -19,9 +19,7 @@ import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.CpModelHelper;
 import eu.melodic.upperware.metasolver.util.PredictionHelper;
-import eu.paasage.upperware.security.authapi.SecurityConstants;
-import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
-import eu.paasage.upperware.security.authapi.token.JWTService;
+import eu.melodic.upperware.metasolver.util.jwt.JwtTokenService;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.*;
@@ -50,11 +49,10 @@ import java.util.stream.Collectors;
 public class Coordinator implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-    private MetaSolverController controller;
+
     @Getter
     private MetaSolverProperties metaSolverProperties;
-    private JWTService jwtService;
-    private MelodicSecurityProperties melodicSecurityProperties;
+    private JwtTokenService jwtTokenService;
     private double uvThresholdFactor;
     private boolean removeRedundantCandidates;
     private RestTemplate restTemplate;
@@ -77,13 +75,16 @@ public class Coordinator implements ApplicationContextAware {
     @Getter
     private PredictionHelper predictionHelper;
 
+    @Value("${user.username}")
+    private String username;
+    @Value("${user.password}")
+    private String password;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        this.controller = applicationContext.getBean(MetaSolverController.class);
-        this.jwtService = applicationContext.getBean(JWTService.class);
+        this.jwtTokenService = applicationContext.getBean(JwtTokenService.class);
         this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
-        this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
         this.removeRedundantCandidates = metaSolverProperties.isRemoveRedundantCandidates();
         this.restTemplate = new RestTemplate();
@@ -252,23 +253,24 @@ public class Coordinator implements ApplicationContextAware {
     /**
      * Update deployed and candidate solutions in CP model
      * Input:
-     * applicationId : application id
-     * cpModelPath: the path to CP model resource in CDO server
-     * success: indicates whether adapter succeeded to deploy candidate solution or not
+     *  - applicationId : application id
+     *  - cpModelPath: the path to CP model resource in CDO server
+     *  - success: indicates whether adapter succeeded to deploy candidate solution or not
+     *  - jwtToken: used to authenticate to Upperware components
      * if SUCCESS
-     * deployed Id <-- candidate Id
-     * candidate Id <-- -1
+     *  - deployed Id <-- candidate Id
+     *  - candidate Id <-- -1
      * if ERROR
-     * candidate Id <-- -1
+     *  - candidate Id <-- -1
      * Returns:
-     * the new solution positions (int[])
-     * int[0] : Index of deployed solution in 'solutions' EList
-     * int[1] : Index of candidate solution in 'solutions' EList
-     * An index equal to -1 means absence of deployed/candidate solution
-     * An index equal to -2 means empty 'solutions' EList
-     * An index >=0 indicates the position of the deployed/candidate solution in 'solutions' EList
+     *    the new solution positions (int[])
+     *    int[0] : Index of deployed solution in 'solutions' EList
+     *    int[1] : Index of candidate solution in 'solutions' EList
+     *    An index equal to -1 means absence of deployed/candidate solution
+     *    An index equal to -2 means empty 'solutions' EList
+     *    An index >=0 indicates the position of the deployed/candidate solution in 'solutions' EList
      */
-    public Pair<Integer,Integer> updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success) throws ConcurrentAccessException {
+    public Pair<Integer,Integer> updateSolutionIdsInCpModel(String applicationId, String cpModelPath, boolean success, String jwtToken) throws ConcurrentAccessException {
         log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): appId={}, model={}, deploy-success={}", applicationId, cpModelPath, success);
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
@@ -288,7 +290,7 @@ public class Coordinator implements ApplicationContextAware {
         enableReconfigurationRunning();
 
         // Notify EMS about new solution acceptance
-		notifyEMS(cpModelPath);
+		notifyEMS(cpModelPath, jwtToken);
 		
         log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): Solution Ids have been updated in CP model: deployed-solution-id={}, candidate-solution-id={}",
                 newPos.getLeft(), newPos.getRight());
@@ -319,7 +321,7 @@ public class Coordinator implements ApplicationContextAware {
         // Schedule reconfiguration running timeout
         if (metaSolverProperties.isPreventConcurrentReconfigurations() && getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()>0) {
             reconfigurationRunningTimeoutFuture = taskScheduler.schedule(() -> enableReconfigurationRunning(false),
-                    Date.from(Instant.now().plusMillis(getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout())));
+                    Instant.now().plusMillis(getMetaSolverProperties().getPreventConcurrentReconfigurationsTimeout()));
         }
 
         // Use previously cached 'application id' and 'CP model'
@@ -373,8 +375,8 @@ public class Coordinator implements ApplicationContextAware {
         notification.setCdoResourcePath(cpModelPath);
         notification.setIsSimulation(Boolean.toString(isSimulation));
 
-        notification.setUsername(melodicSecurityProperties.getUser().getUsername());
-        notification.setPassword(melodicSecurityProperties.getUser().getPassword());
+        notification.setUsername(username);
+        notification.setPassword(password);
 
         String uuid = UUID.randomUUID().toString().toLowerCase();
         notification.setWatermark(prepareWatermark(uuid));
@@ -454,7 +456,7 @@ public class Coordinator implements ApplicationContextAware {
         log.info("MetaSolver.Coordinator: setMvvMap(): 'mvvToCurrentConfigVarsMap' updated");
     }
 
-    private void notifyEMS(String cpModelPath) {
+    private void notifyEMS(String cpModelPath, String jwtToken) {
         String emsUrl = metaSolverProperties.getEmsUrl();
         if (StringUtils.isEmpty(emsUrl)) {
             log.debug("MetaSolver.Coordinator: notifyEMS(): EMS-URL has not been set");
@@ -470,16 +472,16 @@ public class Coordinator implements ApplicationContextAware {
         notification.put("cp-model-id", cpModelPath);
 		
         final ResponseEntity<String> response =
-                postToUrl(emsUrl, HashMap.class, notification, false);
+                postToUrl(emsUrl, HashMap.class, notification, false, jwtToken);
 
         log.debug("MetaSolver.Coordinator: notifyEMS(): Response from EMS: status={}, response={}, body={}",
                 response.getStatusCode(), response, response.getBody());
     }
 
-    public ResponseEntity<String> postToUrl(String url, Class notifType, Object notification, boolean createNewToken) {
-        String jwtToken = createNewToken
+    public ResponseEntity<String> postToUrl(String url, Class notifType, Object notification, boolean createNewToken, String jwtToken) {
+        jwtToken = createNewToken
                 ? createToken()
-                : controller.getAuthenticationToken();
+                : jwtToken;
         log.debug("MetaSolver.postToUrl(): JWT token={}, created={}", jwtToken, createNewToken);
 
         final ResponseEntity<String> response;
@@ -508,9 +510,8 @@ public class Coordinator implements ApplicationContextAware {
     }
 
     public String createToken() {
-        String username = melodicSecurityProperties.getUser().getUsername();
-        log.debug("MetaSolver.createToken():  username={}, jwt-service={}", username, jwtService);
-        String token = SecurityConstants.TOKEN_PREFIX + jwtService.create(username);
+        log.debug("MetaSolver.createToken():  username={}, jwt-service={}", username, jwtTokenService);
+        String token = JwtTokenService.TOKEN_PREFIX + jwtTokenService.createToken(username);
         log.debug("MetaSolver.createToken():  username={}, token={}", username, token);
         return token;
     }

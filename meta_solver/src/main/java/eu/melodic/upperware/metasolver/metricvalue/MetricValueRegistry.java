@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 @Slf4j
@@ -41,7 +42,7 @@ public class MetricValueRegistry<T> implements InitializingBean {
         // Setup prediction registry cleanup
         long cleanupRate = properties.getPredictionRegistryCleanupRate();
         if (cleanupRate>0) {
-            scheduler.scheduleAtFixedRate(this::runPredictionRegistryClean, cleanupRate);
+            scheduler.scheduleAtFixedRate(this::runPredictionRegistryClean, Duration.ofMillis(cleanupRate));
             log.info("MetricValueRegistry: Prediction Registry cleanup every: {}ms", cleanupRate);
         } else {
             log.warn("MetricValueRegistry: Prediction Registry cleanup is deactivated. Set 'predictionRegistryCleanupRate' property to activate cleanup.");

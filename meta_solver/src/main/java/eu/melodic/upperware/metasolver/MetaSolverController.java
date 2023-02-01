@@ -12,11 +12,11 @@ import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.interfaces.metaSolver.*;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,27 +31,20 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
-//@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor
 public class MetaSolverController {
 
-    @Autowired
-    private Coordinator coordinator;
+    private final Coordinator coordinator;
 
-	private String jwtToken = null;
-	
-	public String getAuthenticationToken() {
-		return jwtToken;
-	}
-
-	public void setAuthenticationToken(String s) { if (StringUtils.isNotEmpty(s)) jwtToken = s.trim(); }
+    @RequestMapping(value = "/", method = GET)
+    public String test(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken) {
+        return "OK "+ (StringUtils.isNotBlank(jwtToken) ? "JWT present" : "No JWT found");
+    }
 
     @RequestMapping(value = "/constraintProblemEnhancement", method = POST)
-    public ConstraintProblemEnhancementResponse selectSolvers(@RequestBody ConstraintProblemEnhancementRequestImpl request,
-                                                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public ConstraintProblemEnhancementResponse selectSolvers(@RequestBody ConstraintProblemEnhancementRequestImpl request)
             throws ConcurrentAccessException
 	{
-        setAuthenticationToken(jwtToken);
-		
         // Get information from request
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
@@ -82,12 +75,9 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/solutionEvaluation", method = POST)
-    public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request,
-                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public SolutionEvaluationResponse solutionEvaluation(@RequestBody SolutionEvaluationRequestImpl request)
             throws ConcurrentAccessException
 	{
-        setAuthenticationToken(jwtToken);
-		
         // Get information from request
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
@@ -114,8 +104,6 @@ public class MetaSolverController {
                                                  @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
 	{
-        setAuthenticationToken(jwtToken);
-		
         // Get information from request
         String applicationId = request.getApplicationId();
         String cdoModelsPath = request.getCdoModelsPath();
@@ -129,7 +117,7 @@ public class MetaSolverController {
 
         // Update deployed and candidate solution Ids (positions) in CP model
         log.info("Update solution: ");
-        Pair<Integer,Integer> pos = coordinator.updateSolutionIdsInCpModel(applicationId, cdoModelsPath, success);
+        Pair<Integer,Integer> pos = coordinator.updateSolutionIdsInCpModel(applicationId, cdoModelsPath, success, jwtToken);
         log.info("Update solution: deployed={}, candidate={}", pos.getLeft(), pos.getRight());
 
         // Prepare and return response
@@ -143,12 +131,9 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/updateConfiguration", method = POST)
-    public String updateConfiguration(@RequestBody String configStr,
-                                      @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public String updateConfiguration(@RequestBody String configStr)
             throws ConcurrentAccessException
 	{
-        setAuthenticationToken(jwtToken);
-		
         log.info("updateConfiguration: json={}", configStr);
 
         // Unserialize configuration from JSON
@@ -169,11 +154,8 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/clearReconfigurationRunning", method = {GET,POST})
-    public String clearReconfigurationRunning(@QueryParam("alsoClearBlockingPeriod") Optional<Boolean> alsoClearBlockingPeriod,
-                                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public String clearReconfigurationRunning(@QueryParam("alsoClearBlockingPeriod") Optional<Boolean> alsoClearBlockingPeriod)
     {
-        setAuthenticationToken(jwtToken);
-
         log.info("clearReconfigurationRunning: alsoClearBlockingPeriod={}", alsoClearBlockingPeriod);
 
         // Clear ReconfigurationRunning state
@@ -183,11 +165,9 @@ public class MetaSolverController {
     }
 
     @RequestMapping(value = "/simulateReconfiguration", method = POST)
-    public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request,
-                                                                          @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken)
+    public SimulatedMetricValuesResponseImpl simulateReconfiguration(@RequestBody SimulatedMetricValuesRequestImpl request)
             throws ConcurrentAccessException
     {
-        setAuthenticationToken(jwtToken);
         String applicationId = request.getApplicationId();
         log.info("Received request: {}", applicationId);
 
@@ -203,10 +183,7 @@ public class MetaSolverController {
     }
 
     @GetMapping("/getMetricNames/{applicationId}")
-    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId,
-                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
-
-        setAuthenticationToken(jwtToken);
+    public MetricsNamesResponse getMetricNames(@PathVariable("applicationId") String applicationId) {
         log.info("Received request for metric names: ");
         MetricsNamesResponse metricsNamesResponse = new MetricsNamesResponseImpl();
         metricsNamesResponse.setMetricsNames(coordinator.getMetricNames(applicationId));
@@ -215,8 +192,7 @@ public class MetaSolverController {
     }
 
     @GetMapping("/getOperationMode")
-    public MetaSolverProperties.OperationMode getOperationMode(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
-        setAuthenticationToken(jwtToken);
+    public MetaSolverProperties.OperationMode getOperationMode() {
         log.info("Received request for getting operation mode: ");
         MetaSolverProperties.OperationMode mode = coordinator.getMetaSolverProperties().getOperationMode();
         log.info("Current operation mode: {}", mode);
@@ -224,10 +200,8 @@ public class MetaSolverController {
     }
 
     @GetMapping("/setOperationMode/{mode}")
-    public void setOperationMode(@PathVariable("mode") MetaSolverProperties.OperationMode mode,
-                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION) String jwtToken) {
+    public void setOperationMode(@PathVariable("mode") MetaSolverProperties.OperationMode mode) {
 
-        setAuthenticationToken(jwtToken);
         log.info("Received request for setting operation mode: {}", mode);
         MetaSolverProperties.OperationMode prevMode = coordinator.getMetaSolverProperties().getOperationMode();
         log.info("Previous operation mode: {}", prevMode);

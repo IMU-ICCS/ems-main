@@ -6,13 +6,16 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-FROM openjdk:8-alpine
-VOLUME /tmp
-RUN /bin/sh -c "apk add --no-cache bash"
+FROM eclipse-temurin:17.0.5_8-jre
+
+RUN apt-get update && apt-get install -y \
+    netcat \
+    && rm -rf /var/lib/apt/lists/*
 
 ADD meta-solver.jar meta-solver.jar
 RUN bash -c 'touch /meta-solver.jar'
 
 COPY ./run.sh .
 RUN bash -c 'chmod +rx run.sh'
+
 ENTRYPOINT ["./run.sh"]
