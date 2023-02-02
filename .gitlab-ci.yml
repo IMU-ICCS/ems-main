@@ -305,7 +305,6 @@ buildJars:ems-server:
     - build-required-part2:ems-broker-client
   script:
     - $EMS_CLI -Pwithout-docker clean install
-    - $EMS_SERVER_CLI -Pwithout-docker process-resources
   artifacts:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/control-service/
@@ -483,8 +482,7 @@ deployDocker:ems-server:
   services:
     - $DOCKER_DIND_SERVICE
   script:
-    - cd event-management/control-service/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/control-service/6.0.0-SNAPSHOT/control-service-6.0.0-SNAPSHOT.jar ./control-service.jar
+    - cd event-management/control-service/target/docker/
     - docker build -t ems-server -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ems-server:latest $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
@@ -500,7 +498,7 @@ deployDocker:metasolver:
   dependencies:
     - buildJars:metasolver
   script:
-    - cd meta-solver/src/main/docker/
+    - cd meta_solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware/meta-solver/6.0.0-SNAPSHOT/meta-solver-6.0.0-SNAPSHOT.jar ./meta-solver.jar
     - docker build -t metasolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
