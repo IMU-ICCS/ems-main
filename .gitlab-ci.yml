@@ -221,6 +221,10 @@ buildJars:utility-generator-standalone:
     - build-required-part3:utility-generator
   script:
     - $UG_STANDALONE_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/utility-generator-standalone/
 
 buildJars:melodic-cache-standalone:
   stage: buildJars
@@ -231,6 +235,10 @@ buildJars:melodic-cache-standalone:
     - build-required-part1:melodic-cache
   script:
     - $MC_STANDALONE_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/melodic-cache-standalone/
 
 buildJars:adapter:
   stage: buildJars
@@ -246,6 +254,10 @@ buildJars:adapter:
     - build-required-part1:melodic-cache
   script:
     - $ADAPTER_SERVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/adapter/
 
 buildJars:cp-generator:
   stage: buildJars
@@ -259,6 +271,10 @@ buildJars:cp-generator:
     - build-required-part2:melodic-commons
   script:
     - $CP_GENERATOR_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/generator/
 
 buildJars:cp-solver:
   stage: buildJars
@@ -273,6 +289,10 @@ buildJars:cp-solver:
     - build-required-part3:utility-generator
   script:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/cp-solver/
 
 buildJars:ems-server:
   stage: buildJars
@@ -284,7 +304,11 @@ buildJars:ems-server:
     - build-required-part2:ems-broker-client
   script:
     - $EMS_CLI -Pwithout-docker clean install
-    - $EMS_CLI -Pwithout-docker resources:copy-resources-to-docker-context
+    - $EMS_CLI -Pwithout-docker resources:copy-resources
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/control-service/
+
 
 buildJars:metasolver:
   stage: buildJars
@@ -296,6 +320,10 @@ buildJars:metasolver:
     - build-required-part1:upperware-metamodel
   script:
     - $METASOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/meta-solver/
 
 buildJars:mq-adapter:
   stage: buildJars
@@ -308,6 +336,10 @@ buildJars:mq-adapter:
     - build-required-part2:melodic-commons
   script:
     - $MQ_ADAPTER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/visualization/mq-http-adapter/
 
 buildJars:gui-backend:
   stage: buildJars
@@ -320,6 +352,10 @@ buildJars:gui-backend:
     - build-required-part2:melodic-commons
   script:
     - $GUI_BACKEND_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/gui-backend/
 
 buildJars:jwt-server:
   stage: buildJars
@@ -331,6 +367,10 @@ buildJars:jwt-server:
     - build-required-part1:upperware-metamodel
   script:
     - $JWT_SERVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/jwt-server/
 
 # In this section we deploy libraries
 # Note that they are rebuilt so if you don'tneed them later in the pipeline, there is no need to have building stage
