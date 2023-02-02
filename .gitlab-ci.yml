@@ -391,7 +391,7 @@ deployDocker:adapter:
     - buildJars:adapter
   script:
     - cd adapter/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/adapter/6.0.0-SNAPSHOT/adapter-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/adapter/6.0.0-SNAPSHOT/adapter-6.0.0-SNAPSHOT.jar ./adapter.jar
     - docker build -t adapter -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag adapter:latest $CI_REGISTRY_IMAGE/adapter:$CI_COMMIT_BRANCH
@@ -408,7 +408,7 @@ deployDocker:cp-generator:
     - buildJars:cp-generator
   script:
     - cd cp-generator/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-generator/6.0.0-SNAPSHOT/cp-generator-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-generator/6.0.0-SNAPSHOT/cp-generator-6.0.0-SNAPSHOT.jar ./cp-generator.jar
     - docker build -t generator -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag generator:latest $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
@@ -425,7 +425,7 @@ deployDocker:cp-solver:
     - $DOCKER_DIND_SERVICE
   script:
     - cd cp-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/6.0.0-SNAPSHOT/cp-solver-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-solver/6.0.0-SNAPSHOT/cp-solver-6.0.0-SNAPSHOT.jar ./cp-solver.jar
     - docker build -t cpsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag cpsolver:latest $CI_REGISTRY_IMAGE/cpsolver:$CI_COMMIT_BRANCH
@@ -442,7 +442,7 @@ deployDocker:ems-server:
     - $DOCKER_DIND_SERVICE
   script:
     - cd event-management/control-service/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/control-service/6.0.0-SNAPSHOT/control-service-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/event/control-service/6.0.0-SNAPSHOT/control-service-6.0.0-SNAPSHOT.jar ./control-service.jar
     - docker build -t ems-server -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ems-server:latest $CI_REGISTRY_IMAGE/ems-server:$CI_COMMIT_BRANCH
@@ -459,7 +459,7 @@ deployDocker:metasolver:
     - buildJars:metasolver
   script:
     - cd meta-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/meta-solver/6.0.0-SNAPSHOT/meta-solver-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/meta-solver/6.0.0-SNAPSHOT/meta-solver-6.0.0-SNAPSHOT.jar ./meta-solver.jar
     - docker build -t metasolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag metasolver:latest $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
@@ -476,7 +476,7 @@ deployDocker:mq-adapter:
     - buildJars:mq-adapter
   script:
     - cd mq-http-adapter/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mq-http-adapter/6.0.0-SNAPSHOT/mq-http-adapter-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mq-http-adapter/6.0.0-SNAPSHOT/mq-http-adapter-6.0.0-SNAPSHOT.jar ./mq-http-adapter.jar
     - docker build -t mq-http-adapter -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag mq-http-adapter:latest $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
@@ -493,7 +493,7 @@ deployDocker:gui-backend:
     - buildJars:gui-backend
   script:
     - cd gui-backend/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/gui-backend/6.0.0-SNAPSHOT/gui-backend-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/gui-backend/6.0.0-SNAPSHOT/gui-backend-6.0.0-SNAPSHOT.jar ./gui-backend.jar
     - docker build -t gui-backend -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag gui-backend:latest $CI_REGISTRY_IMAGE/gui-backend:$CI_COMMIT_BRANCH
@@ -510,7 +510,7 @@ deployDocker:jwt-server:
     - buildJars:jwt-server
   script:
     - cd jwt-server/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/jwt-server/6.0.0-SNAPSHOT/jwt-server-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/jwt-server/6.0.0-SNAPSHOT/jwt-server-6.0.0-SNAPSHOT.jar ./jwt-server.jar
     - docker build -t jwtserver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag jwtserver:latest $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
@@ -572,7 +572,7 @@ deployDockerSolvers:nc-solver:
     - buildSolversJars:nc-solver
   script:
     - cd zpp-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/nc-solver/6.0.0-SNAPSHOT/nc-solver-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/nc-solver/6.0.0-SNAPSHOT/nc-solver-6.0.0-SNAPSHOT.jar ./nc-solver.jar
     - docker build -t ncsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ncsolver:latest $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
@@ -589,7 +589,7 @@ deployDockerSolvers:pt-solver:
     - buildSolversJars:pt-solver
   script:
     - cd zpp-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/pt-solver/6.0.0-SNAPSHOT/pt-solver-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/pt-solver/6.0.0-SNAPSHOT/pt-solver-6.0.0-SNAPSHOT.jar ./pt-solver.jar
     - docker build -t ptsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ptsolver:latest $CI_REGISTRY_IMAGE/ptsolver:$CI_COMMIT_BRANCH
@@ -606,7 +606,7 @@ deployDockerSolvers:mcts-solver:
     - buildSolversJars:mcts-solver
   script:
     - cd zpp-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mcts-solver/6.0.0-SNAPSHOT/mcts-solver-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mcts-solver/6.0.0-SNAPSHOT/mcts-solver-6.0.0-SNAPSHOT.jar ./mcts-solver.jar
     - docker build -t mctssolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag mctssolver:latest $CI_REGISTRY_IMAGE/mctssolver:$CI_COMMIT_BRANCH
@@ -623,7 +623,7 @@ deployDockerSolvers:gen-solver:
     - buildSolversJars:gen-solver
   script:
     - cd zpp-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/genetic-solver/6.0.0-SNAPSHOT/genetic-solver-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/genetic-solver/6.0.0-SNAPSHOT/genetic-solver-6.0.0-SNAPSHOT.jar ./genetic-solver.jar
     - docker build -t geneticsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag geneticsolver:latest $CI_REGISTRY_IMAGE/geneticsolver:$CI_COMMIT_BRANCH
