@@ -35,6 +35,7 @@ variables:
   MCTS_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/mcts-solver/pom.xml"
 
   EMS_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/pom.xml"
+  EMS_SERVER_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/control-service/pom.xml"
   EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
   EMS_UTIL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/util/pom.xml"
 
@@ -304,7 +305,7 @@ buildJars:ems-server:
     - build-required-part2:ems-broker-client
   script:
     - $EMS_CLI -Pwithout-docker clean install
-    - $EMS_CLI -Pwithout-docker process-resources
+    - $EMS_SERVER_CLI -Pwithout-docker process-resources
   artifacts:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/control-service/
@@ -398,7 +399,7 @@ deployDocker:utility-generator-standalone:
     - buildJars:utility-generator-standalone
   script:
     - cd utility-generator-standalone/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/utility-generator-standalone/6.0.0-SNAPSHOT/utility-generator-standalone-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/utility-generator-standalone/6.0.0-SNAPSHOT/utility-generator-standalone-6.0.0-SNAPSHOT.jar ./utility-generator-standalone.jar
     - docker build -t ug-standalone -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ug-standalone:latest $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
@@ -415,7 +416,7 @@ deployDocker:melodic-cache-standalone:
     - buildJars:melodic-cache-standalone
   script:
     - cd melodic-cache-standalone/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-cache-standalone/6.0.0-SNAPSHOT/melodic-cache-standalone-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-cache-standalone/6.0.0-SNAPSHOT/melodic-cache-standalone-6.0.0-SNAPSHOT.jar ./melodic-cache-standalone.jar
     - docker build -t melodiccachestandalone -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag melodiccachestandalone:latest $CI_REGISTRY_IMAGE/melodiccachestandalone:$CI_COMMIT_BRANCH
@@ -449,7 +450,7 @@ deployDocker:cp-generator:
     - buildJars:cp-generator
   script:
     - cd cp_generator/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/generator/6.0.0-SNAPSHOT/generator-6.0.0-SNAPSHOT.jar ./generator.jar
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/generator/6.0.0-SNAPSHOT/generator-6.0.0-SNAPSHOT.jar ./generator.jar
     - docker build -t generator -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag generator:latest $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
@@ -499,7 +500,7 @@ deployDocker:metasolver:
   dependencies:
     - buildJars:metasolver
   script:
-    - cd metasolver/src/main/docker/
+    - cd meta-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware/meta-solver/6.0.0-SNAPSHOT/meta-solver-6.0.0-SNAPSHOT.jar ./meta-solver.jar
     - docker build -t metasolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
