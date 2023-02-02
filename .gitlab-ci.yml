@@ -357,7 +357,7 @@ deployDocker:utility-generator-standalone:
     - buildJars:utility-generator-standalone
   script:
     - cd utility-generator-standalone/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/utility-generator-standalone/6.0.0-SNAPSHOT/utility-generator-standalone-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/utility-generator-standalone/6.0.0-SNAPSHOT/utility-generator-standalone-6.0.0-SNAPSHOT.jar ./
     - docker build -t ug-standalone -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ug-standalone:latest $CI_REGISTRY_IMAGE/ug-standalone:$CI_COMMIT_BRANCH
@@ -374,7 +374,7 @@ deployDocker:melodic-cache-standalone:
     - buildJars:melodic-cache-standalone
   script:
     - cd melodic-cache-standalone/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/melodic-cache-standalone/6.0.0-SNAPSHOT/melodic-cache-standalone-6.0.0-SNAPSHOT.jar ./
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/melodic-cache-standalone/6.0.0-SNAPSHOT/melodic-cache-standalone-6.0.0-SNAPSHOT.jar ./
     - docker build -t melodiccachestandalone -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag melodiccachestandalone:latest $CI_REGISTRY_IMAGE/melodiccachestandalone:$CI_COMMIT_BRANCH
@@ -407,8 +407,8 @@ deployDocker:cp-generator:
   dependencies:
     - buildJars:cp-generator
   script:
-    - cd cp-generator/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/cp-generator/6.0.0-SNAPSHOT/cp-generator-6.0.0-SNAPSHOT.jar ./cp-generator.jar
+    - cd cp_generator/src/main/docker/
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/generator/6.0.0-SNAPSHOT/generator-6.0.0-SNAPSHOT.jar ./generator.jar
     - docker build -t generator -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag generator:latest $CI_REGISTRY_IMAGE/generator:$CI_COMMIT_BRANCH
@@ -458,8 +458,8 @@ deployDocker:metasolver:
   dependencies:
     - buildJars:metasolver
   script:
-    - cd meta-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/meta-solver/6.0.0-SNAPSHOT/meta-solver-6.0.0-SNAPSHOT.jar ./meta-solver.jar
+    - cd metasolver/src/main/docker/
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/upperware/meta-solver/6.0.0-SNAPSHOT/meta-solver-6.0.0-SNAPSHOT.jar ./meta-solver.jar
     - docker build -t metasolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag metasolver:latest $CI_REGISTRY_IMAGE/metasolver:$CI_COMMIT_BRANCH
@@ -476,7 +476,7 @@ deployDocker:mq-adapter:
     - buildJars:mq-adapter
   script:
     - cd mq-http-adapter/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mq-http-adapter/6.0.0-SNAPSHOT/mq-http-adapter-6.0.0-SNAPSHOT.jar ./mq-http-adapter.jar
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/visualization/mq-http-adapter/6.0.0-SNAPSHOT/mq-http-adapter-6.0.0-SNAPSHOT.jar ./mq-http-adapter.jar
     - docker build -t mq-http-adapter -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag mq-http-adapter:latest $CI_REGISTRY_IMAGE/mq-http-adapter:$CI_COMMIT_BRANCH
@@ -510,7 +510,7 @@ deployDocker:jwt-server:
     - buildJars:jwt-server
   script:
     - cd jwt-server/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/jwt-server/6.0.0-SNAPSHOT/jwt-server-6.0.0-SNAPSHOT.jar ./jwt-server.jar
+    - cp /builds/melodic/melodic-upperware/maven_repo/org/ow2/paasage/jwt-server/6.0.0-SNAPSHOT/jwt-server-6.0.0-SNAPSHOT.jar ./jwt-server.jar
     - docker build -t jwtserver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag jwtserver:latest $CI_REGISTRY_IMAGE/jwt-server:$CI_COMMIT_BRANCH
