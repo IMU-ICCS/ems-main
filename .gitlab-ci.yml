@@ -304,7 +304,7 @@ buildJars:ems-server:
     - build-required-part2:ems-broker-client
   script:
     - $EMS_CLI -Pwithout-docker clean install
-    - $EMS_CLI -Pwithout-docker resources:copy-resources
+    - $EMS_CLI -Pwithout-docker process-resources
   artifacts:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/control-service/
@@ -323,7 +323,7 @@ buildJars:metasolver:
   artifacts:
     expire_in: 1 week
     paths:
-      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/meta-solver/
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/upperware/meta-solver/
 
 buildJars:mq-adapter:
   stage: buildJars
