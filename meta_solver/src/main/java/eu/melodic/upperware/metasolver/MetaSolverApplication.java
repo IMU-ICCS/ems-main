@@ -33,11 +33,16 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class MetaSolverApplication {
 
     public static void main(String[] args) {
+        long initStartTime = System.currentTimeMillis();
+
         SpringApplication springApplication = new SpringApplicationBuilder()
                 .environment(new StandardEncryptableEnvironment())
                 .sources(MetaSolverApplication.class)
                 .build();
         springApplication.setBannerMode(Banner.Mode.LOG);
         SpringApplication.run(MetaSolverApplication.class, args);
+
+        long initEndTime = System.currentTimeMillis();
+        log.info("MetaSolver initialized in {}ms", initEndTime-initStartTime);
     }
 }
