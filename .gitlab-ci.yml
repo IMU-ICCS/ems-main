@@ -284,6 +284,7 @@ buildJars:ems-server:
     - build-required-part2:ems-broker-client
   script:
     - $EMS_CLI -Pwithout-docker clean install
+    - $EMS_CLI -Pwithout-docker resources:copy-resources-to-docker-context
 
 buildJars:metasolver:
   stage: buildJars
