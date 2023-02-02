@@ -149,6 +149,16 @@ build-required-part1:ems:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/event-management/
 
+build-required-part1:zpp-solver:
+  stage: build-required-part1
+  image: $MAVEN_IMAGE
+  script:
+    - $ZPP_SOLVER_CLI -N -Pwithout-docker clean install
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/org/ow2/passage/zpp-solver/
+
+
 build-required-part2:ems-broker-client:
   stage: build-required-part2
   image: $MAVEN_IMAGE
@@ -329,6 +339,7 @@ buildSolversJars:nc-solver:
   image: $MAVEN_IMAGE
   dependencies:
     - build-required-part4:cp-parser
+    - build-required-part1:zpp-solver
   script:
     - $NC_SOLVER_CLI -Pwithout-docker clean install
 
@@ -339,6 +350,7 @@ buildSolversJars:pt-solver:
   image: $MAVEN_IMAGE
   dependencies:
     - build-required-part4:cp-parser
+    - build-required-part1:zpp-solver
   script:
     - $PT_SOLVER_CLI -Pwithout-docker clean install
 
@@ -349,6 +361,7 @@ buildSolversJars:mcts-solver:
   image: $MAVEN_IMAGE
   dependencies:
     - build-required-part4:cp-parser
+    - build-required-part1:zpp-solver
   script:
     - $MCTS_SOLVER_CLI -Pwithout-docker clean install
 
@@ -359,6 +372,7 @@ buildSolversJars:gen-solver:
   image: $MAVEN_IMAGE
   dependencies:
     - build-required-part4:cp-parser
+    - build-required-part1:zpp-solver
   script:
     - $GEN_SOLVER_CLI -Pwithout-docker clean install
 
