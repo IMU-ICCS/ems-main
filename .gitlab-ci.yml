@@ -612,7 +612,7 @@ deployDockerSolvers:nc-solver:
   dependencies:
     - buildSolversJars:nc-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/node-candidates-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/nc-solver/6.0.0-SNAPSHOT/nc-solver-6.0.0-SNAPSHOT.jar ./nc-solver.jar
     - docker build -t ncsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -629,7 +629,7 @@ deployDockerSolvers:pt-solver:
   dependencies:
     - buildSolversJars:pt-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/pt-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/pt-solver/6.0.0-SNAPSHOT/pt-solver-6.0.0-SNAPSHOT.jar ./pt-solver.jar
     - docker build -t ptsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -646,7 +646,7 @@ deployDockerSolvers:mcts-solver:
   dependencies:
     - buildSolversJars:mcts-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/mcts-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mcts-solver/6.0.0-SNAPSHOT/mcts-solver-6.0.0-SNAPSHOT.jar ./mcts-solver.jar
     - docker build -t mctssolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -663,7 +663,7 @@ deployDockerSolvers:gen-solver:
   dependencies:
     - buildSolversJars:gen-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/genetic-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/genetic-solver/6.0.0-SNAPSHOT/genetic-solver-6.0.0-SNAPSHOT.jar ./genetic-solver.jar
     - docker build -t geneticsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
