@@ -93,7 +93,7 @@ public class Coordinator implements ApplicationContextAware {
 
     /**
      * How can we select the most appropriate solver??
-     * For R3.0 it will be a list of pre-configured solvers
+     * For R4.0 it will be a list of pre-configured solvers
      * @return The selected solver names (List of strings)
      */
     public List<String> selectSolvers(String applicationId, String cpModelPath) throws ConcurrentAccessException {
