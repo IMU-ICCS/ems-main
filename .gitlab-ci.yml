@@ -308,6 +308,7 @@ buildJars:ems-server:
   artifacts:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/control-service/
+      - $CI_PROJECT_DIR/event-management/control-service/target/
 
 
 buildJars:metasolver:
