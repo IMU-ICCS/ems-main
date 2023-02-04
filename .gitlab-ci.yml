@@ -1,44 +1,46 @@
 variables:
-  DOCKER_PUSH: "false"
-  LOCAL_REPO: "127.0.0.1:5000"
-  DOCKER_REPO: "gitlab.ow2.org:4567"
+
+  #images used so that we have envrironment with maven installed
   MAVEN_IMAGE: "maven:3.6.3-jdk-8"
+  #images used so that we have envrironment with docker installed
+  #Note that for building images still the images from dockerfiles are used
   DOCKER_DIND_IMAGE: "docker:20.10.17"
   DOCKER_DIND_SERVICE: "$DOCKER_DIND_IMAGE-dind"
-  DOCKER_DRIVER: overlay
-  DOCKER_TLS_CERTDIR: "/certs"
 
   MAVEN_OPTS: "-Xmx2048m -Xms2048m"
   SKIP_TESTS: "true"
 
+  # -U forces usage of newest possible SNAPSHOT version
+  # -f defines what pom file to use
+  # -N don't built submodules
+
+  #parent poms
   MELODIC_UPPERWARE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f pom.xml"
+  ZPP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f zpp-solver/pom.xml"
+  EMS_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/pom.xml"
+
+  #libraries
   UPPERWARE_METAMODEL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f upperware_metamodel/pom.xml"
   JWT_COMMONS_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f jwt-commons/pom.xml"
   MELODIC_COMMONS_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f melodic-commons/pom.xml"
   MELODIC_CACHE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f melodic-cache/pom.xml"
-
-  JWT_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f jwt-server/pom.xml"
   UTILITY_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f utility-generator/pom.xml"
+  CP_PARSER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/cp-parser/pom.xml"
+  EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
+  EMS_UTIL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/util/pom.xml"
+
+  #upperware modules
+  JWT_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f jwt-server/pom.xml"
   UG_STANDALONE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f utility-generator-standalone/pom.xml"
   MC_STANDALONE_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f melodic-cache-standalone/pom.xml"
-
-  ZPP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -f zpp-solver/pom.xml"
-
   ADAPTER_SERVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f adapter/pom.xml"
   CP_GENERATOR_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -U -f cp_generator/pom.xml"
-
-  CP_PARSER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/cp-parser/pom.xml"
   CP_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f cp-solver/pom.xml"
   GEN_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/genetic-solver/pom.xml"
   NC_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/node-candidates-solver/pom.xml"
   PT_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/pt-solver/pom.xml"
   MCTS_SOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f zpp-solver/mcts-solver/pom.xml"
-
-  EMS_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/pom.xml"
   EMS_SERVER_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/control-service/pom.xml"
-  EMS_BROKER_CLIENT_CLI: "mvn --batch-mode -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/broker-client/pom.xml"
-  EMS_UTIL_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f event-management/util/pom.xml"
-
   METASOLVER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f meta_solver/pom.xml"
   MQ_ADAPTER_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -f mq-http-adapter/pom.xml"
   GUI_BACKEND_CLI: "mvn --batch-mode -N -Dmaven.test.skip=$SKIP_TESTS -Ddocker.push=false -U -f gui-backend/pom.xml"
@@ -77,6 +79,13 @@ after_script:
   - docker image ls
   - echo '=========================================================================='
 
+# NOTE on pipeline #1
+# You can switch order of stages 'buildAndDeployJars' and
+# 'deployDocker' as they have no influence on each other
+# 'buildAndDeployJars' pushes to package registry
+# 'deployDocker' pushes to docker registry
+# Remember that libraries that depend on each other need to have 'dependencies'
+# array defined
 stages:
   - build-basic-dependencies
   - build-required-part1
@@ -89,6 +98,13 @@ stages:
   - buildSolversJars
   - deployDockerSolvers
 
+
+# NOTE on pipeline #2
+# Most likely $CI_PROJECT_DIR is /build/melodic/morphemic-preprocessor
+# artifact path defines what files should be preserved for further stages
+# Inside $CI_PROJECT_DIR there is the same filesystem as in your project
+# By default mvn clean install installs jars to 'target' directories and then to
+# '$CI_PROJECT_DIR/maven_repo/......'
 build-basic-dependencies:melodic-upperware:
   stage: build-basic-dependencies
   image: $MAVEN_IMAGE
@@ -159,7 +175,6 @@ build-required-part1:zpp-solver:
     paths:
       - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/zpp-solver/
 
-
 build-required-part2:ems-broker-client:
   stage: build-required-part2
   image: $MAVEN_IMAGE
@@ -212,7 +227,7 @@ build-required-part4:cp-parser:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/cp-parser/
 
 
-##building main modules jars
+##building main upperware jars
 buildJars:utility-generator-standalone:
   stage: buildJars
   only:
@@ -308,7 +323,7 @@ buildJars:ems-server:
   artifacts:
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/event/control-service/
-
+      - $CI_PROJECT_DIR/event-management/control-service/target/
 
 buildJars:metasolver:
   stage: buildJars
@@ -372,8 +387,11 @@ buildJars:jwt-server:
     paths:
       - $CI_PROJECT_DIR/maven_repo/org/ow2/paasage/jwt-server/
 
-# In this section we deploy libraries
-# Note that they are rebuilt so if you don'tneed them later in the pipeline, there is no need to have building stage
+# NOTE on pipeline #3
+# as 'mvn deploy' command run all previous steps as well (clean, install, tests etc.)
+# the module is rebuilt from scratch no matter what the previous steps were
+# Note that there is no need to push built jars to package registry unless they are needed
+# inside other pipelines
 buildAndDeployJars:broker-client:
   stage: buildAndDeployJars
   only:
@@ -385,8 +403,13 @@ buildAndDeployJars:broker-client:
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker -P!build-web-admin deploy
 
-# In this section we build modules, fetch libraries from earlier stages, build and push docker images
-
+# NOTE on pipeline #4
+# deployDocker steps need to have dependencies to the previously built jars and other files needed to built docker image
+# default starting point is $CI_PROJECT_DIR/
+# Only initial module files ($CI_PROJECT_DIR/your_module_name) and files defined before as artifacts are visible here
+# deployDocker step should have defined dependencies array of previous steps
+# empty array means that no previous jobs artifacts are needed
+# (for example when building python containers that don't require building jars)
 deployDocker:utility-generator-standalone:
   stage: deployDocker
   only:
@@ -601,6 +624,7 @@ buildSolversJars:gen-solver:
   script:
     - $GEN_SOLVER_CLI -Pwithout-docker clean install
 
+## deploy solvers dockers
 deployDockerSolvers:nc-solver:
   stage: deployDockerSolvers
   only:
@@ -611,8 +635,8 @@ deployDockerSolvers:nc-solver:
   dependencies:
     - buildSolversJars:nc-solver
   script:
-    - cd zpp-solver/src/main/docker/
-    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/nc-solver/6.0.0-SNAPSHOT/nc-solver-6.0.0-SNAPSHOT.jar ./nc-solver.jar
+    - cd zpp-solver/node-candidates-solver/src/main/docker/
+    - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/node-candidates-solver/6.0.0-SNAPSHOT/node-candidates-solver-6.0.0-SNAPSHOT.jar ./node-candidates-solver.jar
     - docker build -t ncsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
     - docker tag ncsolver:latest $CI_REGISTRY_IMAGE/ncsolver:$CI_COMMIT_BRANCH
@@ -628,7 +652,7 @@ deployDockerSolvers:pt-solver:
   dependencies:
     - buildSolversJars:pt-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/pt-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/pt-solver/6.0.0-SNAPSHOT/pt-solver-6.0.0-SNAPSHOT.jar ./pt-solver.jar
     - docker build -t ptsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -645,7 +669,7 @@ deployDockerSolvers:mcts-solver:
   dependencies:
     - buildSolversJars:mcts-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/mcts-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/mcts-solver/6.0.0-SNAPSHOT/mcts-solver-6.0.0-SNAPSHOT.jar ./mcts-solver.jar
     - docker build -t mctssolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
@@ -662,7 +686,7 @@ deployDockerSolvers:gen-solver:
   dependencies:
     - buildSolversJars:gen-solver
   script:
-    - cd zpp-solver/src/main/docker/
+    - cd zpp-solver/genetic-solver/src/main/docker/
     - cp /builds/melodic/melodic-upperware/maven_repo/eu/melodic/genetic-solver/6.0.0-SNAPSHOT/genetic-solver-6.0.0-SNAPSHOT.jar ./genetic-solver.jar
     - docker build -t geneticsolver -f ./Dockerfile .
     - echo "$K8S_SECRET_DOCKER_PASSWORD" | docker login $CI_REGISTRY -u $K8S_SECRET_DOCKER_USER --password-stdin
