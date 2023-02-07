@@ -24,7 +24,7 @@
         <!-- Melodic component versions -->
         <!--<melodic.version>6.0.0-SNAPSHOT</melodic.version>
         <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>-->
-        <cdo-client.version>5.5.0-SNAPSHOT</cdo-client.version>
+        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
         <lombok.version>1.18.24</lombok.version>
         <!--DOCKER plugin properties-->
         <docker.imageName>metasolver</docker.imageName>
