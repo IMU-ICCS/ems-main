@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -14,8 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
-
-//import eu.melodic.event.brokercep.event.MetricEvent;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CepEvalFunction {
@@ -81,18 +82,54 @@ public class CepEvalFunction {
         return result;
     }
 
-    public static EventMap/*MetricEvent*/ newEvent(double metricValue, String... params) {
-        return newEvent(metricValue, 1);
+    public static double evalMath(String formula, double...values) {
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> evalMath:   formula: {}", formula);
+        log.debug(">> evalMath:    values: {}", values);
+
+        // Get formula arguments
+        Set<String> argNames = MathUtil.getFormulaArguments(formula);
+        log.debug(">> evalMath: arg-names: {}", argNames);
+
+        // Check the number of arguments and the number of provided values match
+        if (argNames.size() != values.length)
+            throw new IllegalArgumentException(String.format(
+                    "evalMath: The number of provided values do not match the number of formula arguments: #args=%d != #values=%d",
+                    argNames.size(), values.length));
+
+        // Map values onto arguments, using the order of appearance (i.e. 1st value->1st arg, 2nd value->2nd arg...)
+        final AtomicInteger i = new AtomicInteger(0);
+        Map<String, Double> map = argNames.stream().collect(Collectors.toMap(
+                arg -> arg, arg -> values[ i.getAndIncrement() ]
+        ));
+        log.debug(">> evalMath:  args-map: {}", map);
+
+        double result = evalMath(formula, map);
+        log.debug(">> evalMath:   result:  {}", result);
+        return result;
     }
 
-    public static EventMap/*MetricEvent*/ newEvent(double metricValue, int level, String... params) {
+    public static double evalMath(String formula, Map<String,Double> args) {
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> evalMath:   formula: {}", formula);
+        log.debug(">> evalMath:  args-map: {}", args);
+
+        double result = MathUtil.eval(formula, args);
+        log.debug(">> evalMath:   result:  {}", result);
+        return result;
+    }
+
+    public static EventMap newEvent(double metricValue, String... params) {
+        return newEvent(metricValue, 1, params);
+    }
+
+    public static EventMap newEvent(double metricValue, int level, String... params) {
         log.debug(">> ---------------------------------------------------------------------------");
         log.debug(">> newEvent:   metric-value:  {}", metricValue);
         log.debug(">> newEvent:   params-length: {}", params.length);
 
         // Add metric value
         EventMap event = new EventMap(metricValue, level, System.currentTimeMillis());
-        //MetricEvent event = new MetricEvent(metricValue, level, System.currentTimeMillis());
 
         // Add extra parameters
         for (int i = 0; i < params.length; i += 2) {
@@ -119,4 +156,31 @@ public class CepEvalFunction {
 		log.debug(">>>>>>>>>>>>>>>>>>   EVAL RESULT: {}", value);
 		return value;
 	}*/
+
+    public static Object prop(Object eventObj, String propertyName) {
+        return prop(eventObj, propertyName, null);
+    }
+
+    public static Object prop(Object eventObj, String propertyName, Object defaultValue) {
+        EventMap event = eventObj instanceof EventMap ? ((EventMap) eventObj) : null;
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> prop:   event-object:  {}", eventObj);
+        log.debug(">> prop:    event-class:  {}", eventObj!=null ? eventObj.getClass() : null);
+        log.debug(">> prop:      event-map:  {}", event);
+        log.debug(">> prop:       property:  {}", propertyName);
+
+        // Retrieve event property
+        Object ret = null;
+        if (event!=null) {
+            Map<String, Object> props = event.getEventProperties();
+            if (props != null) {
+                log.debug(">> prop:     properties: {}", props);
+                ret = props.getOrDefault(propertyName, defaultValue);
+                defaultValue = null;
+            }
+        }
+        if (ret==null) ret = defaultValue;
+        log.debug(">> prop:          value: {}", ret);
+        return ret;
+    }
 }

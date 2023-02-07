@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -29,7 +29,9 @@ public class CepExtensions {
     public CepExtensions(ApplicationContext appContext) {
         CepService cepService = appContext.getBean(CepService.class);
         cepService.addSingleRowFunction("EVAL", CepEvalFunction.class.getName(), "eval");
+        cepService.addSingleRowFunction("MATH", CepEvalFunction.class.getName(), "evalMath");
         cepService.addSingleRowFunction("NEWEVENT", CepEvalFunction.class.getName(), "newEvent");
+        cepService.addSingleRowFunction("PROP", CepEvalFunction.class.getName(), "prop");
         cepService.addAggregatorFunction("EVALAGG", CepEvalAggregatorFactory.class.getName());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -26,20 +26,20 @@ import java.util.Set;
 @ToString(exclude = {"brokerPassword"})
 public class GroupingConfiguration implements Serializable {
     @NonNull private String name;
-    /*@NonNull*/ private Properties properties;
+    private Properties properties;
     @NonNull private Map<String, BrokerConnectionConfig> brokerConnections;
     @NonNull private Set<String> eventTypeNames;
     @NonNull private Map<String, Set<String>> rules;
     @NonNull private Map<String, Set<String>> connections;
     @NonNull private Set<FunctionDefinition> functionDefinitions;
     @NonNull private Map<String, Double> constants;
-    /*@NonNull*/ private String brokerUsername;
-    /*@NonNull*/ private String brokerPassword;
+    private String brokerUsername;
+    private String brokerPassword;
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    @ToString(exclude = {/*"certificate",*/ "password"})
+    @ToString(exclude = {"certificate", "password"})
     public static class BrokerConnectionConfig implements Serializable {
         private String grouping;
         private String url;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -19,7 +19,7 @@ import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -136,7 +135,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
         otpAuthEnabled = properties.getOtpAuthentication().isEnabled();
         otpDuration = properties.getOtpAuthentication().getDuration();
         otpRequestHeader = properties.getOtpAuthentication().getRequestHeader();
-        otpRequestParam = properties.getOtpAuthentication().getRequestParam();
+        otpRequestParam = properties.getOtpAuthentication().getRequestParameter();
 
         // User form authentication fields
         userFormAuthEnabled = properties.getFormAuthentication().isEnabled();
@@ -160,8 +159,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
 
     @EventListener(ApplicationReadyEvent.class)
     public void applicationReady() {
-        if (securityEnabled && userFormAuthEnabled && (StringUtils.isBlank(username) || password.isEmpty()))
-            throw new InvalidParameterException("User form authentication is enabled but username or password are blank");
+        if (securityEnabled && userFormAuthEnabled && (StringUtils.isBlank(username) || StringUtils.isEmpty(password)))
+            throw new InvalidParameterException("User form authentication is enabled but username or password is blank");
         if (securityEnabled && apiKeyAuthEnabled && StringUtils.isBlank(apiKeyValue))
             throw new InvalidParameterException("API Key authentication is enabled but no API Key provided or it is blank");
         if (permittedUrls==null) permittedUrls = new String[0];
@@ -252,7 +251,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
             httpSecurity
                     .csrf().disable()
                     .authorizeRequests()
-                        //.antMatchers("//broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
+                        //.antMatchers("/broker/credentials").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
                         //.antMatchers("/baguette/ref/**").hasAnyAuthority(ROLE_JWT_TOKEN, ROLE_API_KEY)
                         .antMatchers(permittedUrls).permitAll()
                         .anyRequest().authenticated()
@@ -349,7 +348,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
                 String jwtValue = req.getHeader(SecurityConstants.HEADER_STRING);
                 log.debug("jwtAuthorizationFilter: Authorization Header: {}", passwordUtil.encodePassword(jwtValue));
 
-                // ...else get JWT token from 'jwt' query parameter
+                // ...else get JWT token from 'jwtRequestParam' query parameter
                 if (StringUtils.isBlank(jwtValue)) {
                     if (StringUtils.isNotBlank(jwtRequestParam)) {
                         log.debug("jwtAuthorizationFilter: Authorization Header is missing. Checking for '{}' parameter", jwtRequestParam);

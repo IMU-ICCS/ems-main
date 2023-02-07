@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+# Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
 #
 # This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless 
 # Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -29,8 +29,9 @@ RUN apt-get update && apt-get install -y \
 
 # Download a JRE8 suitable for running EMS clients, and
 # offer it for download during EMS client installations
+ENV JRE8_LINUX_X64_PACKAGE zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz
 RUN mkdir -p ${PUBLIC_DIR}/resources
-RUN curl https://cdn.azul.com/zulu/bin/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz --output ${PUBLIC_DIR}/resources/zulu8.52.0.23-ca-jre8.0.282-linux_x64.tar.gz
+RUN curl https://cdn.azul.com/zulu/bin/${JRE8_LINUX_X64_PACKAGE} --output ${PUBLIC_DIR}/resources/${JRE8_LINUX_X64_PACKAGE}
 
 ADD bin ${BIN_DIR}
 ADD jars ${JARS_DIR}
@@ -48,5 +49,11 @@ RUN bash -c 'chmod +rx ${BIN_DIR}/*.sh'
 # RUN adduser --system --home ${BASEDIR} --no-create-home --shell /bin/false --group emsuser
 # RUN chown -R emsuser:emsuser ${BASEDIR}
 # USER emsuser
+
+EXPOSE 2222
+EXPOSE 8111
+EXPOSE 61610
+EXPOSE 61616
+EXPOSE 61617
 
 ENTRYPOINT ["dumb-init", "./bin/run.sh"]

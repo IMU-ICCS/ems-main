@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -37,7 +37,7 @@
     </div>
 
     <div class="row">
-        <div class="col-6">
+        <div class="col-12">
             <!-- Default box -->
             <Card bodyClasses="table-responsive p-0"
                   header="Call EMS REST API"
@@ -45,7 +45,37 @@
                   :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
             >
                 <div style="padding: 5px 15px;">
-                    <RestCall />
+                    <RestCall rootId="rest_call" :sseRef="sseRef" />
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-12 -->
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+            <!-- Default box -->
+            <Card bodyClasses="table-responsive p-0"
+                  header="&nbsp;CDO Repository"
+                  icon="fas fa-project-diagram"
+                  :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
+            >
+                <div style="padding: 5px 15px;">
+                    <CdoMgnt restCallRootId="rest_call" />
+                </div>
+            </Card>
+        </div>
+        <!-- /.col-md-6 -->
+
+        <div class="col-6">
+            <!-- Default box -->
+            <Card bodyClasses="table-responsive p-0"
+                  header="&nbsp;File Manager"
+                  icon="fas fa-folder-open"
+                  :hasRefresh="true" :hasCollapse="true" :hasMaximize="true" :hasRemove="false"
+            >
+                <div style="padding: 5px 15px;">
+                    <FileExplorer />
                 </div>
             </Card>
         </div>
@@ -59,14 +89,17 @@ import Card from '@/components/card/card.vue';
 import ClientCommands from './widgets/client-commands.vue';
 import ClientEvents from './widgets/client-events.vue';
 import RestCall from './widgets/rest-call.vue';
+import CdoMgnt from './widgets/cdo-mgnt.vue';
+import FileExplorer from './widgets/fileexplorer.vue';
 
 export default {
     name: 'Admin Dashboard - Commands section',
     components: {
-        Card, ClientCommands, ClientEvents, RestCall
+        Card, ClientCommands, ClientEvents, RestCall, CdoMgnt, FileExplorer
     },
     props: {
         modelValue: Object,
+        sseRef: String
     },
     data() {
         return {

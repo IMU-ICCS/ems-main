@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -25,12 +25,11 @@ import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,25 +52,19 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
 @RestController
-@AllArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor
 public class ControlServiceController {
 
     private final static String ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY =
             "hasAnyRole('"+WebSecurityConfig.ROLE_JWT_TOKEN+"','"+WebSecurityConfig.ROLE_API_KEY+"')";
 
-    @Autowired
-    private ControlServiceProperties properties;
-    @Autowired
-    private StaticResourceProperties staticResourceProperties;
-    @Autowired
-    private ControlServiceCoordinator coordinator;
-    @Autowired
-    private WebSecurityConfig webSecurityConfig;
-    @Autowired
-    private PasswordUtil passwordUtil;
+    private final ControlServiceProperties properties;
+    private final StaticResourceProperties staticResourceProperties;
+    private final ControlServiceCoordinator coordinator;
+    private final WebSecurityConfig webSecurityConfig;
+    private final PasswordUtil passwordUtil;
 
-    @Autowired
-    private RequestMappingHandlerMapping mvcHandlerMapping;
+    private final RequestMappingHandlerMapping mvcHandlerMapping;
 
     // ------------------------------------------------------------------------------------------------------------
     // ESB and Upperware interfacing methods
@@ -100,8 +93,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/camelModelJson", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String newCamelModel(@RequestBody String requestStr,
                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
@@ -126,8 +118,7 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/cpModelJson", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String newCpModel(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
             throws ConcurrentAccessException
@@ -143,6 +134,27 @@ public class ControlServiceController {
         // Start CP model processing in a worker thread
         coordinator.processCpModel(cpModelId, null, null, jwtToken);
         log.debug("ControlServiceController.newCpModel(): CP Model processing dispatched to a worker thread");
+
+        return "OK";
+    }
+
+    @RequestMapping(value = "/cpConstants", method = POST,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String setConstants(@RequestBody String requestStr,
+                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+            throws ConcurrentAccessException
+    {
+        log.info("ControlServiceController.setConstants(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.setConstants(): JWT token: {}", jwtToken);
+
+        // Use Gson to get constants from request body (in JSON format)
+        Type type = new TypeToken<Map<String,Double>>(){}.getType();
+        Map<String, Double> constants = new com.google.gson.Gson().fromJson(requestStr, type);
+        log.info("ControlServiceController.setConstants(): Constants from request: {}", constants);
+
+        // Start CP model processing in a worker thread
+        coordinator.setConstants(constants, null, null, jwtToken);
+        log.debug("ControlServiceController.setConstants(): Constants set");
 
         return "OK";
     }
@@ -225,7 +237,8 @@ public class ControlServiceController {
         return currentCpModelId;
     }
 
-    @RequestMapping(value = { "/translator/constraintThresholds/{appId}", "/translator/constraintThresholds" }, method = {GET,POST})
+    @RequestMapping(value = { "/translator/constraintThresholds/{appId}", "/translator/constraintThresholds" }, method = {GET,POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Collection getConstraintThresholds(@PathVariable("appId") Optional<String> optAppId,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -240,14 +253,15 @@ public class ControlServiceController {
         }
 
         // Retrieve sensor information
-        String appPath = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        String appPath = coordinator._normalizeModelId(applicationId);
         Set constraints = coordinator.getMetricConstraints(appPath);
         log.info("ControlServiceController.getConstraintThresholds(): Constraints for application: {}: {}", applicationId, constraints);
 
         return constraints;
     }
 
-    @GetMapping(value = {"/translator/getTopLevelNodesMetricContexts/{appId}", "/translator/getTopLevelNodesMetricContexts"})
+    @GetMapping(value = {"/translator/getTopLevelNodesMetricContexts/{appId}", "/translator/getTopLevelNodesMetricContexts"},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Collection<?> getTopLevelNodesMetricContexts(@PathVariable("appId") Optional<String> optAppId,
                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
@@ -262,7 +276,7 @@ public class ControlServiceController {
         }
 
         // Retrieve context metrics of the top-level DAG nodes
-        String camelModelId = (applicationId.startsWith("/")) ? applicationId : "/"+applicationId;
+        String camelModelId = coordinator._normalizeModelId(applicationId);
         log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): camelModelId: {}", camelModelId);
         Set<TranslationContext.MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
         log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Result: {}", results);
@@ -274,9 +288,8 @@ public class ControlServiceController {
     // Broker-CEP query & control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
-    @RequestMapping(value = "/broker/credentials", method = {GET,POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+//    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
+    @RequestMapping(value = "/broker/credentials", method = {GET,POST})
     public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
         log.info("ControlServiceController.getBrokerCredentials(): BEGIN");
@@ -301,7 +314,7 @@ public class ControlServiceController {
         return entity;
     }
 
-    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
+//    @PreAuthorize(ROLES_ALLOWED_JWT_TOKEN_OR_API_KEY)
     @RequestMapping(value = "/baguette/ref/{ref}", method = {GET,POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
@@ -371,8 +384,7 @@ public class ControlServiceController {
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/baguette/stopServer", method = {GET, POST},
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/baguette/stopServer", method = {GET, POST})
     public String baguetteStopServer() {
         log.info("ControlServiceController.baguetteStopServer(): Request received");
 
@@ -384,8 +396,7 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/baguette/registerNode", method = POST,
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) throws Exception {
         log.info("ControlServiceController.baguetteRegisterNode(): Invoked");
         log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
@@ -472,14 +483,15 @@ public class ControlServiceController {
 
         ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
                 .createInstallationHelper(entry)
-                .createClientInstallationTask(entry);
+                .createClientInstallationTask(entry, coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId()));
         ClientInstaller.instance().addTask(installationTask);
         log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 
         return "OK";
     }
 
-    @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST})
+    @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST},
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
         log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
 
@@ -529,14 +541,16 @@ public class ControlServiceController {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/client/list", method = GET)
+    @RequestMapping(value = "/client/list", method = GET,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<String> listClients() {
         List<String> clients = coordinator.clientList();
         log.info("ControlServiceController.listClients(): {}", clients);
         return clients;
     }
 
-    @RequestMapping(value = "/client/list/map", method = GET)
+    @RequestMapping(value = "/client/list/map", method = GET,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Map<String, Map<String, String>> listClientMaps() {
         Map<String, Map<String, String>> clients = coordinator.clientMap();
         log.info("ControlServiceController.listClientMaps(): {}", clients);
@@ -567,10 +581,13 @@ public class ControlServiceController {
         return newOtp;
     }
 
-    @RequestMapping(value = "/ems/otp/remove", method = {GET, POST})
+    @RequestMapping(value = "/ems/otp/remove/{otp}", method = {GET, POST})
     public String removeOtp(@PathVariable String otp) {
         log.info("ControlServiceController.removeOtp(): BEGIN");
-        webSecurityConfig.otpRemove(otp);
+        if ("*".equals(otp))
+            webSecurityConfig.otpClearCache();
+        else
+            webSecurityConfig.otpRemove(otp);
         log.debug("ControlServiceController.removeOtp(): Removed OTP: {}", passwordUtil.encodePassword(otp));
         return "OK";
     }

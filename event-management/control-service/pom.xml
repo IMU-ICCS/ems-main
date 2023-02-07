@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -24,12 +24,13 @@
         <spring.boot.admin.version>2.3.1</spring.boot.admin.version>
         <jasypt.starter.version>2.1.0</jasypt.starter.version>
         <micrometer.registry.prometheus.version>1.3.1</micrometer.registry.prometheus.version>
+        <openapi-ui.version>1.6.13</openapi-ui.version>
         <!-- Build timestamp -->
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 
         <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
-        <docker.esperJar>esper-${esper-version}.jar</docker.esperJar>
+        <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
 
         <!-- com.spotify docker-maven-plugin properties-->
         <!--
@@ -46,6 +47,9 @@
         <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
         <!--<docker-image-tag>2022-devel</docker-image-tag>-->
         <!--<build-description></build-description>-->
+
+        <!-- EMS server main class -->
+        <start-class>eu.melodic.event.control.ControlServiceApplication</start-class>
     </properties>
 
     <dependencies>
@@ -54,6 +58,12 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
             <!--<version>${interfaces.version}</version>-->
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
@@ -96,6 +106,18 @@
             <groupId>eu.melodic.event</groupId>
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>eu.melodic.cdo</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.cdo</groupId>
+            <artifactId>client</artifactId>
+            <version>${cdo-client.version}</version>
+            <classifier>repackaged</classifier>
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>
@@ -159,17 +181,17 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <!-- See: https://github.com/sevdokimov/log-viewer/blob/master/_docs/embadded-spring-boot.md -->
+        <dependency>
+            <groupId>io.github.sevdokimov.logviewer</groupId>
+            <artifactId>log-viewer-spring-boot</artifactId>
+            <version>1.0.3</version>
         </dependency>
 
         <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
@@ -179,6 +201,14 @@
             <artifactId>hawtio-springboot</artifactId>
             <version>${hawtio.version}</version>
         </dependency>
+
+        <!-- OpenAPI UI and Swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${openapi-ui.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -269,7 +299,7 @@
                                 <artifactItem>
                                     <groupId>com.espertech</groupId>
                                     <artifactId>esper</artifactId>
-                                    <version>${esper-version}</version>
+                                    <version>${esper.version}</version>
                                     <type>jar</type>
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
@@ -589,25 +619,21 @@
                         </executions>
                     </plugin>
 
-                    <!-- Rename docker context folder to 'docker-context'. Removed previous if exists. -->
+                    <!-- Rename docker context folder to 'docker-context'. Remove previous if exists. -->
                     <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <configuration>
-                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                            <filesets>
-                                <fileset>
-                                    <directory>${project.build.directory}/docker-context</directory>
-                                    <followSymlinks>false</followSymlinks>
-                                </fileset>
-                            </filesets>
-                        </configuration>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
-                                <id>remove-old-docker-context</id>
                                 <phase>install</phase>
                                 <goals>
-                                    <goal>clean</goal>
+                                    <goal>run</goal>
                                 </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.build.directory}/docker-context"/>
+                                    </target>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

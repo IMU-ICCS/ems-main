@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -17,11 +17,11 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.TopicBeaconProperties;
 import eu.melodic.event.translate.TranslationContext;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -35,16 +35,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @EnableScheduling
+@RequiredArgsConstructor
 public class TopicBeacon implements InitializingBean {
-    @Autowired
-    private TopicBeaconProperties properties;
+    private final TopicBeaconProperties properties;
 
-    @Autowired
-    private ControlServiceCoordinator coordinator;
-    @Autowired
-    private BrokerCepService brokerCepService;
-    @Autowired
-    private TaskScheduler scheduler;
+    private final ControlServiceCoordinator coordinator;
+    private final BrokerCepService brokerCepService;
+    private final TaskScheduler scheduler;
 
     private Gson gson;
     private String previousModelId = "";
@@ -65,14 +62,21 @@ public class TopicBeacon implements InitializingBean {
         log.debug("Topic Beacon settings: init-delay={}, delay={}, heartbeat-topics={}, threshold-topics={}, instance-topics={}",
                 properties.getInitialDelay(), properties.getDelay(), properties.getHeartbeatTopics(), properties.getThresholdTopics(),
                 properties.getInstanceTopics());
-        scheduler.scheduleWithFixedDelay(() -> {
+
+        Runnable transmitInfoTask = () -> {
             try {
                 transmitInfo();
             } catch (Exception e) {
                 log.error("Topic Beacon: Exception while sending info: ", e);
             }
-        }, startTime, properties.getDelay());
-        log.info("Topic Beacon started: init-delay={}ms", properties.getInitialDelay());
+        };
+        if (properties.isUseDelay()) {
+            scheduler.scheduleWithFixedDelay(transmitInfoTask, startTime, properties.getDelay());
+            log.info("Topic Beacon started: init-delay={}ms, delay={}ms", properties.getInitialDelay(), properties.getDelay());
+        } else {
+            scheduler.scheduleAtFixedRate(transmitInfoTask, startTime, properties.getRate());
+            log.info("Topic Beacon started: init-delay={}ms, rate={}ms", properties.getInitialDelay(), properties.getRate());
+        }
     }
 
     public void transmitInfo() throws JMSException {
@@ -142,14 +146,15 @@ public class TopicBeacon implements InitializingBean {
 
         // Convert to Translator-to-Forecasting Methods event format
         final long currVersion = modelVersion.get();
-        List<HashMap<String, Object>> payload = metricContexts.stream().map(s -> {
+        List<HashMap<String, Object>> payload = metricContexts.stream().map(mc -> {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("metric", s.getName());
+            map.put("metric", mc.getName());
+            map.put("component", mc.getComponent());
             map.put("level", 3);
             map.put("version", currVersion);
-            map.put("publish_rate", s.getSchedule()!=null
-                    ? s.getSchedule().getIntervalInMillis() :
-                    properties.getPredictionRate());
+            map.put("publish_rate", mc.getSchedule()!=null
+                    ? mc.getSchedule().getIntervalInMillis()
+                    : properties.getPredictionRate());
             return map;
         }).collect(Collectors.toList());
         log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);

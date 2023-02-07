@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -13,6 +13,7 @@ import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.coordinator.NoopCoordinator;
+import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.ClientConfiguration;
 import eu.melodic.event.util.GROUPING;
@@ -44,6 +45,7 @@ public class ClusteringCoordinator extends NoopCoordinator {
     private GROUPING lastLevelGrouping;
 
     private final Map<String,NodeRegistryEntry> ignoredNodes = new LinkedHashMap<>();
+    private ClusterSelfHealing clusterSelfHealing;
 
     public Collection<String> getClusterIdSet() { return topologyMap.keySet(); }
     public Collection<IClusterZone> getClusters() { return topologyMap.values().stream().map(c->(IClusterZone)c).collect(Collectors.toList()); }
@@ -84,6 +86,10 @@ public class ClusteringCoordinator extends NoopCoordinator {
         this.lastLevelGrouping = groupings.get(2);
         log.info("ClusteringCoordinator.initialize(): Groupings: top-level={}, aggregator={}, last-level={}",
                 topLevelGrouping, aggregatorGrouping, lastLevelGrouping);
+
+        // Configure Self-Healing manager
+        clusterSelfHealing = new ClusterSelfHealing(server.getSelfHealingManager());
+        server.getSelfHealingManager().setMode(SelfHealingManager.MODE.INCLUDED);
     }
 
     @SneakyThrows
@@ -224,7 +230,6 @@ public class ClusteringCoordinator extends NoopCoordinator {
             csc.setCloseConnection(true);
             return;
         }
-        if (preregEntry!=null) csc.setNodeRegistryEntry(preregEntry);
 
         // Check if client has already been registered (i.e. is still connected)
         ClientShellCommand regEntry = topologyMap.values().stream()
@@ -319,10 +324,20 @@ public class ClusteringCoordinator extends NoopCoordinator {
                 nodeAddress, nodeHostname, nodeCanonical, nodePort);
     }
 
-     private synchronized void addedNodeInTopology(ClientShellCommand csc) {
+    private synchronized void addedNodeInTopology(ClientShellCommand csc) {
         // Signal Zone Management Strategy for new client registration
         zoneManagementStrategy.nodeAdded(csc, this, csc.getClientZone());
         log.info("addNodeInTopology: Client added in topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
+
+        if (csc.getClientZone()!=null) {
+            IClusterZone zone = csc.getClientZone();
+            log.trace("addNodeInTopology: CSC is in zone: client={}, address={}, zone={}", csc.getId(), csc.getClientIpAddress(), zone.getId());
+
+            // Self-healing-related actions
+            List<NodeRegistryEntry> aggregatorCapableNodes = clusterSelfHealing.getAggregatorCapableNodesInZone(zone);
+            clusterSelfHealing.updateNodesSelfHealingMonitoring(zone, aggregatorCapableNodes);
+            clusterSelfHealing.removeResourceLimitedNodeSelfHealingMonitoring(zone, aggregatorCapableNodes);
+        }
     }
 
     protected synchronized void _do_unregister(ClientShellCommand csc) {
@@ -332,16 +347,33 @@ public class ClusteringCoordinator extends NoopCoordinator {
 
     private synchronized void removeNodeFromTopology(ClientShellCommand csc) {
         // Assign client in a zone
-        String zoneId = clusterZoneDetector.getZoneIdFor(csc);
-        ClusterZone zone = topologyMap.get(zoneId);
+        String zoneId = csc.getNodeRegistryEntry()!=null ? clusterZoneDetector.getZoneIdFor(csc) : null;
+        ClusterZone zone = StringUtils.isNotBlank(zoneId) ? topologyMap.get(zoneId) : null;
         if (zone == null) {
-            log.warn("removeNodeFromTopology: Not Registered client removed: client={}, address={}", csc.getId(), csc.getClientIpAddress());
+            log.warn("removeNodeFromTopology: Non-registered client removed: client={}, address={}, zone-id={}", csc.getId(), csc.getClientIpAddress(), zoneId);
+            log.debug("removeNodeFromTopology: Non-registered client removed: entry={}", csc.getNodeRegistryEntry());
         } else {
             log.trace("removeNodeFromTopology: Zone members: BEFORE: {}", zone.getNodes());
             zone.removeNode(csc);
             log.trace("removeNodeFromTopology: Zone members:  AFTER: {}", zone.getNodes());
             zoneManagementStrategy.nodeRemoved(csc, this, zone);
             log.info("removeNodeFromTopology: Client removed from topology: client={}, address={}", csc.getId(), csc.getClientIpAddress());
+
+            ClientShellCommand aggregator = zone.getAggregator();
+            if (aggregator==csc || aggregator==null) {
+                if (aggregator==csc) zone.setAggregator(null);
+                log.warn("removeNodeFromTopology: Zone without aggregator: zone-id={}, old-aggregator-id={}, address={}", zone.getId(), csc.getId(), csc.getClientIpAddress());
+
+                // Nothing to do. Client-side self-healing must elect a new Aggregator
+                // Optionally, we can start a timer so that if no Aggregator is elected within a period, then we can appoint one or trigger Server-side self-healing
+            }
+
+            // Self-healing-related actions
+            List<NodeRegistryEntry> aggregatorCapableNodes = clusterSelfHealing.getAggregatorCapableNodesInZone(zone);
+            clusterSelfHealing.updateNodesSelfHealingMonitoring(zone, aggregatorCapableNodes);
+            if (aggregatorCapableNodes.isEmpty())
+                ; //XXX: TODO: ??Reconfigure non-candidate nodes to forward their events to EMS server??
+            clusterSelfHealing.addResourceLimitedNodeSelfHealingMonitoring(zone, aggregatorCapableNodes);
         }
     }
 

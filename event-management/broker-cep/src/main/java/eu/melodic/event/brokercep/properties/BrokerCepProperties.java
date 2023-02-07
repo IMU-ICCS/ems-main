@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import java.util.Map;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "brokercep")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 public class BrokerCepProperties implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("BrokerCepProperties: {}", this);
@@ -46,6 +46,7 @@ public class BrokerCepProperties implements InitializingBean {
 
     private int managementConnectorPort = -1;
     private boolean bypassLocalBroker;
+    private long eventForwarderLoopDelay = 100L;
 
     // brokercep.ssl.** settings
     private KeystoreAndCertificateProperties ssl;

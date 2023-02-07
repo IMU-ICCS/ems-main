@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client;
 import edu.emory.mathcs.backport.java.util.Collections;
 import eu.melodic.event.baguette.client.cluster.ClusterManagerProperties;
 import eu.melodic.event.baguette.client.collector.netdata.NetdataCollector;
+//import eu.melodic.event.baguette.client.collector.prometheus.PrometheusCollector;
 import eu.melodic.event.baguette.client.plugin.recovery.SelfHealingPlugin;
 import eu.melodic.event.util.EventBus;
 import lombok.Getter;
@@ -46,6 +47,11 @@ public class BaguetteClient implements ApplicationRunner {
     private final BaguetteClientProperties baguetteClientProperties;
     private final ClusterManagerProperties clusterManagerProperties;
     private final ConfigurableApplicationContext applicationContext;
+
+    private final List<Class<? extends Collector>> DEFAULT_COLLECTORS_LIST = Collections.<Class<? extends Collector>>unmodifiableList(new ArrayList<Class<? extends Collector>>() {{
+        add(NetdataCollector.class);
+        //add(PrometheusCollector.class);
+    }});
 
     @Getter
     private final List<Collector> collectorsList = new ArrayList<>();
@@ -131,8 +137,8 @@ public class BaguetteClient implements ApplicationRunner {
 
         log.debug("BaguetteClient: Starting collectors...");
         if (baguetteClientProperties.getCollectorClasses()==null)
-            baguetteClientProperties.setCollectorClasses(Collections.singletonList(NetdataCollector.class));
-        for (Class<Collector> collectorClass : baguetteClientProperties.getCollectorClasses()) {
+            baguetteClientProperties.setCollectorClasses(DEFAULT_COLLECTORS_LIST);
+        for (Class<? extends Collector> collectorClass : baguetteClientProperties.getCollectorClasses()) {
             try {
                 log.debug("BaguetteClient: Starting collector: {}...", collectorClass.getName());
                 Collector collector = applicationContext.getBean(collectorClass);

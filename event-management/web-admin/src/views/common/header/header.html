@@ -21,13 +21,26 @@
           Logs
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="/logs/ems.log" target="_new">EMS Server Logs</a>
-          <a class="dropdown-item disabled" href="#">Live view</a>
+          <a class="dropdown-item" href="/logs/ems.log" target="_new">EMS Server Log</a>
+          <a class="dropdown-item" href="/log-viewer" target="_new">Log viewer</a>
           <a class="dropdown-item disabled" href="#" target="_new">Old EMS Server logs</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="/logs/_TC.json" target="_new">Translation context</a>
-          <a class="dropdown-item disabled" href="#" target="_new">DAG as SVG</a>
-          <a class="dropdown-item disabled" href="#" target="_new">DAG as PNG</a>
+          <div v-if="dagExportFiles.length>0" class="dropdown-divider"></div>
+          <a v-if="dagExportFiles.length>0" class="dropdown-item disabled" href="#">DAG as...</a>
+          <a v-for="item in dagExportFiles"  class="dropdown-item" :href="'/files/getpath'+item" target="_new">&nbsp;&nbsp;&nbsp;&nbsp;{{item.slice(item.lastIndexOf('.')+1).toLowerCase()}}</a>
+        </div>
+      </li>
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          API
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="/actuator/" target="_new">Actuator</a>
+          <a class="dropdown-item" href="/v3/api-docs/" target="_new">OpenAPI in Json</a>
+          <a class="dropdown-item" href="/v3/api-docs.yaml" target="_new">OpenAPI in Yaml</a>
+          <a class="dropdown-item" href="/swagger-ui.html" target="_new">Swagger UI</a>
         </div>
       </li>
 

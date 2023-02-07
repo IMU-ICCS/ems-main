@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -64,14 +64,14 @@
         <dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
-            <version>${esper-version}</version>
+            <version>${esper.version}</version>
         </dependency>
 
         <!-- MathParser dependencies -->
         <dependency>
             <groupId>org.mariuszgromada.math</groupId>
             <artifactId>MathParser.org-mXparser</artifactId>
-            <version>${mathparser-version}</version>
+            <version>${mathparser.version}</version>
         </dependency>
 
         <!-- Lombok project -->
@@ -79,12 +79,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
         </dependency>
 
         <!-- Apache Commons Lang -->

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -15,6 +15,7 @@ import eu.melodic.event.util.EventBus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.sshd.client.ClientFactoryManager;
 import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.PropertyResolverUtils;
 import org.apache.sshd.common.config.keys.KeyUtils;
@@ -116,6 +117,7 @@ public class Sshd {
         );
 
         // Set session timeout
+        PropertyResolverUtils.updateProperty(sshd, ClientFactoryManager.HEARTBEAT_INTERVAL, 60*1000);
         PropertyResolverUtils.updateProperty(sshd, ServerFactoryManager.IDLE_TIMEOUT, Long.MAX_VALUE);
         PropertyResolverUtils.updateProperty(sshd, ServerFactoryManager.SOCKET_KEEPALIVE, true);
         log.debug("SSH server: Set IDLE_TIMEOUT to MAX, and KEEP-ALIVE to true");

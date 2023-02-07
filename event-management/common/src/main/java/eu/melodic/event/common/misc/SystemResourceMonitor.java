@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -116,7 +116,7 @@ public class SystemResourceMonitor implements Runnable, InitializingBean {
         log.debug("SystemResourceMonitor: processOutput: Metrics: {}", event);
 
         if (StringUtils.isBlank(systemResourceMetricsTopic)) {
-            log.debug("SystemResourceMonitor: processOutput: END: No metrics topic has been not set. Will not publish metrics event");
+            log.debug("SystemResourceMonitor: processOutput: END: No metrics topic has been set. Will not publish metrics event");
             return;
         }
 

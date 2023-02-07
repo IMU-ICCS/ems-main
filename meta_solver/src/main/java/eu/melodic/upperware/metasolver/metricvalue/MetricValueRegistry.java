@@ -136,7 +136,7 @@ public class MetricValueRegistry<T> implements InitializingBean {
     }
 
     public String toString() {
-        return super.toString() + " : " + registry.toString();
+        return super.toString() + " : " + registry;
     }
 
     // MetricValue class definition

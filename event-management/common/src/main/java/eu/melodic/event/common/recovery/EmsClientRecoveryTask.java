@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -33,11 +33,11 @@ public class EmsClientRecoveryTask<P extends SshClientProperties> extends VmNode
     @Getter
     private final List<RECOVERY_COMMAND> recoveryCommands = Collections.unmodifiableList(Arrays.asList(
             new RECOVERY_COMMAND("Initial wait...",
-                    "pwd",0, 10000),
+                    "pwd", 0, 0),
             new RECOVERY_COMMAND("Sending baguette client kill command...",
-                    "/opt/baguette-client/bin/kill.sh",0, 2000),
+                    "/opt/baguette-client/bin/kill.sh", 0, 2000),
             new RECOVERY_COMMAND("Sending baguette client start command...",
-                    "/opt/baguette-client/bin/run.sh",0, 10000)
+                    "/opt/baguette-client/bin/run.sh", 0, 10000)
     ));
 
     public EmsClientRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext, @NonNull SelfHealingProperties selfHealingProperties) {

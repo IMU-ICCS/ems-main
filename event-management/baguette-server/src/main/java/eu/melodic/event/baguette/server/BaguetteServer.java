@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -12,8 +12,11 @@ package eu.melodic.event.baguette.server;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.common.recovery.RecoveryConstant;
+import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -21,12 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.event.Level;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,16 +39,16 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<String, Object, Object> {
-    @Autowired
-    private BaguetteServerProperties config;
-    @Autowired
-    private PasswordUtil passwordUtil;
-    @Autowired
-    private NodeRegistry nodeRegistry;
+    private final BaguetteServerProperties config;
+    private final PasswordUtil passwordUtil;
+    private final NodeRegistry nodeRegistry;
 
-    @Autowired
-    private EventBus<String,Object,Object> eventBus;
+    private final EventBus<String,Object,Object> eventBus;
+    @Getter
+    private final SelfHealingManager<NodeRegistryEntry> selfHealingManager;
+    private final TaskScheduler taskScheduler;
 
     private Sshd server;
 
@@ -68,8 +72,10 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         String genPassword = RandomStringUtils.randomAlphanumeric(32, 64);
         CredentialsMap credentials = config.getCredentials();
         credentials.put(genUsername, genPassword, true);
-        log.info("BaguetteServer.afterPropertiesSet(): Generated new Baguette Server username/password: username={}, password={}", genUsername,
-                credentials.getPasswordEncoder()!=null ? credentials.getPasswordEncoder().encode(genPassword) : "****");
+        log.info("BaguetteServer.afterPropertiesSet(): Generated new Baguette Server username/password: username={}, password={}",
+                genUsername, credentials.getPasswordEncoder()!=null
+                        ? credentials.getPasswordEncoder().encode(genPassword)
+                        : passwordUtil.encodePassword(genPassword));
     }
 
     // Configuration getter methods
@@ -266,7 +272,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
                 }
         );
 
-        // Start an new instance of SSH server
+        // Start a new instance of SSH server
         startServer(coordinator);
 
         log.info("BaguetteServer.setTopologyConfiguration(): END");
@@ -412,6 +418,14 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         return createClientMap(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.NOT_INSTALLED, NodeRegistryEntry.STATE.IGNORE_NODE)));
     }
 
+    public List<String> getAllNodes() {
+        return createClientList(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.values())));
+    }
+
+    public Map<String, Map<String, String>> getAllNodesMap() {
+        return createClientMap(new HashSet<>(Arrays.asList(NodeRegistryEntry.STATE.values())));
+    }
+
     private List<String> createClientList(Set<NodeRegistryEntry.STATE> states) {
         return nodeRegistry.getNodes().stream()
                 .filter(entry->states.contains(entry.getState()))
@@ -453,23 +467,34 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
     }
 
     private Map<String, String> prepareClientMap(ClientShellCommand c, NodeRegistryEntry entry) {
+        // Get node hostname
         String address = entry!=null ? entry.getIpAddress() : c.getClientIpAddress();
         String hostname = entry!=null ? entry.getHostname() : null;
         if (StringUtils.isBlank(hostname)) {
             if (c!=null)
                 hostname = c.getClientClusterNodeHostname();
-            if (StringUtils.isBlank(hostname)) {
-                try {
-                    hostname = InetAddress.getByName(address).getHostName();
-                } catch (Exception e) {
-                    log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
-                }
-            }
             if (StringUtils.isNotBlank(hostname)) {
                 if (c!=null) c.setClientClusterNodeHostname(hostname);
                 if (entry!=null) entry.setHostname(hostname);
             }
+
+            // Resolve hostname in a separate thread to avoid blocking this method (and the Web Admin updates)
+            if (config.isResolveHostname() && StringUtils.isBlank(hostname)) {
+                taskScheduler.schedule(()->{
+                    try {
+                        String _hostname = InetAddress.getByName(address).getHostName();
+                        if (StringUtils.isNotBlank(_hostname)) {
+                            if (c!=null) c.setClientClusterNodeHostname(_hostname);
+                            if (entry!=null) entry.setHostname(_hostname);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to resolve client hostname from IP address: {}\n", address, e);
+                    }
+                }, Instant.now());
+            }
         }
+
+        // Prepare node info map
         Map<String,String> properties = new LinkedHashMap<>();
         properties.put("id", c!=null ? c.getId() : entry.getClientId());
         properties.put("ip-address", address);
@@ -481,6 +506,12 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         properties.put("reference", entry!=null ? entry.getReference() : null);
         properties.put("node-id", c!=null ? c.getClientProperty("node-id") : null);
         properties.put("node-state", entry!=null && entry.getState()!=null ? entry.getState().toString() : null);
+        properties.put("errors", entry!=null && entry.getErrors()!=null
+                ? entry.getErrors().stream()
+                        .filter(Objects::nonNull)
+                        .map(Object::toString)
+                        .collect(Collectors.joining(" | "))
+                : null);
         return properties;
     }
 

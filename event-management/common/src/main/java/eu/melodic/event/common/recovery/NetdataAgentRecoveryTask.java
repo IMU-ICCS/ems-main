@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -33,11 +33,11 @@ public class NetdataAgentRecoveryTask<P extends SshClientProperties> extends VmN
     @Getter
     private final List<RECOVERY_COMMAND> recoveryCommands = Collections.unmodifiableList(Arrays.asList(
             new RECOVERY_COMMAND("Initial wait...",
-                    "pwd",0, 5000),
+                    "pwd", 0, 0),
             new RECOVERY_COMMAND("Sending Netdata agent kill command...",
-                    "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ",0, 2000),
+                    "sudo sh -c  'ps -U netdata -o \"pid\" --no-headers | xargs kill -9' ", 0, 2000),
             new RECOVERY_COMMAND("Sending Netdata agent start command...",
-                    "sudo netdata",0, 10000)
+                    "sudo netdata", 0, 10000)
     ));
 
     public NetdataAgentRecoveryTask(@NonNull EventBus<String, Object, Object> eventBus, @NonNull PasswordUtil passwordUtil, @NonNull TaskScheduler taskScheduler, @NonNull CollectorContext<P> collectorContext, @NonNull SelfHealingProperties selfHealingProperties) {
