@@ -10,12 +10,7 @@
 package eu.melodic.event.baguette.server.coordinator.cluster;
 
 import eu.melodic.event.baguette.server.ClientShellCommand;
-import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.internal.guava.InetAddresses;
-
-import java.util.UUID;
 
 /**
  * The default Zone Management Strategy used when 'zone-management-strategy-class' property is not set.

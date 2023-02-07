@@ -33,11 +33,11 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 @Slf4j
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
-    private static AtomicLong eventCounter = new AtomicLong(0);
-    private static AtomicLong textEventCounter = new AtomicLong(0);
-    private static AtomicLong objectEventCounter = new AtomicLong(0);
-    private static AtomicLong otherEventCounter = new AtomicLong(0);
-    private static AtomicLong eventFailuresCounter = new AtomicLong(0);
+    private final static AtomicLong eventCounter = new AtomicLong(0);
+    private final static AtomicLong textEventCounter = new AtomicLong(0);
+    private final static AtomicLong objectEventCounter = new AtomicLong(0);
+    private final static AtomicLong otherEventCounter = new AtomicLong(0);
+    private final static AtomicLong eventFailuresCounter = new AtomicLong(0);
 
     @Autowired
     private BrokerCepProperties properties;

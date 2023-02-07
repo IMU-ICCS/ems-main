@@ -17,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Vector;
 
-//import java.util.Properties;
-
 @Slf4j
 public class ServerCoordinatorTimeWin implements ServerCoordinator {
     private BaguetteServer server;

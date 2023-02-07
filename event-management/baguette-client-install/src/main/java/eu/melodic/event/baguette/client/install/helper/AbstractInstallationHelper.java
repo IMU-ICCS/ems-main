@@ -14,7 +14,6 @@ import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.KeystoreUtil;
-import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.Setter;
