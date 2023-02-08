@@ -86,6 +86,7 @@ after_script:
 # 'deployDocker' pushes to docker registry
 # Remember that libraries that depend on each other need to have 'dependencies'
 # array defined
+# if you want to launch them as soon as possible you can use 'needs' flag instead
 stages:
   - build-basic-dependencies
   - build-required-part1
@@ -105,6 +106,8 @@ stages:
 # Inside $CI_PROJECT_DIR there is the same filesystem as in your project
 # By default mvn clean install installs jars to 'target' directories and then to
 # '$CI_PROJECT_DIR/maven_repo/......'
+# 'expire_in' defines how long the artifacts can be downloaded from THE PIPELINE. It has no
+# impact on the artifacts deployed to the package registry (during stage buildAndDeployJars)
 build-basic-dependencies:melodic-upperware:
   stage: build-basic-dependencies
   image: $MAVEN_IMAGE
@@ -180,7 +183,7 @@ build-required-part2:ems-broker-client:
   image: $MAVEN_IMAGE
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker -P!build-web-admin  clean install
-  dependencies:
+  needs:
     - build-required-part1:ems
     - build-required-part1:ems-util
   artifacts:
@@ -192,7 +195,7 @@ build-required-part2:melodic-commons:
   image: $MAVEN_IMAGE
   script:
     - $MELODIC_COMMONS_CLI -Pwithout-docker clean install
-  dependencies:
+  needs:
     - build-required-part1:upperware-metamodel
   artifacts:
     expire_in: 1 week
@@ -204,7 +207,7 @@ build-required-part3:utility-generator:
   image: $MAVEN_IMAGE
   script:
     - $UTILITY_GENERATOR_CLI -Pwithout-docker clean install
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part1:melodic-cache
@@ -219,13 +222,12 @@ build-required-part4:cp-parser:
   image: $MAVEN_IMAGE
   script:
     - $CP_PARSER_CLI -Pwithout-docker clean install
-  dependencies:
+  needs:
     - build-required-part3:utility-generator
   artifacts:
     expire_in: 1 week
     paths:
       - $CI_PROJECT_DIR/maven_repo/eu/melodic/cp-parser/
-
 
 ##building main upperware jars
 buildJars:utility-generator-standalone:
@@ -233,7 +235,7 @@ buildJars:utility-generator-standalone:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part3:utility-generator
   script:
     - $UG_STANDALONE_CLI -Pwithout-docker clean install
@@ -247,7 +249,7 @@ buildJars:melodic-cache-standalone:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:melodic-cache
   script:
     - $MC_STANDALONE_CLI -Pwithout-docker clean install
@@ -261,7 +263,7 @@ buildJars:adapter:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part2:melodic-commons
@@ -280,7 +282,7 @@ buildJars:cp-generator:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part1:melodic-cache
@@ -297,7 +299,7 @@ buildJars:cp-solver:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part1:melodic-cache
@@ -315,7 +317,7 @@ buildJars:ems-server:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:ems-util
     - build-required-part2:ems-broker-client
   script:
@@ -330,7 +332,7 @@ buildJars:metasolver:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
   script:
@@ -345,7 +347,7 @@ buildJars:mq-adapter:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part2:ems-broker-client
     - build-required-part1:ems
     - build-required-part2:melodic-commons
@@ -361,7 +363,7 @@ buildJars:gui-backend:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part2:melodic-commons
@@ -377,7 +379,7 @@ buildJars:jwt-server:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
   script:
@@ -397,9 +399,9 @@ buildAndDeployJars:broker-client:
   only:
     - morphemic-rc4.0
   image: $MAVEN_IMAGE
-  dependencies:
+  needs:
     - build-required-part1:ems
-    - build-required-part2:ems-broker-client
+    - build-required-part1:ems-util
   script:
     - $EMS_BROKER_CLIENT_CLI -Pwithout-docker -P!build-web-admin deploy
 
@@ -417,7 +419,7 @@ deployDocker:utility-generator-standalone:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:utility-generator-standalone
   script:
     - cd utility-generator-standalone/src/main/docker/
@@ -434,7 +436,7 @@ deployDocker:melodic-cache-standalone:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:melodic-cache-standalone
   script:
     - cd melodic-cache-standalone/src/main/docker/
@@ -451,7 +453,7 @@ deployDocker:adapter:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:adapter
   script:
     - cd adapter/src/main/docker/
@@ -468,7 +470,7 @@ deployDocker:cp-generator:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:cp-generator
   script:
     - cd cp_generator/src/main/docker/
@@ -483,7 +485,7 @@ deployDocker:cp-solver:
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
-  dependencies:
+  needs:
     - buildJars:cp-solver
   services:
     - $DOCKER_DIND_SERVICE
@@ -500,7 +502,7 @@ deployDocker:ems-server:
   only:
     - morphemic-rc4.0
   image: $DOCKER_DIND_IMAGE
-  dependencies:
+  needs:
     - buildJars:ems-server
   services:
     - $DOCKER_DIND_SERVICE
@@ -518,7 +520,7 @@ deployDocker:metasolver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:metasolver
   script:
     - cd meta_solver/src/main/docker/
@@ -535,7 +537,7 @@ deployDocker:mq-adapter:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:mq-adapter
   script:
     - cd mq-http-adapter/src/main/docker/
@@ -552,7 +554,7 @@ deployDocker:gui-backend:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:gui-backend
   script:
     - cd gui-backend/src/main/docker/
@@ -569,7 +571,7 @@ deployDocker:jwt-server:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildJars:jwt-server
   script:
     - cd jwt-server/src/main/docker/
@@ -588,8 +590,13 @@ buildSolversJars:nc-solver:
   dependencies:
     - build-required-part4:cp-parser
     - build-required-part1:zpp-solver
+    - build-required-part3:utility-generator
   script:
     - $NC_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/node-candidates-solver/
 
 buildSolversJars:pt-solver:
   stage: buildSolversJars
@@ -599,8 +606,13 @@ buildSolversJars:pt-solver:
   dependencies:
     - build-required-part4:cp-parser
     - build-required-part1:zpp-solver
+    - build-required-part3:utility-generator
   script:
     - $PT_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/pt-solver/
 
 buildSolversJars:mcts-solver:
   stage: buildSolversJars
@@ -610,8 +622,13 @@ buildSolversJars:mcts-solver:
   dependencies:
     - build-required-part4:cp-parser
     - build-required-part1:zpp-solver
+    - build-required-part3:utility-generator
   script:
     - $MCTS_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/mcts-solver/
 
 buildSolversJars:gen-solver:
   stage: buildSolversJars
@@ -621,8 +638,13 @@ buildSolversJars:gen-solver:
   dependencies:
     - build-required-part4:cp-parser
     - build-required-part1:zpp-solver
+    - build-required-part3:utility-generator
   script:
     - $GEN_SOLVER_CLI -Pwithout-docker clean install
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $CI_PROJECT_DIR/maven_repo/eu/melodic/genetic-solver/
 
 ## deploy solvers dockers
 deployDockerSolvers:nc-solver:
@@ -632,7 +654,7 @@ deployDockerSolvers:nc-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildSolversJars:nc-solver
   script:
     - cd zpp-solver/node-candidates-solver/src/main/docker/
@@ -649,7 +671,7 @@ deployDockerSolvers:pt-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildSolversJars:pt-solver
   script:
     - cd zpp-solver/pt-solver/src/main/docker/
@@ -666,7 +688,7 @@ deployDockerSolvers:mcts-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildSolversJars:mcts-solver
   script:
     - cd zpp-solver/mcts-solver/src/main/docker/
@@ -683,7 +705,7 @@ deployDockerSolvers:gen-solver:
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
-  dependencies:
+  needs:
     - buildSolversJars:gen-solver
   script:
     - cd zpp-solver/genetic-solver/src/main/docker/
