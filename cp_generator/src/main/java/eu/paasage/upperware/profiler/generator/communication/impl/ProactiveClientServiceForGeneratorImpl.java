@@ -23,7 +23,7 @@ public class ProactiveClientServiceForGeneratorImpl implements ProactiveClientSe
         try {
             return proactiveClientConnectorService.fetchNodeCandidates(requirements);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }

@@ -16,7 +16,7 @@ public class ProactiveClientServiceImpl implements ProactiveClientService {
         try {
             return proactiveClientConnectorService.stopJob(Collections.singletonList(jobId));
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1L;
         }
     }

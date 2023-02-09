@@ -28,7 +28,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
             proactiveClientConnectorService.createJob(job);
             return 0;
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -38,7 +38,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addNodes(iaasDefinitions, jobId));
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -49,7 +49,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
             proactiveClientConnectorService.removeNodes(nodeNames, true);
             return 0;
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -59,7 +59,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return proactiveClientConnectorService.submitJob(jobId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -69,7 +69,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addScaleOutTask(jobId, taskName, nodeNames));
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -79,7 +79,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addScaleInTask(jobId, taskName, nodeNames));
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -94,7 +94,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
             log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: ProActive client has not returned JobState for jobId={}", jobId);
         } catch (ProactiveClientException e) {
             log.error("ProactiveClientServiceForAdapterImpl->getJobStatus: Exception has been caught while retrieving JobState for jobId={} from ProActive Scheduler, message: {}", jobId, e.getMessage());
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
         }
 
         return Optional.empty();
@@ -106,7 +106,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return proactiveClientConnectorService.addEmsDeployment(nodeNames, authorizationBearer);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -175,7 +175,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addByonNodes(byonIdPerComponent, jobId));
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -185,7 +185,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return proactiveClientConnectorService.fetchByonNodes(jobId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -195,7 +195,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return proactiveClientConnectorService.fetchEdgeNodes(jobId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -205,7 +205,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addEdgeNodes(edgeIdPerComponent, jobId));
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -215,7 +215,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return proactiveClientConnectorService.fetchNodes();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }

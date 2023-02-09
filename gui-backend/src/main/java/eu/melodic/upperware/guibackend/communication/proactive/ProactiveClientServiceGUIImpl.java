@@ -21,7 +21,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.getLengthOfNodeCandidates().intValue();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return -1;
         }
     }
@@ -31,7 +31,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchClouds();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -41,7 +41,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchImages(cloudID);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -51,7 +51,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchHardware();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -61,7 +61,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchLocations();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -71,7 +71,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.registerNewEdgeNode(edgeDefinition, jobId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return null;
         }
     }
@@ -81,7 +81,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.registerNewByonNode(byonNodeDefinition, jobId,automate);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return null;
         }
     }
@@ -91,7 +91,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchByonNodes(jobId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -101,7 +101,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchEdgeNodes(jobId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -111,7 +111,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchJobs();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -121,7 +121,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchNodes();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -131,7 +131,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.fetchMonitors();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }    }
 
@@ -140,7 +140,7 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
         try {
             return proactiveClientConnectorService.deleteByonNodes(byonId);
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return false;
         }
     }

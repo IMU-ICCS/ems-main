@@ -20,7 +20,7 @@ public class ProactiveClientServiceForMqHttpAdapterImpl implements ProactiveClie
         try {
             return proactiveClientConnectorService.fetchNodes();
         } catch (ProactiveClientException e) {
-            e.printStackTrace();
+            log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
