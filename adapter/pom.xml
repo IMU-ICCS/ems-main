@@ -188,7 +188,7 @@
     <dependency>
       <groupId>cloud.morphemic.connectors</groupId>
       <artifactId>proactive_client</artifactId>
-      <version>3.0-salaas-20230124.114757-27</version>
+      <version>3.0-salaas-20230209.141909-29</version>
     </dependency>
     <dependency>
       <groupId>io.github.cloudiator.client</groupId>
