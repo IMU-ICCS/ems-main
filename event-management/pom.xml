@@ -28,8 +28,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Melodic component versions -->
-        <!--<melodic.version>6.0.0-SNAPSHOT</melodic.version>
-        <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>-->
+        <!--<melodic.version>5.5.0-SNAPSHOT</melodic.version>
+        <interfaces.version>5.5.0-SNAPSHOT</interfaces.version>-->
         <camel.version>5.5.0-SNAPSHOT</camel.version>
         <cdo-client.version>5.5.0-SNAPSHOT</cdo-client.version>
         <authorization.version>4.5.0-SNAPSHOT</authorization.version>
