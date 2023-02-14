@@ -68,7 +68,6 @@
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
             <version>${interfaces.version}</version>
-            <!--<version>${interfaces.version}</version>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
