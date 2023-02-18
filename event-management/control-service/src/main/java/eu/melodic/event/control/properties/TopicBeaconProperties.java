@@ -36,5 +36,7 @@ public class TopicBeaconProperties {
     private Set<String> instanceTopics = new HashSet<>();
     private Set<String> predictionTopics = new HashSet<>();
     @Min(1) private long predictionRate = 60000;
+    @Min(1) private long predictionMinAllowedRate = 1;
+    @Min(1) private long predictionMaxAllowedRate = 365*24*3600*1000L;
     private Set<String> sloViolationDetectorTopics = new HashSet<>();
 }
