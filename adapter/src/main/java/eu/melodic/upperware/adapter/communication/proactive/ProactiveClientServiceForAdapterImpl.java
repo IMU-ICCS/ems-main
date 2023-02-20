@@ -104,7 +104,10 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
     @Override
     public int addMonitors(List<String> nodeNames, String authorizationBearer) {
         try {
-            return proactiveClientConnectorService.addEmsDeployment(nodeNames, authorizationBearer);
+            return proactiveClientConnectorService.addEmsDeployment(new EmsDeploymentDefinition(
+                    nodeNames,
+                    authorizationBearer
+            ));
         } catch (ProactiveClientException e) {
             log.error("Error message body: {}", e.getMessage());
             return -1;
