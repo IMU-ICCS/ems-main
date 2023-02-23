@@ -20,7 +20,7 @@ import java.util.Map;
 public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMFacade {
 
 	private static final String APPLICATION_PROPERTY_NAME = "application";
-	private static final String TARGET_PROPERTY_NAME = "target";
+	public static final String TARGET_PROPERTY_NAME = "target";
 	private static final String VARIABLES_PROPERTY_NAME = "variables";
 
 	public TextPMFacadeImpl() {
@@ -52,6 +52,14 @@ public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMF
  		features.put(APPLICATION_PROPERTY_NAME, applicationId);
 
 		Map<String, Object> result = sendRequestAndAwaitReply(features, 15);
+
+		// check if keys of returned data conform to metricsFromConstraintProblem
+		for(String key : result.keySet()) {
+			boolean keyFound = metricsFromConstraintProblem.stream().anyMatch((MetricDTO m) -> key.equals(m.getName()));
+			if(!keyFound) {
+				log.warn("PM returned metric not present in constraint problem: {}", key);
+			}
+		}
 
 		if(result.isEmpty()) {
 			return Collections.emptyMap();

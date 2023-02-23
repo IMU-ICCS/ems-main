@@ -11,6 +11,7 @@ package eu.melodic.upperware.utilitygenerator.cdo.camel_model;
 import camel.core.CamelModel;
 import camel.deployment.DeploymentTypeModel;
 import camel.deployment.SoftwareComponent;
+import camel.metric.MetricContext;
 import camel.metric.MetricModel;
 import camel.metric.MetricVariable;
 import camel.metric.impl.MetricTypeModelImpl;
@@ -37,6 +38,7 @@ import org.eclipse.emf.common.util.EList;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -53,6 +55,7 @@ public class FromCamelModelExtractor {
     private String camelModelPath;
     private CamelModel model;
     private Collection<MetricVariableImpl> metricVariables;
+    private final Collection<String> performanceMetrics;
 
     @Getter @Setter
     private String utilityFunctionFormula;
@@ -70,6 +73,7 @@ public class FromCamelModelExtractor {
         CDOView view = cdoService.openView(sessionX);
         this.model = cdoService.getCamelModel(path, view);
         this.metricVariables = extractMetricVariables(model.getMetricModels());
+        this.performanceMetrics = extractPerformanceMetrics(metricVariables);
         this.utilityFunctionFormula = getUtilityFormula().orElse(StringUtils.EMPTY);
     }
 
@@ -82,6 +86,23 @@ public class FromCamelModelExtractor {
                 .filter(m -> m instanceof MetricVariable)
                 .map(m -> (MetricVariableImpl) m)
                 .collect(Collectors.toList());
+    }
+
+    private Collection<String> extractPerformanceMetrics(Collection<MetricVariableImpl> metricVariables) {
+        Collection<String> perfMetrics = new HashSet<>();
+        for (MetricVariable m : metricVariables) {
+            if (m.getMetricContext() != null) {
+                MetricContext ctx = m.getMetricContext();
+                if (ctx.getMetric() != null) {
+                    perfMetrics.add(ctx.getMetric().getName());
+                }
+            }
+        }
+        return perfMetrics;
+    }
+
+    public Collection<String> getPerformanceMetrics() {
+        return performanceMetrics;
     }
 
     public void endWorkWithCamelModel() {
