@@ -30,7 +30,7 @@ import org.mariuszgromada.math.mxparser.Argument;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,6 +52,7 @@ public class UtilityFunctionEvaluator {
     private Collection<ArgumentConverter> converters;
     private final String applicationId;
     private final Collection<MetricDTO> metricsFromConstraintProblem;
+    private final Collection<String> performanceMetrics;
     private final PMFacade facade;
 
     // TODO old constructor signature, just here to prevent older artifacts from failing - remove later
@@ -71,6 +72,7 @@ public class UtilityFunctionEvaluator {
         this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        this.performanceMetrics = fromCamelModelExtractor.getPerformanceMetrics();
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
         String formula = prepareUtilityFunction(fromCamelModelExtractor);
@@ -102,6 +104,7 @@ public class UtilityFunctionEvaluator {
         this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
+        this.performanceMetrics = fromCamelModelExtractor.getPerformanceMetrics();
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
         String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
@@ -138,6 +141,7 @@ public class UtilityFunctionEvaluator {
         this.function = new UtilityFunction(utilityFormula, new ArrayList<>());
 
         metricsFromConstraintProblem = constraintProblemExtractor.extractMetrics();
+        performanceMetrics = new HashSet<>();
         applicationId = ""; // TODO no app-ID here?
 
         constraintProblemExtractor.endWorkWithCPModel();
@@ -170,20 +174,23 @@ public class UtilityFunctionEvaluator {
             return 0;
         }
 
-        // TODO filter for dependent metrics here
-        Map<String, Double> predictionResult = new HashMap<>();
-        if(metricsFromConstraintProblem.isEmpty()) {
+        if (performanceMetrics.isEmpty()) {
+            log.info("No performance metrics found - skipping PM call");
+        }
+        else if (metricsFromConstraintProblem.isEmpty()) {
             log.info("No metrics in constraint problem - skipping PM call");
         }
         else {
-            predictionResult = facade.callPmPredictionText(solution, applicationId, variablesFromConstraintProblem, metricsFromConstraintProblem);
-        }
+            Collection<MetricDTO> metrics = filterPerformanceMetrics();
 
-        if(predictionResult == null) {
-            log.warn("PM returned empty prediction");
-        }
-        else {
-            injectResultIntoConverter(predictionResult);
+            Map<String, Double> predictionResult = facade.callPmPredictionText(solution, applicationId, variablesFromConstraintProblem, metrics);
+
+            if(predictionResult == null) {
+                log.warn("PM returned empty prediction");
+            }
+            else {
+                injectResultIntoConverter(predictionResult);
+            }
         }
 
         Collection<Argument> allArguments = this.converters.stream()
@@ -192,6 +199,18 @@ public class UtilityFunctionEvaluator {
                 .collect(Collectors.toList());
 
         return function.evaluateFunction(allArguments);
+    }
+
+    private Collection<MetricDTO> filterPerformanceMetrics() {
+        Collection<MetricDTO> metrics = new HashSet<>(metricsFromConstraintProblem.size());
+
+        for (MetricDTO m : metricsFromConstraintProblem) {
+            if (performanceMetrics.contains(m.getName()) || TextPMFacadeImpl.TARGET_PROPERTY_NAME.equals(m.getName())) { // PM needs the target metric in any case
+                metrics.add(m);
+                log.info("Adding performance metric: {}", m.getName());
+            }
+        }
+        return metrics;
     }
 
     private void injectResultIntoConverter(Map<String, Double> predictionResult) {
