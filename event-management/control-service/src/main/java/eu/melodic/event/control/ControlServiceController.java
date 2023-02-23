@@ -405,7 +405,7 @@ public class ControlServiceController {
             return "ERROR "+e.getMessage();
         }
 
-        // Update client registration info with BASE_URL, IP_SETTING and CLIENT_ID
+        // Update client registration info with BASE_URL, IP_SETTING, CLIENT_ID and OS info
         updateRegistrationInfo(request, entry);
 
         // Continue processing according to ExecutionWare type
@@ -444,6 +444,12 @@ public class ControlServiceController {
         entry.getPreregistration().put("BASE_URL", baseUrl);
         entry.getPreregistration().put("CLIENT_ID", clientId);
         entry.getPreregistration().put("IP_SETTING", ipSetting);
+
+        // Set OS info
+        String os = StringUtils.isNotBlank(entry.getPreregistration().get("operatingSystem.name"))
+                ? entry.getPreregistration().get("operatingSystem.name")
+                : entry.getPreregistration().get("operatingSystem");
+        entry.getPreregistration().put("operatingSystem", os);
     }
 
     // Retained for backward compatibility with Cloudiator
