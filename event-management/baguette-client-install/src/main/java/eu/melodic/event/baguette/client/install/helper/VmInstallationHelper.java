@@ -21,7 +21,6 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
