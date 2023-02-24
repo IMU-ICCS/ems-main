@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
+import eu.melodic.event.util.StrUtil;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -66,8 +67,7 @@ public class NodeRegistryEntry {
 
     public NodeRegistryEntry nodePreregistration(Map<String,Object> nodeInfo) {
         preregistration.clear();
-        preregistration.putAll(processMap("", nodeInfo));
-//        preregistration.putAll((Map)processMap(nodeInfo));
+        preregistration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.PREREGISTERED);
         return this;
     }
@@ -107,88 +107,58 @@ public class NodeRegistryEntry {
 
     public NodeRegistryEntry nodeRegistering(Map<String,Object> nodeInfo) {
         registration.clear();
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.REGISTERING);
         return this;
     }
 
     public NodeRegistryEntry nodeRegistered(Map<String,Object> nodeInfo) {
         //registration.clear();
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.REGISTERED);
         return this;
     }
 
     public NodeRegistryEntry nodeRegistrationError(Map<String,Object> nodeInfo) {
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.REGISTRATION_ERROR);
         return this;
     }
 
     public NodeRegistryEntry nodeRegistrationError(Throwable t) {
-        registration.putAll(processMap("", Collections.singletonMap("exception", t)));
+        registration.putAll(StrUtil.deepFlattenMap(Collections.singletonMap("exception", t)));
         setState(STATE.REGISTRATION_ERROR);
         return this;
     }
 
     public NodeRegistryEntry nodeDisconnected(Map<String,Object> nodeInfo) {
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.DISCONNECTED);
         return this;
     }
 
     public NodeRegistryEntry nodeDisconnected(Throwable t) {
-        registration.putAll(processMap("", Collections.singletonMap("exception", t)));
+        registration.putAll(StrUtil.deepFlattenMap(Collections.singletonMap("exception", t)));
         setState(STATE.DISCONNECTED);
         return this;
     }
 
     public NodeRegistryEntry nodeExiting(Map<String,Object> nodeInfo) {
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.EXITING);
         return this;
     }
 
     public NodeRegistryEntry nodeExited(Map<String,Object> nodeInfo) {
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.EXITED);
         return this;
     }
 
     public NodeRegistryEntry nodeFailed(Map<String,Object> failInfo) {
         if (failInfo!=null)
-            registration.putAll(processMap("", failInfo));
+            registration.putAll(StrUtil.deepFlattenMap(failInfo));
         setState(STATE.NODE_FAILED);
         return this;
-    }
-
-    private Map<String,Object> processMap(Map<String,Object> inMap) {
-        Map<String,Object> outMap = new LinkedHashMap<>();
-        for (Map.Entry<String,Object> entry : inMap.entrySet()) {
-            if (entry.getValue()!=null && entry.getValue() instanceof Map) {
-                Map tmpMap = processMap((Map) entry.getValue());
-                outMap.put(entry.getKey(), tmpMap);
-            } else {
-                outMap.put(entry.getKey(), entry.getValue()!=null ? entry.getValue().toString() : null);
-            }
-        }
-        return outMap;
-    }
-
-    private Map<String,String> processMap(String prefix, Map<String,Object> inMap) {
-        if (inMap==null) return Collections.emptyMap();
-        Map<String,String> outMap = new LinkedHashMap<>();
-        for (Map.Entry<String,Object> entry : inMap.entrySet()) {
-            String newKey = prefix.isEmpty()
-                    ? entry.getKey()
-                    : (entry.getKey()!=null) ? prefix+"."+entry.getKey() : prefix;
-            if (entry.getValue()!=null && entry.getValue() instanceof Map) {
-                Map tmpMap = processMap(newKey, (Map) entry.getValue());
-                outMap.putAll(tmpMap);
-            } else {
-                outMap.put(newKey, entry.getValue()!=null ? entry.getValue().toString() : null);
-            }
-        }
-        return outMap;
     }
 }

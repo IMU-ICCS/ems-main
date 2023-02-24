@@ -519,14 +519,26 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         server.sendConstants(constants);
     }
 
-    public NodeRegistryEntry registerClient(Map<String,Object> nodeInfoMap) throws UnknownHostException {
+    public NodeRegistryEntry registerClient(Map<String,? extends Object> nodeInfoMap) throws UnknownHostException {
         log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
 
         Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);
 
-        // Create client id
+        // Create client id and random UUID
+        String clientId = nodeInfoMap.get("CLIENT_ID")!=null && StringUtils.isNotBlank(nodeInfoMap.get("CLIENT_ID").toString())
+                ? nodeInfoMap.get("CLIENT_ID").toString()
+                : generateClientIdFromNodeInfo(nodeInfo);
+        Object randomUuid = UUID.randomUUID().toString();
+        nodeInfo.put("random", randomUuid);
+        log.debug("BaguetteServer.registerClient(): client-id={}, random-UUID={}", clientId, randomUuid);
+
+        // Add node info into node registry
+        return nodeRegistry.addNode(nodeInfo, clientId);
+    }
+
+    public String generateClientIdFromNodeInfo(Map<String, ? extends Object> nodeInfo) {
+        String clientId;
         String formatter = getConfiguration().getClientIdFormat();
-        String clientId = null;
         if (StringUtils.isBlank(formatter)) {
             log.debug("BaguetteServer.registerClient(): No formatter specified. A random uuid will be returned");
             clientId = UUID.randomUUID().toString();
@@ -534,12 +546,8 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
             String escape = Optional.ofNullable(getConfiguration().getClientIdFormatEscape()).orElse("~");
             formatter = formatter.replace(escape,"$");
             log.debug("BaguetteServer.registerClient(): formatter={}", formatter);
-            nodeInfo.put("random", UUID.randomUUID().toString());
             clientId = StringSubstitutor.replace(formatter, nodeInfo);
         }
-        log.debug("BaguetteServer.registerClient(): client-id={}", clientId);
-
-        // Add node info into node registry
-        return nodeRegistry.addNode(nodeInfo, clientId);
+        return clientId;
     }
 }

@@ -23,6 +23,7 @@ import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.PasswordUtil;
+import eu.melodic.event.util.StrUtil;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,6 @@ import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -407,17 +407,22 @@ public class ControlServiceController {
         String nodeId = (String) nodeMap.get("id");
         log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
+        // Pre-process node data passed from SAL (before registering node)
+        Map<String, String> nodeMapFlattened = StrUtil.deepFlattenMap(nodeMap);
+        log.trace("ControlServiceController.baguetteRegisterNode(): Flattened node info map: \n{}", nodeMapFlattened);
+
+        // Update node registration info with OS name, BASE_URL, IP_SETTING, and CLIENT_ID
+        updateRegistrationInfo(request, nodeMapFlattened);
+        log.trace("ControlServiceController.baguetteRegisterNode(): updated flattened node info map: \n{}", nodeMapFlattened);
+
         // Register node to Baguette server
         NodeRegistryEntry entry;
         try {
-            entry = coordinator.getBaguetteServer().registerClient(nodeMap);
+            entry = coordinator.getBaguetteServer().registerClient(nodeMapFlattened);
         } catch (Exception e) {
             log.error("ControlServiceController.baguetteRegisterNode(): EXCEPTION while registering node: map={}\n", nodeMap, e);
             return "ERROR "+e.getMessage();
         }
-
-        // Update client registration info with BASE_URL, IP_SETTING, CLIENT_ID and OS info
-        updateRegistrationInfo(request, entry);
 
         // Continue processing according to ExecutionWare type
         String response;
@@ -433,7 +438,13 @@ public class ControlServiceController {
         return response;
     }
 
-    private void updateRegistrationInfo(HttpServletRequest request, NodeRegistryEntry entry) {
+    private void updateRegistrationInfo(HttpServletRequest request, Map<String, String> nodeMap) {
+        // Set OS info
+        String os = StringUtils.isNotBlank(nodeMap.get("operatingSystem.name"))
+                ? nodeMap.get("operatingSystem.name")
+                : nodeMap.get("operatingSystem");
+        nodeMap.put("operatingSystem", os);
+
         // Get web server base URL
         String staticResourceContext = staticResourceProperties.getResourceContext();
         staticResourceContext =  StringUtils.substringBeforeLast(staticResourceContext,"/**");
@@ -449,18 +460,12 @@ public class ControlServiceController {
 
         // Get IP Setting and Client ID
         String ipSetting = coordinator.getControlServiceProperties().getIpSetting().toString();
-        String clientId = entry.getClientId();
+        String clientId = coordinator.getBaguetteServer().generateClientIdFromNodeInfo(nodeMap);
 
         // Add to context
-        entry.getPreregistration().put("BASE_URL", baseUrl);
-        entry.getPreregistration().put("CLIENT_ID", clientId);
-        entry.getPreregistration().put("IP_SETTING", ipSetting);
-
-        // Set OS info
-        String os = StringUtils.isNotBlank(entry.getPreregistration().get("operatingSystem.name"))
-                ? entry.getPreregistration().get("operatingSystem.name")
-                : entry.getPreregistration().get("operatingSystem");
-        entry.getPreregistration().put("operatingSystem", os);
+        nodeMap.put("BASE_URL", baseUrl);
+        nodeMap.put("CLIENT_ID", clientId);
+        nodeMap.put("IP_SETTING", ipSetting);
     }
 
     // Retained for backward compatibility with Cloudiator
