@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import java.io.Serializable;
+import java.time.temporal.ValueRange;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -146,15 +147,18 @@ public class TopicBeacon implements InitializingBean {
 
         // Convert to Translator-to-Forecasting Methods event format
         final long currVersion = modelVersion.get();
+        final ValueRange allowedPredictionRateRange =
+                ValueRange.of(properties.getPredictionMinAllowedRate(), properties.getPredictionMaxAllowedRate());
         List<HashMap<String, Object>> payload = metricContexts.stream().map(mc -> {
             HashMap<String, Object> map = new HashMap<>();
             map.put("metric", mc.getName());
             map.put("component", mc.getComponent());
             map.put("level", 3);
             map.put("version", currVersion);
-            map.put("publish_rate", mc.getSchedule()!=null
-                    ? mc.getSchedule().getIntervalInMillis()
-                    : properties.getPredictionRate());
+            map.put("publish_rate",
+                    mc.getSchedule()!=null && allowedPredictionRateRange.isValidValue(mc.getSchedule().getIntervalInMillis())
+                            ? mc.getSchedule().getIntervalInMillis()
+                            : properties.getPredictionRate());
             return map;
         }).collect(Collectors.toList());
         log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);
