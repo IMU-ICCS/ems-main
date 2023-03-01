@@ -39,7 +39,7 @@ public class InstallationHelperFactory implements InitializingBean {
 
     public InstallationHelper createInstallationHelper(NodeRegistryEntry entry) {
         String nodeType = entry.getPreregistration().get("type");
-        if ("VM".equalsIgnoreCase(nodeType)) {
+        if ("VM".equalsIgnoreCase(nodeType) || "baremetal".equalsIgnoreCase(nodeType)) {
             return createVmInstallationHelper(entry);
         }
         throw new IllegalArgumentException("Unsupported or missing Node type: "+nodeType);
