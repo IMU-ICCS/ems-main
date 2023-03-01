@@ -8,12 +8,14 @@
 
 package eu.melodic.upperware.metasolver;
 
+import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequestImpl;
+import eu.melodic.models.services.metaSolver.DeploymentProcessResponse;
 import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
@@ -402,7 +404,21 @@ public class Coordinator implements ApplicationContextAware {
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<DeploymentProcessRequest> entity = new HttpEntity<>(notification, headers);
-        return restTemplate.postForEntity(url, entity, String.class);
+//        return restTemplate.postForEntity(url, entity, String.class);
+
+        // 2023-03-01: Investigating for a (possible) bug...
+        ResponseEntity<Object> r = restTemplate.postForEntity(url, entity, Object.class);
+        log.warn(">>>>>>>>> body: {}", r.getBody());
+        log.warn(">>>>>>>>> body-type: {}", Objects.requireNonNull(r.getBody()).getClass().getName());
+        if (r.getBody() instanceof DeploymentProcessResponse) {
+            DeploymentProcessResponse dpr = (DeploymentProcessResponse) r.getBody();
+            log.warn(">>>>>>>>> DPR: processId: {}", dpr.getProcessId());
+            NotificationResult n = dpr.getResult();
+            log.warn(">>>>>>>>> DPR: notif: status: {}", n.getStatus());
+            log.warn(">>>>>>>>> DPR: notif: error-code: {}", n.getErrorCode());
+            log.warn(">>>>>>>>> DPR: notif: error-desc: {}", n.getErrorDescription());
+        }
+        return new ResponseEntity<>(r.getBody().toString(), r.getStatusCode());
     }
 
     public Watermark prepareWatermark(String uuid) {
