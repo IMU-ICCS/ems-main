@@ -69,9 +69,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         // Extract node identification and type information
         String nodeId = nodeMap.get("id");
-        String nodeOs = StringUtils.isNotBlank(nodeMap.get("operatingSystem.name"))
-                ? nodeMap.get("operatingSystem.name")
-                : nodeMap.get("operatingSystem");
+        String nodeOs = nodeMap.get("operatingSystem");
         String nodeAddress = nodeMap.get("address");
         String nodeType = nodeMap.get("type");
         String nodeName = nodeMap.get("name");

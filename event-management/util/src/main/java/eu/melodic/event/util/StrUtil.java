@@ -236,6 +236,45 @@ public class StrUtil {
     }
 
     // ------------------------------------------------------------------------
+    // Object Map-to-String Map conversion methods
+    // ------------------------------------------------------------------------
+
+    public static Map<String,Object> deepStringifyMap(Map<String,Object> inputMap) {
+        Map<String,Object> outMap = new LinkedHashMap<>();
+        for (Map.Entry<String,Object> entry : inputMap.entrySet()) {
+            if (entry.getValue()!=null && entry.getValue() instanceof Map) {
+                Map<String,Object> tmpMap = deepStringifyMap((Map<String,Object>) entry.getValue());
+                outMap.put(entry.getKey(), tmpMap);
+            } else {
+                outMap.put(entry.getKey(), entry.getValue()!=null ? entry.getValue().toString() : null);
+            }
+        }
+        return outMap;
+    }
+
+    public static Map<String,String> deepFlattenMap(Map<String,Object> inputMap) {
+        return deepFlattenMap(inputMap, "");
+    }
+
+    public static Map<String,String> deepFlattenMap(Map<String,Object> inputMap, String prefix) {
+        if (inputMap==null)
+            return Collections.emptyMap();
+        Map<String,String> outMap = new LinkedHashMap<>();
+        for (Map.Entry<String,Object> entry : inputMap.entrySet()) {
+            String newKey = prefix.isEmpty()
+                    ? entry.getKey()
+                    : (entry.getKey()!=null) ? prefix+"."+entry.getKey() : prefix;
+            if (entry.getValue()!=null && entry.getValue() instanceof Map) {
+                Map tmpMap = deepFlattenMap((Map) entry.getValue(), newKey);
+                outMap.putAll(tmpMap);
+            } else {
+                outMap.put(newKey, entry.getValue()!=null ? entry.getValue().toString() : null);
+            }
+        }
+        return outMap;
+    }
+
+    // ------------------------------------------------------------------------
     // Main for command-line use
     // ------------------------------------------------------------------------
 
