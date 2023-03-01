@@ -56,9 +56,9 @@ public class MetaSolverProperties {
     @Range(min=0, max=1)
     private double reconfigurationProbabilityThreshold = 0.5;
     @Min(0)
-    private long reconfigurationBlockingPeriod = 0;     // reconfiguration cool down period
-    private boolean preventConcurrentReconfigurations = false;
-    private long preventConcurrentReconfigurationsTimeout = -1L;
+    private long reconfigurationBlockingPeriod = 10*60*1000L;       // reconfiguration cool down period
+    private boolean preventConcurrentReconfigurations = true;
+    private long preventConcurrentReconfigurationsTimeout = 2*60*1000L;
 
     private DebugEvent debugEvents = new DebugEvent();
 
