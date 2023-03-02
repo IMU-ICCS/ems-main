@@ -106,7 +106,8 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
         try {
             return proactiveClientConnectorService.addEmsDeployment(new EmsDeploymentDefinition(
                     nodeNames,
-                    authorizationBearer
+                    authorizationBearer,
+                    false
             ));
         } catch (ProactiveClientException e) {
             log.error("Error message body: {}", e.getMessage());
