@@ -394,31 +394,26 @@ public class Coordinator implements ApplicationContextAware {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
         log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Request to ESB: url={}, notification={}", esbUrl, notification.toString());
-        ResponseEntity<String> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
+        ResponseEntity<Object> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
         log.info("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
                 response.getStatusCode(), response.getBody());
     }
 
-    private ResponseEntity<String> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+    private ResponseEntity<Object> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): BEGIN: url={}, notification={}", url, notification);
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<DeploymentProcessRequest> entity = new HttpEntity<>(notification, headers);
-//        return restTemplate.postForEntity(url, entity, String.class);
 
-        // 2023-03-01: Investigating for a (possible) bug...
-        ResponseEntity<Object> r = restTemplate.postForEntity(url, entity, Object.class);
-        log.warn(">>>>>>>>> body: {}", r.getBody());
-        log.warn(">>>>>>>>> body-type: {}", Objects.requireNonNull(r.getBody()).getClass().getName());
-        if (r.getBody() instanceof DeploymentProcessResponse) {
-            DeploymentProcessResponse dpr = (DeploymentProcessResponse) r.getBody();
-            log.warn(">>>>>>>>> DPR: processId: {}", dpr.getProcessId());
-            NotificationResult n = dpr.getResult();
-            log.warn(">>>>>>>>> DPR: notif: status: {}", n.getStatus());
-            log.warn(">>>>>>>>> DPR: notif: error-code: {}", n.getErrorCode());
-            log.warn(">>>>>>>>> DPR: notif: error-desc: {}", n.getErrorDescription());
-        }
-        return new ResponseEntity<>(r.getBody().toString(), r.getStatusCode());
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): Calling ESB: url={}, http-entity={}", url, entity);
+        ResponseEntity<Object> response = restTemplate.postForEntity(url, entity, Object.class);
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): ESB response: status={}", response.getStatusCode());
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): ESB response: status={}, response={}", response.getStatusCode(), response);
+
+        Object responseBody = response.getBody();
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): END: ESB response: status={}, response-body={}", response.getStatusCode(), responseBody);
+        return response;
     }
 
     public Watermark prepareWatermark(String uuid) {
