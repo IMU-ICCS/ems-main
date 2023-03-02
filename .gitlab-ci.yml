@@ -328,6 +328,7 @@ buildJars:ems-server:
     - build-required-part1:ems-util
     - build-required-part2:ems-broker-client
     - build-required-part1:upperware-metamodel
+    - build-required-part1:jwt-commons
   script:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
