@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
