@@ -7,8 +7,8 @@ import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.Parallel
 import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
 import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.pt_solver.pt_solver.PTSolver;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -76,7 +76,7 @@ public class PTSolverCoordinator {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
-            List<UtilityGeneratorApplication> utilityGenerator = IntStream.range(0, numThreads).mapToObj( index -> new UtilityGeneratorApplication(applicationId, cpModelFilePath,
+            List<UtilityFunctionEvaluator> utilityGenerator = IntStream.range(0, numThreads).mapToObj( index -> new UtilityFunctionEvaluator(applicationId, cpModelFilePath,
                     true, nodeCandidates, melodicSecurityProperties, jwtService)).collect(Collectors.toList());
             log.info("Starting PT Solver with " + numThreads + " threads for " + seconds + " seconds");
             solve(cp, utilityGenerator, seconds);
@@ -98,9 +98,8 @@ public class PTSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            List<UtilityGeneratorApplication> utilityGenerators = IntStream.range(0, numThreads)
-                    .mapToObj(index -> new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
-                            melodicSecurityProperties, jwtService))
+            List<UtilityFunctionEvaluator> utilityGenerators = IntStream.range(0, numThreads)
+                    .mapToObj(index -> new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates, melodicSecurityProperties, jwtService))
                     .collect(Collectors.toList());
 
             solve(cp, utilityGenerators, seconds);
@@ -117,7 +116,7 @@ public class PTSolverCoordinator {
         }
     }
 
-    private void solve(ConstraintProblem cp, List<UtilityGeneratorApplication> utilityGenerators, int seconds) {
+    private void solve(ConstraintProblem cp, List<UtilityFunctionEvaluator> utilityGenerators, int seconds) {
         PTSolver solver = new PTSolver(minTemp, maxTemp, numThreads, cp, new ParallelUtilityProviderImpl(utilityGenerators));
         Pair<List<VariableValueDTO>, Double> solution = solver.solve(new MaxRuntime(seconds, TimeUnit.SECONDS));
         log.info("Found solution with utility: {}", solution.getValue1());

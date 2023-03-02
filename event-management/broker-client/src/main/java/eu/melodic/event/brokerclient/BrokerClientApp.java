@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -92,7 +92,7 @@ public class BrokerClientApp {
             String value = args[aa++];
             String level = args[aa++];
             EventMap event = new EventMap(Double.parseDouble(value), Integer.parseInt(level), System.currentTimeMillis());
-            sendEvent(url, username, password, topic, type, event);
+            sendEvent(url, username, password, topic, type, event, collectProperties(args, aa));
         } else
         if ("publish2".equalsIgnoreCase(command)) {
             String url = processUrlArg( args[aa++] );
@@ -102,7 +102,7 @@ public class BrokerClientApp {
             payload = payload
                     .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
             EventMap event = gson.fromJson(payload, EventMap.class);
-            sendEvent(url, username, password, topic, type, event);
+            sendEvent(url, username, password, topic, type, event, collectProperties(args, aa));
         } else
         if ("publish3".equalsIgnoreCase(command)) {
             String url = processUrlArg( args[aa++] );
@@ -111,11 +111,12 @@ public class BrokerClientApp {
             String payload = args[aa++];
             payload = payload
                     .replaceAll("%TIMESTAMP%|%TS%", ""+System.currentTimeMillis());
+            Map<String, String> properties = collectProperties(args, aa);
             if ("map".equalsIgnoreCase(type)) {
                 EventMap event = gson.fromJson(payload, EventMap.class);
-                sendEvent(url, username, password, topic, type, event);
+                sendEvent(url, username, password, topic, type, event, properties);
             } else {
-                sendEvent(url, username, password, topic, type, payload);
+                sendEvent(url, username, password, topic, type, payload, properties);
             }
         } else
         // receive events from topic
@@ -223,16 +224,26 @@ public class BrokerClientApp {
         }
     }
 
+    private static Map<String, String> collectProperties(String[] args, int aa) {
+        return Arrays.stream(args, aa, args.length)
+                .map(s->s.split("[=:]",2))
+                .filter(p->StringUtils.isNotBlank(p[0]))
+                .collect(Collectors.toMap(
+                        p->p[0].trim(),
+                        p->p.length>1 ? p[1] : ""
+                ));
+    }
+
     private static String processUrlArg(String url) {
         url = url.replace("%KAP%", "daemon=true&trace=false&useInactivityMonitor=false&connectionTimeout=0&keepAlive=true");
         log.debug("BrokerClientApp: Effective URL: {}", url);
         return url;
     }
 
-    private static void sendEvent(String url, String username, String password, String topic, String type, Serializable payload) throws JMSException, IOException {
+    private static void sendEvent(String url, String username, String password, String topic, String type, Serializable payload, Map<String,String> properties) throws JMSException, IOException {
         log.info("BrokerClientApp: Publishing event: {}", payload);
         BrokerClient client = BrokerClient.newClient(username, password);
-        client.publishEvent(url, topic, type, payload, null);
+        client.publishEvent(url, topic, type, payload, properties);
         log.info("BrokerClientApp: Event payload: {}", payload);
     }
 
@@ -734,10 +745,11 @@ public class BrokerClientApp {
     protected static void usage() {
         log.info("BrokerClientApp: Usage: ");
         log.info("BrokerClientApp: client list [-U<USERNAME> [-P<PASSWORD]] <URL> ");
-        log.info("BrokerClientApp: client publish [ -U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <VALUE> <LEVEL> ");
-        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <JSON-PAYLOAD> ");
-        log.info("BrokerClientApp: client publish3 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <TEXT-PAYLOAD> ");
+        log.info("BrokerClientApp: client publish [ -U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <VALUE> <LEVEL> [<PROPERTY>]*");
+        log.info("BrokerClientApp: client publish2 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <JSON-PAYLOAD>  [<PROPERTY>]*");
+        log.info("BrokerClientApp: client publish3 [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> [-T<MSG-TYPE>] <TEXT-PAYLOAD>  [<PROPERTY>]*");
         log.info("BrokerClientApp:     <MSG-TYPE>: text, object, bytes, map");
+        log.info("BrokerClientApp:     <PROPERTY>: <Property name>=<Property value>  (use quotes if needed)");
         log.info("BrokerClientApp: client receive [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client subscribe [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> ");
         log.info("BrokerClientApp: client generator [-U<USERNAME> [-P<PASSWORD]] <URL> <TOPIC> <INTERVAL> <HOWMANY> <LOWER-VALUE> <UPPER-VALUE> <LEVEL> ");

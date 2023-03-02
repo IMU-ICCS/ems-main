@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,15 +9,16 @@
 
 package eu.melodic.event.brokerclient.event;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @Getter
 @Slf4j
-public class EventMap extends HashMap<String, Object> implements Serializable {
+public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
     public EventMap() {
         super();
     }

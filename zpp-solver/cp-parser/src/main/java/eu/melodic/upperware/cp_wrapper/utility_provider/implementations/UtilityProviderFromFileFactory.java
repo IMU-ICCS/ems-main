@@ -3,7 +3,7 @@ package eu.melodic.upperware.cp_wrapper.utility_provider.implementations;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProvider;
 import eu.melodic.upperware.cp_wrapper.utility_provider.UtilityProviderFactory;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ public class UtilityProviderFromFileFactory implements UtilityProviderFactory {
 
     @Override
     public UtilityProvider create() {
-        return new UtilityProviderImpl(new UtilityGeneratorApplication(camelModelFilePath, cpProblemFilePath,
+        return new UtilityProviderImpl(new UtilityFunctionEvaluator(camelModelFilePath, cpProblemFilePath,
                 true, nodeCandidates, melodicSecurityProperties, jwtService));
     }
 }

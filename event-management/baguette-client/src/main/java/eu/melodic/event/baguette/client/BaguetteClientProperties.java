@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -21,13 +21,18 @@ import java.util.List;
 @Data
 @Configuration
 @ConfigurationProperties
-@PropertySource("file:${MELODIC_CONFIG_DIR}/baguette-client.properties")
+@PropertySource(value = {
+		"file:${MELODIC_CONFIG_DIR}/ems-client.yml",
+		"file:${MELODIC_CONFIG_DIR}/ems-client.properties",
+		"file:${MELODIC_CONFIG_DIR}/baguette-client.yml",
+		"file:${MELODIC_CONFIG_DIR}/baguette-client.properties"
+}, ignoreResourceNotFound = true)
 @ToString(callSuper = true)
 public class BaguetteClientProperties extends SshClientProperties {
 	private boolean exitCommandAllowed = false;
 	private int killDelay = 5;
 
-	private List<Class<Collector>> collectorClasses;
+	private List<Class<? extends Collector>> collectorClasses;
 
 	private String debugFakeIpAddress;
 

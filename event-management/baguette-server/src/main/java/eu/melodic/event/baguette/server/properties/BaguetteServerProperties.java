@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Max;
@@ -26,12 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Data
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "baguette.server")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-server.properties")
-@Slf4j
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.baguette-server.properties")
 public class BaguetteServerProperties implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("BaguetteServerProperties: {}", this);
@@ -69,6 +69,7 @@ public class BaguetteServerProperties implements InitializingBean {
 
     private String address;
     public String getServerAddress() { return address; }
+    private boolean resolveHostname = true;
 
     @Min(value = 1, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")
     @Max(value = 65535, message = "Valid server ports are between 1 and 65535. Please prefer ports higher than 1023.")

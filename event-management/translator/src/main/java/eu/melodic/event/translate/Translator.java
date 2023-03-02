@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -12,6 +12,7 @@ package eu.melodic.event.translate;
 import camel.core.CamelModel;
 
 public interface Translator {
-    TranslationContext translate(String camelId);
+    TranslationContext translate(String camelModelPath);
     TranslationContext translate(CamelModel camelModel);
+    void printResults(TranslationContext translationContext, String exportName);
 }

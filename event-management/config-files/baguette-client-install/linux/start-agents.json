@@ -23,6 +23,23 @@
       "message": "Netdata is already running"
     },
     {
+      "description": "Copy Netdata Prometheus plugin configuration to node's /tmp directory",
+      "taskType": "FILE",
+      "localFileName": "${MELODIC_CONFIG_DIR}/baguette-client-install/netdata/go.d/prometheus.conf",
+      "fileName": "/tmp",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
+      "description": "Move prometheus config from /tmp to /etc/netdata/go.d/ directory",
+      "taskType": "CMD",
+      "command": "sudo -- sh -c 'mkdir -p /etc/netdata/go.d/ && mv -f /tmp/prometheus.conf /etc/netdata/go.d/' ",
+      "executable": false,
+      "exitCode": 0,
+      "match": false
+    },
+    {
       "description": "Launch Netdata",
       "taskType": "CMD",
       "command": "echo ${NODE_SSH_PASSWORD} | sudo -S /usr/sbin/netdata",

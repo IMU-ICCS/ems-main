@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -24,7 +24,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -81,5 +88,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 executor.getCorePoolSize(), executor.getMaximumPoolSize(), executor.getPoolSize(),
                 executor.getActiveCount(), executor.getKeepAliveTime(TimeUnit.SECONDS));
         return new ConcurrentTaskExecutor(executor);
+    }
+
+    @Bean
+    public javax.servlet.Filter contentCachingFilter() {
+        log.debug("contentCachingFilter(): Registering content caching request filter");
+        return (servletRequest, servletResponse, filterChain) -> {
+            log.trace("contentCachingFilter(): request={}", servletRequest);
+            HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+            //HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
+            ServletRequest contentCachingRequestWrapper = new ContentCachingRequestWrapper(httpRequest);
+            //ServletResponse contentCachingResponseWrapper = new ContentCachingResponseWrapper(httpResponse);
+            log.trace("contentCachingFilter(): request={}, content-caching-request={}", servletRequest, contentCachingRequestWrapper);
+            //log.trace("contentCachingFilter(): response={}, content-caching-response={}", servletResponse, contentCachingResponseWrapper);
+            filterChain.doFilter(contentCachingRequestWrapper, servletResponse);
+            //filterChain.doFilter(contentCachingRequestWrapper, contentCachingResponseWrapper);
+        };
     }
 }

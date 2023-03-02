@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -8,7 +8,7 @@
 
 package eu.melodic.upperware.metasolver.properties;
 
-import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse.DesignatedSolverType;
+import eu.melodic.models.services.process.ConstraintProblemEnhancementResponse;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import lombok.Data;
 import lombok.ToString;
@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,8 @@ public class MetaSolverProperties {
     private Pubsub pubsub;
     @NotNull
     private double utilityThresholdFactor;
-    private DesignatedSolverType defaultSolver = DesignatedSolverType.CPSOLVER;
+    private boolean removeRedundantCandidates;
+    private List<ConstraintProblemEnhancementResponse.DesignatedSolverType> defaultSolvers = Collections.singletonList(ConstraintProblemEnhancementResponse.DesignatedSolverType.CPSOLVER);
     private String emsUrl;
 
     private boolean cpModelUpdateEnabled = true;
@@ -54,9 +56,9 @@ public class MetaSolverProperties {
     @Range(min=0, max=1)
     private double reconfigurationProbabilityThreshold = 0.5;
     @Min(0)
-    private long reconfigurationBlockingPeriod = 0;     // reconfiguration cool down period
-    private boolean preventConcurrentReconfigurations = false;
-    private long preventConcurrentReconfigurationsTimeout = -1L;
+    private long reconfigurationBlockingPeriod = 10*60*1000L;       // reconfiguration cool down period
+    private boolean preventConcurrentReconfigurations = true;
+    private long preventConcurrentReconfigurationsTimeout = 2*60*1000L;
 
     private DebugEvent debugEvents = new DebugEvent();
 

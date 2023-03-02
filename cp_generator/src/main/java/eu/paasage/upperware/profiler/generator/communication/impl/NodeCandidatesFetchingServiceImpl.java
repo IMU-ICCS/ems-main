@@ -146,6 +146,13 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         getAttribute(requirementsMap, "minCpu").ifPresent(attribute -> log.warn("MinCpu requirement is not supported"));
         getAttribute(requirementsMap, "maxCpu").ifPresent(attribute -> log.warn("MaxCpu requirement is not supported"));
 
+        //Same requirements as above, but for camel 3.0
+        getAttribute(requirementsMap, "TotalMemory").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getMinValue()))));
+        getAttribute(requirementsMap, "TotalMemory").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.LEQ, getValueAsString(attribute.getMaxValue()))));
+
+        getAttribute(requirementsMap, "hasNumberofCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.GEQ, getValueAsString(attribute.getMinValue()))));
+        getAttribute(requirementsMap, "hasNumberofCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.LEQ, getValueAsString(attribute.getMaxValue()))));
+
         return result;
     }
 

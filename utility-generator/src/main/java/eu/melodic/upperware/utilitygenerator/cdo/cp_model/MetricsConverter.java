@@ -19,6 +19,7 @@ import org.mariuszgromada.math.mxparser.Argument;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static eu.melodic.upperware.utilitygenerator.utility_function.ArgumentFactory.createArgument;
 import static eu.melodic.upperware.utilitygenerator.utility_function.UtilityFunctionUtils.isInFormula;
 
 @Slf4j
@@ -26,6 +27,7 @@ public class MetricsConverter implements ArgumentConverter {
 
     private Collection<MetricDTO> metricsFromConstraintProblem;
     private String function;
+    private Double performanceMetrics;
 
     public MetricsConverter(ConstraintProblemExtractor constraintProblemExtractor, String function) {
         this.metricsFromConstraintProblem = constraintProblemExtractor.extractMetrics();
@@ -34,9 +36,20 @@ public class MetricsConverter implements ArgumentConverter {
 
     @Override
     public Collection<Argument> convertToArguments(Collection<VariableValueDTO> solution, Collection<ConfigurationElement> configuration) {
+        if(performanceMetrics == null) { // cover for call from evaluator constructor when performanceMetrics has not yet been set
+            return metricsFromConstraintProblem.stream()
+                    .filter(m -> isInFormula(function, m.getName()))
+                    .map(ArgumentFactory::createArgument)
+                    .collect(Collectors.toList());
+        }
+
         return metricsFromConstraintProblem.stream()
                 .filter(m -> isInFormula(function, m.getName()))
-                .map(ArgumentFactory::createArgument)
+                .map(a -> createArgument(a.getName(), performanceMetrics))
                 .collect(Collectors.toList());
+    }
+
+    public void setPerformanceMetrics(Double performanceMetrics) {
+        this.performanceMetrics = performanceMetrics;
     }
 }

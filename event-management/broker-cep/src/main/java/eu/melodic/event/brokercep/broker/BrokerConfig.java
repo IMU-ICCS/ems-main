@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -109,13 +109,15 @@ public class BrokerConfig implements InitializingBean {
                     brokerUsername, passwordUtil.encodePassword(brokerPassword));
 
             // initialize additional user credentials from configuration
-            for (String extraUserCred : properties.getAdditionalBrokerCredentials().split(",")) {
-                String[] cred = extraUserCred.split("/", 2);
-                String username = cred[0].trim();
-                String password = cred.length > 1 ? cred[1].trim() : "";
-                userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
-                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}",
-                        username, passwordUtil.encodePassword(password));
+            if (StringUtils.isNotBlank(properties.getAdditionalBrokerCredentials())) {
+                for (String extraUserCred : properties.getAdditionalBrokerCredentials().split(",")) {
+                    String[] cred = extraUserCred.split("/", 2);
+                    String username = cred[0].trim();
+                    String password = cred.length > 1 ? cred[1].trim() : "";
+                    userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
+                    log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}",
+                            username, passwordUtil.encodePassword(password));
+                }
             }
 
             // initialize Broker authentication plugin

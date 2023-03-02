@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -13,10 +13,9 @@ import eu.melodic.event.control.webconf.WebMvcConfig;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
@@ -30,7 +29,12 @@ import static eu.melodic.event.util.EmsConstant.EMS_PROPERTIES_PREFIX;
 @Validated
 @Configuration
 @ConfigurationProperties(prefix = EMS_PROPERTIES_PREFIX + "control")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.control.properties")
+/*@PropertySource(value = {
+        "file:${MELODIC_CONFIG_DIR}/ems-server.yml",
+        "file:${MELODIC_CONFIG_DIR}/ems-server.properties",
+        "file:${MELODIC_CONFIG_DIR}/ems.yml",
+        "file:${MELODIC_CONFIG_DIR}/ems.properties"
+}, ignoreResourceNotFound = true)*/
 public class ControlServiceProperties {
     public enum IpSetting {
         DEFAULT_IP,
@@ -50,8 +54,7 @@ public class ControlServiceProperties {
     private String metasolverConfigurationUrl;
     private String esbUrl;
 
-    private String preloadCamelModel;
-    private String preloadCpModel;
+    private Preload preload = new Preload();
 
     private boolean skipTranslation;
     private boolean skipMvvRetrieve;
@@ -64,10 +67,6 @@ public class ControlServiceProperties {
     private String tcLoadFile;
     private String tcSaveFile;
 
-    private boolean eventDebugEnabled;
-    private String eventDebugResourceContext;
-    private String[] eventDebugResourcePath;
-
     private boolean exitAllowed;
     @Min(1)
     private long exitGracePeriod = 10;
@@ -78,6 +77,12 @@ public class ControlServiceProperties {
 
     private TaskSchedulerProperties taskScheduler = new TaskSchedulerProperties();
     private AuthorizationProperties authorization = new AuthorizationProperties();
+
+    @Data
+    public static class Preload {
+        private String camelModel;
+        private String cpModel;
+    }
 
     @Data
     public static class TaskSchedulerProperties {

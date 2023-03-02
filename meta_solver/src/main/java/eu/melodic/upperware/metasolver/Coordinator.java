@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -8,13 +8,14 @@
 
 package eu.melodic.upperware.metasolver;
 
+import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
-import eu.melodic.models.interfaces.metaSolver.ConstraintProblemEnhancementResponse;
 import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequestImpl;
+import eu.melodic.models.services.metaSolver.DeploymentProcessResponse;
 import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
@@ -44,6 +45,7 @@ import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -56,6 +58,7 @@ public class Coordinator implements ApplicationContextAware {
     private JWTService jwtService;
     private MelodicSecurityProperties melodicSecurityProperties;
     private double uvThresholdFactor;
+    private boolean removeRedundantCandidates;
     private RestTemplate restTemplate;
 
     private String cacheAppId;
@@ -84,6 +87,7 @@ public class Coordinator implements ApplicationContextAware {
         this.metaSolverProperties = applicationContext.getBean(MetaSolverProperties.class);
         this.melodicSecurityProperties = applicationContext.getBean(MelodicSecurityProperties.class);
         this.uvThresholdFactor = metaSolverProperties.getUtilityThresholdFactor();
+        this.removeRedundantCandidates = metaSolverProperties.isRemoveRedundantCandidates();
         this.restTemplate = new RestTemplate();
         this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
@@ -91,16 +95,19 @@ public class Coordinator implements ApplicationContextAware {
 
     /**
      * How can we select the most appropriate solver??
-     * For R2.5 it will always be CP solver
+     * For R4.0 it will be a list of pre-configured solvers
+     * @return The selected solver names (List of strings)
      */
-    public ConstraintProblemEnhancementResponse.DesignatedSolverType selectSolver(String applicationId, String cpModelPath) throws ConcurrentAccessException {
-        log.info("MetaSolver.Coordinator: selectSolver(): appId={}, model={}", applicationId, cpModelPath);
+    public List<String> selectSolvers(String applicationId, String cpModelPath) throws ConcurrentAccessException {
+        log.info("MetaSolver.Coordinator: selectSolvers(): app-id={}, model-path={}", applicationId, cpModelPath);
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
 
-        ConstraintProblemEnhancementResponse.DesignatedSolverType defaultSolver = metaSolverProperties.getDefaultSolver();
-        log.info("MetaSolver.Coordinator: selectSolver(): Solver selected: {}", defaultSolver);
-        return defaultSolver;
+        List<String> defaultSolvers = metaSolverProperties.getDefaultSolvers()
+                .stream().map(Enum::name)
+                .collect(Collectors.toList());
+        log.info("MetaSolver.Coordinator: selectSolvers(): Solvers selected: {}", defaultSolvers);
+        return defaultSolvers;
     }
 
     /**
@@ -163,46 +170,83 @@ public class Coordinator implements ApplicationContextAware {
         this.cacheAppId = applicationId;
         this.cacheCpModelPath = cpModelPath;
 
-        // Update candidate solution
-        CpModelHelper helper = (CpModelHelper) applicationContext.getBean(CpModelHelper.class);
-        int newCanPos = helper.findAndSetCandidateSolutionIdInCpModel(applicationId, cpModelPath);
-        if (newCanPos >= 0) log.debug("MetaSolver.Coordinator: candidate solution updated: id={}", newCanPos);
-        else if (newCanPos == -1) log.debug("MetaSolver.Coordinator: no candidate solution found");
-        else log.debug("MetaSolver.Coordinator: an error occurred while looking for candidate solution");
+        // Get current candidate and deployed solution indexes, and all solutions utilities
+        CpModelHelper helper = applicationContext.getBean(CpModelHelper.class);
+        CpModelHelper.SolutionData solutionData = helper.getSolutionIndexesAndUtilitiesFromCpModel(applicationId, cpModelPath);
+        log.debug("MetaSolver.Coordinator: evaluateSolution(): Solutions data in CP model: appId={}, model={}, data={}", applicationId, cpModelPath, solutionData);
 
-        // Get utility values of new and deployed solutions
-        double[] solUv = helper.getSolutionUtilities(applicationId, cpModelPath);
-        log.debug("MetaSolver.Coordinator: solUv: {}", solUv);
-
-        // check if an error occurred
-        if (solUv == null) {
-            log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: An error occurred: appId={}, model={}", applicationId, cpModelPath);
-            return SolutionEvaluationResponse.EvaluationResultType.ERROR;
-        }
-        if (solUv[0] == -2) {
+        // Check if no new candidate solutions are available (i.e. with index > current (old) candidate index)
+        int currentCandidatesIndex = solutionData.getCandidateIndex();
+        int currentDeployedIndex = solutionData.getDeployedIndex();
+        currentCandidatesIndex = currentCandidatesIndex>=0 ? currentCandidatesIndex : -1;
+        currentDeployedIndex = currentDeployedIndex>=0 ? currentDeployedIndex : -1;
+        List<Double> utilities = solutionData.getUtilities();
+        if (utilities.size() == 0) {
             log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
-        if (solUv[1] == -1) {
-            log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No candidate solution found in CP model: appId={}, model={}", applicationId, cpModelPath);
+        if (currentCandidatesIndex+1 >= utilities.size()) {
+            log.warn("MetaSolver.Coordinator: evaluateSolution(): RETURN ERROR: No new candidate solutions found in CP model: appId={}, model={}", applicationId, cpModelPath);
             return SolutionEvaluationResponse.EvaluationResultType.ERROR;
         }
+        log.debug("MetaSolver.Coordinator: evaluateSolution(): Solutions and solution indexes found in CP model: appId={}, model={}, num-of-solutions={}, current-candidates-index={}, deployed-index={}", applicationId, cpModelPath, utilities.size(), currentCandidatesIndex, currentDeployedIndex);
 
-        // check if a solution is deployed. If no solution is deployed accept new solution
-        if (solUv[0] < 0) {
-            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: No deployed solution found. Accepting new solution: appId={}, model={}", applicationId, cpModelPath);
-            return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
+        // Find new candidate solution with the highest utility (search solutions with index > current candidates index)
+        int maxUVIndex = currentCandidatesIndex+1;
+        double maxUV = utilities.get(maxUVIndex);
+        log.trace("MetaSolver.Coordinator: evaluateSolution(): First new candidate solution in CP model: appId={}, model={}, index={}, utility={}", applicationId, cpModelPath, maxUVIndex, maxUV);
+        for (int i=solutionData.getCandidateIndex()+2; i<utilities.size(); i++) {
+            log.trace("MetaSolver.Coordinator: evaluateSolution(): Checking new candidate solution in CP model: appId={}, model={}, index={}, utility={}", applicationId, cpModelPath, i, utilities.get(i));
+            if (utilities.get(i) > maxUV) {
+                maxUV = utilities.get(i);
+                maxUVIndex = i;
+            }
+        }
+        log.debug("MetaSolver.Coordinator: evaluateSolution(): Selected candidate solution with the highest utility: appId={}, model={}, index={}, utility={}", applicationId, cpModelPath, maxUVIndex, maxUV);
+        int selectedIndex = maxUVIndex;
+        double selectedUV = maxUV;
+
+        // Check if the selected candidate solution (with the highest utility) is at least X% better than the currently deployed solution
+        if (currentDeployedIndex>=0) {
+            double deployedUV = utilities.get(currentDeployedIndex);
+            if (selectedUV <= uvThresholdFactor * deployedUV) {
+                log.info("MetaSolver.Coordinator: evaluateSolution(): Selected candidate solution has NOT better utility than the deployed solution: appId={}, model={}, candidate-index/utility={}/{}, deployed-index/utility={}/{}, uv-threshold-factor={}",
+                        applicationId, cpModelPath, selectedIndex, selectedUV, currentDeployedIndex, deployedUV, uvThresholdFactor);
+                selectedUV = -1;
+                selectedIndex = -1;
+            } else {
+                log.info("MetaSolver.Coordinator: evaluateSolution(): Selected candidate solution has better utility than the deployed solution: appId={}, model={}, candidate-index/utility={}/{}, deployed-index/utility={}/{}, uv-threshold-factor={}",
+                        applicationId, cpModelPath, selectedIndex, selectedUV, currentDeployedIndex, deployedUV, uvThresholdFactor);
+            }
+        } else {
+            log.info("MetaSolver.Coordinator: evaluateSolution(): There is no deployed solution. Selected candidate solution will be accepted: appId={}, model={}, index={}, utility={}",
+                    applicationId, cpModelPath, selectedIndex, selectedUV);
         }
 
-        // a deployed solution exists. We need to compare the utility values of new and deployed solutions
-        log.debug("MetaSolver.Coordinator: evaluateSolution(): utility-threshold-factor={} : appId={}, model={}", uvThresholdFactor, applicationId, cpModelPath);
-        double depSolUv = solUv[0];
-        double newSolUv = solUv[1];
-        if (newSolUv > uvThresholdFactor * depSolUv) {
-            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: New solution is ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+        // Move selected candidate solution (if any) to the end of the list
+        if (selectedIndex>=0) {
+            helper.moveSolutionToPositionInCpModel(applicationId, cpModelPath, selectedIndex, utilities.size() - 1);
+            selectedIndex = utilities.size() - 1;
+        }
+        // Remove not selected candidate solutions
+        if (removeRedundantCandidates) {
+            int limit = selectedIndex>=0 ? selectedIndex : utilities.size();
+            helper.removeSolutionRangeFromCpModel(applicationId, cpModelPath, currentCandidatesIndex + 1, limit);
+            if (selectedIndex>=0) {
+                solutionData = helper.getSolutionIndexesAndUtilitiesFromCpModel(applicationId, cpModelPath);
+                selectedIndex = solutionData.getUtilities().size() - 1;
+            }
+        }
+
+        // Update candidate solutions index to the last solution (i.e. to the one with the highest utility)
+        helper.setSolutionIndexesInCpModel(applicationId, cpModelPath, solutionData.getUtilities().size() - 1, currentDeployedIndex);
+
+        // Return result
+        if (selectedIndex>=0) {
+            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN POSITIVE: Selected candidate solution is ACCEPTED: appId={}, model={}, new-solution-index={}", applicationId, cpModelPath, selectedIndex);
             return SolutionEvaluationResponse.EvaluationResultType.POSITIVE;
         } else {
-            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: New solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
+            log.info("MetaSolver.Coordinator: evaluateSolution(): RETURN NEGATIVE: Selected candidate solution is NOT ACCEPTED: appId={}, model={}", applicationId, cpModelPath);
             return SolutionEvaluationResponse.EvaluationResultType.NEGATIVE;
         }
     }
@@ -350,17 +394,26 @@ public class Coordinator implements ApplicationContextAware {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
         log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Request to ESB: url={}, notification={}", esbUrl, notification.toString());
-        ResponseEntity<String> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
+        ResponseEntity<Object> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
         log.info("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
                 response.getStatusCode(), response.getBody());
     }
 
-    private ResponseEntity<String> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+    private ResponseEntity<Object> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): BEGIN: url={}, notification={}", url, notification);
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<DeploymentProcessRequest> entity = new HttpEntity<>(notification, headers);
-        return restTemplate.postForEntity(url, entity, String.class);
+
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): Calling ESB: url={}, http-entity={}", url, entity);
+        ResponseEntity<Object> response = restTemplate.postForEntity(url, entity, Object.class);
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): ESB response: status={}", response.getStatusCode());
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): ESB response: status={}, response={}", response.getStatusCode(), response);
+
+        Object responseBody = response.getBody();
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): END: ESB response: status={}, response-body={}", response.getStatusCode(), responseBody);
+        return response;
     }
 
     public Watermark prepareWatermark(String uuid) {

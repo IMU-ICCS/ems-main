@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -37,6 +37,7 @@ public class NodeRegistry {
         String ipAddress = hostnameOrAddress;
 
         // Get IP address from provided hostname or address
+        Throwable errorObj = null;
         try {
             log.debug("NodeRegistry.addNode(): Resolving IP address from provided hostname/address: {}", hostnameOrAddress);
             InetAddress host = InetAddress.getByName(hostnameOrAddress);
@@ -44,12 +45,13 @@ public class NodeRegistry {
             String resolvedIpAddress = host.getHostAddress();
             log.info("NodeRegistry.addNode(): Provided-Address={},  Resolved-IP-Address={}", hostnameOrAddress, resolvedIpAddress);
             ipAddress = resolvedIpAddress;
-            nodeInfo.put("original-address", nodeInfo.get("address"));
-            nodeInfo.put("address", ipAddress);
         } catch (UnknownHostException e) {
             log.error("NodeRegistry.addNode(): EXCEPTION while resolving IP address from provided hostname/address: {}\n", ipAddress, e);
-            throw e;
+            errorObj = e;
+            //throw e;
         }
+        nodeInfo.put("original-address", hostnameOrAddress);
+        nodeInfo.put("address", ipAddress);
 
         // Check if an entry with the same IP address is already registered
         NodeRegistryEntry entry = registry.get(ipAddress);
@@ -68,6 +70,7 @@ public class NodeRegistry {
 
         // Create and register node registry entry
         entry = new NodeRegistryEntry(ipAddress, clientId, coordinator.getServer()).nodePreregistration(nodeInfo);
+        if (errorObj!=null) entry.getErrors().add(errorObj);
         nodeInfo.put("baguette-client-id", clientId);
         registry.put(ipAddress, entry);
         log.debug("NodeRegistry.addNode(): Added info for node at address: {}\nNode info: {}", ipAddress, nodeInfo);
@@ -128,5 +131,7 @@ public class NodeRegistry {
         return registry.values();
     }
 
-    public Collection<String> getNodeReferences() { return registry.values().stream().map(NodeRegistryEntry::getReference).collect(Collectors.toList()); }
+    public Collection<String> getNodeReferences() {
+        return registry.values().stream().map(NodeRegistryEntry::getReference).collect(Collectors.toList());
+    }
 }

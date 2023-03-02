@@ -7,8 +7,8 @@ import eu.melodic.upperware.cp_wrapper.utility_provider.implementations.UtilityP
 import eu.melodic.upperware.cp_wrapper.utils.cp_variable.CpVariableCreator;
 import eu.melodic.upperware.cp_wrapper.utils.solution_result_notifier.SolutionResultNotifier;
 import eu.melodic.upperware.genetic_solver.runner.GeneticSolverRunner;
-import eu.melodic.upperware.utilitygenerator.UtilityGeneratorApplication;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
+import eu.melodic.upperware.utilitygenerator.evaluator.UtilityFunctionEvaluator;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
@@ -70,8 +70,7 @@ public class GeneticSolverCoordinator {
         try {
             NodeCandidates nodeCandidates = filecacheService.load(nodeCandidatesFilePath);
             ConstraintProblem cp = getCPFromFile(cpModelFilePath);
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpModelFilePath,
-                    true, nodeCandidates, melodicSecurityProperties, jwtService);
+            UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(applicationId, cpModelFilePath, true, nodeCandidates, melodicSecurityProperties, jwtService);
 
             boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
             if (!solutionFeasible) {
@@ -95,8 +94,7 @@ public class GeneticSolverCoordinator {
 
             ConstraintProblem cp = getCPFromCDO(cpResourcePath, trans)
                     .orElseThrow(() -> new IllegalStateException("Constraint Problem does not exist in CDO"));
-            UtilityGeneratorApplication utilityGenerator = new UtilityGeneratorApplication(applicationId, cpResourcePath, false, nodeCandidates,
-                    melodicSecurityProperties, jwtService);
+            UtilityFunctionEvaluator utilityGenerator = new UtilityFunctionEvaluator(applicationId, cpResourcePath, false, nodeCandidates, melodicSecurityProperties, jwtService);
 
             boolean solutionFeasible = solve(cp, utilityGenerator, timeLimit);
 
@@ -118,7 +116,7 @@ public class GeneticSolverCoordinator {
         }
     }
 
-    private boolean solve(ConstraintProblem cp, UtilityGeneratorApplication utilityGenerator, int timeLimit) {
+    private boolean solve(ConstraintProblem cp, UtilityFunctionEvaluator utilityGenerator, int timeLimit) {
         GeneticSolverRunner runner = new GeneticSolverRunner();
         runner.setPopulationSize(populationSize);
         runner.setTimeLimitSeconds(timeLimit);

@@ -19,39 +19,42 @@
 
     <groupId>org.ow2.paasage</groupId>
     <artifactId>upperware</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>6.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Upperware</name>
 
     <modules>
         <module>upperware_metamodel</module>
-<!--        <module>jwt-commons</module>-->
-<!--        <module>jwt-server</module>-->
+        <module>jwt-commons</module>
+        <module>jwt-server</module>
         <module>melodic-commons</module>
         <module>melodic-cache</module>
-<!--        <module>adapter</module>-->
+        <module>adapter</module>
         <module>cp_generator</module>
-<!--        <module>gui-backend</module>-->
-<!--        <module>meta_solver</module>-->
-<!--        <module>utility-generator</module>-->
-<!--        <module>cp-solver</module>-->
-<!--        <module>la_converter</module>-->
-<!--        <module>event-management</module>-->
-<!--        <module>mq-http-adapter</module>-->
-<!--        <module>zpp-solver</module>-->
+        <module>gui-backend</module>
+        <module>meta_solver</module>
+        <module>utility-generator</module>
+        <module>cp-solver</module>
+        <!--Currently not used, disabled for morphemic-rc4.0-->
+        <!--module>la_converter</module>-->
+        <module>event-management</module>
+        <module>mq-http-adapter</module>
+        <module>zpp-solver</module>
+        <module>melodic-cache-standalone</module>
+        <module>utility-generator-standalone</module>
         <!--functionizer-testing-tool is to uncomment when proactive will support FAAS-->
         <!--<module>functionizer-testing-tool</module>-->
     </modules>
 
 
     <properties>
-        <melodic.version>5.0.0-SNAPSHOT</melodic.version>
+        <melodic.version>6.0.0-SNAPSHOT</melodic.version>
 
         <!-- version for all paasage components-->
-        <camel.version>4.5.0-SNAPSHOT</camel.version>
+        <camel.version>6.0.0-SNAPSHOT</camel.version>
 
-        <interfaces.version>5.0.0-SNAPSHOT</interfaces.version>
+        <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>
 
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -124,12 +127,12 @@
                 while adding dependency in child pom ${parent.version}
                 will be set to upperware version not parent of upperware -->
                 <!--<version>${parent.version}</version>-->
-                <version>3.1.0-SNAPSHOT</version>
+                <version>6.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>eu.melodic.cdo</groupId>
                 <artifactId>client</artifactId>
-                <version>3.1.0-SNAPSHOT</version>
+                <version>6.0.0-SNAPSHOT</version>
                 <classifier>repackaged</classifier>
             </dependency>
             <dependency>
@@ -311,33 +314,30 @@
         </pluginManagement>
     </build>
     <repositories>
+        <!--        CDO rand Camel epository-->
         <repository>
-            <id>eu.7bulls</id>
-            <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>gitlab-maven-cdo</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
+        </repository>
+
+        <repository>
+            <id>gitlab-maven-camel</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1227/packages/maven</url>
+        </repository>
+
+        <repository>
+            <id>gitlab-maven-melodic-integration</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1230/packages/maven</url>
+        </repository>
+
+        <repository>
+            <id>gitlab-maven-melodic-security</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1235/packages/maven</url>
         </repository>
 
         <repository>
             <id>maven-central</id>
             <url>https://repo1.maven.org/maven2/</url>
-        </repository>
-
-        <repository>
-            <id>ow2</id>
-            <name>OW2 repository</name>
-            <url>http://repository.ow2.org/nexus/content/repositories/public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
         <repository>
             <id>ossrh.snapshots</id>
@@ -353,14 +353,12 @@
     </repositories>
     <distributionManagement>
         <repository>
-            <id>eu.7bulls</id>
-            <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-releases/</url>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1234/packages/maven</url>
         </repository>
         <snapshotRepository>
-            <id>eu.7bulls</id>
-            <name>Melodic 7bulls repository</name>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-snapshots/</url>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1234/packages/maven</url>
         </snapshotRepository>
     </distributionManagement>
 

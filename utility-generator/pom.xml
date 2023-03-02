@@ -8,11 +8,13 @@
     <parent>
         <groupId>org.ow2.paasage</groupId>
         <artifactId>upperware</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>eu.melodic</groupId>
     <artifactId>utility-generator</artifactId>
+
+    <version>6.0.0-SNAPSHOT</version>
 
     <name>Upperware - Utility Generator</name>
 
@@ -28,6 +30,7 @@
         <dependency>
             <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
+            <version>6.0.0-SNAPSHOT</version>
             <classifier>repackaged</classifier>
         </dependency>
 
@@ -62,6 +65,36 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>jwt-commons</artifactId>
         </dependency>
 
         <dependency>
@@ -121,12 +154,18 @@
             <groupId>org.ow2.paasage</groupId>
             <artifactId>melodic-commons</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>jwt-commons</artifactId>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-core</artifactId>
+            <version>5.7.0</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>
-
 
 </project>

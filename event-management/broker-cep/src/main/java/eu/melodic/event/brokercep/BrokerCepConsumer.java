@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,6 +11,7 @@ package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
+import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
@@ -23,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,11 +33,11 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 @Slf4j
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
-    private static AtomicLong eventCounter = new AtomicLong(0);
-    private static AtomicLong textEventCounter = new AtomicLong(0);
-    private static AtomicLong objectEventCounter = new AtomicLong(0);
-    private static AtomicLong otherEventCounter = new AtomicLong(0);
-    private static AtomicLong eventFailuresCounter = new AtomicLong(0);
+    private final static AtomicLong eventCounter = new AtomicLong(0);
+    private final static AtomicLong textEventCounter = new AtomicLong(0);
+    private final static AtomicLong objectEventCounter = new AtomicLong(0);
+    private final static AtomicLong otherEventCounter = new AtomicLong(0);
+    private final static AtomicLong eventFailuresCounter = new AtomicLong(0);
 
     @Autowired
     private BrokerCepProperties properties;
@@ -176,7 +179,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
                 // Send message to Esper
                 if (mesg.getObject() instanceof Map) {
-                    cepService.handleEvent((Map<String, Object>) mesg.getObject(), messageDestination.getPhysicalName());
+                    //cepService.handleEvent((Map<String, Object>) mesg.getObject(), messageDestination.getPhysicalName());
+                    EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
+                    copyEventProperties(message, eventMap);
+                    cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
                 } else {
                     cepService.handleEvent(mesg.getObject());
                 }
@@ -188,7 +194,11 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
                         messageDestination.getPhysicalName(), mesg.getText(), mesg.getJMSXMimeType());
 
                 // Send message to Esper
-                cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
+                //cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
+                EventMap eventMap = new com.google.gson.Gson().fromJson(mesg.getText(), EventMap.class);
+                copyEventProperties(message, eventMap);
+                log.trace("BrokerCepConsumer.onMessage(): event-map={}", eventMap);
+                cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
                 textEventCounter.incrementAndGet();
             } else {
                 otherEventCounter.incrementAndGet();
@@ -199,6 +209,23 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
             eventFailuresCounter.incrementAndGet();
         }
+    }
+
+    private EventMap copyEventProperties(Message message, EventMap eventMap) throws JMSException {
+        log.debug("BrokerCepConsumer.copyEventProperties(): BEGIN: message={}, event={}", message, eventMap);
+
+        // Copy message properties to event map
+        Collections.list((Enumeration<String>) message.getPropertyNames()).forEach(n -> {
+            log.trace("BrokerCepConsumer.copyEventProperties(): Copying property: message={}, event={}, property={}", message, eventMap, n);
+            try {
+                String v = message.getStringProperty(n);
+                eventMap.setEventProperty(n, v);
+                log.debug("BrokerCepConsumer.copyEventProperties(): Copied property: message={}, event={}, property={}, value={}", message, eventMap, n, v);
+            } catch (Exception e) {
+                log.debug("BrokerCepConsumer.copyEventProperties(): EXCEPTION: while copying property: message={}, event={}, property={}, Exception: ", message, eventMap, n, e);
+            }
+        });
+        return eventMap;
     }
 
     public static long getEventCounter() { return eventCounter.get(); }

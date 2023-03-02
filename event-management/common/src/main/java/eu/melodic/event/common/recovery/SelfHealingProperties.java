@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -26,7 +26,7 @@ public class SelfHealingProperties {
 
 	@Data
 	public static class Recovery {
-		private long delay = 10000;
+		private long delay = 1000;
 		private long retryDelay = 60000;
 		private int maxRetries = 3;
 

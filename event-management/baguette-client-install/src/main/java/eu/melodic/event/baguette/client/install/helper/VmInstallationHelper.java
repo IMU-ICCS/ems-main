@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -18,6 +18,7 @@ import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.NetUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
     private ClientInstallationProperties clientInstallationProperties;
 
     @Override
-    public ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws IOException {
+    public ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry, TranslationContext translationContext) throws IOException {
         Map<String, String> nodeMap = entry.getPreregistration();
 
         String baseUrl = nodeMap.get("BASE_URL");
@@ -117,6 +118,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
                 .provider(nodeProvider)
                 .instructionSets(instructionsSetList)
                 .nodeRegistryEntry(entry)
+                .translationContext(translationContext)
                 .build();
         log.debug("VmInstallationHelper.createClientInstallationTask(): Created client installation task: {}", installationTask);
 
@@ -225,7 +227,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
             // Read installation instructions from JSON file
             List<String> jsonFiles = null;
             if (nodeMap.containsKey("instruction-files")) {
-                jsonFiles = Arrays.stream(nodeMap.getOrDefault("instruction-files", "").toString().split(","))
+                jsonFiles = Arrays.stream(nodeMap.getOrDefault("instruction-files", "").split(","))
                         .filter(StringUtils::isNotBlank)
                         .map(String::trim)
                         .collect(Collectors.toList());

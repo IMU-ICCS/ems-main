@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,13 +9,20 @@
 
 package eu.melodic.event.control.info;
 
+import com.logviewer.data2.LogFormat;
+import com.logviewer.logLibs.LogConfigurationLoader;
+import com.logviewer.springboot.LogViewerSpringBootConfig;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +31,7 @@ import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.QueryParam;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,23 +39,38 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Import(LogViewerSpringBootConfig.class)
 public class InfoServiceController {
 
     private final InfoServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
     private final IEmsInfoService emsInfoService;
 
+    @Bean
+    public LogConfigurationLoader getLogConfigurationLoader() {
+        // Initialize Log-Viewer log paths
+        List<Path> logPaths = properties.getLogViewerFiles();
+        if (logPaths==null || logPaths.size()==0)
+            return null;
+        return () -> {
+            LinkedHashMap<Path,LogFormat> logConf = new LinkedHashMap<>();
+            logPaths.forEach(p -> logConf.put(p, null));
+            log.info("LogConfigurationLoader: log-paths: {}", logConf);
+            return logConf;
+        };
+    }
+
     @GetMapping("/info/metrics/get")
-    public Mono<Map<String,Object>> serverMetricsGet(HttpServletRequest request) {
+    public Mono<Map<String,Object>> serverMetricsGet(HttpServletRequest request, @AuthenticationPrincipal UserDetails user) {
         log.info("serverMetricsGet(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
-        Map<String,Object> message = createServerMetricsResult(null, -1L);
+        Map<String,Object> message = createServerMetricsResult(null, -1L, user);
         log.debug("serverMetricsGet(): message={}", message);
         return Mono.just(message);
     }
 
     @GetMapping("/info/metrics/stream")
     public Flux<ServerSentEvent<Map<String,Object>>> serverMetricsStream(
-            @QueryParam("interval") Optional<Integer> interval, HttpServletRequest request)
+            @QueryParam("interval") Optional<Integer> interval, HttpServletRequest request, @AuthenticationPrincipal UserDetails user)
     {
         String sid = UUID.randomUUID().toString();
         log.info("serverMetricsStream(): interval={} --- client: {}:{}, Stream-Id: {}",
@@ -59,7 +82,7 @@ public class InfoServiceController {
         return Flux.interval(Duration.ofSeconds(intervalInSeconds))
                 .onBackpressureDrop()
                 .map(sequence -> {
-                    Map<String,Object> message = createServerMetricsResult(sid, sequence);
+                    Map<String,Object> message = createServerMetricsResult(sid, sequence, user);
                     log.debug("serverMetricsStream(): seq={}, id={}, message={}", sequence, sid, message);
                     return ServerSentEvent.<Map<String,Object>> builder()
                             .id(String.valueOf(sequence))
@@ -127,10 +150,10 @@ public class InfoServiceController {
 
     @GetMapping("/info/all-metrics/get/{clientIds}")
     public Mono<Map<String,Object>> allMetricsGet(
-            @PathVariable("clientIds") List<String> clientIds, HttpServletRequest request)
+            @PathVariable("clientIds") List<String> clientIds, HttpServletRequest request, @AuthenticationPrincipal UserDetails user)
     {
         log.info("allMetricsGet(): baguette-client-ids={} --- client: {}:{}", clientIds, request.getRemoteAddr(), request.getRemotePort());
-        Map<String,Object> message1 = createServerMetricsResult(null, -1L);
+        Map<String,Object> message1 = createServerMetricsResult(null, -1L, user);
         Map<String,Object> message2 = createClientMetricsResult(null, -1L, clientIds);
         Map<String,Object> message = new LinkedHashMap<>();
         message.put("ems", message1);
@@ -143,7 +166,8 @@ public class InfoServiceController {
     public Flux<ServerSentEvent<Map<String,Object>>> allMetricsStream(
             @PathVariable("clientIds") List<String> clientIds,
             @QueryParam("interval") Optional<Integer> interval,
-            HttpServletRequest request)
+            HttpServletRequest request,
+            @AuthenticationPrincipal UserDetails user)
     {
         String sid = UUID.randomUUID().toString();
         log.info("allMetricsStream(): interval={}, baguette-client-ids={} --- client: {}:{}, Stream-Id: {}",
@@ -155,7 +179,7 @@ public class InfoServiceController {
         return Flux.interval(Duration.ofSeconds(intervalInSeconds))
                 .onBackpressureDrop()
                 .map(sequence -> {
-                    Map<String,Object> message1 = createServerMetricsResult(sid, sequence);
+                    Map<String,Object> message1 = createServerMetricsResult(sid, sequence, user);
                     Map<String,Object> message2 = createClientMetricsResult(sid, sequence, clientIds);
                     Map<String,Object> message = new LinkedHashMap<>();
                     message.put("ems", message1);
@@ -180,11 +204,12 @@ public class InfoServiceController {
 
     // ------------------------------------------------------------------------
 
-    public Map<String,Object> createServerMetricsResult(String sid, long sequence) {
+    public Map<String,Object> createServerMetricsResult(String sid, long sequence, UserDetails userDetails) {
         log.trace("createServerMetricsResult: BEGIN: sid={}, seq={}", sid, sequence);
         Map<String, Object> metrics = new LinkedHashMap<>(emsInfoService.getServerMetricValues());
 
         addMetricsFromEnvVars(metrics);
+        addAuthenticationInfo(metrics, userDetails);
 
         metrics.put(".stream-id", sid);
         metrics.put(".sequence", sequence);
@@ -272,6 +297,15 @@ public class InfoServiceController {
                     });
                 }
             }
+        }
+    }
+
+    private void addAuthenticationInfo(Map<String, Object> metrics, UserDetails userDetails) {
+        log.debug("addAuthenticationInfo: user-details: {}", userDetails);
+        if (userDetails!=null && StringUtils.isNotBlank(userDetails.getUsername())) {
+            String username = userDetails.getUsername();
+            metrics.put(".authentication-username", username);
+            log.debug("addAuthenticationInfo: Adding username from session: {}", username);
         }
     }
 }

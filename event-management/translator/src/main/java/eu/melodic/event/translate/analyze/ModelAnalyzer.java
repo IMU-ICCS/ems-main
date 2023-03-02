@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -13,8 +13,8 @@ import camel.constraint.*;
 import camel.core.*;
 import camel.data.Data;
 import camel.deployment.Component;
-import camel.metric.*;
 import camel.metric.Sensor;
+import camel.metric.*;
 import camel.metric.impl.MetricVariableImpl;
 import camel.requirement.OptimisationRequirement;
 import camel.requirement.RequirementModel;
@@ -22,11 +22,13 @@ import camel.requirement.ServiceLevelObjective;
 import camel.scalability.*;
 import camel.type.*;
 import camel.unit.Unit;
+import com.google.gson.Gson;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.util.StrUtil;
 import eu.melodic.models.interfaces.ems.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +41,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelAnalyzer {
     private final CamelToEplTranslatorProperties properties;
+    private final Gson gson;
 
     private List<Sink> EMS_SINKS;
 
@@ -149,7 +151,7 @@ public class ModelAnalyzer {
         // for every metric type model...
         metricModels.forEach(mm -> {
             // get current-config metric variables
-            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}... (1)", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
@@ -204,7 +206,7 @@ public class ModelAnalyzer {
         // for every metric type model...
         for (MetricTypeModel mm : metricModels) {
             // get metric variables
-            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting Current-Config Metric Variables from Metric Type model {}... (2)", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
@@ -378,7 +380,7 @@ public class ModelAnalyzer {
 
     private Set<Metric> _extractMetricsFromFormula(TranslationContext _TC, String formula) {
         log.debug("    Extracting metrics from formula: {}", formula);
-        List<String> argNames = MathUtil.getFormulaArguments(formula);
+        Set<String> argNames = MathUtil.getFormulaArguments(formula);
         log.debug("    Formula arguments: {}", argNames);
 
         // find formula component metrics
@@ -458,7 +460,7 @@ public class ModelAnalyzer {
         // for every metric type model...
         metricModels.forEach(mm -> {
             // get metric variables
-            log.info("  Extracting current-config Metric Variables from Metric Type model {}...", mm.getName());
+            log.info("  Extracting current-config Metric Variables from Metric Type model {}... (3)", mm.getName());
             List<MetricVariable> variables = mm.getMetrics().stream()
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
@@ -837,11 +839,10 @@ public class ModelAnalyzer {
 
         // Get common Metric Context parameters
         Metric metric = context.getMetric();
-        Window window = context.getWindow();
         Schedule schedule = context.getSchedule();
         ObjectContext objContext = context.getObjectContext();
-        log.info("  _decomposeMetricContext(): common fields: {} :: metric={}, window={}, schedule={}, object={}",
-                context.getName(), metric.getName(), getElementName(window), getElementName(schedule), getElementName(objContext));
+        log.info("  _decomposeMetricContext(): common fields: {} :: metric={}, schedule={}, object={}",
+                context.getName(), metric.getName(), getElementName(schedule), getElementName(objContext));
 
         // Commented addition in DAG and decomposition of Metrics
         /*_TC.DAG.addNode(context, metric).setGrouping(getGrouping(metric));
@@ -850,10 +851,11 @@ public class ModelAnalyzer {
 
         if (context instanceof CompositeMetricContext) {
             CompositeMetricContext cmc = (CompositeMetricContext) context;
+            Window window = cmc.getWindow();
             GroupingType grouping = cmc.getGroupingType();
             EList<MetricContext> composingMetricContexts = cmc.getComposingMetricContexts();
-            log.info("  _decomposeMetricContext(): CompositeMetricContext: {} :: grouping={}, composing-metric-contexts={}",
-                    cmc.getName(), grouping != null ? grouping.getName() : null, getListElementNames(composingMetricContexts));
+            log.info("  _decomposeMetricContext(): CompositeMetricContext: {} :: window={}, grouping={}, composing-metric-contexts={}",
+                    cmc.getName(), getElementName(window), grouping != null ? grouping.getName() : null, getListElementNames(composingMetricContexts));
 
             for (MetricContext mctx : composingMetricContexts) {
                 _TC.DAG.addNode(context, mctx).setGrouping(getGrouping(mctx));
@@ -914,20 +916,34 @@ public class ModelAnalyzer {
 
     private boolean hasAnnotation(NamedElement elem, String annotation) {
         log.trace("  hasAnnotation: BEGIN: elem={}, looking-for-annotation={}", elem.getName(), annotation);
+        if (elem.getAnnotations()==null || elem.getAnnotations().size()==0) return false;
         return elem.getAnnotations().stream().anyMatch(ann -> {
-            log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
-            //StringBuilder annPath = new StringBuilder(ann.getName());
-            StringBuilder annPath = new StringBuilder(ann.getId());
-            camel.mms.MmsConcept p = (camel.mms.MmsConcept) ann;
-            while (p.getParent() != null) {
-                p = p.getParent();
-                log.trace("  hasAnnotation:  Adding parent:   id={}, name={}", p.getId(), p.getName());
-                //annPath.insert(0, p.getName() + ".");
-                annPath.insert(0, p.getId() + ".");
+            try {
+                log.trace("  hasAnnotation:   Checking Annotation: id={}, name={}", ann.getId(), ann.getName());
+                //StringBuilder annPath = new StringBuilder(ann.getName());
+                StringBuilder annPath = new StringBuilder(ann.getId());
+                camel.mms.MmsConcept p;
+                if (ann instanceof camel.mms.MmsConceptInstance || ann instanceof camel.mms.MmsProperty) {
+                    p = (camel.mms.MmsConcept) ann.eContainer();
+                    log.trace("  hasAnnotation:  Adding {} parent:   id={}, name={}", ann.getClass().getSimpleName(), p.getId(), p.getName());
+                    //annPath.insert(0, p.getName() + ".");
+                    annPath.insert(0, p.getId() + ".");
+                } else {
+                    p = (camel.mms.MmsConcept) ann;
+                }
+                while (p.getParent() != null) {
+                    p = p.getParent();
+                    log.trace("  hasAnnotation:  Adding parent:   id={}, name={}", p.getId(), p.getName());
+                    //annPath.insert(0, p.getName() + ".");
+                    annPath.insert(0, p.getId() + ".");
+                }
+                log.trace("  hasAnnotation: Annotation: {}", annPath);
+                log.trace("  hasAnnotation: Annotation matches to looking-for-annotation: {}", annPath.toString().equals(annotation));
+                return annPath.toString().equals(annotation);
+            } catch (Exception e) {
+                log.error("  hasAnnotation: Annotation: EXCEPTION: elem={}, looking-for-annotation={}", elem.getName(), annotation);
+                throw e;
             }
-            log.trace("  hasAnnotation: Annotation: {}", annPath);
-            log.trace("  hasAnnotation: Annotation matches to looking-for-annotation: {}", annPath.toString().equals(annotation));
-            return annPath.toString().equals(annotation);
         });
     }
 
@@ -1051,31 +1067,9 @@ public class ModelAnalyzer {
             return Collections.emptySet();
         }
 
-        // Create result set
-        Set<Monitor> results = new HashSet<>();
-
-        // Get sensor type and configuration
+        // Get push or pull sensor (configured)
         eu.melodic.models.interfaces.ems.Sensor monitorSensor;
-        if (sensor.isIsPush()) {
-            PushSensor pushSensor = new PushSensorImpl();
-            String port = sensor.getConfiguration();
-            try {
-                pushSensor.setPort(Integer.parseInt(port));
-            } catch (NumberFormatException nfe) {
-                log.error("    _createMonitorsForSensor(): ERROR: Invalid port, using -1: sensor={}, port={}", sensor.getName(), port);
-                pushSensor.setPort(-1);
-            }
-            monitorSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
-            log.info("    _createMonitorsForSensor(): sensor={} :: port={}, PushSensor: {}", sensor.getName(), port, pushSensor);
-        } else {
-            PullSensor pullSensor = new PullSensorImpl();
-            String className = sensor.getConfiguration();
-            pullSensor.setClassName(className);
-            pullSensor.setConfiguration(Collections.emptyList());
-            //pullSensor.setInterval(....);
-            monitorSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
-            log.info("    _createMonitorsForSensor(): sensor={} :: class-name={}, PullSensor: {}", sensor.getName(), className, pullSensor);
-        }
+        monitorSensor = _createPushOrPullSensor(sensor);
 
         // Get monitor component
         String monitorComponent = getComponentName(objContext);
@@ -1086,7 +1080,7 @@ public class ModelAnalyzer {
         }
 
         // Get additional configuration
-        String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
+        /*String sensorConfigAnnotation = properties.getSensorConfigurationAnnotation();
         List<KeyValuePair> keyValuePairs = null;
         Optional<Feature> sensorConfig = sensor.getSubFeatures().stream()
                 .filter(f -> hasAnnotation(f, sensorConfigAnnotation))
@@ -1117,11 +1111,10 @@ public class ModelAnalyzer {
                         return pair;
                     })
                     .collect(Collectors.toList());
-        }
+        }*/
 
-        // Get monitor metrics and intervals
-        boolean isPull = !sensor.isIsPush();
-        long sensorInterval = Long.MAX_VALUE;    // in seconds
+        // Create results set
+        Set<Monitor> results = new HashSet<>();
         for (DAGNode parent : _TC.DAG.getParentNodes(sensorDagNode)) {
             // Get metric name from sensor
             log.info("    + _createMonitorsForSensor(): sensor={} :: parent-node={}", sensor.getName(), parent.getName());
@@ -1134,7 +1127,7 @@ public class ModelAnalyzer {
             log.info("    + _createMonitorsForSensor(): sensor={} :: metric/topic={}, component={}", sensor.getName(), monitorMetric, monitorComponent);
 
             // Get interval (if PullSensor)
-            if (isPull) {
+            /*if (isPull) {
                 Schedule sched = rmc.getSchedule();
                 if (sched != null) {
                     long schedInterval = sched.getInterval();
@@ -1148,7 +1141,7 @@ public class ModelAnalyzer {
                     }
 //XXX:ASK: WHAT IF it is a REPETITIONS schedule????
                 }
-            }
+            }*/
 
             // Create a Monitor instance
             Monitor monitor = new MonitorImpl();
@@ -1156,27 +1149,201 @@ public class ModelAnalyzer {
             monitor.setSensor(monitorSensor);
             monitor.setComponent(monitorComponent);
             monitor.setSinks(EMS_SINKS);
-            monitor.setTags(keyValuePairs);
+//            monitor.setTags(keyValuePairs);
             // watermark will be set in Coordinator
 
             results.add(monitor);
         }
 
-        // Set sensor interval
-        if (isPull) {
-            if (sensorInterval < properties.getSensorMinInterval() || sensorInterval == Long.MAX_VALUE)
-            {
-                sensorInterval = properties.getSensorDefaultInterval();
-            }
-            Interval iv = new IntervalImpl();
-            iv.setPeriod((int) sensorInterval);
-            iv.setUnit(Interval.UnitType.SECONDS);
-            monitorSensor.getPullSensor().setInterval(iv);
-        }
-
         log.info("    _createMonitorsForSensor(): sensor={} :: monitors={}", sensor.getName(), results);
 
         return results;
+    }
+
+    private eu.melodic.models.interfaces.ems.Sensor _createPushOrPullSensor(Sensor sensor) {
+        log.info("    _createPushOrPullSensor(): BEGIN: sensor={} : {}", sensor.getName(), sensor);
+
+        Map<String, String> sensorConfigMap;
+
+        // Get configuration from JSON-string (if Sensor is annotated as JSON-formatted string)
+        sensorConfigMap = getSensorConfigurationFromJsonString(sensor);
+
+        // Get configuration from sensor attributes (will override settings from connection string)
+        Map<String, String> attributesConfigMap = getSensorConfigurationFromAttributes(sensor);
+
+        log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap BEFORE merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
+        if (sensorConfigMap != null && attributesConfigMap != null)
+            sensorConfigMap.putAll(attributesConfigMap);
+        else if (sensorConfigMap == null)
+            sensorConfigMap = attributesConfigMap;
+        log.debug("    _createPushOrPullSensor(): sensor={} :: sensorConfigMap AFTER merging with attribute config.: {}", sensor.getName(), sensorConfigMap);
+
+        // Process sensor configuration
+        int port = -1;
+        String className = null;
+        List<KeyValuePair> sensorConfig = null;
+        Interval interval = null;
+
+        if (sensorConfigMap!=null && sensorConfigMap.size()>0) {
+            // Extract sensor settings from configuration Map
+            try {
+                if (sensor.isIsPush()) {
+                    // Push sensor config - Get port
+                    String portStr = sensorConfigMap.get("port");
+                    port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
+                            String.format("    _createPushOrPullSensor(): ERROR: Invalid port. Using -1: sensor=%s, configuration=%s\n",
+                                    sensor.getName(), sensorConfigMap));
+                } else {
+                    // Pull Sensor config - Get class name
+                    className = StrUtil.getWithVariations(sensorConfigMap, "className", "").trim();
+
+                    // Pull Sensor config - Get interval period
+                    String periodStr = StrUtil.getWithVariations(sensorConfigMap, "intervalPeriod", "").trim();
+                    int period = StrUtil.strToInt(periodStr, (int)properties.getSensorDefaultInterval(), (i)->i>=properties.getSensorMinInterval(), false,
+                            String.format("    _createPushOrPullSensor(): Invalid interval period in configuration: sensor=%s, configuration=%s\n",
+                                    sensor.getName(), sensorConfigMap));
+
+                    // Pull Sensor config - Get interval unit
+                    String periodUnitStr = StrUtil.getWithVariations(sensorConfigMap, "intervalUnit", "").trim();
+                    Interval.UnitType periodUnit = StrUtil.strToEnum(periodUnitStr, Interval.UnitType.class, Interval.UnitType.SECONDS, false,
+                            String.format("    _createPushOrPullSensor(): Invalid interval unit in configuration: sensor=%s, configuration=%s\n",
+                                    sensor.getName(), sensorConfigMap));
+
+                    // Create an Interval instance
+                    interval = new IntervalImpl();
+                    interval.setPeriod(period);
+                    interval.setUnit(periodUnit);
+                }
+
+            } catch (Exception e) {
+                log.error("    _createPushOrPullSensor(): ERROR: While processing sensor configuration: sensor={}, configuration={}\n",
+                        sensor.getName(), sensor.getConfiguration(), e);
+                throw e;
+            }
+
+        } else {
+            // Sensor is neither annotated as a JSON-formatted-configuration element
+            // nor there are any attributes. Hence, config. Map is empty
+            log.info("    _createPushOrPullSensor(): Sensor configuration is empty or missing: sensor={}, config={}, attributes={}",
+                    sensor.getName(), sensor.getConfiguration(), sensor.getAttributes());
+
+            if (sensor.isIsPush()) {
+                String portStr = sensor.getConfiguration();
+                port = StrUtil.strToInt(portStr, -1, (i)->i>0 && i<=65535, false,
+                        String.format("    _createPushOrPullSensor(): ERROR: Invalid port. Using -1: sensor=%s, port=%s\n", sensor.getName(), portStr));
+            } else {
+                className = sensor.getConfiguration();
+                interval = new IntervalImpl();
+                interval.setPeriod((int) properties.getSensorDefaultInterval());
+                interval.setUnit(Interval.UnitType.SECONDS);
+            }
+        }
+
+        // Build a list of KeyValuePair's using the configuration Map
+        sensorConfig = Collections.emptyList();
+        if (sensorConfigMap!=null) {
+            sensorConfig = sensorConfigMap.entrySet().stream()
+                    .map(entry -> {
+                        KeyValuePairImpl keyValuePair = new KeyValuePairImpl();
+                        keyValuePair.setKey(entry.getKey());
+                        keyValuePair.setValue(entry.getValue());
+                        return keyValuePair;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Create PushSensor or PullSensor
+        eu.melodic.models.interfaces.ems.Sensor pushOrPullSensor;
+        if (sensor.isIsPush()) {
+            log.info("    _createPushOrPullSensor(): PUSH sensor: sensor={}", sensor.getName());
+            PushSensor pushSensor = new PushSensorImpl();
+            pushSensor.setPort(port);
+            pushSensor.setAdditionalProperties(Collections.singletonMap("configuration", sensorConfig));
+            pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
+            log.info("    _createPushOrPullSensor(): sensor={} :: port={}, additional-properties={}, PushSensor: {}",
+                    sensor.getName(), port, pushSensor.getAdditionalProperties(), pushSensor);
+        } else {
+            log.info("    _createPushOrPullSensor(): PULL sensor: sensor={}", sensor.getName());
+            PullSensor pullSensor = new PullSensorImpl();
+            pullSensor.setClassName(className);
+            pullSensor.setConfiguration(sensorConfig);
+            pullSensor.setInterval(interval);
+            pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
+            log.info("    _createPushOrPullSensor(): sensor={} :: class-name={}, PullSensor: {}",
+                    sensor.getName(), className, pullSensor);
+        }
+        return pushOrPullSensor;
+    }
+
+    private Map<String, String> getSensorConfigurationFromAttributes(Sensor sensor) {
+        // Process sensor attributes. Attributes will override configuration string settings
+        List<Attribute> sensorAttributes = sensor.getAttributes();
+        if (sensorAttributes!=null) {
+            log.info("    getSensorConfigurationFromAttributes(): sensor={} :: Processing attributes: {}", sensor.getName(), sensorAttributes);
+            Map<String, String> attributesConfigMap =
+                    sensorAttributes.stream().filter(Objects::nonNull)
+                            .collect(Collectors.toMap(
+                                    NamedElement::getName,
+                                    attribute -> {
+                                        if (attribute.getValue() instanceof StringValue)
+                                            return ((StringValue) attribute.getValue()).getValue();
+                                        else if (attribute.getValue() instanceof BooleanValue)
+                                            return Boolean.toString(((BooleanValue) attribute.getValue()).isValue());
+                                        else if (attribute.getValue() instanceof IntValue)
+                                            return Integer.toString(((IntValue) attribute.getValue()).getValue());
+                                        else if (attribute.getValue() instanceof FloatValue)
+                                            return Float.toString(((FloatValue) attribute.getValue()).getValue());
+                                        else if (attribute.getValue() instanceof DoubleValue)
+                                            return Double.toString(((DoubleValue) attribute.getValue()).getValue());
+                                        else
+                                            throw new ModelAnalysisException("Invalid Attribute Value type: " + attribute.getValue().getClass().getName() + " in sensor configuration: sensor=" + sensor.getName() + ", attribute=" + attribute.getName());
+                                    }
+                            ));
+            log.info("    getSensorConfigurationFromAttributes(): sensor={} :: Configuration extracted from attributes (will override config. string settings): {}", sensor.getName(), attributesConfigMap);
+            return attributesConfigMap;
+        }
+        return null;
+    }
+
+    private Map<String, String> getSensorConfigurationFromJsonString(Sensor sensor) {
+        // Check if sensor is annotated as a JSON-formatted-configuration element (Annotation is configurable)
+        // If the configured annotation is set to '*' then even non-annotated sensors will be treated like they
+        // were annotated
+        Map<String, String> sensorConfigMap = null;
+        if ("*".equals(properties.getSensorConfigurationAnnotation()) ||
+                hasAnnotation(sensor, properties.getSensorConfigurationAnnotation()))
+        {
+            log.info("    _createPushOrPullSensor(): Sensor configuration string is in JSON format: sensor={}, config={}", sensor.getName(), sensor.getConfiguration());
+
+            if (StringUtils.isNotBlank(sensor.getConfiguration())) {
+                // Convert JSON-formatted configuration string to Map
+                Map map;
+                try {
+                    // Convert JSON string to Map
+                    map = gson.fromJson(sensor.getConfiguration(), Map.class);
+
+                    // Convert Map to Map<String,String>
+                    sensorConfigMap = new LinkedHashMap<>();
+                    for (Object key : map.keySet()) {
+                        Object val = map.get(key);
+                        String keyStr = (key!=null) ? key.toString() : null;
+                        String valStr = (val!=null) ? val.toString() : null;
+                        sensorConfigMap.put(keyStr, valStr);
+                    }
+                    log.info("    _createPushOrPullSensor(): Extracted sensor configuration: sensor={}, configuration={}",
+                            sensor.getName(), sensorConfigMap);
+                } catch (Exception e) {
+                    log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration does not contain a valid JSON string: sensor={}, configuration={}\n",
+                            sensor.getName(), sensor.getConfiguration(), e);
+                    throw e;
+                }
+            } else {
+                log.error("    _createPushOrPullSensor(): ERROR: Sensor configuration string is blank. It must contain configuration in JSON format: sensor={}, configuration={}",
+                        sensor.getName(), sensor.getConfiguration());
+                throw new IllegalArgumentException("Sensor configuration string is blank. It must contain config. in JSON format: sensor="+ sensor.getName()+", configuration="+ sensor.getConfiguration());
+            }
+        }
+        return sensorConfigMap;
     }
 
     private void _checkFormulaAndComponents(TranslationContext _TC, String formula, List<Metric> componentMetrics) {
@@ -1186,12 +1353,12 @@ public class ModelAnalyzer {
         if (componentMetrics == null) componentMetrics = new ArrayList<>();
         List<String> metricNames = getListElementNames(componentMetrics);
         log.debug("    _checkFormulaAndComponents(): formula={}, component-metrics={}", formula, metricNames);
-        List<String> argNames = MathUtil.getFormulaArguments(formula);
+        Set<String> argNames = MathUtil.getFormulaArguments(formula);
         log.debug("    _checkFormulaAndComponents(): formula={}, arguments={}", formula, argNames);
 
         // check if all arguments are found in component metrics - Detailed report
         Set<String> diff1 = new HashSet<>(argNames);
-        diff1.removeAll(metricNames);
+        metricNames.forEach(diff1::remove);
         log.debug("    _checkFormulaAndComponents(): diff1={}", diff1);
         if (diff1.size() > 0) {
             log.error("    _checkFormulaAndComponents(): ERROR: Formula arguments not found in component metrics: formula={}, arguments-not-found={}, component-metrics={}", formula, diff1, metricNames);
@@ -1199,7 +1366,7 @@ public class ModelAnalyzer {
 
         // check if all component metrics are found in arguments - Detailed report
         Set<String> diff2 = new HashSet<>(metricNames);
-        diff2.removeAll(argNames);
+        argNames.forEach(diff2::remove);
         log.debug("    _checkFormulaAndComponents(): diff2={}", diff2);
         if (diff2.size() > 0) {
             log.error("    _checkFormulaAndComponents(): ERROR: Formula component metrics not found in formula arguments: formula={}, metrics-not-found={}, arguments={}", formula, diff2, argNames);
