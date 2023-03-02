@@ -253,6 +253,7 @@ buildJars:melodic-cache-standalone:
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:melodic-cache
+    - build-required-part1:jwt-commons
   script:
     - $MC_STANDALONE_CLI -Pwithout-docker clean install
   artifacts:
