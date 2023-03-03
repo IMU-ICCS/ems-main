@@ -2,7 +2,7 @@ package eu.melodic.upperware.mcts_solver.solver.utils;
 
 import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 public class VariableExtractor {
     public static long getVariableValue(VariableType type, NodeCandidate nodeCandidate) {
