@@ -14,7 +14,7 @@ import eu.melodic.upperware.nc_solver.nc_solver.node_candidate.node_candidate_el
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import org.jamesframework.core.problems.GenericProblem;
 import org.jamesframework.core.problems.Problem;
 import org.jamesframework.core.search.algo.ParallelTempering;

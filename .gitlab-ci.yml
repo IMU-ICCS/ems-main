@@ -235,7 +235,6 @@ buildJars:utility-generator-standalone:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part3:utility-generator
@@ -250,7 +249,6 @@ buildJars:melodic-cache-standalone:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:melodic-cache
@@ -266,7 +264,6 @@ buildJars:adapter:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:jwt-commons
@@ -287,7 +284,6 @@ buildJars:cp-generator:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:jwt-commons
@@ -306,7 +302,6 @@ buildJars:cp-solver:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:jwt-commons
@@ -326,7 +321,6 @@ buildJars:ems-server:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:ems-util
@@ -344,7 +338,6 @@ buildJars:metasolver:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:jwt-commons
@@ -360,7 +353,6 @@ buildJars:mq-adapter:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part2:ems-broker-client
@@ -378,7 +370,6 @@ buildJars:gui-backend:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:jwt-commons
@@ -396,7 +387,6 @@ buildJars:jwt-server:
   stage: buildJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:jwt-commons
@@ -417,7 +407,6 @@ buildAndDeployJars:broker-client:
   stage: buildAndDeployJars
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:ems
@@ -436,7 +425,6 @@ deployDocker:utility-generator-standalone:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -454,7 +442,6 @@ deployDocker:melodic-cache-standalone:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -472,7 +459,6 @@ deployDocker:adapter:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -490,7 +476,6 @@ deployDocker:cp-generator:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -508,7 +493,6 @@ deployDocker:cp-solver:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   needs:
     - buildJars:cp-solver
@@ -526,7 +510,6 @@ deployDocker:ems-server:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   needs:
     - buildJars:ems-server
@@ -543,7 +526,6 @@ deployDocker:metasolver:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -561,7 +543,6 @@ deployDocker:mq-adapter:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -579,7 +560,6 @@ deployDocker:gui-backend:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE
@@ -597,7 +577,6 @@ deployDocker:jwt-server:
   stage: deployDocker
   only:
     - morphemic-rc4.0
-    - SALAAS
   image: $DOCKER_DIND_IMAGE
   services:
     - $DOCKER_DIND_SERVICE

@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class NCParser {
-    private Gson gson = new Gson();
-    private CacheService<NodeCandidates> filecacheService = new FilecacheService();
+    private final Gson gson = new Gson();
+    private final CacheService<NodeCandidates> filecacheService = new FilecacheService();
 
     public NodeCandidates parse(String pathToJSON, Collection<String> componentNames) throws FileNotFoundException {
         List<NodeCandidate> nodes = Arrays.asList(gson.fromJson(new FileReader(pathToJSON), NodeCandidate[].class));
