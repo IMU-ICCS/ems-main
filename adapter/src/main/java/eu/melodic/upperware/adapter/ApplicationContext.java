@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter;
 import camel.deployment.DeploymentPackage;
 import camel.organisation.OrganisationPackage;
 import camel.type.TypePackage;
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import com.google.gson.Gson;
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
@@ -44,7 +45,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
@@ -133,11 +133,8 @@ public class ApplicationContext {
   }
 
   @Bean
-  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter() {
-    return new ProactiveClientServiceForAdapterImpl(adapterProperties.getPaConfig().getRestUrl(),
-            adapterProperties.getPaConfig().getLogin(),
-            adapterProperties.getPaConfig().getPassword(),
-            adapterProperties.getPaConfig().getEncryptorPw());
+  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter(ProactiveClientConnectorService proactiveClientConnectorService) {
+    return new ProactiveClientServiceForAdapterImpl(proactiveClientConnectorService);
   }
 
   //Busy Instance Number provider

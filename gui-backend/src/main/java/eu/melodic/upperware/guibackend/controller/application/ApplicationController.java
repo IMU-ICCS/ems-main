@@ -7,7 +7,7 @@ import io.github.cloudiator.rest.model.Function;
 import io.github.cloudiator.rest.model.Node;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Deployment;
+import org.ow2.proactive.sal.model.Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

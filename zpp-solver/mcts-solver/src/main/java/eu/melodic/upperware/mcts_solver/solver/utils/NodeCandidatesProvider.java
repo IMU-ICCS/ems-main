@@ -9,7 +9,7 @@ import eu.melodic.upperware.cp_wrapper.utils.numeric_value.implementations.LongV
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.paasage.upperware.metamodel.cp.Domain;
 import eu.paasage.upperware.metamodel.cp.VariableType;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.util.Collection;
 import java.util.HashMap;

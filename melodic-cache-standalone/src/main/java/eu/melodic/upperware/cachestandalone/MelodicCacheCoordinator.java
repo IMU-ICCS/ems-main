@@ -5,7 +5,7 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.cachestandalone.exception.NodeCandidatesNotFound;
 import eu.melodic.upperware.cachestandalone.exception.NodeCandidatesNotLoaded;
 import lombok.RequiredArgsConstructor;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 

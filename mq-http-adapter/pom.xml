@@ -22,7 +22,6 @@
         <dependency>
             <groupId>eu.melodic.event</groupId>
             <artifactId>broker-client</artifactId>
-            <classifier>jar-with-dependencies</classifier>
             <version>${project.version}</version>
         </dependency>
         <dependency>

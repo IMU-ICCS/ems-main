@@ -1,14 +1,13 @@
 package eu.melodic.cache;
 
-import com.google.gson.Gson;
 import eu.melodic.cache.exception.CacheException;
-import org.activeeon.morphemic.model.NodeCandidate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.io.Serializable;
 import java.util.*;
@@ -16,7 +15,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.activeeon.morphemic.model.NodeCandidate.NodeCandidateTypeEnum.*;
+import static org.ow2.proactive.sal.model.NodeCandidate.NodeCandidateTypeEnum.*;
 
 /**
  * Created by pszkup on 04.01.18.
@@ -78,7 +77,7 @@ public class NodeCandidates implements Serializable {
         Optional<NodeCandidate> cheapest = get(vmName, providerIndex, predicates).stream().reduce(nodeCandidateSortOperator);
 
         if (cheapest.isPresent()) {
-            log.debug("Cheapest NodeCandidate found!!! {}", new Gson().toJson(cheapest.get()));
+            log.debug("Cheapest NodeCandidate found!!! {}", cheapest.get().toString());
         } else {
             log.debug("Cheapest nodeCandidate not found!!!");
         }
