@@ -35,7 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.jms.ConnectionFactory;
@@ -426,7 +425,6 @@ public class BrokerConfig implements InitializingBean {
     /**
      * Creates a new connection factory
      */
-    @Bean
     public ConnectionFactory connectionFactory() {
         return connectionFactory(null);
     }
@@ -482,13 +480,16 @@ public class BrokerConfig implements InitializingBean {
                 .computeIfAbsent(connectionString, this::connectionFactory);
     }
 
-    /**
-     * Creates a new JMS template for client-side connections
-     */
-    @Bean
-    public JmsTemplate jmsTemplate() {
-        JmsTemplate template = new JmsTemplate();
-        template.setConnectionFactory(connectionFactory());
-        return template;
+    public ConnectionFactory getConnectionFactoryForConsumer() {
+        String connStr = StringUtils.isNotBlank(properties.getBrokerUrlForConsumer()) ? properties.getBrokerUrlForConsumer() : null;
+        if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
+            log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
+            connStr = properties.getBrokerUrlForConsumer();
+        } else {
+            log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Default broker URL will be used for Broker-CEP consumer instance: {}", properties.getBrokerUrlForClients());
+            connStr = null;
+        }
+        return connectionFactoryCache
+                .computeIfAbsent(connStr, this::connectionFactory);
     }
 }
