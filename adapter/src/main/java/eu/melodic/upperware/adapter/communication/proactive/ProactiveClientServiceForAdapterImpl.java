@@ -3,6 +3,7 @@ package eu.melodic.upperware.adapter.communication.proactive;
 import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import cloud.morphemic.connectors.exception.ProactiveClientException;
 import eu.melodic.upperware.adapter.exception.AdapterException;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
@@ -19,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServiceForAdapter {
 
     private final long TIMEOUT_SECONDS = 5;
+
+    private final AdapterProperties adapterProperties;
 
     private final ProactiveClientConnectorService proactiveClientConnectorService;
 
@@ -107,7 +110,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
             return proactiveClientConnectorService.addEmsDeployment(new EmsDeploymentDefinition(
                     nodeNames,
                     authorizationBearer,
-                    false
+                    adapterProperties.isDeploymentInsidePrivateNetwork()
             ));
         } catch (ProactiveClientException e) {
             log.error("Error message body: {}", e.getMessage());

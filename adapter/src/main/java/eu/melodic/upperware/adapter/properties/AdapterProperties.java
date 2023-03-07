@@ -46,6 +46,9 @@ public class AdapterProperties {
   @NotNull
   private ActiveMqConfig activeMq;
 
+  @NotNull
+  private boolean deploymentInsidePrivateNetwork;
+
   @Data
   public static class Esb {
 
