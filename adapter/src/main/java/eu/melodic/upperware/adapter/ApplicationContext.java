@@ -133,8 +133,9 @@ public class ApplicationContext {
   }
 
   @Bean
-  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter(ProactiveClientConnectorService proactiveClientConnectorService) {
-    return new ProactiveClientServiceForAdapterImpl(proactiveClientConnectorService);
+  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter(ProactiveClientConnectorService proactiveClientConnectorService,
+                                                                           AdapterProperties adapterProperties) {
+    return new ProactiveClientServiceForAdapterImpl(adapterProperties, proactiveClientConnectorService);
   }
 
   //Busy Instance Number provider
