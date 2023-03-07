@@ -29,7 +29,10 @@ public class CepEvalAggregator implements AggregationMethod {
     public void enter(Object value) {
         log.debug("CepEvalAggregator.enter(): aggregator-hash={}, input={}, hash={}", hashCode(), value, value.hashCode());
         traceValue("ENTER-BEFORE", value, null, true);
-        entries.add((Object[]) value);        // 0:formula, 1:stream-names, 2+:EventMap
+        if (value instanceof Object[])
+            entries.put(Arrays.hashCode((Object[]) value), (Object[]) value);   // 0:formula, 1:stream-names, 2+:EventMap
+        else
+            log.error("CepEvalAggregator.enter(): ERROR: WRONG ARG TYPE: Expected Object[]: aggregator-hash={}, input={}, input-type={}", hashCode(), value, value.getClass().getName());
         traceValue("ENTER-AFTER", value, null, true);
     }
 
