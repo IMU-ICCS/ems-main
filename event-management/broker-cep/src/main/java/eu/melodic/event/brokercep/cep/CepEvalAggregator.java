@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class CepEvalAggregator implements AggregationMethod {
-    private final List<Object[]> entries = new ArrayList<>();
+    private final LinkedHashMap<Integer,Object[]> entries = new LinkedHashMap<>();
 
     public void clear() {
         log.debug("CepEvalAggregator.clear(): aggregator-hash={}", hashCode());
@@ -30,7 +30,7 @@ public class CepEvalAggregator implements AggregationMethod {
         log.debug("CepEvalAggregator.enter(): aggregator-hash={}, input={}, hash={}", hashCode(), value, value.hashCode());
         traceValue("ENTER-BEFORE", value, null, true);
         if (value instanceof Object[])
-            entries.add((Object[]) value);      // 0:formula, 1:stream-names, 2+:EventMap
+            entries.put(Arrays.hashCode((Object[]) value), (Object[]) value);      // 0:formula, 1:stream-names, 2+:EventMap
         else
             log.error("CepEvalAggregator.enter(): ERROR: WRONG ARG TYPE: Expected Object[]: aggregator-hash={}, input={}, input-type={}", hashCode(), value, value.getClass().getName());
         traceValue("ENTER-AFTER", value, null, true);
@@ -40,15 +40,17 @@ public class CepEvalAggregator implements AggregationMethod {
         log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, hash={}", hashCode(), value, value.hashCode());
         traceValue("LEAVE-BEFORE", value, null, true);
 
-        int p = findEntry(value);
-        Object[] removedObject = p>-1 ? entries.remove(p) : new Object[0];
+//        int p = findEntry(value);
+//        Object[] removedObject = p!=-1 ? entries.remove(p) : null;
+        int valueHash = Arrays.hashCode((Object[]) value);
+        Object[] removedObject = entries.remove(valueHash);
         log.debug("CepEvalAggregator.leave(): aggregator-hash={}, input={}, hash={}, p={}, removed={}", hashCode(), value, value.hashCode(),
-                p, Arrays.asList(removedObject));
+                /*p*/null, removedObject==null ? null : Arrays.asList(removedObject));
 
         traceValue("LEAVE-AFTER", removedObject, value, true);
     }
 
-    private int findEntry(Object value) {
+    /*private int findEntry(Object value) {
         log.trace("CepEvalAggregator.findEntry: BEGIN:  to-remove={}", value);
         if (value==null) {
             log.trace("CepEvalAggregator.findEntry: END: ILLEGAL ARG: NULL ARG: to-remove={}", value);
@@ -67,7 +69,7 @@ public class CepEvalAggregator implements AggregationMethod {
 
         log.trace("CepEvalAggregator.findEntry: num-of-entries: {}", entries.size());
         int pos = -1;
-        for (Object[] oArr : entries) {
+        for (Object[] oArr : entries.values()) {
             pos++;
             log.trace("CepEvalAggregator.findEntry: entry-item: pos={}, item={}, to-remove={}", pos, oArr, value);
             if (oArr==value) {
@@ -77,10 +79,10 @@ public class CepEvalAggregator implements AggregationMethod {
             log.trace("CepEvalAggregator.findEntry: entry-item: pos={}, item-arr-len={}, to-remove-arr-len={}", pos, oArr.length, valArrLen);
             if (oArr.length!=valArrLen)
                 continue;
-            /*int x = _findEntry_extraChecks(valArr, oArr);
-            log.trace("CepEvalAggregator.findEntry: entry-item: pos={}, extra-checks-result={}", pos, x);
-            if (x != 0)
-                continue;*/
+//            int x = _findEntry_extraChecks(valArr, oArr);
+//            log.trace("CepEvalAggregator.findEntry: entry-item: pos={}, extra-checks-result={}", pos, x);
+//            if (x != 0)
+//                continue;
             if (log.isTraceEnabled())
                 log.trace("CepEvalAggregator.findEntry: entry-item: pos={}, item-arr-hash={}, to-remove-arr-hash={}", pos, Arrays.hashCode(oArr), Arrays.hashCode(valArr));
             if (Arrays.hashCode(oArr) != Arrays.hashCode(valArr))
@@ -93,7 +95,7 @@ public class CepEvalAggregator implements AggregationMethod {
         return -10;
     }
 
-    /*private static Integer _findEntry_extraChecks(Object[] valArr, Object[] oArr) {
+    private static Integer _findEntry_extraChecks(Object[] valArr, Object[] oArr) {
         for (int i = 0; i< oArr.length; i++) {
             if (i>=2) {
                 if (oArr[i] instanceof EventMap && valArr[i] instanceof EventMap) {
@@ -133,9 +135,10 @@ public class CepEvalAggregator implements AggregationMethod {
         log.debug("CepEvalAggregator.getValue(): BEGIN");
 
         // Get an unmodifiable local copy of entries
-        List<Object[]> _entries;
+        Map<Integer, Object[]> _entries;
         synchronized (entries) {
-            _entries = Collections.unmodifiableList(entries);
+//            _entries = Collections.unmodifiableList(entries);
+            _entries = Collections.unmodifiableMap(entries);
         }
 
         if (_entries.size() == 0) {
@@ -144,7 +147,8 @@ public class CepEvalAggregator implements AggregationMethod {
         }
 
         // get formula and stream names (they must be identical for all entries)
-        Object[] first = _entries.get(0);
+//        Object[] first = _entries.get(0);
+        Object[] first = _entries.values().iterator().next();
         String formula = (String) first[0];
         String[] streamNames = ((String) first[1]).split(",");
 
@@ -155,7 +159,7 @@ public class CepEvalAggregator implements AggregationMethod {
         }
 
         // append events from entries into stream event lists
-        for (Object[] entry : _entries) {
+        for (Object[] entry : _entries.values()) {
             if (!entry[0].equals(formula) && !entry[1].equals(streamNames))
                 throw new IllegalArgumentException("Aggregator entries do not contain the same formula or stream names in arguments #0 or #1");
             for (int i = 0; i < streamNames.length; i++) {
@@ -253,7 +257,7 @@ public class CepEvalAggregator implements AggregationMethod {
         if (listEntries) {
             log.trace("CepEvalAggregator.logValue: LIST-ENTRIES:  ----> ENTRIES: {}", entries.size());
             int j = 0;
-            for (Object arr : entries) {
+            for (Object arr : entries.values()) {
                 log.trace("CepEvalAggregator.logValue: LIST-ENTRIES:  ----> ENTRY-{}: ------------------------------", j);
                 traceValue("LOG-VALUE-"+j, arr, null, false);
             }
