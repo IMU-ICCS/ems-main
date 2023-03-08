@@ -1,10 +1,11 @@
 package eu.melodic.cache;
 
-import org.activeeon.morphemic.model.GeoLocation;
-import org.activeeon.morphemic.model.Location;
-import org.activeeon.morphemic.model.NodeCandidate;
+
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.OperatingSystemFamily;
+import org.ow2.proactive.sal.model.GeoLocation;
+import org.ow2.proactive.sal.model.Location;
+import org.ow2.proactive.sal.model.NodeCandidate;
+import org.ow2.proactive.sal.model.OperatingSystemFamily;
 
 import java.util.Arrays;
 import java.util.Objects;

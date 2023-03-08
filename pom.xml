@@ -350,6 +350,11 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>activeeon</id>
+            <name>repository.activeeon</name>
+            <url>http://repository.activeeon.com/content/groups/proactive/</url>
+        </repository>
     </repositories>
     <distributionManagement>
         <repository>

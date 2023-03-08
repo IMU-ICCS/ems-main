@@ -212,6 +212,7 @@ build-required-part3:utility-generator:
     - build-required-part1:upperware-metamodel
     - build-required-part1:melodic-cache
     - build-required-part2:melodic-commons
+    - build-basic-dependencies:melodic-upperware
   artifacts:
     expire_in: 1 week
     paths:
@@ -251,6 +252,7 @@ buildJars:melodic-cache-standalone:
   image: $MAVEN_IMAGE
   needs:
     - build-required-part1:melodic-cache
+    - build-required-part1:jwt-commons
   script:
     - $MC_STANDALONE_CLI -Pwithout-docker clean install
   artifacts:
@@ -270,6 +272,7 @@ buildJars:adapter:
     - build-required-part2:ems-broker-client
     - build-required-part1:ems
     - build-required-part1:melodic-cache
+    - build-basic-dependencies:melodic-upperware
   script:
     - $ADAPTER_SERVER_CLI -Pwithout-docker clean install
   artifacts:
@@ -287,6 +290,7 @@ buildJars:cp-generator:
     - build-required-part1:upperware-metamodel
     - build-required-part1:melodic-cache
     - build-required-part2:melodic-commons
+    - build-basic-dependencies:melodic-upperware
   script:
     - $CP_GENERATOR_CLI -Pwithout-docker clean install
   artifacts:
@@ -305,6 +309,7 @@ buildJars:cp-solver:
     - build-required-part1:melodic-cache
     - build-required-part2:melodic-commons
     - build-required-part3:utility-generator
+    - build-basic-dependencies:melodic-upperware
   script:
     - $CP_SOLVER_CLI -Pwithout-docker clean install
   artifacts:
@@ -320,6 +325,8 @@ buildJars:ems-server:
   needs:
     - build-required-part1:ems-util
     - build-required-part2:ems-broker-client
+    - build-required-part1:upperware-metamodel
+    - build-required-part1:jwt-commons
   script:
     - $EMS_CLI -Pwithout-docker clean install
   artifacts:
@@ -351,6 +358,7 @@ buildJars:mq-adapter:
     - build-required-part2:ems-broker-client
     - build-required-part2:melodic-commons
     - build-required-part1:ems
+    - build-basic-dependencies:melodic-upperware
   script:
     - $MQ_ADAPTER_CLI -Pwithout-docker clean install
   artifacts:
@@ -367,6 +375,7 @@ buildJars:gui-backend:
     - build-required-part1:jwt-commons
     - build-required-part1:upperware-metamodel
     - build-required-part2:melodic-commons
+    - build-basic-dependencies:melodic-upperware
   script:
     - $GUI_BACKEND_CLI -Pwithout-docker clean install
   artifacts:

@@ -1,16 +1,16 @@
 package eu.melodic.upperware.adapter.planexecutor.colosseum;
 
-import com.google.common.base.MoreObjects;
 import eu.melodic.upperware.adapter.communication.proactive.ProactiveClientServiceForAdapter;
 import eu.melodic.upperware.adapter.exception.AdapterException;
 import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.*;
 import eu.melodic.upperware.adapter.plangenerator.tasks.JobTask;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.ow2.proactive.sal.model.*;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import static java.lang.String.format;
@@ -38,26 +38,25 @@ public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
             // here we create workflow/job skeleton with all defined tasks (e.g. Component_App) with their communication ports and installation recipe
             // and connection between tasks/components (by portRequired and portProvided matching)
             log.info("JobTaskExecutor->create: [application id: {}] AdapterJob= {}", applicationId, taskBody);
-            JSONObject jobJSON = new JSONObject();
-            JSONObject jobInformationJSON = new JSONObject();
-            jobInformationJSON.put("id", this.applicationId);
-            jobInformationJSON.put("name", taskBody.getJobName());
-            jobJSON.put("jobInformation", jobInformationJSON);
 
-            JSONArray tasksJSONArray = new JSONArray();
+            JobDefinition jobDefinition = new JobDefinition();
+            JobInformation jobInformation = new JobInformation();
+            jobInformation.setId(applicationId);
+            jobInformation.setName(taskBody.getName());
+            jobDefinition.setJobInformation(jobInformation);
+
+            List<TaskDefinition> tasks = new LinkedList<>();
             taskBody.getTasks()
-                    .forEach(adapterTask -> addTask(tasksJSONArray, adapterTask));
-            jobJSON.put("tasks", tasksJSONArray);
+                    .forEach(adapterTask -> addTask(tasks, adapterTask));
+            jobDefinition.setTasks(tasks);
 
-            JSONArray communicationsJSONArray = new JSONArray();
+            List<Communication> communications = new LinkedList<>();
             taskBody.getCommunications()
-                    .forEach(adapterCommunication -> addCommunication(communicationsJSONArray, adapterCommunication));
-            jobJSON.put("communications", communicationsJSONArray);
+                    .forEach(adapterCommunication -> addCommunication(communications, adapterCommunication));
+            jobDefinition.setCommunications(communications);
+            log.info("JobTaskExecutor->create: [application id: {}] ProActive job (JSONObject): \n{}", applicationId, jobDefinition);
 
-            log.info("JobTaskExecutor->create: [application id: {}] ProActive job (JSONObject): \n{}", applicationId, jobJSON);
-
-            log.info("JobTaskExecutor->create: [application id: {}] ProActive Connection State={}", applicationId, proactiveClientServiceForAdapter.getConnectionState());
-            int status = proactiveClientServiceForAdapter.createJob(jobJSON);
+            int status = proactiveClientServiceForAdapter.createJob(jobDefinition);
 
             log.info("JobTaskExecutor->create: [application id: {}] createJob status= {}", applicationId, status);
 
@@ -73,20 +72,19 @@ public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
         throw new UnsupportedOperationException("Delete method is not supported for JobTaskExecutor");
     }
 
-    private void addTask(JSONArray tasksJSONArray, AdapterTask adapterTask) {
-        JSONObject taskJSON = new JSONObject();
-        taskJSON.put("name", adapterTask.getName());
-        taskJSON.put("installation", getInstallationInstructionsJSON(adapterTask));
-
-        JSONArray portsJSONArray = new JSONArray();
+    private void addTask(List<TaskDefinition> tasks, AdapterTask adapterTask) {
+        TaskDefinition task = new TaskDefinition();
+        task.setName(adapterTask.getName());
+        task.setInstallation(getInstallationInstructionsJSON(adapterTask));
+        List<AbstractPortDefinition> ports = new LinkedList<>();
         adapterTask.getPorts()
-                .forEach(adapterPort -> addPort(portsJSONArray, adapterPort));
-        taskJSON.put("ports", portsJSONArray);
+                .forEach(adapterPort -> addPort(ports, adapterPort));
+        task.setPorts(ports);
 
-        tasksJSONArray.put(taskJSON);
+        tasks.add(task);
     }
 
-    private JSONObject getInstallationInstructionsJSON(AdapterTask adapterTask) {
+    private AbstractInstallation getInstallationInstructionsJSON(AdapterTask adapterTask) {
         return adapterTask.getInterfaces()
         .stream()
         .findFirst()
@@ -94,69 +92,68 @@ public class JobTaskExecutor extends RunnableTaskExecutor<AdapterJob> {
         .orElseThrow(() -> new AdapterException(format("No installation instructions for task: %s [application id: %s]", adapterTask.getName(), applicationId)));
     }
 
-    private void addCommunication(JSONArray communicationsJSONArray, AdapterCommunication adapterCommunication) {
-        JSONObject communicationJSON = new JSONObject();
-        communicationJSON.put("portRequired", adapterCommunication.getPortRequired());
-        communicationJSON.put("portProvided", adapterCommunication.getPortProvided());
-        communicationsJSONArray.put(communicationJSON);
+    private void addCommunication(List<Communication> communications, AdapterCommunication adapterCommunication) {
+        Communication communication = new Communication(
+                adapterCommunication.getPortProvided(),
+                adapterCommunication.getPortRequired()
+        );
+        communications.add(communication);
     }
 
-    private JSONObject addInstallationInstructions(AdapterTaskInterface adapterTaskInterface) {
-        JSONObject installationInstructionsJSON = new JSONObject();
-
+    private AbstractInstallation addInstallationInstructions(AdapterTaskInterface adapterTaskInterface) {
         if (adapterTaskInterface instanceof AdapterLanceInterface) {
-            JSONObject operatingSystemJSON = new JSONObject();
-            installationInstructionsJSON.put("type", "commands");
-            operatingSystemJSON.put("operatingSystemFamily", ((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem().getOperatingSystemFamily());
-            operatingSystemJSON.put("operatingSystemVersion", ((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem().getOperatingSystemVersion());
-            installationInstructionsJSON.put("operatingSystem", operatingSystemJSON);
-            installationInstructionsJSON.put("preInstall", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getPreInstall(), JSONObject.NULL));
-            installationInstructionsJSON.put("install", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getInstall(), JSONObject.NULL));
-            installationInstructionsJSON.put("postInstall", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getPostInstall(), JSONObject.NULL));
-            installationInstructionsJSON.put("start", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getStart(), JSONObject.NULL));
-            installationInstructionsJSON.put("startDetection", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getStartDetection(), JSONObject.NULL));
-            installationInstructionsJSON.put("stop", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getStop(), JSONObject.NULL));
-            installationInstructionsJSON.put("update", MoreObjects.firstNonNull(((AdapterLanceInterface) adapterTaskInterface).getUpdate(), JSONObject.NULL));
-        } else if (adapterTaskInterface instanceof AdapterSparkInterface) {
-            installationInstructionsJSON.put("type", "spark");
-            installationInstructionsJSON.put("file", ((AdapterSparkInterface) adapterTaskInterface).getFile());
-            installationInstructionsJSON.put("className", (((AdapterSparkInterface) adapterTaskInterface).getClassName()));
-            installationInstructionsJSON.put("arguments", (((AdapterSparkInterface) adapterTaskInterface).getArguments()));
-            installationInstructionsJSON.put("sparkArguments", (((AdapterSparkInterface) adapterTaskInterface).getSparkArguments()));
-            installationInstructionsJSON.put("sparkConfiguration", (((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration()));
-        } else if (adapterTaskInterface instanceof AdapterDockerInterface) {
-            installationInstructionsJSON.put("type", "docker");
-            installationInstructionsJSON.put("dockerImage", ((AdapterDockerInterface) adapterTaskInterface).getDockerImage());
-            installationInstructionsJSON.put("environment", ((AdapterDockerInterface) adapterTaskInterface).getEnvironment());
-        } else if (adapterTaskInterface instanceof AdapterFaasInterface) {
-            installationInstructionsJSON.put("type", "faas");
-            installationInstructionsJSON.put("functionName", ((AdapterFaasInterface) adapterTaskInterface).getFunctionName());
-            installationInstructionsJSON.put("sourceCodeUrl", ((AdapterFaasInterface) adapterTaskInterface).getSourceCodeUrl());
-            installationInstructionsJSON.put("handler", ((AdapterFaasInterface) adapterTaskInterface).getHandler());
-            installationInstructionsJSON.put("triggers", ((AdapterFaasInterface) adapterTaskInterface).getTriggers());
-            installationInstructionsJSON.put("timeout", ((AdapterFaasInterface) adapterTaskInterface).getTimeout());
-            installationInstructionsJSON.put("functionEnvironment", ((AdapterFaasInterface) adapterTaskInterface).getFunctionEnvironment());
+            CommandsInstallation installationInstructions = new CommandsInstallation();
+            OperatingSystemType operatingSystem = new OperatingSystemType();
+            operatingSystem.setOperatingSystemFamily(((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem().getOperatingSystemFamily().toString());
+            operatingSystem.setOperatingSystemVersion(((AdapterLanceInterface) adapterTaskInterface).getOperatingSystem().getOperatingSystemVersion().floatValue());
+            installationInstructions.setOperatingSystemType(operatingSystem);
+            installationInstructions.setPreInstall(((AdapterLanceInterface) adapterTaskInterface).getPreInstall());
+            installationInstructions.setInstall(((AdapterLanceInterface) adapterTaskInterface).getInstall());
+            installationInstructions.setPostInstall(((AdapterLanceInterface) adapterTaskInterface).getPostInstall());
+            installationInstructions.setStart(((AdapterLanceInterface) adapterTaskInterface).getStart());
+            installationInstructions.setStartDetection(((AdapterLanceInterface) adapterTaskInterface).getStartDetection());
+            installationInstructions.setStop(((AdapterLanceInterface) adapterTaskInterface).getStop());
+            installationInstructions.setUpdateCmd(((AdapterLanceInterface) adapterTaskInterface).getUpdate());
+            return installationInstructions;
+        }  else if (adapterTaskInterface instanceof AdapterDockerInterface) {
+            return new DockerEnvironment(
+                    ((AdapterDockerInterface) adapterTaskInterface).getDockerImage(),
+                    ((AdapterDockerInterface) adapterTaskInterface).getEnvironment().get("port"),
+                    ((AdapterDockerInterface) adapterTaskInterface).getEnvironment()
+            );
+//        } else if (adapterTaskInterface instanceof AdapterFaasInterface) {
+//            installationInstructionsJSON.put("type", "faas");
+//            installationInstructionsJSON.put("functionName", ((AdapterFaasInterface) adapterTaskInterface).getFunctionName());
+//            installationInstructionsJSON.put("sourceCodeUrl", ((AdapterFaasInterface) adapterTaskInterface).getSourceCodeUrl());
+//            installationInstructionsJSON.put("handler", ((AdapterFaasInterface) adapterTaskInterface).getHandler());
+//            installationInstructionsJSON.put("triggers", ((AdapterFaasInterface) adapterTaskInterface).getTriggers());
+//            installationInstructionsJSON.put("timeout", ((AdapterFaasInterface) adapterTaskInterface).getTimeout());
+//            installationInstructionsJSON.put("functionEnvironment", ((AdapterFaasInterface) adapterTaskInterface).getFunctionEnvironment());
+//        } else if (adapterTaskInterface instanceof AdapterSparkInterface) {
+//            installationInstructionsJSON.put("type", "spark");
+//            installationInstructionsJSON.put("file", ((AdapterSparkInterface) adapterTaskInterface).getFile());
+//            installationInstructionsJSON.put("className", (((AdapterSparkInterface) adapterTaskInterface).getClassName()));
+//            installationInstructionsJSON.put("arguments", (((AdapterSparkInterface) adapterTaskInterface).getArguments()));
+//            installationInstructionsJSON.put("sparkArguments", (((AdapterSparkInterface) adapterTaskInterface).getSparkArguments()));
+//            installationInstructionsJSON.put("sparkConfiguration", (((AdapterSparkInterface) adapterTaskInterface).getSparkConfiguration()));
         } else {
             throw new AdapterException(format("Unknown TaskInterface type: %s", adapterTaskInterface.getClass().getSimpleName()));
         }
-        return installationInstructionsJSON;
     }
 
-    private void addPort(JSONArray portsJSONArray, AdapterPort adapterPort) {
-        JSONObject portJSON = new JSONObject();
-
+    private void addPort(List<AbstractPortDefinition> ports, AdapterPort adapterPort) {
+        AbstractPortDefinition port;
         if (adapterPort instanceof AdapterPortProvided) {
-            portJSON.put("type", adapterPort.getType());
-            portJSON.put("name", adapterPort.getName());
-            portJSON.put("port", ((AdapterPortProvided) adapterPort).getPort());
+            port = new PortProvided(((AdapterPortProvided) adapterPort).getPort());
+            port.setType(PortDefinition.PortType.fromValue(adapterPort.getType()));
+            port.setName(adapterPort.getName());
         } else if (adapterPort instanceof AdapterPortRequired) {
-            portJSON.put("type", adapterPort.getType());
-            portJSON.put("name", adapterPort.getName());
-            portJSON.put("isMandatory", ((AdapterPortRequired) adapterPort).getIsMandatory());
+            port = new PortRequired(((AdapterPortRequired) adapterPort).getIsMandatory());
+            port.setType(PortDefinition.PortType.fromValue(adapterPort.getType()));
+            port.setName(adapterPort.getName());
         } else {
             throw new AdapterException(format("Unknown Port type: %s", adapterPort.getClass().getSimpleName()));
         }
-
-        portsJSONArray.put(portJSON);
+        ports.add(port);
     }
 }

@@ -1,10 +1,10 @@
 package eu.paasage.upperware.profiler.generator.service.camel.impl;
 
 import eu.paasage.upperware.profiler.generator.service.camel.NodeCandidatesService;
-import org.activeeon.morphemic.model.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ow2.proactive.sal.model.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

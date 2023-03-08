@@ -2,7 +2,7 @@ package eu.melodic.upperware.activemqtorest.proactive;
 
 import eu.passage.upperware.commons.model.internal.*;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Deployment;
+import org.ow2.proactive.sal.model.Deployment;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -26,7 +26,7 @@ public class ProactiveNodeConverter {
                 .name(deployment.getNodeName())
                 .id(deployment.getInstanceId())
                 .nodeProperties(NodeProperties.builder().providerId(deployment.getPaCloud().getCloudProviderName()).build())
-                .originId(deployment.getLocationName()+"/"+deployment.getPaCloud().getCloudProviderName())
+                .originId(deployment.getNode().getNodeCandidate().getLocation().getName()+"/"+deployment.getPaCloud().getCloudProviderName())
                 .state(decideOnNodeState(deployment))
                 .diagnostic(createNodeInfo(deployment))
                 .ipAddresses(createIpAddress(deployment))
@@ -52,11 +52,11 @@ public class ProactiveNodeConverter {
         return "CloudID: " +
                 external.getPaCloud().getCloudID() +
                 " | HardwareProviderId: " +
-                external.getHardwareProviderId() +
+                external.getNode().getNodeCandidate().getHardware().getProviderId() +
                 " | ImageProviderId: " +
-                external.getImageProviderId() +
+                external.getNode().getNodeCandidate().getImage().getProviderId() +
                 " | LocationName: " +
-                external.getLocationName() +
+                external.getNode().getNodeCandidate().getLocation().getName() +
                 " | NodeAccessToken: " +
                 external.getNodeAccessToken();
     }

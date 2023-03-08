@@ -114,7 +114,7 @@ public abstract class AbstractFacade<Q extends GeneratedMessageV3, Y extends Gen
 			String json = message.getText();
 			log.info("Received JSON string: {}", json);
 			return	objectMapper.readValue(json, HashMap.class);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			log.error("JSON decoding failed: {}", e.getMessage(), e);
 			throw new RuntimeException(e);
 		}

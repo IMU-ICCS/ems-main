@@ -25,29 +25,11 @@ public class GeneratorProperties {
     @NotNull
     private Esb esb;
 
-    @Valid
-    @NotNull
-    private ProActive paConfig;
-
     @Getter
     @Setter
     public static class Esb {
 
         @NotBlank
         private String url;
-    }
-
-    @Getter
-    @Setter
-    @ToString
-    public static class ProActive {
-        @NotNull
-        private String restUrl;
-        @NotNull
-        private String login;
-        @NotNull
-        private String password;
-        @NotNull
-        private String encryptorPw;
     }
 }
