@@ -12,15 +12,13 @@ package eu.melodic.event.brokercep;
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
-import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
@@ -30,8 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class BrokerCepConsumer implements MessageListener, InitializingBean {
     private final static AtomicLong eventCounter = new AtomicLong(0);
     private final static AtomicLong textEventCounter = new AtomicLong(0);
@@ -39,14 +38,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     private final static AtomicLong otherEventCounter = new AtomicLong(0);
     private final static AtomicLong eventFailuresCounter = new AtomicLong(0);
 
-    @Autowired
-    private BrokerCepProperties properties;
-    @Autowired
-    private BrokerConfig brokerConfig;
-    @Autowired
-    private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
-    @Autowired
-    private CepService cepService;
+    private final BrokerConfig brokerConfig;
+    private final BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
+    private final CepService cepService;
 
     private Connection connection;
     private Session session;
@@ -67,14 +61,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             addedDestinations.clear();
 
             // If an alternative Broker URL is provided for consumer, it will be used
-            ConnectionFactory connectionFactory;
-            if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
-                log.debug("BrokerCepConsumer.initialize(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
-                connectionFactory = brokerConfig.getConnectionFactoryFor(properties.getBrokerUrlForConsumer());
-            } else {
-                log.debug("BrokerCepConsumer.initialize(): Default broker URL will be used for Broker-CEP consumer instance: {}", brokerConfig.getBrokerUrl());
-                connectionFactory = brokerConfig.getConnectionFactoryFor(null);
-            }
+            ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryForConsumer();
 
             // Initialize connection
             connection = (brokerConfig.getBrokerLocalAdminUsername() != null)

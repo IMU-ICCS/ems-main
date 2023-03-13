@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
 
     private static Gson gson;
+    private static AtomicLong eventIdSequence = new AtomicLong(0);
 
     // Standard/Known Event fields configuration
     @Data
@@ -66,6 +68,9 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         return PROPERTY_CLASSES_ARRAY;
     }
 
+
+    // Event Id
+    private final long eventId = eventIdSequence.getAndIncrement();
 
     // Event properties
     private Map<String,Object> eventProperties;

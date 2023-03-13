@@ -42,7 +42,7 @@
     {
       "description": "Launch Netdata",
       "taskType": "CMD",
-      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S /usr/sbin/netdata",
+      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S -- sh -c '/opt/netdata/bin/netdata || /usr/sbin/netdata || netdata' ",
       "executable": false,
       "exitCode": 0,
       "match": false,

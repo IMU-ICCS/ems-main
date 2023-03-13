@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.cep;
 
 import com.espertech.esper.client.hook.AggregationFunctionFactory;
+import com.espertech.esper.collection.Pair;
 import com.espertech.esper.epl.agg.aggregator.AggregationMethod;
 import com.espertech.esper.epl.agg.service.common.AggregationValidationContext;
 import eu.melodic.event.brokercep.event.EventMap;
@@ -39,13 +40,19 @@ public class CepEvalAggregatorFactory implements AggregationFunctionFactory {
 		log.debug("CepEvalAggregatorFactory.validate(): BEGIN: validationContext: {}", validationContext);
 		Class[] paramType = validationContext.getParameterTypes();
         log.debug("CepEvalAggregatorFactory.validate(): param-types: {}", Arrays.asList(paramType));
-		if (!paramType[0].equals(String.class))
-			throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #0 type in aggregator '"+aggregatorFunctionName+"'. Expected 'String' but found: "+paramType[0].getName());
-		if (!paramType[1].equals(String.class))
-			throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #1 type in aggregator '"+aggregatorFunctionName+"'. Expected 'String' but found: "+paramType[1].getName());
+		if (!paramType[0].equals(String.class)) {
+            log.error("CepEvalAggregatorFactory.validate(): Invalid argument #0 type in aggregator '" + aggregatorFunctionName + "'. Expected 'String' but found: " + paramType[0].getName());
+            throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #0 type in aggregator '"+aggregatorFunctionName+"'. Expected 'String' but found: "+paramType[0].getName());
+        }
+		if (!paramType[1].equals(String.class)) {
+            log.error("CepEvalAggregatorFactory.validate(): Invalid argument #1 type in aggregator '" + aggregatorFunctionName + "'. Expected 'String' but found: " + paramType[1].getName());
+            throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #1 type in aggregator '"+aggregatorFunctionName+"'. Expected 'String' but found: "+paramType[1].getName());
+        }
 		for (int i=2; i<paramType.length; i++) {
-			if (!paramType[i].equals(EventMap.class) && !paramType[i].equals(Map.class))
-				throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #"+i+" type in aggregator '"+aggregatorFunctionName+"'. Expected 'EventMap' or 'Map' but found: "+paramType[i].getName());
+			if (!paramType[i].equals(EventMap.class) && !paramType[i].equals(Map.class) && !paramType[i].equals(Pair.class)) {
+                log.error("CepEvalAggregatorFactory.validate(): Invalid argument #" + i + " type in aggregator '" + aggregatorFunctionName + "'. Expected 'EventMap' or 'Map' but found: " + paramType[i].getName());
+                throw new IllegalArgumentException("CepEvalAggregatorFactory.validate(): Invalid argument #"+i+" type in aggregator '"+aggregatorFunctionName+"'. Expected 'EventMap' or 'Map' but found: "+paramType[i].getName());
+            }
 		}
         log.debug("CepEvalAggregatorFactory.validate(): END: OK");
     }
