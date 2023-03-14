@@ -82,12 +82,11 @@ public class BrokerCepProperties implements InitializingBean {
     @Data
     public static class Usage {
         private Memory memory = new Memory();
-
-        @Data
-        public static class Memory {
-            private int jvmHeapPercentage = -1;
-            private long size = -1;
-        }
+    }
+    @Data
+    public static class Memory {
+        private int jvmHeapPercentage = -1;
+        private long size = -1;
     }
     @Data
     public static class MessageInterceptorSpec {
