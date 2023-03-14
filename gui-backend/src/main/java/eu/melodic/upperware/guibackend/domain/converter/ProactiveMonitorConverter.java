@@ -4,7 +4,7 @@ import eu.passage.upperware.commons.model.internal.EmsDeploymentTargetProvider;
 import eu.passage.upperware.commons.model.internal.EmsDeploymentTargetType;
 import eu.passage.upperware.commons.model.internal.OperatingSystemFamily;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.EmsDeploymentRequest;
+import org.ow2.proactive.sal.model.EmsDeploymentRequest;
 
 import java.util.Objects;
 
@@ -23,10 +23,10 @@ public class ProactiveMonitorConverter implements GenericConverter<EmsDeployment
                 .baguetteIp(external.getBaguetteIp())
                 .baguettePort(external.getBaguette_port())
                 .isUsingHttps(external.isUsingHttps())
-                .location(external.getLocation())
+                .location(external.getTargetNodeCandidate().getLocation().getName())
                 .nodeId(external.getNodeId())
                 .targetName(external.getTargetName())
-                .targetOs(OperatingSystemFamily.valueOf(external.getTargetOs().name()))
+                .targetOs(OperatingSystemFamily.valueOf(external.getTargetNodeCandidate().getImage().getOperatingSystem().getOperatingSystemFamily().name()))
                 .targetProvider(EmsDeploymentTargetProvider.valueOf(external.getTargetProvider().name()))
                 .targetType(EmsDeploymentTargetType.valueOf(external.getTargetType().name()))
                 .build();

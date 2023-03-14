@@ -8,12 +8,14 @@
 
 package eu.melodic.upperware.metasolver;
 
+import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.Watermark;
 import eu.melodic.models.commons.WatermarkImpl;
 import eu.melodic.models.interfaces.metaSolver.KeyValuePair;
 import eu.melodic.models.interfaces.metaSolver.SolutionEvaluationResponse;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequest;
 import eu.melodic.models.services.metaSolver.DeploymentProcessRequestImpl;
+import eu.melodic.models.services.metaSolver.DeploymentProcessResponse;
 import eu.melodic.upperware.metasolver.metricvalue.MetricValueMonitorBean;
 import eu.melodic.upperware.metasolver.metricvalue.TopicType;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
@@ -85,7 +87,7 @@ public class Coordinator implements InitializingBean {
 
     /**
      * How can we select the most appropriate solver??
-     * For R3.0 it will be a list of pre-configured solvers
+     * For R4.0 it will be a list of pre-configured solvers
      * @return The selected solver names (List of strings)
      */
     public List<String> selectSolvers(String applicationId, String cpModelPath) throws ConcurrentAccessException {
@@ -386,17 +388,26 @@ public class Coordinator implements InitializingBean {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
         log.debug("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Request to ESB: url={}, notification={}", esbUrl, notification.toString());
-        ResponseEntity<String> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
+        ResponseEntity<Object> response = sendDeploymentProcessRequestToUrl(esbUrl, notification);
         log.info("MetaSolver.Coordinator: sendNotification(DeploymentProcessRequest): Response: status={}, body={}",
                 response.getStatusCode(), response.getBody());
     }
 
-    private ResponseEntity<String> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+    private ResponseEntity<Object> sendDeploymentProcessRequestToUrl(String url, DeploymentProcessRequest notification) {
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): BEGIN: url={}, notification={}", url, notification);
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         HttpEntity<DeploymentProcessRequest> entity = new HttpEntity<>(notification, headers);
-        return restTemplate.postForEntity(url, entity, String.class);
+
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): Calling ESB: url={}, http-entity={}", url, entity);
+        ResponseEntity<Object> response = restTemplate.postForEntity(url, entity, Object.class);
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): ESB response: status={}", response.getStatusCode());
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): ESB response: status={}, response={}", response.getStatusCode(), response);
+
+        Object responseBody = response.getBody();
+        log.debug("MetaSolver.Coordinator: sendDeploymentProcessRequestToUrl(): END: ESB response: status={}, response-body={}", response.getStatusCode(), responseBody);
+        return response;
     }
 
     public Watermark prepareWatermark(String uuid) {

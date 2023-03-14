@@ -16,7 +16,7 @@ import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;

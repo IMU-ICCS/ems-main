@@ -46,13 +46,4 @@ public class MelodicConfiguration {
 
 	@Value("${mq.recentmetrics.expiry.interval:120}")
 	private long mqRecentMetricsExpiryInterval;
-
-	@Value("${pa-config.rest-url}")
-	private String restUrl;
-	@Value("${pa-config.login}")
-	private String login;
-	@Value("${pa-config.password}")
-	private String password;
-	@Value("${pa-config.encryptor-pw}")
-	private String encryptorPw;
 }

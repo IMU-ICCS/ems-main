@@ -429,7 +429,6 @@ public class BrokerConfig implements InitializingBean {
     /**
      * Creates a new connection factory
      */
-    @Bean
     public ConnectionFactory connectionFactory() {
         return connectionFactory(null);
     }
@@ -483,5 +482,18 @@ public class BrokerConfig implements InitializingBean {
     public ConnectionFactory getConnectionFactoryFor(String connectionString) {
         return connectionFactoryCache
                 .computeIfAbsent(connectionString, this::connectionFactory);
+    }
+
+    public ConnectionFactory getConnectionFactoryForConsumer() {
+        String connStr = StringUtils.isNotBlank(properties.getBrokerUrlForConsumer()) ? properties.getBrokerUrlForConsumer() : null;
+        if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
+            log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
+            connStr = properties.getBrokerUrlForConsumer();
+        } else {
+            log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Default broker URL will be used for Broker-CEP consumer instance: {}", properties.getBrokerUrlForClients());
+            connStr = null;
+        }
+        return connectionFactoryCache
+                .computeIfAbsent(connStr, this::connectionFactory);
     }
 }

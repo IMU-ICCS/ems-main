@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
   ~ If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -16,7 +16,7 @@
         <relativePath></relativePath>
     </parent>
 
-    <groupId>org.ow2.paasage.upperware.metasolver</groupId>
+    <groupId>org.ow2.paasage.upperware</groupId>
     <artifactId>meta-solver</artifactId>
     <version>6.0.0-SNAPSHOT</version>
 

@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ByonMapper {
-    public org.activeeon.morphemic.model.ByonDefinition mapByonDefinitionToProactive(ByonDefinition byonDefinitionForNode) {
-        org.activeeon.morphemic.model.ByonDefinition byonDefinitionProactive = new org.activeeon.morphemic.model.ByonDefinition();
+    public org.ow2.proactive.sal.model.ByonDefinition mapByonDefinitionToProactive(ByonDefinition byonDefinitionForNode) {
+        org.ow2.proactive.sal.model.ByonDefinition byonDefinitionProactive = new org.ow2.proactive.sal.model.ByonDefinition();
         byonDefinitionProactive.setName(byonDefinitionForNode.getName());
         byonDefinitionProactive.setLoginCredential((convertLoginCredential(byonDefinitionForNode.getLoginCredential())));
         byonDefinitionProactive.setIpAddresses(convertIpAddresses(byonDefinitionForNode.getIpAddresses()));
@@ -21,8 +21,8 @@ public class ByonMapper {
         return byonDefinitionProactive;
     }
 
-    private org.activeeon.morphemic.model.LoginCredential convertLoginCredential(LoginCredential loginCredential) {
-        org.activeeon.morphemic.model.LoginCredential loginCredentialProactive = new org.activeeon.morphemic.model.LoginCredential();
+    private org.ow2.proactive.sal.model.LoginCredential convertLoginCredential(LoginCredential loginCredential) {
+        org.ow2.proactive.sal.model.LoginCredential loginCredentialProactive = new org.ow2.proactive.sal.model.LoginCredential();
         loginCredentialProactive.setUsername(loginCredential.getUsername());
         loginCredentialProactive.setPassword(loginCredential.getPassword());
         loginCredentialProactive.setPrivateKey(loginCredential.getPrivateKey());
@@ -30,45 +30,45 @@ public class ByonMapper {
         return loginCredentialProactive;
     }
 
-    private List<org.activeeon.morphemic.model.IpAddress> convertIpAddresses(List<IpAddress> ipAddresses) {
+    private List<org.ow2.proactive.sal.model.IpAddress> convertIpAddresses(List<IpAddress> ipAddresses) {
         return ipAddresses.stream()
                 .map(this::convertIpAddress)
                 .collect(Collectors.toList());
     }
 
-    private org.activeeon.morphemic.model.IpAddress convertIpAddress(IpAddress ipAddress) {
-        org.activeeon.morphemic.model.IpAddress ipAddressProactive = new org.activeeon.morphemic.model.IpAddress();
-        ipAddressProactive.setIpAddressType(org.activeeon.morphemic.model.IpAddressType.valueOf(ipAddress.getIpAddressType().name()));
-        ipAddressProactive.setIpVersion(org.activeeon.morphemic.model.IpVersion.valueOf(ipAddress.getIpVersion().name()));
+    private org.ow2.proactive.sal.model.IpAddress convertIpAddress(IpAddress ipAddress) {
+        org.ow2.proactive.sal.model.IpAddress ipAddressProactive = new org.ow2.proactive.sal.model.IpAddress();
+        ipAddressProactive.setIpAddressType(org.ow2.proactive.sal.model.IpAddressType.valueOf(ipAddress.getIpAddressType().name()));
+        ipAddressProactive.setIpVersion(org.ow2.proactive.sal.model.IpVersion.valueOf(ipAddress.getIpVersion().name()));
         ipAddressProactive.setValue(ipAddress.getValue());
 
         return ipAddressProactive;
     }
 
-    private org.activeeon.morphemic.model.NodeProperties convertNodeProperties(NodeProperties nodeProperties) {
-        org.activeeon.morphemic.model.NodeProperties nodePropertiesProactive = new org.activeeon.morphemic.model.NodeProperties();
+    private org.ow2.proactive.sal.model.NodeProperties convertNodeProperties(NodeProperties nodeProperties) {
+        org.ow2.proactive.sal.model.NodeProperties nodePropertiesProactive = new org.ow2.proactive.sal.model.NodeProperties();
         nodePropertiesProactive.setDisk(nodeProperties.getDisk());
         nodePropertiesProactive.setMemory(nodeProperties.getMemory());
         nodePropertiesProactive.setNumberOfCores(nodeProperties.getNumberOfCores());
         nodePropertiesProactive.setProviderId(nodeProperties.getProviderId());
 
-        org.activeeon.morphemic.model.GeoLocation geoLocation = new org.activeeon.morphemic.model.GeoLocation();
+        org.ow2.proactive.sal.model.GeoLocation geoLocation = new org.ow2.proactive.sal.model.GeoLocation();
         geoLocation.setCity(nodeProperties.getGeoLocation().getCity());
         geoLocation.setCountry(nodeProperties.getGeoLocation().getCountry());
         geoLocation.setLatitude(nodeProperties.getGeoLocation().getLatitude());
         geoLocation.setLongitude(nodeProperties.getGeoLocation().getLongitude());
         nodePropertiesProactive.setGeoLocation(geoLocation);
 
-        org.activeeon.morphemic.model.OperatingSystem operatingSystem = new org.activeeon.morphemic.model.OperatingSystem();
-        operatingSystem.setOperatingSystemArchitecture(org.activeeon.morphemic.model.OperatingSystemArchitecture.valueOf(Objects.requireNonNull(nodeProperties.getOperatingSystem().getOperatingSystemArchitecture()).name()));
-        operatingSystem.setOperatingSystemFamily(org.activeeon.morphemic.model.OperatingSystemFamily.valueOf(Objects.requireNonNull(nodeProperties.getOperatingSystem().getOperatingSystemFamily()).name()));
+        org.ow2.proactive.sal.model.OperatingSystem operatingSystem = new org.ow2.proactive.sal.model.OperatingSystem();
+        operatingSystem.setOperatingSystemArchitecture(org.ow2.proactive.sal.model.OperatingSystemArchitecture.valueOf(Objects.requireNonNull(nodeProperties.getOperatingSystem().getOperatingSystemArchitecture()).name()));
+        operatingSystem.setOperatingSystemFamily(org.ow2.proactive.sal.model.OperatingSystemFamily.valueOf(Objects.requireNonNull(nodeProperties.getOperatingSystem().getOperatingSystemFamily()).name()));
         operatingSystem.setOperatingSystemVersion(nodeProperties.getOperatingSystem().getOperatingSystemVersion());
         nodePropertiesProactive.setOperatingSystem(operatingSystem);
 
         return nodePropertiesProactive;
     }
 
-    public ByonNode mapProactiveByonNodeToInternal(org.activeeon.morphemic.model.ByonNode byonNodeProactive) {
+    public ByonNode mapProactiveByonNodeToInternal(org.ow2.proactive.sal.model.ByonNode byonNodeProactive) {
         ByonNode byonNode = new ByonNode();
         byonNode.setId(byonNodeProactive.getId());
         byonNode.setAllocated(byonNodeProactive.isAllocated());
@@ -84,13 +84,13 @@ public class ByonMapper {
         return byonNode;
     }
 
-    private List<IpAddress> convertProactiveIpAddresses(List<org.activeeon.morphemic.model.IpAddress> proactiveIpAddresses) {
+    private List<IpAddress> convertProactiveIpAddresses(List<org.ow2.proactive.sal.model.IpAddress> proactiveIpAddresses) {
         return proactiveIpAddresses.stream()
                 .map(this::convertProactiveIpAddress)
                 .collect(Collectors.toList());
     }
 
-    private IpAddress convertProactiveIpAddress(org.activeeon.morphemic.model.IpAddress proactiveIpAddress) {
+    private IpAddress convertProactiveIpAddress(org.ow2.proactive.sal.model.IpAddress proactiveIpAddress) {
         IpAddress ipAddress = new IpAddress();
         ipAddress.setIpAddressType(IpAddressType.valueOf(proactiveIpAddress.getIpAddressType().name()));
         ipAddress.setIpVersion(IpVersion.valueOf(proactiveIpAddress.getIpVersion().name()));
@@ -99,7 +99,7 @@ public class ByonMapper {
         return ipAddress;
     }
 
-    private LoginCredential convertProactiveLoginCredential(org.activeeon.morphemic.model.LoginCredential proactiveLoginCredential) {
+    private LoginCredential convertProactiveLoginCredential(org.ow2.proactive.sal.model.LoginCredential proactiveLoginCredential) {
         LoginCredential loginCredentialProactive = new LoginCredential();
         loginCredentialProactive.setUsername(proactiveLoginCredential.getUsername());
         loginCredentialProactive.setPassword(proactiveLoginCredential.getPassword());
@@ -108,7 +108,7 @@ public class ByonMapper {
         return loginCredentialProactive;
     }
 
-    private NodeProperties convertProactiveNodeProperties(org.activeeon.morphemic.model.NodeProperties proactiveNodeProperties) {
+    private NodeProperties convertProactiveNodeProperties(org.ow2.proactive.sal.model.NodeProperties proactiveNodeProperties) {
         NodeProperties nodePropertiesProactive = new NodeProperties();
         nodePropertiesProactive.setDisk(proactiveNodeProperties.getDisk());
         nodePropertiesProactive.setMemory(proactiveNodeProperties.getMemory());

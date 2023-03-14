@@ -195,7 +195,7 @@ public class CdoServerClientApi implements CdoServerApi {
                 .filter(metaDataModel -> "MMS_MetaDataModel".equals(metaDataModel.getName()))
                 .map(MetaDataModel::getMetadataElements)
                 .flatMap(Collection::stream)
-                .filter(mmsObject -> "MELODICMetadataSchema".equals(mmsObject.getId()))
+                .filter(mmsObject -> "MELODIC_Metadata_Schema".equals(mmsObject.getId()))
                 .filter(mmsObject -> mmsObject instanceof MmsConceptImpl)
                 .map(mmsObject -> (MmsConceptImpl) mmsObject)
                 .map(MmsConceptImpl::getConcept)

@@ -67,6 +67,7 @@ public class BrokerCepProperties implements InitializingBean {
     private boolean brokerPopulateJmsxUserId;
 
     private boolean enableAdvisoryWatcher = true;
+    private int advisoryWatcherInitRetryDelay = 5;   // in seconds
 
     private List<MessageInterceptorConfig> messageInterceptors;
     private Map<String,MessageInterceptorSpec> messageInterceptorsSpecs = new HashMap<>();
