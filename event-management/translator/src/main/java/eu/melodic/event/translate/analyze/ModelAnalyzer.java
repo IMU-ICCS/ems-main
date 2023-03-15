@@ -1258,7 +1258,8 @@ public class ModelAnalyzer {
             log.info("    _createPushOrPullSensor(): PUSH sensor: sensor={}", sensor.getName());
             PushSensor pushSensor = new PushSensorImpl();
             pushSensor.setPort(port);
-            pushSensor.setAdditionalProperties(Collections.singletonMap("configuration", sensorConfig));
+//XXX: BUG: It generates the 'configuration' field as a sibling of 'port'; not under the 'additionalProperties'
+//            pushSensor.setAdditionalProperties(Collections.singletonMap("configuration", sensorConfig));
             pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
             log.info("    _createPushOrPullSensor(): sensor={} :: port={}, additional-properties={}, PushSensor: {}",
                     sensor.getName(), port, pushSensor.getAdditionalProperties(), pushSensor);
