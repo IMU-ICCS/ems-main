@@ -92,6 +92,22 @@
             <version>1.9.3</version>
             <scope>compile</scope>
         </dependency>
+        <!-- test       -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>cloud.morphemic.connectors</groupId>
             <artifactId>proactive_client</artifactId>
@@ -122,5 +138,4 @@
         </dependency>
 
     </dependencies>
-
 </project>

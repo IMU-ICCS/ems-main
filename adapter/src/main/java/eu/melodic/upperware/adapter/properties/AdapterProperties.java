@@ -49,6 +49,9 @@ public class AdapterProperties {
   @NotNull
   private boolean deploymentInsidePrivateNetwork;
 
+  @NotNull
+  private boolean fillSecureVariables;
+
   @Data
   public static class Esb {
 
