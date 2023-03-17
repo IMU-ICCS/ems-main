@@ -13,9 +13,7 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,6 +91,23 @@ public class SecureStoreDBService {
                 log.info("Found secure variable which already exists in database", matcher.group(1));
         }
         return secureVariablesKeys;
+    }
+
+    public String fillSecureVariablesInText(String text) {
+        log.info("Filling secure variables in the text");
+        Map<String, String> secureVariables = new HashMap<>();
+        Matcher matcher = SECURE_VARIABLE_PATTERN.matcher(text);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            if (!secureVariables.containsKey(key)) {
+                secureVariables.put(key, getSecureVariable(key));
+                log.info("Found secure variable to fill: {}", key);
+            }
+            matcher.appendReplacement(result, secureVariables.get(key));
+        }
+        matcher.appendTail(result);
+        return result.toString();
     }
 
     // This method checks correctness of secure variable names,
