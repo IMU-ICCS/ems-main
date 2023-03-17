@@ -94,20 +94,25 @@ public class SecureStoreDBService {
     }
 
     public String fillSecureVariablesInText(String text) {
-        log.info("Filling secure variables in the text");
-        Map<String, String> secureVariables = new HashMap<>();
-        Matcher matcher = SECURE_VARIABLE_PATTERN.matcher(text);
-        StringBuffer result = new StringBuffer();
-        while (matcher.find()) {
-            String key = matcher.group(1);
-            if (!secureVariables.containsKey(key)) {
-                secureVariables.put(key, getSecureVariable(key));
-                log.info("Found secure variable to fill: {}", key);
+        if (text != null) {
+            log.info("Filling secure variables in the text: {}", maskSensitiveText(text));
+            Map<String, String> secureVariables = new HashMap<>();
+            Matcher matcher = SECURE_VARIABLE_PATTERN.matcher(text);
+            StringBuffer result = new StringBuffer();
+            while (matcher.find()) {
+                String key = matcher.group(1);
+                if (!secureVariables.containsKey(key)) {
+                    secureVariables.put(key, getSecureVariable(key));
+                    log.info("Found secure variable to fill: {}", key);
+                }
+                matcher.appendReplacement(result, secureVariables.get(key));
             }
-            matcher.appendReplacement(result, secureVariables.get(key));
+            matcher.appendTail(result);
+            return result.toString();
+        } else {
+            log.warn("Provided text to fill secure variables is null");
+            return null;
         }
-        matcher.appendTail(result);
-        return result.toString();
     }
 
     // This method checks correctness of secure variable names,
