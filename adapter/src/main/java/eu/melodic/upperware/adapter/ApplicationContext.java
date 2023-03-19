@@ -28,6 +28,7 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -144,6 +145,16 @@ public class ApplicationContext {
     return new BusyInstancesRegistry(
             new ConcurrentHashMap<>(),
             proactiveClientServiceForAdapter
+    );
+  }
+
+  @Bean
+  public SecureStoreDBService secureStoreDBService(final AdapterProperties adapterProperties) {
+    return new SecureStoreDBService(
+            adapterProperties.getSecureStore().getDbUrl(),
+            adapterProperties.getSecureStore().getDbUsername(),
+            adapterProperties.getSecureStore().getDbPassword(),
+            adapterProperties.getSecureStore().getPw()
     );
   }
 }
