@@ -12,9 +12,7 @@ package eu.melodic.event.brokercep.cep;
 import eu.melodic.event.brokercep.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -61,6 +59,59 @@ public class CepEvalFunction {
 
         return result;
     }
+
+    /*public static double eval(String formula, String streamNames, Pair pair1) {
+        return _eval(formula, streamNames, pair1);
+    }
+
+    public static double eval(String formula, String streamNames, Pair pair1, Pair pair2) {
+        return _eval(formula, streamNames, pair1, pair2);
+    }
+
+    public static double eval(String formula, String streamNames, Pair pair1, Pair pair2, Pair pair3) {
+        return _eval(formula, streamNames, pair1, pair2, pair3);
+    }
+
+    public static double eval(String formula, String streamNames, Pair pair1, Pair pair2, Pair pair3, Pair pair4) {
+        return _eval(formula, streamNames, pair1, pair2, pair3, pair4);
+    }
+
+    public static double _eval(String formula, String streamNames, Pair<Object,String>... pairs) {
+        log.debug(">> ---------------------------------------------------------------------------");
+        log.debug(">> eval(Pair):   formula: {}", formula);
+        log.debug(">> eval(Pair):   streams: {}", streamNames);
+        log.debug(">> eval(Pair):   entries: {}", pairs.length);
+        log.debug(">> eval(Pair):   values:  {}", Arrays.asList(pairs));
+
+        String[] names = streamNames.split(",");
+        if (names.length != pairs.length)
+            throw new IllegalArgumentException("The num. of stream names provided is not equal to the num. of value pairs provided");
+        Map<String, Double> args = new HashMap<>();
+        for (int i = 0; i < names.length; i++) {
+            if (log.isTraceEnabled())
+                log.trace(">> eval(Pair):  LOOP:  i={}, name={}, pair-1={}/{}, pair-2={}/{}",
+                        i, names[i],
+                        pairs[i].getFirst(), pairs[i].getFirst()==null ? null : pairs[i].getFirst().getClass().getName(),
+                        pairs[i].getSecond(), pairs[i].getSecond()==null ? null : pairs[i].getSecond().getClass().getName());
+            Object eventObj = pairs[i].getFirst();
+            double value;
+            if (eventObj instanceof EventMap)
+                value = ((EventMap)eventObj).getMetricValue();
+            else if (eventObj instanceof Map)
+                value = (double) ((Map)eventObj).get("metricValue");
+            else if (eventObj instanceof Double)
+                value = (double) eventObj;
+            else
+                throw new IllegalArgumentException("Encountered unsupported Event type in Pair: "+eventObj.getClass().getName()+", event: "+eventObj);
+            args.put(names[i].trim(), value);
+        }
+        log.debug(">> eval(Pair):   map-args: {}", args);
+
+        double result = MathUtil.eval(formula, args);
+        log.debug(">> eval(Pair):   result:  {}", result);
+
+        return result;
+    }*/
 
     public static double eval(String formula, String streamNames, double... v) {
         log.debug(">> ---------------------------------------------------------------------------");

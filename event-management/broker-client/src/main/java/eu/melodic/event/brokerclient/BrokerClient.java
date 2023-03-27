@@ -343,7 +343,13 @@ public class BrokerClient {
 
     // ------------------------------------------------------------------------
 
+    public enum ON_EXCEPTION { IGNORE, LOG_AND_IGNORE, THROW, LOG_AND_THROW }
+
     public void receiveEvents(String connectionString, String destinationName, MessageListener listener) throws JMSException {
+        receiveEvents(connectionString, destinationName, listener, ON_EXCEPTION.LOG_AND_IGNORE);
+    }
+
+    public void receiveEvents(String connectionString, String destinationName, MessageListener listener, ON_EXCEPTION onException) throws JMSException {
         checkProperties();
         MessageConsumer consumer = null;
         boolean _closeConn = false;
@@ -363,10 +369,25 @@ public class BrokerClient {
             consumer = session.createConsumer(destination);
 
             // Wait for messages
+            boolean logException = onException==ON_EXCEPTION.LOG_AND_IGNORE || onException==ON_EXCEPTION.LOG_AND_THROW;
+            boolean throwException = onException==ON_EXCEPTION.THROW || onException==ON_EXCEPTION.LOG_AND_THROW;
             log.info("BrokerClient: Waiting for messages...");
             while (true) {
                 Message message = consumer.receive();
-                listener.onMessage(message);
+                try {
+                    listener.onMessage(message);
+                } catch (Exception e) {
+                    if (logException) {
+                        if (log.isDebugEnabled())
+                            log.debug("BrokerClient: Exception in callback listener: {}: {}\nevent: {}\nException: ",
+                                    e.getClass().getName(), e.getMessage(), message, e);
+                        else
+                            log.warn("BrokerClient: Exception in callback listener: {}: {}\nevent: {}",
+                                    e.getClass().getName(), e.getMessage(), message);
+                    }
+                    if (throwException)
+                        throw e;
+                }
             }
 
         } finally {
