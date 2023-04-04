@@ -238,6 +238,8 @@ buildJars:utility-generator-standalone:
   image: $MAVEN_IMAGE
   needs:
     - build-required-part3:utility-generator
+    - build-required-part1:upperware-metamodel
+    - build-required-part2:melodic-commons
   script:
     - $UG_STANDALONE_CLI -Pwithout-docker clean install
   artifacts:
@@ -271,6 +273,7 @@ buildJars:adapter:
     - build-required-part2:melodic-commons
     - build-required-part2:ems-broker-client
     - build-required-part1:ems
+    - build-required-part1:ems-util
     - build-required-part1:melodic-cache
     - build-basic-dependencies:melodic-upperware
   script:
@@ -358,6 +361,7 @@ buildJars:mq-adapter:
     - build-required-part2:ems-broker-client
     - build-required-part2:melodic-commons
     - build-required-part1:ems
+    - build-required-part1:ems-util
     - build-basic-dependencies:melodic-upperware
   script:
     - $MQ_ADAPTER_CLI -Pwithout-docker clean install
