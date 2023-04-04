@@ -239,6 +239,7 @@ buildJars:utility-generator-standalone:
   needs:
     - build-required-part3:utility-generator
     - build-required-part1:upperware-metamodel
+    - build-required-part1:melodic-cache
     - build-required-part2:melodic-commons
   script:
     - $UG_STANDALONE_CLI -Pwithout-docker clean install
