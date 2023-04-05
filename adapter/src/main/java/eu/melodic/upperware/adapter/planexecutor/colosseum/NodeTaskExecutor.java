@@ -78,8 +78,8 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
                 .orElseThrow(() -> new AdapterException(String.format("Could not find BYON with associated NodeCandidate id=%s", taskBody.getNodeCandidate().getId())))
                 .getId();
 
-        final Map<String, Pair<String, String>> byonIdPerComponent = Collections.singletonMap(byonId,
-                new ImmutablePair<>(taskBody.getNodeName(), taskBody.getTaskName()));
+        final Map<String, String> byonIdPerComponent = Collections.singletonMap(byonId,
+                String.join("/", taskBody.getNodeName(), taskBody.getTaskName()));
         log.info("NodeTaskExecutor->addBYONNode: [application id: {}] ProActive byonIdPerComponent= {}", applicationId, byonIdPerComponent);
 
         int status = proactiveClientServiceForAdapter.addByonNodes(byonIdPerComponent, applicationId);
@@ -94,8 +94,8 @@ public class NodeTaskExecutor extends RunnableTaskExecutor<AdapterRequirement> {
                 .orElseThrow(() -> new AdapterException(String.format("Could not find EDGE with associated NodeCandidate id=%s", taskBody.getNodeCandidate().getId())))
                 .getId();
 
-        final Map<String, Pair<String, String>> edgeIdPerComponent = Collections.singletonMap(edgeId,
-                new ImmutablePair<>(taskBody.getNodeName(), taskBody.getTaskName()));
+        final Map<String, String> edgeIdPerComponent = Collections.singletonMap(edgeId,
+                String.join("/", taskBody.getNodeName(), taskBody.getTaskName()));
         log.info("NodeTaskExecutor->addEDGENode: [application id: {}] ProActive edgeIdPerComponent= {}", applicationId, edgeIdPerComponent);
 
         int status = proactiveClientServiceForAdapter.addEdgeNodes(edgeIdPerComponent, applicationId);
