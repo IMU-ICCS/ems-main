@@ -178,7 +178,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
     }
 
     @Override
-    public int addByonNodes(Map<String, Pair<String, String>> byonIdPerComponent, String jobId) {
+    public int addByonNodes(Map<String, String> byonIdPerComponent, String jobId) {
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addByonNodes(byonIdPerComponent, jobId));
         } catch (ProactiveClientException e) {
@@ -208,7 +208,7 @@ public class ProactiveClientServiceForAdapterImpl implements ProactiveClientServ
     }
 
     @Override
-    public int addEdgeNodes(Map<String, Pair<String, String>> edgeIdPerComponent, String jobId) {
+    public int addEdgeNodes(Map<String, String> edgeIdPerComponent, String jobId) {
         try {
             return BooleanUtils.toInteger(proactiveClientConnectorService.addEdgeNodes(edgeIdPerComponent, jobId));
         } catch (ProactiveClientException e) {
