@@ -70,7 +70,7 @@ public class EdgeMapper {
     public EdgeNode mapProactiveEdgeNodeToInternal(org.ow2.proactive.sal.model.EdgeNode edgeNodeProactive) {
         EdgeNode edgeNode = new EdgeNode();
         edgeNode.setId(edgeNodeProactive.getId());
-        edgeNode.setAllocated(edgeNodeProactive.isAllocated());
+        edgeNode.setAllocated(edgeNodeProactive.getAllocated());
         edgeNode.setName(edgeNodeProactive.getName());
         edgeNode.setJarURL(edgeNodeProactive.getJarURL());
         edgeNode.setScriptURL(edgeNodeProactive.getScriptURL());
