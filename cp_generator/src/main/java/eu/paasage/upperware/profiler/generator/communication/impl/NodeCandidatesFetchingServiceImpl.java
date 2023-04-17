@@ -125,7 +125,7 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
 
         Map<MmsObject, List<Attribute>> requirementsMap = getRequirementsMap(resourceRequirement);
 
-        final Optional<Attribute> nodeType = getAttribute(requirementsMap, "placementType");
+        Optional<Attribute> nodeType = getAttribute(requirementsMap, "placementType");
         if (nodeType.isPresent()) {
             result.add(createNodeTypeRequirement(Collections.singletonList(NodeType.valueOf(getValueAsString(nodeType.get().getValue()))), resourceName));
         } else {
@@ -147,6 +147,14 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         getAttribute(requirementsMap, "maxCpu").ifPresent(attribute -> log.warn("MaxCpu requirement is not supported"));
 
         //Same requirements as above, but for camel 3.0
+        nodeType = getAttribute(requirementsMap, "hasPlacementType");
+        if (nodeType.isPresent()) {
+            result.add(createNodeTypeRequirement(Collections.singletonList(NodeType.valueOf(getValueAsString(nodeType.get().getValue()))), resourceName));
+        } else {
+            result.add(createNodeTypeRequirement(Arrays.asList(NodeType.IAAS, NodeType.BYON, NodeType.EDGE), resourceName));
+        }
+        getAttribute(requirementsMap, "hasPlacementName").ifPresent(attribute -> result.add(createRequirement(NAME_CLASS, "placementName", RequirementOperator.EQ, getValueAsString(attribute.getValue()))));
+
         getAttribute(requirementsMap, "TotalMemory").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.GEQ, getValueAsString(attribute.getMinValue()))));
         getAttribute(requirementsMap, "TotalMemory").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "ram", RequirementOperator.LEQ, getValueAsString(attribute.getMaxValue()))));
 
