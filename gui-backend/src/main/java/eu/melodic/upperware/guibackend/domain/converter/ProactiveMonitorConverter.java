@@ -21,7 +21,7 @@ public class ProactiveMonitorConverter implements GenericConverter<EmsDeployment
                 .id(external.getId())
                 .authorizationBearer(external.getAuthorizationBearer())
                 .baguetteIp(external.getBaguetteIp())
-                .baguettePort(external.getBaguette_port())
+                .baguettePort(external.getBaguettePort())
                 .isUsingHttps(external.isUsingHttps())
                 .location(external.getTargetNodeCandidate().getLocation().getName())
                 .nodeId(external.getNodeId())
