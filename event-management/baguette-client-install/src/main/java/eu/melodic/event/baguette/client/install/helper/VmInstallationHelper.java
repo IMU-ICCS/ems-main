@@ -170,7 +170,7 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         nodeMap.putAll(additionalKeysMap);
 
         // Load client config. template and prepare configuration
-        nodeMap.put("ROOT_CMD", rootCmd);
+        nodeMap.put("ROOT_CMD", rootCmd!=null ? rootCmd : "");
         nodeMap.put("BAGUETTE_CLIENT_ID", clientId);
         nodeMap.put("BAGUETTE_CLIENT_BASE_DIR", baseDir);
         nodeMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
