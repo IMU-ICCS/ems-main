@@ -143,6 +143,8 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         // Get parameters
         log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux(): properties: {}", properties);
+        String rootCmd = properties.getRootCmd();
+        String baseDir = properties.getBaseDir();
         String checkInstallationFile = properties.getCheckInstalledFile();
 
         String baseDownloadUrl = _prepareUrl(properties.getDownloadUrl(), baseUrl);
@@ -168,7 +170,9 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         nodeMap.putAll(additionalKeysMap);
 
         // Load client config. template and prepare configuration
+        nodeMap.put("ROOT_CMD", rootCmd);
         nodeMap.put("BAGUETTE_CLIENT_ID", clientId);
+        nodeMap.put("BAGUETTE_CLIENT_BASE_DIR", baseDir);
         nodeMap.put("BAGUETTE_SERVER_ADDRESS", baguette.getConfiguration().getServerAddress());
         nodeMap.put("BAGUETTE_SERVER_HOSTNAME", NetUtil.getHostname());
         nodeMap.put("BAGUETTE_SERVER_PORT", ""+baguette.getConfiguration().getServerPort());

@@ -40,14 +40,15 @@ public class ClientInstallationProperties implements InitializingBean {
 
     private int workers = 1;
 
-    private String baseDir;
+    private String baseDir;                     // EMS client home directory
+    private String rootCmd = "sudo";            // Root command (e.g. sudo)
     private List<String> mkdirs;
     private List<String> touchFiles;
     private String checkInstalledFile;
 
-    private String downloadUrl;
+    private String downloadUrl;                 // Base URL of EMS server downloads
     @ToString.Exclude
-    private String apiKey;
+    private String apiKey;                      // API Key for accessing EMS server downloads
     private String installScriptUrl;
     private String installScriptFile;
 
