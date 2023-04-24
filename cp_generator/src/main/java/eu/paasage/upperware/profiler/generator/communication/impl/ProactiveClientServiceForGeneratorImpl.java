@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProactiveClientServiceForGeneratorImpl implements ProactiveClientServiceForGenerator {
 
-    private static final int NUMBER_OF_REPEATS_FOR_NODE_CANDIDATES = 20;
+    private static final int NUMBER_OF_REPEATS_FOR_NODE_CANDIDATES = 120;
     private static final int DELAY_BETWEEN_REQUESTS = 5000;
     private final ProactiveClientConnectorService proactiveClientConnectorService;
 
