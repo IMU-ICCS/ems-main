@@ -449,7 +449,7 @@ baguette.client.install:
   rootCmd: ''
 
   ### --- Directories and files ---
-  baseDir: /tmp/baguette-client
+  baseDir: ~/baguette-client
   mkdirs: [ '${baguette.client.install.baseDir}/bin', '${baguette.client.install.baseDir}/conf', '${baguette.client.install.baseDir}/logs' ]
   touchFiles: [ '${baguette.client.install.baseDir}/logs/output.txt' ]
   checkInstalledFile: ${baguette.client.install.baseDir}/conf/ok.txt
