@@ -437,15 +437,19 @@ baguette.client.install:
 
   ### OS families
   osFamilies:
-    LINUX: [ CENTOS,DARWIN,DEBIAN,FEDORA ,FREEBSD ,GENTOO,COREOS,AMZN_LINUX,MANDRIVA ,NETBSD,OEL ,OPENBSD,RHEL,SCIENTIFIC,CEL,SLACKWARE,SOLARIS,SUSE,TURBOLINUX,CLOUD_LINUX,UBUNTU ]
+    LINUX: [ UNKNOWN_OS_FAMILY, CENTOS,DARWIN,DEBIAN,FEDORA ,FREEBSD ,GENTOO,COREOS,AMZN_LINUX,MANDRIVA ,NETBSD,OEL ,OPENBSD,RHEL,SCIENTIFIC,CEL,SLACKWARE,SOLARIS,SUSE,TURBOLINUX,CLOUD_LINUX,UBUNTU ]
     WINDOWS: [ WINDOWS ]
 
   ### Workers
   workers: 5
 
   ### Installation settings
+  ### --- Root command ---
+  ### E.g. 'echo ${NODE_SSH_PASSWORD} | sudo -S -- '
+  rootCmd: ''
+
   ### --- Directories and files ---
-  baseDir: /opt/baguette-client
+  baseDir: ~/baguette-client
   mkdirs: [ '${baguette.client.install.baseDir}/bin', '${baguette.client.install.baseDir}/conf', '${baguette.client.install.baseDir}/logs' ]
   touchFiles: [ '${baguette.client.install.baseDir}/logs/output.txt' ]
   checkInstalledFile: ${baguette.client.install.baseDir}/conf/ok.txt
@@ -461,7 +465,7 @@ baguette.client.install:
   #archiveSourceDir: ${MELODIC_CONFIG_DIR}/baguette-client
   #archiveDir: ${MELODIC_CONFIG_DIR}/baguette-client
   #archiveFile: baguette-client-conf.tgz
-  #clientConfArchiveFile: /opt/baguette-client/baguette-client-conf.tgz
+  #clientConfArchiveFile: ${baguette.client.install.baseDir}/baguette-client-conf.tgz
 
   ### --- EMS server (HTTPS) certificate file (PEM) ---
   serverCertFileAtServer: ${MELODIC_CONFIG_DIR}/baguette-client/conf/server.pem

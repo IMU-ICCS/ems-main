@@ -416,8 +416,12 @@ baguette.client.install.osFamilies.WINDOWS=WINDOWS
 baguette.client.install.workers=5
 
 ### Installation settings
+### --- Root command ---
+### E.g. 'echo ${NODE_SSH_PASSWORD} | sudo -S -- '
+baguette.client.install.rootCmd=
+
 ### --- Directories and files ---
-baguette.client.install.baseDir=/opt/baguette-client
+baguette.client.install.baseDir=~/baguette-client
 baguette.client.install.mkdirs=${baguette.client.install.baseDir}/bin,${baguette.client.install.baseDir}/conf,${baguette.client.install.baseDir}/logs
 baguette.client.install.touchFiles=${baguette.client.install.baseDir}/logs/output.txt
 baguette.client.install.checkInstalledFile=${baguette.client.install.baseDir}/conf/ok.txt
@@ -433,7 +437,7 @@ baguette.client.install.installScriptFile=${baguette.client.install.baseDir}/bin
 #baguette.client.install.archiveSourceDir=${MELODIC_CONFIG_DIR}/baguette-client
 #baguette.client.install.archiveDir=${MELODIC_CONFIG_DIR}/baguette-client
 #baguette.client.install.archiveFile=baguette-client-conf.tgz
-#baguette.client.install.clientConfArchiveFile=/opt/baguette-client/baguette-client-conf.tgz
+#baguette.client.install.clientConfArchiveFile=${baguette.client.install.baseDir}/baguette-client-conf.tgz
 
 ### --- EMS server (HTTPS) certificate file (PEM) ---
 baguette.client.install.serverCertFileAtServer=${MELODIC_CONFIG_DIR}/baguette-client/conf/server.pem

@@ -66,4 +66,5 @@
 
     <!-- activeeon proactive -->
     <logger name="org.activeeon" level="DEBUG"/>
+    <logger name="org.ow2.proactive" level="DEBUG"/>
 </configuration>
