@@ -10,7 +10,7 @@
 
 MELODIC_CONFIG_DIR=.
 
-JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12 
+#JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 

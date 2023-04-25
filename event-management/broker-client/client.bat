@@ -11,9 +11,9 @@
 set MELODIC_CONFIG_DIR=.
 
 setlocal
-set JAVA_OPTS= -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 ^
- -Djavax.net.ssl.trustStorePassword=melodic ^
- -Djavax.net.ssl.trustStoreType=pkcs12 
+rem set JAVA_OPTS= -Djavax.net.ssl.trustStore=..\config-files\broker-truststore.p12 ^
+rem  -Djavax.net.ssl.trustStorePassword=melodic ^
+rem  -Djavax.net.ssl.trustStoreType=pkcs12
 rem -Djavax.net.debug=all
 rem -Djavax.net.debug=ssl,handshake,record
 
