@@ -10,7 +10,7 @@
     {
       "description": "Check if 'java' is installed at Node",
       "taskType": "CHECK",
-      "command": "/opt/baguette-client/jre/bin/java -version",
+      "command": "${BAGUETTE_CLIENT_BASE_DIR}/jre/bin/java -version",
       "executable": false,
       "exitCode": 0,
       "match": false,
@@ -19,16 +19,16 @@
     {
       "description": "Check if EMS client is already installed at Node",
       "taskType": "CHECK",
-      "command": "[[ -f /opt/baguette-client/conf/ok.txt ]] && exit 99",
+      "command": "[[ -f ${BAGUETTE_CLIENT_BASE_DIR}/conf/ok.txt ]] && exit 99",
       "executable": false,
       "exitCode": 99,
       "match": true,
       "message": "EMS client is already installed at Node"
     },
     {
-      "description": "-- LIST /opt BEFORE --",
+      "description": "-- LIST ${BAGUETTE_CLIENT_BASE_DIR}/.. BEFORE --",
       "taskType": "CMD",
-      "command": "ls -l /opt ",
+      "command": "ls -l ${BAGUETTE_CLIENT_BASE_DIR}/.. ",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -67,7 +67,7 @@
     {
       "description": "Extract installation package to target folder",
       "taskType": "CMD",
-      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S tar zxvf /tmp/baguette-client.tgz -C /opt",
+      "command": "${ROOT_CMD} tar zxvf /tmp/baguette-client.tgz -C ${BAGUETTE_CLIENT_BASE_DIR}/../ ",
       "executable": false,
       "exitCode": 0,
       "match": false,
@@ -76,7 +76,7 @@
     {
       "description": "Change files and folders ownership",
       "taskType": "CMD",
-      "command": "echo ${NODE_SSH_PASSWORD} | sudo -S chown -R ${NODE_SSH_USERNAME} /opt/baguette-client",
+      "command": "${ROOT_CMD} chown -R ${NODE_SSH_USERNAME} ${BAGUETTE_CLIENT_BASE_DIR}",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -84,7 +84,7 @@
     {
       "description": "Touch files",
       "taskType": "CMD",
-      "command": "touch /opt/baguette-client/logs/output.txt",
+      "command": "touch ${BAGUETTE_CLIENT_BASE_DIR}/logs/output.txt",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -92,7 +92,7 @@
     {
       "description": "Create conf directory",
       "taskType": "CMD",
-      "command": "mkdir /opt/baguette-client/conf/",
+      "command": "mkdir ${BAGUETTE_CLIENT_BASE_DIR}/conf/",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -101,7 +101,7 @@
       "description": "Copy-and-process configuration to target",
       "taskType": "FILE",
       "localFileName": "${MELODIC_CONFIG_DIR}/baguette-client/",
-      "fileName": "/opt/baguette-client",
+      "fileName": "${BAGUETTE_CLIENT_BASE_DIR}",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -117,15 +117,15 @@
     {
       "description": "Write success file",
       "taskType": "CMD",
-      "command": "echo SUCCESS >> /opt/baguette-client/conf/ok.txt",
+      "command": "echo SUCCESS >> ${BAGUETTE_CLIENT_BASE_DIR}/conf/ok.txt",
       "executable": false,
       "exitCode": 0,
       "match": false
     },
     {
-      "description": "-- LIST /opt AFTER --",
+      "description": "-- LIST ${BAGUETTE_CLIENT_BASE_DIR}/.. AFTER --",
       "taskType": "CMD",
-      "command": "ls -l /opt ",
+      "command": "ls -l ${BAGUETTE_CLIENT_BASE_DIR}/.. ",
       "executable": false,
       "exitCode": 0,
       "match": false
@@ -133,7 +133,7 @@
     {
       "description": "-- LIST baguette-client FILES --",
       "taskType": "CMD",
-      "command": "ls -l /opt/baguette-client ",
+      "command": "ls -l ${BAGUETTE_CLIENT_BASE_DIR} ",
       "executable": false,
       "exitCode": 0,
       "match": false
