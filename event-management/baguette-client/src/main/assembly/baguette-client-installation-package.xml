@@ -62,13 +62,13 @@
             </includes>
         </fileSet>
         <fileSet>
-            <outputDirectory>target</outputDirectory>
+            <outputDirectory>jars/broker-client</outputDirectory>
             <directory>${project.parent.basedir}/broker-client/target</directory>
             <includes>
                 <include>broker-client-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <outputDirectory>bin</outputDirectory>
             <directory>${project.parent.basedir}/broker-client</directory>
             <includes>
@@ -76,7 +76,7 @@
             </includes>
             <lineEnding>unix</lineEnding>
             <fileMode>0755</fileMode>
-        </fileSet>
+        </fileSet>-->
         <fileSet>
             <outputDirectory>bin</outputDirectory>
             <directory>${project.parent.basedir}/bin</directory>
