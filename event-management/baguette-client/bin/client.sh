@@ -16,4 +16,4 @@ MELODIC_CONFIG_DIR=.
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 
-${JAVA_HOME}/bin/java $JAVA_OPTS -jar jars/broker-client/broker-client-jar-with-dependencies.jar $*
+${JAVA_HOME}/bin/java $JAVA_OPTS -jar ${BASEDIR}/jars/broker-client/broker-client-jar-with-dependencies.jar $*
