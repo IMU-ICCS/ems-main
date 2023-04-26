@@ -23,6 +23,7 @@ import camel.requirement.impl.OptimisationRequirementImpl;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOService;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceFromFile;
 import eu.melodic.upperware.utilitygenerator.cdo.CDOServiceImpl;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.PerformanceMetric;
 import eu.melodic.upperware.utilitygenerator.node_candidates.NodeCandidateAttribute;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
@@ -55,7 +56,7 @@ public class FromCamelModelExtractor {
     private String camelModelPath;
     private CamelModel model;
     private Collection<MetricVariableImpl> metricVariables;
-    private final Collection<String> performanceMetrics;
+    private final Collection<PerformanceMetric> performanceMetrics;
 
     @Getter @Setter
     private String utilityFunctionFormula;
@@ -88,20 +89,20 @@ public class FromCamelModelExtractor {
                 .collect(Collectors.toList());
     }
 
-    private Collection<String> extractPerformanceMetrics(Collection<MetricVariableImpl> metricVariables) {
-        Collection<String> perfMetrics = new HashSet<>();
+    private Collection<PerformanceMetric> extractPerformanceMetrics(Collection<MetricVariableImpl> metricVariables) {
+        Collection<PerformanceMetric> perfMetrics = new HashSet<>();
         for (MetricVariable m : metricVariables) {
             if (m.getMetricContext() != null) {
                 MetricContext ctx = m.getMetricContext();
                 if (ctx.getMetric() != null) {
-                    perfMetrics.add(ctx.getMetric().getName());
+                    perfMetrics.add(new PerformanceMetric(ctx.getMetric().getName(), m.getName(), m.getFormula()));
                 }
             }
         }
         return perfMetrics;
     }
 
-    public Collection<String> getPerformanceMetrics() {
+    public Collection<PerformanceMetric> getPerformanceMetrics() {
         return performanceMetrics;
     }
 
