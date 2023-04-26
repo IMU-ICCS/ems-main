@@ -26,6 +26,6 @@ public interface PMFacade {
 * @param metricsFromConstraintProblem
 * @return Map containing the performance estimation per feature.
 	 */
-	Map<String, Double> callPmPredictionText(Collection<VariableValueDTO> solution, String applicationId, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem);
+	Map<String, Double> callPmPredictionText(Collection<VariableValueDTO> solution, String applicationId, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem, Collection<String> performanceMetrics);
 
 }
