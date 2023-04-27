@@ -9,22 +9,30 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
+import com.google.gson.Gson;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstructionsService implements EnvironmentAware {
     private Environment environment;
+    private final ResourceLoader resourceLoader;
     private static InstructionsService INSTANCE;
 
     public static InstructionsService getInstance() {
@@ -69,5 +77,44 @@ public class InstructionsService implements EnvironmentAware {
         //s = environment.resolveRequiredPlaceholders(s);
         s = s.replace('\\', '/');
         return s;
+    }
+
+    public InstructionsSet loadInstructionsFile(@NonNull String fileName) throws IOException {
+        if (StringUtils.isBlank(fileName))
+            throw new IllegalArgumentException("File name is blank");
+        fileName = fileName.trim();
+
+        // Get file type from file extension
+        String ext = null;
+        int i = fileName.lastIndexOf('.');
+        if (i > 0) {
+            ext = fileName.substring(i+1);
+            if (ext.contains("/") || ext.contains("\\")) ext = null;
+        }
+        if (ext==null)
+            throw new IllegalArgumentException("Unknown file type: "+fileName);
+
+        // Process instructions file based on its type
+        if ("json".equalsIgnoreCase(ext)) {
+            // Load instructions set from JSON file
+            return _loadFromJsonFile(fileName);
+        } else {
+            throw new IllegalArgumentException("Unsupported file type: "+fileName);
+        }
+    }
+
+    private InstructionsSet _loadFromJsonFile(String jsonFile) throws IOException {
+        log.debug("InstructionsService: Loading instructions from JSON file: {}", jsonFile);
+        byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
+        String json = new String(bdata, StandardCharsets.UTF_8);
+        log.trace("InstructionsService: JSON instructions file contents: \n{}", json);
+
+        // Create InstructionsSet object from JSON
+        InstructionsSet instructionsSet =
+                new Gson().fromJson(json, InstructionsSet.class);
+        instructionsSet.setFileName(jsonFile);
+        log.trace("InstructionsService: Installation instructions loaded from JSON file: {}\n{}", jsonFile, instructionsSet);
+
+        return instructionsSet;
     }
 }
