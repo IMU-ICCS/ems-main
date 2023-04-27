@@ -7,11 +7,7 @@ import eu.morphemic.facade.AbstractTextRequesterFacade;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Facade implementation for the UtilityGenerator --> Performance Module use case.
@@ -28,7 +24,7 @@ public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMF
 	}
 
 	@Override
-	public Map<String, Double> callPmPredictionText(Collection<VariableValueDTO> solution, String applicationId, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem) {
+	public Map<String, Double> callPmPredictionText(Collection<VariableValueDTO> solution, String applicationId, Collection<VariableDTO> variablesFromConstraintProblem, Collection<MetricDTO> metricsFromConstraintProblem, Collection<String> performanceMetrics) {
 		if(solution.size() != variablesFromConstraintProblem.size()) {
 			throw new RuntimeException("Solution and variables do not match");
 		}
@@ -40,8 +36,8 @@ public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMF
 
 		Map<String, Object> features = new HashMap<>();
 		for(MetricDTO dto : metricsFromConstraintProblem) {
-			if(TARGET_PROPERTY_NAME.equals(dto.getName())) {
-				features.put(TARGET_PROPERTY_NAME, dto.getValue()); // put target on the same level as variables
+			if(performanceMetrics.contains(dto.getName())) {
+				features.put(TARGET_PROPERTY_NAME, dto.getName()); // put the target on the same level as variables
 			}
 			else {
 				variablesMap.put(dto.getName(), dto.getValue());
@@ -111,8 +107,10 @@ public class TextPMFacadeImpl extends AbstractTextRequesterFacade implements PMF
 		metricsFromConstraintProblem.add(new MetricDTO("target", "ETPercentile"));
 		metricsFromConstraintProblem.add(new MetricDTO("variant", "vm"));
 		metricsFromConstraintProblem.add(new MetricDTO("hw", "cpu"));
+		Collection<String> performanceMetrics = new HashSet<>();
+		performanceMetrics.add("ETPercentile");
 
-		Map<String, Double> result = pmFacade.callPmPredictionText(data, "genome", variablesFromConstraintProblem, metricsFromConstraintProblem);
+		Map<String, Double> result = pmFacade.callPmPredictionText(data, "genome", variablesFromConstraintProblem, metricsFromConstraintProblem,performanceMetrics );
 		log.info("FINAL RESULT = {}", result);
 		// just here to keep the VM up until all is logged
 		try {

@@ -12,9 +12,11 @@ import eu.melodic.cache.NodeCandidates;
 import eu.melodic.upperware.utilitygenerator.cdo.camel_model.FromCamelModelExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.ConstraintProblemExtractor;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.MetricDTO;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.PerformanceMetric;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.DTO.VariableValueDTO;
 import eu.melodic.upperware.utilitygenerator.cdo.cp_model.MetricsConverter;
+import eu.melodic.upperware.utilitygenerator.cdo.cp_model.PerformanceMetricConverter;
 import eu.melodic.upperware.utilitygenerator.evaluator.template_function_evaluator_utils.TemplateNodeCandidatesConverter;
 import eu.melodic.upperware.utilitygenerator.facade.pm.PMFacade;
 import eu.melodic.upperware.utilitygenerator.facade.pm.TextPMFacadeImpl;
@@ -27,13 +29,8 @@ import eu.paasage.upperware.security.authapi.token.JWTService;
 import lombok.extern.slf4j.Slf4j;
 import org.mariuszgromada.math.mxparser.Argument;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static eu.melodic.upperware.utilitygenerator.evaluator.EvaluatingUtils.convertDeployedSolutionToNodeCandidates;
@@ -52,7 +49,8 @@ public class UtilityFunctionEvaluator {
     private Collection<ArgumentConverter> converters;
     private final String applicationId;
     private final Collection<MetricDTO> metricsFromConstraintProblem;
-    private final Collection<String> performanceMetrics;
+    private final PerformanceMetricConverter performanceMetricConverter;
+    //private final Map<String,UtilityFunction> performanceMetricsFormulas;
     private final PMFacade facade;
 
     // TODO old constructor signature, just here to prevent older artifacts from failing - remove later
@@ -72,7 +70,7 @@ public class UtilityFunctionEvaluator {
         this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
-        this.performanceMetrics = fromCamelModelExtractor.getPerformanceMetrics();
+        Collection<PerformanceMetric> performanceMetrics = fromCamelModelExtractor.getPerformanceMetrics();
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
         String formula = prepareUtilityFunction(fromCamelModelExtractor);
@@ -80,8 +78,19 @@ public class UtilityFunctionEvaluator {
         fromCamelModelExtractor.setUtilityFunctionFormula(formula);
         NodeCandidatesConverter nodeCandidatesConverter = new NodeCandidatesConverter(fromCamelModelExtractor, nodeCandidates, this.variablesFromConstraintProblem);
 
+        Map<String,UtilityFunction> performanceMetricsFormulas = new HashMap<>();
+        for (PerformanceMetric metric: performanceMetrics){
+            UtilityFunction performanceFormula = new UtilityFunction(metric.getFormula(),
+                    createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, metric.getFormula()), nodeCandidatesConverter));
+            performanceMetricsFormulas.put(metric.getName(), performanceFormula);
+
+        }
+        this.performanceMetricConverter = new PerformanceMetricConverter(performanceMetrics, performanceMetricsFormulas, formula);
+
         this.converters = createConverters(formula, nodeCandidatesConverter);
         this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
+
+
 
         metricsFromConstraintProblem = constraintProblemExtractor.extractMetrics();
         applicationId = camelModelFilePath;
@@ -104,7 +113,7 @@ public class UtilityFunctionEvaluator {
         this.unmoveableComponents = fromCamelModelExtractor.getUnmoveableComponentNames();
         log.info("Unmoveable components: {}", this.unmoveableComponents.toString());
         this.variablesFromConstraintProblem = constraintProblemExtractor.extractVariables();
-        this.performanceMetrics = fromCamelModelExtractor.getPerformanceMetrics();
+        Collection<PerformanceMetric> performanceMetrics = fromCamelModelExtractor.getPerformanceMetrics();
         this.deployedConfiguration = convertDeployedSolutionToNodeCandidates(this.variablesFromConstraintProblem, nodeCandidates, constraintProblemExtractor.extractActualConfiguration());
 
         String formula = TemplateProvider.getTemplate(variablesFromConstraintProblem, utilityComponents);
@@ -115,6 +124,14 @@ public class UtilityFunctionEvaluator {
         this.converters = createConverters(formula, nodeCandidatesConverter);
         this.function = new UtilityFunction(formula, createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, formula), nodeCandidatesConverter));
 
+        Map<String,UtilityFunction> performanceMetricsFormulas = new HashMap<>();
+        for (PerformanceMetric metric: performanceMetrics){
+            UtilityFunction performanceFormula = new UtilityFunction(metric.getFormula(),
+                    createConstantValuesForOneReasoning(new MetricsConverter(constraintProblemExtractor, metric.getFormula()), nodeCandidatesConverter));
+            performanceMetricsFormulas.put(metric.getName(), performanceFormula);
+
+        }
+        this.performanceMetricConverter = new PerformanceMetricConverter(performanceMetrics, performanceMetricsFormulas, formula);
         metricsFromConstraintProblem = constraintProblemExtractor.extractMetrics();
         applicationId = camelModelFilePath;
 
@@ -141,7 +158,8 @@ public class UtilityFunctionEvaluator {
         this.function = new UtilityFunction(utilityFormula, new ArrayList<>());
 
         metricsFromConstraintProblem = constraintProblemExtractor.extractMetrics();
-        performanceMetrics = new HashSet<>();
+        this.performanceMetricConverter = new PerformanceMetricConverter(new HashSet<>(), new HashMap<>(), utilityFormula);
+
         applicationId = ""; // TODO no app-ID here?
 
         constraintProblemExtractor.endWorkWithCPModel();
@@ -174,24 +192,48 @@ public class UtilityFunctionEvaluator {
             return 0;
         }
 
-        if (performanceMetrics.isEmpty()) {
+        if (performanceMetricConverter.getPerformanceMetrics().isEmpty()) {
             log.info("No performance metrics found - skipping PM call");
         }
         else if (metricsFromConstraintProblem.isEmpty()) {
-            log.info("No metrics in constraint problem - skipping PM call");
+            log.info("No metrics in Constraint Problem - skipping PM call");
         }
         else {
-            Collection<MetricDTO> metrics = filterPerformanceMetrics();
+            //Collection<MetricDTO> metrics = filterPerformanceMetrics();
+            List<String> performanceMetricsNames = performanceMetricConverter.getPerformanceMetrics().stream().map(PerformanceMetric::getName).collect(Collectors.toList());
+            Map<String, Double> predictionResult = facade.callPmPredictionText(solution, applicationId, variablesFromConstraintProblem, metricsFromConstraintProblem,performanceMetricsNames);
+            Map<String,Double> performanceIndicators = new HashMap<>();
+            if(predictionResult == null || predictionResult.isEmpty()) {
+                log.warn("PM returned empty prediction, using predefined formula instead");
+                for (PerformanceMetric metric: performanceMetricConverter.getPerformanceMetrics()){
+                    log.info("Calculating for performance metric value: {}, using formula {}", metric.getName(), metric.getFormula());
+                    UtilityFunction performanceIndicatorFunction = performanceMetricConverter.getPerformanceMetricsFormulas().get(metric.getName());
+                    Collection<Argument> allArgumentsToPerfMetric = this.converters.stream()
+                            .map(converter -> converter.convertToArguments(solution, newConfiguration))
+                            .flatMap(Collection::stream)
+                            .collect(Collectors.toList());
+                    double performanceMetricEstimation = performanceIndicatorFunction.evaluateFunction(allArgumentsToPerfMetric);
+                    log.debug("Calculating for performance metric: {}, the resulted value: {} will be placed under name {}", metric.getName(), performanceMetricEstimation, metric.getPerformanceIndicatorName());
+                    performanceIndicators.put(metric.getPerformanceIndicatorName(), performanceMetricEstimation);
 
-            Map<String, Double> predictionResult = facade.callPmPredictionText(solution, applicationId, variablesFromConstraintProblem, metrics);
-
-            if(predictionResult == null) {
-                log.warn("PM returned empty prediction");
+                }
             }
             else {
-                injectResultIntoConverter(predictionResult);
+                log.info("PM returned predictions, injecting them into utility function");
+
+                for (PerformanceMetric metric: performanceMetricConverter.getPerformanceMetrics()){
+                    log.debug("Converting value {} from performance metric {} to performance indicator {})",
+                            predictionResult.get(metric.getName()), metric.getName(), metric.getPerformanceIndicatorName());
+                    performanceIndicators.put(metric.getPerformanceIndicatorName(), predictionResult.get(metric.getName()));
+                }
+
             }
+            log.debug("Performance indicators list:{}", performanceIndicators.toString());
+            performanceMetricConverter.setPerformanceIndicatorValues(performanceIndicators);
+            log.info("Performance indicator values: {}", performanceMetricConverter.getPerformanceIndicatorValues().toString());
+            this.converters.add(performanceMetricConverter);
         }
+
 
         Collection<Argument> allArguments = this.converters.stream()
                 .map(converter -> converter.convertToArguments(solution, newConfiguration))
@@ -200,37 +242,7 @@ public class UtilityFunctionEvaluator {
 
         return function.evaluateFunction(allArguments);
     }
-
-    private Collection<MetricDTO> filterPerformanceMetrics() {
-        Collection<MetricDTO> metrics = new HashSet<>(metricsFromConstraintProblem.size());
-
-        for (MetricDTO m : metricsFromConstraintProblem) {
-            if (performanceMetrics.contains(m.getName()) || TextPMFacadeImpl.TARGET_PROPERTY_NAME.equals(m.getName())) { // PM needs the target metric in any case
-                metrics.add(m);
-                log.info("Adding performance metric: {}", m.getName());
-            }
-        }
-        return metrics;
-    }
-
-    private void injectResultIntoConverter(Map<String, Double> predictionResult) {
-        if(predictionResult.size() >= 1) {
-            MetricsConverter metricsConverter = getMetricsConverter();
-            if(metricsConverter != null) {
-                metricsConverter.setPerformanceMetrics(predictionResult.get("prediction"));
-            }
-        }
-    }
-
-    private MetricsConverter getMetricsConverter() {
-        for(ArgumentConverter converter : converters) {
-            if(converter instanceof MetricsConverter) {
-                return (MetricsConverter) converter;
-            }
-        }
-        return null;
-    }
-
+    
     private String prepareUtilityFunction(FromCamelModelExtractor fromCamelModelExtractor) {
         String utilityFunctionFormula = fromCamelModelExtractor.getUtilityFunctionFormula();
         if ("".equals(utilityFunctionFormula)){
