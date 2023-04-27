@@ -394,10 +394,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         Integer exitStatus = null;
         ChannelExec channel = session.createExecChannel(command);
         setChannelStreams(channel);
+        log.debug("SshClientInstaller: task #{}: EXEC: New channel id: {}", taskCounter, channel.getId());
         //streamLogger.getInvertedIn().write(command.getBytes());
         streamLogger.logMessage(String.format("EXEC: %s\n", command));
         try {
+            // Sending command to remote side
+            log.debug("SshClientInstaller: task #{}: EXEC: Sending command for execution: {}   (connect timeout: {}ms)", taskCounter, command, connectTimeout);
+            session.resetIdleTimeout();
             channel.open().verify(connectTimeout);
+            log.trace("SshClientInstaller: task #{}: EXEC: Sending command verified: {}", taskCounter, command);
+            log.debug("SshClientInstaller: task #{}: EXEC: Opened channel id: {}", taskCounter, channel.getId());
 
             //XXX: TODO: Search remote side output for expected patterns
 
