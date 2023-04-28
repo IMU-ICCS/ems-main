@@ -10,10 +10,12 @@
 package eu.melodic.event.baguette.client.install.instruction;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.*;
 
 @Data
+@NoArgsConstructor
 public class InstructionsSet extends AbstractInstructionsBase {
     private String os;
     private String description;

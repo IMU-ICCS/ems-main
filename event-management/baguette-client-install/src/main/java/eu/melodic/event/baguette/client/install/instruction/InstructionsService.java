@@ -9,6 +9,8 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.Gson;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -98,6 +100,10 @@ public class InstructionsService implements EnvironmentAware {
         if ("json".equalsIgnoreCase(ext)) {
             // Load instructions set from JSON file
             return _loadFromJsonFile(fileName);
+        } else
+        if ("yml".equalsIgnoreCase(ext) || "yaml".equalsIgnoreCase(ext)) {
+            // Load instructions set from YAML file
+            return _loadFromYamlFile(fileName);
         } else {
             throw new IllegalArgumentException("Unsupported file type: "+fileName);
         }
@@ -114,6 +120,20 @@ public class InstructionsService implements EnvironmentAware {
                 new Gson().fromJson(json, InstructionsSet.class);
         instructionsSet.setFileName(jsonFile);
         log.trace("InstructionsService: Installation instructions loaded from JSON file: {}\n{}", jsonFile, instructionsSet);
+
+        return instructionsSet;
+    }
+
+    private InstructionsSet _loadFromYamlFile(String yamlFile) throws IOException {
+        log.debug("InstructionsService: Loading instructions from YAML file: {}", yamlFile);
+        byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(yamlFile).getInputStream());
+        String yamlStr = new String(bdata, StandardCharsets.UTF_8);
+        log.trace("InstructionsService: YAML instructions file contents: \n{}", yamlStr);
+
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        InstructionsSet instructionsSet = mapper.readValue(yamlStr, InstructionsSet.class);
+        instructionsSet.setFileName(yamlFile);
+        log.trace("InstructionsService: Installation instructions loaded from YAML file: {}\n{}", yamlFile, instructionsSet);
 
         return instructionsSet;
     }
