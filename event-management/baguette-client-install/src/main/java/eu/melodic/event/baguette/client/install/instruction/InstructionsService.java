@@ -49,11 +49,14 @@ public class InstructionsService implements EnvironmentAware {
     }
 
     public boolean checkCondition(@NonNull AbstractInstructionsBase i, Map<String,String> valueMap) {
+        log.trace("InstructionsService: checkCondition: condition={}, value-map={}", i.getCondition(), valueMap);
         String condition = i.getCondition();
         if (StringUtils.isBlank(condition)) return true;
         String conditionResolved = processPlaceholders(condition, valueMap);
+        log.trace("InstructionsService: checkCondition: Expression after placeholder resolution: {}", conditionResolved);
         final ExpressionParser parser = new SpelExpressionParser();
         Object result = parser.parseExpression(conditionResolved).getValue();
+        log.trace("InstructionsService: checkCondition: Expression result: {}", result);
         if (result==null)
             throw new IllegalArgumentException("Condition evaluation returned null: " + condition);
         if (result instanceof Boolean)
@@ -105,9 +108,9 @@ public class InstructionsService implements EnvironmentAware {
                 // Load instructions set from YAML file
                 return _loadFromYamlFile(fileName);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Exception thrown while processing instructions set file: {}", fileName);
-            throw e;
+            throw new IOException(fileName+": "+e.getMessage(), e);
         }
         throw new IllegalArgumentException("Unsupported file type: "+fileName);
     }

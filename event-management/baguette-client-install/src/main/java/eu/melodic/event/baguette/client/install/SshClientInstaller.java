@@ -828,6 +828,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         // Process file lines against instruction patterns
         patterns.forEach((varName,pattern) -> {
+            log.trace("SshClientInstaller: processPatterns: For-Each: var-name={}, pattern={}, pattern-flags={}", varName, pattern, pattern.flags());
             Matcher matcher = null;
             for (String line : linesArr) {
                 Matcher m = pattern.matcher(line);
