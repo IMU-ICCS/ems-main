@@ -43,6 +43,7 @@
         <mathparser.version>4.2.0</mathparser.version>
         <!-- Lombok version -->
         <lombok.version>1.18.24</lombok.version>
+        <jackson.version>2.15.0</jackson.version>
     </properties>
 
     <modules>

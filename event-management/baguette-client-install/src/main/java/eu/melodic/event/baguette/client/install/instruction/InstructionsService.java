@@ -9,9 +9,9 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.gson.Gson;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,12 +115,14 @@ public class InstructionsService implements EnvironmentAware {
     private InstructionsSet _loadFromJsonFile(String jsonFile) throws IOException {
         log.debug("InstructionsService: Loading instructions from JSON file: {}", jsonFile);
         byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
-        String json = new String(bdata, StandardCharsets.UTF_8);
-        log.trace("InstructionsService: JSON instructions file contents: \n{}", json);
+        String jsonStr = new String(bdata, StandardCharsets.UTF_8);
+        log.trace("InstructionsService: JSON instructions file contents: \n{}", jsonStr);
 
         // Create InstructionsSet object from JSON
-        InstructionsSet instructionsSet =
-                new Gson().fromJson(json, InstructionsSet.class);
+        ObjectMapper mapper = new ObjectMapper();
+        InstructionsSet instructionsSet = mapper.readerFor(InstructionsSet.class)
+                .with(JsonReadFeature.ALLOW_JAVA_COMMENTS)
+                .readValue(jsonStr);
         instructionsSet.setFileName(jsonFile);
         log.trace("InstructionsService: Installation instructions loaded from JSON file: {}\n{}", jsonFile, instructionsSet);
 
