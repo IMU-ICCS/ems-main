@@ -496,6 +496,7 @@ baguette.client.install:
 
   instructions:
     LINUX:
+      # Instructions set files - JSON version
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/check-ignore.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/detect.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/netdata.json
@@ -503,6 +504,14 @@ baguette.client.install:
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/baguette.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/baguette-skip.json
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux/start-agents.json
+      # Instructions set files - YAML version
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/check-ignore.yml
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/detect.yml
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/netdata.yml
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/jre8.yml
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/baguette.yml
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/baguette-skip.yml
+#      - file:${MELODIC_CONFIG_DIR}/baguette-client-install/linux-yaml/start-agents.yml
     WINDOWS:
       - file:${MELODIC_CONFIG_DIR}/baguette-client-install/win/win.json
 
