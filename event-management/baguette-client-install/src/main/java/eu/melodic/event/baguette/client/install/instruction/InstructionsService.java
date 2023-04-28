@@ -97,16 +97,19 @@ public class InstructionsService implements EnvironmentAware {
             throw new IllegalArgumentException("Unknown file type: "+fileName);
 
         // Process instructions file based on its type
-        if ("json".equalsIgnoreCase(ext)) {
-            // Load instructions set from JSON file
-            return _loadFromJsonFile(fileName);
-        } else
-        if ("yml".equalsIgnoreCase(ext) || "yaml".equalsIgnoreCase(ext)) {
-            // Load instructions set from YAML file
-            return _loadFromYamlFile(fileName);
-        } else {
-            throw new IllegalArgumentException("Unsupported file type: "+fileName);
+        try {
+            if ("json".equalsIgnoreCase(ext)) {
+                // Load instructions set from JSON file
+                return _loadFromJsonFile(fileName);
+            } else if ("yml".equalsIgnoreCase(ext) || "yaml".equalsIgnoreCase(ext)) {
+                // Load instructions set from YAML file
+                return _loadFromYamlFile(fileName);
+            }
+        } catch (Exception e) {
+            log.error("Exception thrown while processing instructions set file: {}", fileName);
+            throw e;
         }
+        throw new IllegalArgumentException("Unsupported file type: "+fileName);
     }
 
     private InstructionsSet _loadFromJsonFile(String jsonFile) throws IOException {
@@ -131,7 +134,8 @@ public class InstructionsService implements EnvironmentAware {
         log.trace("InstructionsService: YAML instructions file contents: \n{}", yamlStr);
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        InstructionsSet instructionsSet = mapper.readValue(yamlStr, InstructionsSet.class);
+        InstructionsSet instructionsSet =
+                mapper.readValue(yamlStr, InstructionsSet.class);
         instructionsSet.setFileName(yamlFile);
         log.trace("InstructionsService: Installation instructions loaded from YAML file: {}\n{}", yamlFile, instructionsSet);
 

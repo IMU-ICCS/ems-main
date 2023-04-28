@@ -22,15 +22,13 @@ public class InstructionsSet extends AbstractInstructionsBase {
     private String fileName;
     private List<Instruction> instructions = new ArrayList<>();
 
-    /*public Map<String,String> getValueMap() {
-        return Collections.unmodifiableMap(valueMap);
+    public List<Instruction> getInstructions() {
+        return Collections.unmodifiableList(instructions);
     }
-    public void setValueMap(Map<String,String> valueMap) {
-        this.valueMap = new HashMap<>(valueMap);
-    }*/
 
-    public List<Instruction> getInstructions() { return Collections.unmodifiableList(instructions); }
-    public void setInstructions(List<Instruction> ni) { instructions = new ArrayList<>(ni); }
+    public void setInstructions(List<Instruction> ni) {
+        instructions = new ArrayList<>(ni);
+    }
 
     public InstructionsSet appendInstruction(Instruction i) {
         instructions.add(i);

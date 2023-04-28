@@ -1,5 +1,5 @@
 {
-  "os": "",
+  "os": "LINUX",
   "description": "Netdata installation instruction set at VM node",
   "condition": "! ${SKIP_NETDATA_INSTALLATION:-false}",
   "instructions": [
