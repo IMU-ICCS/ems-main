@@ -107,6 +107,11 @@ public class InstructionsService implements EnvironmentAware {
             } else if ("yml".equalsIgnoreCase(ext) || "yaml".equalsIgnoreCase(ext)) {
                 // Load instructions set from YAML file
                 return _loadFromYamlFile(fileName);
+            } else if ("js".equalsIgnoreCase(ext)) {
+                // Just return an instruction set with the file name set
+                InstructionsSet is = new InstructionsSet();
+                is.setFileName(fileName);
+                return is;
             }
         } catch (IOException e) {
             log.error("Exception thrown while processing instructions set file: {}", fileName);
