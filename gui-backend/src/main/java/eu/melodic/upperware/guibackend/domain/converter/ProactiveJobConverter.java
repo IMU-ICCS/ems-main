@@ -38,7 +38,7 @@ public class ProactiveJobConverter implements GenericConverter<Job, eu.passage.u
                 .map(task -> Task.builder()
                         .name(task.getName())
                         .taskId(task.getTaskId())
-                        .type(task.getType())
+                        .type(String.valueOf(task.getType()))
                         .parentTasks(task.getParentTasks())
                         .installation(createInstallation(task.getInstallation()))
                         .portsToOpen(createPortsList(task.getPortsToOpen()))
