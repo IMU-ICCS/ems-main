@@ -16,7 +16,7 @@
       "executable": false,
       "exitCode": 99,
       "match": true,
-      "message": "Netdata is already installed at Node"
+      "message": "====== Netdata is already installed at Node ======"
     },
     {
       "description": "Log Wait if apt is being updated",
