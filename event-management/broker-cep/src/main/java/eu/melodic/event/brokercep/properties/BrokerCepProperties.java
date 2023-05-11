@@ -77,6 +77,9 @@ public class BrokerCepProperties implements InitializingBean {
 
     private Usage usage = new Usage();
 
+    private boolean logBrokerMessages = true;
+    private boolean logBrokerMessagesFull = false;
+
     @Data
     public static class Usage {
         private Memory memory = new Memory();
