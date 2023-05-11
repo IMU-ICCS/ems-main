@@ -146,6 +146,7 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
         getAttribute(requirementsMap, "minCpu").ifPresent(attribute -> log.warn("MinCpu requirement is not supported"));
         getAttribute(requirementsMap, "maxCpu").ifPresent(attribute -> log.warn("MaxCpu requirement is not supported"));
 
+
         //Same requirements as above, but for camel 3.0
         nodeType = getAttribute(requirementsMap, "hasPlacementType");
         if (nodeType.isPresent()) {
@@ -160,6 +161,10 @@ public class NodeCandidatesFetchingServiceImpl implements NodeCandidatesFetching
 
         getAttribute(requirementsMap, "hasNumberofCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.GEQ, getValueAsString(attribute.getMinValue()))));
         getAttribute(requirementsMap, "hasNumberofCores").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "cores", RequirementOperator.LEQ, getValueAsString(attribute.getMaxValue()))));
+
+        getAttribute(requirementsMap, "hasFPGANumber").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "fpga", RequirementOperator.GEQ, getValueAsString(attribute.getMinValue()))));
+        getAttribute(requirementsMap, "hasFPGANumber").ifPresent(attribute -> result.add(createRequirement(HARDWARE_CLASS, "fpga", RequirementOperator.LEQ, getValueAsString(attribute.getMaxValue()))));
+
 
         return result;
     }
