@@ -10,7 +10,7 @@
       "executable": false,
       "exitCode": 99,
       "match": true,
-      "message": "JRE 8u282 is already installed at Node"
+      "message": "====== JRE 8u282 is already installed at Node ======"
     },
     {
       "description": "Install JRE 8u282...",

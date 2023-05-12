@@ -399,8 +399,12 @@
                                     <destinationFile>../public_resources/resources/eu.melodic.event.brokerclient.properties</destinationFile>
                                 </fileSet>-->
                                 <fileSet>
-                                    <sourceFile>../bin/client.sh</sourceFile>
+                                    <sourceFile>${project.basedir}/src/main/resources/public/client.sh</sourceFile>
                                     <destinationFile>../public_resources/resources/client.sh</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/src/main/resources/public/client.bat</sourceFile>
+                                    <destinationFile>../public_resources/resources/client.bat</destinationFile>
                                 </fileSet>
 
                                 <!-- Copy baguette-client files to /public_resources -->

@@ -1,5 +1,5 @@
 {
-  "os": "",
+  "os": "LINUX",
   "description": "Netdata installation instruction set at VM node",
   "condition": "! ${SKIP_NETDATA_INSTALLATION:-false}",
   "instructions": [
@@ -16,7 +16,7 @@
       "executable": false,
       "exitCode": 99,
       "match": true,
-      "message": "Netdata is already installed at Node"
+      "message": "====== Netdata is already installed at Node ======"
     },
     {
       "description": "Log Wait if apt is being updated",

@@ -57,13 +57,17 @@ public class ClientInstaller implements InitializingBean {
     public void addTask(@NotNull ClientInstallationTask task) {
         executorService.submit(() -> {
             long taskCnt = taskCounter.getAndIncrement();
-            log.info("ClientInstaller: Executing Client installation Task #{}: task-id={}, node-id={}, name={}, type={}, address={}",
-                    taskCnt, task.getId(), task.getNodeId(), task.getName(), task.getType(), task.getAddress());
-            long startTm = System.currentTimeMillis();
-            boolean result = executeTask(task, taskCnt);
-            long endTm = System.currentTimeMillis();
-            log.info("ClientInstaller: Client installation Task #{}: result={}, duration={}ms",
-                    taskCnt, result?"SUCCESS":"FAILED", endTm-startTm);
+            try {
+                log.info("ClientInstaller: Executing Client installation Task #{}: task-id={}, node-id={}, name={}, type={}, address={}",
+                        taskCnt, task.getId(), task.getNodeId(), task.getName(), task.getType(), task.getAddress());
+                long startTm = System.currentTimeMillis();
+                boolean result = executeTask(task, taskCnt);
+                long endTm = System.currentTimeMillis();
+                log.info("ClientInstaller: Client installation Task #{}: result={}, duration={}ms",
+                        taskCnt, result ? "SUCCESS" : "FAILED", endTm - startTm);
+            } catch (Throwable t) {
+                log.info("ClientInstaller: Exception caught in Client installation Task #{}: Exception: ", taskCnt, t);
+            }
         });
     }
 
@@ -111,19 +115,33 @@ public class ClientInstaller implements InitializingBean {
 
     private boolean executeVmTask(ClientInstallationTask task, long taskCounter) {
         // Select the appropriate client installer plugin to run installation task.
-        // Currently, only one installer plugin is available: SshClientInstaller
-        return SshClientInstaller.builder()
-                .task(task)
-                .taskCounter(taskCounter)
-                /*.maxRetries(properties.getMaxRetries())
-                .authenticationTimeout(properties.getAuthenticateTimeout())
-                .connectTimeout(properties.getConnectTimeout())
-                .heartbeatInterval(properties.getHeartbeatInterval())
-                .simulateConnection(properties.isSimulateConnection())
-                .simulateExecution(properties.isSimulateExecution())
-                .commandExecutionTimeout(properties.getCommandExecutionTimeout())*/
-                .properties(properties)
-                .build()
-                .execute();
+        // Currently, two installer plugins are available: SshClientInstaller, and SshJsClientInstaller
+        boolean result;
+        if (properties.getInstallerType()==ClientInstallationProperties.INSTALLER_TYPE.JS_INSTALLER) {
+            log.info("ClientInstaller: Using SshJsClientInstaller for task #{}", taskCounter);
+            result = SshJsClientInstaller.jsBuilder()
+                    .task(task)
+                    .taskCounter(taskCounter)
+                    .properties(properties)
+                    .build()
+                    .execute();
+        } else {
+            log.info("ClientInstaller: Using SshClientInstaller (default) for task #{}", taskCounter);
+            result = SshClientInstaller.builder()
+                    .task(task)
+                    .taskCounter(taskCounter)
+                    /*.maxRetries(properties.getMaxRetries())
+                    .authenticationTimeout(properties.getAuthenticateTimeout())
+                    .connectTimeout(properties.getConnectTimeout())
+                    .heartbeatInterval(properties.getHeartbeatInterval())
+                    .simulateConnection(properties.isSimulateConnection())
+                    .simulateExecution(properties.isSimulateExecution())
+                    .commandExecutionTimeout(properties.getCommandExecutionTimeout())*/
+                    .properties(properties)
+                    .build()
+                    .execute();
+        }
+        log.info("ClientInstaller: Task execution result #{}: success={}", taskCounter, result);
+        return result;
     }
 }

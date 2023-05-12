@@ -43,6 +43,10 @@
         <mathparser.version>4.2.0</mathparser.version>
         <!-- Lombok version -->
         <lombok.version>1.18.24</lombok.version>
+
+        <!-- Jackson and Snakeyaml - Used in baguette-client-install -->
+        <jackson.version>2.15.0</jackson.version>
+        <snakeyaml.version>1.33</snakeyaml.version>
     </properties>
 
     <modules>

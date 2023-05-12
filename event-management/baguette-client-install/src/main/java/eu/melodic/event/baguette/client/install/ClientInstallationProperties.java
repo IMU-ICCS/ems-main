@@ -36,9 +36,12 @@ public class ClientInstallationProperties implements InitializingBean {
         log.debug("ClientInstallationProperties: {}", this);
     }
 
+    enum INSTALLER_TYPE { DEFAULT_INSTALLER, JS_INSTALLER }
+
     private final Map<String, List<String>> osFamilies = new LinkedHashMap<>();
 
     private int workers = 1;
+    private INSTALLER_TYPE installerType = INSTALLER_TYPE.DEFAULT_INSTALLER;
 
     private String baseDir;                     // EMS client home directory
     private String rootCmd;                     // Root command (e.g. 'sudo', or 'echo ${NODE_SSH_PASSWORD} | sudo -S ')
