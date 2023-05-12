@@ -501,6 +501,45 @@ public class ControlServiceController {
         return "OK";
     }
 
+    @RequestMapping(value = "/baguette/node/list", method = GET)
+    public Collection<String> baguetteNodeList() throws Exception {
+        log.info("ControlServiceController.baguetteNodeList(): Invoked");
+
+        Collection<String> addresses = coordinator.getBaguetteServer().getNodeRegistry().getNodeAddresses();
+
+        log.info("ControlServiceController.baguetteNodeList(): {}", addresses);
+        return addresses;
+    }
+
+    @RequestMapping(value = "/baguette/node/reinstall/{ipAddress:.+}", method = {GET, POST},
+            produces = MediaType.TEXT_PLAIN_VALUE)
+    public String baguetteNodeReinstall(@PathVariable String ipAddress) throws Exception {
+        log.info("ControlServiceController.baguetteNodeReinstall(): Invoked");
+        log.info("ControlServiceController.baguetteNodeReinstall(): Node IP address: {}", ipAddress);
+
+        // Get node info using IP address
+        BaguetteServer baguette = coordinator.getBaguetteServer();
+        NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
+        log.info("ControlServiceController.baguetteNodeReinstall(): Info for node at: ip-address={}, Node Info:\n{}",
+                ipAddress, nodeInfo);
+        if (nodeInfo==null) {
+            log.warn("ControlServiceController.baguetteNodeReinstall(): Not found pre-registered node with ip-address: {}", ipAddress);
+            return "NODE NOT FOUND: "+ipAddress;
+        }
+
+        // Continue processing according to ExecutionWare type
+        String response;
+        log.info("ControlServiceController.baguetteNodeReinstall(): ExecutionWare: {}", properties.getExecutionware());
+        if (properties.getExecutionware() == ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
+            response = getClientInstallationInstructions(nodeInfo);
+        } else {
+            response = createClientInstallationTask(nodeInfo);
+        }
+
+        log.info("ControlServiceController.baguetteNodeReinstall(): node ip-address: {}, response: {}", ipAddress, response);
+        return response;
+    }
+
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST},
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
