@@ -12,6 +12,8 @@ export const FORM_TYPE_OPTIONS = [
                 { 'id': 'new-cp', 'text': 'Send CP model request', 'url': '/cpModelJson', 'method': 'POST', 'form': 'cp-form' },
                 { 'id': 'const', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/cpConstants', 'method': 'POST', 'form': '' },
                 { 'id': 'new-vm', 'text': 'Register Node', 'url': '/baguette/registerNode', 'method': 'POST', 'form': 'vm-form' },
+                { 'id': 'vm-list', 'text': 'Node IP addresses', 'url': '/baguette/node/list', 'method': 'GET', 'form': '' },
+                { 'id': 'vm-reinstall', 'text': 'Reinstall Node', 'url': '/baguette/node/reinstall/{ip-address}', 'method': 'GET', 'form': 'vm-reinstall' },
                 { 'id': 'get-mons', 'text': 'Get Monitors/Sensors', 'url': '/monitors', 'method': 'POST', 'form': 'camel-form' },
                 { 'id': 'get-camel', 'text': 'Current CAMEL model', 'url': '/translator/currentCamelModel', 'method': 'GET', 'form': '' },
                 { 'id': 'get-cp', 'text': 'Current CP model', 'url': '/translator/currentCpModel', 'method': 'GET', 'form': '' },
@@ -69,6 +71,11 @@ export const FORM_SPECS = {
                         { 'name': 'ssh.username', 'text': 'SSH username' },
                         { 'name': 'ssh.password', 'text': 'SSH password', 'type': 'password' },
                         { 'name': 'ssh.key', 'text': 'SSH key', 'type': 'password' },
+                    ]
+                },
+                'vm-reinstall': {
+                    'fields': [
+                        { 'name': 'ip-address', 'text': 'IP address' },
                     ]
                 },
                 'app-id-form': {
