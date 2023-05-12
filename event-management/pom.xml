@@ -62,6 +62,10 @@
         <activemq.version>5.17.3</activemq.version>
         <!-- Jasypt version -->
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
+
+        <!-- Jackson and Snakeyaml - Used in baguette-client-install -->
+        <jackson.version>2.15.0</jackson.version>
+        <snakeyaml.version>1.33</snakeyaml.version>
     </properties>
 
     <modules>

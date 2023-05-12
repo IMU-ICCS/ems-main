@@ -12,12 +12,14 @@ package eu.melodic.event.brokercep;
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     private final static AtomicLong otherEventCounter = new AtomicLong(0);
     private final static AtomicLong eventFailuresCounter = new AtomicLong(0);
 
+    private final BrokerCepProperties properties;
     private final BrokerConfig brokerConfig;
     private final BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
     private final CepService cepService;
@@ -156,6 +159,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
     @Override
     public void onMessage(Message message) {
+        // Log message
+        logMessage(message);
+
+        // Handle message
         try {
             log.trace("BrokerCepConsumer.onMessage(): {}", message);
             if (message instanceof ActiveMQObjectMessage) {
@@ -195,6 +202,42 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
             eventFailuresCounter.incrementAndGet();
+        }
+    }
+
+    private void logMessage(Message message) {
+        boolean logBrokerMessages = properties.isLogBrokerMessages();
+        boolean logBrokerMessagesFull = properties.isLogBrokerMessagesFull();
+        if (!logBrokerMessages) return;
+
+        try {
+            // Check if message passed is null
+            if (message==null) {
+                log.warn("\n==========|  **NULL** MESSAGE RECEIVED");
+                return;
+            }
+
+            // Extract important message data (id, destination, metric-value)
+            String jmsMesgId = message.getJMSMessageID();
+            Destination jmsDest = message.getJMSDestination();
+            String mesgStr = message.toString();
+            String metricValue = StringUtils.substringBetween(mesgStr, "metricValue", ",");
+            if (metricValue==null) metricValue = StringUtils.substringBetween(mesgStr, "metricValue", "}");
+            if (metricValue!=null) metricValue = metricValue.replace("\"", "").replace(":", "").trim();
+            else metricValue = logBrokerMessagesFull ? "---See next---" : "---Not found---";
+
+            // Log message data
+            if (logBrokerMessagesFull)
+                log.info("\n==========|  RECEIVED A MESSAGE: metricValue={}, dest={}, id={}\n{}", metricValue, jmsDest, jmsMesgId, message);
+            else
+                log.info("\n==========|  RECEIVED A MESSAGE: metricValue={}, dest={}, id={}", metricValue, jmsDest, jmsMesgId);
+
+        } catch (Exception e) {
+            // Log error
+            if (logBrokerMessagesFull)
+                log.warn("\n==========|  RECEIVED A MESSAGE: FAILED TO PARSE. SEE NEXT FOR STACKTRACE\n{}\n\nSTACKTRACE:\n", message, e);
+            else
+                log.warn("\n==========|  RECEIVED A MESSAGE: FAILED TO PARSE. SEE NEXT FOR STACKTRACE\n\nSTACKTRACE:\n", e);
         }
     }
 

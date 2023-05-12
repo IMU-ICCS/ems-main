@@ -23,7 +23,7 @@
       "executable": false,
       "exitCode": 99,
       "match": true,
-      "message": "EMS client is already installed at Node"
+      "message": "====== EMS client is already installed at Node ======"
     },
     {
       "description": "-- LIST ${BAGUETTE_CLIENT_BASE_DIR}/.. BEFORE --",

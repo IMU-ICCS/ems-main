@@ -10,7 +10,7 @@
       "executable": false,
       "exitCode": 99,
       "match": true,
-      "message": "JRE is already installed at Node"
+      "message": "====== JRE is already installed at Node ======"
     },
     {
       "description": "Install JRE...",
