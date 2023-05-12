@@ -174,10 +174,14 @@ public class KeystoreUtil {
             List<GeneralName> altNames = new ArrayList<>();
             for (String name : names) {
                 if (StringUtils.startsWithIgnoreCase(name, "dns:")) {
-                    altNames.add(new GeneralName(GeneralName.dNSName, name.substring("dns:".length())));
+                    name = name.substring("dns:".length());
+                    if (StringUtils.isNotBlank(name))
+                        altNames.add(new GeneralName(GeneralName.dNSName, name));
                 } else
                 if (StringUtils.startsWithIgnoreCase(name, "ip:")) {
-                    altNames.add(new GeneralName(GeneralName.iPAddress, name.substring("ip:".length())));
+                    name = name.substring("ip:".length());
+                    if (StringUtils.isNotBlank(name))
+                        altNames.add(new GeneralName(GeneralName.iPAddress, name));
                 } else
                     log.warn("KeystoreUtil: Ignoring element of Subject Alt. Names: {}", name);
             }
