@@ -485,7 +485,7 @@ public class BrokerConfig implements InitializingBean {
     }
 
     public ConnectionFactory getConnectionFactoryForConsumer() {
-        String connStr = StringUtils.isNotBlank(properties.getBrokerUrlForConsumer()) ? properties.getBrokerUrlForConsumer() : null;
+        String connStr;
         if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
             log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
             connStr = properties.getBrokerUrlForConsumer();
