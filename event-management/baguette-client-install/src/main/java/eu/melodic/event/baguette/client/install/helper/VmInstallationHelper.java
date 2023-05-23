@@ -160,12 +160,35 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
         String clientTmpDir = StringUtils.firstNonBlank(properties.getClientTmpDir(), "/tmp");
 
         // Create additional keys (with NODE_ prefix) for node map values (as aliases to the already existing keys)
+        /*
         Map<String,String> additionalKeysMap = nodeMap.entrySet().stream()
                 .collect(Collectors.toMap(
                         e -> e.getKey().startsWith("ssh.")
                                 ? "NODE_SSH_" + e.getKey().substring(4).toUpperCase()
                                 : "NODE_" + e.getKey().toUpperCase(),
-                        Map.Entry::getValue));
+                        Map.Entry::getValue,
+                        (v1, v2) -> {
+                            log.warn("VmInstallationHelper.prepareInstallationInstructionsForLinux(): DUPLICATE KEY FOUND: key={}, old-value={}, new-value={}",
+                                    k, v1, v2);
+                            return v2;
+                        }
+                ));*/
+        final Map<String,String> additionalKeysMap = new HashMap<>();
+        nodeMap.forEach((k, v) -> {
+            try {
+                k = k.startsWith("ssh.")
+                        ? "NODE_SSH_" + k.substring(4).toUpperCase()
+                        : "NODE_" + k.toUpperCase();
+                if (additionalKeysMap.containsKey(k)) {
+                    log.warn("VmInstallationHelper.prepareInstallationInstructionsForLinux(): DUPLICATE KEY FOUND: key={}, old-value={}, new-value={}",
+                            k, additionalKeysMap.get(k), v);
+                }
+                additionalKeysMap.put(k, v);
+            } catch (Exception ex) {
+                log.error("VmInstallationHelper.prepareInstallationInstructionsForLinux(): EXCEPTION in additional keys copy loop: key={}, value={}, additionalKeysMap={}, Exception:\n",
+                        k, v, additionalKeysMap, ex);
+            }
+        });
         nodeMap.putAll(additionalKeysMap);
 
         // Load client config. template and prepare configuration
