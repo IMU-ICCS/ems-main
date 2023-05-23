@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.cep;
 
+import com.espertech.esper.collection.Pair;
 import eu.melodic.event.brokercep.event.EventMap;
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +61,7 @@ public class CepEvalFunction {
         return result;
     }
 
-    /*public static double eval(String formula, String streamNames, Pair pair1) {
+    public static double eval(String formula, String streamNames, Pair pair1) {
         return _eval(formula, streamNames, pair1);
     }
 
@@ -111,7 +112,7 @@ public class CepEvalFunction {
         log.debug(">> eval(Pair):   result:  {}", result);
 
         return result;
-    }*/
+    }
 
     public static double eval(String formula, String streamNames, double... v) {
         log.debug(">> ---------------------------------------------------------------------------");

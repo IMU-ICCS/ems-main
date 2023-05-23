@@ -9,8 +9,8 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotNull;
@@ -20,6 +20,9 @@ import java.util.regex.Pattern;
 @Data
 @Accessors(chain = true, fluent = true)
 @Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter(onMethod = @__(@JsonProperty))
 public class Instruction extends AbstractInstructionsBase {
     private INSTRUCTION_TYPE taskType;
     private String description;

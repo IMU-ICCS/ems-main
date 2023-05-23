@@ -14,8 +14,9 @@ import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.client.install.ClientInstallationProperties;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.SshConfig;
-import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.client.install.instruction.Instruction;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
+import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.translate.TranslationContext;
@@ -27,12 +28,10 @@ import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -229,37 +228,31 @@ public class VmInstallationHelper extends AbstractInstallationHelper {
 
         try {
             // Read installation instructions from JSON file
-            List<String> jsonFiles = null;
+            List<String> instructionSetFileList = null;
             if (nodeMap.containsKey("instruction-files")) {
-                jsonFiles = Arrays.stream(nodeMap.getOrDefault("instruction-files", "").split(","))
+                instructionSetFileList = Arrays.stream(nodeMap.getOrDefault("instruction-files", "").split(","))
                         .filter(StringUtils::isNotBlank)
                         .map(String::trim)
                         .collect(Collectors.toList());
-                if (jsonFiles.size()==0)
+                if (instructionSetFileList.size()==0)
                     log.warn("VmInstallationHelper.prepareInstallationInstructionsForLinux: Context map contains 'instruction-files' entry with no contents");
             } else {
-                jsonFiles = properties.getInstructions().get("LINUX");
+                instructionSetFileList = properties.getInstructions().get("LINUX");
             }
-            for (String jsonFile : jsonFiles) {
-                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", jsonFile);
-                byte[] bdata = FileCopyUtils.copyToByteArray(resourceLoader.getResource(jsonFile).getInputStream());
-                String json = new String(bdata, StandardCharsets.UTF_8);
-                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Template installation instructions for LINUX: json:\n{}", json);
-
-                // Create InstructionsSet object from JSON
-                InstructionsSet instructionsSet =
-                        new Gson().fromJson(json, InstructionsSet.class);
-                instructionsSet.setFileName(jsonFile);
-                log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: object:\n{}", instructionsSet);
+            for (String instructionSetFile : instructionSetFileList) {
+                // Load instructions set from file
+                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions file for LINUX: {}", instructionSetFile);
+                InstructionsSet instructionsSet = InstructionsService.getInstance().loadInstructionsFile(instructionSetFile);
+                log.debug("VmInstallationHelper.prepareInstallationInstructionsForLinux: Instructions set loaded from file: {}\n{}", instructionSetFile, instructionsSet);
 
                 // Pretty print instructionsSet JSON
                 if (log.isTraceEnabled()) {
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    StringWriter sw = new StringWriter();
-                    try (PrintWriter writer = new PrintWriter(sw)) {
+                    StringWriter stringWriter = new StringWriter();
+                    try (PrintWriter writer = new PrintWriter(stringWriter)) {
                         gson.toJson(instructionsSet, writer);
                     }
-                    log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", sw.toString());
+                    log.trace("VmInstallationHelper.prepareInstallationInstructionsForLinux: Installation instructions for LINUX: json:\n{}", stringWriter);
                 }
 
                 instructionsSetList.add(instructionsSet);
