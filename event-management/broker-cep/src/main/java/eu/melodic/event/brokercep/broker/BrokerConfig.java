@@ -158,12 +158,16 @@ public class BrokerConfig implements InitializingBean {
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
         KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
 
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}...",
+                properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
+                passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
+                properties.getSsl().getKeyEntryName());
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
                 .passwordUtil(passwordUtil)
                 .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryName());
-        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieved certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
                 properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
                 passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
                 properties.getSsl().getKeyEntryName(), this.brokerCert);
@@ -481,7 +485,7 @@ public class BrokerConfig implements InitializingBean {
     }
 
     public ConnectionFactory getConnectionFactoryForConsumer() {
-        String connStr = StringUtils.isNotBlank(properties.getBrokerUrlForConsumer()) ? properties.getBrokerUrlForConsumer() : null;
+        String connStr;
         if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
             log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
             connStr = properties.getBrokerUrlForConsumer();
