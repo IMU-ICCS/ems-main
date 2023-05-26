@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.properties;
 
+import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
@@ -80,6 +81,8 @@ public class BrokerCepProperties implements InitializingBean {
     private boolean logBrokerMessages = true;
     private boolean logBrokerMessagesFull = false;
 
+    private EventRecorderProperties eventRecorder = new EventRecorderProperties();
+
     @Data
     public static class Usage {
         private Memory memory = new Memory();
@@ -106,5 +109,12 @@ public class BrokerCepProperties implements InitializingBean {
         private String username;
         @ToString.Exclude
         private String password;
+    }
+
+    @Data
+    public static class EventRecorderProperties {
+        private boolean enabled;
+        private EventRecorder.FORMAT format = EventRecorder.FORMAT.CSV;
+        private String file;
     }
 }

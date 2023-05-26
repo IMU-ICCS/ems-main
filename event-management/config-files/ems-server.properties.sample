@@ -357,6 +357,11 @@ brokercep.usage.memory.jvm-heap-percentage = 20
 #brokercep.maxEventForwardRetries: -1
 #brokercep.maxEventForwardDuration: -1
 
+# Event recorder settings
+event-recorder.enabled=true
+event-recorder.format=JSON
+event-recorder.file=${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.json
+
 
 ################################################################################
 ###                     EMS - Baguette Server properties                     ###

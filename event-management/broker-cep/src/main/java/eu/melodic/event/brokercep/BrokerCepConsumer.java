@@ -12,7 +12,9 @@ package eu.melodic.event.brokercep;
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
@@ -27,6 +29,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -52,6 +55,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     private Session session;
     private final Map<String,MessageConsumer> addedDestinations = new HashMap<>();
 
+    private EventRecorder eventRecorder;
     private final TaskScheduler scheduler;
     private boolean shuttingDown;
 
@@ -68,6 +72,19 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
 
             // clear added destinations list
             addedDestinations.clear();
+
+            // clear previous event recorder (if any)
+            if (eventRecorder!=null && !eventRecorder.isClosed())
+                eventRecorder.close();
+
+            // create new event recorder
+            if (properties.getEventRecorder()!=null) {
+                if (!shuttingDown && properties.getEventRecorder().isEnabled()) {
+                    @NonNull String recordFile = properties.getEventRecorder().getFile().replace("%T", "" + System.currentTimeMillis());
+                    eventRecorder = new EventRecorder(properties.getEventRecorder().getFormat(), recordFile, scheduler);
+                    eventRecorder.startRecording();
+                }
+            }
 
             // If an alternative Broker URL is provided for consumer, it will be used
             ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryForConsumer();
@@ -175,6 +192,8 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     public void onMessage(Message message) {
         // Log message
         logMessage(message);
+        // Record message
+        if (eventRecorder!=null) eventRecorder.recordEvent(message);
 
         // Handle message
         try {

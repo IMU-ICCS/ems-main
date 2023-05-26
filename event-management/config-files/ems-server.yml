@@ -373,6 +373,12 @@ brokercep:
   #maxEventForwardRetries: -1
   #maxEventForwardDuration: -1
 
+  # Event recorder settings
+  event-recorder:
+    enabled: true
+    format: JSON
+    file: ${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.json
+
 
 ################################################################################
 ###                     EMS - Baguette Server properties                     ###
