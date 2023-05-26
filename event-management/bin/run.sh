@@ -67,6 +67,9 @@ if [[ -z ${EMS_SKIP_WAIT_CDO+x} ]] && [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh 
     $MELODIC_CONFIG_DIR/wait-for-cdo.sh
 fi
 
+# Setup TERM & INT signal handler
+trap 'echo "Signaling EMS to exit"; kill -TERM "${emsPid}"; wait "${emsPid}"; ' SIGTERM SIGINT
+
 # Run EMS server
 # Uncomment next line to set JAVA runtime options
 #JAVA_OPTS=-Djavax.net.debug=all
@@ -83,7 +86,10 @@ while :; do
   # java $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Duser.timezone=Europe/Athens -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE"
 
   # Use when Esper is NOT packaged in control-service.jar
-  java $EMS_DEBUG_OPTS $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE" $*
+  java $EMS_DEBUG_OPTS $JAVA_OPTS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE" $* &
+  emsPid=$!
+  echo "EMS Pid: $emsPid"
+  wait $emsPid
 
   retCode=$?
   if [[ $retCode -eq $RESTART_EXIT_CODE ]]; then echo "Restarting EMS server..."; else break; fi
@@ -95,3 +101,4 @@ echo "EMS server exited"
 # e.g. --spring.config.name=application.properties
 
 cd $PREVWORKDIR
+exit $retCode
