@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum InstanceStatus {
-    @SerializedName("1") BUSY,
-    @SerializedName("0") IDLE,
+    @SerializedName("1.0") BUSY,
+    @SerializedName("0.0") IDLE,
     NOT_KNOWN
 }

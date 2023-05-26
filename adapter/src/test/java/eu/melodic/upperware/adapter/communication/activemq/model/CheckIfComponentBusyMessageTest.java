@@ -24,7 +24,7 @@ public class CheckIfComponentBusyMessageTest {
 
     @Test
     void testDeserialisationSimpleMessage() {
-        String payload = "{ 'instanceName'= 'testName', 'metricValue' = '1'}";
+        String payload = "{ 'instanceName'= 'testName', 'metricValue' = '1.0'}";
         CheckIfComponentBusyMessage message = gson.fromJson(payload, CheckIfComponentBusyMessage.class);
         assertEquals("testName", message.getComponentInstanceName());
         assertEquals(InstanceStatus.BUSY, message.getInstanceStatus());
@@ -32,7 +32,7 @@ public class CheckIfComponentBusyMessageTest {
 
     @Test
     void testDeserialisationNoNotNeededField() {
-        String payload = "{ 'metricValue' = '0'}";
+        String payload = "{ 'metricValue' = '0.0'}";
         CheckIfComponentBusyMessage message = gson.fromJson(payload, CheckIfComponentBusyMessage.class);
         assertNull(message.getComponentInstanceName());
         assertEquals(InstanceStatus.IDLE, message.getInstanceStatus());
