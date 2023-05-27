@@ -111,10 +111,14 @@ public class BrokerCepProperties implements InitializingBean {
         private String password;
     }
 
+    public enum EVENT_RECORDER_FILTER_MODE { ALL, REGISTERED, CUSTOM }
+
     @Data
     public static class EventRecorderProperties {
         private boolean enabled;
         private EventRecorder.FORMAT format = EventRecorder.FORMAT.CSV;
         private String file;
+        private EVENT_RECORDER_FILTER_MODE filterMode = EVENT_RECORDER_FILTER_MODE.REGISTERED;
+        private List<String> allowedDestinations;
     }
 }

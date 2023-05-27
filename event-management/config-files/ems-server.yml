@@ -343,11 +343,14 @@ brokercep:
       className: 'eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor'
       params:
         - '#SourceAddressMessageUpdateInterceptor'
+        - '#LogMessageUpdateInterceptor'
         - '#MessageForwarderInterceptor'
 
   message-interceptors-specs:
     SourceAddressMessageUpdateInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
+    LogMessageUpdateInterceptor:
+      className: eu.melodic.event.brokercep.broker.interceptor.LogMessageUpdateInterceptor
     MessageForwarderInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
 
@@ -378,6 +381,8 @@ brokercep:
     enabled: true
     format: JSON
     file: ${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.json
+#    filter-mode: ALL | REGISTERED (default) | CUSTOM
+#    allowed-destinations:
 
 
 ################################################################################

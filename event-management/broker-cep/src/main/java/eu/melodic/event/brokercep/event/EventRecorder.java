@@ -12,10 +12,12 @@ package eu.melodic.event.brokercep.event;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.scheduling.TaskScheduler;
@@ -42,45 +44,41 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
     @Getter
     private final FORMAT recordFormat;
     @Getter
-    private final String recordFile;
+    private final String recordFilePattern;
     @Getter
-    private final Deque<Message> eventQueue;
+    private final BrokerCepProperties.EVENT_RECORDER_FILTER_MODE filterMode;
+    @Getter
+    private final List<String> allowedDestinations;
+
+    @Getter
+    private String recordFile;
     @Getter
     private boolean closed;
+    @Getter
     private boolean recording;
-    private final BufferedWriter recordWriter;
+
+    private BufferedWriter recordWriter;
     private CSVPrinter csvPrinter;
     private JsonGenerator jsonGenerator;
 
+    private final Deque<Message> eventQueue;
     private final TaskScheduler scheduler;
-    private final ScheduledFuture<?> runnerFuture;
+    private ScheduledFuture<?> runnerFuture;
 
-    public EventRecorder(@NonNull FORMAT recordFormat, @NonNull String recordFile, @NonNull TaskScheduler scheduler) throws IOException {
-        log.info("EventRecorder: Record format: {}", recordFormat);
-        log.info("EventRecorder: Record file:   {}", recordFile);
-        this.recordWriter = new BufferedWriter(new FileWriter(recordFile));
+    public EventRecorder(@NonNull BrokerCepProperties.EventRecorderProperties properties, @NonNull TaskScheduler scheduler) throws IOException {
+        this(properties.getFormat(), properties.getFile(), properties.getFilterMode(), properties.getAllowedDestinations(), scheduler);
+    }
 
-        if (recordFormat==FORMAT.CSV) {
-            csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT
-                    .withHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties"));
-            csvPrinter.flush();
-        }
-        if (recordFormat==FORMAT.JSON) {
-            jsonGenerator = new JsonFactory()
-                    .createGenerator(recordWriter)
-                    .setPrettyPrinter(new DefaultPrettyPrinter());
-            jsonGenerator.writeStartArray();
-            jsonGenerator.flush();
-        }
+    public EventRecorder(@NonNull FORMAT recordFormat, @NonNull String recordFilePattern, BrokerCepProperties.EVENT_RECORDER_FILTER_MODE filterMode, List<String> allowedDestinations, @NonNull TaskScheduler scheduler) throws IOException {
         this.recordFormat = recordFormat;
-        this.recordFile = recordFile;
+        this.recordFilePattern = recordFilePattern;
+        this.filterMode = filterMode;
+        this.allowedDestinations = allowedDestinations==null ? Collections.emptyList() : Collections.unmodifiableList(allowedDestinations);
         this.scheduler = scheduler;
         this.eventQueue = new ConcurrentLinkedDeque<>();
 
-        runnerFuture = scheduler.scheduleAtFixedRate(this, Duration.ofMillis(1000));
-
         registerShutdownHook();
-        activeEventRecorders.add(this);
+        rotate();
     }
 
     public static void registerShutdownHook() {
@@ -101,8 +99,42 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
         }
     }
 
+    public synchronized void rotate() throws IOException {
+        // Close current recording file
+        if (recordFile!=null && !isClosed()) {
+            close();
+        }
+        closed = false;
+
+        // Create new recording file
+        this.recordFile = recordFilePattern.replace("%T", "" + System.currentTimeMillis());
+        this.recordWriter = new BufferedWriter(new FileWriter(recordFile));
+
+        log.info("EventRecorder: Record format: {}", recordFormat);
+        log.info("EventRecorder: Record file:   {}", recordFile);
+
+        if (recordFormat==FORMAT.CSV) {
+            csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT
+                    .withHeader("Timestamp", "Destination", "Mime", "Type", "Contents", "Properties"));
+            csvPrinter.flush();
+        }
+        if (recordFormat==FORMAT.JSON) {
+            jsonGenerator = new JsonFactory()
+                    .createGenerator(recordWriter)
+                    .setPrettyPrinter(new DefaultPrettyPrinter());
+            jsonGenerator.writeStartArray();
+            jsonGenerator.flush();
+        }
+
+        // Start processing loop
+        runnerFuture = scheduler.scheduleAtFixedRate(this, Duration.ofMillis(1000));
+        activeEventRecorders.add(this);
+
+        startRecording();
+    }
+
     public synchronized void close() {
-        if (closed) throw new IllegalStateException("EventRecorder has been closed");
+        if (closed) throw new IllegalStateException("EventRecorder has already been closed");
         if (recording) stopRecording();
         this.closed = true;
         runnerFuture.cancel(false);
@@ -144,8 +176,23 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
         }
     }
 
-    public void recordEvent(@NonNull Message message) {
-        eventQueue.addLast(message);
+    public void recordEvent(@NonNull ActiveMQMessage message) throws JMSException {
+        recordAllowedEvent(message);
+    }
+
+    public void recordAllowedEvent(@NonNull Message message) throws JMSException {
+        if (filterMode == BrokerCepProperties.EVENT_RECORDER_FILTER_MODE.ALL
+            || filterMode == BrokerCepProperties.EVENT_RECORDER_FILTER_MODE.CUSTOM
+                && allowedDestinations.stream().anyMatch(getDestinationName(message)::equalsIgnoreCase))
+        {
+            eventQueue.addLast(message);
+        }
+    }
+
+    public void recordRegisteredEvent(@NonNull Message message) {
+        if (filterMode==BrokerCepProperties.EVENT_RECORDER_FILTER_MODE.REGISTERED) {
+            eventQueue.addLast(message);
+        }
     }
 
     public void run() {
