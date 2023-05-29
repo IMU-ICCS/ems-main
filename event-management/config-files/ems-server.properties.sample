@@ -361,7 +361,7 @@ brokercep.usage.memory.jvm-heap-percentage = 20
 # Event recorder settings
 event-recorder.enabled=true
 #event-recorder.format=JSON
-event-recorder.file=${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.csv
+event-recorder.file=${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.%S
 #event-recorder.filterMode: ALL | REGISTERED (default) | ALLOWED
 #event-recorder.allowed-destinations:
 

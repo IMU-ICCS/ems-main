@@ -107,7 +107,9 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
         closed = false;
 
         // Create new recording file
-        this.recordFile = recordFilePattern.replace("%T", "" + System.currentTimeMillis());
+        this.recordFile = recordFilePattern
+                .replace("%T", "" + System.currentTimeMillis())
+                .replace("%S", getSuffix());
         this.recordWriter = new BufferedWriter(new FileWriter(recordFile));
 
         log.info("EventRecorder: Record format: {}", recordFormat);
@@ -131,6 +133,12 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
         activeEventRecorders.add(this);
 
         startRecording();
+    }
+
+    private String getSuffix() {
+        if (recordFormat==FORMAT.JSON) return "json";
+        if (recordFormat==FORMAT.CSV) return "csv";
+        throw new IllegalStateException("No suffix for FORMAT: "+recordFormat);
     }
 
     public synchronized void close() {

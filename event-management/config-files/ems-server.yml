@@ -380,7 +380,7 @@ brokercep:
   event-recorder:
     enabled: true
     #format: JSON
-    file: ${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.csv
+    file: ${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.%S
     #filter-mode: ALL | REGISTERED (default) | ALLOWED
     #allowed-destinations:
 
