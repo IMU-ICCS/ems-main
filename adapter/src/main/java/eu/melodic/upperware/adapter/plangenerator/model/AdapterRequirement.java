@@ -3,7 +3,7 @@ package eu.melodic.upperware.adapter.plangenerator.model;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.util.function.BiPredicate;
 

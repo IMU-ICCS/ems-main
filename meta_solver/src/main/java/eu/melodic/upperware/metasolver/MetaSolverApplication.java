@@ -25,14 +25,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @Slf4j
-@SpringBootApplication
 @EnableAsync
 @Configuration
+@SpringBootApplication
 @EnableConfigurationProperties(MelodicSecurityProperties.class)
 public class MetaSolverApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MetaSolverApplication.class, args);
-        //UtilCpModelImport.main(args);
     }
 }

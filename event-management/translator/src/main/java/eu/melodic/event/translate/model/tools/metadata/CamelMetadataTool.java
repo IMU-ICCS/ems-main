@@ -2,6 +2,8 @@
 // Date: 2022-01-18
 package eu.melodic.event.translate.model.tools.metadata;
 
+import camel.core.MeasurableAttribute;
+import camel.metric.MetricTemplate;
 import camel.metric.impl.MetricVariableImpl;
 import camel.mms.MmsObject;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +53,19 @@ public class CamelMetadataTool {
     }
 
     private static boolean isVariableFromGroup(MetricVariableImpl metricVariable, List<CamelMetadata> metadata) {
-        return metricVariable.getMetricTemplate().getAttribute().getAnnotations().stream().anyMatch(mmsObject -> checkAnnotation(mmsObject, metadata));
+        try {
+            MetricTemplate tpl = metricVariable.getMetricTemplate();
+            MeasurableAttribute att = tpl==null ? null : tpl.getAttribute();
+            EList<MmsObject> annList = att==null ? null : att.getAnnotations();
+            if (annList==null || annList.size()==0) {
+                log.error("isVariableFromGroup: Metric-variable={}, template={}, attribute={}, annotations={}", metricVariable.getName(), tpl, att, annList);
+                return false;
+            }
+            return annList.stream().anyMatch(mmsObject -> checkAnnotation(mmsObject, metadata));
+        } catch (Exception e) {
+            log.error("isVariableFromGroup: EXCEPTION: Metric-variable={} -- Exception: ", metricVariable.getName(), e);
+            throw e;
+        }
     }
 
     private static boolean checkAnnotation(MmsObject mmsObject, List<CamelMetadata> metadata) {
@@ -61,8 +75,10 @@ public class CamelMetadataTool {
     private static String getAnnotationOfMetricVariable(MetricVariableImpl metricVariable) {
         EList<MmsObject> annotations = metricVariable.getMetricTemplate().getAttribute().getAnnotations();
         if (annotations.isEmpty()) {
-            log.warn("Metric Variable {} has not definied annotation, returning empty String", metricVariable.getName());
-            return "";
+            log.error("Metric Variable {} has no annotation defined", metricVariable.getName());
+            throw new IllegalArgumentException("Missing annotation in Metric Variable " + metricVariable.getName());
+            //log.warn("Metric Variable {} has not defined annotation, returning empty String", metricVariable.getName());
+            //return "";
         }
         String annotation = annotations.get(0).getId();
         log.debug("Found annotation {} for metric: {}", metricVariable.getName(), annotation);

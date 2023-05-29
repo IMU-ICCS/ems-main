@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
- *  CredentialsMap is a HashMap with toString() method overridden in order to password encodes entry values.
- *  Used to store credentials
+ *  CredentialsMap is a HashMap for storing username/passwords in-memory.
+ *  It includes a preferred key (i.e. username), and overrides 'toString()' method in order to password-encode entry values.
  */
 @Slf4j
 public class CredentialsMap extends HashMap<String,String> {
@@ -51,7 +51,7 @@ public class CredentialsMap extends HashMap<String,String> {
 
     public CredentialsMap.Entry<String, String> getPreferredPair() {
         if (preferredKey==null) return null;
-        return new CredentialsMap.SimpleEntry<String,String>(preferredKey, get(preferredKey));
+        return new CredentialsMap.SimpleEntry<>(preferredKey, get(preferredKey));
     }
 
     public String toString() {

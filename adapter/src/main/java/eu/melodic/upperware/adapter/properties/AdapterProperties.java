@@ -18,6 +18,7 @@ import org.springframework.context.annotation.PropertySource;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -45,6 +46,17 @@ public class AdapterProperties {
   @Valid
   @NotNull
   private ActiveMqConfig activeMq;
+
+  @NotNull
+  private boolean deploymentInsidePrivateNetwork;
+
+  @NotNull
+  private boolean fillSecureVariables;
+
+  @Valid
+  @NotNull
+  private SecureStore secureStore;
+
 
   @Data
   public static class Esb {
@@ -97,5 +109,19 @@ public class AdapterProperties {
 
     @NotNull
     private String checkIfComponentBusyActiveMQTopic;
+  }
+  @Getter
+  @Setter
+  public static class SecureStore {
+
+    @NotBlank
+    private String pw;
+    @NotBlank
+    private String dbUrl;
+    @NotBlank
+    private String dbUsername;
+    @NotBlank
+    private String dbPassword;
+
   }
 }

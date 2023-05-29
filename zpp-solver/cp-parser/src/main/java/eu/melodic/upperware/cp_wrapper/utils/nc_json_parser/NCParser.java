@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import eu.melodic.cache.CacheService;
 import eu.melodic.cache.NodeCandidates;
 import eu.melodic.cache.impl.FilecacheService;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class NCParser {
-    private Gson gson = new Gson();
-    private CacheService<NodeCandidates> filecacheService = new FilecacheService();
+    private final Gson gson = new Gson();
+    private final CacheService<NodeCandidates> filecacheService = new FilecacheService();
 
     public NodeCandidates parse(String pathToJSON, Collection<String> componentNames) throws FileNotFoundException {
         List<NodeCandidate> nodes = Arrays.asList(gson.fromJson(new FileReader(pathToJSON), NodeCandidate[].class));

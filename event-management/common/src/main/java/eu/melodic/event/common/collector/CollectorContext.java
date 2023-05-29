@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Set;
 
 public interface CollectorContext<P extends SshClientProperties> {
+    enum PUBLISH_RESULT { SENT, SKIPPED, ERROR }
+
     List<ClientConfiguration> getNodeConfigurations();
     Set<Serializable> getNodesWithoutClient();
     boolean isAggregator();
-    boolean sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination);
+    PUBLISH_RESULT sendEvent(String connectionString, String destinationName, EventMap event, boolean createDestination);
     default SshClient<P> getSshClient() { return null; }
     default P getSshClientProperties() { return null; }
 }

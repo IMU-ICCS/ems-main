@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -10,9 +10,11 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.broker.interceptor.AbstractMessageInterceptor;
+import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -35,7 +37,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.core.JmsTemplate;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.ConnectionFactory;
@@ -43,6 +45,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -81,9 +84,14 @@ public class BrokerConfig implements InitializingBean {
 
     private final HashMap<String, ConnectionFactory> connectionFactoryCache = new HashMap<>();
 
+    private final TaskScheduler scheduler;
+    @Getter
+    private EventRecorder eventRecorder;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         _initializeSecurity();
+        _initializeEventRecorder();
     }
 
     protected synchronized void _initializeSecurity() throws Exception {
@@ -109,13 +117,15 @@ public class BrokerConfig implements InitializingBean {
                     brokerUsername, passwordUtil.encodePassword(brokerPassword));
 
             // initialize additional user credentials from configuration
-            for (String extraUserCred : properties.getAdditionalBrokerCredentials().split(",")) {
-                String[] cred = extraUserCred.split("/", 2);
-                String username = cred[0].trim();
-                String password = cred.length > 1 ? cred[1].trim() : "";
-                userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
-                log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}",
-                        username, passwordUtil.encodePassword(password));
+            if (StringUtils.isNotBlank(properties.getAdditionalBrokerCredentials())) {
+                for (String extraUserCred : properties.getAdditionalBrokerCredentials().split(",")) {
+                    String[] cred = extraUserCred.split("/", 2);
+                    String username = cred[0].trim();
+                    String password = cred.length > 1 ? cred[1].trim() : "";
+                    userList.add(new AuthenticationUser(username, password, SimpleBrokerAuthorizationPlugin.RW_USER_GROUP));
+                    log.debug("BrokerConfig._initializeSecurity(): Initialized additional broker user from configuration: {} / {}",
+                            username, passwordUtil.encodePassword(password));
+                }
             }
 
             // initialize Broker authentication plugin
@@ -157,16 +167,34 @@ public class BrokerConfig implements InitializingBean {
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
         KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
 
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}...",
+                properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
+                passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
+                properties.getSsl().getKeyEntryName());
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL...");
         this.brokerCert = KeystoreUtil
                 .getKeystore(properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(), properties.getSsl().getKeystorePassword())
                 .passwordUtil(passwordUtil)
                 .getEntryCertificateAsPEM(properties.getSsl().getKeyEntryName());
-        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
+        log.trace("BrokerConfig.initializeKeyAndCert(): Retrieved certificate for Broker-SSL: file={}, type={}, password={}, alias={}, cert=\n{}",
                 properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
                 passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
                 properties.getSsl().getKeyEntryName(), this.brokerCert);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
+    }
+
+    private void _initializeEventRecorder() throws IOException {
+        // clear previous event recorder (if any)
+        if (eventRecorder!=null && !eventRecorder.isClosed())
+            eventRecorder.close();
+
+        // create new event recorder
+        if (properties.getEventRecorder()!=null) {
+            if (properties.getEventRecorder().isEnabled()) {
+                eventRecorder = new EventRecorder(properties.getEventRecorder(), scheduler);
+                eventRecorder.startRecording();
+            }
+        }
     }
 
     public String getBrokerName() {
@@ -424,7 +452,6 @@ public class BrokerConfig implements InitializingBean {
     /**
      * Creates a new connection factory
      */
-    @Bean
     public ConnectionFactory connectionFactory() {
         return connectionFactory(null);
     }
@@ -480,13 +507,16 @@ public class BrokerConfig implements InitializingBean {
                 .computeIfAbsent(connectionString, this::connectionFactory);
     }
 
-    /**
-     * Creates a new JMS template for client-side connections
-     */
-    @Bean
-    public JmsTemplate jmsTemplate() {
-        JmsTemplate template = new JmsTemplate();
-        template.setConnectionFactory(connectionFactory());
-        return template;
+    public ConnectionFactory getConnectionFactoryForConsumer() {
+        String connStr;
+        if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
+            log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
+            connStr = properties.getBrokerUrlForConsumer();
+        } else {
+            log.debug("BrokerConfig.getConnectionFactoryForConsumer(): Default broker URL will be used for Broker-CEP consumer instance: {}", properties.getBrokerUrlForClients());
+            connStr = null;
+        }
+        return connectionFactoryCache
+                .computeIfAbsent(connStr, this::connectionFactory);
     }
 }

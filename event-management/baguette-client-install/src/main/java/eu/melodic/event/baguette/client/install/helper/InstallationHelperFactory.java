@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -39,7 +39,7 @@ public class InstallationHelperFactory implements InitializingBean {
 
     public InstallationHelper createInstallationHelper(NodeRegistryEntry entry) {
         String nodeType = entry.getPreregistration().get("type");
-        if ("VM".equalsIgnoreCase(nodeType)) {
+        if ("VM".equalsIgnoreCase(nodeType) || "baremetal".equalsIgnoreCase(nodeType)) {
             return createVmInstallationHelper(entry);
         }
         throw new IllegalArgumentException("Unsupported or missing Node type: "+nodeType);

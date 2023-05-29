@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.server.coordinator;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.ClientShellCommand;
+import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.GROUPING;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,9 @@ public class TwoLevelCoordinator extends NoopCoordinator {
         this.nodeGrouping = groupings.get(1);
         log.info("TwoLevelCoordinator.initialize(): Groupings: top-level={}, node-level={}",
                 globalGrouping, nodeGrouping);
+
+        // Configure Self-Healing manager
+        server.getSelfHealingManager().setMode(SelfHealingManager.MODE.ALL);
     }
 
     @Override

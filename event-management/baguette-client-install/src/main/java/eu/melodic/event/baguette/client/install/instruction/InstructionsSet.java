@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -10,25 +10,25 @@
 package eu.melodic.event.baguette.client.install.instruction;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.*;
 
 @Data
+@NoArgsConstructor
 public class InstructionsSet extends AbstractInstructionsBase {
     private String os;
     private String description;
     private String fileName;
     private List<Instruction> instructions = new ArrayList<>();
 
-    /*public Map<String,String> getValueMap() {
-        return Collections.unmodifiableMap(valueMap);
+    public List<Instruction> getInstructions() {
+        return Collections.unmodifiableList(instructions);
     }
-    public void setValueMap(Map<String,String> valueMap) {
-        this.valueMap = new HashMap<>(valueMap);
-    }*/
 
-    public List<Instruction> getInstructions() { return Collections.unmodifiableList(instructions); }
-    public void setInstructions(List<Instruction> ni) { instructions = new ArrayList<>(ni); }
+    public void setInstructions(List<Instruction> ni) {
+        instructions = new ArrayList<>(ni);
+    }
 
     public InstructionsSet appendInstruction(Instruction i) {
         instructions.add(i);

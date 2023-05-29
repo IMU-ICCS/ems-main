@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -12,6 +12,7 @@ package eu.melodic.event.control.properties;
 import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
@@ -26,8 +27,14 @@ import java.util.List;
 @Data
 @Validated
 @Configuration
-@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "web")
-public class WebSecurityProperties {
+@ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "web.security")
+public class WebSecurityProperties implements InitializingBean {
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.debug("WebSecurityProperties: {}", this);
+    }
+
     // JWT Token authentication
     @Valid
     @NotNull
@@ -64,7 +71,7 @@ public class WebSecurityProperties {
         @Min(1)
         private long duration = 3600000;
         private String requestHeader = "EMS-OTP";
-        private String requestParam = "ems-otp";
+        private String requestParameter = "ems-otp";
     }
 
     // User form authentication

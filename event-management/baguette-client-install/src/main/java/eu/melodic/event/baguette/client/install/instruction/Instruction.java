@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,8 +9,8 @@
 
 package eu.melodic.event.baguette.client.install.instruction;
 
-import lombok.Builder;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotNull;
@@ -20,6 +20,9 @@ import java.util.regex.Pattern;
 @Data
 @Accessors(chain = true, fluent = true)
 @Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter(onMethod = @__(@JsonProperty))
 public class Instruction extends AbstractInstructionsBase {
     private INSTRUCTION_TYPE taskType;
     private String description;

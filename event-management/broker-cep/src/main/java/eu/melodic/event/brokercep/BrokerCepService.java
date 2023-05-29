@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -257,7 +257,7 @@ public class BrokerCepService {
         if (_isLocalBrokerUrl(connectionString)) {
             username = brokerConfig.getBrokerLocalAdminUsername();
             password = brokerConfig.getBrokerLocalAdminPassword();
-            log.debug("BrokerCepService._publishEvent(): Setting LOCAL BROKER credentials: {} / {}",
+            log.debug("BrokerCepService._publishEvent(): Using LOCAL BROKER credentials: {} / {}",
                     username, passwordUtil.encodePassword(password));
         }
         _publishEvent(connectionString, username, password, destinationName, event, convertToJson);

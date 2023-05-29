@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,7 +11,9 @@ package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
+import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
@@ -19,35 +21,40 @@ import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Service
 @Slf4j
-public class BrokerCepConsumer implements MessageListener, InitializingBean {
-    private static AtomicLong eventCounter = new AtomicLong(0);
-    private static AtomicLong textEventCounter = new AtomicLong(0);
-    private static AtomicLong objectEventCounter = new AtomicLong(0);
-    private static AtomicLong otherEventCounter = new AtomicLong(0);
-    private static AtomicLong eventFailuresCounter = new AtomicLong(0);
+@Service
+@RequiredArgsConstructor
+public class BrokerCepConsumer implements MessageListener, InitializingBean, ApplicationListener<ContextClosedEvent> {
+    private final static AtomicLong eventCounter = new AtomicLong(0);
+    private final static AtomicLong textEventCounter = new AtomicLong(0);
+    private final static AtomicLong objectEventCounter = new AtomicLong(0);
+    private final static AtomicLong otherEventCounter = new AtomicLong(0);
+    private final static AtomicLong eventFailuresCounter = new AtomicLong(0);
 
-    @Autowired
-    private BrokerCepProperties properties;
-    @Autowired
-    private BrokerConfig brokerConfig;
-    @Autowired
-    private BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
-    @Autowired
-    private CepService cepService;
+    private final BrokerCepProperties properties;
+    private final BrokerConfig brokerConfig;
+    private final BrokerService brokerService;    // Added in order to ensure that BrokerService will be instantiated first
+    private final CepService cepService;
 
     private Connection connection;
     private Session session;
     private final Map<String,MessageConsumer> addedDestinations = new HashMap<>();
+
+    private final TaskScheduler scheduler;
+    private boolean shuttingDown;
 
     @Override
     public void afterPropertiesSet() {
@@ -64,22 +71,17 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             addedDestinations.clear();
 
             // If an alternative Broker URL is provided for consumer, it will be used
-            ConnectionFactory connectionFactory;
-            if (StringUtils.isNotBlank(properties.getBrokerUrlForConsumer())) {
-                log.debug("BrokerCepConsumer.initialize(): Broker URL for Broker-CEP consumer instance: {}", properties.getBrokerUrlForConsumer());
-                connectionFactory = brokerConfig.getConnectionFactoryFor(properties.getBrokerUrlForConsumer());
-            } else {
-                log.debug("BrokerCepConsumer.initialize(): Default broker URL will be used for Broker-CEP consumer instance: {}", brokerConfig.getBrokerUrl());
-                connectionFactory = brokerConfig.getConnectionFactoryFor(null);
-            }
+            ConnectionFactory connectionFactory = brokerConfig.getConnectionFactoryForConsumer();
 
             // Initialize connection
             connection = (brokerConfig.getBrokerLocalAdminUsername() != null)
                     ? connectionFactory.createConnection(brokerConfig.getBrokerLocalAdminUsername(), brokerConfig.getBrokerLocalAdminPassword())
                     : connectionFactory.createConnection();
             connection.setExceptionListener(e -> {
-                log.warn("BrokerCepConsumer: Connection exception listener: Exception caught: ", e);
-                initialize();
+                if (!shuttingDown) {
+                    log.warn("BrokerCepConsumer: Connection exception listener: Exception caught: ", e);
+                    scheduler.schedule(this::initialize, Instant.now());
+                }
             });
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -87,6 +89,12 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.initialize(): EXCEPTION: ", ex);
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        log.info("BrokerCepConsumer is shutting down");
+        shuttingDown = true;
     }
 
     private void closeConnection() {
@@ -166,6 +174,15 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
     @Override
     public void onMessage(Message message) {
+        // Log message
+        logMessage(message);
+
+        // Record message
+
+        if (brokerConfig.getEventRecorder()!=null)
+            brokerConfig.getEventRecorder().recordRegisteredEvent(message);
+
+        // Handle message
         try {
             log.trace("BrokerCepConsumer.onMessage(): {}", message);
             if (message instanceof ActiveMQObjectMessage) {
@@ -176,7 +193,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
 
                 // Send message to Esper
                 if (mesg.getObject() instanceof Map) {
-                    cepService.handleEvent((Map<String, Object>) mesg.getObject(), messageDestination.getPhysicalName());
+                    //cepService.handleEvent((Map<String, Object>) mesg.getObject(), messageDestination.getPhysicalName());
+                    EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
+                    copyEventProperties(message, eventMap);
+                    cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
                 } else {
                     cepService.handleEvent(mesg.getObject());
                 }
@@ -188,7 +208,11 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
                         messageDestination.getPhysicalName(), mesg.getText(), mesg.getJMSXMimeType());
 
                 // Send message to Esper
-                cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
+                //cepService.handleEvent(mesg.getText(), messageDestination.getPhysicalName());
+                EventMap eventMap = new com.google.gson.Gson().fromJson(mesg.getText(), EventMap.class);
+                copyEventProperties(message, eventMap);
+                log.trace("BrokerCepConsumer.onMessage(): event-map={}", eventMap);
+                cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
                 textEventCounter.incrementAndGet();
             } else {
                 otherEventCounter.incrementAndGet();
@@ -199,6 +223,59 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
             log.error("BrokerCepConsumer.onMessage(): EXCEPTION: ", ex);
             eventFailuresCounter.incrementAndGet();
         }
+    }
+
+    private void logMessage(Message message) {
+        boolean logBrokerMessages = properties.isLogBrokerMessages();
+        boolean logBrokerMessagesFull = properties.isLogBrokerMessagesFull();
+        if (!logBrokerMessages) return;
+
+        try {
+            // Check if message passed is null
+            if (message==null) {
+                log.warn("\n==========|  **NULL** MESSAGE RECEIVED");
+                return;
+            }
+
+            // Extract important message data (id, destination, metric-value)
+            String jmsMesgId = message.getJMSMessageID();
+            Destination jmsDest = message.getJMSDestination();
+            String mesgStr = message.toString();
+            String metricValue = StringUtils.substringBetween(mesgStr, "metricValue", ",");
+            if (metricValue==null) metricValue = StringUtils.substringBetween(mesgStr, "metricValue", "}");
+            if (metricValue!=null) metricValue = metricValue.replace("\"", "").replace(":", "").trim();
+            else metricValue = logBrokerMessagesFull ? "---See next---" : "---Not found---";
+
+            // Log message data
+            if (logBrokerMessagesFull)
+                log.info("\n==========|  RECEIVED A MESSAGE: metricValue={}, dest={}, id={}\n{}", metricValue, jmsDest, jmsMesgId, message);
+            else
+                log.info("\n==========|  RECEIVED A MESSAGE: metricValue={}, dest={}, id={}", metricValue, jmsDest, jmsMesgId);
+
+        } catch (Exception e) {
+            // Log error
+            if (logBrokerMessagesFull)
+                log.warn("\n==========|  RECEIVED A MESSAGE: FAILED TO PARSE. SEE NEXT FOR STACKTRACE\n{}\n\nSTACKTRACE:\n", message, e);
+            else
+                log.warn("\n==========|  RECEIVED A MESSAGE: FAILED TO PARSE. SEE NEXT FOR STACKTRACE\n\nSTACKTRACE:\n", e);
+        }
+    }
+
+    private EventMap copyEventProperties(Message message, EventMap eventMap) throws JMSException {
+        log.debug("BrokerCepConsumer.copyEventProperties(): BEGIN: message={}, event={}", message, eventMap);
+
+        // Copy message properties to event map
+        Collections.list((Enumeration<String>) message.getPropertyNames()).forEach(n -> {
+            log.trace("BrokerCepConsumer.copyEventProperties(): Copying property: message={}, event={}, property={}", message, eventMap, n);
+            try {
+                String v = message.getStringProperty(n);
+                eventMap.setEventProperty(n, v);
+                log.debug("BrokerCepConsumer.copyEventProperties(): Copied property: message={}, event={}, property={}, value={}", message, eventMap, n, v);
+            } catch (Exception e) {
+                log.debug("BrokerCepConsumer.copyEventProperties(): EXCEPTION: while copying property: message={}, event={}, property={}, Exception: ", message, eventMap, n, e);
+            }
+        });
+        return eventMap;
     }
 
     public static long getEventCounter() { return eventCounter.get(); }

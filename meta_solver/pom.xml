@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0.
   ~ If a copy of the MPL was not distributed with this file, You can obtain one at
@@ -15,12 +15,17 @@
         <version>6.0.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.ow2.paasage.upperware.metasolver</groupId>
+    <groupId>org.ow2.paasage.upperware</groupId>
 
     <artifactId>meta-solver</artifactId>
     <name>Upperware - MetaSolver</name>
 
     <properties>
+        <!-- Melodic component versions -->
+        <!--<melodic.version>6.0.0-SNAPSHOT</melodic.version>
+        <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>-->
+        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
+        <lombok.version>1.18.24</lombok.version>
         <!--DOCKER plugin properties-->
         <docker.imageName>metasolver</docker.imageName>
     </properties>
@@ -30,17 +35,38 @@
         <dependency>
             <groupId>eu.melodic.cdo</groupId>
             <artifactId>client</artifactId>
-            <version>6.0.0-SNAPSHOT</version>
+            <version>${cdo-client.version}</version>
             <classifier>repackaged</classifier>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic</groupId>
+            <artifactId>interfaces</artifactId>
+            <version>${interfaces.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>eu.melodic.cdo</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
         <dependency>
-            <groupId>eu.melodic</groupId>
-            <artifactId>interfaces</artifactId>
+            <groupId>org.ow2.paasage</groupId>
+            <artifactId>jwt-commons</artifactId>
         </dependency>
 
         <!-- Spring-boot dependencies -->
@@ -93,11 +119,6 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>jwt-commons</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -114,10 +135,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.groovy.maven</groupId>
-                <artifactId>gmaven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

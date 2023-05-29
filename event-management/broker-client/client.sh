@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+# Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
 #
 # This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless 
 # Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -10,7 +10,7 @@
 
 MELODIC_CONFIG_DIR=.
 
-JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12 
+#JAVA_OPTS=-Djavax.net.ssl.trustStore=./broker-truststore.p12\ -Djavax.net.ssl.trustStorePassword=melodic\ -Djavax.net.ssl.trustStoreType=pkcs12
 # -Djavax.net.debug=all
 # -Djavax.net.debug=ssl,handshake,record
 

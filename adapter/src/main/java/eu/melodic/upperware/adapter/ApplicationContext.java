@@ -12,6 +12,7 @@ package eu.melodic.upperware.adapter;
 import camel.deployment.DeploymentPackage;
 import camel.organisation.OrganisationPackage;
 import camel.type.TypePackage;
+import cloud.morphemic.connectors.ProactiveClientConnectorService;
 import com.google.gson.Gson;
 import eu.melodic.cache.properties.CacheProperties;
 import eu.melodic.security.authorization.client.AuthorizationServiceClient;
@@ -27,6 +28,7 @@ import eu.paasage.upperware.metamodel.types.TypesPackage;
 import eu.paasage.upperware.security.authapi.properties.MelodicSecurityProperties;
 import eu.paasage.upperware.security.authapi.token.JWTService;
 import eu.paasage.upperware.security.authapi.token.JWTServiceImpl;
+import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import lombok.AllArgsConstructor;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
@@ -44,7 +46,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
@@ -133,11 +134,9 @@ public class ApplicationContext {
   }
 
   @Bean
-  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter() {
-    return new ProactiveClientServiceForAdapterImpl(adapterProperties.getPaConfig().getRestUrl(),
-            adapterProperties.getPaConfig().getLogin(),
-            adapterProperties.getPaConfig().getPassword(),
-            adapterProperties.getPaConfig().getEncryptorPw());
+  public ProactiveClientServiceForAdapter proactiveClientServiceForAdapter(ProactiveClientConnectorService proactiveClientConnectorService,
+                                                                           AdapterProperties adapterProperties) {
+    return new ProactiveClientServiceForAdapterImpl(adapterProperties, proactiveClientConnectorService);
   }
 
   //Busy Instance Number provider
@@ -146,6 +145,16 @@ public class ApplicationContext {
     return new BusyInstancesRegistry(
             new ConcurrentHashMap<>(),
             proactiveClientServiceForAdapter
+    );
+  }
+
+  @Bean
+  public SecureStoreDBService secureStoreDBService(final AdapterProperties adapterProperties) {
+    return new SecureStoreDBService(
+            adapterProperties.getSecureStore().getDbUrl(),
+            adapterProperties.getSecureStore().getDbUsername(),
+            adapterProperties.getSecureStore().getDbPassword(),
+            adapterProperties.getSecureStore().getPw()
     );
   }
 }

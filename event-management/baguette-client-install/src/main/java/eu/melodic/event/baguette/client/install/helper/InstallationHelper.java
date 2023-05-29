@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.install.helper;
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
+import eu.melodic.event.translate.TranslationContext;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,5 +25,8 @@ public interface InstallationHelper {
     List<InstructionsSet> prepareInstallationInstructionsForWin(NodeRegistryEntry entry);
     List<InstructionsSet> prepareInstallationInstructionsForLinux(NodeRegistryEntry entry) throws IOException;
 
-    ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws Exception;
+    default ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry) throws Exception {
+        return createClientInstallationTask(entry, null);
+    }
+    ClientInstallationTask createClientInstallationTask(NodeRegistryEntry entry, TranslationContext translationContext) throws Exception;
 }

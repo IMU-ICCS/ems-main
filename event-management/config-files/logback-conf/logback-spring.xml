@@ -13,11 +13,14 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
     <logger name="eu.melodic.upperware.adapter" level="INFO"/>
+    <logger name="eu.melodic.upperware.melodiccachestandalone" level="INFO"/>
+    <logger name="eu.melodic.upperware.activemqtorest" level="INFO"/>
 
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
 
     <logger name="eu.melodic.upperware.zppsolver" level = "INFO"/>
     <logger name="eu.melodic.upperware.cpsolver" level="INFO"/>
+
     <!-- choco solver begin -->
     <logger name="choco" level="WARN"/>
     <logger name="choco.util" level="INFO"/>
@@ -63,4 +66,5 @@
 
     <!-- activeeon proactive -->
     <logger name="org.activeeon" level="DEBUG"/>
+    <logger name="org.ow2.proactive" level="DEBUG"/>
 </configuration>

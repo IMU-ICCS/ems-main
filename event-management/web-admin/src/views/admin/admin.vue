@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -29,7 +29,7 @@
       </Section>-->
 
       <Section title="Commands" background="rgba(255,0,0,.5)">
-          <CommandsSection v-model="ems" />
+          <CommandsSection v-model="ems" :sseRef="sseRef" />
       </Section>
 
       <!--<Section title="Topics and CEP" background="rgba(255,0,0,.55)">

@@ -5,7 +5,7 @@ import eu.melodic.security.authorization.client.extractor.DataExtractor;
 
 import java.util.Map;
 
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import org.springframework.stereotype.Service;
 
 @Service

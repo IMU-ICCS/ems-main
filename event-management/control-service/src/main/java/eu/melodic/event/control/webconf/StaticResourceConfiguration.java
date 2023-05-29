@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -65,25 +65,13 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
                     .addResourceLocations(logsPath.toArray(new String[0]));
         }
 
-        if (controlServiceProperties.isEventDebugEnabled()
-            && controlServiceProperties.getEventDebugResourcePath()!=null
-            && controlServiceProperties.getEventDebugResourcePath().length > 0)
-        {
-            log.info("Serving event-debug content from: {} --> {}", controlServiceProperties.getEventDebugResourceContext(), controlServiceProperties.getEventDebugResourcePath());
-            registry
-                    .addResourceHandler(controlServiceProperties.getEventDebugResourceContext())
-                    .addResourceLocations(controlServiceProperties.getEventDebugResourcePath())
-                    //.setCachePeriod(0)
-            ;
-        }
-
         WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         // Remains for backward compatibility (of properties file)
-        String resourceRedirect = properties.getResourceRedirect();
+        String resourceRedirect = properties.getRedirect();
         if (StringUtils.isNotBlank(resourceRedirect)) {
             log.info("Redirecting / to: {}", resourceRedirect);
             registry
@@ -91,7 +79,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
                     .setViewName("redirect:" + resourceRedirect);
         }
 
-        Map<String,String> resourceRedirects = properties.getResourceRedirects();
+        Map<String,String> resourceRedirects = properties.getRedirects();
         log.debug("Configured resource redirects: {}", resourceRedirects);
         if (resourceRedirects!=null) {
             resourceRedirects.forEach((context, redirect) -> {

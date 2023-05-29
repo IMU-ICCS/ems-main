@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -62,13 +62,13 @@
             </includes>
         </fileSet>
         <fileSet>
-            <outputDirectory>target</outputDirectory>
+            <outputDirectory>jars/broker-client</outputDirectory>
             <directory>${project.parent.basedir}/broker-client/target</directory>
             <includes>
                 <include>broker-client-jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
-        <fileSet>
+        <!--<fileSet>
             <outputDirectory>bin</outputDirectory>
             <directory>${project.parent.basedir}/broker-client</directory>
             <includes>
@@ -76,7 +76,7 @@
             </includes>
             <lineEnding>unix</lineEnding>
             <fileMode>0755</fileMode>
-        </fileSet>
+        </fileSet>-->
         <fileSet>
             <outputDirectory>bin</outputDirectory>
             <directory>${project.parent.basedir}/bin</directory>

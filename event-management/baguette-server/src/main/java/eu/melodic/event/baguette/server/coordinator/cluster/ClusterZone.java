@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -22,6 +22,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Data
@@ -112,6 +113,8 @@ public class ClusterZone implements IClusterZone {
                 csc.setClientZone(null);
             if (csc.getNodeRegistryEntry()!=null && csc.getNodeRegistryEntry().getClusterZone()==this)
                 csc.getNodeRegistryEntry().setClusterZone(null);
+            if (aggregator==csc)
+                setAggregator(null);
         }
     }
 
@@ -125,6 +128,15 @@ public class ClusterZone implements IClusterZone {
 
     public ClientShellCommand getNodeByAddress(String address) {
         return nodes.get(address);
+    }
+
+    public List<NodeRegistryEntry> findAggregatorCapableNodes() {
+        return this.nodes.values().stream()
+                .filter(Objects::nonNull)
+                .map(ClientShellCommand::getNodeRegistryEntry)
+                .filter(Objects::nonNull)
+                .filter(entry -> entry.getState()==NodeRegistryEntry.STATE.REGISTERED || entry.getState()==NodeRegistryEntry.STATE.REGISTERING)
+                .collect(Collectors.toList());
     }
 
     // Nodes-without-Clients management

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -11,20 +11,18 @@ package eu.melodic.event.baguette.server;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
+import eu.melodic.event.util.StrUtil;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class NodeRegistryEntry {
     public enum STATE { PREREGISTERED, IGNORE_NODE, INSTALLING, NOT_INSTALLED, INSTALLED, INSTALL_ERROR,
-        WAITING_REGISTRATION, REGISTERED, NOT_REGISTERED, REGISTRATION_ERROR, DISCONNECTED, NODE_FAILED
+        WAITING_REGISTRATION, REGISTERING, REGISTERED, REGISTRATION_ERROR, DISCONNECTED, EXITING, EXITED, NODE_FAILED
     };
     @Getter private final String ipAddress;
     @Getter private final String clientId;
@@ -34,6 +32,7 @@ public class NodeRegistryEntry {
     @Getter private STATE state = null;
     @Getter private Date stateLastUpdate;
     @Getter private String reference = UUID.randomUUID().toString();
+    @Getter private List<Object> errors = new LinkedList<>();
     @JsonIgnore
     @Getter private transient Map<String, String> preregistration = new LinkedHashMap<>();
     @JsonIgnore
@@ -68,8 +67,7 @@ public class NodeRegistryEntry {
 
     public NodeRegistryEntry nodePreregistration(Map<String,Object> nodeInfo) {
         preregistration.clear();
-        preregistration.putAll(processMap("", nodeInfo));
-//        preregistration.putAll((Map)processMap(nodeInfo));
+        preregistration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.PREREGISTERED);
         return this;
     }
@@ -107,46 +105,60 @@ public class NodeRegistryEntry {
         return this;
     }
 
-    public NodeRegistryEntry nodeRegistration(Map<String,Object> nodeInfo) {
+    public NodeRegistryEntry nodeRegistering(Map<String,Object> nodeInfo) {
         registration.clear();
-        registration.putAll(processMap("", nodeInfo));
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
+        setState(STATE.REGISTERING);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeRegistered(Map<String,Object> nodeInfo) {
+        //registration.clear();
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
         setState(STATE.REGISTERED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeRegistrationError(Map<String,Object> nodeInfo) {
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
+        setState(STATE.REGISTRATION_ERROR);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeRegistrationError(Throwable t) {
+        registration.putAll(StrUtil.deepFlattenMap(Collections.singletonMap("exception", t)));
+        setState(STATE.REGISTRATION_ERROR);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeDisconnected(Map<String,Object> nodeInfo) {
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
+        setState(STATE.DISCONNECTED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeDisconnected(Throwable t) {
+        registration.putAll(StrUtil.deepFlattenMap(Collections.singletonMap("exception", t)));
+        setState(STATE.DISCONNECTED);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeExiting(Map<String,Object> nodeInfo) {
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
+        setState(STATE.EXITING);
+        return this;
+    }
+
+    public NodeRegistryEntry nodeExited(Map<String,Object> nodeInfo) {
+        registration.putAll(StrUtil.deepFlattenMap(nodeInfo));
+        setState(STATE.EXITED);
         return this;
     }
 
     public NodeRegistryEntry nodeFailed(Map<String,Object> failInfo) {
         if (failInfo!=null)
-            registration.putAll(processMap("", failInfo));
+            registration.putAll(StrUtil.deepFlattenMap(failInfo));
         setState(STATE.NODE_FAILED);
         return this;
-    }
-
-    private Map<String,Object> processMap(Map<String,Object> inMap) {
-        Map<String,Object> outMap = new LinkedHashMap<>();
-        for (Map.Entry<String,Object> entry : inMap.entrySet()) {
-            if (entry.getValue()!=null && entry.getValue() instanceof Map) {
-                Map tmpMap = processMap((Map) entry.getValue());
-                outMap.put(entry.getKey(), tmpMap);
-            } else {
-                outMap.put(entry.getKey(), entry.getValue()!=null ? entry.getValue().toString() : null);
-            }
-        }
-        return outMap;
-    }
-
-    private Map<String,String> processMap(String prefix, Map<String,Object> inMap) {
-        Map<String,String> outMap = new LinkedHashMap<>();
-        for (Map.Entry<String,Object> entry : inMap.entrySet()) {
-            String newKey = prefix.isEmpty()
-                    ? entry.getKey()
-                    : (entry.getKey()!=null) ? prefix+"."+entry.getKey() : prefix;
-            if (entry.getValue()!=null && entry.getValue() instanceof Map) {
-                Map tmpMap = processMap(newKey, (Map) entry.getValue());
-                outMap.putAll(tmpMap);
-            } else {
-                outMap.put(newKey, entry.getValue()!=null ? entry.getValue().toString() : null);
-            }
-        }
-        return outMap;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.properties;
 
+import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
@@ -17,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+//import org.springframework.context.annotation.PropertySource;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ import java.util.Map;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "brokercep")
-@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
+//@PropertySource("file:${MELODIC_CONFIG_DIR}/eu.melodic.event.brokercep.properties")
 public class BrokerCepProperties implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("BrokerCepProperties: {}", this);
@@ -46,6 +47,7 @@ public class BrokerCepProperties implements InitializingBean {
 
     private int managementConnectorPort = -1;
     private boolean bypassLocalBroker;
+    private long eventForwarderLoopDelay = 100L;
 
     // brokercep.ssl.** settings
     private KeystoreAndCertificateProperties ssl;
@@ -64,6 +66,7 @@ public class BrokerCepProperties implements InitializingBean {
     private boolean brokerPopulateJmsxUserId;
 
     private boolean enableAdvisoryWatcher = true;
+    private int advisoryWatcherInitRetryDelay = 5;   // in seconds
 
     private List<MessageInterceptorConfig> messageInterceptors;
     private Map<String,MessageInterceptorSpec> messageInterceptorsSpecs = new HashMap<>();
@@ -74,6 +77,11 @@ public class BrokerCepProperties implements InitializingBean {
     private long maxEventForwardDuration = -1;
 
     private Usage usage = new Usage();
+
+    private boolean logBrokerMessages = true;
+    private boolean logBrokerMessagesFull = false;
+
+    private EventRecorderProperties eventRecorder = new EventRecorderProperties();
 
     @Data
     public static class Usage {
@@ -101,5 +109,16 @@ public class BrokerCepProperties implements InitializingBean {
         private String username;
         @ToString.Exclude
         private String password;
+    }
+
+    public enum EVENT_RECORDER_FILTER_MODE { ALL, REGISTERED, ALLOWED }
+
+    @Data
+    public static class EventRecorderProperties {
+        private boolean enabled;
+        private EventRecorder.FORMAT format = EventRecorder.FORMAT.CSV;
+        private String file;
+        private EVENT_RECORDER_FILTER_MODE filterMode = EVENT_RECORDER_FILTER_MODE.REGISTERED;
+        private List<String> allowedDestinations;
     }
 }

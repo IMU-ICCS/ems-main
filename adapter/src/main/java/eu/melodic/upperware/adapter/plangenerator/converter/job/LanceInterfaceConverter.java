@@ -6,6 +6,9 @@ import eu.melodic.upperware.adapter.plangenerator.model.AdapterLanceInterface;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterOperatingSystem;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterOperatingSystemArchitecture;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterOperatingSystemFamily;
+import eu.melodic.upperware.adapter.properties.AdapterProperties;
+import eu.passage.upperware.commons.service.store.SecureStoreDBService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +16,12 @@ import java.math.BigDecimal;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class LanceInterfaceConverter implements InterfaceConverter<ScriptConfiguration, AdapterLanceInterface> {
+
+    private final SecureStoreDBService secureStoreDBService;
+
+    private final AdapterProperties adapterProperties;
 
     @Override
     public boolean isInstance(Configuration configuration) {
@@ -29,13 +37,13 @@ public class LanceInterfaceConverter implements InterfaceConverter<ScriptConfigu
                 .builder()
                 .containterType("NATIVE")
                 .operatingSystem(createDefaultAdapterOperatingSystem())
-                .preInstall(configuration.getDownloadCommand())
-                .install(configuration.getInstallCommand())
-                .postInstall(configuration.getConfigureCommand())
-                .start(configuration.getStartCommand())
-                .startDetection(configuration.getUploadCommand())
-                .stop(configuration.getStopCommand())
-                .update(configuration.getUpdateCommand())
+                .preInstall(fillSecureVariablesFromSecureStore(configuration.getDownloadCommand()))
+                .install(fillSecureVariablesFromSecureStore(configuration.getInstallCommand()))
+                .postInstall(fillSecureVariablesFromSecureStore(configuration.getConfigureCommand()))
+                .start(fillSecureVariablesFromSecureStore(configuration.getStartCommand()))
+                .startDetection(fillSecureVariablesFromSecureStore(configuration.getUploadCommand()))
+                .stop(fillSecureVariablesFromSecureStore(configuration.getStopCommand()))
+                .update(fillSecureVariablesFromSecureStore(configuration.getUpdateCommand()))
                 .build();
     }
 
@@ -45,5 +53,13 @@ public class LanceInterfaceConverter implements InterfaceConverter<ScriptConfigu
                 .operatingSystemArchitecture(AdapterOperatingSystemArchitecture.AMD64)
                 .operatingSystemVersion(new BigDecimal(1604))
                 .build();
+    }
+
+    private String fillSecureVariablesFromSecureStore(String text) {
+        if (adapterProperties.isFillSecureVariables()) {
+            return secureStoreDBService.fillSecureVariablesInText(text);
+        } else {
+            return text;
+        }
     }
 }

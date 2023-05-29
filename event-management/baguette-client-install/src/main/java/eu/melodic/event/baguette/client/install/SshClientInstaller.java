@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -14,6 +14,7 @@ import eu.melodic.event.baguette.client.install.instruction.Instruction;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsService;
 import eu.melodic.event.baguette.client.install.instruction.InstructionsSet;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +61,7 @@ import java.util.stream.Stream;
  * SSH client installer
  */
 @Slf4j
+@Getter
 public class SshClientInstaller implements ClientInstallerPlugin {
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSS");
 
@@ -67,6 +69,8 @@ public class SshClientInstaller implements ClientInstallerPlugin {
     private final long taskCounter;
 
     private final int maxRetries;
+    private final long retryDelay;
+    private final double retryBackoffFactor;
     private final long connectTimeout;
     private final long authenticationTimeout;
     private final long heartbeatInterval;
@@ -103,7 +107,10 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         this.task = task;
         this.taskCounter = taskCounter;
 
-        this.maxRetries = properties.getMaxRetries()>0 ? properties.getMaxRetries() : 5;
+        this.maxRetries = properties.getMaxRetries()>=0 ? properties.getMaxRetries() : 5;
+        this.retryDelay = properties.getRetryDelay()>0 ? properties.getRetryDelay() : 1000L;
+        this.retryBackoffFactor = properties.getRetryBackoffFactor()>0 ? properties.getRetryBackoffFactor() : 1.0;
+
         this.connectTimeout = properties.getConnectTimeout()>0 ? properties.getConnectTimeout() : 60000;
         this.authenticationTimeout = properties.getAuthenticateTimeout()>0 ? properties.getAuthenticateTimeout() : 60000;
         this.heartbeatInterval = properties.getHeartbeatInterval()>0 ? properties.getHeartbeatInterval() : 10000;
@@ -117,6 +124,24 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
     @Override
     public boolean executeTask(/*int retries*/) {
+        if (! openSshConnection())
+            return false;
+
+        boolean success;
+        try {
+            INSTRUCTION_RESULT exitResult = executeInstructionSets();
+            success = exitResult != INSTRUCTION_RESULT.FAIL;
+        } catch (Exception ex) {
+            log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
+            success = false;
+        }
+
+        if (success) log.info("SshClientInstaller: Task completed successfully #{}", taskCounter);
+        else log.info("SshClientInstaller: Error occurred while executing task #{}", taskCounter);
+        return closeSshConnection(success);
+    }
+
+    protected boolean openSshConnection() {
         task.getNodeRegistryEntry().nodeInstalling(task.getNodeRegistryEntry().getPreregistration());
         boolean success = false;
         int retries = 0;
@@ -127,33 +152,37 @@ public class SshClientInstaller implements ClientInstallerPlugin {
                 //sshOpenShell();
                 success = true;
             } catch (Exception ex) {
-                success = false;
                 log.error("SshClientInstaller: Failed executing task #{}, Exception: ", taskCounter, ex);
                 retries++;
+                if (retries<=maxRetries)
+                    waitToRetry(retries);
             }
         }
         if (!success) {
             log.error("SshClientInstaller: Giving up executing task #{} after {} retries", taskCounter, maxRetries);
             return false;
         }
+        return true;
+    }
 
-        try {
-            INSTRUCTION_RESULT exitResult = executeInstructionSets();
-            success = exitResult != INSTRUCTION_RESULT.FAIL;
-        } catch (Exception ex) {
-            log.error("SshClientInstaller: Failed executing installation instructions for task #{}, Exception: ", taskCounter, ex);
-            success = false;
-        }
-
+    protected boolean closeSshConnection(boolean success) {
         try {
             //sshCloseShell();
             sshDisconnect();
-            if (success) log.info("SshClientInstaller: Task completed successfully #{}", taskCounter);
-            else log.info("SshClientInstaller: Error occurred while executing task #{}", taskCounter);
             return success;
         } catch (Exception ex) {
             log.error("SshClientInstaller: Exception while disconnecting. Task #{}, Exception: ", taskCounter, ex);
             return false;
+        }
+    }
+
+    private void waitToRetry(int retries) {
+        long delay = Math.max(1, (long)(retryDelay * Math.pow(retryBackoffFactor, retries-1)));
+        try {
+            log.debug("SshClientInstaller: waitToRetry: Waiting for {}ms to retry", delay);
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            log.warn("SshClientInstaller: waitToRetry: Waiting to retry interrupted: ", e);
         }
     }
 
@@ -304,7 +333,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         channel.setErr(new NoCloseOutputStream( streamLogger.getErr() ));
     }
 
-    /*private boolean sshOpenShell() throws IOException {
+    /*public boolean sshOpenShell() throws IOException {
         if (simulateConnection) {
             log.info("SshClientInstaller: Simulate open shell channel: task #{}", taskCounter);
             return true;
@@ -325,7 +354,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean sshCloseShell() throws IOException {
+    public boolean sshCloseShell() throws IOException {
         if (simulateConnection) {
             log.info("SshClientInstaller: Simulate close shell channel: task #{}", taskCounter);
             return true;
@@ -340,7 +369,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean sshShellExec(@NotNull String command, long executionTimeout) throws IOException {
+    public boolean sshShellExec(@NotNull String command, long executionTimeout) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate command execution: task #{}: command: {}", taskCounter, command);
             return true;
@@ -363,11 +392,11 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }*/
 
-    private Integer sshExecCmd(String command) throws IOException {
+    public Integer sshExecCmd(String command) throws IOException {
         return sshExecCmd(command, commandExecutionTimeout);
     }
 
-    private Integer sshExecCmd(String command, long executionTimeout) throws IOException {
+    public Integer sshExecCmd(String command, long executionTimeout) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate shell command execution: task #{}: command: {}", taskCounter, command);
             return null;
@@ -377,10 +406,16 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         Integer exitStatus = null;
         ChannelExec channel = session.createExecChannel(command);
         setChannelStreams(channel);
+        log.debug("SshClientInstaller: task #{}: EXEC: New channel id: {}", taskCounter, channel.getId());
         //streamLogger.getInvertedIn().write(command.getBytes());
         streamLogger.logMessage(String.format("EXEC: %s\n", command));
         try {
+            // Sending command to remote side
+            log.debug("SshClientInstaller: task #{}: EXEC: Sending command for execution: {}   (connect timeout: {}ms)", taskCounter, command, connectTimeout);
+            session.resetIdleTimeout();
             channel.open().verify(connectTimeout);
+            log.trace("SshClientInstaller: task #{}: EXEC: Sending command verified: {}", taskCounter, command);
+            log.debug("SshClientInstaller: task #{}: EXEC: Opened channel id: {}", taskCounter, channel.getId());
 
             //XXX: TODO: Search remote side output for expected patterns
 
@@ -403,7 +438,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return exitStatus;
     }
 
-    private boolean sshFileDownload(String remoteFilePath, String localFilePath) throws IOException {
+    public boolean sshFileDownload(String remoteFilePath, String localFilePath) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate file download: task #{}: remote: {} -> local: {}", taskCounter, remoteFilePath, localFilePath);
             return true;
@@ -423,7 +458,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean sshFileUpload(String localFilePath, String remoteFilePath) throws IOException {
+    public boolean sshFileUpload(String localFilePath, String remoteFilePath) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate file upload: task #{}: local: {} -> remote: {}", taskCounter, localFilePath, remoteFilePath);
             return true;
@@ -445,7 +480,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean sshFileWrite(String content, String remoteFilePath, boolean isExecutable) throws IOException {
+    public boolean sshFileWrite(String content, String remoteFilePath, boolean isExecutable) throws IOException {
         if (simulateConnection || simulateExecution) {
             log.info("SshClientInstaller: Simulate file upload: task #{}: remote: {}, content-length={}", taskCounter, remoteFilePath, content.length());
             return true;
@@ -753,7 +788,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return INSTRUCTION_RESULT.SUCCESS;
     }
 
-    private boolean copyDir(String sourceDir, String targetDir, Map<String,String> valueMap) throws IOException {
+    public boolean copyDir(String sourceDir, String targetDir, Map<String,String> valueMap) throws IOException {
         // Copy files from EMS server to Baguette Client
         if (StringUtils.isNotEmpty(sourceDir) && StringUtils.isNotEmpty(targetDir)) {
             Path baseDir = Paths.get(sourceDir).toAbsolutePath();
@@ -772,7 +807,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         return true;
     }
 
-    private boolean copyFile(Path sourcePath, Path sourceBaseDir, String targetDir, Map<String,String> valueMap, boolean isExecutable) throws IOException {
+    public boolean copyFile(Path sourcePath, Path sourceBaseDir, String targetDir, Map<String,String> valueMap, boolean isExecutable) throws IOException {
         String targetFile = StringUtils.substringAfter(sourcePath.toUri().toString(), sourceBaseDir.toUri().toString());
         if (!targetFile.startsWith("/")) targetFile = "/"+targetFile;
         targetFile = targetDir + targetFile;
@@ -805,6 +840,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
 
         // Process file lines against instruction patterns
         patterns.forEach((varName,pattern) -> {
+            log.trace("SshClientInstaller: processPatterns: For-Each: var-name={}, pattern={}, pattern-flags={}", varName, pattern, pattern.flags());
             Matcher matcher = null;
             for (String line : linesArr) {
                 Matcher m = pattern.matcher(line);
@@ -849,7 +885,7 @@ public class SshClientInstaller implements ClientInstallerPlugin {
         result = postProcessVariable(
                 properties.getClientInstallVarName(),
                 properties.getClientInstallErrorPattern(),
-                value -> { task.getNodeRegistryEntry().nodeInstallationComplete(value); return true; },
+                value -> { task.getNodeRegistryEntry().nodeInstallationError(value); return true; },
                 null, null);
         log.trace("SshClientInstaller: postProcessTask: CLIENT INSTALLATION.... result: {}", result);
         if (result) return true;

@@ -1,6 +1,6 @@
 {
   "name": "ems-web-admin",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -20,12 +20,14 @@
     "leaflet": "^1.7.1",
     "leaflet-providers": "^1.13.0",
     "leaflet.markercluster": "^1.5.3",
+    "mime-types": "^2.1.35",
     "mitt": "^3.0.0",
     "vue": "^3.2.31",
     "vue-gauge": "^1.0.3",
     "vue-json-pretty": "^2.0.6",
     "vue-router": "^4.0.14",
     "vue-world-map": "^0.1.1",
+    "vue3-ace-editor": "^2.2.2",
     "vue3-blocks-tree": "^0.5.2"
   },
   "devDependencies": {

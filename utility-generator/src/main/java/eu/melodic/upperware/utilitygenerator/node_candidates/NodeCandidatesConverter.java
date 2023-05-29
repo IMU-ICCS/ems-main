@@ -16,7 +16,7 @@ import eu.melodic.upperware.utilitygenerator.evaluator.ConfigurationElement;
 import eu.melodic.upperware.utilitygenerator.utility_function.ArgumentConverter;
 import eu.paasage.upperware.metamodel.cp.VariableType;
 import eu.passage.upperware.commons.model.tools.metadata.CamelMetadata;
-import org.activeeon.morphemic.model.NodeCandidate;
+import org.ow2.proactive.sal.model.NodeCandidate;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -102,7 +102,8 @@ public class NodeCandidatesConverter implements ArgumentConverter {
             if (NodeCandidate.NodeCandidateTypeEnum.FAAS.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPricePerInvocation();
             } else if (NodeCandidate.NodeCandidateTypeEnum.IAAS.equals(nodeCandidate.getNodeCandidateType()) ||
-                    NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType())) {
+                    NodeCandidate.NodeCandidateTypeEnum.BYON.equals(nodeCandidate.getNodeCandidateType()) ||
+                    NodeCandidate.NodeCandidateTypeEnum.EDGE.equals(nodeCandidate.getNodeCandidateType())) {
                 return nodeCandidate.getPrice();
             } else {
                 throw new IllegalStateException("Type of Node Candidate: " + nodeCandidate.getNodeCandidateType() + "is not supported");

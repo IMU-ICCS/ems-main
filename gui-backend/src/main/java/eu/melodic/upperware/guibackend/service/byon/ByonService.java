@@ -10,7 +10,7 @@ import eu.passage.upperware.commons.service.store.SecureStoreDBService;
 import eu.passage.upperware.commons.service.yaml.YamlDataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.Job;
+import org.ow2.proactive.sal.model.Job;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,9 +135,9 @@ public class ByonService {
                 .filter(byonDefinition -> byonDefinition.getId() == byonDefinitionId)
                 .findFirst()
                 .orElseThrow(() -> new ByonDefinitionNotFoundException(byonDefinitionId));
-        final org.activeeon.morphemic.model.ByonDefinition byonDefinitionProactive = byonMapper.mapByonDefinitionToProactive(byonDefinitionForNode);
+        final org.ow2.proactive.sal.model.ByonDefinition byonDefinitionProactive = byonMapper.mapByonDefinitionToProactive(byonDefinitionForNode);
         log.info("LSZ DEV[ByonService]: createByonNode: byonDefinitionProactive={}", byonDefinitionProactive);
-        final Optional<org.activeeon.morphemic.model.ByonNode> byonNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId, automate));
+        final Optional<org.ow2.proactive.sal.model.ByonNode> byonNodeProactive = Optional.ofNullable(proactiveClientServiceGUI.registerNewByonNode(byonDefinitionProactive, applicationId, automate));
         log.info("LSZ DEV[ByonService]: createByonNode: byonNodeProactive={}", byonNodeProactive);
         ByonNode byonNode = null;
         if(byonNodeProactive.isPresent()) {
@@ -178,7 +178,7 @@ public class ByonService {
 
     public List<ByonNode> getByonNodesList(String applicationId) {
         log.info("LSZ DEV[ByonService]: getByonNodesList: applicationId={}", applicationId);
-        final List<org.activeeon.morphemic.model.ByonNode> byonNodeList = proactiveClientServiceGUI.getByonNodeList(applicationId);
+        final List<org.ow2.proactive.sal.model.ByonNode> byonNodeList = proactiveClientServiceGUI.getByonNodeList(applicationId);
         log.info("LSZ DEV[ByonService]: getByonNodesList: byonNodeList={}", byonNodeList);
         return byonNodeList.stream()
                 .map(byonMapper::mapProactiveByonNodeToInternal)

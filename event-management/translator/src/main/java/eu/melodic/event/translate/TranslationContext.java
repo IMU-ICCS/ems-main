@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -19,13 +19,12 @@ import camel.deployment.Component;
 import camel.metric.*;
 import camel.requirement.ServiceLevelObjective;
 import camel.scalability.Event;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.translate.analyze.DAG;
 import eu.melodic.event.translate.analyze.DAGNode;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.models.interfaces.ems.Monitor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,6 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TranslationContext {
     // Decomposition DAG
+    @JsonIgnore
     public final DAG DAG;
 
     // Event-to-Action map
@@ -47,10 +47,10 @@ public class TranslationContext {
     public final Set<String> SLO;
 
     // Component-to-Sensor map
-    public final Map<Component, Set<Sensor>> C2S;        //XXX:TODO-LOW: Convert to strings
+    public final Map<Component, Set<TranslationContext.Sensor>> C2S;        //XXX:TODO-LOW: Convert to strings
 
     // Data-to-Sensor map
-    public final Map<Data, Set<Sensor>> D2S;                //XXX:TODO-LOW: Convert to strings
+    public final Map<Data, Set<TranslationContext.Sensor>> D2S;             //XXX:TODO-LOW: Convert to strings
 
     // Sensor Monitors set
     public final Set<Monitor> MON;                        //XXX:TODO-LOW: Remove ??
@@ -90,6 +90,10 @@ public class TranslationContext {
 
     // Load-annotated Metric
     protected Set<String> loadAnnotatedMetricsSet;
+
+    // Export files
+    @Getter @Setter
+    protected List<String> exportFiles;
 
 
     // ====================================================================================================================================================
@@ -215,14 +219,15 @@ public class TranslationContext {
         else SLO.add(slo.getName());
     }
 
-    public void addComponentSensorPair(ObjectContext objContext, Sensor sensor) {
+    public void addComponentSensorPair(ObjectContext objContext, camel.metric.Sensor sensor) {
+        TranslationContext.Sensor tcSensor = new TranslationContext.Sensor(sensor);
         if (objContext != null) {
             Component comp = objContext.getComponent();
             Data data = objContext.getData();
-            if (comp != null) _addPair(C2S, comp, sensor);
-            if (data != null) _addPair(D2S, data, sensor);
+            if (comp != null) _addPair(C2S, comp, tcSensor);
+            if (data != null) _addPair(D2S, data, tcSensor);
         } else {
-            _addPair(C2S, null, sensor);
+            _addPair(C2S, null, tcSensor);
         }
     }
 
@@ -237,6 +242,10 @@ public class TranslationContext {
 
     public boolean containsMonitorsForSensor(String sensorName) {
         return MONS.contains(sensorName);
+    }
+
+    public Set<Monitor> getMonitors() {
+        return Collections.unmodifiableSet(MON);
     }
 
     public void addGroupingTopicPair(String grouping, String topic) {
@@ -524,6 +533,10 @@ public class TranslationContext {
         loadAnnotatedMetricsSet.add(metricName);
     }
 
+    public void addLoadAnnotatedMetrics(@NonNull Set<String> metricNames) {
+        loadAnnotatedMetricsSet.addAll(metricNames);
+    }
+
     public Set<String> getLoadAnnotatedMetricsSet() {
         return new HashSet<>(loadAnnotatedMetricsSet);
     }
@@ -559,10 +572,15 @@ public class TranslationContext {
     @RequiredArgsConstructor
     public static class MetricContext {
         private final String name;
+        private final String component;
         private final Schedule schedule;
 
         public MetricContext(camel.metric.MetricContext mc) {
             name = mc.getName();
+            component = mc.getObjectContext()!=null && mc.getObjectContext().getComponent()!=null
+                    && StringUtils.isNotBlank(mc.getObjectContext().getComponent().getName())
+                            ? mc.getObjectContext().getComponent().getName()
+                            : null;
             schedule = (mc.getSchedule()!=null) ? new TranslationContext.Schedule(mc.getSchedule()) : null;
         }
     }
@@ -584,6 +602,20 @@ public class TranslationContext {
         public long getIntervalInMillis() {
             if (unit==null) return interval;
             return TimeUnit.MILLISECONDS.convert(interval, TimeUnit.valueOf(unit.toUpperCase()));
+        }
+    }
+
+    @lombok.Data
+    @RequiredArgsConstructor
+    public static class Sensor {
+        private final String name;
+        private final String configuration;
+        private final boolean isPush;
+
+        public Sensor(camel.metric.Sensor sensor) {
+            this.name = sensor.getName();
+            this.configuration = sensor.getConfiguration();
+            this.isPush = sensor.isIsPush();
         }
     }
 }

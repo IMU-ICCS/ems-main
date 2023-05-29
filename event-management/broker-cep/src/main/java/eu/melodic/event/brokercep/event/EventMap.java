@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 public class EventMap extends LinkedHashMap<String, Object> implements Serializable {
 
     private static Gson gson;
+    private static AtomicLong eventIdSequence = new AtomicLong(0);
 
     // Standard/Known Event fields configuration
     @Data
@@ -67,6 +69,9 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
 
+    // Event Id
+    private final long eventId = eventIdSequence.getAndIncrement();
+
     // Event properties
     private Map<String,Object> eventProperties;
 
@@ -75,7 +80,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public synchronized Object setEventProperty(@NonNull String name, Object value) {
-        if (eventProperties ==null) eventProperties = new LinkedHashMap<>();
+        if (eventProperties == null) eventProperties = new LinkedHashMap<>();
         return eventProperties.put(name, value);
     }
 
@@ -204,7 +209,9 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     }
 
     public String toString() {
-        return super.toString();
+        return getEventProperties()!=null
+                ? "{ payload: "+super.toString() + ", properties: " + getEventProperties().toString() + " }"
+                : super.toString();
     }
 
     public String toJsonString() {

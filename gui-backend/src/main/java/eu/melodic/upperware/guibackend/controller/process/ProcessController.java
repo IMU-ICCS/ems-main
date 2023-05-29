@@ -17,8 +17,8 @@ import eu.passage.upperware.commons.model.internal.Location;
 import io.github.cloudiator.rest.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.EmsDeploymentRequest;
-import org.activeeon.morphemic.model.PACloud;
+import org.ow2.proactive.sal.model.EmsDeploymentRequest;
+import org.ow2.proactive.sal.model.PACloud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -67,7 +67,7 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public List<eu.passage.upperware.commons.model.internal.Hardware> getHardwareList() {
         log.info("GET request for hardware list");
-        final List<eu.passage.upperware.commons.model.internal.Hardware> domains = ((GenericConverter<org.activeeon.morphemic.model.Hardware, eu.passage.upperware.commons.model.internal.Hardware>) domainConverterFactory.getHardwareConverter()).createDomains(proactiveClientServiceGUI.getAllHardware());
+        final List<eu.passage.upperware.commons.model.internal.Hardware> domains = ((GenericConverter<org.ow2.proactive.sal.model.Hardware, eu.passage.upperware.commons.model.internal.Hardware>) domainConverterFactory.getHardwareConverter()).createDomains(proactiveClientServiceGUI.getAllHardware());
         log.info("ProcessController->getHardwareList converted to internal/domain hardware list: {}", domains);
         return domains;
     }
@@ -76,7 +76,7 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public List<Location> getLocationList() {
         log.info("GET request for locations list");
-        final List<Location> domains = ((GenericConverter<org.activeeon.morphemic.model.Location, Location>) domainConverterFactory.getLocationConverter()).createDomains(proactiveClientServiceGUI.getAllLocation());
+        final List<Location> domains = ((GenericConverter<org.ow2.proactive.sal.model.Location, Location>) domainConverterFactory.getLocationConverter()).createDomains(proactiveClientServiceGUI.getAllLocation());
         log.info("ProcessController->getLocationList converted to internal/domain location list: {}", domains);
         return domains;
     }
@@ -85,7 +85,7 @@ public class ProcessController {
     @ResponseStatus(HttpStatus.OK)
     public List<eu.passage.upperware.commons.model.internal.Image> getImageList() {
         log.info("GET request for images list");
-        final List<org.activeeon.morphemic.model.Image> images = proactiveClientServiceGUI.getAllClouds()
+        final List<org.ow2.proactive.sal.model.Image> images = proactiveClientServiceGUI.getAllClouds()
                 .stream()
                 .map(paCloud -> {
                     log.info("ProcessController->getImageList fetching images for cloudID: {}", paCloud.getCloudID());
@@ -94,7 +94,7 @@ public class ProcessController {
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
         log.info("ProcessController->getImageList collected images: {}", images);
-        final List<eu.passage.upperware.commons.model.internal.Image> domains = ((GenericConverter<org.activeeon.morphemic.model.Image, eu.passage.upperware.commons.model.internal.Image>) domainConverterFactory.getImageConverter()).createDomains(images);
+        final List<eu.passage.upperware.commons.model.internal.Image> domains = ((GenericConverter<org.ow2.proactive.sal.model.Image, eu.passage.upperware.commons.model.internal.Image>) domainConverterFactory.getImageConverter()).createDomains(images);
         log.info("ProcessController->getImageList converted to internal/domain images: {}", domains);
         return domains;
     }
@@ -145,7 +145,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/process")
     public List<CloudiatorProcess> getCloudiatorProcessList() {
-        log.info("GET Cloudiator processes list");
+        log.info("GET processes list");
         log.warn("Fetching processes list is not implemented yet.");
 //        return cloudiatorApi.getProcessList();
         return Collections.emptyList();
@@ -161,7 +161,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/queue")
     public List<Queue> getCloudiatorQueue() {
-        log.info("GET Cloudiator queues list");
+        log.info("GET queues list");
         log.warn("Fetching queues list is not implemented yet.");
 //        return cloudiatorApi.getQueueList();
         return Collections.emptyList();
@@ -169,17 +169,17 @@ public class ProcessController {
 
     @GetMapping("/deployment/job")
     public List<eu.passage.upperware.commons.model.internal.Job> getJobsList() {
-        log.info("GET Cloudiator jobs list");
-        final List<org.activeeon.morphemic.model.Job> allJobs = proactiveClientServiceGUI.getAllJobs();
+        log.info("GET jobs list");
+        final List<org.ow2.proactive.sal.model.Job> allJobs = proactiveClientServiceGUI.getAllJobs();
         log.info("ProcessController->getJobsList collected jobs: {}", allJobs);
-        final List<eu.passage.upperware.commons.model.internal.Job> domains = ((GenericConverter<org.activeeon.morphemic.model.Job, eu.passage.upperware.commons.model.internal.Job>) domainConverterFactory.getJobConverter()).createDomains(allJobs);
+        final List<eu.passage.upperware.commons.model.internal.Job> domains = ((GenericConverter<org.ow2.proactive.sal.model.Job, eu.passage.upperware.commons.model.internal.Job>) domainConverterFactory.getJobConverter()).createDomains(allJobs);
         log.info("ProcessController->getJobsList converted to internal/domain jobs: {}", domains);
         return domains;
     }
 
     @GetMapping("/deployment/schedule")
     public List<Schedule> getSchedulesList() {
-        log.info("GET Cloudiator schedules list");
+        log.info("GET schedules list");
         log.warn("Fetching schedules list is not implemented yet.");
 //        return cloudiatorApi.getScheduleList();
         return Collections.emptyList();
@@ -187,7 +187,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/monitor")
     public List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> getMonitorsList() {
-        log.info("GET Cloudiator monitors list");
+        log.info("GET monitors list");
         final List<EmsDeploymentRequest> allMonitors = proactiveClientServiceGUI.getAllMonitors();
         log.info("ProcessController->getMonitorsList collected monitors: {}", allMonitors);
         final List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> domains = ((GenericConverter<EmsDeploymentRequest, eu.passage.upperware.commons.model.internal.EmsDeploymentRequest>) domainConverterFactory.getMonitorConverter()).createDomains(allMonitors);

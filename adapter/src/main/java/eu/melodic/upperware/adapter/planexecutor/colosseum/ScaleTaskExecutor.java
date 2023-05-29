@@ -6,7 +6,7 @@ import eu.melodic.upperware.adapter.planexecutor.RunnableTaskExecutor;
 import eu.melodic.upperware.adapter.plangenerator.model.AdapterScale;
 import eu.melodic.upperware.adapter.plangenerator.tasks.ScaleTask;
 import lombok.extern.slf4j.Slf4j;
-import org.activeeon.morphemic.model.SubmittedJobType;
+import org.ow2.proactive.sal.model.SubmittedJobType;
 
 import java.util.Collection;
 import java.util.concurrent.Future;

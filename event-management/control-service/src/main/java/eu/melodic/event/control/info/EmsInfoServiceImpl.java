@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -143,8 +143,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         controlServiceInfo.put("current-ems-state", controlServiceCoordinator.getCurrentEmsState());
         controlServiceInfo.put("current-ems-state-message", controlServiceCoordinator.getCurrentEmsStateMessage());
         controlServiceInfo.put("current-ems-state-change-timestamp", controlServiceCoordinator.getCurrentEmsStateChangeTimestamp());
-        controlServiceInfo.put("current-camel-model-id", controlServiceCoordinator.getCurrentCamelModelId());
-        controlServiceInfo.put("current-cp-model-id", controlServiceCoordinator.getCurrentCpModelId());
+        controlServiceInfo.put("current-camel-model-path", controlServiceCoordinator.getCamelModelPath());
+        controlServiceInfo.put("current-cp-model-path", controlServiceCoordinator.getCpModelPath());
         if (controlServiceProperties!=null && infoServiceProperties!=null) {
             controlServiceInfo.put("prop-ip-setting", controlServiceProperties.getIpSetting());
             controlServiceInfo.put("prop-executionware", controlServiceProperties.getExecutionware().toString());
@@ -154,14 +154,13 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             controlServiceInfo.put("prop-metrics-client-update-interval", infoServiceProperties.getMetricsClientUpdateInterval());
             controlServiceInfo.put("prop-metrics-stream-event-name", infoServiceProperties.getMetricsStreamEventName());
             controlServiceInfo.put("prop-metrics-stream-update-interval", infoServiceProperties.getMetricsStreamUpdateInterval());
-            controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreloadCamelModel());
-            controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreloadCpModel());
+            controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreload().getCamelModel());
+            controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreload().getCpModel());
             controlServiceInfo.put("prop-upperware-grouping", controlServiceProperties.getUpperwareGrouping());
             controlServiceInfo.put("prop-tc-load-file", controlServiceProperties.getTcLoadFile());
             controlServiceInfo.put("prop-tc-save-file", controlServiceProperties.getTcSaveFile());
 
             Map<String,Object> debugFlags = new LinkedHashMap<>();
-            debugFlags.put("event-debug-enabled",  controlServiceProperties.isEventDebugEnabled());
             debugFlags.put("exit-allowed",  controlServiceProperties.isExitAllowed());
             debugFlags.put("print-build-info",  controlServiceProperties.isPrintBuildInfo());
             debugFlags.put("skip-translation",  controlServiceProperties.isSkipTranslation());
@@ -178,8 +177,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             staticResourceCfg.put("favicon-path",  staticResourceProperties.getFaviconPath());
             staticResourceCfg.put("resource-context",  staticResourceProperties.getResourceContext());
             staticResourceCfg.put("resource-path",  staticResourceProperties.getResourcePath());
-            staticResourceCfg.put("resource-redirect",  staticResourceProperties.getResourceRedirect());
-            staticResourceCfg.put("resource-redirects",  staticResourceProperties.getResourceRedirects());
+            staticResourceCfg.put("resource-redirect",  staticResourceProperties.getRedirect());
+            staticResourceCfg.put("resource-redirects",  staticResourceProperties.getRedirects());
             staticResourceCfg.put("logs-context",  staticResourceProperties.getLogsContext());
             staticResourceCfg.put("logs-path",  staticResourceProperties.getLogsPath());
             controlServiceInfo.put("prop-static-resource", staticResourceCfg);
@@ -217,14 +216,16 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         baguetteServerInfo.put("active-clients-map", controlServiceCoordinator.clientMap());
         baguetteServerInfo.put("passive-clients-list", controlServiceCoordinator.passiveClientList());
         baguetteServerInfo.put("passive-clients-map", controlServiceCoordinator.passiveClientMap());
+        baguetteServerInfo.put("all-clients-list", controlServiceCoordinator.allClientList());
+        baguetteServerInfo.put("all-clients-map", controlServiceCoordinator.allClientMap());
         metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
 
         // Destinations per grouping and min/max grouping
         Map<String,Object> translatorInfo = new LinkedHashMap<>();
         metrics.put(TRANSLATOR_INFO_PROVIDER, translatorInfo);
-        String camelModelId = controlServiceCoordinator.getCurrentCamelModelId();
-        if (StringUtils.isNotBlank(camelModelId)) {
-            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelId);
+        String camelModelPath = controlServiceCoordinator.getCamelModelPath();
+        if (StringUtils.isNotBlank(camelModelPath)) {
+            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelPath);
             Set<String> groupings = _TC.G2T.keySet();
             ArrayList<String> orderedGroupings = new ArrayList<>(groupings);
             orderedGroupings.sort((o1, o2) -> {
@@ -232,7 +233,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
                 GROUPING g2 = GROUPING.valueOf(o2);
                 return g1.compareTo(g2);
             });
-            translatorInfo.put("camel-model-id", camelModelId);
+            translatorInfo.put("camel-model-path", camelModelPath);
             translatorInfo.put("groupings", orderedGroupings);
             translatorInfo.put("actions-per-event", _TC.E2A);
             translatorInfo.put("slo", _TC.SLO);
@@ -245,6 +246,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             translatorInfo.put("destination-connections", _TC.getTopicConnections());
             translatorInfo.put("function-definitions", _TC.FUNC.stream()
                     .map(FunctionDefinition::toString).collect(Collectors.toList()));
+            translatorInfo.put("export-files", _TC.getExportFiles());
         }
 
         log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);
@@ -286,7 +288,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
         for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
             /*log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
-            Object o = baguetteServer.readFromClient(clientId, "GET-STATS", org.slf4j.event.Level.DEBUG);
+            Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS", org.slf4j.event.Level.DEBUG);
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);
             if (o instanceof Map) {
                 clientMetrics.put(clientId, o);

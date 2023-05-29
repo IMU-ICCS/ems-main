@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
   ~
   ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
   ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -23,6 +23,9 @@
         <span :style="style('fnGenerateEvents')" @click="fnGenerateEvents" title="Generate events at node"><i class="fas fa-stopwatch"/></span>
     </div>
     <div :id="id" v-if="nodeType==='edge' || nodeType==='ignore'">
+        <span :style="style('fnSshConsole')" @click="fnSshConsole" title="SSH console"><i class="fas fa-terminal"/></span>&nbsp;&nbsp;
+    </div>
+    <div :id="id" v-if="nodeType==='installing' || nodeType==='error' || nodeType==='unknown' || nodeType===''">
         <span :style="style('fnSshConsole')" @click="fnSshConsole" title="SSH console"><i class="fas fa-terminal"/></span>&nbsp;&nbsp;
     </div>
 </template>

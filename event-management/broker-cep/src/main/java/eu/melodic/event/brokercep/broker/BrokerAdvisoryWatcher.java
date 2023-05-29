@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Institute of Communication and Computer Systems (imu.iccs.gr)
+ * Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
  * Esper library is used, in which case it is subject to the terms of General Public License v2.0.
@@ -10,7 +10,9 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.PasswordUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
@@ -18,37 +20,37 @@ import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.DataStructure;
 import org.apache.activemq.command.DestinationInfo;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
 import java.time.Instant;
 
-@ConditionalOnProperty(name="brokercep.enable-advisory-watcher", matchIfMissing = true)
-@Service
 @Slf4j
-public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean {
-	@Autowired
-	private BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
-	@Autowired
-	private ConnectionFactory connectionFactory;
-	@Autowired
-	private BrokerCepService brokerCerService;
-	@Autowired
-	private PasswordUtil passwordUtil;
-	@Autowired
-	private TaskScheduler taskScheduler;
+@Service
+@ConditionalOnProperty(name="brokercep.enable-advisory-watcher", matchIfMissing = true)
+@RequiredArgsConstructor
+public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean, ApplicationListener<ContextClosedEvent> {
+	private final BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
+	private final BrokerConfig brokerConfig;
+	private final BrokerCepService brokerCepService;
+	private final BrokerCepProperties properties;
 
-	private final int initRetryDelay = 5;	// in seconds
+	private ConnectionFactory connectionFactory;
+
+	private final PasswordUtil passwordUtil;
+	private final TaskScheduler taskScheduler;
 
 	private Connection connection;
 	private Session session;
+	private boolean shuttingDown;
 
 	@Override
 	public void afterPropertiesSet() {
-		log.debug("BrokerAdvisoryWatcher: afterPropertiesSet: BrokerCepProperties: {}", brokerCerService.getBrokerCepProperties());
+		log.debug("BrokerAdvisoryWatcher: afterPropertiesSet: BrokerCepProperties: {}", brokerCepService.getBrokerCepProperties());
 		initialize();
 	}
 	
@@ -59,30 +61,47 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 			closeConnection();
 
 			// If an alternative Broker URL is provided for consumer, it will be used
-			boolean usesAuthentication = brokerCerService.getBrokerCepProperties().isAuthenticationEnabled();
-			String username = brokerCerService.getBrokerUsername();
-			String password = brokerCerService.getBrokerPassword();
+			if (connectionFactory==null) {
+				connectionFactory = brokerConfig.getConnectionFactoryForConsumer();
+			}
+
+			// If authentication is enabled get credentials
+			boolean usesAuthentication = brokerCepService.getBrokerCepProperties().isAuthenticationEnabled();
+			String username = brokerCepService.getBrokerUsername();
+			String password = brokerCepService.getBrokerPassword();
 			log.debug("BrokerAdvisoryWatcher.init(): uses-authentication={}, username={}, password={}",
 					usesAuthentication, username, passwordUtil.encodePassword(password));
 
+			// Create and start new connection
 			this.connection = usesAuthentication
 					? connectionFactory.createConnection(username, password)
 					: connectionFactory.createConnection();
 			connection.setExceptionListener(e -> {
-				log.warn("BrokerAdvisoryWatcher: Connection exception listener: Exception caught: ", e);
-				initialize();
+				if (!shuttingDown) {
+					log.warn("BrokerAdvisoryWatcher: Connection exception listener: Exception caught: ", e);
+					initialize();
+				}
 			});
 			this.connection.start();
+
+			// Create a new session, and new consumer for topic
 			this.session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			Topic topic = session.createTopic("ActiveMQ.Advisory.>");
 			MessageConsumer consumer = session.createConsumer(topic);
 			consumer.setMessageListener( this );
+
 			log.debug("BrokerAdvisoryWatcher.init(): Initializing instance... done");
 		} catch (Exception ex) {
-			log.error("BrokerAdvisoryWatcher.init(): EXCEPTION: while retry in {} seconds:", initRetryDelay, ex);
+			log.error("BrokerAdvisoryWatcher.init(): EXCEPTION: while retry in {} seconds:", properties.getAdvisoryWatcherInitRetryDelay(), ex);
 			final BrokerAdvisoryWatcher _this = this;
-			taskScheduler.schedule(_this::initialize, Instant.now().plusSeconds(initRetryDelay));
+			taskScheduler.schedule(_this::initialize, Instant.now().plusSeconds(properties.getAdvisoryWatcherInitRetryDelay()));
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextClosedEvent event) {
+		log.info("BrokerAdvisoryWatcher is shutting down");
+		shuttingDown = true;
 	}
 
 	private void closeConnection() {
