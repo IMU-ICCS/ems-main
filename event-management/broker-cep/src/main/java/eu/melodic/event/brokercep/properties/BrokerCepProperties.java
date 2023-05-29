@@ -111,7 +111,7 @@ public class BrokerCepProperties implements InitializingBean {
         private String password;
     }
 
-    public enum EVENT_RECORDER_FILTER_MODE { ALL, REGISTERED, CUSTOM }
+    public enum EVENT_RECORDER_FILTER_MODE { ALL, REGISTERED, ALLOWED }
 
     @Data
     public static class EventRecorderProperties {

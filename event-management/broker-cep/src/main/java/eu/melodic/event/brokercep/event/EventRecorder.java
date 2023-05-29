@@ -182,7 +182,7 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
 
     public void recordAllowedEvent(@NonNull Message message) throws JMSException {
         if (filterMode == BrokerCepProperties.EVENT_RECORDER_FILTER_MODE.ALL
-            || filterMode == BrokerCepProperties.EVENT_RECORDER_FILTER_MODE.CUSTOM
+            || filterMode == BrokerCepProperties.EVENT_RECORDER_FILTER_MODE.ALLOWED
                 && allowedDestinations.stream().anyMatch(getDestinationName(message)::equalsIgnoreCase))
         {
             eventQueue.addLast(message);

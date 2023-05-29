@@ -379,10 +379,10 @@ brokercep:
   # Event recorder settings
   event-recorder:
     enabled: true
-    format: JSON
+    #format: JSON
     file: ${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.json
-#    filter-mode: ALL | REGISTERED (default) | CUSTOM
-#    allowed-destinations:
+    #filter-mode: ALL | REGISTERED (default) | ALLOWED
+    #allowed-destinations:
 
 
 ################################################################################
