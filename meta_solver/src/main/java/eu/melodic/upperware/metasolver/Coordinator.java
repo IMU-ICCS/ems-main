@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
@@ -71,8 +72,10 @@ public class Coordinator implements ApplicationContextAware {
     private String updatePath;
 
     private long previousReconfigurationTimestamp = 0;
-    private Semaphore reconfigurationRunning = new Semaphore(1);
+    private final Semaphore reconfigurationRunning = new Semaphore(1);
     private ScheduledFuture<?> reconfigurationRunningTimeoutFuture;
+    private boolean reconfigurationRequestedButBlocked;
+
     @Autowired
     private TaskScheduler taskScheduler;
 
@@ -91,6 +94,27 @@ public class Coordinator implements ApplicationContextAware {
         this.restTemplate = new RestTemplate();
         this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
+
+        startReconfigurationRequestWatcher();
+    }
+
+    private void startReconfigurationRequestWatcher() {
+        if (!metaSolverProperties.isCacheReconfigurationRequestIfBlocked()) return;
+
+        long checkRate = metaSolverProperties.getCachedReconfigurationRequestCheckRate();
+        taskScheduler.scheduleAtFixedRate(() -> {
+            if (reconfigurationRequestedButBlocked) {
+                reconfigurationRequestedButBlocked = false;
+                try {
+                    log.warn("MetaSolver.Coordinator: Reconfiguration requested during previous reconfiguration execution or blocking period. Requesting now...");
+                    requestReconfigurationStart(true);
+                } catch (ConcurrentAccessException e) {
+                    log.warn("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms", checkRate);
+                    log.debug("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms.\n", checkRate, e);
+                    reconfigurationRequestedButBlocked = true;
+                }
+            }
+        }, Duration.ofMillis(checkRate));
     }
 
     /**
@@ -307,6 +331,7 @@ public class Coordinator implements ApplicationContextAware {
         // Check if a (previous) reconfiguration process is still running
         if (metaSolverProperties.isPreventConcurrentReconfigurations() && ! reconfigurationRunning.tryAcquire()) {
             log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): A previous Reconfiguration instance is still running. Ignoring requests");
+            reconfigurationRequestedButBlocked = true;
             return false;
         }
 
@@ -314,6 +339,7 @@ public class Coordinator implements ApplicationContextAware {
         if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
             log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Cannot request a new reconfiguration during reconfiguration blocking period");
             enableReconfigurationRunning();
+            reconfigurationRequestedButBlocked = true;
             return false;
         }
         previousReconfigurationTimestamp = System.currentTimeMillis();

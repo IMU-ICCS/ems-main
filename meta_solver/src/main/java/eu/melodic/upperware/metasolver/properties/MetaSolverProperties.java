@@ -59,6 +59,8 @@ public class MetaSolverProperties {
     private long reconfigurationBlockingPeriod = 10*60*1000L;       // reconfiguration cool down period
     private boolean preventConcurrentReconfigurations = true;
     private long preventConcurrentReconfigurationsTimeout = 2*60*1000L;
+    private boolean cacheReconfigurationRequestIfBlocked = true;
+    private long cachedReconfigurationRequestCheckRate = 1000L;
 
     private DebugEvent debugEvents = new DebugEvent();
 
