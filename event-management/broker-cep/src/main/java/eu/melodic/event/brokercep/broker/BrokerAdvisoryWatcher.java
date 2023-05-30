@@ -21,6 +21,8 @@ import org.apache.activemq.command.DataStructure;
 import org.apache.activemq.command.DestinationInfo;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +33,7 @@ import java.time.Instant;
 @Service
 @ConditionalOnProperty(name="brokercep.enable-advisory-watcher", matchIfMissing = true)
 @RequiredArgsConstructor
-public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean {
+public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean, ApplicationListener<ContextClosedEvent> {
 	private final BrokerService brokerService;	// Added in order to ensure that BrokerService will be instantiated first
 	private final BrokerConfig brokerConfig;
 	private final BrokerCepService brokerCepService;
@@ -44,6 +46,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 
 	private Connection connection;
 	private Session session;
+	private boolean shuttingDown;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -74,8 +77,10 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 					? connectionFactory.createConnection(username, password)
 					: connectionFactory.createConnection();
 			connection.setExceptionListener(e -> {
-				log.warn("BrokerAdvisoryWatcher: Connection exception listener: Exception caught: ", e);
-				initialize();
+				if (!shuttingDown) {
+					log.warn("BrokerAdvisoryWatcher: Connection exception listener: Exception caught: ", e);
+					initialize();
+				}
 			});
 			this.connection.start();
 
@@ -91,6 +96,12 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean 
 			final BrokerAdvisoryWatcher _this = this;
 			taskScheduler.schedule(_this::initialize, Instant.now().plusSeconds(properties.getAdvisoryWatcherInitRetryDelay()));
 		}
+	}
+
+	@Override
+	public void onApplicationEvent(ContextClosedEvent event) {
+		log.info("BrokerAdvisoryWatcher is shutting down");
+		shuttingDown = true;
 	}
 
 	private void closeConnection() {
