@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
@@ -71,13 +72,17 @@ public class Coordinator implements ApplicationContextAware {
     private String updatePath;
 
     private long previousReconfigurationTimestamp = 0;
-    private Semaphore reconfigurationRunning = new Semaphore(1);
+    private final Semaphore reconfigurationRunning = new Semaphore(1);
     private ScheduledFuture<?> reconfigurationRunningTimeoutFuture;
+    private boolean reconfigurationRequestedButBlocked;
+
     @Autowired
     private TaskScheduler taskScheduler;
 
     @Getter
     private PredictionHelper predictionHelper;
+
+    private MetricValueMonitorBean metricValueMonitorBean;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -90,7 +95,31 @@ public class Coordinator implements ApplicationContextAware {
         this.removeRedundantCandidates = metaSolverProperties.isRemoveRedundantCandidates();
         this.restTemplate = new RestTemplate();
         this.predictionHelper = applicationContext.getBean(PredictionHelper.class);
+        this.metricValueMonitorBean = applicationContext.getBean(MetricValueMonitorBean.class);
         log.debug("MetaSolver.Coordinator: setApplicationContext(): configuration={}", metaSolverProperties);
+
+        startReconfigurationRequestWatcher();
+    }
+
+    private void startReconfigurationRequestWatcher() {
+        if (!metaSolverProperties.isCacheReconfigurationRequestIfBlocked()) return;
+
+        long checkRate = metaSolverProperties.getCachedReconfigurationRequestCheckRate();
+        taskScheduler.scheduleAtFixedRate(() -> {
+            if (reconfigurationRequestedButBlocked
+                && System.currentTimeMillis() > previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod())
+            {
+                reconfigurationRequestedButBlocked = false;
+                try {
+                    log.info("MetaSolver.Coordinator: Reconfiguration requested during previous reconfiguration execution or blocking period. Requesting now...");
+                    requestReconfigurationStart(true);
+                } catch (ConcurrentAccessException e) {
+                    log.warn("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms", checkRate);
+                    log.debug("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms.\n", checkRate, e);
+                    reconfigurationRequestedButBlocked = true;
+                }
+            }
+        }, Duration.ofMillis(checkRate));
     }
 
     /**
@@ -107,6 +136,8 @@ public class Coordinator implements ApplicationContextAware {
                 .stream().map(Enum::name)
                 .collect(Collectors.toList());
         log.info("MetaSolver.Coordinator: selectSolvers(): Solvers selected: {}", defaultSolvers);
+
+        metricValueMonitorBean.sendMetasolverEvent("selectSolvers", defaultSolvers);
         return defaultSolvers;
     }
 
@@ -117,8 +148,7 @@ public class Coordinator implements ApplicationContextAware {
         log.info("MetaSolver.Coordinator: setMetricValuesInCpModel(): appId={}, model={}", applicationId, cpModelPath);
 
         // get metric values from metric value registry
-        MetricValueMonitorBean monitor = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
-        Map<String, String> metricValues = monitor.getMetricValuesRegistry().getMetricValuesAsMap();
+        Map<String, String> metricValues = metricValueMonitorBean.getMetricValuesRegistry().getMetricValuesAsMap();
         log.debug("MetaSolver.Coordinator: setMetricValuesInCpModel(): Metric values map: {}", metricValues);
 
         return setMetricValuesInCpModel(applicationId, cpModelPath, metricValues);
@@ -131,7 +161,7 @@ public class Coordinator implements ApplicationContextAware {
         if (metaSolverProperties.getDebugEvents().isEnabled()) {
             try {
                 log.debug("setMetricValuesInCpModel: Sending DEBUG event: metricValues={}", metricValues);
-                applicationContext.getBean(MetricValueMonitorBean.class).sendDebugEvent(metaSolverProperties.getDebugEvents().getTopicName(), metricValues);
+                metricValueMonitorBean.sendDebugEvent(metricValues);
                 log.debug("setMetricValuesInCpModel: DEBUG event sent: metricValues={}", metricValues);
             } catch (Exception e) {
                 log.error("setMetricValuesInCpModel: EXCEPTION while sending debug event: ", e);
@@ -162,6 +192,7 @@ public class Coordinator implements ApplicationContextAware {
             // Enable reconfiguration running
             enableReconfigurationRunning();
         }
+        metricValueMonitorBean.sendMetasolverEvent("evaluateSolution", result);
         return result;
     }
 
@@ -291,7 +322,8 @@ public class Coordinator implements ApplicationContextAware {
 
         // Notify EMS about new solution acceptance
 		notifyEMS(cpModelPath);
-		
+        metricValueMonitorBean.sendMetasolverEvent("updateSolutionIdsInCpModel", newPos);
+
         log.info("MetaSolver.Coordinator: updateSolutionIdsInCpModel(): Solution Ids have been updated in CP model: deployed-solution-id={}, candidate-solution-id={}",
                 newPos.getLeft(), newPos.getRight());
         return newPos;
@@ -306,7 +338,9 @@ public class Coordinator implements ApplicationContextAware {
     public synchronized boolean requestReconfigurationStart(boolean isSimulation, Map<String, String> metricValues) throws ConcurrentAccessException {
         // Check if a (previous) reconfiguration process is still running
         if (metaSolverProperties.isPreventConcurrentReconfigurations() && ! reconfigurationRunning.tryAcquire()) {
-            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): A previous Reconfiguration instance is still running. Ignoring requests");
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): A previous Reconfiguration instance is still running. Caching request");
+            reconfigurationRequestedButBlocked = true;
+            metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Cached. Previous reconfiguration is still running");
             return false;
         }
 
@@ -314,6 +348,8 @@ public class Coordinator implements ApplicationContextAware {
         if (System.currentTimeMillis() < previousReconfigurationTimestamp + metaSolverProperties.getReconfigurationBlockingPeriod()) {
             log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Cannot request a new reconfiguration during reconfiguration blocking period");
             enableReconfigurationRunning();
+            reconfigurationRequestedButBlocked = true;
+            metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Cached. In blocking period");
             return false;
         }
         previousReconfigurationTimestamp = System.currentTimeMillis();
@@ -335,18 +371,27 @@ public class Coordinator implements ApplicationContextAware {
                 ? setMetricValuesInCpModel(appId, cpModelPath)
                 : setMetricValuesInCpModel(appId, cpModelPath, metricValues);
         if (!result) {
-            log.debug("MetaSolver.Coordinator: requestReconfigurationStart():" +
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart():" +
                     " Metric values update failed in CP model: {}, aborting scaling process", cpModelPath);
             enableReconfigurationRunning();
+            metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Abort. Error while updating metric values in CP model");
             return false;
         }
         log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Metric values updated in CP model: {}", cpModelPath);
 
         // Send request to start Deployment Process (reusing existing CP model)
         DeploymentProcessRequest notification = prepareDeploymentProcessRequest(appId, cpModelPath, isSimulation);
-        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Sending deployment process request: {}", notification);
-        sendNotification(notification);
-        log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Deployment process request sent: {}", notification);
+        try {
+            log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Sending deployment process request: {}", notification);
+            sendNotification(notification);
+            log.debug("MetaSolver.Coordinator: requestReconfigurationStart(): Deployment process request sent: {}", notification);
+            metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Sent");
+        } catch (Exception e) {
+            log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Deployment process request caused Exception: {}\n", notification, e);
+            enableReconfigurationRunning();
+            metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Abort. Error while sending reconfiguration request to Control Plane");
+            return false;
+        }
         return true;
     }
 
@@ -429,9 +474,6 @@ public class Coordinator implements ApplicationContextAware {
     public void updateSubscriptions(Set<Map> subscriptions) {
         log.info("MetaSolver.Coordinator: updateSubscriptions(): subscriptions={}", subscriptions);
 
-        // get metric value registry
-        MetricValueMonitorBean metricValueMonitorBean = (MetricValueMonitorBean) applicationContext.getBean(MetricValueMonitorBean.class);
-
         // unsubscribe from previous topics
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Unsubscribing from old topics...");
         metricValueMonitorBean.unsubscribe();
@@ -456,6 +498,7 @@ public class Coordinator implements ApplicationContextAware {
             metricValueMonitorBean.subscribe(url, username, password, certificate, topicName, clientId, type);
             log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribed to topic: {}", topicName);
         }
+        metricValueMonitorBean.sendMetasolverEvent("updateSubscriptions", "Subscriptions updated");
         log.info("MetaSolver.Coordinator: updateSubscriptions(): Subscribing to current topics... ok");
     }
 
@@ -533,11 +576,10 @@ public class Coordinator implements ApplicationContextAware {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("Wrong application Id: %s", applicationId));
         } else {
-            MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-            Set<String> metricNames = monitor.getMetricValuesRegistry().getMvvMetricNames();
+            Set<String> metricNames = metricValueMonitorBean.getMetricValuesRegistry().getMvvMetricNames();
             for (KeyValuePair nameValuePair : metricValues) {
                 if (metricNames.contains(nameValuePair.getKey())) {
-                    monitor.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
+                    metricValueMonitorBean.setMetricValueInRegistry(nameValuePair.getKey(), nameValuePair.getValue());
                 } else {
                     log.warn("Received invalid metric name: {}", nameValuePair.getKey());
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -560,8 +602,7 @@ public class Coordinator implements ApplicationContextAware {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     String.format("Wrong application Id: %s", applicationId));
         } else {
-            MetricValueMonitorBean monitor = applicationContext.getBean(MetricValueMonitorBean.class);
-            metricNames = new ArrayList<>(monitor.getMetricValuesRegistry().getMvvMetricNames());
+            metricNames = new ArrayList<>(metricValueMonitorBean.getMetricValuesRegistry().getMvvMetricNames());
             if (metricNames.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No metrics defined or net yet received");
             }
