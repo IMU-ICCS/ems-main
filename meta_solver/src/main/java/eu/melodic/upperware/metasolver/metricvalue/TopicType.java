@@ -9,5 +9,5 @@
 package eu.melodic.upperware.metasolver.metricvalue;
 
 public enum TopicType {
-    MVV, SCALE, UNKNOWN, DEBUG_EVENT
+    MVV, SCALE, UNKNOWN, DEBUG_EVENT, METASOLVER_EVENT
 }

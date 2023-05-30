@@ -12,11 +12,13 @@ import eu.melodic.upperware.metasolver.Coordinator;
 import eu.melodic.upperware.metasolver.properties.MetaSolverProperties;
 import eu.melodic.upperware.metasolver.util.PredictionHelper;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.command.ActiveMQMapMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
@@ -39,6 +41,7 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
     private MetaSolverProperties properties;
     private Coordinator coordinator;
     private PredictionHelper predictionHelper;
+    private MessageProducer metasolverEventProducer = null;
     private MessageProducer debugEventProducer = null;
 
     private final HashMap<String, ConnectionConf> connectionCache = new HashMap<>();
@@ -59,11 +62,29 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): configuration={}", properties);
         log.debug("MetaSolver.MetricValueMonitorBean: setApplicationContext(): Broker username: {}", brokerUsername);
 
+        initMetasolverEventTopic();
         initDebugEventTopic();
     }
 
     public MetricValueRegistry<Object> getMetricValuesRegistry() {
         return registry;
+    }
+
+    protected void initMetasolverEventTopic() {
+        MetaSolverProperties.MetasolverEvent cfg = properties.getMetasolverEvents();
+        if (cfg!=null && cfg.isEnabled() && metasolverEventProducer==null) {
+            log.info("MetaSolver.MetricValueMonitorBean: Subscribing to Metasolver Event topic: {}", cfg.getTopicName());
+            try {
+                subscribe(cfg.getUrl(), cfg.getUsername(), cfg.getPassword(), cfg.getCertificate(),
+                        cfg.getTopicName(), cfg.getClientId(), TopicType.METASOLVER_EVENT);
+                Session session = connectionCache.remove(cfg.getUrl()).getSessions().get(0).getSession();
+                Topic topic = session.createTopic(cfg.getTopicName());
+                metasolverEventProducer = session.createProducer(topic);
+                log.info("MetaSolver.MetricValueMonitorBean: Subscribed to Metasolver Event topic: {}", cfg.getTopicName());
+            } catch (Exception e) {
+                log.error("MetaSolver.MetricValueMonitorBean: EXCEPTION while subscribing to Metasolver Event topic: {}. Exception: ", cfg.getTopicName(), e);
+            }
+        }
     }
 
     protected void initDebugEventTopic() {
@@ -288,13 +309,26 @@ public class MetricValueMonitorBean implements ApplicationContextAware {
         }
     }
 
-    public void sendDebugEvent(String topicName, Map<String, String> metricValues) throws JMSException {
+    public void sendMetasolverEvent(@NonNull String eventType, Object description) {
+        try {
+            initMetasolverEventTopic();
+
+            ActiveMQMapMessage message = new ActiveMQMapMessage();
+            message.setString("eventType", eventType);
+            message.setString("description", description!=null ? description.toString() : null);
+
+            if (metasolverEventProducer == null)
+                log.warn("MetaSolver.MetricValueMonitorBean.sendMetasolverEvent: Metasolver Event producer has not been initialized");
+            else
+                metasolverEventProducer.send(message);
+        } catch (JMSException e) {
+            log.warn("MetaSolver.MetricValueMonitorBean.sendMetasolverEvent: Exception while sending Metasolver Event: ", e);
+        }
+    }
+
+    public void sendDebugEvent(Map<String, String> metricValues) throws JMSException {
         initDebugEventTopic();
 
-        /*ActiveMQMapMessage message = new ActiveMQMapMessage();
-        message.setObject("metricValues", metricValues);
-        message.setLong("timestamp", System.currentTimeMillis());
-        */
         Map<String,Object> map = new HashMap<>();
         map.put("metricValues", metricValues);
         map.put("timestamp", System.currentTimeMillis());
