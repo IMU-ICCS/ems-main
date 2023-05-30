@@ -75,6 +75,7 @@ public class Coordinator implements ApplicationContextAware {
     private final Semaphore reconfigurationRunning = new Semaphore(1);
     private ScheduledFuture<?> reconfigurationRunningTimeoutFuture;
     private boolean reconfigurationRequestedButBlocked;
+    private boolean reconfigurationRequestedButBlocked_Simulation;
 
     @Autowired
     private TaskScheduler taskScheduler;
@@ -112,7 +113,7 @@ public class Coordinator implements ApplicationContextAware {
                 reconfigurationRequestedButBlocked = false;
                 try {
                     log.info("MetaSolver.Coordinator: Reconfiguration requested during previous reconfiguration execution or blocking period. Requesting now...");
-                    requestReconfigurationStart(true);
+                    requestReconfigurationStart(reconfigurationRequestedButBlocked_Simulation);
                 } catch (ConcurrentAccessException e) {
                     log.warn("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms", checkRate);
                     log.debug("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms.\n", checkRate, e);
@@ -340,6 +341,7 @@ public class Coordinator implements ApplicationContextAware {
         if (metaSolverProperties.isPreventConcurrentReconfigurations() && ! reconfigurationRunning.tryAcquire()) {
             log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): A previous Reconfiguration instance is still running. Caching request");
             reconfigurationRequestedButBlocked = true;
+            reconfigurationRequestedButBlocked_Simulation = isSimulation;
             metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Cached. Previous reconfiguration is still running");
             return false;
         }
@@ -349,6 +351,7 @@ public class Coordinator implements ApplicationContextAware {
             log.warn("MetaSolver.Coordinator: requestReconfigurationStart(): Cannot request a new reconfiguration during reconfiguration blocking period");
             enableReconfigurationRunning();
             reconfigurationRequestedButBlocked = true;
+            reconfigurationRequestedButBlocked_Simulation = isSimulation;
             metricValueMonitorBean.sendMetasolverEvent("requestReconfigurationStart", "Cached. In blocking period");
             return false;
         }
