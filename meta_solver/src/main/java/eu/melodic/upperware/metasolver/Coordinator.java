@@ -112,7 +112,7 @@ public class Coordinator implements ApplicationContextAware {
                 reconfigurationRequestedButBlocked = false;
                 try {
                     log.info("MetaSolver.Coordinator: Reconfiguration requested during previous reconfiguration execution or blocking period. Requesting now...");
-                    requestReconfigurationStart(true);
+                    requestReconfigurationStart(false);
                 } catch (ConcurrentAccessException e) {
                     log.warn("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms", checkRate);
                     log.debug("MetaSolver.Coordinator: ConcurrentAccessException while requesting reconfiguration. Will try in {}ms.\n", checkRate, e);
