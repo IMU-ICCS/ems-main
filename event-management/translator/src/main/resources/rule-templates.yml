@@ -17,6 +17,9 @@ translator.generator:
       __ANY__:
         - |
           OUTPUT ALL EVERY [(${period})] [(${unit})]
+      AGG:
+        - |
+          OUTPUT SNAPSHOT EVERY [(${period})] [(${unit})]
     # Binary-Event-Pattern templates
     BEP-AND:
       GLOBAL:
