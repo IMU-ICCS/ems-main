@@ -59,7 +59,10 @@ public class MetaSolverProperties {
     private long reconfigurationBlockingPeriod = 10*60*1000L;       // reconfiguration cool down period
     private boolean preventConcurrentReconfigurations = true;
     private long preventConcurrentReconfigurationsTimeout = 2*60*1000L;
+    private boolean cacheReconfigurationRequestIfBlocked = true;
+    private long cachedReconfigurationRequestCheckRate = 1000L;
 
+    private MetasolverEvent metasolverEvents = new MetasolverEvent();
     private DebugEvent debugEvents = new DebugEvent();
 
     public enum OperationMode {ACTUAL_AND_PREDICTED, ACTUAL_ONLY, PREDICTED_ONLY}
@@ -102,5 +105,10 @@ public class MetaSolverProperties {
         @ToString.Exclude
         private String certificate;
         private String clientId;
+    }
+
+    @Data
+    public static class MetasolverEvent extends DebugEvent {
+        private String topicName = "metasolver_events";
     }
 }

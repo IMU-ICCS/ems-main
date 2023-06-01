@@ -30,6 +30,7 @@ import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.event.util.StrUtil;
 import eu.melodic.models.interfaces.ems.*;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -889,10 +890,8 @@ public class ModelAnalyzer {
                 log.trace("  _decomposeMetricContext(): Adding a new Metric Variable for LOAD METRIC topic: context-name={}", context.getName());
                 String newMvName =
                         String.format(properties.getLoadMetricVariableFormatter(), metric.getName());
-                MetricVariable newMv = new MetricVariableImpl() {};
-                newMv.setName(newMvName);
+                LoadMetricVariableImpl newMv = new LoadMetricVariableImpl(newMvName, context);
                 newMv.setMetricTemplate(metric.getMetricTemplate());
-                newMv.setFormula(metric.getName());
                 log.debug("  _decomposeMetricContext(): New LOAD Metric Variable: {}", newMv.getName());
 
                 _TC.addElementToNamePair(newMv, newMvName);
@@ -1611,6 +1610,17 @@ public class ModelAnalyzer {
 
             // recursively process ancestors
             _inferAncestorGroupings(_TC, parent);
+        }
+    }
+
+    @RequiredArgsConstructor
+    public static class LoadMetricVariableImpl extends MetricVariableImpl {
+        @Getter
+        private final MetricContext metricContext;
+
+        public LoadMetricVariableImpl(String name, MetricContext context) {
+            this(context);
+            setName(name);
         }
     }
 }

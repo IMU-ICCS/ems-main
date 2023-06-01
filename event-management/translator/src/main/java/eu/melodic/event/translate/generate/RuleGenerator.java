@@ -28,6 +28,7 @@ import camel.scalability.UnaryEventPattern;
 import camel.type.StringValue;
 import eu.melodic.event.brokercep.cep.MathUtil;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.analyze.ModelAnalyzer;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.event.translate.properties.RuleTemplateProperties;
@@ -812,6 +813,23 @@ public class RuleGenerator {
                 log.warn("RuleGenerator.generateRules():      Found a Raw-Metric element: node={}, elem-name={}", node, elemName);
                 providesTopic = false;
                 // Nothing to do here
+            } else if (elem instanceof ModelAnalyzer.LoadMetricVariableImpl) {
+                log.warn("RuleGenerator.generateRules():      Found a LOAD Metric-Variable element: node={}, elem-name={}", node, elemName);
+                MetricVariable mvar = (ModelAnalyzer.LoadMetricVariableImpl) elem;
+                Component comp = mvar.getComponent();
+                String compName = comp != null ? comp.getName() : null;
+
+                MetricContext loadMetricContext = mvar.getMetricContext();
+                String loadMetricContextName = loadMetricContext.getName();
+
+                log.warn("RuleGenerator.generateRules():      LOAD Metric-Variable: node={}, elem-name={}, component={}, metric-context={}",
+                        node, elemName, compName, loadMetricContextName);
+
+                // Write rule for LOAD Metric Variable
+                Context context = new Context();
+                context.setVariable("context", loadMetricContextName);
+                _generateRule(_TC, "LOAD-VAR", grouping, elem, context);
+
             } else if (elem instanceof camel.metric.MetricVariable) {
                 log.warn("RuleGenerator.generateRules():      Found a Metric-Variable element: node={}, elem-name={}", node, elemName);
                 MetricVariable mvar = (MetricVariable) elem;

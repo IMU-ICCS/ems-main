@@ -164,6 +164,12 @@ translator.generator:
                  current_timestamp AS timestamp [/] [/]
           FROM [# th:each="ctx,iterStat : ${DOLLAR}{contexts}" th:text="!${DOLLAR}{iterStat.last} ? ${DOLLAR}{ctx}+' AS '+${DOLLAR}{ctx} + ', ' : ${DOLLAR}{ctx}+' AS '+${DOLLAR}{ctx}"] [/]
           
+    LOAD-VAR:
+      __ANY__:
+        - |
+          /* LOAD-VAR-any */ /*INSERT INTO [(${outputStream})]*/
+          SELECT * FROM [(${context})]
+
     # Optimisation-Requirement templates
     OPT-REQ-CTX:
       __ANY__:

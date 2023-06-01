@@ -365,11 +365,14 @@ brokercep:
       className: 'eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor'
       params:
         - '#SourceAddressMessageUpdateInterceptor'
+        - '#LogMessageUpdateInterceptor'
         - '#MessageForwarderInterceptor'
 
   message-interceptors-specs:
     SourceAddressMessageUpdateInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
+    LogMessageUpdateInterceptor:
+      className: eu.melodic.event.brokercep.broker.interceptor.LogMessageUpdateInterceptor
     MessageForwarderInterceptor:
       className: eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
 
@@ -394,6 +397,14 @@ brokercep:
   # Event forward settings
   #maxEventForwardRetries: -1
   #maxEventForwardDuration: -1
+
+  # Event recorder settings
+  event-recorder:
+    enabled: true
+    #format: JSON
+    file: ${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.%S
+    #filter-mode: ALL | REGISTERED (default) | ALLOWED
+    #allowed-destinations:
 
 
 ################################################################################

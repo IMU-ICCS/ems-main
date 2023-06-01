@@ -351,9 +351,10 @@ brokercep.broker-populate-jmsx-user-id = true
 # Message interceptors
 brokercep.message-interceptors[0].destination = >
 brokercep.message-interceptors[0].className = eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor
-brokercep.message-interceptors[0].params = #SourceAddressMessageUpdateInterceptor, #MessageForwarderInterceptor
+brokercep.message-interceptors[0].params = #SourceAddressMessageUpdateInterceptor, #LogMessageUpdateInterceptor, #MessageForwarderInterceptor
 
 brokercep.message-interceptors-specs.SourceAddressMessageUpdateInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
+brokercep.message-interceptors-specs.LogMessageUpdateInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.LogMessageUpdateInterceptor
 brokercep.message-interceptors-specs.MessageForwarderInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
 
 # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
@@ -374,6 +375,13 @@ brokercep.usage.memory.jvm-heap-percentage = 20
 # Event forward settings
 #brokercep.maxEventForwardRetries: -1
 #brokercep.maxEventForwardDuration: -1
+
+# Event recorder settings
+event-recorder.enabled=true
+#event-recorder.format=JSON
+event-recorder.file=${LOGS_DIR:${MELODIC_CONFIG_DIR}/../logs}/events-%T.%S
+#event-recorder.filterMode: ALL | REGISTERED (default) | ALLOWED
+#event-recorder.allowed-destinations:
 
 
 ################################################################################

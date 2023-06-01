@@ -21,9 +21,13 @@ import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.*;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -33,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BrokerCepConsumer implements MessageListener, InitializingBean {
+public class BrokerCepConsumer implements MessageListener, InitializingBean, ApplicationListener<ContextClosedEvent> {
     private final static AtomicLong eventCounter = new AtomicLong(0);
     private final static AtomicLong textEventCounter = new AtomicLong(0);
     private final static AtomicLong objectEventCounter = new AtomicLong(0);
@@ -48,6 +52,9 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     private Connection connection;
     private Session session;
     private final Map<String,MessageConsumer> addedDestinations = new HashMap<>();
+
+    private final TaskScheduler scheduler;
+    private boolean shuttingDown;
 
     @Override
     public void afterPropertiesSet() {
@@ -71,8 +78,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
                     ? connectionFactory.createConnection(brokerConfig.getBrokerLocalAdminUsername(), brokerConfig.getBrokerLocalAdminPassword())
                     : connectionFactory.createConnection();
             connection.setExceptionListener(e -> {
-                log.warn("BrokerCepConsumer: Connection exception listener: Exception caught: ", e);
-                initialize();
+                if (!shuttingDown) {
+                    log.warn("BrokerCepConsumer: Connection exception listener: Exception caught: ", e);
+                    scheduler.schedule(this::initialize, Instant.now());
+                }
             });
             connection.start();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -80,6 +89,12 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
         } catch (Exception ex) {
             log.error("BrokerCepConsumer.initialize(): EXCEPTION: ", ex);
         }
+    }
+
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        log.info("BrokerCepConsumer is shutting down");
+        shuttingDown = true;
     }
 
     private void closeConnection() {
@@ -161,6 +176,11 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean {
     public void onMessage(Message message) {
         // Log message
         logMessage(message);
+
+        // Record message
+
+        if (brokerConfig.getEventRecorder()!=null)
+            brokerConfig.getEventRecorder().recordRegisteredEvent(message);
 
         // Handle message
         try {

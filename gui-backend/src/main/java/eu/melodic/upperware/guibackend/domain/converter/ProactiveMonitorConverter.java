@@ -28,7 +28,7 @@ public class ProactiveMonitorConverter implements GenericConverter<EmsDeployment
                 .targetName(external.getTargetName())
                 .targetOs(OperatingSystemFamily.valueOf(external.getTargetNodeCandidate().getImage().getOperatingSystem().getOperatingSystemFamily().name()))
                 .targetProvider(EmsDeploymentTargetProvider.valueOf(external.getTargetProvider().name()))
-                .targetType(EmsDeploymentTargetType.valueOf(external.getTargetType().name()))
+                .targetType(EmsDeploymentTargetType.valueOf(external.getTargetType().name().toLowerCase()))
                 .build();
     }
 

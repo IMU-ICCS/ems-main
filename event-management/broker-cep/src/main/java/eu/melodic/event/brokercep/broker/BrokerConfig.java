@@ -10,9 +10,11 @@
 package eu.melodic.event.brokercep.broker;
 
 import eu.melodic.event.brokercep.broker.interceptor.AbstractMessageInterceptor;
+import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -35,6 +37,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.jms.ConnectionFactory;
@@ -42,6 +45,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,9 +84,14 @@ public class BrokerConfig implements InitializingBean {
 
     private final HashMap<String, ConnectionFactory> connectionFactoryCache = new HashMap<>();
 
+    private final TaskScheduler scheduler;
+    @Getter
+    private EventRecorder eventRecorder;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         _initializeSecurity();
+        _initializeEventRecorder();
     }
 
     protected synchronized void _initializeSecurity() throws Exception {
@@ -172,6 +181,20 @@ public class BrokerConfig implements InitializingBean {
                 passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
                 properties.getSsl().getKeyEntryName(), this.brokerCert);
         log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
+    }
+
+    private void _initializeEventRecorder() throws IOException {
+        // clear previous event recorder (if any)
+        if (eventRecorder!=null && !eventRecorder.isClosed())
+            eventRecorder.close();
+
+        // create new event recorder
+        if (properties.getEventRecorder()!=null) {
+            if (properties.getEventRecorder().isEnabled()) {
+                eventRecorder = new EventRecorder(properties.getEventRecorder(), scheduler);
+                eventRecorder.startRecording();
+            }
+        }
     }
 
     public String getBrokerName() {

@@ -145,7 +145,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/process")
     public List<CloudiatorProcess> getCloudiatorProcessList() {
-        log.info("GET Cloudiator processes list");
+        log.info("GET processes list");
         log.warn("Fetching processes list is not implemented yet.");
 //        return cloudiatorApi.getProcessList();
         return Collections.emptyList();
@@ -161,7 +161,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/queue")
     public List<Queue> getCloudiatorQueue() {
-        log.info("GET Cloudiator queues list");
+        log.info("GET queues list");
         log.warn("Fetching queues list is not implemented yet.");
 //        return cloudiatorApi.getQueueList();
         return Collections.emptyList();
@@ -169,7 +169,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/job")
     public List<eu.passage.upperware.commons.model.internal.Job> getJobsList() {
-        log.info("GET Cloudiator jobs list");
+        log.info("GET jobs list");
         final List<org.ow2.proactive.sal.model.Job> allJobs = proactiveClientServiceGUI.getAllJobs();
         log.info("ProcessController->getJobsList collected jobs: {}", allJobs);
         final List<eu.passage.upperware.commons.model.internal.Job> domains = ((GenericConverter<org.ow2.proactive.sal.model.Job, eu.passage.upperware.commons.model.internal.Job>) domainConverterFactory.getJobConverter()).createDomains(allJobs);
@@ -179,7 +179,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/schedule")
     public List<Schedule> getSchedulesList() {
-        log.info("GET Cloudiator schedules list");
+        log.info("GET schedules list");
         log.warn("Fetching schedules list is not implemented yet.");
 //        return cloudiatorApi.getScheduleList();
         return Collections.emptyList();
@@ -187,7 +187,7 @@ public class ProcessController {
 
     @GetMapping("/deployment/monitor")
     public List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> getMonitorsList() {
-        log.info("GET Cloudiator monitors list");
+        log.info("GET monitors list");
         final List<EmsDeploymentRequest> allMonitors = proactiveClientServiceGUI.getAllMonitors();
         log.info("ProcessController->getMonitorsList collected monitors: {}", allMonitors);
         final List<eu.passage.upperware.commons.model.internal.EmsDeploymentRequest> domains = ((GenericConverter<EmsDeploymentRequest, eu.passage.upperware.commons.model.internal.EmsDeploymentRequest>) domainConverterFactory.getMonitorConverter()).createDomains(allMonitors);
