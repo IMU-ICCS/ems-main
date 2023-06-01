@@ -512,7 +512,7 @@ public class RuleGenerator {
         }
     }*/
 
-    protected String _generateScheduleClause(Schedule sched) {
+    protected String _generateScheduleClause(Schedule sched, String selector) {
         if (sched == null) return "";
 
         int schedRepetitions = sched.getRepetitions();
@@ -535,7 +535,8 @@ public class RuleGenerator {
             schedUnit = "EVENTS";
         }
 
-        String schedTpl = ruleTemplatesRegistry.getTemplatesFor("SCHEDULE", "__ANY__").stream().findFirst().orElse(null);
+        if (StringUtils.isBlank(selector)) selector = "__ANY__";
+        String schedTpl = ruleTemplatesRegistry.getTemplatesFor("SCHEDULE", selector).stream().findFirst().orElse(null);
         log.trace("RuleGenerator._generateScheduleClause(): schedule-tpl: {}", schedTpl);
         if (schedTpl != null) {
             // Use template engine to process the selected schedule template
@@ -704,11 +705,13 @@ public class RuleGenerator {
                 EList<Metric> components = metric.getComponentMetrics();
                 List<String> componentNames = components.stream().map(item -> item.getName()).collect(Collectors.toList());
 
+                boolean isAggregation = MathUtil.containsAggregator(formula);
+
                 // Get composite metric context's window and schedule parameters
                 Window win = cmc.getWindow();
                 String winClause = _generateWindowClause(win);
                 Schedule sched = cmc.getSchedule();
-                String schedClause = _generateScheduleClause(sched);
+                String schedClause = _generateScheduleClause(sched, isAggregation ? "AGG" : null);
 
                 // Get composite metric context's component or data parameters
                 String[] compAndDataName = getComponentAndDataName(cmc);
@@ -735,7 +738,7 @@ public class RuleGenerator {
                 // Select rule tag, depending on whether an Aggregator function is used in formula
                 // (a) COMP-CTX: when no Aggregator function is used in formula, (b) COMP-CTX-AGG: when an Aggregator function is used in formula
                 String ruleTag = "COMP-CTX";
-                if (MathUtil.containsAggregator(formula)) ruleTag = "AGG-COMP-CTX";
+                if (isAggregation) ruleTag = "AGG-COMP-CTX";
                 log.warn("RuleGenerator.generateRules():      CMC-tag={}", ruleTag);
 
                 // Write rule for CMC or CMC-AGG
@@ -758,7 +761,7 @@ public class RuleGenerator {
 
                 // Get raw metric context's schedule parameters
                 Schedule sched = rmc.getSchedule();
-                String schedClause = _generateScheduleClause(sched);
+                String schedClause = _generateScheduleClause(sched, null);
 
                 // Get raw metric context's component or data parameters
                 String[] compAndDataName = getComponentAndDataName(rmc);
