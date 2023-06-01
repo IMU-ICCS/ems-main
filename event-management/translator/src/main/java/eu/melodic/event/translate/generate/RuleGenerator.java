@@ -333,9 +333,15 @@ public class RuleGenerator {
     }
 
     private void _processWindowProcessingCriteria(StringBuilder sb, WindowProcessing p, EList<WindowCriterion> criteriaList, String openView, String closeView, boolean allowTimestampType) {
+        // Get view from translation overriding sub-feature
+        String view = getEplValueFromSubfeatures(p);
+        if (StringUtils.isNotBlank(view)) {
+            sb.append(view);
+            return;
+        }
+
+        // Default view processing
         if (criteriaList!=null && criteriaList.size()>0) {
-            // Get view from translation overriding sub-feature
-            String view = getEplValueFromSubfeatures(p);
             if (StringUtils.isBlank(view)) {
                 view = openView;
             } else
