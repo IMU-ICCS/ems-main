@@ -50,7 +50,7 @@ public class ProactiveNodeConverter {
 
     private String createNodeInfo(Deployment external) {
         return "CloudID: " +
-                external.getPaCloud().getCloudID() +
+                external.getPaCloud().getCloudId() +
                 " | HardwareProviderId: " +
                 external.getNode().getNodeCandidate().getHardware().getProviderId() +
                 " | ImageProviderId: " +
