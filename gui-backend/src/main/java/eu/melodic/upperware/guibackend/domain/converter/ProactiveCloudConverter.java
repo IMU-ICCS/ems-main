@@ -13,7 +13,7 @@ public class ProactiveCloudConverter implements GenericConverter<PACloud, Cloud>
     @Override
     public Cloud createDomain(@NonNull PACloud external) {
         Map<String, String> props = new HashMap<>();
-        props.put("CloudID", external.getCloudID());
+        props.put("CloudID", external.getCloudId());
 
         return Cloud.builder()
                 .endpoint(external.getEndpoint())
