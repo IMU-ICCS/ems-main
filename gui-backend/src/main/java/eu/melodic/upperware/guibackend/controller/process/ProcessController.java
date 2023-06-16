@@ -88,8 +88,8 @@ public class ProcessController {
         final List<org.ow2.proactive.sal.model.Image> images = proactiveClientServiceGUI.getAllClouds()
                 .stream()
                 .map(paCloud -> {
-                    log.info("ProcessController->getImageList fetching images for cloudID: {}", paCloud.getCloudID());
-                    return proactiveClientServiceGUI.getAllCloudImages(paCloud.getCloudID());
+                    log.info("ProcessController->getImageList fetching images for cloudID: {}", paCloud.getCloudId());
+                    return proactiveClientServiceGUI.getAllCloudImages(paCloud.getCloudId());
                 })
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
