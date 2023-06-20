@@ -9,6 +9,9 @@ import org.ow2.proactive.sal.model.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -108,22 +111,50 @@ public class ProactiveClientServiceGUIImpl implements ProactiveClientServiceGUI 
 
     @Override
     public List<Job> getAllJobs() {
+        Map<String, Deployment> deploymentsById = getAllNodes().stream()
+                .collect(Collectors.toMap(
+                        Deployment::getNodeName,
+                        Function.identity()
+                ));
+        if (deploymentsById.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Job> jobs;
         try {
-            return proactiveClientConnectorService.fetchJobs();
+            jobs = proactiveClientConnectorService.fetchJobs();
         } catch (ProactiveClientException e) {
             log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
+        jobs.forEach(job -> job.getTasks().forEach(task -> {
+            task.setDeployments(task.getDeployments().stream()
+                    .map(deployment -> deploymentsById.get(deployment.getNodeName()))
+                    .collect(Collectors.toList()));
+        }));
+
+        return jobs;
     }
 
     @Override
     public List<Deployment> getAllNodes() {
+        Map<String, PACloud> cloudsById = getAllClouds().stream()
+                .collect(Collectors.toMap(
+                        PACloud::getCloudId,
+                        Function.identity()
+                ));
+        if (cloudsById.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Deployment> deployments;
         try {
-            return proactiveClientConnectorService.fetchNodes();
+            deployments = proactiveClientConnectorService.fetchNodes();
         } catch (ProactiveClientException e) {
             log.error("Error message body: {}", e.getMessage());
             return Collections.emptyList();
         }
+        return deployments.stream()
+                .peek(deployment -> deployment.setPaCloud(cloudsById.get(deployment.getPaCloud().getCloudId())))
+                .collect(Collectors.toList());
     }
 
     @Override
