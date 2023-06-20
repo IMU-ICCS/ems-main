@@ -32,9 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
+import java.security.cert.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -299,11 +297,7 @@ public class KeystoreUtil {
     public String getEntryCertificateAsPEM(String entryName) throws Exception {
         X509Certificate cert = getEntryCertificate(entryName);
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
-        byte[] certBytes = cert.getEncoded();
-        Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
-        String certEncoded = new String(encoder.encode(certBytes));
-        String certPem =
-                BEGIN_CERT + LINE_SEPARATOR + certEncoded + LINE_SEPARATOR + END_CERT;
+        String certPem = exportCertificateAsPEM(cert);
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (PEM):\n{}", certPem);
         return certPem;
     }
@@ -313,6 +307,24 @@ public class KeystoreUtil {
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate:\n{}", cert);
         byte[] certBytes = cert.getEncoded();
         log.trace("KeystoreUtil.getEntryCertificatePEM(): X509 certificate (DER):\n{}", certBytes);
+        return certBytes;
+    }
+
+    public static String exportCertificateAsPEM(X509Certificate cert) throws CertificateEncodingException {
+        log.trace("KeystoreUtil.exportCertificateAsPEM(): X509 certificate:\n{}", cert);
+        byte[] certBytes = cert.getEncoded();
+        Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
+        String certEncoded = new String(encoder.encode(certBytes));
+        String certPem =
+                BEGIN_CERT + LINE_SEPARATOR + certEncoded + LINE_SEPARATOR + END_CERT;
+        log.trace("KeystoreUtil.exportCertificateAsPEM(): X509 certificate (PEM):\n{}", certPem);
+        return certPem;
+    }
+
+    public static byte[] exportCertificateAsDER(X509Certificate cert) throws Exception {
+        log.trace("KeystoreUtil.exportCertificateAsDER(): X509 certificate:\n{}", cert);
+        byte[] certBytes = cert.getEncoded();
+        log.trace("KeystoreUtil.exportCertificateAsDER(): X509 certificate (DER):\n{}", certBytes);
         return certBytes;
     }
 
@@ -412,7 +424,7 @@ public class KeystoreUtil {
     public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil) throws Exception {
         if (passwordUtil==null)
             passwordUtil = PasswordUtil.getInstance();
-        log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate");
+        log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate...");
         log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Key pair and Certificate settings:");
         log.debug("    Keystore file: {}", properties.getKeystoreFile());
         log.debug("    Keystore type: {}", properties.getKeystoreType());
@@ -525,5 +537,6 @@ public class KeystoreUtil {
                     .getEntryCertificateAsPEM(properties.getKeyEntryName());
             log.debug("    Certificate (PEM):\n{}", certPemStr);
         }
+        log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate... done");
     }
 }

@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.7</version>
+        <version>3.1.0</version>
         <relativePath></relativePath>
     </parent>
 
@@ -42,7 +42,7 @@
 
         <!-- Versions for common plugins -->
         <source-plugin.version>2.4</source-plugin.version>
-        <maven-compiler.version>3.8.1</maven-compiler.version>
+        <maven-compiler.version>3.11.0</maven-compiler.version>
         <javadoc-plugin.version>2.9.1</javadoc-plugin.version>
         <maven-assembly-plugin.version>2.5.3</maven-assembly-plugin.version>
 
@@ -193,11 +193,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler.version}</version>
-                    <!--<configuration>
+                    <configuration>
                         <compilerArgs>
-                            <arg>-Xlint:unchecked,-Xlint:deprecation</arg>
+                            <!--<arg>-Xlint:unchecked,-Xlint:deprecation</arg>-->
+                            <arg>-parameters</arg>  <!-- Used to suppress warning "Using deprecated '-debug' fallback for parameter name resolution. Compile the affected code with '-parameters' instead or avoid its introspection"-->
                         </compilerArgs>
-                    </configuration>-->
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

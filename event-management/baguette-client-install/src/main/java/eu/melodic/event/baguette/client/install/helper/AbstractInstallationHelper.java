@@ -33,9 +33,8 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,58 +84,62 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
     }
 
     private void initServerCertificateFile(TomcatWebServer tomcat) throws Exception {
-        //this.isServerSecure = "https".equalsIgnoreCase(tomcat.getTomcat().getConnector().getScheme());
         this.isServerSecure = tomcat.getTomcat().getConnector().getSecure();
         log.debug("AbstractInstallationHelper.initServerCertificate(): Embedded Tomcat is secure: {}", isServerSecure);
 
         if (isServerSecure) {
+            // If HTTPS is enabled
             SSLHostConfig[] sslHostConfigArr = tomcat.getTomcat().getConnector().findSslHostConfigs();
             if (log.isDebugEnabled())
                 log.debug("AbstractInstallationHelper.initServerCertificate(): Tomcat SSL host config array: {}", Arrays.asList(sslHostConfigArr));
             if (sslHostConfigArr.length!=1)
                 throw new RuntimeException("Embedded Tomcat has zero or more than one SSL host configurations: "+sslHostConfigArr.length);
 
+            // Get certificate entries (in key manager/store) for this SSL Hosting configuration
             Set<SSLHostConfigCertificate> sslCertificatesSet = sslHostConfigArr[0].getCertificates();
             log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificates set: {}", sslCertificatesSet);
-            if (sslCertificatesSet.size()!=1)
-                throw new RuntimeException("Embedded Tomcat has zero or more than one SSL certificates: "+sslCertificatesSet.size());
+            int n = 0;
+            String serverCert = null;
+            for (SSLHostConfigCertificate sslCertificate : sslCertificatesSet) {
+                // Get entry alias
+                log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate[{}]: {}", n, sslCertificate);
+                String keyAlias = sslCertificate.getCertificateKeyAlias();
+                log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate[{}]: alias={}", n, keyAlias);
 
-            SSLHostConfigCertificate sslCertificate = sslCertificatesSet.iterator().next();
-            log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate: {}", sslCertificate);
-            String keystoreFile = sslCertificate.getCertificateKeystoreFile();
-            String keystorePassword = sslCertificate.getCertificateKeystorePassword();
-            String keystoreType = sslCertificate.getCertificateKeystoreType();
-            String keyAlias = sslCertificate.getCertificateKeyAlias();
-            log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate: keystore={}, type={}, key-alias={}",
-                    keystoreFile, keystoreType, keyAlias);
+                // Get certificate chain for entry with 'alias'
+                X509Certificate[] chain = sslCertificate.getSslContext().getCertificateChain(keyAlias);
+                StringBuilder sb = new StringBuilder();
+                int m = 0;
+                for (X509Certificate c : chain) {
+                    // Export certificate in PEM format (for each chain item)
+                    String certPem = KeystoreUtil.exportCertificateAsPEM(c);
+                    log.debug("AbstractInstallationHelper.initServerCertificate(): SSL certificate[{}]: {}: \n{}", n, m, certPem);
+                    // Append PEM certificate to 'sb'
+                    sb.append(certPem).append(System.getProperty("line.separator"));
+                    m++;
+                }
+                // The first entry is used as the server certificate
+                if (serverCert==null)
+                    serverCert = sb.toString();
 
-            if (StringUtils.startsWith(keystoreFile, "file:"))
-                keystoreFile = StringUtils.substringAfter(keystoreFile, "file:");
-            log.debug("AbstractInstallationHelper.initServerCertificate(): Tomcat SSL host config: keystore={}, type={}, key-alias={}",
-                    keystoreFile, keystoreType, keyAlias);
+                n++;
+            }
+            this.serverCert = serverCert;
+            log.debug("AbstractInstallationHelper.initServerCertificate(): Server certificate:\n{}", serverCert);
 
+            // Write server certificate to PEM file (server.pem)
             String certFileName = properties.getServerCertFileAtServer();
-            if (StringUtils.isNotEmpty(certFileName)) {
-                log.debug("AbstractInstallationHelper.initServerCertificate(): Exporting server PEM certificate to file: {}", certFileName);
-                KeystoreUtil
-                        .getKeystore(keystoreFile, keystoreType, keystorePassword)
-                        .passwordUtil(passwordUtil)
-                        .exportCertToFile(keyAlias, certFileName);
-                log.debug("AbstractInstallationHelper.initServerCertificate(): Server PEM certificate exported to file: {}", certFileName);
-                log.info("Server PEM certificate exported to file: {}", certFileName);
-
+            if (this.serverCert!=null && StringUtils.isNotEmpty(certFileName)) {
                 File certFile = new File(certFileName);
+                Files.writeString(certFile.toPath(), this.serverCert, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
                 if (! certFile.exists())
                     throw new RuntimeException("Server PEM certificate file not found: "+certFile);
-                this.serverCert = new String(Files.readAllBytes(Paths.get(certFile.getAbsolutePath())));
-            } else {
-                this.serverCert = KeystoreUtil
-                        .getKeystore(keystoreFile, keystoreType, keystorePassword)
-                        .passwordUtil(passwordUtil)
-                        .getEntryCertificateAsPEM(keyAlias);
+                log.debug("AbstractInstallationHelper.initServerCertificate(): Server PEM certificate stored in file: {}", certFile);
+                log.info("Server PEM certificate stored in file: {}", certFile);
             }
 
         } else {
+            // If HTTPS is disabled
             if (StringUtils.isNotEmpty(properties.getServerCertFileAtServer())) {
                 File certFile = new File(properties.getServerCertFileAtServer());
                 if (certFile.exists()) {
@@ -144,6 +147,7 @@ public abstract class AbstractInstallationHelper implements InitializingBean, Ap
                     if (!certFile.delete())
                         throw new RuntimeException("Could not remove previous server certificate file: " + certFile);
                 }
+                this.serverCert = null;
             }
         }
     }
