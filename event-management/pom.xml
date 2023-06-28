@@ -7,8 +7,8 @@
   ~ https://www.mozilla.org/en-US/MPL/2.0/
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -18,13 +18,16 @@
         <relativePath></relativePath>
     </parent>
 
+    <name>Event Management System</name>
+
     <groupId>eu.melodic.event</groupId>
     <artifactId>event-management</artifactId>
-    <version>6.0.0-SNAPSHOT</version>
-    <name>Event Management System</name>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <properties>
+        <revision>6.0.0-SNAPSHOT</revision>
+
         <!-- Source encoding -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Java version -->
@@ -32,8 +35,8 @@
         <maven.compiler.release>17</maven.compiler.release>
 
         <!-- Melodic component versions -->
-        <melodic.version>6.0.0-SNAPSHOT</melodic.version>
-        <!--XXX:SPLIT: <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>-->
+        <melodic.version>${revision}</melodic.version>
+        <!--XXX:SPLIT: <interfaces.version>${revision}</interfaces.version>-->
 
         <camel.version>6.0.0-SNAPSHOT</camel.version>
         <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
@@ -159,6 +162,38 @@
                         </fileset>
                     </filesets>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <configuration>
+                </configuration>
+                <executions>
+                    <!-- enable flattening -->
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <!-- ensure proper cleanup -->
+                    <execution>
+                        <id>flatten-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <!--<execution>
+                        <id>flatten-clean-2</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>-->
+                </executions>
             </plugin>
         </plugins>
 

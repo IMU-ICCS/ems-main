@@ -7,3 +7,4 @@ tcnative*
 ems.log
 server.pem
 .dev-*
+.flattened-pom.xml
