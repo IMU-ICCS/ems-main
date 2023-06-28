@@ -10,8 +10,8 @@
 package eu.melodic.event.control.webconf;
 
 import eu.melodic.event.control.properties.ControlServiceProperties;
-import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterceptor;
-import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
+//XXX:SPLIT: import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterceptor;
+//XXX:SPLIT: import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -45,7 +45,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
     public final static String[] DEFAULT_PATHS_EXCLUDED = { };
 
-    private final AuthorizationServiceClientProperties authProperties;
+//XXX:SPLIT:    private final AuthorizationServiceClientProperties authProperties;
     private final ControlServiceProperties controlServiceProperties;
     private final ApplicationContext applicationContext;
 
@@ -55,7 +55,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         boolean authEnabled = controlServiceProperties.getAuthorization().isEnabled();
         String[] authPathsProtected = controlServiceProperties.getAuthorization().getPathsProtected().toArray(new String[0]);
         String[] authPathsExcluded = controlServiceProperties.getAuthorization().getPathsExcluded().toArray(new String[0]);
-        if (!authEnabled || authProperties.getPdp().isDisabled()) {
+        if (!authEnabled /*XXX:SPLIT: || authProperties.getPdp().isDisabled()*/) {
             log.warn("WebMvcConfig.addInterceptors(): Authorization check is disabled");
         } else {
             log.info("WebMvcConfig.addInterceptors(): Authorization check is enabled");
@@ -65,12 +65,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
             log.warn("WebMvcConfig.addInterceptors(): Authorization check: paths-protected={}, paths-excluded={}",
                     authPathsProtected, authPathsExcluded);
 
+            /*XXX:SPLIT:
             log.debug("WebMvcConfig.addInterceptors(): Authorization properties: {}", authProperties);
             registry
                     .addInterceptor(AuthorizationServiceTomcatInterceptor.getSingleton(authProperties))
                     .addPathPatterns(authPathsProtected)
                     .excludePathPatterns(authPathsExcluded)
-            ;
+            ;*/
             log.debug("WebMvcConfig.addInterceptors(): Registered Authorization interceptor");
         }
     }

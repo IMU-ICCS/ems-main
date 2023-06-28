@@ -26,7 +26,7 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+        <!--XXX:SPLIT: <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
             <version>${interfaces.version}</version>
@@ -36,7 +36,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>

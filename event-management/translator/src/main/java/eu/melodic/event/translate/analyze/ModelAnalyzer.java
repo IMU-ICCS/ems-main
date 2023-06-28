@@ -24,12 +24,12 @@ import camel.type.*;
 import camel.unit.Unit;
 import com.google.gson.Gson;
 import eu.melodic.event.brokercep.cep.MathUtil;
+import eu.melodic.event.models.interfaces.*;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadata;
 import eu.melodic.event.translate.model.tools.metadata.CamelMetadataTool;
 import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
 import eu.melodic.event.util.StrUtil;
-import eu.melodic.models.interfaces.ems.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,8 +40,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -157,7 +157,6 @@ public class ModelAnalyzer {
                     .filter(met -> MetricVariable.class.isAssignableFrom(met.getClass()))
                     .map(met -> (MetricVariable) met)
                     .filter(MetricVariable::isCurrentConfiguration)
-                    // ...also filter using method 'isFromVariable()' from melodic-commons
                     .filter(mv -> CamelMetadataTool.isFromVariable((MetricVariableImpl) mv))
                     .collect(Collectors.toList());
             log.info("  Extracting Metric Variables from Metric Type model {}... {}", mm.getName(), getListElementNames(variables));
@@ -1067,7 +1066,7 @@ public class ModelAnalyzer {
         }
 
         // Get push or pull sensor (configured)
-        eu.melodic.models.interfaces.ems.Sensor monitorSensor;
+        eu.melodic.event.models.interfaces.Sensor monitorSensor;
         monitorSensor = _createPushOrPullSensor(sensor);
 
         // Get monitor component
@@ -1159,7 +1158,7 @@ public class ModelAnalyzer {
         return results;
     }
 
-    private eu.melodic.models.interfaces.ems.Sensor _createPushOrPullSensor(Sensor sensor) {
+    private eu.melodic.event.models.interfaces.Sensor _createPushOrPullSensor(Sensor sensor) {
         log.info("    _createPushOrPullSensor(): BEGIN: sensor={} : {}", sensor.getName(), sensor);
 
         Map<String, String> sensorConfigMap;
@@ -1252,14 +1251,14 @@ public class ModelAnalyzer {
         }
 
         // Create PushSensor or PullSensor
-        eu.melodic.models.interfaces.ems.Sensor pushOrPullSensor;
+        eu.melodic.event.models.interfaces.Sensor pushOrPullSensor;
         if (sensor.isIsPush()) {
             log.info("    _createPushOrPullSensor(): PUSH sensor: sensor={}", sensor.getName());
             PushSensor pushSensor = new PushSensorImpl();
             pushSensor.setPort(port);
 //XXX: BUG: It generates the 'configuration' field as a sibling of 'port'; not under the 'additionalProperties'
 //            pushSensor.setAdditionalProperties(Collections.singletonMap("configuration", sensorConfig));
-            pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pushSensor);
+            pushOrPullSensor = new eu.melodic.event.models.interfaces.Sensor(pushSensor);
             log.info("    _createPushOrPullSensor(): sensor={} :: port={}, additional-properties={}, PushSensor: {}",
                     sensor.getName(), port, pushSensor.getAdditionalProperties(), pushSensor);
         } else {
@@ -1268,7 +1267,7 @@ public class ModelAnalyzer {
             pullSensor.setClassName(className);
             pullSensor.setConfiguration(sensorConfig);
             pullSensor.setInterval(interval);
-            pushOrPullSensor = new eu.melodic.models.interfaces.ems.Sensor(pullSensor);
+            pushOrPullSensor = new eu.melodic.event.models.interfaces.Sensor(pullSensor);
             log.info("    _createPushOrPullSensor(): sensor={} :: class-name={}, PullSensor: {}",
                     sensor.getName(), className, pullSensor);
         }

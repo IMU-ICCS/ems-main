@@ -12,8 +12,8 @@ import camel.constraint.ConstraintPackage;
 import camel.type.TypePackage;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
-import eu.paasage.upperware.metamodel.types.TypesPackage;
+/*XXX:SPLIT: import eu.paasage.upperware.metamodel.cp.CpPackage;
+import eu.paasage.upperware.metamodel.types.TypesPackage;*/
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -63,8 +63,8 @@ public class CdoCpModelUtil {
     static {
         log.debug("Initialising CP model packages...");
 
-        TypesPackage.eINSTANCE.eClass();
-        CpPackage.eINSTANCE.eClass();
+//XXX:SPLIT:        TypesPackage.eINSTANCE.eClass();
+//XXX:SPLIT:        CpPackage.eINSTANCE.eClass();
         TypePackage.eINSTANCE.eClass();
         ConstraintPackage.eINSTANCE.eClass();
 
@@ -72,7 +72,7 @@ public class CdoCpModelUtil {
         Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("*", new XMIResourceFactoryImpl());
 
         registeredPackages = Arrays.asList(
-                CpPackage.eINSTANCE, ConstraintPackage.eINSTANCE);
+                /*XXX:SPLIT: CpPackage.eINSTANCE,*/ ConstraintPackage.eINSTANCE);
         log.debug("Initialising CP model packages... ok");
     }
 

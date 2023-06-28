@@ -34,11 +34,11 @@
 
         <!-- Melodic component versions -->
         <melodic.version>6.0.0-SNAPSHOT</melodic.version>
-        <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>
+        <!--XXX:SPLIT: <interfaces.version>6.0.0-SNAPSHOT</interfaces.version>-->
 
         <camel.version>6.0.0-SNAPSHOT</camel.version>
         <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
-        <authorization.version>4.5.0-SNAPSHOT</authorization.version>
+        <!--XXX:SPLIT: <authorization.version>4.5.0-SNAPSHOT</authorization.version>-->
 
         <!-- Versions for common plugins -->
         <source-plugin.version>2.4</source-plugin.version>
@@ -88,7 +88,7 @@
                 <version>${lombok.version}</version>
             </dependency>
 
-            <dependency>
+            <!--XXX:SPLIT: <dependency>
                 <groupId>eu.melodic</groupId>
                 <artifactId>interfaces</artifactId>
                 <version>${interfaces.version}</version>
@@ -98,22 +98,12 @@
                         <artifactId>jaxrs-code-generator-7bulls</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.paasage</groupId>
-                <artifactId>melodic-commons</artifactId>
-                <version>${melodic.version}</version>
-            </dependency>
-            <dependency>
+            </dependency>-->
+            <!--XXX:SPLIT: <dependency>
                 <groupId>org.ow2.paasage</groupId>
                 <artifactId>upperware-metamodel</artifactId>
                 <version>${melodic.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.paasage</groupId>
-                <artifactId>jwt-commons</artifactId>
-                <version>${melodic.version}</version>
-            </dependency>
+            </dependency>-->
             <dependency>
                 <groupId>org.ow2.paasage.mddb.cdo</groupId>
                 <artifactId>client</artifactId>
@@ -293,13 +283,6 @@
     </scm>
 
     <profiles>
-        <profile>
-            <id>with-ems-extra</id>
-            <modules>
-                <module>extra</module>
-            </modules>
-        </profile>
-
         <profile>
             <id>build-web-admin</id>
             <activation>

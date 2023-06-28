@@ -54,22 +54,16 @@
 
     <dependencies>
         <!-- Melodic dependencies -->
-        <dependency>
+        <!--XXX:SPLIT: <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <!--<version>${interfaces.version}</version>-->
+            &lt;!&ndash;<version>${interfaces.version}</version>&ndash;&gt;
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- XXX: NOTE: Removed because it uses dependencies incompatible to SB 3, and also uses old/weak JWT algorithms
-        <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>jwt-commons</artifactId>
-            <version>${melodic.version}</version>
         </dependency>-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -87,7 +81,7 @@
             <version>${jjwt.version}</version>
         </dependency>
 
-        <dependency>
+        <!--XXX:SPLIT: <dependency>
             <groupId>eu.melodic.security.authorization</groupId>
             <artifactId>authorization-service-client</artifactId>
             <version>${authorization.version}</version>
@@ -101,7 +95,7 @@
                     <artifactId>jjwt</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
 
         <!-- Dependencies on other EMS modules -->
         <dependency>

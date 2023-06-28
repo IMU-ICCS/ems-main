@@ -38,12 +38,7 @@
             <classifier>repackaged</classifier>
             <version>${cdo-client.version}</version>
         </dependency>
-        <!--<dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>melodic-commons</artifactId>
-            <version>${melodic.version}</version>
-        </dependency>-->
-        <dependency>
+        <!--XXX:SPLIT: <dependency>
             <groupId>org.ow2.paasage</groupId>
             <artifactId>upperware-metamodel</artifactId>
             <version>${melodic.version}</version>
@@ -53,7 +48,7 @@
                     <artifactId>client</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>camel</groupId>
             <artifactId>camel</artifactId>
@@ -64,17 +59,17 @@
             <artifactId>camel.dsl</artifactId>
             <version>${camel.version}</version>
         </dependency>
-        <dependency>
+        <!--XXX:SPLIT: <dependency>
             <groupId>eu.melodic</groupId>
             <artifactId>interfaces</artifactId>
-            <!--<version>${interfaces.version}</version>-->
+            &lt;!&ndash;<version>${interfaces.version}</version>&ndash;&gt;
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>eu.melodic.event</groupId>
             <artifactId>broker-cep</artifactId>

@@ -17,7 +17,7 @@ import eu.melodic.event.translate.properties.RuleTemplateProperties;
 import eu.paasage.mddb.cdo.client.exp.CDOClientX;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
-import eu.paasage.upperware.metamodel.cp.CpPackage;
+//XXX:SPLIT: import eu.paasage.upperware.metamodel.cp.CpPackage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.cdo.eresource.CDOResource;
@@ -39,7 +39,7 @@ public class CamelToEplTranslatorCdo extends AbstractCamelTranslator {
 
 	private void initCdoClient() {
 		if (cdoClient!=null) return;
-		this.cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE, CpPackage.eINSTANCE));
+		this.cdoClient = new CDOClientXImpl(Arrays.asList(CorePackage.eINSTANCE/*XXX:SPLIT: , CpPackage.eINSTANCE*/));
 		log.debug("CamelToEplTranslatorCdo.initCdoClient():  Initialized cdo-client");
 	}
 

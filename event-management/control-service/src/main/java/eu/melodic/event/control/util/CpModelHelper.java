@@ -12,10 +12,12 @@ package eu.melodic.event.control.util;
 import eu.melodic.event.translate.TranslationContext;
 import eu.paasage.mddb.cdo.client.exp.CDOClientXImpl;
 import eu.paasage.mddb.cdo.client.exp.CDOSessionX;
+/*XXX:SPLIT:
 import eu.paasage.upperware.metamodel.cp.ConstraintProblem;
 import eu.paasage.upperware.metamodel.cp.CpPackage;
 import eu.paasage.upperware.metamodel.cp.Solution;
 import eu.paasage.upperware.metamodel.types.*;
+*/
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -29,10 +31,10 @@ import java.util.*;
 @Slf4j
 public class CpModelHelper {
 
-    private static HashSet<String> LOCKS = new HashSet<>();
+    private final static HashSet<String> LOCKS = new HashSet<>();
     private static int counter = 0;
 
-    private int id;
+    private final int id;
     private CDOClientXImpl cdoClient;
 
     public CpModelHelper() {
@@ -42,7 +44,7 @@ public class CpModelHelper {
 
     private void initCdoClient() {
         if (cdoClient!=null) return;
-        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
+//XXX:SPLIT:        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
     }
 
     public Map<String, Double> getMatchingMetricVariableValues(String cpModelPath, TranslationContext _TC) throws ConcurrentAccessException {
@@ -72,6 +74,7 @@ public class CpModelHelper {
         CDOTransaction transaction = null;
 
         Map<String, Double> results = new HashMap<>();
+        /*XXX:SPLIT:
         try {
             // retrieve CP model (open transaction)
             initCdoClient();
@@ -130,7 +133,7 @@ public class CpModelHelper {
 
             // release resource
             releaseCpModel(cpModelPath, "getMetricVariableValues()");
-        }
+        }*/
 
         // return timestamp
         log.debug("CpModelHelper.getMetricVariableValues(): END: Metric Variable Values: {}", results);
@@ -178,8 +181,8 @@ public class CpModelHelper {
             log.info("CpModelHelper.loadCpModel(): BEGIN: helper-id={}, cp-model-file={}, cdo-path={}", id, pathName, cpModelPath);
 
             final org.eclipse.emf.ecore.resource.ResourceSet rs = new org.eclipse.emf.ecore.resource.impl.ResourceSetImpl();
-            rs.getPackageRegistry().put(TypesPackage.eNS_URI, TypesPackage.eINSTANCE);
-            rs.getPackageRegistry().put(CpPackage.eNS_URI, CpPackage.eINSTANCE);
+//XXX:SPLIT:            rs.getPackageRegistry().put(TypesPackage.eNS_URI, TypesPackage.eINSTANCE);
+//XXX:SPLIT:            rs.getPackageRegistry().put(CpPackage.eNS_URI, CpPackage.eINSTANCE);
             org.eclipse.emf.ecore.resource.Resource res = rs.getResource(org.eclipse.emf.common.util.URI.createFileURI(pathName), true);
             EList<org.eclipse.emf.ecore.EObject> contents = res.getContents();
 

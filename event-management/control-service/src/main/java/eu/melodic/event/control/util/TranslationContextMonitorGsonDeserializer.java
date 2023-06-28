@@ -10,7 +10,7 @@
 package eu.melodic.event.control.util;
 
 import com.google.gson.*;
-import eu.melodic.models.interfaces.ems.*;
+import eu.melodic.event.models.interfaces.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
