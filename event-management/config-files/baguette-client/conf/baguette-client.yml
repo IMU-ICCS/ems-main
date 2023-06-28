@@ -163,7 +163,7 @@ brokercep:
   broker-port: 61617
   broker-protocol: ssl
   #management-connector-port: 1088
-  #bypass-local-broker: true   # Don't use in Upperware
+  #bypass-local-broker: true   # Don't use in EMS server
 
   # Broker connectors
   broker-url:

@@ -301,7 +301,7 @@ CLIENT_URL_PROPERTIES=daemon=true&trace=false&useInactivityMonitor=false&connect
 brokercep.broker-port = 61617
 brokercep.broker-protocol = ssl
 #brokercep.management-connector-port = 1099
-# Don't use in Upperware
+# Don't use in EMS server
 #brokercep.bypass-local-broker = true
 
 # Broker connectors

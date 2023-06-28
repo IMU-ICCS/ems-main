@@ -138,7 +138,7 @@ brokercep.broker-name = broker
 brokercep.broker-port = 61617
 #brokercep.management-connector-port = 1088
 brokercep.broker-protocol = ssl
-# Don't use in Upperware
+# Don't use in EMS server
 #brokercep.bypass-local-broker = true
 
 # Common Broker settings

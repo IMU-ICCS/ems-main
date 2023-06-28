@@ -12,41 +12,6 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <logger name="eu.melodic.upperware.adapter" level="INFO"/>
-    <logger name="eu.melodic.upperware.melodiccachestandalone" level="INFO"/>
-    <logger name="eu.melodic.upperware.activemqtorest" level="INFO"/>
-
-    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
-
-    <logger name="eu.melodic.upperware.zppsolver" level = "INFO"/>
-    <logger name="eu.melodic.upperware.cpsolver" level="INFO"/>
-
-    <!-- choco solver begin -->
-    <logger name="choco" level="WARN"/>
-    <logger name="choco.util" level="INFO"/>
-    <logger name="bench" level="info"/>
-    <logger name="solver" level="info"/>
-    <logger name="fzn" level="info"/>
-    <logger name="explainer" level="info"/>
-    <logger name="configuration" level="info"/>
-    <logger name="tree" level="info"/>
-    <logger name="visualization" level="info"/>
-    <!-- choco solver end -->
-
-    <logger name="eu.melodic.upperware.metasolver" level="INFO"/>
-
-    <!-- from generator -->
-    <logger name="eu.paasage.upperware.profiler" level="INFO"/>
-
-    <logger name="eu.paasage.upperware.security" level="INFO"/>
-    <logger name="eu.melodic.security.authorization" level="INFO"/>
-
-    <logger name="eu.paasage.mddb.cdo.server" level="DEBUG"/>
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type" level="TRACE"/>
-
-    <logger name="eu.paasage.upperware.profiler.generator.service.camel" level="DEBUG"/>
-
     <!-- ems -->
     <logger name="eu.melodic.event" level="INFO"/>
     <logger name="eu.melodic.event.control" level="INFO"/>
@@ -60,11 +25,6 @@
     <logger name="eu.melodic.event.util.NetUtil" level="INFO"/>
     <logger name="com.ulisesbocchio.jasyptspringboot" level="WARN"/>
     <logger name="org.apache.catalina.core.AprLifecycleListener" level="ERROR"/>
-
-    <!-- functionizer testing tool -->
-    <logger name="eu.functionizer.functionizertestingtool" level="DEBUG"/>
-
-    <!-- activeeon proactive -->
-    <logger name="org.activeeon" level="DEBUG"/>
-    <logger name="org.ow2.proactive" level="DEBUG"/>
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
+    <logger name="eu.paasage.mddb.cdo.server" level="DEBUG"/>
 </configuration>
