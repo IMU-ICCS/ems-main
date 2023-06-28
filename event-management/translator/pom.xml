@@ -17,7 +17,7 @@
     </parent>
 
     <artifactId>translator</artifactId>
-    <name>Upperware - EMS - CAMEL-to-EPL translator</name>
+    <name>EMS - CAMEL-to-EPL translator</name>
 
     <properties>
         <!-- Dependencies versions -->

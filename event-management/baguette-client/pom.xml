@@ -17,7 +17,7 @@
 	</parent>
 
 	<artifactId>baguette-client</artifactId>
-	<name>Upperware - EMS - Baguette Client</name>
+	<name>EMS - Baguette Client</name>
 
 	<properties>
 		<atomix.version>3.1.8</atomix.version>

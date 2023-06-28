@@ -17,8 +17,7 @@
     </parent>
 
     <artifactId>broker-client</artifactId>
-    <name>Upperware - EMS - Broker Client library</name>
-    <url>https://gitlab.ow2.org/melodic/melodic-upperware/-/tree/master/event-management/broker-client</url>
+    <name>EMS - Broker Client library</name>
 
     <dependencies>
         <!-- EMS dependencies -->

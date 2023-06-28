@@ -17,7 +17,7 @@
     </parent>
 
     <artifactId>control-service</artifactId>
-    <name>Upperware - EMS - Control Service</name>
+    <name>EMS - Control Service</name>
 
     <properties>
         <hawtio.version>2.17.0</hawtio.version>

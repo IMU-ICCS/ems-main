@@ -17,7 +17,7 @@
 	</parent>
 
 	<artifactId>baguette-server</artifactId>
-	<name>Upperware - EMS - Baguette Server</name>
+	<name>EMS - Baguette Server</name>
 
 	<dependencies>
 		<dependency>

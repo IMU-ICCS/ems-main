@@ -17,7 +17,7 @@
     </parent>
 
     <artifactId>util</artifactId>
-    <name>Upperware - EMS - Utilities</name>
+    <name>EMS - Utilities</name>
 
     <dependencies>
         <!-- Spring-Boot dependencies -->

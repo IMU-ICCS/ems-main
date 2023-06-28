@@ -17,7 +17,7 @@
     </parent>
 
     <artifactId>baguette-client-install</artifactId>
-    <name>Upperware - EMS - Baguette Client install utilities</name>
+    <name>EMS - Baguette Client install utilities</name>
 
     <dependencies>
         <dependency>
