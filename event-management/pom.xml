@@ -36,6 +36,10 @@
 
         <!-- Melodic component versions -->
         <melodic.version>${revision}</melodic.version>
+
+        <!--XXX:SPLIT:  TO BE REMOVED -->
+        <camel.version>6.0.0-SNAPSHOT</camel.version>
+        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
         <!--XXX:SPLIT: <authorization.version>4.5.0-SNAPSHOT</authorization.version>-->
 
         <!-- Versions for common plugins -->

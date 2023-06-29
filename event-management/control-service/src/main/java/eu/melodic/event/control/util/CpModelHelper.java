@@ -23,11 +23,11 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.eclipse.emf.common.util.EList;
-import org.springframework.stereotype.Component;
+//XXX:SPLIT: import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Component
+//XXX:SPLIT: @Component
 @Slf4j
 public class CpModelHelper {
 
@@ -45,6 +45,7 @@ public class CpModelHelper {
     private void initCdoClient() {
         if (cdoClient!=null) return;
 //XXX:SPLIT:        this.cdoClient = new CDOClientXImpl(Collections.singletonList(CpPackage.eINSTANCE));
+        this.cdoClient = new CDOClientXImpl();
     }
 
     public Map<String, Double> getMatchingMetricVariableValues(String cpModelPath, TranslationContext _TC) throws ConcurrentAccessException {

@@ -104,6 +104,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        mvvService.init();
+
         // Run configuration checks and throw exceptions early (before actually using EMS)
         if (properties.isSkipTranslation()) {
             if (StringUtils.isBlank(properties.getTcLoadFile()))
