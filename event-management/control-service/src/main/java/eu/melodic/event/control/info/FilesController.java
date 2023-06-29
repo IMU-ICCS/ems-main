@@ -17,7 +17,6 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -33,9 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.validation.constraints.Null;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -113,6 +110,11 @@ public class FilesController {
         return pathStr;
     }
 
+    private InputStreamResource toStringInputStream(String s) {
+        //return new InputStreamResource(new org.apache.tools.ant.filters.StringInputStream(s));
+        return new InputStreamResource(new ByteArrayInputStream(s.getBytes()));
+    }
+
     @GetMapping("/files/get/{rootId}/**")
     public ResponseEntity<InputStreamResource> getFile(HttpServletRequest request, @PathVariable int rootId, WebRequest webRequest) throws IOException {
         log.debug("getFile(): --- client: {}:{}", request.getRemoteAddr(), request.getRemotePort());
@@ -122,14 +124,14 @@ public class FilesController {
         File file = Paths.get(roots.get(rootId).toString(), pathStr).toFile();
         log.debug("getFile(): --- Effective Path: {}", file);
         if (!file.exists()) {
-            //return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File not exists")));
+            //return ResponseEntity.badRequest().body( toStringInputStream("File not exists") );
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: "+rootId+": "+pathStr);
         }
         if (isFileBlocked(file.toPath())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Blocked extension. Cannot download file: "+rootId+": "+pathStr);
         }
         if (!file.canRead()) {
-            return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File cannot be read")));
+            return ResponseEntity.badRequest().body( toStringInputStream("File cannot be read") );
         }
         if (file.isFile()) {
             HttpHeaders headers = new HttpHeaders();
@@ -157,7 +159,7 @@ public class FilesController {
                     .contentType(mediaType)
                     .body(new InputStreamResource(new FileInputStream(file)));
         }
-        return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("Not a regular file")));
+        return ResponseEntity.badRequest().body( toStringInputStream("Not a regular file") );
     }
 
     @GetMapping("/files/getpath/**")
@@ -187,14 +189,14 @@ public class FilesController {
         File file = Paths.get(pathStr).toFile();
         log.debug("getFileFromPath(): --- Effective Path: {}", file);
         if (!file.exists()) {
-            //return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File not exists")));
+            //return ResponseEntity.badRequest().body( toStringInputStream("File not exists") );
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found: "+pathStr);
         }
         if (isFileBlocked(file.toPath())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Blocked extension. Cannot download file: "+pathStr);
         }
         if (!file.canRead()) {
-            return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("File cannot be read")));
+            return ResponseEntity.badRequest().body( toStringInputStream("File cannot be read") );
         }
         if (file.isFile()) {
             HttpHeaders headers = new HttpHeaders();
@@ -223,7 +225,7 @@ public class FilesController {
                     .contentType(mediaType)
                     .body(new InputStreamResource(Files.newInputStream(file.toPath())));
         }
-        return ResponseEntity.badRequest().body(new InputStreamResource(new StringInputStream("Not a regular file")));
+        return ResponseEntity.badRequest().body( toStringInputStream("Not a regular file") );
     }
 
     private boolean isFileBlocked(Path path) {

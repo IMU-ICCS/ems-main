@@ -32,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.emf.cdo.util.ConcurrentAccessException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -79,7 +78,6 @@ public class ControlServiceController {
     @RequestMapping(value = "/camelModel", method = POST)
     public String newCamelModel(@RequestBody CamelModelRequestImpl request,
                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
     {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", request);
         log.trace("ControlServiceController.newCamelModel()/camelModel: JWT token: {}", jwtToken);
@@ -102,7 +100,6 @@ public class ControlServiceController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newCamelModel(@RequestBody String requestStr,
                                 @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
     {
         log.info("ControlServiceController.newCamelModel(): Received request: {}", requestStr);
         log.trace("ControlServiceController.newCamelModel()/camelModelJson: JWT token: {}", jwtToken);
@@ -127,7 +124,6 @@ public class ControlServiceController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newCpModel(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
     {
         log.info("ControlServiceController.newCpModel(): Received request: {}", requestStr);
         log.trace("ControlServiceController.newCpModel(): JWT token: {}", jwtToken);
@@ -148,7 +144,6 @@ public class ControlServiceController {
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public String setConstants(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
     {
         log.info("ControlServiceController.setConstants(): Received request: {}", requestStr);
         log.trace("ControlServiceController.setConstants(): JWT token: {}", jwtToken);
@@ -170,7 +165,6 @@ public class ControlServiceController {
     @RequestMapping(value = "/monitors", method = POST)
     public HttpEntity<MonitorsDataResponse> getSensors(@RequestBody MonitorsDataRequestImpl request,
                                                        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
-            throws ConcurrentAccessException
     {
         log.info("ControlServiceController.getSensors(): Received request: {}", request);
         log.trace("ControlServiceController.getSensors(): JWT token: {}", jwtToken);

@@ -24,6 +24,7 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
+import eu.melodic.event.control.util.mvv.MetricVariableValuesService;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
@@ -77,6 +78,8 @@ public class ControlServiceCoordinator implements InitializingBean {
     private final NodeRegistry nodeRegistry;
     private final WebClient webClient;
     private final PasswordUtil passwordUtil;
+    private final MetricVariableValuesService mvvService;
+
     @Getter private BrokerCepService brokerCep;
 
     private final AtomicBoolean inUse = new AtomicBoolean();
@@ -351,9 +354,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
                     // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
-                    eu.melodic.event.control.util.CpModelHelper helper = new eu.melodic.event.control.util.CpModelHelper();
-                    /*constants.putAll(helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)));*/
-                    constants = helper.getMatchingMetricVariableValues(cpModelId, _TC);
+                    constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
                     log.info("ControlServiceCoordinator.processNewModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
 
                 } catch (Exception ex) {
@@ -602,9 +603,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
                     // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
                     log.info("ControlServiceCoordinator._processCpModel(): Looking for MVV_CP's: {}", _TC.MVV_CP);
-                    eu.melodic.event.control.util.CpModelHelper helper = new eu.melodic.event.control.util.CpModelHelper();
-                    /*constants.putAll(helper.getMetricVariableValues(cpModelId, new java.util.HashSet<String>(_TC.MVV)));*/
-                    constants = helper.getMatchingMetricVariableValues(cpModelId, _TC);
+                    constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
                     log.info("ControlServiceCoordinator._processCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
 
                 } catch (Exception ex) {
@@ -850,6 +849,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private Object _decomposeConstraint(TranslationContext _tc, DAGNode constraintNode, Map<String, TranslationContext.MetricConstraint> mcMap, Map<String, TranslationContext.LogicalConstraint> lcMap) {
         NamedElement element = constraintNode.getElement();
         String elementName = constraintNode.getElementName();
+        String elementClassName = ((Object)element).getClass().getName();
         if (element instanceof camel.constraint.MetricConstraint) {
             return mcMap.get(elementName);
         } else
@@ -870,7 +870,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             result.put("constraints", list);
             return result;
         } else
-            log.warn("_decomposeConstraint: Unsupported Constraint type: {} {}", constraintNode.getElementName(), element.getClass().getName());
+            log.warn("_decomposeConstraint: Unsupported Constraint type: {} {}", constraintNode.getElementName(), elementClassName);
         return null;
     }
 
