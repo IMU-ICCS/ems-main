@@ -20,6 +20,10 @@
     <name>EMS - CAMEL-to-EPL translator</name>
 
     <properties>
+        <!-- CAMEL and CDO versions -->
+        <camel.version>6.0.0-SNAPSHOT</camel.version>
+        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
+
         <!-- Dependencies versions -->
         <jgrapht.version>1.4.0</jgrapht.version>
         <graphviz-java.version>0.18.1</graphviz-java.version>
@@ -38,17 +42,6 @@
             <classifier>repackaged</classifier>
             <version>${cdo-client.version}</version>
         </dependency>
-        <!--XXX:SPLIT: <dependency>
-            <groupId>org.ow2.paasage</groupId>
-            <artifactId>upperware-metamodel</artifactId>
-            <version>${melodic.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>eu.melodic.cdo</groupId>
-                    <artifactId>client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>camel</groupId>
             <artifactId>camel</artifactId>
@@ -59,17 +52,7 @@
             <artifactId>camel.dsl</artifactId>
             <version>${camel.version}</version>
         </dependency>
-        <!--XXX:SPLIT: <dependency>
-            <groupId>eu.melodic</groupId>
-            <artifactId>interfaces</artifactId>
-            &lt;!&ndash;<version>${interfaces.version}</version>&ndash;&gt;
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
+
         <dependency>
             <groupId>eu.melodic.event</groupId>
             <artifactId>broker-cep</artifactId>
@@ -139,6 +122,16 @@
     </dependencies>
 
     <repositories>
+        <!-- Repositories for CAMEL and CDO client dependencies -->
+        <repository>
+            <id>gitlab-maven-camel</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1227/packages/maven</url>
+        </repository>
+        <repository>
+            <id>gitlab-maven-cdo-client</id>
+            <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
+        </repository>
+
         <!-- Deactivate unneeded repositories inherited -->
         <repository>
             <id>paasage.repo</id>
@@ -184,28 +177,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <!--<repository>
-            <id>central</id>
-            <layout>default</layout>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>-->
-        <!--<repository>
-            <id>eu.7bulls</id>
-            <layout>default</layout>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>-->
         <repository>
             <id>ossrh.snapshots</id>
             <layout>default</layout>

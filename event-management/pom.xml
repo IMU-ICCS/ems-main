@@ -36,10 +36,6 @@
 
         <!-- Melodic component versions -->
         <melodic.version>${revision}</melodic.version>
-        <!--XXX:SPLIT: <interfaces.version>${revision}</interfaces.version>-->
-
-        <camel.version>6.0.0-SNAPSHOT</camel.version>
-        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
         <!--XXX:SPLIT: <authorization.version>4.5.0-SNAPSHOT</authorization.version>-->
 
         <!-- Versions for common plugins -->
@@ -91,37 +87,6 @@
                 <version>${lombok.version}</version>
             </dependency>
 
-            <!--XXX:SPLIT: <dependency>
-                <groupId>eu.melodic</groupId>
-                <artifactId>interfaces</artifactId>
-                <version>${interfaces.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>eu.melodic</groupId>
-                        <artifactId>jaxrs-code-generator-7bulls</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>-->
-            <!--XXX:SPLIT: <dependency>
-                <groupId>org.ow2.paasage</groupId>
-                <artifactId>upperware-metamodel</artifactId>
-                <version>${melodic.version}</version>
-            </dependency>-->
-            <dependency>
-                <groupId>org.ow2.paasage.mddb.cdo</groupId>
-                <artifactId>client</artifactId>
-                <!-- This may be strange but is necessary -
-                while adding dependency in child pom ${parent.version}
-                will be set to upperware version not parent of upperware -->
-                <!--<version>${parent.version}</version>-->
-                <version>3.1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>eu.melodic.cdo</groupId>
-                <artifactId>client</artifactId>
-                <version>${cdo-client.version}</version>
-                <classifier>repackaged</classifier>
-            </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
@@ -131,17 +96,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>camel</groupId>
-                <artifactId>camel</artifactId>
-                <version>${camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>camel</groupId>
-                <artifactId>camel.dsl</artifactId>
-                <version>${camel.version}</version>
             </dependency>
 
         </dependencies>
@@ -317,112 +271,4 @@
         <developerConnection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
     </scm>
 
-    <repositories>
-        <!-- Re-define 'central' repository -->
-        <repository>
-            <id>central</id>
-            <name>Default Repository</name>
-            <layout>default</layout>
-            <url>https://repo1.maven.org/maven2</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-        <!-- Repositories for CAMEL and CDO client dependencies -->
-        <repository>
-            <id>gitlab-maven-camel</id>
-            <url>https://gitlab.ow2.org/api/v4/projects/1227/packages/maven</url>
-        </repository>
-        <repository>
-            <id>gitlab-maven-cdo-client</id>
-            <url>https://gitlab.ow2.org/api/v4/projects/1228/packages/maven</url>
-        </repository>
-
-        <!-- 7Bulls repository -->
-        <repository>
-            <id>eu.7bulls</id>
-            <layout>default</layout>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-        </repository>
-
-        <!-- Deactivate unneeded repositories inherited -->
-        <repository>
-            <id>paasage.repo</id>
-            <layout>default</layout>
-            <url>http://jenkins.paasage.cetic.be/repository/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>choco.repos</id>
-            <layout>default</layout>
-            <url>http://www.emn.fr/z-info/choco-repo/mvn/repository/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>mule-snapshot</id>
-            <layout>default</layout>
-            <url>https://repository-master.mulesoft.org/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>mule</id>
-            <layout>default</layout>
-            <url>https://repository-master.mulesoft.org/releases/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <!--<repository>
-            <id>central</id>
-            <layout>default</layout>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>-->
-        <!--<repository>
-            <id>eu.7bulls</id>
-            <layout>default</layout>
-            <url>https://nexus.7bulls.eu:8443/repository/maven-public/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>-->
-        <repository>
-            <id>ossrh.snapshots</id>
-            <layout>default</layout>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>

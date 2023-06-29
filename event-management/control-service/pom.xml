@@ -54,17 +54,6 @@
 
     <dependencies>
         <!-- Melodic dependencies -->
-        <!--XXX:SPLIT: <dependency>
-            <groupId>eu.melodic</groupId>
-            <artifactId>interfaces</artifactId>
-            &lt;!&ndash;<version>${interfaces.version}</version>&ndash;&gt;
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -81,7 +70,8 @@
             <version>${jjwt.version}</version>
         </dependency>
 
-        <!--XXX:SPLIT: <dependency>
+        <!--XXX: Dependency for authorization client -->
+        <!--<dependency>
             <groupId>eu.melodic.security.authorization</groupId>
             <artifactId>authorization-service-client</artifactId>
             <version>${authorization.version}</version>
