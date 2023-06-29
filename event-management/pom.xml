@@ -71,6 +71,7 @@
     </properties>
 
     <modules>
+        <module>web-admin</module>
         <module>util</module>
         <module>broker-client</module>
         <module>broker-cep</module>
@@ -315,21 +316,6 @@
         <connection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</connection>
         <developerConnection>scm:git:https://bitbucket.7bulls.eu/scm/mel/upperware.git</developerConnection>
     </scm>
-
-    <profiles>
-        <profile>
-            <id>build-web-admin</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <missing>.dev-skip-build-web-admin</missing>
-                </file>
-            </activation>
-            <modules>
-                <module>web-admin</module>
-            </modules>
-        </profile>
-    </profiles>
 
     <repositories>
         <!-- Re-define 'central' repository -->
