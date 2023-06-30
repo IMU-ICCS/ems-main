@@ -13,16 +13,3 @@ target/
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
-nbproject/private/
-build/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-
-
-### MCTS tree printing ###
-zpp-solver/testing_module/src/main/resources/nodes*
-zpp-solver/testing_module/src/main/resources/tree*

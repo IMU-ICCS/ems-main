@@ -1,0 +1,717 @@
+<!--
+  ~ Copyright (C) 2017-2023 Institute of Communication and Computer Systems (imu.iccs.gr)
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v2.0, unless
+  ~ Esper library is used, in which case it is subject to the terms of General Public License v2.0.
+  ~ If a copy of the MPL was not distributed with this file, you can obtain one at
+  ~ https://www.mozilla.org/en-US/MPL/2.0/
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>eu.melodic.event</groupId>
+        <artifactId>ems-core</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>control-service</artifactId>
+    <name>EMS - Control Service</name>
+
+    <properties>
+        <hawtio.version>2.17.0</hawtio.version>
+        <spring.boot.admin.version>3.0.0-M8</spring.boot.admin.version>  <!-- XXX: NOTE: This is not GA release -->
+        <micrometer.registry.prometheus.version>1.10.2</micrometer.registry.prometheus.version>
+        <springdoc.version>2.0.2</springdoc.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <!-- Build timestamp -->
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+
+        <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
+        <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
+
+        <!-- com.spotify docker-maven-plugin properties-->
+        <!--
+        <docker.push>false</docker.push>
+        <docker.repository></docker.repository>
+        <docker.imagePrefix></docker.imagePrefix>
+        <docker.imageName></docker.imageName>
+        <docker.imageTag></docker.imageTag>
+        -->
+        <docker.imageName>ems-server</docker.imageName>
+
+        <!-- io.fabricat8 docker-maven-plugin properties -->
+        <docker-maven-plugin.version>0.39.1</docker-maven-plugin.version>
+        <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
+        <!--<docker-image-tag>2022-devel</docker-image-tag>-->
+        <!--<build-description></build-description>-->
+
+        <!-- EMS server main class -->
+        <start-class>eu.melodic.event.control.ControlServiceApplication</start-class>
+    </properties>
+
+    <dependencies>
+        <!-- Melodic dependencies -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <!--XXX: Dependency for authorization client -->
+        <!--<dependency>
+            <groupId>eu.melodic.security.authorization</groupId>
+            <artifactId>authorization-service-client</artifactId>
+            <version>${authorization.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.jsonwebtoken</groupId>
+                    <artifactId>jjwt</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>-->
+
+        <!-- Dependencies on other EMS modules -->
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>baguette-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>baguette-client-install</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>broker-cep</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>translator</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>eu.melodic.cdo</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--XXX:SPLIT:  TO BE REMOVED -->
+        <dependency>
+            <groupId>eu.melodic.cdo</groupId>
+            <artifactId>client</artifactId>
+            <version>${cdo-client.version}</version>
+            <classifier>repackaged</classifier>
+        </dependency>
+        <dependency>
+            <groupId>eu.melodic.event</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring-boot dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Spring Boot Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- Spring Boot Webflux -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <!-- Spring Boot Actuator  -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Micrometer Prometheus registry  -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>${micrometer.registry.prometheus.version}</version>
+        </dependency>
+        <!-- Spring Boot Admin client  -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
+        <!--<dependency>
+            <groupId>de.codecentric</groupId>
+            <artifactId>spring-boot-admin-starter-client</artifactId>
+            <version>${spring.boot.admin.version}</version>
+        </dependency>-->
+        <!-- Jasypt Spring Boot starter  -->
+        <dependency>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+            <version>${jasypt.starter.version}</version>
+        </dependency>
+
+        <!-- Lombok project -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <!-- See: https://github.com/sevdokimov/log-viewer/blob/master/_docs/embadded-spring-boot.md -->
+        <!--XXX: TODO: Temporarily disabled logviewer because follows EE8 (javax.*) rather than EE9 (jakarta.*)
+        <dependency>
+            <groupId>io.github.sevdokimov.logviewer</groupId>
+            <artifactId>log-viewer-spring-boot</artifactId>
+            <version>1.0.3</version>
+        </dependency>-->
+
+        <!-- Hawtio console dependency (https://hawt.io/docs/get-started/) -->
+        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
+        <!--XXX: TODO: Temporarily disabled because Jolokia does not follow Spring Boot 3 changes (see https://adevait.com/java/spring-boot-3-0)
+        <dependency>
+            <groupId>io.hawt</groupId>
+            <artifactId>hawtio-springboot</artifactId>
+            <version>${hawtio.version}</version>
+        </dependency>-->
+
+        <!-- Springdoc: OpenAPI UI and Swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>*.txt</include>
+                    <include>META-INF/spring.factories</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Remove previous files from /public_resources -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>remove-old-public-resources</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--<excludeDefaultDirectories>true</excludeDefaultDirectories>-->
+                    <filesets>
+                        <fileset>
+                            <directory>${project.parent.basedir}/public_resources</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+
+            <!-- See: https://github.com/git-commit-id/git-commit-id-maven-plugin -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>5.0.0</version>
+                <!--<executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <commitIdGenerationMode>full</commitIdGenerationMode>
+                </configuration>-->
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>eu.melodic.event</groupId>
+                            <artifactId>baguette-client</artifactId>
+                        </exclude>
+                        <exclude>
+                            <groupId>com.espertech</groupId>
+                            <artifactId>esper</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <timestamp>${timestamp}</timestamp>
+                                <buildNumber>${buildNumber}</buildNumber>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-esper-jar</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.espertech</groupId>
+                                    <artifactId>esper</artifactId>
+                                    <version>${esper.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>eu.melodic.event</groupId>
+                                    <artifactId>baguette-client</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>tgz</type>
+                                    <classifier>installation-package</classifier>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>baguette-client.tgz</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Checksum Maven plugin (http://checksum-maven-plugin.nicoulaj.net) -->
+            <plugin>
+                <groupId>net.nicoulaj.maven.plugins</groupId>
+                <artifactId>checksum-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>files</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${project.build.directory}</directory>
+                            <!--<directory>target</directory>-->
+                            <includes>
+                                <include>*.zip</include>
+                                <include>*.tar</include>
+                                <include>*.tar.gz</include>
+                                <include>*.tgz</include>
+                            </includes>
+                            <excludes>
+                                <exclude>*.jar</exclude>
+                            </excludes>
+                        </fileSet>
+                    </fileSets>
+                    <algorithms>
+                        <algorithm>MD5</algorithm>
+                    </algorithms>
+                    <individualFiles>true</individualFiles>
+                    <failOnError>true</failOnError>
+                    <failIfNoFiles>false</failIfNoFiles>
+                </configuration>
+            </plugin>
+
+            <!-- Copy-Rename Maven plugin (https://coderplus.github.io/copy-rename-maven-plugin/) -->
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-files</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <!-- Copy index.html and favicon.ico to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/src/main/resources/public/index.html</sourceFile>
+                                    <destinationFile>../public_resources/resources/index.html</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/src/main/resources/public/favicon.ico</sourceFile>
+                                    <destinationFile>../public_resources/favicon.ico</destinationFile>
+                                </fileSet>
+
+                                <!-- Copy checksums.csv to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>${project.build.directory}/checksums.csv</sourceFile>
+                                    <destinationFile>../public_resources/resources/checksums.csv</destinationFile>
+                                </fileSet>
+
+                                <!-- Copy broker-client files to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>../broker-client/target/broker-client-jar-with-dependencies.jar</sourceFile>
+                                    <destinationFile>../public_resources/resources/broker-client.jar</destinationFile>
+                                </fileSet>
+                                <!--
+                                  "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
+                                -->
+                                <!--<fileSet>
+                                    <sourceFile>../broker-client/eu.melodic.event.brokerclient.properties</sourceFile>
+                                    <destinationFile>../public_resources/resources/eu.melodic.event.brokerclient.properties</destinationFile>
+                                </fileSet>-->
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/src/main/resources/public/client.sh</sourceFile>
+                                    <destinationFile>../public_resources/resources/client.sh</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/src/main/resources/public/client.bat</sourceFile>
+                                    <destinationFile>../public_resources/resources/client.bat</destinationFile>
+                                </fileSet>
+
+                                <!-- Copy baguette-client files to /public_resources -->
+                                <fileSet>
+                                    <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz</sourceFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/target/baguette-client-installation-package.tgz.md5</sourceFile>
+                                    <destinationFile>../public_resources/resources/baguette-client.tgz.md5</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>../baguette-client/bin/install.sh</sourceFile>
+                                    <destinationFile>../public_resources/resources/install.sh</destinationFile>
+                                </fileSet>
+                            </fileSets>
+                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
+                            <overWrite>true</overWrite>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <!-- Copy Web Admin distribution files to /public_resources -->
+                    <execution>
+                        <id>copy-web-admin-resources</id>
+                        <!-- here the phase you need -->
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.parent.basedir}/public_resources/admin</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.parent.basedir}/web-admin/dist</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                    <!-- Add needed files to docker context folder -->
+                    <execution>
+                        <id>copy-resources-to-docker-context</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/docker</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/docker</directory>
+                                </resource>
+
+                                <resource>
+                                    <targetPath>${project.build.directory}/docker/jars</targetPath>
+                                    <directory>${project.build.directory}</directory>
+                                    <include>${docker.controlServiceJar}</include>
+                                    <include>${docker.esperJar}</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <targetPath>${project.build.directory}/docker/bin</targetPath>
+                                    <directory>${project.basedir}/../bin/</directory>
+                                    <include>run.sh</include>
+                                    <include>sysmon.sh</include>
+                                    <include>detect.sh</include>
+                                    <include>jwtutil.sh</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <targetPath>${project.build.directory}/docker/config</targetPath>
+                                    <directory>${project.basedir}/../config-files</directory>
+                                    <!--<excludes>
+                                        <exclude>resources/**/*</exclude>
+                                    </excludes>-->
+                                    <filtering>false</filtering>
+                                </resource>
+
+                                <!-- Add public_resources/ folder resources to '/public_resources' -->
+                                <resource>
+                                    <targetPath>${project.build.directory}/docker/public_resources</targetPath>
+                                    <directory>${project.basedir}/../public_resources</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+
+                                <!-- Add broker-client too -->
+                                <resource>
+                                    <targetPath>${project.build.directory}/docker/jars</targetPath>
+                                    <directory>${project.basedir}/../broker-client/target</directory>
+                                    <include>broker-client-jar-with-dependencies.jar</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <!--
+                                  "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
+                                -->
+                                <!--<resource>
+                                    <targetPath>${project.build.directory}/docker/config</targetPath>
+                                    <directory>${project.basedir}/../broker-client</directory>
+                                    <include>eu.melodic.event.brokerclient.properties</include>
+                                    <filtering>false</filtering>
+                                </resource>-->
+                                <resource>
+                                    <targetPath>${project.build.directory}/docker/bin</targetPath>
+                                    <directory>${project.basedir}/../bin/</directory>
+                                    <include>client.sh</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.4.10</version>
+                <configuration>
+                    <resources>
+                        <!-- Added in order to prevent copying 'control-service.jar' to docker context dir. (We have already copied it) -->
+                        <resource>
+                            <targetPath>/bin</targetPath>
+                            <directory>${project.basedir}/../bin/</directory>
+                            <include>run.sh</include>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <configuration>
+                    <timestampFormat>{0,date,yyyy-MM-dd HH:mm:ss'Z'}</timestampFormat>
+                    <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>dev-local-docker-image-build</id>
+            <activation>
+                <file>
+                    <exists>../.dev-local-docker-image-build</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Read docker plugin settings from properties file -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>properties-maven-plugin</artifactId>
+                        <version>1.1.0</version>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>read-project-properties</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <!--<keyPrefix>dev-</keyPrefix>-->
+                            <files>
+                                <file>../.dev-local-docker-image-build</file>
+                            </files>
+                        </configuration>
+                    </plugin>
+                    <!--<plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>Print Docker image dev properties</echo>
+                                        <echo>Image Tag: "${docker-image-tag}"</echo>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>-->
+
+                    <!-- Turn off com.spotify:docker-maven-plugin (same as 'without-docker' profile -->
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>execution</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Rename docker context folder to 'docker-context'. Remove previous if exists. -->
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.build.directory}/docker-context"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.coderplus.maven.plugins</groupId>
+                        <artifactId>copy-rename-maven-plugin</artifactId>
+                        <version>1.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>rename-docker-context-dir</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>rename</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceFile>${project.build.directory}/docker</sourceFile>
+                                    <destinationFile>${project.build.directory}/docker-context</destinationFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Build docker image using docker-context folder -->
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>${docker-maven-plugin.version}</version>
+                        <configuration>
+                            <!--<dockerHost>https://localhost:2376</dockerHost>-->
+                            <verbose>true</verbose>
+                            <useColor>true</useColor>
+                            <images>
+                                <image>
+                                    <name>${docker-maven-plugin.imageName}:${docker-image-tag}</name>
+                                    <build>
+                                        <contextDir>${project.build.directory}/docker-context</contextDir>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>docker-image-build</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
