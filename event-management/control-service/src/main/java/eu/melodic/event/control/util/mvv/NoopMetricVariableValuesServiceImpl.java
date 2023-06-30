@@ -9,29 +9,26 @@
 
 package eu.melodic.event.control.util.mvv;
 
-import eu.melodic.event.control.util.CpModelHelper;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.mvv.MetricVariableValuesService;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 @Service
-public class MetricVariableValuesServiceImpl implements MetricVariableValuesService {
-    private CpModelHelper helper;
-
-    public void init() {
-        helper = new CpModelHelper();
-    }
+public class NoopMetricVariableValuesServiceImpl implements MetricVariableValuesService {
+    public void init() { }
 
     @SneakyThrows
     public Map<String, Double> getMatchingMetricVariableValues(String cpModelPath, TranslationContext _TC) {
-        return helper.getMatchingMetricVariableValues(cpModelPath, _TC);
+        return Collections.emptyMap();
     }
 
     @SneakyThrows
     public Map<String, Double> getMetricVariableValues(String cpModelPath, Set<String> variableNames) {
-        return helper.getMetricVariableValues(cpModelPath, variableNames);
+        return Collections.emptyMap();
     }
 }

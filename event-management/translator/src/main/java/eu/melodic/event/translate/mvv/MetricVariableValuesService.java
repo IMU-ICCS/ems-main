@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.control.util.mvv;
+package eu.melodic.event.translate.mvv;
 
 import eu.melodic.event.translate.TranslationContext;
 
