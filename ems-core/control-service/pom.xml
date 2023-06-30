@@ -12,7 +12,7 @@
 
     <parent>
         <groupId>eu.melodic.event</groupId>
-        <artifactId>event-management</artifactId>
+        <artifactId>ems-core</artifactId>
         <version>${revision}</version>
     </parent>
 

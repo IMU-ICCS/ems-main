@@ -12,8 +12,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>event-management</artifactId>
         <groupId>eu.melodic.event</groupId>
+        <artifactId>ems-core</artifactId>
         <version>${revision}</version>
     </parent>
 
