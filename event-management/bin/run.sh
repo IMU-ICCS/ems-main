@@ -96,7 +96,16 @@ while :; do
   # java $EMS_DEBUG_OPTS $JAVA_OPTS $JAVA_ADD_OPENS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -jar $JARS_DIR/control-service/target/control-service.jar "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE"
 
   # Use when Esper is NOT packaged in control-service.jar
-  java $EMS_DEBUG_OPTS $JAVA_OPTS  $JAVA_ADD_OPENS -Djasypt.encryptor.password=$JASYPT_PASSWORD -Djava.security.egd=file:/dev/urandom -cp ${JARS_DIR}/control-service.jar -Dloader.path=${JARS_DIR}/esper-7.1.0.jar org.springframework.boot.loader.PropertiesLauncher "--spring.config.location=${EMS_CONFIG_LOCATION}" "--logging.config=file:$LOG_CONFIG_FILE" $* &
+  java $EMS_DEBUG_OPTS $JAVA_OPTS  $JAVA_ADD_OPENS \
+      -Djasypt.encryptor.password=$JASYPT_PASSWORD \
+      -Djava.security.egd=file:/dev/urandom \
+      -Dscan.packages=${SCAN_PACKAGES} \
+      -cp ${JARS_DIR}/control-service.jar \
+      -Dloader.path=${JARS_DIR}/esper-7.1.0.jar,${EXTRA_LOADER_PATHS} \
+      org.springframework.boot.loader.PropertiesLauncher \
+      "--spring.config.location=${EMS_CONFIG_LOCATION}" \
+      "--logging.config=file:$LOG_CONFIG_FILE" \
+      $* &
   emsPid=$!
   echo "EMS Pid: $emsPid"
   wait $emsPid

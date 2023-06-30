@@ -38,9 +38,13 @@ import java.util.TimerTask;
 @EnableAsync
 @Configuration
 @SpringBootApplication(
-        scanBasePackages = { "eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
-                "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep", "eu.melodic.event.control",
-                "eu.melodic.event.translate", "eu.melodic.event.common", "eu.melodic.event.util" },
+        scanBasePackages = {
+                "eu.melodic.event.baguette.server", "eu.melodic.event.baguette.client.install",
+                "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep",
+                "eu.melodic.event.control", "eu.melodic.event.translate",
+                "eu.melodic.event.common", "eu.melodic.event.util",
+                "${scan.packages}"
+        },
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
 @RequiredArgsConstructor
 public class ControlServiceApplication {
@@ -62,6 +66,13 @@ public class ControlServiceApplication {
         springApplication.setBannerMode(Banner.Mode.LOG);
         springApplication.addListeners(new ApplicationPidFileWriter("./ems.pid"));
         applicationContext = springApplication.run(args);
+
+        // Load configured plugins
+        /*BeanDefinitionRegistry beanFactory = (BeanDefinitionRegistry) applicationContext.getAutowireCapableBeanFactory();
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(
+                beanFactory, true, applicationContext.getEnvironment());
+        scanner.scan("eu.melodic.ems");
+        */
 
         long initEndTime = System.currentTimeMillis();
         log.info("EMS server initialized in {}ms", initEndTime-initStartTime);
