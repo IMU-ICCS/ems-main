@@ -24,7 +24,8 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
-import eu.melodic.event.control.util.mvv.MetricVariableValuesService;
+import eu.melodic.event.translate.mvv.MetricVariableValuesService;
+import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
 import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.analyze.DAGNode;
@@ -78,7 +79,9 @@ public class ControlServiceCoordinator implements InitializingBean {
     private final NodeRegistry nodeRegistry;
     private final WebClient webClient;
     private final PasswordUtil passwordUtil;
-    private final MetricVariableValuesService mvvService;
+
+    private final List<MetricVariableValuesService> mvvServiceImplementations;
+    private MetricVariableValuesService mvvService;     // Will be populated in 'afterPropertiesSet()'
 
     @Getter private BrokerCepService brokerCep;
 
@@ -104,7 +107,21 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        // Initialize MVV service
+        log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service implementations: {}", mvvServiceImplementations);
+        if (mvvServiceImplementations.size() == 1) {
+            mvvService = mvvServiceImplementations.get(0);
+        } else if (mvvServiceImplementations.isEmpty()) {
+            throw new IllegalArgumentException("No MVV service implementation found");
+        } else {
+            mvvService = mvvServiceImplementations.stream()
+                    .filter(s -> s!=null && !(s instanceof NoopMetricVariableValuesServiceImpl))
+                    .findAny()
+                    .orElse(new NoopMetricVariableValuesServiceImpl());
+        }
+        log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service implementation selected: {}", mvvService);
         mvvService.init();
+        log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service initialized");
 
         // Run configuration checks and throw exceptions early (before actually using EMS)
         if (properties.isSkipTranslation()) {
