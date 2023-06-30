@@ -21,7 +21,7 @@
     <name>Event Management System</name>
 
     <groupId>eu.melodic.event</groupId>
-    <artifactId>event-management</artifactId>
+    <artifactId>ems-core</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 

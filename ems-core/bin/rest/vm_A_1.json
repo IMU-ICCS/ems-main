@@ -1,0 +1,13 @@
+{
+     "id": "vm-A-1",
+     "name": "vm_A_1",
+     "operatingSystem": "UBUNTU",
+     "address": "vm_A_1",
+     "ssh": {
+          "port": "22",
+          "username": "ubuntu",
+          "password": "ubuntu"
+     },
+     "type": "VM",
+     "provider": "AWS"
+}
