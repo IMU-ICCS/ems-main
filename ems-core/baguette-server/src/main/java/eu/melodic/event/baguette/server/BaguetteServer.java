@@ -519,7 +519,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         server.sendConstants(constants);
     }
 
-    public NodeRegistryEntry registerClient(Map<String,? extends Object> nodeInfoMap) throws UnknownHostException {
+    public NodeRegistryEntry registerClient(Map<String,?> nodeInfoMap) throws UnknownHostException {
         log.debug("BaguetteServer.registerClient(): node-info={}", nodeInfoMap);
 
         Map<String,Object> nodeInfo = new HashMap<>(nodeInfoMap);
@@ -536,7 +536,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         return nodeRegistry.addNode(nodeInfo, clientId);
     }
 
-    public String generateClientIdFromNodeInfo(Map<String, ? extends Object> nodeInfo) {
+    public String generateClientIdFromNodeInfo(Map<String, ?> nodeInfo) {
         String clientId;
         String formatter = getConfiguration().getClientIdFormat();
         if (StringUtils.isBlank(formatter)) {

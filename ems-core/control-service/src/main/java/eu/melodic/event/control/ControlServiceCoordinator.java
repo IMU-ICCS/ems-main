@@ -9,11 +9,6 @@
 
 package eu.melodic.event.control;
 
-import camel.core.NamedElement;
-import camel.metric.CompositeMetric;
-import camel.metric.MetricContext;
-import camel.metric.RawMetric;
-import camel.requirement.ServiceLevelObjective;
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.baguette.server.NodeRegistry;
@@ -24,20 +19,17 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
+import eu.melodic.event.translate.Translator;
 import eu.melodic.event.translate.mvv.MetricVariableValuesService;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
-import eu.melodic.event.translate.CamelToEplTranslator;
 import eu.melodic.event.translate.TranslationContext;
-import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.translate.dag.DAGNode;
 import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.models.commons.NotificationResult;
 import eu.melodic.event.models.commons.NotificationResultImpl;
 import eu.melodic.event.models.commons.Watermark;
 import eu.melodic.event.models.commons.WatermarkImpl;
-import eu.melodic.event.models.interfaces.KeyValuePair;
-import eu.melodic.event.models.interfaces.Monitor;
-import eu.melodic.event.models.interfaces.Sink;
 import eu.melodic.event.models.services.CamelModelNotificationRequest;
 import eu.melodic.event.models.services.CamelModelNotificationRequestImpl;
 import lombok.Getter;
@@ -264,8 +256,8 @@ public class ControlServiceCoordinator implements InitializingBean {
             setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
 
             log.info("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: camel-model-id={}", camelModelId);
-            CamelToEplTranslator translator =
-                    applicationContext.getBean(CamelToEplTranslator.class);
+            Translator translator =
+                    applicationContext.getBean(Translator.class);
             _TC = translator.translate(camelModelId);
             log.debug("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: RESULTS: {}", _TC);
 
@@ -284,17 +276,17 @@ public class ControlServiceCoordinator implements InitializingBean {
                     com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
                     // clone _TC
                     TranslationContext _copyTC = new TranslationContext(false);
-                    _copyTC.G2R.putAll(_TC.G2R);
-                    _copyTC.G2T.putAll(_TC.G2T);
+                    _copyTC.getG2R().putAll(_TC.getG2R());
+                    _copyTC.getG2T().putAll(_TC.getG2T());
                     _copyTC.getTopicConnections().putAll(_TC.getTopicConnections());
 
-                    _copyTC.E2A.putAll(_TC.E2A);
-                    _copyTC.SLO.addAll(_TC.SLO);
-                    _copyTC.MON.addAll(_TC.MON);
-                    _copyTC.MONS.addAll(_TC.MONS);
-                    _copyTC.CMVAR.addAll(_TC.CMVAR);
-                    _copyTC.MVV.addAll(_TC.MVV);
-                    _copyTC.MVV_CP.putAll(_TC.MVV_CP);
+                    _copyTC.getE2A().putAll(_TC.getE2A());
+                    _copyTC.getSLO().addAll(_TC.getSLO());
+                    _copyTC.getMON().addAll(_TC.getMON());
+                    _copyTC.getMONS().addAll(_TC.getMONS());
+                    _copyTC.getCMVar().addAll(_TC.getCMVar());
+                    _copyTC.getMVV().addAll(_TC.getMVV());
+                    _copyTC.getMvvCP().putAll(_TC.getMvvCP());
                     _copyTC.addLoadAnnotatedMetrics(_TC.getLoadAnnotatedMetricsSet());
                     _copyTC.setExportFiles(_TC.getExportFiles());
 
@@ -346,14 +338,14 @@ public class ControlServiceCoordinator implements InitializingBean {
                     log.info("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
                     com.google.gson.Gson gson = new GsonBuilder()
-                            .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
+                            .registerTypeAdapter(TranslationContext.Monitor.class, new TranslationContextMonitorGsonDeserializer())
                             .create();
                     _TC = gson.fromJson(reader, TranslationContext.class);
                     reader.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
 
-                    CamelToEplTranslator translator =
-                            applicationContext.getBean(CamelToEplTranslator.class);
+                    Translator translator =
+                            applicationContext.getBean(Translator.class);
                     translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
@@ -441,13 +433,12 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Process placeholders in sink type configurations
         String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
-        for (Monitor mon : _TC.MON) {
-            for (Sink s : mon.getSinks()) {
-                for (KeyValuePair pair : s.getConfiguration()) {
-                    String val = pair.getValue();
-                    val = val.replace("%{BROKER_URL}%", brokerUrlForClients);
-                    pair.setValue(val);
-                }
+        for (TranslationContext.Monitor mon : _TC.getMON()) {
+            for (TranslationContext.Sink s : mon.getSinks()) {
+                s.getConfiguration().entrySet().forEach(entry -> {
+                    if (entry.getValue() != null)
+                        entry.setValue( entry.getValue().replace("%{BROKER_URL}%", brokerUrlForClients) );
+                });
             }
         }
 
@@ -499,12 +490,12 @@ public class ControlServiceCoordinator implements InitializingBean {
 
             // Get scaling event and SLO topics from _TC
             Set<String> scalingTopics = new HashSet<>();
-            scalingTopics.addAll(_TC.E2A.keySet());
-            scalingTopics.addAll(_TC.SLO);
+            scalingTopics.addAll(_TC.getE2A().keySet());
+            scalingTopics.addAll(_TC.getSLO());
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: scaling-topics: {}", scalingTopics);
 
             // Get top-level metric topics from _TC
-            Set<String> metricTopics = _TC.DAG.getTopLevelNodes().stream().filter(node -> !scalingTopics.contains(node.getElementName())).map(node -> node.getElementName()).collect(Collectors.toSet());
+            Set<String> metricTopics = _TC.getDAG().getTopLevelNodes().stream().filter(node -> !scalingTopics.contains(node.getElementName())).map(node -> node.getElementName()).collect(Collectors.toSet());
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
 
             // Prepare subscription configurations
@@ -529,7 +520,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver subscriptions configuration: {}", subscriptionConfigs);
 
             // Retrieve MVV to Current-Config MVV map
-            Map<String, String> mvvMap = _TC.MVV_CP;
+            Map<String, String> mvvMap = _TC.getMvvCP();
             log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver MVV configuration: {}", mvvMap);
 
             // Prepare MetaSolver configuration
@@ -621,7 +612,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
                     // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
-                    log.info("ControlServiceCoordinator._processCpModel(): Looking for MVV_CP's: {}", _TC.MVV_CP);
+                    log.info("ControlServiceCoordinator._processCpModel(): Looking for MVV_CP's: {}", _TC.getMvvCP());
                     constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
                     log.info("ControlServiceCoordinator._processCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
 
@@ -782,12 +773,12 @@ public class ControlServiceCoordinator implements InitializingBean {
         return camelToTcCache.get(_normalizeModelId(camelModelId));
     }
 
-    public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
+    public List<TranslationContext.Monitor> getSensorsOfCamelModel(String camelModelId) {
         if (StringUtils.isBlank(camelModelId))
             camelModelId = currentCamelModelId;
         TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptyList();
-        List<Monitor> sensors = new ArrayList<>(_tc.MON);
+        List<TranslationContext.Monitor> sensors = new ArrayList<>(_tc.getMON());
         return sensors;
     }
 
@@ -840,17 +831,17 @@ public class ControlServiceCoordinator implements InitializingBean {
                 .collect(Collectors.toMap(TranslationContext.IfThenConstraint::getName, ic -> ic));*/
 
         // Create map of top-level element names and instances
-        Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
+        Set<DAGNode> topLevelNodes = _tc.getDAG().getTopLevelNodes();
         Map<String, DAGNode> topLevelNodesMap = topLevelNodes.stream()
                 .collect(Collectors.toMap(DAGNode::getElementName, x -> x));
 
         // process each SLO
         List<Object> sloMetricDecompositions = new ArrayList<>();
-        for (String sloName : _tc.SLO) {
+        for (String sloName : _tc.getSLO()) {
             DAGNode node = topLevelNodesMap.get(sloName);
             if (node!=null) {
                 // get SLO constraint
-                Set<DAGNode> sloConstraintSet = _tc.DAG.getNodeChildren(node);
+                Set<DAGNode> sloConstraintSet = _tc.getDAG().getNodeChildren(node);
                 // SLO must contain exactly one constraint
                 if (sloConstraintSet.size()==1) {
                     DAGNode sloConstraintNode = sloConstraintSet.iterator().next();
@@ -866,7 +857,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     private Object _decomposeConstraint(TranslationContext _tc, DAGNode constraintNode, Map<String, TranslationContext.MetricConstraint> mcMap, Map<String, TranslationContext.LogicalConstraint> lcMap) {
-        NamedElement element = constraintNode.getElement();
+        TranslationContext.NamedElement element = constraintNode.getElement();
         String elementName = constraintNode.getElementName();
         String elementClassName = ((Object)element).getClass().getName();
         if (element instanceof camel.constraint.MetricConstraint) {
@@ -885,7 +876,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             // create decomposition result
             Map<String,Object> result = new HashMap<>();
             result.put("name", lc.getName());
-            result.put("operator", lc.getOperator());
+            result.put("operator", lc.getLogicalOperator());
             result.put("constraints", list);
             return result;
         } else
@@ -902,24 +893,23 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Process DAG top-level nodes
-        Set<DAGNode> topLevelNodes = _tc.DAG.getTopLevelNodes();
+        Set<DAGNode> topLevelNodes = _tc.getDAG().getTopLevelNodes();
         HashSet<TranslationContext.MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
         log.debug("getMetricContextsForPrediction: Translation Context found for model: {}", camelModelId);
 
         final Deque<DAGNode> q = topLevelNodes.stream()
                 .filter(x ->
-                        x.getElement() instanceof ServiceLevelObjective ||
-                        x.getElement() instanceof CompositeMetric ||
-                        x.getElement() instanceof RawMetric)
+                        x.getElement() instanceof TranslationContext.ServiceLevelObjective ||
+                        x.getElement() instanceof TranslationContext.Metric)
                 .distinct()
                 .collect(Collectors.toCollection(ArrayDeque::new));
 
         while (!q.isEmpty()) {
             DAGNode node = q.pop();
-            if (node.getElement() instanceof MetricContext) {
+            if (node.getElement() instanceof TranslationContext.MetricContext) {
                 tcMetricsOfTopLevelNodes.add(node.getMetricContext());
             } else {
-                Set<DAGNode> children = _tc.DAG.getNodeChildren(node);
+                Set<DAGNode> children = _tc.getDAG().getNodeChildren(node);
                 if (children!=null) q.addAll(children);
             }
         }
@@ -1040,7 +1030,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         sendCamelModelNotification(request, notificationUri, jwtToken);
     }
 
-    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException, IOException, CertificateException, UnrecoverableKeyException {
+    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) {
         // Check if 'notificationUri' is blank
         if (StringUtils.isBlank(notificationUri)) {
             log.warn("ControlServiceCoordinator.sendCamelModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");

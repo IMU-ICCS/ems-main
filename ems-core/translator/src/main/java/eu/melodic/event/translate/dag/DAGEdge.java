@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.translate.analyze;
+package eu.melodic.event.translate.dag;
 
 import org.jgrapht.graph.DefaultEdge;
 

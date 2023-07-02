@@ -11,10 +11,8 @@ package eu.melodic.event.baguette.client.install.plugin;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.InstallationContextProcessorPlugin;
+import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.StrUtil;
-import eu.melodic.event.models.interfaces.Interval;
-import eu.melodic.event.models.interfaces.KeyValuePair;
-import eu.melodic.event.models.interfaces.Monitor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Installation context processor plugin for generating Netdata configuration for collecting metrics from prometheus exporters
@@ -55,7 +52,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
         boolean found = false;
 
         prometheusConf.append("\njobs:\n");
-        for (Monitor monitor : task.getTranslationContext().MON) {
+        for (TranslationContext.Monitor monitor : task.getTranslationContext().getMON()) {
             try {
                 log.trace("PrometheusProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
                 String componentName = monitor.getComponent();
@@ -64,9 +61,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                 log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR: component={}, metric={}", taskCounter, componentName, metricName);
                 if (monitor.getSensor().isPullSensor()) {
                     if (monitor.getSensor().getPullSensor().getConfiguration()!=null) {
-                        Map<String, String> config = monitor.getSensor().getPullSensor().getConfiguration().stream()
-                                .filter(pair -> pair.getKey() != null && pair.getValue() != null)
-                                .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
+                        Map<String, String> config = monitor.getSensor().getPullSensor().getConfiguration();
                         log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
 
                         // Get Prometheus related settings
@@ -84,12 +79,12 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                                 found = true;
 
                                 // Get monitor interval
-                                Interval interval = monitor.getSensor().getPullSensor().getInterval();
+                                TranslationContext.Interval interval = monitor.getSensor().getPullSensor().getInterval();
                                 if (interval != null) {
                                     int period = interval.getPeriod();
                                     TimeUnit unit = TimeUnit.SECONDS;
                                     if (interval.getUnit() != null) {
-                                        unit = TimeUnit.valueOf(interval.getUnit().toString());
+                                        unit = TimeUnit.valueOf(interval.getUnit());
                                     }
                                     long periodInSeconds = TimeUnit.SECONDS.convert(period, unit);
                                     if (periodInSeconds > 0)

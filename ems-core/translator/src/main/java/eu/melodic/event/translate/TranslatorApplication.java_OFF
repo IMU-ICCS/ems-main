@@ -9,8 +9,9 @@
 
 package eu.melodic.event.translate;
 
-import eu.melodic.event.translate.properties.CamelToEplTranslatorProperties;
-import eu.melodic.event.translate.properties.RuleTemplateProperties;
+import eu.melodic.event.translate.camel.CamelToEplTranslator;
+import eu.melodic.event.translate.camel.properties.CamelToEplTranslatorProperties;
+import eu.melodic.event.translate.camel.properties.RuleTemplateProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

@@ -9,22 +9,12 @@
 
 package eu.melodic.event.translate;
 
-import camel.constraint.ComparisonOperatorType;
-import camel.constraint.Constraint;
-import camel.constraint.UnaryConstraint;
-import camel.core.Action;
-import camel.core.NamedElement;
-import camel.data.Data;
-import camel.deployment.Component;
-import camel.metric.*;
-import camel.requirement.ServiceLevelObjective;
-import camel.scalability.Event;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import eu.melodic.event.translate.analyze.DAG;
-import eu.melodic.event.translate.analyze.DAGNode;
+import eu.melodic.event.translate.dag.DAG;
+import eu.melodic.event.translate.dag.DAGNode;
 import eu.melodic.event.util.FunctionDefinition;
-import eu.melodic.event.models.interfaces.Monitor;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,65 +26,83 @@ import java.util.stream.Collectors;
 @ToString
 @Slf4j
 public class TranslationContext {
+
     // Decomposition DAG
+    @Getter
     @JsonIgnore
-    public final DAG DAG;
+    private final DAG DAG;
 
     // Event-to-Action map
-    public final Map<String, Set<String>> E2A;
+    @Getter
+    private final Map<String, Set<String>> E2A = new HashMap<>();
 
     // SLO set
-    public final Set<String> SLO;
+    @Getter
+    private final Set<String> SLO = new LinkedHashSet<>();
 
     // Component-to-Sensor map
-    public final Map<Component, Set<TranslationContext.Sensor>> C2S;        //XXX:TODO-LOW: Convert to strings
+    @Getter
+    private final Map<TranslationContext.Component, Set<TranslationContext.Sensor>> C2S = new HashMap<>();        //XXX:TODO-LOW: Convert to strings
 
     // Data-to-Sensor map
-    public final Map<Data, Set<TranslationContext.Sensor>> D2S;             //XXX:TODO-LOW: Convert to strings
+    @Getter
+    private final Map<TranslationContext.Data, Set<TranslationContext.Sensor>> D2S = new HashMap<>();             //XXX:TODO-LOW: Convert to strings
 
     // Sensor Monitors set
-    public final Set<Monitor> MON;                        //XXX:TODO-LOW: Remove ??
-    public final Set<String> MONS;
+    @Getter
+    private final Set<Monitor> MON = new LinkedHashSet<>();                        //XXX:TODO-LOW: Remove ??
+    @Getter
+    private final Set<String> MONS = new LinkedHashSet<>();
 
     // Grouping-to-EPL Rule map
-    public final Map<String, Map<String, Set<String>>> G2R;
+    private final Map<String, Map<String, Set<String>>> G2R = new HashMap<>();
 
     // Grouping-to-Topics map
-    public final Map<String, Set<String>> G2T;
+    private final Map<String, Set<String>> G2T = new HashMap<>();
+
     // Metric-to-Metric Context map
-    public final Map<Metric, Set<camel.metric.MetricContext>> M2MC;
+    @Getter
+    private final Map<Metric, Set<MetricContext>> M2MC = new HashMap<>();
+
     // Composite Metric Variables set
-    public final Set<String> CMVAR;
-    public final Set<MetricVariable> CMVAR_1;
+    @Getter
+    private final Set<String> CMVar = new LinkedHashSet<>();
+    @Getter
+    private final Set<MetricVariable> CMVar_1 = new LinkedHashSet<>();
+
     // Metric Variable Values set (i.e. non-composite metric variable)
-    public final Set<String> MVV;
-    public final Map<String,String> MVV_CP;
+    private final Set<String> MVV = new LinkedHashSet<>();
+    private final Map<String,String> MvvCP = new HashMap<>();
+
     // Function set
-    public final Set<FunctionDefinition> FUNC;
-    // Element-to-Full-Name cache, pattern and count
-    private transient final Map<NamedElement, String> E2N;              //XXX:TODO-LOW: Clear after translation
-    private transient final AtomicLong elementsCount;
+    @Getter
+    private final Set<FunctionDefinition> FUNC = new LinkedHashSet<>();
+
     // Topics-Connections-per-Grouping
-    protected Map<String, String> providedTopics;                       // topic-grouping where this topic is provided
-    protected Map<String, Set<String>> requiredTopics;                  // topic-set of groupings where this topic is required
-    protected Map<String, Map<String, Set<String>>> topicConnections;   // grouping-provided topic in grouping-groupings that require provided topic
+    protected final Map<String, String> providedTopics = new HashMap<>();                       // topic-grouping where this topic is provided
+    protected final Map<String, Set<String>> requiredTopics = new HashMap<>();                  // topic-set of groupings where this topic is required
+    protected final Map<String, Map<String, Set<String>>> topicConnections = new HashMap<>();   // grouping-provided topic in grouping-groupings that require provided topic
     protected boolean needsRefresh;
-    private transient String fullNamePattern;                           // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
 
     // Metric Constraints
-    protected Set<MetricConstraint> metricConstraints;
+    private final Set<MetricConstraint> metricConstraints = new LinkedHashSet<>();
     // Logical Constraints
-    protected Set<LogicalConstraint> logicalConstraints;
+    private final Set<LogicalConstraint> logicalConstraints = new LinkedHashSet<>();
     // If-Then-Else Constraints
-    protected Set<IfThenConstraint> ifThenConstraints;
+    private final Set<IfThenConstraint> ifThenConstraints = new LinkedHashSet<>();
 
     // Load-annotated Metric
-    protected Set<String> loadAnnotatedMetricsSet;
+    protected final Set<String> loadAnnotatedMetricsSet = new LinkedHashSet<>();
 
     // Export files
     @Getter @Setter
-    protected List<String> exportFiles;
+    private List<String> exportFiles = new ArrayList<>();
 
+    // Element-to-Full-Name cache, pattern and count
+    protected transient final Map<NamedElement, String> E2N;              //XXX:TODO-LOW: Clear after translation
+    protected transient final AtomicLong elementsCount;
+    @Getter @Setter
+    protected transient String fullNamePattern;                           // all options: {TYPE}, {--NO--CAMEL}, {--NO--MODEL}, {ELEM}, {HASH}, {COUNT}
 
     // ====================================================================================================================================================
     // Constructors
@@ -106,42 +114,11 @@ public class TranslationContext {
     public TranslationContext(boolean initializeDag) {
         // Public staff
         this.DAG = initializeDag ? new DAG(this) : new DAG();
-        this.E2A = new HashMap<>();
-        this.SLO = new HashSet<>();
-        this.C2S = new HashMap<>();
-        this.D2S = new HashMap<>();
-        this.MON = new HashSet<>();
-        this.MONS = new HashSet<>();
-        this.G2R = new HashMap<>();
-        this.G2T = new HashMap<>();
-
-        this.M2MC = new HashMap<>();
-        this.CMVAR = new HashSet<>();
-        this.CMVAR_1 = new HashSet<>();
-        this.MVV = new HashSet<>();
-        this.MVV_CP = new HashMap<>();
-        this.FUNC = new HashSet<>();
-
-        // Topics-Connections-per-Grouping staff
-        this.providedTopics = new HashMap<>();
-        this.requiredTopics = new HashMap<>();
-        this.topicConnections = new HashMap<>();
-        this.needsRefresh = false;
 
         // Element-to-Full-Name staff
         this.E2N = new HashMap<>();
         this.elementsCount = new AtomicLong(0);
         this.fullNamePattern = "{ELEM}";
-
-        // Metric Constraints
-        this.metricConstraints = new HashSet<>();
-        // Logical Constraints
-        this.logicalConstraints = new HashSet<>();
-        // If-Then-Else Constraints
-        this.ifThenConstraints = new HashSet<>();
-
-        // Load-annotated Metric
-        this.loadAnnotatedMetricsSet = new HashSet<>();
     }
 
     // ====================================================================================================================================================
@@ -167,14 +144,9 @@ public class TranslationContext {
         return newGroupingsMap;
     }
 
-    public camel.metric.MetricContext getMetricContextForMetric(Metric m) {
-        Set<camel.metric.MetricContext> set = M2MC.get(m);
+    public MetricContext getMetricContextForMetric(Metric m) {
+        Set<MetricContext> set = M2MC.get(m);
         return set == null ? null : set.iterator().next();
-    }
-
-    public boolean isMVV(String name) {
-        for (String mvv : MVV) if (mvv.equals(name)) return true;
-        return false;
     }
 
     public Set<TranslationContext.MetricConstraint> getMetricConstraints() {
@@ -185,13 +157,14 @@ public class TranslationContext {
         return new HashSet<>(logicalConstraints);
     }
 
-    public Set<TranslationContext.IfThenConstraint> getIfThenConstraints() {
-        return new HashSet<>(ifThenConstraints);
+    public boolean isMVV(String name) {
+        for (String mvv : MVV) if (mvv.equals(name)) return true;
+        return false;
     }
 
-    public Set<String> getMVVs() { return new HashSet<>(MVV); }
+    public Set<String> getMVV() { return new HashSet<>(MVV); }
 
-    public Set<String> getCompositeMetricVariables() { return new HashSet<>(CMVAR); }
+    public Map<String,String> getMvvCP() { return new HashMap<>(MvvCP); }
 
     // ====================================================================================================================================================
     // Map- and Set-related helper methods
@@ -219,15 +192,14 @@ public class TranslationContext {
         else SLO.add(slo.getName());
     }
 
-    public void addComponentSensorPair(ObjectContext objContext, camel.metric.Sensor sensor) {
-        TranslationContext.Sensor tcSensor = new TranslationContext.Sensor(sensor);
+    public void addComponentSensorPair(ObjectContext objContext, Sensor sensor) {
         if (objContext != null) {
             Component comp = objContext.getComponent();
             Data data = objContext.getData();
-            if (comp != null) _addPair(C2S, comp, tcSensor);
-            if (data != null) _addPair(D2S, data, tcSensor);
+            if (comp != null) _addPair(C2S, comp, sensor);
+            if (data != null) _addPair(D2S, data, sensor);
         } else {
-            _addPair(C2S, null, tcSensor);
+            _addPair(C2S, null, sensor);
         }
     }
 
@@ -266,21 +238,25 @@ public class TranslationContext {
         rules.forEach(rule -> addGroupingRulePair(grouping, topic, rule));
     }
 
-    public void addMetricMetricContextPair(Metric m, camel.metric.MetricContext mc) {
+    public void addMetricMetricContextPair(Metric m, MetricContext mc) {
         _addPair(M2MC, m, mc);
     }
 
-    public void addMetricMetricContextPairs(Metric m, List<camel.metric.MetricContext> mcs) {
+    public void addMetricMetricContextPairs(Metric m, List<MetricContext> mcs) {
         _addPair(M2MC, m, mcs);
     }
 
     public void addCompositeMetricVariable(MetricVariable mv) {
-        CMVAR.add(mv.getName());
-        CMVAR_1.add(mv);
+        CMVar.add(mv.getName());
+        CMVar_1.add(mv);
     }
 
     public void addCompositeMetricVariables(List<MetricVariable> mvs) {
         mvs.forEach(this::addCompositeMetricVariable);
+    }
+
+    public void addMVV(@NonNull String mvv) {
+        MVV.add(mvv);
     }
 
     public void addMVV(MetricVariable mvv) {
@@ -298,28 +274,19 @@ public class TranslationContext {
 
     public void addMetricConstraint(UnaryConstraint uc) {
         // Get comparison operator
-        String opName = uc.getComparisonOperator().getName();
-        String op = null;
-        if (StringUtils.isBlank(opName)) throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no operator specified");
-        else if (ComparisonOperatorType.EQUAL.getName().equalsIgnoreCase(opName)) op = "=";
-        else if (ComparisonOperatorType.NOT_EQUAL.getName().equalsIgnoreCase(opName)) op = "<>";
-        else if (ComparisonOperatorType.LESS_THAN.getName().equalsIgnoreCase(opName)) op = "<";
-        else if (ComparisonOperatorType.LESS_EQUAL_THAN.getName().equalsIgnoreCase(opName)) op = "<=";
-        else if (ComparisonOperatorType.GREATER_THAN.getName().equalsIgnoreCase(opName)) op = ">";
-        else if (ComparisonOperatorType.GREATER_EQUAL_THAN.getName().equalsIgnoreCase(opName)) op = ">=";
-        else throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has an invalid operator: "+opName);
+        ComparisonOperatorType op = uc.getComparisonOperator();
+        if (op==null)
+            throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no operator specified");
 
         // Get metric context/variable name
         String metricName = null;
-        if (uc instanceof camel.constraint.MetricConstraint) {
-            camel.constraint.MetricConstraint mc = (camel.constraint.MetricConstraint) uc;
-            camel.metric.MetricContext context = mc.getMetricContext();
+        if (uc instanceof MetricConstraint mc) {
+            MetricContext context = mc.getMetricContext();
             if (context!=null) metricName = context.getName();
             if (StringUtils.isBlank(metricName))
-                throw new IllegalArgumentException("Metric Constraint '"+uc.getName()+"' has no valid metric context");
+                throw new IllegalArgumentException("Metric Constraint '"+mc.getName()+"' has no valid metric context");
         } else
-        if (uc instanceof camel.constraint.MetricVariableConstraint) {
-            camel.constraint.MetricVariableConstraint mvc = (camel.constraint.MetricVariableConstraint) uc;
+        if (uc instanceof MetricVariableConstraint mvc) {
             MetricVariable mv = mvc.getMetricVariable();
             if (mv!=null) metricName = mv.getName();
             if (StringUtils.isBlank(metricName))
@@ -328,38 +295,54 @@ public class TranslationContext {
             throw new IllegalArgumentException("Invalid Unary Constraint '"+uc.getName()+"' specified. Only metric constraints and metric variable constraints are allowed.");
 
         // Add threshold information
-        metricConstraints.add(new MetricConstraint(uc.getName(), metricName, op, uc.getThreshold()));
+        metricConstraints.add(
+                MetricConstraint.builder()
+                        .name(uc.getName())
+                        .metric(metricName)
+                        .comparisonOperator(op)
+                        .threshold(uc.getThreshold())
+                        .build()
+        );
     }
 
-    public void addLogicalConstraint(camel.constraint.LogicalConstraint logicalConstraint, List<DAGNode> nodeList) {
-        // Get logical operator
-        String opName = logicalConstraint.getLogicalOperator().getName();
-        if (StringUtils.isBlank(opName))
+    public void addLogicalConstraint(LogicalConstraint logicalConstraint, List<DAGNode> nodeList) {
+        // Check there is a logical operator
+        LogicalOperatorType op = logicalConstraint.getLogicalOperator();
+        if (op==null)
             throw new IllegalArgumentException("Logical Constraint '"+logicalConstraint.getName()+"' has no operator specified");
 
-        // Get child constraints
+        // Check there are child constraints
         List<String> childConstraintNames = logicalConstraint.getConstraints()
-                .stream().map(NamedElement::getName).collect(Collectors.toList());
+                .stream().map(NamedElement::getName).toList();
         if (childConstraintNames.size()==0)
             throw new IllegalArgumentException("Logical Constraint '"+logicalConstraint.getName()+"' has no child constraints");
 
+        // Set node list
+        logicalConstraint.setConstraintNodes(nodeList);
+
         // Add logical constraint information
-        logicalConstraints.add(new LogicalConstraint(logicalConstraint.getName(), opName, childConstraintNames, nodeList));
+        logicalConstraints.add(logicalConstraint);
     }
 
-    public void addIfThenConstraint(camel.constraint.IfThenConstraint ifThenConstraint) {
+    public void addIfThenConstraint(@NonNull IfThenConstraint ifThenConstraint) {
         String name = ifThenConstraint.getName();
 
-        // Get child constraints
+        // Check child constraints
         Constraint ifConstraint = ifThenConstraint.getIf();
         Constraint thenConstraint = ifThenConstraint.getThen();
         Constraint elseConstraint = ifThenConstraint.getElse();
+        if (ifConstraint==null || thenConstraint==null)
+            throw new IllegalArgumentException("If-Then-Else Constraint '"+ifConstraint.getName()+"' has no IF or no THEN constraint");
         String ifConstraintName = ifConstraint.getName();
         String thenConstraintName = thenConstraint.getName();
+        if (StringUtils.isBlank(ifConstraintName) || StringUtils.isBlank(thenConstraintName))
+            throw new IllegalArgumentException("IF or THEN constraint in If-Then-Else constraint'"+ifConstraint.getName()+"' has no name");
         String elseConstraintName = elseConstraint != null ? elseConstraint.getName() : null;
+        if (elseConstraint!=null && StringUtils.isBlank(elseConstraintName))
+            throw new IllegalArgumentException("ELSE constraint in If-Then-Else constraint'"+ifConstraint.getName()+"' has no name");
 
-        // Add logical constraint information
-        ifThenConstraints.add(new IfThenConstraint(name, ifConstraintName, thenConstraintName, elseConstraintName));
+        // Add if-then-else constraint information
+        ifThenConstraints.add(ifThenConstraint);
     }
 
     // ====================================================================================================================================================
@@ -371,7 +354,7 @@ public class TranslationContext {
         addGroupingTopicPair(grouping, topic);
         String providerGrouping = providedTopics.get(grouping);
         if (providerGrouping != null && !providerGrouping.equals(grouping)) {
-            throw new CamelToEplTranslationException("Topic " + topic + " is provided more than once: grouping-1=" + grouping + ", grouping-2=" + providedTopics.get(grouping));
+            throw new IllegalArgumentException("Topic " + topic + " is provided more than once: grouping-1=" + grouping + ", grouping-2=" + providedTopics.get(grouping));
         }
         providedTopics.put(topic, grouping);
         needsRefresh = true;
@@ -383,8 +366,7 @@ public class TranslationContext {
         log.trace("requireGroupingTopicPair: Not an MVV. Good: grouping={}, topic={}", grouping, topic);
         log.trace("requireGroupingTopicPair: requiredTopics BEFORE: {}", requiredTopics);
         addGroupingTopicPair(grouping, topic);
-        Set<String> groupings = requiredTopics.get(topic);
-        if (groupings == null) requiredTopics.put(topic, groupings = new HashSet<>());
+        Set<String> groupings = requiredTopics.computeIfAbsent(topic, k -> new HashSet<>());
         groupings.add(grouping);
         needsRefresh = true;
         log.trace("requireGroupingTopicPair: requiredTopics AFTER: {}", requiredTopics);
@@ -411,18 +393,16 @@ public class TranslationContext {
                 // get provider grouping of current required topic
                 String providerGrouping = providedTopics.get(requiredTopic);
                 if (providerGrouping == null)
-                    throw new CamelToEplTranslationException("Topic " + requiredTopic + " is not provided in any grouping");
+                    throw new IllegalArgumentException("Topic " + requiredTopic + " is not provided in any grouping");
                 // remove provider grouping from consumer groupings
                 consumerGroupings.remove(providerGrouping);
                 // store required topic in 'topicConnections'
                 if (consumerGroupings.size() > 0) {
                     // ...get provider grouping topics from topicConnections
-                    Map<String, Set<String>> groupingTopics = topicConnections.get(providerGrouping);
-                    if (groupingTopics == null)
-                        topicConnections.put(providerGrouping, groupingTopics = new HashMap<String, Set<String>>());
+                    Map<String, Set<String>> groupingTopics = topicConnections.computeIfAbsent(providerGrouping, k -> new HashMap<>());
                     // ...store consumer groupings for current required topic in provider grouping
                     if (groupingTopics.containsKey(requiredTopic))
-                        throw new CamelToEplTranslationException("INTERNAL ERROR: Required Topic " + requiredTopic + " is already set in provider grouping " + providerGrouping + " in '_TC.topicConnections'");
+                        throw new IllegalArgumentException("INTERNAL ERROR: Required Topic " + requiredTopic + " is already set in provider grouping " + providerGrouping + " in '_TC.topicConnections'");
                     groupingTopics.put(requiredTopic, consumerGroupings);
                 }
             }
@@ -442,13 +422,6 @@ public class TranslationContext {
     // ====================================================================================================================================================
     // Element full name generation methods
 
-    public String getFullNamePattern() {
-        return fullNamePattern;
-    }
-
-    public void setFullNamePattern(String pattern) {
-        fullNamePattern = pattern;
-    }
 
     public String getFullName(NamedElement elem) {
         log.trace("  getFullName: BEGIN: {}", elem);
@@ -466,17 +439,17 @@ public class TranslationContext {
         log.trace("  getFullName:   elem-name={}", elemName);
         String elemType = _getElementType(elem);
         log.trace("  getFullName:   elem-type={}", elemType);
-        log.trace("  getFullName:   elem-eContainer={}", elem.eContainer());
-        String modelName = ((NamedElement) elem.eContainer()).getName();
-        log.trace("  getFullName:   model-name={}", modelName);
-        log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.eContainer().eContainer());
-        String camelName = ((NamedElement) elem.eContainer().eContainer()).getName();
-        log.trace("  getFullName:   camel-name={}", camelName);
+        //log.trace("  getFullName:   elem-eContainer={}", elem.eContainer());
+        //String modelName = ((NamedElement) elem.eContainer()).getName();
+        //log.trace("  getFullName:   model-name={}", modelName);
+        //log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.eContainer().eContainer());
+        //String camelName = ((NamedElement) elem.eContainer().eContainer()).getName();
+        //log.trace("  getFullName:   camel-name={}", camelName);
 
         fullName = fullNamePattern
                 .replace("{TYPE}", elemType)
-                .replace("{CAMEL}", camelName)
-                .replace("{MODEL}", modelName)
+                //.replace("{CAMEL}", camelName)
+                //.replace("{MODEL}", modelName)
                 .replace("{ELEM}", elemName)
                 .replace("{HASH}", Integer.toString(elemName.hashCode()))
                 .replace("{COUNT}", Long.toString(elementsCount.getAndIncrement()))
@@ -494,24 +467,25 @@ public class TranslationContext {
     }
 
     protected String _getElementType(NamedElement e) {
-        Class c = e.getClass();
-        if (false) ;
-        else if (camel.scalability.ScalabilityRule.class.isAssignableFrom(c)) return "RUL";
-        else if (camel.scalability.Event.class.isAssignableFrom(c)) return "EVT";
-        else if (camel.constraint.Constraint.class.isAssignableFrom(c)) return "CON";
-        else if (camel.metric.MetricVariable.class.isAssignableFrom(c)) return "VAR";
-        else if (camel.metric.MetricContext.class.isAssignableFrom(c)) return "CTX";
-        else if (camel.metric.Metric.class.isAssignableFrom(c)) return "MET";
-        else if (camel.metric.MetricTemplate.class.isAssignableFrom(c)) return "TMP";
-        else if (camel.requirement.OptimisationRequirement.class.isAssignableFrom(c)) return "OPT";
-        else if (camel.requirement.ServiceLevelObjective.class.isAssignableFrom(c)) return "SLO";
-        else if (camel.requirement.Requirement.class.isAssignableFrom(c)) return "REQ";
-        else if (camel.metric.ObjectContext.class.isAssignableFrom(c)) return "OBJ";
-        else if (camel.metric.Sensor.class.isAssignableFrom(c)) return "SNR";
-        else if (camel.metric.Function.class.isAssignableFrom(c)) return "FUN";
-        else if (camel.metric.Schedule.class.isAssignableFrom(c)) return "CTX";
-        else if (camel.metric.Window.class.isAssignableFrom(c)) return "CTX";
-        else if (camel.scalability.ScalingAction.class.isAssignableFrom(c)) return "ACT";
+        if (e==null) {
+            log.error("Null element passed");
+        }
+        else if (e instanceof ScalabilityRule) return "RUL";
+        else if (e instanceof Event) return "EVT";
+        else if (e instanceof Constraint) return "CON";
+        else if (e instanceof MetricVariable) return "VAR";
+        else if (e instanceof MetricContext) return "CTX";
+        else if (e instanceof Metric) return "MET";
+        else if (e instanceof MetricTemplate) return "TMP";
+        else if (e instanceof OptimisationRequirement) return "OPT";
+        else if (e instanceof ServiceLevelObjective) return "SLO";
+        else if (e instanceof Requirement) return "REQ";
+        else if (e instanceof ObjectContext) return "OBJ";
+        else if (e instanceof Sensor) return "SNR";
+        else if (e instanceof Function) return "FUN";       //XXX:TODO:  Or FunctionDefinition ??
+        else if (e instanceof Schedule) return "CTX";
+        else if (e instanceof Window) return "CTX";
+        else if (e instanceof ScalingAction) return "ACT";
         else {
             //throw new ModelAnalysisException( String.format("Unknown element type: %s  class=%s", e.getName(), e.getClass().getName()) );
             log.error("Unknown element type: {}  class={}", e.getName(), e.getClass().getName());
@@ -545,59 +519,132 @@ public class TranslationContext {
     // Metric and Logical Constraint helper class
 
     @lombok.Data
-    public static class MetricConstraint {
-        private final String name;
-        private final String metric;
-        private final String operator;
-        private final double threshold;
+    @SuperBuilder
+    @NoArgsConstructor
+    public static class NamedElement {
+        protected String name;
+        protected String description;
+        protected List<Annotation> annotations = new ArrayList<>();
     }
 
-    @lombok.Data
-    public static class LogicalConstraint {
-        private final String name;
-        private final String operator;
-        private final List<String> constraints;
-        private final List<DAGNode> constraintNodes;
-    }
+    // ------------------------------------------------------------------------
 
     @lombok.Data
-    public static class IfThenConstraint {
-        private final String name;
-        private final String ifConstraintName;
-        private final String thenConstraintName;
-        private final String elseConstraintName;
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Constraint extends NamedElement {
     }
 
-    @lombok.Data
+    @Getter
     @RequiredArgsConstructor
-    public static class MetricContext {
-        private final String name;
-        private final String component;
-        private final Schedule schedule;
+    public enum ComparisonOperatorType {
+        GREATER_THAN("GREATER_THAN", ">"),
+        GREATER_EQUAL_THAN("GREATER_EQUAL_THAN", ">="),
+        LESS_THAN("LESS_THAN", "<"),
+        LESS_EQUAL_THAN("LESS_EQUAL_THAN", "<="),
+        EQUAL("EQUAL", "="),
+        NOT_EQUAL("NOT_EQUAL", "<>");
 
-        public MetricContext(camel.metric.MetricContext mc) {
+        private final String name;
+        private final String operator;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class UnaryConstraint extends Constraint {
+        private ComparisonOperatorType comparisonOperator;
+        private double threshold;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class MetricConstraint extends UnaryConstraint {
+        private String metric;
+        private MetricContext metricContext;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class MetricVariableConstraint extends UnaryConstraint {
+        private MetricVariable metricVariable;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class CompositeConstraint extends Constraint {
+    }
+
+    public enum LogicalOperatorType { AND, OR, XOR }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class LogicalConstraint extends CompositeConstraint {
+        private LogicalOperatorType logicalOperator;
+        private List<Constraint> constraints;
+        private List<DAGNode> constraintNodes;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class IfThenConstraint extends CompositeConstraint {
+        private Constraint ifConstraint;
+        private Constraint thenConstraint;
+        private Constraint elseConstraint;
+
+        public Constraint getIf() { return ifConstraint; }
+        public Constraint getThen() { return thenConstraint; }
+        public Constraint getElse() { return elseConstraint; }
+    }
+
+    // ------------------------------------------------------------------------
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class MetricContext extends NamedElement {
+        private String component;
+        private Metric metric;
+        private Schedule schedule;
+        private ObjectContext objectContext;
+
+        /*public MetricContext(camel.metric.MetricContext mc) {
             name = mc.getName();
             component = mc.getObjectContext()!=null && mc.getObjectContext().getComponent()!=null
                     && StringUtils.isNotBlank(mc.getObjectContext().getComponent().getName())
                             ? mc.getObjectContext().getComponent().getName()
                             : null;
             schedule = (mc.getSchedule()!=null) ? new TranslationContext.Schedule(mc.getSchedule()) : null;
-        }
+        }*/
     }
 
     @lombok.Data
-    @RequiredArgsConstructor
-    public static class Schedule {
-        private final String name;
-        private final String unit;
-        private final long interval;
-        private final int repetitions;
-        private final Date start;
-        private final Date end;
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Schedule extends NamedElement {
+        private String unit;
+        private long interval;
+        private int repetitions;
+        private Date start;
+        private Date end;
 
-        public Schedule(camel.metric.Schedule s) {
+        /*public Schedule(camel.metric.Schedule s) {
             this(s.getName(), s.getTimeUnit().getName(), s.getInterval(), s.getRepetitions(), s.getStart(), s.getEnd());
-        }
+        }*/
 
         public long getIntervalInMillis() {
             if (unit==null) return interval;
@@ -606,16 +653,310 @@ public class TranslationContext {
     }
 
     @lombok.Data
-    @RequiredArgsConstructor
-    public static class Sensor {
-        private final String name;
-        private final String configuration;
-        private final boolean isPush;
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Sensor extends Component {
+        private String configurationStr;
+        private boolean isPush;
+        public Map<String,String> additionalProperties;
 
-        public Sensor(camel.metric.Sensor sensor) {
+        public boolean isPullSensor() { return !isPush; }
+        public boolean isPushSensor() { return isPush; }
+
+        public PullSensor getPullSensor() {
+            if (this instanceof PullSensor)
+                return (PullSensor) this;
+            throw new IllegalArgumentException("Not a Pull sensor: "+this.getName());
+        }
+
+        public PushSensor getPushSensor() {
+            if (this instanceof PushSensor)
+                return (PushSensor) this;
+            throw new IllegalArgumentException("Not a Push sensor: "+this.getName());
+        }
+
+        /*public Sensor(camel.metric.Sensor sensor) {
             this.name = sensor.getName();
             this.configuration = sensor.getConfiguration();
             this.isPush = sensor.isIsPush();
+        }*/
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class PushSensor extends Sensor {
+        private int port;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class PullSensor extends Sensor {
+        private String className;
+        private Map<String,String> configuration;
+        private Interval interval;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    public static class Interval {
+        private String unit;
+        private int period;
+    }
+
+    @SuperBuilder
+    @NoArgsConstructor
+    public static class LoadMetricVariable extends MetricVariable {
+        public LoadMetricVariable(String name, MetricContext context) {
+            setName(name);
+            setMetricContext(context);
         }
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    public static class Annotation {
+        protected String id;
+        protected String uri;
+        protected boolean implemented;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Component extends NamedElement {
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Data extends NamedElement {
+        private DataSource dataSource;
+        private List<Data> includedData;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class DataSource extends NamedElement {
+        private boolean external;
+        private Component component;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Monitor extends NamedElement {  // See: eu.melodic.event.models.interfaces.Monitor
+        private String metric;
+        private String component;
+        private Sensor sensor;
+        private List<Sink> sinks;
+        private Map<String,String> tags;
+        private Map<String,Object> additionalProperties;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Sink extends NamedElement {  // See: eu.melodic.event.models.interfaces.Sink
+        public enum Type { JMS }
+
+        private Type type;
+        private String component;
+        private Sensor sensor;
+        private List<Sink> sinks;
+        private Map<String,String> configuration;
+        private Map<String,Object> additionalProperties;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Metric extends NamedElement {
+        protected MetricTemplate metricTemplate;
+    }
+
+    public enum ValueType {
+        INT_TYPE, STRING_TYPE, BOOLEAN_TYPE, FLOAT_TYPE, DOUBLE_TYPE,
+        IntType, StringType, BooleanType, FloatType, DoubleType
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class MetricTemplate extends NamedElement {
+        private ValueType valueType;
+        private short valueDirection;
+        private String unit;
+        private MeasurableAttribute attribute;
+    }
+
+    /*@lombok.Data
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Unit extends NamedElement {
+    }*/
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class MeasurableAttribute extends Attribute {
+        private List<Sensor> sensors;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Attribute extends NamedElement {
+        private Object value;
+        private ValueType valueType;
+        private String unit;
+        private Object minValue;
+        private Object maxValue;
+        private boolean minInclusive;
+        private boolean maxInclusive;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class MetricVariable extends Metric {
+        private boolean currentConfiguration;
+        private Component component;
+        private boolean onNodeCandidates;
+        private String formula;
+        private List<Metric> componentMetrics;
+        private TranslationContext.MetricContext metricContext;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class ObjectContext extends NamedElement {
+        private Component component;
+        private Data data;
+        //private Communication communication;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class ScalabilityRule extends NamedElement {
+        private Event event;
+        private List<Action> actions;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Event extends NamedElement {
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Action extends NamedElement {
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class ScalingAction extends NamedElement {
+        private Component component;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class OptimisationRequirement extends Requirement {   // SoftRequirement
+        private double priority;
+        private MetricContext metricContext;
+        private MetricVariable metricVariable;
+        private boolean minimise;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class ServiceLevelObjective extends Requirement { // HardRequirement
+        private Constraint constraint;
+        private Event violationEvent;
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Requirement extends NamedElement {
+    }
+
+    @lombok.Data
+    @SuperBuilder
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Function extends NamedElement {
+        private String expression;
+        private List<String> arguments;
+    }
+
+    public enum WindowType { FIXED, SLIDING }
+    public enum WindowSizeType { MEASUREMENTS_ONLY, TIME_ONLY, FIRST_MATCH, BOTH_MATCH, TIME_ACCUM, TIME_ORDER }
+
+    @lombok.Data
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class Window extends NamedElement {
+        private String timeUnit;
+        private WindowType windowType;
+        private WindowSizeType sizeType;
+        private long measurementSize;
+        private long timeSize;
+        private List<WindowProcessing> processings;
+    }
+
+    public enum WindowProcessingType { GROUP, SORT, RANK }
+
+    @lombok.Data
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class WindowProcessing extends NamedElement {
+        private WindowProcessingType processingType;
+        private List<WindowCriterion> groupingCriteria;
+        private List<WindowCriterion> rankingCriteria;
+    }
+
+    public enum CriterionType { INSTANCE, HOST, ZONE, REGION, CLOUD, TIMESTAMP, CUSTOM }
+
+    @lombok.Data
+    @NoArgsConstructor
+    @EqualsAndHashCode(callSuper = true)
+    public static class WindowCriterion extends NamedElement {
+        private Metric metric;
+        private CriterionType type;
+        private String custom;
+        private boolean ascending;
     }
 }

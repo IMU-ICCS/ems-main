@@ -176,7 +176,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.getSensors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
 
         // Retrieve sensor information
-        List<Monitor> sensors = coordinator.getSensorsOfCamelModel(applicationId);
+        List<TranslationContext.Monitor> monitors = coordinator.getSensorsOfCamelModel(applicationId);
 
         // Update watermark
         watermark.setUser("EMS");
@@ -186,10 +186,10 @@ public class ControlServiceController {
         // Print debug info about sensors
         if (log.isDebugEnabled()) {
             log.debug("ControlServiceController.getSensors(): Printing monitors for Request: {}", requestUuid);
-            sensors.forEach(m -> {
+            monitors.forEach(m -> {
                 log.debug("ControlServiceController.getSensors():     Monitor: metric/topic={}, component={}, additional-properties={}",
                         m.getMetric(), m.getComponent(), m.getAdditionalProperties());
-                Sensor s = m.getSensor();
+                TranslationContext.Sensor s = m.getSensor();
                 if (s.isPushSensor())
                     log.debug("ControlServiceController.getSensors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
                 else
@@ -198,9 +198,19 @@ public class ControlServiceController {
             });
         }
 
+        // Prepare monitors list
+        List<Monitor> responseMonitors = monitors.stream().map(m -> {
+            Monitor mon = new MonitorImpl();
+            mon.setComponent(m.getComponent());
+            mon.setMetric(m.getMetric());
+            mon.setSensor(...); //XXX:TODO:....
+            mon.setSinks(...); //XXX:TODO:....
+            return mon;
+        }).toList();
+
         // Prepare response
         MonitorsDataResponse response = new MonitorsDataResponseImpl();
-        response.setMonitors(sensors);
+        response.setMonitors(responseMonitors);
         response.setWatermark(watermark);
         HttpEntity<MonitorsDataResponse> entity = coordinator.createHttpEntity(MonitorsDataResponse.class, response, jwtToken);
         log.info("ControlServiceController.getSensors(): Response: {}", response);

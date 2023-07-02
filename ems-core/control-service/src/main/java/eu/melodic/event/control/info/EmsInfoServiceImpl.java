@@ -226,7 +226,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         String camelModelPath = controlServiceCoordinator.getCamelModelPath();
         if (StringUtils.isNotBlank(camelModelPath)) {
             TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelPath);
-            Set<String> groupings = _TC.G2T.keySet();
+            Set<String> groupings = _TC.getG2T().keySet();
             ArrayList<String> orderedGroupings = new ArrayList<>(groupings);
             orderedGroupings.sort((o1, o2) -> {
                 GROUPING g1 = GROUPING.valueOf(o1);
@@ -235,16 +235,16 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             });
             translatorInfo.put("camel-model-path", camelModelPath);
             translatorInfo.put("groupings", orderedGroupings);
-            translatorInfo.put("actions-per-event", _TC.E2A);
-            translatorInfo.put("slo", _TC.SLO);
-            translatorInfo.put("monitors", _TC.MONS);
-            translatorInfo.put("rules-per-grouping", _TC.G2R);
-            translatorInfo.put("destinations-per-grouping", _TC.G2T);
-            translatorInfo.put("composite-metric-variables", _TC.CMVAR);
-            translatorInfo.put("metric-variable-values", _TC.MVV);
-            translatorInfo.put("metric-variable-values-for-CP", _TC.MVV_CP);
+            translatorInfo.put("actions-per-event", _TC.getE2A());
+            translatorInfo.put("slo", _TC.getSLO());
+            translatorInfo.put("monitors", _TC.getMONS());
+            translatorInfo.put("rules-per-grouping", _TC.getG2R());
+            translatorInfo.put("destinations-per-grouping", _TC.getG2T());
+            translatorInfo.put("composite-metric-variables", _TC.getCMVar());
+            translatorInfo.put("metric-variable-values", _TC.getMVV());
+            translatorInfo.put("metric-variable-values-for-CP", _TC.getMvvCP());
             translatorInfo.put("destination-connections", _TC.getTopicConnections());
-            translatorInfo.put("function-definitions", _TC.FUNC.stream()
+            translatorInfo.put("function-definitions", _TC.getFUNC().stream()
                     .map(FunctionDefinition::toString).collect(Collectors.toList()));
             translatorInfo.put("export-files", _TC.getExportFiles());
         }
@@ -286,7 +286,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         // Collecting EMS clients' metrics
         List<String> clientIds = controlServiceCoordinator.clientList();
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
-        for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).collect(Collectors.toList())) {
+        for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).toList()) {
             /*log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
             Object o = baguetteServer.readFromClient(clientId, "SHOW-STATS", org.slf4j.event.Level.DEBUG);
             log.trace("updateClientMetricValues(): Metrics from client: {}, metrics: {}", clientId, o);

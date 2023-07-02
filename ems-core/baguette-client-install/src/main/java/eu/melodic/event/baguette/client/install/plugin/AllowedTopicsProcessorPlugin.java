@@ -11,10 +11,9 @@ package eu.melodic.event.baguette.client.install.plugin;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.InstallationContextProcessorPlugin;
+import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.StrUtil;
-import eu.melodic.event.models.interfaces.KeyValuePair;
-import eu.melodic.event.models.interfaces.Monitor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +39,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
         Set<String> addedTopicsSet = new HashSet<>();
 
         boolean first = true;
-        for (Monitor monitor : task.getTranslationContext().MON) {
+        for (TranslationContext.Monitor monitor : task.getTranslationContext().getMON()) {
             try {
                 log.trace("AllowedTopicsProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
 
@@ -54,31 +53,24 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                 }
 
                 // Get sensor configuration (as a list of KeyValuePair's)
-                List<KeyValuePair> sensorConfig = null;
+                Map<String,String> sensorConfig = null;
                 if (monitor.getSensor().isPullSensor()) {
                     // Pull Sensor
                     sensorConfig = monitor.getSensor().getPullSensor().getConfiguration();
                 } else {
                     // Push Sensor
-                    Map<String, Object> props = monitor.getSensor().getPushSensor().getAdditionalProperties();
-                    if (props!=null && props.get("configuration") instanceof List) {
-                        List list = (List) props.get("configuration");
-                        if (list.size()>0 && list.get(0) instanceof KeyValuePair) {
-                            sensorConfig = list;
-                        }
-                    }
+                    sensorConfig = monitor.getSensor().getPushSensor().getAdditionalProperties();
                 }
 
                 // Process Destination aliases, if specified in configuration
                 if (sensorConfig!=null) {
-                    Optional<String> aliases = sensorConfig.stream()
-                            //.filter(pair -> EmsConstant.COLLECTOR_DESTINATION_ALIASES.equals(pair.getKey()))
-                            .filter(pair -> StrUtil.compareNormalized(pair.getKey(), EmsConstant.COLLECTOR_DESTINATION_ALIASES))
-                            .map(KeyValuePair::getValue)
-                            .findAny();
+                    String k = sensorConfig.keySet().stream()
+                            .filter(key -> StrUtil.compareNormalized(key, EmsConstant.COLLECTOR_DESTINATION_ALIASES))
+                            .findAny().orElse(null);
+                    String aliases = (k!=null) ? sensorConfig.get(k) : null;
 
-                    if (aliases.isPresent() && StringUtils.isNotBlank(aliases.get())) {
-                        for (String alias : aliases.get().trim().split(EmsConstant.COLLECTOR_DESTINATION_ALIASES_DELIMITERS)) {
+                    if (StringUtils.isNotBlank(aliases)) {
+                        for (String alias : aliases.trim().split(EmsConstant.COLLECTOR_DESTINATION_ALIASES_DELIMITERS)) {
                             if (!(alias=alias.trim()).isEmpty()) {
                                 if (!alias.equals(metricName)) {
                                     sbAllowedTopics.append(", ");

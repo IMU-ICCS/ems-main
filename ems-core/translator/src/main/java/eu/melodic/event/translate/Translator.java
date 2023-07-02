@@ -9,10 +9,7 @@
 
 package eu.melodic.event.translate;
 
-import camel.core.CamelModel;
-
 public interface Translator {
     TranslationContext translate(String camelModelPath);
-    TranslationContext translate(CamelModel camelModel);
     void printResults(TranslationContext translationContext, String exportName);
 }

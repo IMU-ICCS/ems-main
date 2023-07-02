@@ -7,16 +7,17 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.translate.analyze;
+package eu.melodic.event.translate.dag;
 
-import camel.core.NamedElement;
-import camel.metric.MetricContext;
+import eu.melodic.event.translate.Grouping;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.TranslationContext.MetricContext;
+import eu.melodic.event.translate.TranslationContext.NamedElement;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DAGNode {
-    private static AtomicLong counter = new AtomicLong();
+    private final static AtomicLong counter = new AtomicLong();
     final NamedElement element;
     final String elementName;
     private final long _id = counter.getAndIncrement();
@@ -41,9 +42,8 @@ public class DAGNode {
         _name = fullName;
         _toString = String.format("NODE %s", _name);
 
-        if (elem instanceof MetricContext) {
-            MetricContext mc = (MetricContext) elem;
-            metricContext = new TranslationContext.MetricContext(mc);
+        if (elem instanceof MetricContext mc) {
+            metricContext = mc;
         } else
             metricContext = null;
     }

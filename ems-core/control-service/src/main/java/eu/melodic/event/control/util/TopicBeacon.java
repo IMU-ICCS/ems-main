@@ -19,7 +19,6 @@ import eu.melodic.event.control.properties.TopicBeaconProperties;
 import eu.melodic.event.translate.TranslationContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.scheduling.TaskScheduler;
@@ -81,6 +80,11 @@ public class TopicBeacon implements InitializingBean {
         }
     }
 
+    private <T>Set<T> emptyIfNull(Set<T> s) {
+        if (s==null) return Collections.emptySet();
+        return s;
+    }
+
     public void transmitInfo() throws JMSException {
         log.debug("Topic Beacon: Start transmitting info: {}", new Date());
         updateModelVersion();
@@ -93,7 +97,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitHeartbeat() throws JMSException {
-        if (SetUtils.emptyIfNull(properties.getHeartbeatTopics()).isEmpty()) return;
+        if (emptyIfNull(properties.getHeartbeatTopics()).isEmpty()) return;
 
         String message = "TOPIC BEACON HEARTBEAT "+new Date();
         log.debug("Topic Beacon: Transmitting Heartbeat info: message={}, topics={}", message, properties.getHeartbeatTopics());
@@ -101,7 +105,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitThresholdInfo() {
-        if (SetUtils.emptyIfNull(properties.getThresholdTopics()).isEmpty()) return;
+        if (emptyIfNull(properties.getThresholdTopics()).isEmpty()) return;
 
         if (coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId())==null)
             return;
@@ -120,7 +124,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitInstanceInfo() throws JMSException {
-        if (SetUtils.emptyIfNull(properties.getInstanceTopics()).isEmpty()) return;
+        if (emptyIfNull(properties.getInstanceTopics()).isEmpty()) return;
 
         if (coordinator.getBaguetteServer().isServerRunning()) {
             log.debug("Topic Beacon: Transmitting Instance info: topics={}", properties.getInstanceTopics());
@@ -137,7 +141,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitPredictionInfo() {
-        if (SetUtils.emptyIfNull(properties.getPredictionTopics()).isEmpty()) return;
+        if (emptyIfNull(properties.getPredictionTopics()).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
@@ -182,7 +186,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     public void transmitSloViolatorInfo() {
-        if (SetUtils.emptyIfNull(properties.getSloViolationDetectorTopics()).isEmpty()) return;
+        if (emptyIfNull(properties.getSloViolationDetectorTopics()).isEmpty()) return;
 
         String modelId = coordinator.getCurrentCamelModelId();
         log.trace("Topic Beacon: transmitSloViolatorInfo: current-camel-model-id: {}", modelId);
@@ -191,7 +195,7 @@ public class TopicBeacon implements InitializingBean {
         log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
 
         // Skip event sending if payload is empty
-        if (sloMetricDecompositions.get("constraints") == null || ((List) sloMetricDecompositions.get("constraints")).size() == 0) {
+        if (sloMetricDecompositions.get("constraints") == null || ((List<?>) sloMetricDecompositions.get("constraints")).size() == 0) {
             log.debug("Topic Beacon: transmitSloViolatorInfo: Payload is empty. Not sending event");
             return;
         }

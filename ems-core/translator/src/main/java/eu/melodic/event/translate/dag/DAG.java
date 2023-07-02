@@ -7,10 +7,10 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.translate.analyze;
+package eu.melodic.event.translate.dag;
 
-import camel.core.NamedElement;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.TranslationContext.NamedElement;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.engine.GraphvizV8Engine;
@@ -39,10 +39,10 @@ public class DAG {
     private Map<NamedElement, DAGNode> _namedElementToNodesMapping;
     private Map<String, DAGNode> _nameToNodesMapping;
 
+
     public DAG() {
         // let everything 'null'
     }
-
     public DAG(TranslationContext _TC) {
         this._TC = _TC;
         _graph = new DirectedAcyclicGraph<>(DAGEdge.class);
@@ -344,7 +344,7 @@ public class DAG {
             String label;
             if (node.element != null) {
                 if (node.getGrouping() != null) {
-                    label = String.format("%s\n[%s]", node.getName(), "" + node.getGrouping());
+                    label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
                 } else {
                     label = node.getName();
                 }
