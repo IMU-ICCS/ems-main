@@ -168,7 +168,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     preloadCamelModel, preloadCpModel);
             processNewModel(preloadCamelModel, preloadCpModel, null, null, null);
         } else {
-            log.info("ControlServiceCoordinator.preloadModels(): No CAMEL model to preload");
+            log.info("ControlServiceCoordinator.preloadModels(): No model to preload");
         }
     }
 
@@ -255,11 +255,11 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (!properties.isSkipTranslation()) {
             setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
 
-            log.info("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: camel-model-id={}", camelModelId);
+            log.info("ControlServiceCoordinator.processNewModel(): Model translation: model-id={}", camelModelId);
             Translator translator =
                     applicationContext.getBean(Translator.class);
             _TC = translator.translate(camelModelId);
-            log.debug("ControlServiceCoordinator.processNewModel(): CAMEL-to-EPL rule translation: RESULTS: {}", _TC);
+            log.debug("ControlServiceCoordinator.processNewModel(): Model translation: RESULTS: {}", _TC);
 
             // serialize 'TranslationContext' to file
             String fileName = properties.getTcSaveFile();
@@ -321,7 +321,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             }
 
         } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping CAMEL-to-EPL rule translation due to configuration");
+            log.warn("ControlServiceCoordinator.processNewModel(): Skipping translation due to configuration");
             _TC = new TranslationContext();
 
             // unserialize 'TranslationContext' from file
@@ -860,10 +860,10 @@ public class ControlServiceCoordinator implements InitializingBean {
         TranslationContext.NamedElement element = constraintNode.getElement();
         String elementName = constraintNode.getElementName();
         String elementClassName = ((Object)element).getClass().getName();
-        if (element instanceof camel.constraint.MetricConstraint) {
+        if (element instanceof TranslationContext.MetricConstraint) {
             return mcMap.get(elementName);
         } else
-        if (element instanceof camel.constraint.LogicalConstraint) {
+        if (element instanceof TranslationContext.LogicalConstraint) {
             TranslationContext.LogicalConstraint lc = lcMap.get(elementName);
 
             // decompose child constraints

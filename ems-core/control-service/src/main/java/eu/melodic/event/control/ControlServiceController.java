@@ -162,6 +162,25 @@ public class ControlServiceController {
 
     // ------------------------------------------------------------------------------------------------------------
 
+    //XXX:TODO: MOVE TO A SERVICE (maybe in Translator?)
+    private List<KeyValuePair> convertToKeyValuePairList(Map<String,String> map) {
+        return map.entrySet().stream()
+                .map(e -> {
+                    KeyValuePair pair = new KeyValuePairImpl();
+                    pair.setKey(e.getKey());
+                    pair.setValue(e.getValue());
+                    return pair;
+                })
+                .toList();
+    }
+
+    private Interval convertInterval(TranslationContext.Interval interval) {
+        Interval i = new IntervalImpl();
+        i.setUnit(Interval.UnitType.valueOf( interval.getUnit() ));
+        i.setPeriod(interval.getPeriod());
+        return i;
+    }
+
     @RequestMapping(value = "/monitors", method = POST)
     public HttpEntity<MonitorsDataResponse> getSensors(@RequestBody MonitorsDataRequestImpl request,
                                                        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -200,11 +219,33 @@ public class ControlServiceController {
 
         // Prepare monitors list
         List<Monitor> responseMonitors = monitors.stream().map(m -> {
+            // Sensor
+            Sensor sensor;
+            if (m.getSensor().isPullSensor()) {
+                PullSensor pullSensor = new PullSensorImpl();
+                sensor = new Sensor(pullSensor);
+                pullSensor.setClassName(m.getSensor().getPullSensor().getClassName());
+                pullSensor.setConfiguration( convertToKeyValuePairList(m.getSensor().getPullSensor().getConfiguration()) );
+                pullSensor.setInterval( convertInterval(m.getSensor().getPullSensor().getInterval()) );
+            } else {
+                PushSensor pushSensor = new PushSensorImpl();
+                sensor = new Sensor(pushSensor);
+            }
+
+            // Sinks
+            List<Sink> sinks = m.getSinks().stream().map(s -> {
+                Sink sink = new SinkImpl();
+                sink.setType(Sink.TypeType.valueOf(s.getType().toString()));
+                sink.setConfiguration(convertToKeyValuePairList(s.getConfiguration()));
+                return sink;
+            }).toList();
+
+            // Monitor
             Monitor mon = new MonitorImpl();
             mon.setComponent(m.getComponent());
             mon.setMetric(m.getMetric());
-            mon.setSensor(...); //XXX:TODO:....
-            mon.setSinks(...); //XXX:TODO:....
+            mon.setSensor(sensor);
+            mon.setSinks(sinks);
             return mon;
         }).toList();
 

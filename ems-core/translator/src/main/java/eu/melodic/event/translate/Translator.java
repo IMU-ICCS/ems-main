@@ -10,6 +10,6 @@
 package eu.melodic.event.translate;
 
 public interface Translator {
-    TranslationContext translate(String camelModelPath);
+    TranslationContext translate(String modelPath);
     void printResults(TranslationContext translationContext, String exportName);
 }

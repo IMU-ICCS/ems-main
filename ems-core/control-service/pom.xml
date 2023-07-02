@@ -112,19 +112,12 @@
             <groupId>eu.melodic.event</groupId>
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
-            <exclusions>
+            <!--<exclusions>
                 <exclusion>
                     <groupId>eu.melodic.cdo</groupId>
                     <artifactId>client</artifactId>
                 </exclusion>
-            </exclusions>
-        </dependency>
-        <!--XXX:SPLIT:  TO BE REMOVED -->
-        <dependency>
-            <groupId>eu.melodic.cdo</groupId>
-            <artifactId>client</artifactId>
-            <version>${cdo-client.version}</version>
-            <classifier>repackaged</classifier>
+            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>
@@ -187,6 +180,14 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-validator -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate-validator.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.apache.commons</groupId>

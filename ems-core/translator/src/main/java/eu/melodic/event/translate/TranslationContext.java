@@ -616,19 +616,11 @@ public class TranslationContext {
     @NoArgsConstructor
     @EqualsAndHashCode(callSuper = true)
     public static class MetricContext extends NamedElement {
+        @Getter
         private String component;
         private Metric metric;
         private Schedule schedule;
         private ObjectContext objectContext;
-
-        /*public MetricContext(camel.metric.MetricContext mc) {
-            name = mc.getName();
-            component = mc.getObjectContext()!=null && mc.getObjectContext().getComponent()!=null
-                    && StringUtils.isNotBlank(mc.getObjectContext().getComponent().getName())
-                            ? mc.getObjectContext().getComponent().getName()
-                            : null;
-            schedule = (mc.getSchedule()!=null) ? new TranslationContext.Schedule(mc.getSchedule()) : null;
-        }*/
     }
 
     @lombok.Data
@@ -641,10 +633,6 @@ public class TranslationContext {
         private int repetitions;
         private Date start;
         private Date end;
-
-        /*public Schedule(camel.metric.Schedule s) {
-            this(s.getName(), s.getTimeUnit().getName(), s.getInterval(), s.getRepetitions(), s.getStart(), s.getEnd());
-        }*/
 
         public long getIntervalInMillis() {
             if (unit==null) return interval;
@@ -675,12 +663,6 @@ public class TranslationContext {
                 return (PushSensor) this;
             throw new IllegalArgumentException("Not a Push sensor: "+this.getName());
         }
-
-        /*public Sensor(camel.metric.Sensor sensor) {
-            this.name = sensor.getName();
-            this.configuration = sensor.getConfiguration();
-            this.isPush = sensor.isIsPush();
-        }*/
     }
 
     @lombok.Data

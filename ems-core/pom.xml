@@ -34,12 +34,10 @@
         <java.version>17</java.version>
         <maven.compiler.release>17</maven.compiler.release>
 
-        <!-- Melodic component versions -->
+        <!-- Melodic components version -->
         <melodic.version>${revision}</melodic.version>
 
-        <!--XXX:SPLIT:  TO BE REMOVED -->
-        <camel.version>6.0.0-SNAPSHOT</camel.version>
-        <cdo-client.version>6.0.0-SNAPSHOT</cdo-client.version>
+        <!-- Authorization client version -->
         <!--XXX:SPLIT: <authorization.version>4.5.0-SNAPSHOT</authorization.version>-->
 
         <!-- Versions for common plugins -->
@@ -64,6 +62,8 @@
         <activemq.version>5.17.3</activemq.version>
         <!-- Jasypt version -->
         <jasypt.starter.version>3.0.5</jasypt.starter.version>
+        <!-- Hibernate validator version -->
+        <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
 
         <!-- Jackson and Snakeyaml - Used in baguette-client-install -->
         <jackson.version>2.15.0</jackson.version>
