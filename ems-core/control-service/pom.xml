@@ -53,7 +53,7 @@
     </properties>
 
     <dependencies>
-        <!-- Melodic dependencies -->
+        <!-- JWT dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
