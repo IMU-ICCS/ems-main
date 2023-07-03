@@ -19,6 +19,7 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
+import eu.melodic.event.translate.NoopTranslator;
 import eu.melodic.event.translate.Translator;
 import eu.melodic.event.translate.mvv.MetricVariableValuesService;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
@@ -72,6 +73,9 @@ public class ControlServiceCoordinator implements InitializingBean {
     private final WebClient webClient;
     private final PasswordUtil passwordUtil;
 
+    private final List<Translator> translatorImplementations;
+    private Translator translator;                      // Will be populated in 'afterPropertiesSet()'
+
     private final List<MetricVariableValuesService> mvvServiceImplementations;
     private MetricVariableValuesService mvvService;     // Will be populated in 'afterPropertiesSet()'
 
@@ -99,6 +103,18 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        initTranslator();
+        initMvvService();
+
+        // Run configuration checks and throw exceptions early (before actually using EMS)
+        if (properties.isSkipTranslation()) {
+            if (StringUtils.isBlank(properties.getTcLoadFile()))
+                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file or pattern has been set. Check property: control.tc-load-file");
+            log.warn("Model translation will be skipped, and a Translation Context file will be used: tc-file-pattern={}", properties.getTcLoadFile());
+        }
+    }
+
+    private void initMvvService() {
         // Initialize MVV service
         log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service implementations: {}", mvvServiceImplementations);
         if (mvvServiceImplementations.size() == 1) {
@@ -114,13 +130,23 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service implementation selected: {}", mvvService);
         mvvService.init();
         log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service initialized");
+    }
 
-        // Run configuration checks and throw exceptions early (before actually using EMS)
-        if (properties.isSkipTranslation()) {
-            if (StringUtils.isBlank(properties.getTcLoadFile()))
-                throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file or pattern has been set. Check property: control.tc-load-file");
-            log.warn("Model translation will be skipped, and a Translation Context file will be used: tc-file-pattern={}", properties.getTcLoadFile());
+    private void initTranslator() {
+        log.debug("ControlServiceCoordinator.getTranslator():  Translator implementations: {}", translatorImplementations);
+        if (translatorImplementations.size() == 1) {
+            translator = translatorImplementations.get(0);
+        } else if (translatorImplementations.isEmpty()) {
+            throw new IllegalArgumentException("No Translator implementations found");
+        } else {
+            translator = translatorImplementations.stream()
+                    .filter(s -> s!=null && !(s instanceof NoopTranslator))
+                    .findAny()
+                    .orElse(new NoopTranslator());
         }
+        log.debug("ControlServiceCoordinator.getTranslator():  Translator implementation selected: {}", translator);
+
+        log.info("ControlServiceCoordinator: Effective translator: {}", translator.getClass().getName());
     }
 
     public String getServerIpAddress() {
@@ -256,8 +282,9 @@ public class ControlServiceCoordinator implements InitializingBean {
             setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
 
             log.info("ControlServiceCoordinator.processNewModel(): Model translation: model-id={}", camelModelId);
-            Translator translator =
-                    applicationContext.getBean(Translator.class);
+//            Translator translator =
+//                    applicationContext.getBean(Translator.class);
+            log.info("ControlServiceCoordinator.processNewModel(): Effective translator: {}", translator.getClass().getName());
             _TC = translator.translate(camelModelId);
             log.debug("ControlServiceCoordinator.processNewModel(): Model translation: RESULTS: {}", _TC);
 
@@ -344,8 +371,8 @@ public class ControlServiceCoordinator implements InitializingBean {
                     reader.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
 
-                    Translator translator =
-                            applicationContext.getBean(Translator.class);
+//                    Translator translator =
+//                            applicationContext.getBean(Translator.class);
                     translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
