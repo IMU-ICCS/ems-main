@@ -282,9 +282,6 @@ public class ControlServiceCoordinator implements InitializingBean {
             setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
 
             log.info("ControlServiceCoordinator.processNewModel(): Model translation: model-id={}", camelModelId);
-//            Translator translator =
-//                    applicationContext.getBean(Translator.class);
-            log.info("ControlServiceCoordinator.processNewModel(): Effective translator: {}", translator.getClass().getName());
             _TC = translator.translate(camelModelId);
             log.debug("ControlServiceCoordinator.processNewModel(): Model translation: RESULTS: {}", _TC);
 
@@ -371,8 +368,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     reader.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
 
-//                    Translator translator =
-//                            applicationContext.getBean(Translator.class);
+                    // Print resulting Translation Context
                     translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
