@@ -21,6 +21,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
 import eu.melodic.event.translate.NoopTranslator;
 import eu.melodic.event.translate.Translator;
+import eu.melodic.event.translate.model.*;
 import eu.melodic.event.translate.mvv.MetricVariableValuesService;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
 import eu.melodic.event.translate.TranslationContext;
@@ -362,7 +363,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     log.info("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
                     com.google.gson.Gson gson = new GsonBuilder()
-                            .registerTypeAdapter(TranslationContext.Monitor.class, new TranslationContextMonitorGsonDeserializer())
+                            .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
                             .create();
                     _TC = gson.fromJson(reader, TranslationContext.class);
                     reader.close();
@@ -456,8 +457,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Process placeholders in sink type configurations
         String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
-        for (TranslationContext.Monitor mon : _TC.getMON()) {
-            for (TranslationContext.Sink s : mon.getSinks()) {
+        for (Monitor mon : _TC.getMON()) {
+            for (Sink s : mon.getSinks()) {
                 s.getConfiguration().entrySet().forEach(entry -> {
                     if (entry.getValue() != null)
                         entry.setValue( entry.getValue().replace("%{BROKER_URL}%", brokerUrlForClients) );
@@ -796,12 +797,12 @@ public class ControlServiceCoordinator implements InitializingBean {
         return camelToTcCache.get(_normalizeModelId(camelModelId));
     }
 
-    public List<TranslationContext.Monitor> getSensorsOfCamelModel(String camelModelId) {
+    public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
         if (StringUtils.isBlank(camelModelId))
             camelModelId = currentCamelModelId;
         TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) return Collections.emptyList();
-        List<TranslationContext.Monitor> sensors = new ArrayList<>(_tc.getMON());
+        List<Monitor> sensors = new ArrayList<>(_tc.getMON());
         return sensors;
     }
 
@@ -846,10 +847,10 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (_tc==null) return Collections.emptyList();
 
         // Get metric and logical constraints
-        Map<String, TranslationContext.MetricConstraint> mcMap = _tc.getMetricConstraints().stream()
-                .collect(Collectors.toMap(TranslationContext.MetricConstraint::getName, mc -> mc));
-        Map<String, TranslationContext.LogicalConstraint> lcMap = _tc.getLogicalConstraints().stream()
-                .collect(Collectors.toMap(TranslationContext.LogicalConstraint::getName, lc -> lc));
+        Map<String, MetricConstraint> mcMap = _tc.getMetricConstraints().stream()
+                .collect(Collectors.toMap(MetricConstraint::getName, mc -> mc));
+        Map<String, LogicalConstraint> lcMap = _tc.getLogicalConstraints().stream()
+                .collect(Collectors.toMap(LogicalConstraint::getName, lc -> lc));
         /*Map<String, TranslationContext.IfThenConstraint> ifMap = _tc.getIfThenConstraints().stream()
                 .collect(Collectors.toMap(TranslationContext.IfThenConstraint::getName, ic -> ic));*/
 
@@ -879,15 +880,15 @@ public class ControlServiceCoordinator implements InitializingBean {
         return sloMetricDecompositions;
     }
 
-    private Object _decomposeConstraint(TranslationContext _tc, DAGNode constraintNode, Map<String, TranslationContext.MetricConstraint> mcMap, Map<String, TranslationContext.LogicalConstraint> lcMap) {
-        TranslationContext.NamedElement element = constraintNode.getElement();
+    private Object _decomposeConstraint(TranslationContext _tc, DAGNode constraintNode, Map<String, MetricConstraint> mcMap, Map<String, LogicalConstraint> lcMap) {
+        NamedElement element = constraintNode.getElement();
         String elementName = constraintNode.getElementName();
         String elementClassName = ((Object)element).getClass().getName();
-        if (element instanceof TranslationContext.MetricConstraint) {
+        if (element instanceof MetricConstraint) {
             return mcMap.get(elementName);
         } else
-        if (element instanceof TranslationContext.LogicalConstraint) {
-            TranslationContext.LogicalConstraint lc = lcMap.get(elementName);
+        if (element instanceof LogicalConstraint) {
+            LogicalConstraint lc = lcMap.get(elementName);
 
             // decompose child constraints
             List<Object> list = new ArrayList<>();
@@ -907,7 +908,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         return null;
     }
 
-    public @NonNull Set<TranslationContext.MetricContext> getMetricContextsForPrediction(String camelModelId) {
+    public @NonNull Set<MetricContext> getMetricContextsForPrediction(String camelModelId) {
         log.debug("getMetricContextsForPrediction: BEGIN: {}", camelModelId);
         TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
         if (_tc==null) {
@@ -917,19 +918,19 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Process DAG top-level nodes
         Set<DAGNode> topLevelNodes = _tc.getDAG().getTopLevelNodes();
-        HashSet<TranslationContext.MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
+        HashSet<MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
         log.debug("getMetricContextsForPrediction: Translation Context found for model: {}", camelModelId);
 
         final Deque<DAGNode> q = topLevelNodes.stream()
                 .filter(x ->
-                        x.getElement() instanceof TranslationContext.ServiceLevelObjective ||
-                        x.getElement() instanceof TranslationContext.Metric)
+                        x.getElement() instanceof ServiceLevelObjective ||
+                        x.getElement() instanceof Metric)
                 .distinct()
                 .collect(Collectors.toCollection(ArrayDeque::new));
 
         while (!q.isEmpty()) {
             DAGNode node = q.pop();
-            if (node.getElement() instanceof TranslationContext.MetricContext) {
+            if (node.getElement() instanceof MetricContext) {
                 tcMetricsOfTopLevelNodes.add(node.getMetricContext());
             } else {
                 Set<DAGNode> children = _tc.getDAG().getNodeChildren(node);

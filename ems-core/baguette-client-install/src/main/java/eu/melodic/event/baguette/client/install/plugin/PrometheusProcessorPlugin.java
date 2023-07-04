@@ -11,7 +11,8 @@ package eu.melodic.event.baguette.client.install.plugin;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.InstallationContextProcessorPlugin;
-import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.model.Interval;
+import eu.melodic.event.translate.model.Monitor;
 import eu.melodic.event.util.StrUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +53,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
         boolean found = false;
 
         prometheusConf.append("\njobs:\n");
-        for (TranslationContext.Monitor monitor : task.getTranslationContext().getMON()) {
+        for (Monitor monitor : task.getTranslationContext().getMON()) {
             try {
                 log.trace("PrometheusProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
                 String componentName = monitor.getComponent();
@@ -79,12 +80,12 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                                 found = true;
 
                                 // Get monitor interval
-                                TranslationContext.Interval interval = monitor.getSensor().getPullSensor().getInterval();
+                                Interval interval = monitor.getSensor().getPullSensor().getInterval();
                                 if (interval != null) {
                                     int period = interval.getPeriod();
                                     TimeUnit unit = TimeUnit.SECONDS;
                                     if (interval.getUnit() != null) {
-                                        unit = TimeUnit.valueOf(interval.getUnit());
+                                        unit = TimeUnit.valueOf( interval.getUnit().name() );
                                     }
                                     long periodInSeconds = TimeUnit.SECONDS.convert(period, unit);
                                     if (periodInSeconds > 0)

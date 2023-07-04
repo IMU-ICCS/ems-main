@@ -10,9 +10,8 @@
 package eu.melodic.event.translate.dag;
 
 import eu.melodic.event.translate.Grouping;
-import eu.melodic.event.translate.TranslationContext;
-import eu.melodic.event.translate.TranslationContext.MetricContext;
-import eu.melodic.event.translate.TranslationContext.NamedElement;
+import eu.melodic.event.translate.model.MetricContext;
+import eu.melodic.event.translate.model.NamedElement;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,7 +22,7 @@ public class DAGNode {
     private final long _id = counter.getAndIncrement();
     private final String _name;
     private final String _toString;
-    private final TranslationContext.MetricContext metricContext;
+    private final MetricContext metricContext;
     private Grouping grouping;
 
     DAGNode() {
@@ -74,7 +73,7 @@ public class DAGNode {
         return elementName;
     }
 
-    public TranslationContext.MetricContext getMetricContext() {
+    public MetricContext getMetricContext() {
         return metricContext;
     }
 

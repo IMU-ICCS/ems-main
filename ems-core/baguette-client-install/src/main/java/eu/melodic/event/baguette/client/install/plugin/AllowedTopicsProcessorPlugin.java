@@ -11,7 +11,7 @@ package eu.melodic.event.baguette.client.install.plugin;
 
 import eu.melodic.event.baguette.client.install.ClientInstallationTask;
 import eu.melodic.event.baguette.client.install.InstallationContextProcessorPlugin;
-import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.model.Monitor;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.StrUtil;
 import lombok.Data;
@@ -39,7 +39,7 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
         Set<String> addedTopicsSet = new HashSet<>();
 
         boolean first = true;
-        for (TranslationContext.Monitor monitor : task.getTranslationContext().getMON()) {
+        for (Monitor monitor : task.getTranslationContext().getMON()) {
             try {
                 log.trace("AllowedTopicsProcessorPlugin: Task #{}: Processing monitor: {}", taskCounter, monitor);
 

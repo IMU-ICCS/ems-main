@@ -12,19 +12,19 @@ package eu.melodic.event.translate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.translate.dag.DAG;
 import eu.melodic.event.translate.dag.DAGNode;
+import eu.melodic.event.translate.model.*;
+import eu.melodic.event.translate.model.Data;
 import eu.melodic.event.util.FunctionDefinition;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-@ToString
 @Slf4j
+@ToString
 public class TranslationContext {
 
     // Decomposition DAG
@@ -42,11 +42,11 @@ public class TranslationContext {
 
     // Component-to-Sensor map
     @Getter
-    private final Map<TranslationContext.Component, Set<TranslationContext.Sensor>> C2S = new HashMap<>();        //XXX:TODO-LOW: Convert to strings
+    private final Map<Component, Set<Sensor>> C2S = new HashMap<>();        //XXX:TODO-LOW: Convert to strings
 
     // Data-to-Sensor map
     @Getter
-    private final Map<TranslationContext.Data, Set<TranslationContext.Sensor>> D2S = new HashMap<>();             //XXX:TODO-LOW: Convert to strings
+    private final Map<Data, Set<Sensor>> D2S = new HashMap<>();             //XXX:TODO-LOW: Convert to strings
 
     // Sensor Monitors set
     @Getter
@@ -102,7 +102,7 @@ public class TranslationContext {
     protected transient final Map<NamedElement, String> E2N;              //XXX:TODO-LOW: Clear after translation
     protected transient final AtomicLong elementsCount;
     @Getter @Setter
-    protected transient String fullNamePattern;                           // all options: {TYPE}, {--NO--CAMEL}, {--NO--MODEL}, {ELEM}, {HASH}, {COUNT}
+    protected transient String fullNamePattern;                           // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
 
     // ====================================================================================================================================================
     // Constructors
@@ -149,11 +149,11 @@ public class TranslationContext {
         return set == null ? null : set.iterator().next();
     }
 
-    public Set<TranslationContext.MetricConstraint> getMetricConstraints() {
+    public Set<MetricConstraint> getMetricConstraints() {
         return new HashSet<>(metricConstraints);
     }
 
-    public Set<TranslationContext.LogicalConstraint> getLogicalConstraints() {
+    public Set<LogicalConstraint> getLogicalConstraints() {
         return new HashSet<>(logicalConstraints);
     }
 
@@ -439,17 +439,17 @@ public class TranslationContext {
         log.trace("  getFullName:   elem-name={}", elemName);
         String elemType = _getElementType(elem);
         log.trace("  getFullName:   elem-type={}", elemType);
-        //log.trace("  getFullName:   elem-eContainer={}", elem.eContainer());
-        //String modelName = ((NamedElement) elem.eContainer()).getName();
-        //log.trace("  getFullName:   model-name={}", modelName);
-        //log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.eContainer().eContainer());
-        //String camelName = ((NamedElement) elem.eContainer().eContainer()).getName();
-        //log.trace("  getFullName:   camel-name={}", camelName);
+        log.trace("  getFullName:   elem-eContainer={}", elem.getContainer());
+        String modelName = elem.getContainer().getName();
+        log.trace("  getFullName:   model-name={}", modelName);
+        log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.getContainer().getContainer());
+        String camelName = elem.getContainer().getContainer().getName();
+        log.trace("  getFullName:   camel-name={}", camelName);
 
         fullName = fullNamePattern
                 .replace("{TYPE}", elemType)
-                //.replace("{CAMEL}", camelName)
-                //.replace("{MODEL}", modelName)
+                .replace("{CAMEL}", camelName)
+                .replace("{MODEL}", modelName)
                 .replace("{ELEM}", elemName)
                 .replace("{HASH}", Integer.toString(elemName.hashCode()))
                 .replace("{COUNT}", Long.toString(elementsCount.getAndIncrement()))
@@ -513,432 +513,5 @@ public class TranslationContext {
 
     public Set<String> getLoadAnnotatedMetricsSet() {
         return new HashSet<>(loadAnnotatedMetricsSet);
-    }
-
-    // ====================================================================================================================================================
-    // Metric and Logical Constraint helper class
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    public static class NamedElement {
-        protected String name;
-        protected String description;
-        protected List<Annotation> annotations = new ArrayList<>();
-    }
-
-    // ------------------------------------------------------------------------
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Constraint extends NamedElement {
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public enum ComparisonOperatorType {
-        GREATER_THAN("GREATER_THAN", ">"),
-        GREATER_EQUAL_THAN("GREATER_EQUAL_THAN", ">="),
-        LESS_THAN("LESS_THAN", "<"),
-        LESS_EQUAL_THAN("LESS_EQUAL_THAN", "<="),
-        EQUAL("EQUAL", "="),
-        NOT_EQUAL("NOT_EQUAL", "<>");
-
-        private final String name;
-        private final String operator;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class UnaryConstraint extends Constraint {
-        private ComparisonOperatorType comparisonOperator;
-        private double threshold;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class MetricConstraint extends UnaryConstraint {
-        private String metric;
-        private MetricContext metricContext;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class MetricVariableConstraint extends UnaryConstraint {
-        private MetricVariable metricVariable;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class CompositeConstraint extends Constraint {
-    }
-
-    public enum LogicalOperatorType { AND, OR, XOR }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class LogicalConstraint extends CompositeConstraint {
-        private LogicalOperatorType logicalOperator;
-        private List<Constraint> constraints;
-        private List<DAGNode> constraintNodes;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class IfThenConstraint extends CompositeConstraint {
-        private Constraint ifConstraint;
-        private Constraint thenConstraint;
-        private Constraint elseConstraint;
-
-        public Constraint getIf() { return ifConstraint; }
-        public Constraint getThen() { return thenConstraint; }
-        public Constraint getElse() { return elseConstraint; }
-    }
-
-    // ------------------------------------------------------------------------
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class MetricContext extends NamedElement {
-        @Getter
-        private String component;
-        private Metric metric;
-        private Schedule schedule;
-        private ObjectContext objectContext;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Schedule extends NamedElement {
-        private String unit;
-        private long interval;
-        private int repetitions;
-        private Date start;
-        private Date end;
-
-        public long getIntervalInMillis() {
-            if (unit==null) return interval;
-            return TimeUnit.MILLISECONDS.convert(interval, TimeUnit.valueOf(unit.toUpperCase()));
-        }
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Sensor extends Component {
-        private String configurationStr;
-        private boolean isPush;
-        public Map<String,String> additionalProperties;
-
-        public boolean isPullSensor() { return !isPush; }
-        public boolean isPushSensor() { return isPush; }
-
-        public PullSensor getPullSensor() {
-            if (this instanceof PullSensor)
-                return (PullSensor) this;
-            throw new IllegalArgumentException("Not a Pull sensor: "+this.getName());
-        }
-
-        public PushSensor getPushSensor() {
-            if (this instanceof PushSensor)
-                return (PushSensor) this;
-            throw new IllegalArgumentException("Not a Push sensor: "+this.getName());
-        }
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class PushSensor extends Sensor {
-        private int port;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class PullSensor extends Sensor {
-        private String className;
-        private Map<String,String> configuration;
-        private Interval interval;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    public static class Interval {
-        private String unit;
-        private int period;
-    }
-
-    @SuperBuilder
-    @NoArgsConstructor
-    public static class LoadMetricVariable extends MetricVariable {
-        public LoadMetricVariable(String name, MetricContext context) {
-            setName(name);
-            setMetricContext(context);
-        }
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    public static class Annotation {
-        protected String id;
-        protected String uri;
-        protected boolean implemented;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Component extends NamedElement {
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Data extends NamedElement {
-        private DataSource dataSource;
-        private List<Data> includedData;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class DataSource extends NamedElement {
-        private boolean external;
-        private Component component;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Monitor extends NamedElement {  // See: eu.melodic.event.models.interfaces.Monitor
-        private String metric;
-        private String component;
-        private Sensor sensor;
-        private List<Sink> sinks;
-        private Map<String,String> tags;
-        private Map<String,Object> additionalProperties;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Sink extends NamedElement {  // See: eu.melodic.event.models.interfaces.Sink
-        public enum Type { JMS }
-
-        private Type type;
-        private String component;
-        private Sensor sensor;
-        private List<Sink> sinks;
-        private Map<String,String> configuration;
-        private Map<String,Object> additionalProperties;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Metric extends NamedElement {
-        protected MetricTemplate metricTemplate;
-    }
-
-    public enum ValueType {
-        INT_TYPE, STRING_TYPE, BOOLEAN_TYPE, FLOAT_TYPE, DOUBLE_TYPE,
-        IntType, StringType, BooleanType, FloatType, DoubleType
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class MetricTemplate extends NamedElement {
-        private ValueType valueType;
-        private short valueDirection;
-        private String unit;
-        private MeasurableAttribute attribute;
-    }
-
-    /*@lombok.Data
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Unit extends NamedElement {
-    }*/
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class MeasurableAttribute extends Attribute {
-        private List<Sensor> sensors;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Attribute extends NamedElement {
-        private Object value;
-        private ValueType valueType;
-        private String unit;
-        private Object minValue;
-        private Object maxValue;
-        private boolean minInclusive;
-        private boolean maxInclusive;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class MetricVariable extends Metric {
-        private boolean currentConfiguration;
-        private Component component;
-        private boolean onNodeCandidates;
-        private String formula;
-        private List<Metric> componentMetrics;
-        private TranslationContext.MetricContext metricContext;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class ObjectContext extends NamedElement {
-        private Component component;
-        private Data data;
-        //private Communication communication;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class ScalabilityRule extends NamedElement {
-        private Event event;
-        private List<Action> actions;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Event extends NamedElement {
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Action extends NamedElement {
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class ScalingAction extends NamedElement {
-        private Component component;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class OptimisationRequirement extends Requirement {   // SoftRequirement
-        private double priority;
-        private MetricContext metricContext;
-        private MetricVariable metricVariable;
-        private boolean minimise;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class ServiceLevelObjective extends Requirement { // HardRequirement
-        private Constraint constraint;
-        private Event violationEvent;
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Requirement extends NamedElement {
-    }
-
-    @lombok.Data
-    @SuperBuilder
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Function extends NamedElement {
-        private String expression;
-        private List<String> arguments;
-    }
-
-    public enum WindowType { FIXED, SLIDING }
-    public enum WindowSizeType { MEASUREMENTS_ONLY, TIME_ONLY, FIRST_MATCH, BOTH_MATCH, TIME_ACCUM, TIME_ORDER }
-
-    @lombok.Data
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class Window extends NamedElement {
-        private String timeUnit;
-        private WindowType windowType;
-        private WindowSizeType sizeType;
-        private long measurementSize;
-        private long timeSize;
-        private List<WindowProcessing> processings;
-    }
-
-    public enum WindowProcessingType { GROUP, SORT, RANK }
-
-    @lombok.Data
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class WindowProcessing extends NamedElement {
-        private WindowProcessingType processingType;
-        private List<WindowCriterion> groupingCriteria;
-        private List<WindowCriterion> rankingCriteria;
-    }
-
-    public enum CriterionType { INSTANCE, HOST, ZONE, REGION, CLOUD, TIMESTAMP, CUSTOM }
-
-    @lombok.Data
-    @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
-    public static class WindowCriterion extends NamedElement {
-        private Metric metric;
-        private CriterionType type;
-        private String custom;
-        private boolean ascending;
     }
 }

@@ -10,7 +10,7 @@
 package eu.melodic.event.translate.dag;
 
 import eu.melodic.event.translate.TranslationContext;
-import eu.melodic.event.translate.TranslationContext.NamedElement;
+import eu.melodic.event.translate.model.NamedElement;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.engine.GraphvizV8Engine;

@@ -16,7 +16,7 @@ import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.TopicBeaconProperties;
-import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.model.MetricContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -147,7 +147,7 @@ public class TopicBeacon implements InitializingBean {
         log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
         //Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
         //log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
-        Set<TranslationContext.MetricContext> metricContexts = coordinator.getMetricContextsForPrediction(modelId);
+        Set<MetricContext> metricContexts = coordinator.getMetricContextsForPrediction(modelId);
         log.debug("Topic Beacon: transmitPredictionInfo: Metric Contexts for prediction: {}", metricContexts);
 
         // Convert to Translator-to-Forecasting Methods event format

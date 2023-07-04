@@ -22,7 +22,7 @@ import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.models.commons.Watermark;
 import eu.melodic.event.models.interfaces.*;
-import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.model.MetricContext;
 import eu.melodic.event.util.CredentialsMap;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.util.StrUtil;
@@ -174,9 +174,9 @@ public class ControlServiceController {
                 .toList();
     }
 
-    private Interval convertInterval(TranslationContext.Interval interval) {
+    private Interval convertInterval(eu.melodic.event.translate.model.Interval interval) {
         Interval i = new IntervalImpl();
-        i.setUnit(Interval.UnitType.valueOf( interval.getUnit() ));
+        i.setUnit(Interval.UnitType.valueOf( interval.getUnit().toString() ));
         i.setPeriod(interval.getPeriod());
         return i;
     }
@@ -195,7 +195,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.getSensors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
 
         // Retrieve sensor information
-        List<TranslationContext.Monitor> monitors = coordinator.getSensorsOfCamelModel(applicationId);
+        List<eu.melodic.event.translate.model.Monitor> monitors = coordinator.getSensorsOfCamelModel(applicationId);
 
         // Update watermark
         watermark.setUser("EMS");
@@ -208,7 +208,7 @@ public class ControlServiceController {
             monitors.forEach(m -> {
                 log.debug("ControlServiceController.getSensors():     Monitor: metric/topic={}, component={}, additional-properties={}",
                         m.getMetric(), m.getComponent(), m.getAdditionalProperties());
-                TranslationContext.Sensor s = m.getSensor();
+                eu.melodic.event.translate.model.Sensor s = m.getSensor();
                 if (s.isPushSensor())
                     log.debug("ControlServiceController.getSensors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
                 else
@@ -329,7 +329,7 @@ public class ControlServiceController {
         // Retrieve context metrics of the top-level DAG nodes
         String camelModelId = coordinator._normalizeModelId(applicationId);
         log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): camelModelId: {}", camelModelId);
-        Set<TranslationContext.MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
+        Set<MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
         log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Result: {}", results);
 
         return results;
