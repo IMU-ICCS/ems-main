@@ -28,15 +28,15 @@ public enum Grouping {
         sameCloud = sc;
     }
 
-    boolean equals(Grouping g) {
+    public boolean equals(Grouping g) {
         return this.order == g.order;
     }
 
-    boolean lowerThan(Grouping g) {
+    public boolean lowerThan(Grouping g) {
         return this.order < g.order;
     }
 
-    boolean greaterThan(Grouping g) {
+    public boolean greaterThan(Grouping g) {
         return this.order > g.order;
     }
 }
