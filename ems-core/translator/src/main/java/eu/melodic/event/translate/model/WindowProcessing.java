@@ -13,6 +13,6 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class WindowProcessing extends Feature {
     private WindowProcessingType processingType;
-    private final List<WindowCriterion> groupingCriteria = new ArrayList<>();
-    private final List<WindowCriterion> rankingCriteria = new ArrayList<>();
+    private List<WindowCriterion> groupingCriteria;
+    private List<WindowCriterion> rankingCriteria;
 }

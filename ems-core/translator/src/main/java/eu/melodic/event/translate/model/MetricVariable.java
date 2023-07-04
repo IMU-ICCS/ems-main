@@ -16,7 +16,7 @@ public class MetricVariable extends Metric {
     private Component component;
     private boolean onNodeCandidates;
     private String formula;
-    private final List<Metric> componentMetrics = new ArrayList<>();
+    private List<Metric> componentMetrics;
     private MetricContext metricContext;
 
     public boolean containsMetric(Metric m) {

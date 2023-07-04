@@ -15,7 +15,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class LogicalConstraint extends CompositeConstraint {
     private LogicalOperatorType logicalOperator;
-    private final List<Constraint> constraints = new ArrayList<>();
+    private List<Constraint> constraints;
 
     //XXX:TODO: Try to remove
     private List<DAGNode> constraintNodes;

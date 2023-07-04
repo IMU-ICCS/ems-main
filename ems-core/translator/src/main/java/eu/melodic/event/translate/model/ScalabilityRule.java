@@ -13,5 +13,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class ScalabilityRule extends Feature {
     private Event event;
-    private final List<Action> actions = new ArrayList<>();
+    private List<Action> actions;
 }

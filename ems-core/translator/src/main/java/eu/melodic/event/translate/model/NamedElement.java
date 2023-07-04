@@ -14,5 +14,5 @@ import java.util.List;
 public class NamedElement extends AbstractRootObject {
     protected String name;
     protected String description;
-    protected final List<Annotation> annotations = new ArrayList<>();
+    protected List<Annotation> annotations;
 }

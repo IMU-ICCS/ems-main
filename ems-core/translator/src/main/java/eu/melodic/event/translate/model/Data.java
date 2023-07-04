@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @lombok.Data
-@SuperBuilder
+@SuperBuilder()
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Data extends Feature {
     private DataSource dataSource;
-    private final List<Data> includedData = new ArrayList<>();
+    private List<Data> includedData;
 }
