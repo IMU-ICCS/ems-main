@@ -440,16 +440,16 @@ public class TranslationContext {
         String elemType = _getElementType(elem);
         log.trace("  getFullName:   elem-type={}", elemType);
         log.trace("  getFullName:   elem-eContainer={}", elem.getContainer());
-        String modelName = elem.getContainer().getName();
-        log.trace("  getFullName:   model-name={}", modelName);
-        log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.getContainer().getContainer());
-        String camelName = elem.getContainer().getContainer().getName();
-        log.trace("  getFullName:   camel-name={}", camelName);
+//        String modelName = elem.getContainer().getName();
+//        log.trace("  getFullName:   model-name={}", modelName);
+//        log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.getContainer().getContainer());
+//        String camelName = elem.getContainer().getContainer().getName();
+//        log.trace("  getFullName:   camel-name={}", camelName);
 
         fullName = fullNamePattern
                 .replace("{TYPE}", elemType)
-                .replace("{CAMEL}", camelName)
-                .replace("{MODEL}", modelName)
+//                .replace("{CAMEL}", camelName)
+//                .replace("{MODEL}", modelName)
                 .replace("{ELEM}", elemName)
                 .replace("{HASH}", Integer.toString(elemName.hashCode()))
                 .replace("{COUNT}", Long.toString(elementsCount.getAndIncrement()))
