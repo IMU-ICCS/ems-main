@@ -1,5 +1,6 @@
 package eu.melodic.event.translate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -7,7 +8,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 public abstract class AbstractRootObject {
-    protected Object object;
+    @JsonIgnore
+    protected transient Object object;
     protected NamedElement container;
 
     public <T> T getObject(Class<T> c) {
