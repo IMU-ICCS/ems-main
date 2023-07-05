@@ -12,5 +12,5 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MeasurableAttribute extends Attribute {
-    private List<Sensor> sensors;
+    private List<Sensor> sensors = new ArrayList<>();
 }

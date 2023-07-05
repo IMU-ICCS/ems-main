@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @lombok.Data
@@ -13,6 +14,6 @@ import java.util.Map;
 // Based on: eu.melodic.event.models.interfaces.PullSensor
 public class PullSensor extends Sensor {
     private String className;
-    private Map<String, String> configuration;
+    private Map<String, String> configuration = new HashMap<>();
     private Interval interval;
 }

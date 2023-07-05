@@ -17,5 +17,5 @@ public class Window extends Feature {
     private WindowSizeType sizeType;
     private long measurementSize;
     private long timeSize;
-    private List<WindowProcessing> processings;
+    private List<WindowProcessing> processings = new ArrayList<>();
 }

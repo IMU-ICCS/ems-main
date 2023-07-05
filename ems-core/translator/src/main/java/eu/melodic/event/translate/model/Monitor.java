@@ -18,6 +18,6 @@ public class Monitor extends AbstractInterfaceRootObject {
     private String metric;
     private String component;
     private Sensor sensor;
-    private List<Sink> sinks;
-    private Map<String, String> tags;
+    private List<Sink> sinks = new ArrayList<>();
+    private Map<String, String> tags = new HashMap<>();
 }

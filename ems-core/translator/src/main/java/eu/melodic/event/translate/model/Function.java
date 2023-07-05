@@ -13,5 +13,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class Function extends Feature {
     private String expression;
-    private List<String> arguments;
+    private List<String> arguments = new ArrayList<>();
 }

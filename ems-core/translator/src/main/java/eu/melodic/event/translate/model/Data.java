@@ -13,5 +13,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class Data extends Feature {
     private DataSource dataSource;
-    private List<Data> includedData;
+    private List<Data> includedData = new ArrayList<>();
 }

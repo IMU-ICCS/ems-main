@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @lombok.Data
@@ -13,7 +14,7 @@ import java.util.List;
 public class CompositeMetric extends Metric {
     private String formula;
 
-    private List<Metric> componentMetrics;
+    private List<Metric> componentMetrics = new ArrayList<>();
 
     public boolean containsMetric(Metric m) {
         return componentMetrics.contains(m);

@@ -12,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Feature extends NamedElement {
-    protected List<Attribute> attributes;
-    protected List<Feature> subFeatures;
+    protected List<Attribute> attributes = new ArrayList<>();
+    protected List<Feature> subFeatures = new ArrayList<>();
 }

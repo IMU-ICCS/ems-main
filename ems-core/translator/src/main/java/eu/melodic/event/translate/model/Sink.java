@@ -1,10 +1,10 @@
 package eu.melodic.event.translate.model;
 
-import eu.melodic.event.translate.TranslationContext;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +18,7 @@ public class Sink extends AbstractInterfaceRootObject {
 
     private Type type;
     private String component;
-    private Map<String, String> configuration;
+    private Map<String, String> configuration = new HashMap<>();
 
     //XXX:TODO: Try to remove
     private Sensor sensor;
