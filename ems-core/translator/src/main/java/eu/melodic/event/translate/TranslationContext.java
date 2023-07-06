@@ -10,6 +10,7 @@
 package eu.melodic.event.translate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.gson.Gson;
 import eu.melodic.event.translate.dag.DAG;
 import eu.melodic.event.translate.dag.DAGNode;
 import eu.melodic.event.translate.model.*;
@@ -19,18 +20,19 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Slf4j
 @ToString
-public class TranslationContext {
+public class TranslationContext implements Serializable {
 
     // Decomposition DAG
     @Getter
     @JsonIgnore
-    private final DAG DAG;
+    private final transient DAG DAG;
 
     // Event-to-Action map
     @Getter
@@ -62,7 +64,8 @@ public class TranslationContext {
 
     // Metric-to-Metric Context map
     @Getter
-    private final Map<Metric, Set<MetricContext>> M2MC = new HashMap<>();
+    @JsonIgnore
+    private final transient Map<Metric, Set<MetricContext>> M2MC = new HashMap<>();
 
     // Composite Metric Variables set
     @Getter
@@ -99,10 +102,17 @@ public class TranslationContext {
     private List<String> exportFiles = new ArrayList<>();
 
     // Element-to-Full-Name cache, pattern and count
-    protected transient final Map<NamedElement, String> E2N;              //XXX:TODO-LOW: Clear after translation
+    @JsonIgnore
+    protected transient final Map<NamedElement, String> E2N;            //XXX:TODO-LOW: Clear after translation
+    @JsonIgnore
     protected transient final AtomicLong elementsCount;
     @Getter @Setter
-    protected transient String fullNamePattern;                           // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
+    protected String fullNamePattern;                                   // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
+
+    @JsonIgnore
+    private final transient Gson gson = new Gson();                     // Used when cloning
+    /*@JsonIgnore                                                       // Alternative: clone with Jackson instead of Gson
+    private final transient ObjectMapper objectMapper = new ObjectMapper();*/
 
     // ====================================================================================================================================================
     // Constructors
@@ -119,6 +129,102 @@ public class TranslationContext {
         this.E2N = new HashMap<>();
         this.elementsCount = new AtomicLong(0);
         this.fullNamePattern = "{ELEM}";
+    }
+
+    public TranslationContext(TranslationContext _TC, boolean initializeDag) {
+        this(initializeDag);
+
+        // Comment out 'this(...)' constructor and uncomment the following lines
+        //this.DAG = deepCopy( _TC.DAG, DAG.class );    // DAG used during translation. Not for serialization
+        //this.E2N = new HashMap<>();
+        //this.elementsCount = new AtomicLong(0);
+        //this.fullNamePattern = "{ELEM}";
+        //
+        //this.M2MC.putAll( cloneMapSet(_TC.M2MC) );    // Temporary translation cache. Not for serialization
+
+        this.E2A.putAll( cloneMapSet(_TC.E2A) );
+        this.SLO.addAll(_TC.SLO);
+        //this.C2S.putAll( cloneMapSet(_TC.C2S) );
+        //this.D2S.putAll( cloneMapSet(_TC.D2S) );
+        this.MON.addAll( cloneSet(_TC.MON) );
+        this.MONS.addAll(_TC.MONS);
+        this.G2R.putAll( cloneMapMapSet(_TC.G2R) );
+        this.G2T.putAll( cloneMapSet(_TC.G2T) );
+        this.CMVar.addAll(_TC.CMVar);
+        this.CMVar_1.addAll( cloneSet(_TC.CMVar_1) );
+        this.MVV.addAll(_TC.MVV);
+        this.MvvCP.putAll(_TC.MvvCP);
+        this.FUNC.addAll( cloneSet(_TC.FUNC) );
+        this.providedTopics.putAll(_TC.providedTopics);
+        this.requiredTopics.putAll( cloneMapSet(_TC.requiredTopics) );
+        this.topicConnections.putAll( cloneMapMapSet(_TC.topicConnections) );
+        this.needsRefresh = _TC.needsRefresh;
+        this.metricConstraints.addAll( cloneSet(_TC.metricConstraints) );
+        this.logicalConstraints.addAll( cloneSet(_TC.logicalConstraints) );
+        this.ifThenConstraints.addAll( cloneSet(_TC.ifThenConstraints) );
+        this.loadAnnotatedMetricsSet.addAll(_TC.loadAnnotatedMetricsSet);
+        this.exportFiles.addAll(_TC.exportFiles);
+        this.fullNamePattern = cloneObject(_TC.fullNamePattern);
+    }
+
+    // ====================================================================================================================================================
+    // Cloning methods
+
+    public TranslationContext clone() {
+        return new TranslationContext(this, false);
+    }
+
+    @SneakyThrows
+    protected <T> T deepCopy(T object, Class<T> type) {
+        return gson.fromJson(gson.toJson(object, type), type);
+        /*return objectMapper.readValue(
+                objectMapper.writeValueAsString(object), type);*/
+    }
+
+    protected <T> T cloneObject(T obj) {
+        if (obj==null) return null;
+        if (obj instanceof String x) return (T) new String(x);
+
+        if (obj instanceof PullSensor x) return (T) deepCopy(x, PullSensor.class);
+        if (obj instanceof PushSensor x) return (T) deepCopy(x, PushSensor.class);
+        if (obj instanceof Sensor x) return (T) deepCopy(x, Sensor.class);
+        if (obj instanceof Component x) return (T) deepCopy(x, Component.class);
+        if (obj instanceof Data x) return (T) deepCopy(x, Data.class);
+        if (obj instanceof Monitor x) return (T) deepCopy(x, Monitor.class);
+
+        if (obj instanceof MetricVariable x) return (T) deepCopy(x, MetricVariable.class);
+        if (obj instanceof Metric x) return (T) deepCopy(x, Metric.class);
+        if (obj instanceof MetricContext x) return (T) deepCopy(x, MetricContext.class);
+        if (obj instanceof FunctionDefinition x) return (T) deepCopy(x, FunctionDefinition.class);
+
+        if (obj instanceof MetricConstraint x) return (T) deepCopy(x, MetricConstraint.class);
+        if (obj instanceof LogicalConstraint x) return (T) deepCopy(x, LogicalConstraint.class);
+        if (obj instanceof IfThenConstraint x) return (T) deepCopy(x, IfThenConstraint.class);
+        if (obj instanceof Constraint x) return (T) deepCopy(x, Constraint.class);
+
+        throw new IllegalArgumentException("Unsupported type: "+obj.getClass().getName());
+    }
+
+    protected <T> Set<T> cloneSet(Set<T> set) {
+        return set.stream()
+                .map(this::cloneObject)
+                .collect(Collectors.toSet());
+    }
+
+    protected <S,T> Map<S,Set<T>> cloneMapSet(Map<S, Set<T>> map) {
+        return map.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> cloneObject(e.getKey()),
+                        e -> cloneSet(e.getValue())
+                ));
+    }
+
+    protected <S,T,U> Map<S, Map<T, Set<U>>> cloneMapMapSet(Map<S, Map<T, Set<U>>> map) {
+        return map.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> cloneObject(e.getKey()),
+                        e -> cloneMapSet(e.getValue())
+                ));
     }
 
     // ====================================================================================================================================================
@@ -373,9 +479,7 @@ public class TranslationContext {
     }
 
     public void requireGroupingTopicPairs(String grouping, List<String> topics) {
-        topics.stream().forEach(t -> {
-            requireGroupingTopicPair(grouping, t);
-        });
+        topics.forEach(t -> requireGroupingTopicPair(grouping, t));
     }
 
     public Map<String, Map<String, Set<String>>> getTopicConnections() {
@@ -421,7 +525,6 @@ public class TranslationContext {
 
     // ====================================================================================================================================================
     // Element full name generation methods
-
 
     public String getFullName(NamedElement elem) {
         log.trace("  getFullName: BEGIN: {}", elem);

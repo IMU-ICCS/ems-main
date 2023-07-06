@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
+
 @lombok.Data
 @SuperBuilder
 @NoArgsConstructor
-public abstract class AbstractRootObject {
+public abstract class AbstractRootObject implements Serializable {
     @JsonIgnore
     protected transient Object object;
     protected NamedElement container;

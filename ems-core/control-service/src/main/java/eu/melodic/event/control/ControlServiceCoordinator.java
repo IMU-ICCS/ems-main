@@ -296,50 +296,17 @@ public class ControlServiceCoordinator implements InitializingBean {
                     if (Paths.get(fileName).toFile().exists()) {
                         log.warn("ControlServiceCoordinator.processNewModel(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                     }
-                    log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
-                    java.io.Writer writer = new java.io.FileWriter(fileName);
-                    com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
+
                     // clone _TC
-                    TranslationContext _copyTC = new TranslationContext(false);
-                    _copyTC.getG2R().putAll(_TC.getG2R());
-                    _copyTC.getG2T().putAll(_TC.getG2T());
-                    _copyTC.getTopicConnections().putAll(_TC.getTopicConnections());
+                    log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
+                    com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
+                    TranslationContext _copyTC = _TC.clone();
 
-                    _copyTC.getE2A().putAll(_TC.getE2A());
-                    _copyTC.getSLO().addAll(_TC.getSLO());
-                    _copyTC.getMON().addAll(_TC.getMON());
-                    _copyTC.getMONS().addAll(_TC.getMONS());
-                    _copyTC.getCMVar().addAll(_TC.getCMVar());
-                    _copyTC.getMVV().addAll(_TC.getMVV());
-                    _copyTC.getMvvCP().putAll(_TC.getMvvCP());
-                    _copyTC.addLoadAnnotatedMetrics(_TC.getLoadAnnotatedMetricsSet());
-                    _copyTC.setExportFiles(_TC.getExportFiles());
-
+                    java.io.Writer writer = new java.io.FileWriter(fileName);
                     gson.toJson(_copyTC, writer);
                     writer.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
 
-                    /*try (FileOutputStream out = new FileOutputStream("_TC.xml")) {
-                        log.info(">>>>>>>>  _TC.XML:  WRITING...");
-                        XMLEncoder xmlEncoder = new XMLEncoder(out);
-                        xmlEncoder.writeObject(_TC.DAG);
-                        xmlEncoder.writeObject(_TC.SLO);
-                        xmlEncoder.writeObject(_TC.C2S);
-                        xmlEncoder.writeObject(_TC.D2S);
-                        xmlEncoder.writeObject(_TC.MONS);
-                        xmlEncoder.writeObject(_TC.G2R);
-                        xmlEncoder.writeObject(_TC.G2T);
-                        xmlEncoder.writeObject(_TC.M2MC);
-                        xmlEncoder.writeObject(_TC.CMVAR);
-                        xmlEncoder.writeObject(_TC.MVV);
-                        xmlEncoder.writeObject(_TC.MVV_CP);
-                        xmlEncoder.writeObject(_TC.FUNC);
-                        xmlEncoder.writeObject(_TC.getTopicConnections());
-                        xmlEncoder.writeObject(_TC.getMetricConstraints());
-                        xmlEncoder.close();
-                    } catch (Exception e) {
-                        log.error(">>>>>>>>  _TC.XML:  EXCEPTION: ", e);
-                    }*/
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
                 }

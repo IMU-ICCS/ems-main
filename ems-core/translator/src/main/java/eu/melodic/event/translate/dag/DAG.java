@@ -9,6 +9,7 @@
 
 package eu.melodic.event.translate.dag;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.NamedElement;
 import guru.nidi.graphviz.engine.Format;
@@ -33,11 +34,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DAG {
     // Graph-related fields
-    private TranslationContext _TC;
+    @JsonIgnore
+    private transient TranslationContext _TC;
     private DirectedAcyclicGraph<DAGNode, DAGEdge> _graph;
-    private DAGNode _root;
-    private Map<NamedElement, DAGNode> _namedElementToNodesMapping;
-    private Map<String, DAGNode> _nameToNodesMapping;
+    @JsonIgnore
+    private transient DAGNode _root;
+    @JsonIgnore
+    private transient Map<NamedElement, DAGNode> _namedElementToNodesMapping;
+    @JsonIgnore
+    private transient Map<String, DAGNode> _nameToNodesMapping;
 
 
     public DAG() {

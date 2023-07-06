@@ -14,7 +14,7 @@ import org.jgrapht.graph.DefaultEdge;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DAGEdge extends DefaultEdge {
-    private static AtomicLong edgeCounter = new AtomicLong();
+    private final static AtomicLong edgeCounter = new AtomicLong();
 
     private final long id;
     private final String _toString;
