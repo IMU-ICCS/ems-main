@@ -270,7 +270,7 @@ public class TranslationContext implements Serializable {
 
     public Set<String> getMVV() { return new HashSet<>(MVV); }
 
-    public Map<String,String> getCompositeMetricVariables() { return MvvCP; }
+    public Map<String,String> getCompositeMetricVariables() { return new HashMap<>(MvvCP); }
 
     // ====================================================================================================================================================
     // Map- and Set-related helper methods
