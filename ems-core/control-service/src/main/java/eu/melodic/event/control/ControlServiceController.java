@@ -76,44 +76,44 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/camelModel", method = POST)
-    public String newCamelModel(@RequestBody CamelModelRequestImpl request,
-                                @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public String newAppModel(@RequestBody CamelModelRequestImpl request,
+                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.newCamelModel(): Received request: {}", request);
-        log.trace("ControlServiceController.newCamelModel()/camelModel: JWT token: {}", jwtToken);
+        log.info("ControlServiceController.newAppModel(): Received request: {}", request);
+        log.trace("ControlServiceController.newAppModel(): JWT token: {}", jwtToken);
 
         // Get information from request
         String applicationId = request.getApplicationId();
         String notificationUri = request.getNotificationURI();
         String requestUuid = request.getWatermark().getUuid();
-        log.info("ControlServiceController.newCamelModel(): Request info: app-id={}, notification-uri={}, request-id={}",
+        log.info("ControlServiceController.newAppModel(): Request info: app-id={}, notification-uri={}, request-id={}",
                 applicationId, notificationUri, requestUuid);
 
         // Start translation and reconfiguration in a worker thread
         coordinator.processNewModel(applicationId, null, notificationUri, requestUuid, jwtToken);
-        log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
+        log.debug("ControlServiceController.newAppModel()/camelModel: Model translation dispatched to a worker thread");
 
         return "OK";
     }
 
     @RequestMapping(value = "/camelModelJson", method = POST,
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String newCamelModel(@RequestBody String requestStr,
-                                @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public String newAppModel(@RequestBody String requestStr,
+                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.newCamelModel(): Received request: {}", requestStr);
-        log.trace("ControlServiceController.newCamelModel()/camelModelJson: JWT token: {}", jwtToken);
+        log.info("ControlServiceController.newAppModel(): Received request: {}", requestStr);
+        log.trace("ControlServiceController.newAppModel()/camelModelJson: JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
-        String camelModelId = Optional.ofNullable(jobj.get("camel-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
+        String appModelId = Optional.ofNullable(jobj.get("camel-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
         String cpModelId = Optional.ofNullable(jobj.get("cp-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
-        log.info("ControlServiceController.newCamelModel(): CAMEL model id from request: {}", camelModelId);
-        log.info("ControlServiceController.newCamelModel(): CP model id from request: {}", cpModelId);
+        log.info("ControlServiceController.newAppModel(): App model id from request: {}", appModelId);
+        log.info("ControlServiceController.newAppModel(): CP model id from request: {}", cpModelId);
 
         // Start translation and component reconfiguration in a worker thread
-        coordinator.processNewModel(camelModelId, cpModelId, null, null, jwtToken);
-        log.debug("ControlServiceController.newCamelModel(): Model translation dispatched to a worker thread");
+        coordinator.processNewModel(appModelId, cpModelId, null, null, jwtToken);
+        log.debug("ControlServiceController.newAppModel(): Model translation dispatched to a worker thread");
 
         return "OK";
     }
@@ -195,7 +195,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.getSensors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
 
         // Retrieve sensor information
-        List<eu.melodic.event.translate.model.Monitor> monitors = coordinator.getSensorsOfCamelModel(applicationId);
+        List<eu.melodic.event.translate.model.Monitor> monitors = coordinator.getSensorsOfAppModel(applicationId);
 
         // Update watermark
         watermark.setUser("EMS");
@@ -265,15 +265,15 @@ public class ControlServiceController {
     // ------------------------------------------------------------------------------------------------------------
 
     @RequestMapping(value = "/translator/currentCamelModel", method = {GET,POST})
-    public String getCurrentCamelModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public String getCurrentAppModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.getCurrentCamelModel(): Received request");
-        log.trace("ControlServiceController.getCurrentCamelModel(): JWT token: {}", jwtToken);
+        log.info("ControlServiceController.getCurrentAppModel(): Received request");
+        log.trace("ControlServiceController.getCurrentAppModel(): JWT token: {}", jwtToken);
 
-        String currentCamelModelId = coordinator.getCurrentCamelModelId();
-        log.info("ControlServiceController.getCurrentCamelModel(): Current CAMEL model: {}", currentCamelModelId);
+        String currentAppModelId = coordinator.getCurrentAppModelId();
+        log.info("ControlServiceController.getCurrentAppModel(): Current App model: {}", currentAppModelId);
 
-        return currentCamelModelId;
+        return currentAppModelId;
     }
 
     @RequestMapping(value = "/translator/currentCpModel", method = {GET,POST})
@@ -298,7 +298,7 @@ public class ControlServiceController {
         log.trace("ControlServiceController.getConstraintThresholds(): JWT token: {}", jwtToken);
 
         if (StringUtils.isBlank(applicationId)) {
-            applicationId = coordinator.getCurrentCamelModelId();
+            applicationId = coordinator.getCurrentAppModelId();
             log.info("ControlServiceController.getConstraintThresholds(): Using current application: curr-app-id={}", applicationId);
             if (applicationId==null) applicationId = "";
         }
@@ -321,15 +321,15 @@ public class ControlServiceController {
         log.trace("ControlServiceController.getTopLevelNodesMetricContexts(): JWT token: {}", jwtToken);
 
         if (StringUtils.isBlank(applicationId)) {
-            applicationId = coordinator.getCurrentCamelModelId();
+            applicationId = coordinator.getCurrentAppModelId();
             log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Using current application: curr-app-id={}", applicationId);
             if (applicationId==null) return Collections.emptyList();
         }
 
         // Retrieve context metrics of the top-level DAG nodes
-        String camelModelId = coordinator._normalizeModelId(applicationId);
-        log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): camelModelId: {}", camelModelId);
-        Set<MetricContext> results = coordinator.getMetricContextsForPrediction(camelModelId);
+        String appModelId = coordinator._normalizeModelId(applicationId);
+        log.debug("ControlServiceController.getTopLevelNodesMetricContexts(): appModelId: {}", appModelId);
+        Set<MetricContext> results = coordinator.getMetricContextsForPrediction(appModelId);
         log.info("ControlServiceController.getTopLevelNodesMetricContexts(): Result: {}", results);
 
         return results;
@@ -545,7 +545,7 @@ public class ControlServiceController {
 
         ClientInstallationTask installationTask = InstallationHelperFactory.getInstance()
                 .createInstallationHelper(entry)
-                .createClientInstallationTask(entry, coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId()));
+                .createClientInstallationTask(entry, coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId()));
         ClientInstaller.instance().addTask(installationTask);
         log.debug("ControlServiceController.baguetteRegisterNodeForProactive(): New installation-task: {}", installationTask);
 

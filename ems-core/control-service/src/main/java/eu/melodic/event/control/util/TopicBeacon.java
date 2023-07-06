@@ -107,9 +107,9 @@ public class TopicBeacon implements InitializingBean {
     public void transmitThresholdInfo() {
         if (emptyIfNull(properties.getThresholdTopics()).isEmpty()) return;
 
-        if (coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId())==null)
+        if (coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId())==null)
             return;
-        coordinator.getTranslationContextOfCamelModel(coordinator.getCurrentCamelModelId())
+        coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId())
                 .getMetricConstraints()
                 .forEach(c -> {
                     String message = gson.toJson(c);
@@ -143,8 +143,8 @@ public class TopicBeacon implements InitializingBean {
     public void transmitPredictionInfo() {
         if (emptyIfNull(properties.getPredictionTopics()).isEmpty()) return;
 
-        String modelId = coordinator.getCurrentCamelModelId();
-        log.trace("Topic Beacon: transmitPredictionInfo: current-camel-model-id: {}", modelId);
+        String modelId = coordinator.getCurrentAppModelId();
+        log.trace("Topic Beacon: transmitPredictionInfo: current-app-model-id: {}", modelId);
         //Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
         //log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
         Set<MetricContext> metricContexts = coordinator.getMetricContextsForPrediction(modelId);
@@ -188,8 +188,8 @@ public class TopicBeacon implements InitializingBean {
     public void transmitSloViolatorInfo() {
         if (emptyIfNull(properties.getSloViolationDetectorTopics()).isEmpty()) return;
 
-        String modelId = coordinator.getCurrentCamelModelId();
-        log.trace("Topic Beacon: transmitSloViolatorInfo: current-camel-model-id: {}", modelId);
+        String modelId = coordinator.getCurrentAppModelId();
+        log.trace("Topic Beacon: transmitSloViolatorInfo: current-app-model-id: {}", modelId);
         //List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
         Map<String, Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
         log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
@@ -235,7 +235,7 @@ public class TopicBeacon implements InitializingBean {
     }
 
     private synchronized boolean updateModelVersion() {
-        String modelId = coordinator.getCurrentCamelModelId();
+        String modelId = coordinator.getCurrentAppModelId();
         boolean versionChanged = ! StringUtils.defaultIfBlank(modelId, "").equals(previousModelId);
         log.trace("Topic Beacon: updateModelVersion: previousModelId='{}', modelId='{}', version={}, version-changed={}",
                 previousModelId, modelId, modelVersion.get(), versionChanged);

@@ -83,11 +83,11 @@ public class ControlServiceCoordinator implements InitializingBean {
     @Getter private BrokerCepService brokerCep;
 
     private final AtomicBoolean inUse = new AtomicBoolean();
-    private final Map<String, TranslationContext> camelToTcCache = new HashMap<>();
+    private final Map<String, TranslationContext> appModelToTcCache = new HashMap<>();
 
     @Getter private final String reference = UUID.randomUUID().toString();
 
-    @Getter private String currentCamelModelId;
+    @Getter private String currentAppModelId;
     @Getter private String currentCpModelId;
     private TranslationContext currentTC;
 
@@ -156,8 +156,8 @@ public class ControlServiceCoordinator implements InitializingBean {
                 : NetUtil.getPublicIpAddress();
     }
 
-    public String getCamelModelPath() {
-        return currentCamelModelId;
+    public String getAppModelPath() {
+        return currentAppModelId;
     }
 
     public String getCpModelPath() {
@@ -187,13 +187,13 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Async
     public void preloadModels() {
-        String preloadCamelModel = properties.getPreload().getCamelModel();
+        String preloadAppModel = properties.getPreload().getCamelModel();
         String preloadCpModel = properties.getPreload().getCpModel();
-        if (StringUtils.isNotBlank(preloadCamelModel)) {
+        if (StringUtils.isNotBlank(preloadAppModel)) {
             log.info("===================================================================================================");
-            log.info("ControlServiceCoordinator.preloadModels(): Preloading models: camel-model={}, cp-model={}",
-                    preloadCamelModel, preloadCpModel);
-            processNewModel(preloadCamelModel, preloadCpModel, null, null, null);
+            log.info("ControlServiceCoordinator.preloadModels(): Preloading models: app-model={}, cp-model={}",
+                    preloadAppModel, preloadCpModel);
+            processNewModel(preloadAppModel, preloadCpModel, null, null, null);
         } else {
             log.info("ControlServiceCoordinator.preloadModels(): No model to preload");
         }
@@ -202,13 +202,13 @@ public class ControlServiceCoordinator implements InitializingBean {
     // ------------------------------------------------------------------------------------------------------------
 
     @Async
-    public void processNewModel(String camelModelId, String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
+    public void processNewModel(String appModelId, String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator.processNewModel(): ERROR: Coordinator is in use. Method exits immediately";
             log.warn(mesg);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(camelModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
+                sendErrorNotification(appModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
             }
@@ -217,8 +217,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         try {
             // Call '_processNewModels()' to do actual processing
-            _processNewModels(camelModelId, cpModelId, notificationUri, requestUuid, jwtToken);
-            this.currentCamelModelId = _normalizeModelId(camelModelId);
+            _processNewModels(appModelId, cpModelId, notificationUri, requestUuid, jwtToken);
+            this.currentAppModelId = _normalizeModelId(appModelId);
             this.currentCpModelId = _normalizeModelId(cpModelId);
         } catch (Exception ex) {
             setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
@@ -226,7 +226,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(camelModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
+                sendErrorNotification(appModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
             }
@@ -272,18 +272,18 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected void _processNewModels(String camelModelId, String cpModelId, String notificationUri,
+    protected void _processNewModels(String appModelId, String cpModelId, String notificationUri,
                                      String requestUuid, String jwtToken)
     {
-        log.info("ControlServiceCoordinator.processNewModel(): BEGIN: camel-model-id={}, cp-model-id={}, notification-uri={}, request-uuid={}", camelModelId, cpModelId, notificationUri, requestUuid);
+        log.info("ControlServiceCoordinator.processNewModel(): BEGIN: app-model-id={}, cp-model-id={}, notification-uri={}, request-uuid={}", appModelId, cpModelId, notificationUri, requestUuid);
 
         // Translate models into EPL rules etc
-        TranslationContext _TC = null;
+        TranslationContext _TC;
         if (!properties.isSkipTranslation()) {
-            setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating CAMEL model");
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating model");
 
-            log.info("ControlServiceCoordinator.processNewModel(): Model translation: model-id={}", camelModelId);
-            _TC = translator.translate(camelModelId);
+            log.info("ControlServiceCoordinator.processNewModel(): Model translation: model-id={}", appModelId);
+            _TC = translator.translate(appModelId);
             log.debug("ControlServiceCoordinator.processNewModel(): Model translation: RESULTS: {}", _TC);
 
             // serialize 'TranslationContext' to file
@@ -292,7 +292,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                 try {
                     setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
 
-                    fileName = getTcFileName(camelModelId, fileName);
+                    fileName = getTcFileName(appModelId, fileName);
                     if (Paths.get(fileName).toFile().exists()) {
                         log.warn("ControlServiceCoordinator.processNewModel(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                     }
@@ -322,7 +322,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                 setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
 
                 try {
-                    fileName = getTcFileName(camelModelId, fileName);
+                    fileName = getTcFileName(appModelId, fileName);
                     if (! Paths.get(fileName).toFile().exists()) {
                         log.error("ControlServiceCoordinator.processNewModel(): The specified Translation Context file does not exist: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                         throw new IllegalArgumentException("The specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile() + ", file-name=" + fileName);
@@ -416,7 +416,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                     log.warn("ControlServiceCoordinator.processNewModel(): Broker-CEP: No EPL statements found for GLOBAL grouping");
                 }
             } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", camelModelId, ex);
+                log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while initializing Broker-CEP of Upperware: app-model-id={}", appModelId, ex);
             }
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping Broker-CEP setup due to configuration");
@@ -437,11 +437,11 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (!properties.isSkipBaguette()) {
             setCurrentEmsState(EMS_STATE.INITIALIZING, "Initializing Baguette Server");
 
-            log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: camel-model-id={}", camelModelId);
+            log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: app-model-id={}", appModelId);
             try {
                 baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
             } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: camel-model-id={}", camelModelId, ex);
+                log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: app-model-id={}", appModelId, ex);
             }
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping Baguette Server setup due to configuration");
@@ -450,11 +450,11 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Start/Stop Top-Level collectors
         if (!properties.isSkipCollectors()) {
             if (netdataCollector!=null) {
-                log.info("ControlServiceCoordinator.processNewModel(): Stopping NetdataCollector: camel-model-id={}", camelModelId);
+                log.info("ControlServiceCoordinator.processNewModel(): Stopping NetdataCollector: app-model-id={}", appModelId);
                 try {
                     netdataCollector.stop();
                 } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while stopping NetdataCollector: camel-model-id={}", camelModelId, ex);
+                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while stopping NetdataCollector: app-model-id={}", appModelId, ex);
                 }
             }
             ServerCoordinator serverCoordinator = nodeRegistry.getCoordinator();
@@ -462,14 +462,14 @@ public class ControlServiceCoordinator implements InitializingBean {
                 if (netdataCollector==null) {
                     netdataCollector = applicationContext.getBean(ServerNetdataCollector.class);
                 }
-                log.info("ControlServiceCoordinator.processNewModel(): Starting NetdataCollector: camel-model-id={}", camelModelId);
+                log.info("ControlServiceCoordinator.processNewModel(): Starting NetdataCollector: app-model-id={}", appModelId);
                 try {
                     netdataCollector.start();
                 } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting NetdataCollector: camel-model-id={}", camelModelId, ex);
+                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting NetdataCollector: app-model-id={}", appModelId, ex);
                 }
             } else {
-                log.info("ControlServiceCoordinator.processNewModel(): NetdataCollector is not needed (will not start it): camel-model-id={}", camelModelId);
+                log.info("ControlServiceCoordinator.processNewModel(): NetdataCollector is not needed (will not start it): app-model-id={}", appModelId);
             }
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping Collectors setup due to configuration");
@@ -558,8 +558,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
-        log.info("ControlServiceCoordinator.processNewModel(): Cache translation results: camel-model-id={}", camelModelId);
-        camelToTcCache.put(_normalizeModelId(camelModelId), _TC);
+        log.info("ControlServiceCoordinator.processNewModel(): Cache translation results: app-model-id={}", appModelId);
+        appModelToTcCache.put(_normalizeModelId(appModelId), _TC);
 
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
@@ -568,7 +568,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
                 notificationUri = notificationUri.trim();
                 log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(camelModelId, notificationUri, requestUuid, jwtToken);
+                sendSuccessNotification(appModelId, notificationUri, requestUuid, jwtToken);
                 log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
             } else {
                 log.warn("ControlServiceCoordinator.processNewModel(): Notification URI is blank");
@@ -578,19 +578,19 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         this.currentTC = _TC;
-        log.info("ControlServiceCoordinator.processNewModel(): END: camel-model-id={}", camelModelId);
+        log.info("ControlServiceCoordinator.processNewModel(): END: app-model-id={}", appModelId);
 
         setCurrentEmsState(EMS_STATE.READY, null);
     }
 
-    private String getTcFileName(@NonNull String camelModelId, @NonNull String fileName) {
-        camelModelId = StringUtils.removeStart(camelModelId, "/");
-        return String.format(fileName, camelModelId.replaceAll("[^\\p{L}\\d]", "_"));
+    private String getTcFileName(@NonNull String appModelId, @NonNull String fileName) {
+        appModelId = StringUtils.removeStart(appModelId, "/");
+        return String.format(fileName, appModelId.replaceAll("[^\\p{L}\\d]", "_"));
     }
 
     protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
         log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, notification-uri={}, request-uuid={}", cpModelId, notificationUri, requestUuid);
-        log.info("ControlServiceCoordinator._processCpModel(): Current camel-model-id={}", currentCamelModelId);
+        log.info("ControlServiceCoordinator._processCpModel(): Current app-model-id={}", currentAppModelId);
         TranslationContext _TC = this.currentTC;
 
         // Retrieve Metric Variable Values (MVV) from CP model
@@ -632,7 +632,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                 log.info("ControlServiceCoordinator._processCpModel(): Passing constants to Broker-CEP: {}", constants);
                 brokerCep.setConstants(constants);
             } catch (Exception ex) {
-                log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while initializing Broker-CEP of Upperware: camel-model-id={}", cpModelId, ex);
+                log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while initializing Broker-CEP of Upperware: app-model-id={}", cpModelId, ex);
             }
         } else {
             log.warn("ControlServiceCoordinator._processCpModel(): Skipping Broker-CEP setup due to configuration");
@@ -760,37 +760,37 @@ public class ControlServiceCoordinator implements InitializingBean {
     // Translation information query methods
     // ------------------------------------------------------------------------------------------------------------
 
-    public TranslationContext getTranslationContextOfCamelModel(String camelModelId) {
-        return camelToTcCache.get(_normalizeModelId(camelModelId));
+    public TranslationContext getTranslationContextOfAppModel(String appModelId) {
+        return appModelToTcCache.get(_normalizeModelId(appModelId));
     }
 
-    public List<Monitor> getSensorsOfCamelModel(String camelModelId) {
-        if (StringUtils.isBlank(camelModelId))
-            camelModelId = currentCamelModelId;
-        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
+    public List<Monitor> getSensorsOfAppModel(String appModelId) {
+        if (StringUtils.isBlank(appModelId))
+            appModelId = currentAppModelId;
+        TranslationContext _tc = appModelToTcCache.get(_normalizeModelId(appModelId));
         if (_tc==null) return Collections.emptyList();
         List<Monitor> sensors = new ArrayList<>(_tc.getMON());
         return sensors;
     }
 
-    public Set getMetricConstraints(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
+    public Set getMetricConstraints(String appModelId) {
+        TranslationContext _tc = appModelToTcCache.get(_normalizeModelId(appModelId));
         if (_tc==null) return Collections.emptySet();
         return _tc.getMetricConstraints();
     }
 
-    /*public Set<String> getGlobalGroupingMetrics(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
+    /*public Set<String> getGlobalGroupingMetrics(String appModelId) {
+        TranslationContext _tc = appModelToTcCache.get(_normalizeModelId(appModelId));
         if (_tc==null) return Collections.emptySet();
 
         // get all top-level nodes their component metrics
         final Set<DAGNode> nodes = new HashSet<>();
-        final Deque<DAGNode> q = new ArrayDeque<>(_tc.DAG.getTopLevelNodes());
+        final Deque<DAGNode> q = new ArrayDeque<>(_tc.getDAG().getTopLevelNodes());
         while (!q.isEmpty()) {
             DAGNode node = q.pop();
             if (node.getGrouping()==Grouping.GLOBAL) {
                 nodes.add(node);
-                q.addAll(_tc.DAG.getNodeChildren(node));
+                q.addAll(_tc.getDAG().getNodeChildren(node));
             }
         }
 
@@ -800,8 +800,8 @@ public class ControlServiceCoordinator implements InitializingBean {
                 .collect(Collectors.toSet());
     }*/
 
-    public @NonNull Map<String,Object> getSLOMetricDecomposition(String camelModelId) {
-        List<Object> slos = _getSLOMetricDecomposition(camelModelId);
+    public @NonNull Map<String,Object> getSLOMetricDecomposition(String appModelId) {
+        List<Object> slos = _getSLOMetricDecomposition(appModelId);
         Map<String,Object> result = new HashMap<>();
         result.put("name", "_");
         result.put("operator", "OR");
@@ -809,8 +809,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         return result;
     }
 
-    public @NonNull List<Object> _getSLOMetricDecomposition(String camelModelId) {
-        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
+    public @NonNull List<Object> _getSLOMetricDecomposition(String appModelId) {
+        TranslationContext _tc = appModelToTcCache.get(_normalizeModelId(appModelId));
         if (_tc==null) return Collections.emptyList();
 
         // Get metric and logical constraints
@@ -875,18 +875,18 @@ public class ControlServiceCoordinator implements InitializingBean {
         return null;
     }
 
-    public @NonNull Set<MetricContext> getMetricContextsForPrediction(String camelModelId) {
-        log.debug("getMetricContextsForPrediction: BEGIN: {}", camelModelId);
-        TranslationContext _tc = camelToTcCache.get(_normalizeModelId(camelModelId));
+    public @NonNull Set<MetricContext> getMetricContextsForPrediction(String appModelId) {
+        log.debug("getMetricContextsForPrediction: BEGIN: {}", appModelId);
+        TranslationContext _tc = appModelToTcCache.get(_normalizeModelId(appModelId));
         if (_tc==null) {
-            log.debug("getMetricContextsForPrediction: END: No Translation Context found for model: {}", camelModelId);
+            log.debug("getMetricContextsForPrediction: END: No Translation Context found for model: {}", appModelId);
             return Collections.emptySet();
         }
 
         // Process DAG top-level nodes
         Set<DAGNode> topLevelNodes = _tc.getDAG().getTopLevelNodes();
         HashSet<MetricContext> tcMetricsOfTopLevelNodes = new HashSet<>();
-        log.debug("getMetricContextsForPrediction: Translation Context found for model: {}", camelModelId);
+        log.debug("getMetricContextsForPrediction: Translation Context found for model: {}", appModelId);
 
         final Deque<DAGNode> q = topLevelNodes.stream()
                 .filter(x ->
@@ -905,7 +905,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             }
         }
 
-        log.debug("getMetricContextsForPrediction: END: Metrics of Top-Level nodes of model: model={}, metrics={}", camelModelId, tcMetricsOfTopLevelNodes);
+        log.debug("getMetricContextsForPrediction: END: Metrics of Top-Level nodes of model: model={}, metrics={}", appModelId, tcMetricsOfTopLevelNodes);
         return tcMetricsOfTopLevelNodes;
     }
 
@@ -978,7 +978,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Prepare and send CamelModelNotification
         try {
-            sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+            sendAppModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -995,14 +995,14 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Prepare and send CamelModelNotification
         try {
-            sendCamelModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+            sendAppModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private void sendCamelModelNotification(String applicationId, NotificationResult result, String notificationUri,
-                                            String requestUuid, String jwtToken) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, CertificateException, UnrecoverableKeyException {
+    private void sendAppModelNotification(String applicationId, NotificationResult result, String notificationUri,
+                                          String requestUuid, String jwtToken) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, CertificateException, UnrecoverableKeyException {
         // Create a new watermark
         Watermark watermark = new WatermarkImpl();
         watermark.setUser("EMS");
@@ -1018,13 +1018,13 @@ public class ControlServiceCoordinator implements InitializingBean {
         request.setWatermark(watermark);
 
         // Send CamelModelNotification to ESB (Control Process)
-        sendCamelModelNotification(request, notificationUri, jwtToken);
+        sendAppModelNotification(request, notificationUri, jwtToken);
     }
 
-    private void sendCamelModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) {
+    private void sendAppModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) {
         // Check if 'notificationUri' is blank
         if (StringUtils.isBlank(notificationUri)) {
-            log.warn("ControlServiceCoordinator.sendCamelModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");
+            log.warn("ControlServiceCoordinator.sendAppModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");
             return;
         }
         notificationUri = notificationUri.trim();
@@ -1032,7 +1032,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Get ESB url from control-service configuration
         String esbUrl = properties.getEsbUrl();
         if (StringUtils.isBlank(esbUrl)) {
-            log.warn("ControlServiceCoordinator.sendCamelModelNotification(): esb-url property is empty. No notification will be sent to ESB.");
+            log.warn("ControlServiceCoordinator.sendAppModelNotification(): esb-url property is empty. No notification will be sent to ESB.");
             return;
         }
         esbUrl = esbUrl.trim();
@@ -1047,8 +1047,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Call ESB endpoint
         String url = esbUrl + "/" + notificationUri;
-        log.info("ControlServiceCoordinator.sendCamelModelNotification(): Invoking ESB endpoint: {}", url);
-        log.trace("ControlServiceCoordinator.sendCamelModelNotification(): JWT token: {}", jwtToken);
+        log.info("ControlServiceCoordinator.sendAppModelNotification(): Invoking ESB endpoint: {}", url);
+        log.trace("ControlServiceCoordinator.sendAppModelNotification(): JWT token: {}", jwtToken);
         //String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
         //HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(CamelModelNotificationRequest.class, notification, jwtToken);
 
@@ -1124,9 +1124,9 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         if (response!=null) {
             String responseStatus = response.getStatusCode().toString();
-            log.info("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, status={}, message={}", url, responseStatus, response.getBody());
+            log.info("ControlServiceCoordinator.sendAppModelNotification(): ESB endpoint invoked: {}, status={}, message={}", url, responseStatus, response.getBody());
         } else {
-            log.warn("ControlServiceCoordinator.sendCamelModelNotification(): ESB endpoint invoked: {}, response is NULL", url);
+            log.warn("ControlServiceCoordinator.sendAppModelNotification(): ESB endpoint invoked: {}, response is NULL", url);
         }
     }
 

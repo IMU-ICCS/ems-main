@@ -143,7 +143,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         controlServiceInfo.put("current-ems-state", controlServiceCoordinator.getCurrentEmsState());
         controlServiceInfo.put("current-ems-state-message", controlServiceCoordinator.getCurrentEmsStateMessage());
         controlServiceInfo.put("current-ems-state-change-timestamp", controlServiceCoordinator.getCurrentEmsStateChangeTimestamp());
-        controlServiceInfo.put("current-camel-model-path", controlServiceCoordinator.getCamelModelPath());
+        controlServiceInfo.put("current-app-model-path", controlServiceCoordinator.getAppModelPath());
         controlServiceInfo.put("current-cp-model-path", controlServiceCoordinator.getCpModelPath());
         if (controlServiceProperties!=null && infoServiceProperties!=null) {
             controlServiceInfo.put("prop-ip-setting", controlServiceProperties.getIpSetting());
@@ -154,7 +154,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             controlServiceInfo.put("prop-metrics-client-update-interval", infoServiceProperties.getMetricsClientUpdateInterval());
             controlServiceInfo.put("prop-metrics-stream-event-name", infoServiceProperties.getMetricsStreamEventName());
             controlServiceInfo.put("prop-metrics-stream-update-interval", infoServiceProperties.getMetricsStreamUpdateInterval());
-            controlServiceInfo.put("prop-preload-camel-model", controlServiceProperties.getPreload().getCamelModel());
+            controlServiceInfo.put("prop-preload-app-model", controlServiceProperties.getPreload().getCamelModel());
             controlServiceInfo.put("prop-preload-cp-model", controlServiceProperties.getPreload().getCpModel());
             controlServiceInfo.put("prop-upperware-grouping", controlServiceProperties.getUpperwareGrouping());
             controlServiceInfo.put("prop-tc-load-file", controlServiceProperties.getTcLoadFile());
@@ -223,9 +223,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         // Destinations per grouping and min/max grouping
         Map<String,Object> translatorInfo = new LinkedHashMap<>();
         metrics.put(TRANSLATOR_INFO_PROVIDER, translatorInfo);
-        String camelModelPath = controlServiceCoordinator.getCamelModelPath();
-        if (StringUtils.isNotBlank(camelModelPath)) {
-            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfCamelModel(camelModelPath);
+        String appModelPath = controlServiceCoordinator.getAppModelPath();
+        if (StringUtils.isNotBlank(appModelPath)) {
+            TranslationContext _TC = controlServiceCoordinator.getTranslationContextOfAppModel(appModelPath);
             Set<String> groupings = _TC.getG2T().keySet();
             ArrayList<String> orderedGroupings = new ArrayList<>(groupings);
             orderedGroupings.sort((o1, o2) -> {
@@ -233,7 +233,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
                 GROUPING g2 = GROUPING.valueOf(o2);
                 return g1.compareTo(g2);
             });
-            translatorInfo.put("camel-model-path", camelModelPath);
+            translatorInfo.put("app-model-path", appModelPath);
             translatorInfo.put("groupings", orderedGroupings);
             translatorInfo.put("actions-per-event", _TC.getE2A());
             translatorInfo.put("slo", _TC.getSLO());
