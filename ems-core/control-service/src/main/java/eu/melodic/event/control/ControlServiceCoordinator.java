@@ -764,13 +764,12 @@ public class ControlServiceCoordinator implements InitializingBean {
         return appModelToTcCache.get(_normalizeModelId(appModelId));
     }
 
-    public List<Monitor> getSensorsOfAppModel(String appModelId) {
+    public List<Monitor> getMonitorssOfAppModel(String appModelId) {
         if (StringUtils.isBlank(appModelId))
             appModelId = currentAppModelId;
         TranslationContext _tc = appModelToTcCache.get(_normalizeModelId(appModelId));
         if (_tc==null) return Collections.emptyList();
-        List<Monitor> sensors = new ArrayList<>(_tc.getMON());
-        return sensors;
+        return new ArrayList<>(_tc.getMON());
     }
 
     public Set getMetricConstraints(String appModelId) {

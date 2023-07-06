@@ -182,20 +182,20 @@ public class ControlServiceController {
     }
 
     @RequestMapping(value = "/monitors", method = POST)
-    public HttpEntity<MonitorsDataResponse> getSensors(@RequestBody MonitorsDataRequestImpl request,
-                                                       @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    public HttpEntity<MonitorsDataResponse> getMonitors(@RequestBody MonitorsDataRequestImpl request,
+                                                        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.getSensors(): Received request: {}", request);
-        log.trace("ControlServiceController.getSensors(): JWT token: {}", jwtToken);
+        log.info("ControlServiceController.getMonitors(): Received request: {}", request);
+        log.trace("ControlServiceController.getMonitors(): JWT token: {}", jwtToken);
 
         // Get information from request
         String applicationId = request.getApplicationId();
         Watermark watermark = request.getWatermark();
         String requestUuid = watermark.getUuid();
-        log.info("ControlServiceController.getSensors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
+        log.info("ControlServiceController.getMonitors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
 
         // Retrieve sensor information
-        List<eu.melodic.event.translate.model.Monitor> monitors = coordinator.getSensorsOfAppModel(applicationId);
+        List<eu.melodic.event.translate.model.Monitor> monitors = coordinator.getMonitorssOfAppModel(applicationId);
 
         // Update watermark
         watermark.setUser("EMS");
@@ -203,16 +203,17 @@ public class ControlServiceController {
         watermark.setDate(new java.util.Date());
 
         // Print debug info about sensors
-        if (log.isDebugEnabled()) {
-            log.debug("ControlServiceController.getSensors(): Printing monitors for Request: {}", requestUuid);
+        if (log.isDebugEnabled() || true) {
+            log.warn("ControlServiceController.getMonitors(): Printing monitors for Request: {}", requestUuid);
             monitors.forEach(m -> {
-                log.debug("ControlServiceController.getSensors():     Monitor: metric/topic={}, component={}, additional-properties={}",
+                log.warn("ControlServiceController.getMonitors():     Monitor: metric/topic={}, component={}, additional-properties={}",
                         m.getMetric(), m.getComponent(), m.getAdditionalProperties());
                 eu.melodic.event.translate.model.Sensor s = m.getSensor();
+                log.warn("ControlServiceController.getMonitors():       Sensor: {}", s);
                 if (s.isPushSensor())
-                    log.debug("ControlServiceController.getSensors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
+                    log.warn("ControlServiceController.getMonitors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
                 else
-                    log.debug("ControlServiceController.getSensors():       PullSensor: class-name={}, interval={}, configuration={}",
+                    log.warn("ControlServiceController.getMonitors():       PullSensor: class-name={}, interval={}, configuration={}",
                             m.getSensor().getPullSensor().getClassName(), m.getSensor().getPullSensor().getInterval(), m.getSensor().getPullSensor().getConfiguration());
             });
         }
@@ -227,9 +228,13 @@ public class ControlServiceController {
                 pullSensor.setClassName(m.getSensor().getPullSensor().getClassName());
                 pullSensor.setConfiguration( convertToKeyValuePairList(m.getSensor().getPullSensor().getConfiguration()) );
                 pullSensor.setInterval( convertInterval(m.getSensor().getPullSensor().getInterval()) );
-            } else {
+            } else if (m.getSensor().isPushSensor()) {
                 PushSensor pushSensor = new PushSensorImpl();
                 sensor = new Sensor(pushSensor);
+                pushSensor.setPort(m.getSensor().getPushSensor().getPort());
+            } else {
+                log.error("ControlServiceController.getMonitors():       ERROR: Sensor is neither PullSensor or PushSensor: {}", m.getSensor());
+                throw new IllegalArgumentException("ERROR: Sensor is neither PullSensor or PushSensor: "+m.getSensor());
             }
 
             // Sinks
@@ -254,7 +259,7 @@ public class ControlServiceController {
         response.setMonitors(responseMonitors);
         response.setWatermark(watermark);
         HttpEntity<MonitorsDataResponse> entity = coordinator.createHttpEntity(MonitorsDataResponse.class, response, jwtToken);
-        log.info("ControlServiceController.getSensors(): Response: {}", response);
+        log.info("ControlServiceController.getMonitors(): Response: {}", response);
 
         //return response;
         return entity;
