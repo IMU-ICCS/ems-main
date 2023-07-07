@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 @ToString
 public class TranslationContext implements Serializable {
 
+    @Getter
+    private final String modelName;
+
     // Decomposition DAG
     @Getter
     @JsonIgnore
@@ -123,12 +126,13 @@ public class TranslationContext implements Serializable {
     // ====================================================================================================================================================
     // Constructors
 
-    public TranslationContext() {
-        this(true);
+    public TranslationContext(String modelName) {
+        this(true, modelName);
     }
 
-    public TranslationContext(boolean initializeDag) {
-        // Public staff
+    public TranslationContext(boolean initializeDag, String modelName) {
+        // Initialize fields
+        this.modelName = modelName;
         this.DAG = initializeDag ? new DAG(this) : new DAG();
 
         // Element-to-Full-Name staff
@@ -138,7 +142,7 @@ public class TranslationContext implements Serializable {
     }
 
     public TranslationContext(TranslationContext _TC, boolean initializeDag) {
-        this(initializeDag);
+        this(initializeDag, _TC.modelName);
 
         // Comment out 'this(...)' constructor and uncomment the following lines
         //this.DAG = deepCopy( _TC.DAG, DAG.class );    // DAG used during translation. Not for serialization

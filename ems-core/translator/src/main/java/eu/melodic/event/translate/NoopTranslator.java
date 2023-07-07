@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class NoopTranslator implements Translator {
     public TranslationContext translate(String modelPath) {
         log.warn("NoopTranslator: Call to 'translate': model-path={}", modelPath);
-        return new TranslationContext();
+        return new TranslationContext(modelPath);
     }
 
     public void printResults(TranslationContext translationContext, String exportName) {

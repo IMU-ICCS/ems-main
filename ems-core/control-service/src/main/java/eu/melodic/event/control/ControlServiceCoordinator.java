@@ -313,7 +313,6 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         } else {
             log.warn("ControlServiceCoordinator.processNewModel(): Skipping translation due to configuration");
-            _TC = new TranslationContext();
 
             // unserialize 'TranslationContext' from file
             String fileName = properties.getTcLoadFile();
@@ -340,8 +339,10 @@ public class ControlServiceCoordinator implements InitializingBean {
                     translator.printResults(_TC, null);
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
+                    throw new IllegalArgumentException("Failed to load translation data from file: " + fileName, ex);
                 }
             } else {
+                log.error("ControlServiceCoordinator.processNewModel(): No translation context file has been set");
                 throw new IllegalArgumentException("No translation context file has been set");
             }
         }
