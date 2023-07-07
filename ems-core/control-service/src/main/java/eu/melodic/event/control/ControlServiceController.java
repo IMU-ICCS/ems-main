@@ -176,7 +176,7 @@ public class ControlServiceController {
 
     private Interval convertInterval(eu.melodic.event.translate.model.Interval interval) {
         Interval i = new IntervalImpl();
-        i.setUnit(Interval.UnitType.valueOf( interval.getUnit().toString() ));
+        i.setUnit(Interval.UnitType.valueOf( interval.getUnit().name() ));
         i.setPeriod(interval.getPeriod());
         return i;
     }
@@ -203,7 +203,7 @@ public class ControlServiceController {
         watermark.setDate(new java.util.Date());
 
         // Print debug info about sensors
-        if (log.isDebugEnabled() || true) {
+        if (log.isDebugEnabled()) {
             log.warn("ControlServiceController.getMonitors(): Printing monitors for Request: {}", requestUuid);
             monitors.forEach(m -> {
                 log.warn("ControlServiceController.getMonitors():     Monitor: metric/topic={}, component={}, additional-properties={}",
@@ -238,12 +238,14 @@ public class ControlServiceController {
             }
 
             // Sinks
-            List<Sink> sinks = m.getSinks().stream().map(s -> {
-                Sink sink = new SinkImpl();
-                sink.setType(Sink.TypeType.valueOf(s.getType().toString()));
-                sink.setConfiguration(convertToKeyValuePairList(s.getConfiguration()));
-                return sink;
-            }).toList();
+            List<Sink> sinks = m.getSinks()==null
+                    ? null
+                    : m.getSinks().stream().map(s -> {
+                        Sink sink = new SinkImpl();
+                        sink.setType(Sink.TypeType.valueOf(s.getType().toString()));
+                        sink.setConfiguration(convertToKeyValuePairList(s.getConfiguration()));
+                        return sink;
+                    }).toList();
 
             // Monitor
             Monitor mon = new MonitorImpl();

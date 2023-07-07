@@ -10,12 +10,15 @@
 package eu.melodic.event.control.util;
 
 import com.google.gson.*;
-import eu.melodic.event.models.interfaces.*;
+import eu.melodic.event.translate.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class TranslationContextMonitorGsonDeserializer implements JsonDeserializer<Monitor> {
@@ -24,7 +27,7 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
         log.debug("TranslationContextMonitorGsonDeserializer: INPUT:  jsonElement={}, type={}, context={}", jsonElement, type, jsonDeserializationContext);
 
         JsonObject jsonObject = (JsonObject) jsonElement;
-        Monitor monitor = new MonitorImpl();
+        Monitor monitor = new Monitor();
 
         String metricName = jsonObject.getAsJsonPrimitive("metric").getAsString();
         monitor.setMetric(metricName);
@@ -56,7 +59,7 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
 
         Sensor sensor;
         if (isPull) {
-            PullSensor pullSensor = new PullSensorImpl();
+            PullSensor pullSensor = new PullSensor();
             if (jsonSensorObject.has("className") && !jsonSensorObject.get("className").isJsonNull()) {
                 JsonPrimitive classNameElem = jsonSensorObject.getAsJsonPrimitive("className");
                 String className = classNameElem!=null ? classNameElem.getAsString() : null;
@@ -67,12 +70,15 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
 
             pullSensor.setInterval( getInterval(jsonSensorObject, metricName, componentName, "PullSensor") );
 
-            sensor = new Sensor(pullSensor);
-        } else {
-            PushSensor pushSensor = new PushSensorImpl();
+            sensor = pullSensor;
+        } else if (isPush) {
+            PushSensor pushSensor = new PushSensor();
             int port = jsonSensorObject.getAsJsonPrimitive("port").getAsInt();
             pushSensor.setPort(port);
-            sensor = new Sensor(pushSensor);
+            sensor = pushSensor;
+        } else {
+            throw new JsonParseException("Monitor.Sensor is neither Pull or Push: "
+                    + "jsonSensorObject=" + jsonSensorObject);
         }
         monitor.setSensor(sensor);
 
@@ -88,8 +94,8 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
                 jsonSinkArray.forEach(elem -> {
                     if (!elem.isJsonNull()) {
                         JsonObject jsonSinkElem = elem.getAsJsonObject();
-                        Sink sink = new SinkImpl();
-                        sink.setType(Sink.TypeType.valueOf(jsonSinkElem.getAsJsonPrimitive("type").getAsString()));
+                        Sink sink = new Sink();
+                        sink.setType(Sink.Type.valueOf(jsonSinkElem.getAsJsonPrimitive("type").getAsString()));
                         sink.setConfiguration(getConfiguration(jsonSinkElem, metricName, componentName, "PullSensor.sinks[]"));
                         sinks.add(sink);
                     }
@@ -103,44 +109,33 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
         return monitor;
     }
 
-    public List<KeyValuePair> getConfiguration(JsonObject jsonObject, String metricName, String componentName, String field) {
+    public Map<String, String> getConfiguration(JsonObject jsonObject, String metricName, String componentName, String field) {
         if (!jsonObject.has("configuration")) return null;
         if (jsonObject.get("configuration").isJsonNull()) return null;
-        if (!jsonObject.get("configuration").isJsonArray())
-            throw new JsonParseException("Monitor."+field+".configuration must be an array or null: "
+        if (!jsonObject.get("configuration").isJsonObject())
+            throw new JsonParseException("Monitor."+field+".configuration must be a map or null: "
                     + "metric=" + metricName + ", component=" + componentName);
 
-        JsonArray jsonConfigArray = jsonObject.getAsJsonArray("configuration");
-        List<KeyValuePair> configPairs = new ArrayList<>();
-        jsonConfigArray.forEach(elem -> {
-            if (!elem.isJsonNull()) {
-                if (!elem.isJsonObject())
-                    throw new JsonParseException("Monitor."+field+".configuration[] element must be an object: "
-                            + "metric=" + metricName + ", component=" + componentName);
+        Map<String,String> configPairs = new LinkedHashMap<>();
+        JsonObject jsonConfigMap = jsonObject.getAsJsonObject("configuration");
+        jsonConfigMap.entrySet().forEach(entry -> {
+            String key = entry.getKey();
+            String val = null;
+            JsonElement jsonElem = entry.getValue();
 
-                JsonObject jsonElemObject = elem.getAsJsonObject();
-                JsonElement keyElem = jsonElemObject.get("key");
-                JsonElement valueElem = jsonElemObject.get("value");
+            if (StringUtils.isBlank(key))
+                throw new JsonParseException("Monitor."+field+".configuration contains a blank key: "
+                        + "metric=" + metricName + ", component=" + componentName);
 
-                if (keyElem.isJsonNull())
-                    throw new JsonParseException("Monitor."+field+".configuration[].key cannot be null: "
-                            + "metric=" + metricName + ", component=" + componentName);
-                if (!keyElem.isJsonPrimitive())
-                    throw new JsonParseException("Monitor."+field+".configuration[].key must be an string: "
-                            + "metric=" + metricName + ", component=" + componentName);
+            if (jsonElem.isJsonNull())
+                val = null;
+            else if (jsonElem.isJsonPrimitive())
+                val = jsonElem.getAsString();
+            else
+                throw new JsonParseException("Monitor."+field+".configuration entry contains a non-string value: "
+                        + "metric=" + metricName + ", component=" + componentName + ", configuration[].key=" + key);
 
-                if (!keyElem.isJsonNull() && !keyElem.isJsonPrimitive())
-                    throw new JsonParseException("Monitor."+field+".configuration[].value must be an string or null: "
-                            + "metric=" + metricName + ", component=" + componentName);
-
-                String key = jsonElemObject.get("key").getAsString();
-                String value = valueElem != null && valueElem.isJsonPrimitive() ? jsonElemObject.get("value").getAsString() : null;
-
-                KeyValuePair keyValuePair = new KeyValuePairImpl();
-                keyValuePair.setKey(key);
-                keyValuePair.setValue(value);
-                configPairs.add(keyValuePair);
-            }
+            configPairs.put(key, val);
         });
 
         return configPairs;
@@ -171,7 +166,7 @@ public class TranslationContextMonitorGsonDeserializer implements JsonDeserializ
             throw new JsonParseException("Monitor."+field+".interval.period must be an integer: "
                     + "metric=" + metricName + ", component=" + componentName);
 
-        Interval interval = new IntervalImpl();
+        Interval interval = new Interval();
         interval.setUnit(Interval.UnitType.valueOf(unitElem.getAsString()));
         interval.setPeriod(periodElem.getAsInt());
         return interval;

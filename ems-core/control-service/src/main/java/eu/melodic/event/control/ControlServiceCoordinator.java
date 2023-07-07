@@ -298,12 +298,13 @@ public class ControlServiceCoordinator implements InitializingBean {
                     }
 
                     // Store _TC in a file
-                    log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
+                    log.debug("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
                     com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
                     java.io.Writer writer = new java.io.FileWriter(fileName);
                     gson.toJson(_TC, writer);
                     writer.close();
-                    log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
+                    log.debug("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
+                    log.info("ControlServiceCoordinator.processNewModel(): Saved translation data in file: {}", fileName);
 
                 } catch (java.io.IOException ex) {
                     log.error("ControlServiceCoordinator.processNewModel(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
@@ -325,14 +326,15 @@ public class ControlServiceCoordinator implements InitializingBean {
                         log.error("ControlServiceCoordinator.processNewModel(): The specified Translation Context file does not exist: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                         throw new IllegalArgumentException("The specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile() + ", file-name=" + fileName);
                     }
-                    log.info("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
+                    log.info("ControlServiceCoordinator.processNewModel(): Loading translator data from file: {}", fileName);
+                    log.debug("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
                     java.io.Reader reader = new java.io.FileReader(fileName);
                     com.google.gson.Gson gson = new GsonBuilder()
                             .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
                             .create();
                     _TC = gson.fromJson(reader, TranslationContext.class);
                     reader.close();
-                    log.info("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
+                    log.debug("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
 
                     // Print resulting Translation Context
                     translator.printResults(_TC, null);
