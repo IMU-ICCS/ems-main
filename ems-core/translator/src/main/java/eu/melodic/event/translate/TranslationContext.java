@@ -44,11 +44,13 @@ public class TranslationContext implements Serializable {
 
     // Component-to-Sensor map
     @Getter
-    private final Map<Component, Set<Sensor>> C2S = new HashMap<>();        //XXX:TODO-LOW: Convert to strings
+    @JsonIgnore
+    private final transient Map<Component, Set<Sensor>> C2S = new HashMap<>();        //XXX:TODO-LOW: Convert to strings
 
     // Data-to-Sensor map
     @Getter
-    private final Map<Data, Set<Sensor>> D2S = new HashMap<>();             //XXX:TODO-LOW: Convert to strings
+    @JsonIgnore
+    private final transient Map<Data, Set<Sensor>> D2S = new HashMap<>();             //XXX:TODO-LOW: Convert to strings
 
     // Sensor Monitors set
     @Getter
@@ -69,9 +71,11 @@ public class TranslationContext implements Serializable {
 
     // Composite Metric Variables set
     @Getter
-    private final Set<String> CMVar = new LinkedHashSet<>();
+    @JsonIgnore
+    private final transient Set<String> CMVar = new LinkedHashSet<>();
     @Getter
-    private final Set<MetricVariable> CMVar_1 = new LinkedHashSet<>();
+    @JsonIgnore
+    private final transient Set<MetricVariable> CMVar_1 = new LinkedHashSet<>();
 
     // Metric Variable Values set (i.e. non-composite metric variable)
     private final Set<String> MVV = new LinkedHashSet<>();
@@ -82,9 +86,11 @@ public class TranslationContext implements Serializable {
     private final Set<FunctionDefinition> FUNC = new LinkedHashSet<>();
 
     // Topics-Connections-per-Grouping
-    protected final Map<String, String> providedTopics = new HashMap<>();                       // topic-grouping where this topic is provided
-    protected final Map<String, Set<String>> requiredTopics = new HashMap<>();                  // topic-set of groupings where this topic is required
-    protected final Map<String, Map<String, Set<String>>> topicConnections = new HashMap<>();   // grouping-provided topic in grouping-groupings that require provided topic
+    @JsonIgnore
+    private final transient Map<String, String> providedTopics = new HashMap<>();                       // topic-grouping where this topic is provided
+    @JsonIgnore
+    private final transient Map<String, Set<String>> requiredTopics = new HashMap<>();                  // topic-set of groupings where this topic is required
+    protected final Map<String, Map<String, Set<String>>> topicConnections = new HashMap<>();           // grouping-provided topic in grouping-groupings that require provided topic
     protected boolean needsRefresh;
 
     // Metric Constraints

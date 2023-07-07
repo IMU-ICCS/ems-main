@@ -4,8 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +16,6 @@ public class Monitor extends AbstractInterfaceRootObject {
     private String metric;
     private String component;
     private Sensor sensor;
-    private List<Sink> sinks = new ArrayList<>();
-    private Map<String, String> tags = new HashMap<>();
+    private List<Sink> sinks;
+    private Map<String, String> tags;
 }

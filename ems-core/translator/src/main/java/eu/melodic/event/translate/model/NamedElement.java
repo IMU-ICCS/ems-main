@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @lombok.Data
@@ -14,5 +13,5 @@ import java.util.List;
 public class NamedElement extends AbstractRootObject {
     protected String name;
     protected String description;
-    protected List<Annotation> annotations = new ArrayList<>();
+    protected List<Annotation> annotations;
 }

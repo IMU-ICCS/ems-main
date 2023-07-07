@@ -297,13 +297,11 @@ public class ControlServiceCoordinator implements InitializingBean {
                         log.warn("ControlServiceCoordinator.processNewModel(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
                     }
 
-                    // clone _TC
+                    // Store _TC in a file
                     log.info("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
                     com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
-                    TranslationContext _copyTC = _TC.clone();
-
                     java.io.Writer writer = new java.io.FileWriter(fileName);
-                    gson.toJson(_copyTC, writer);
+                    gson.toJson(_TC, writer);
                     writer.close();
                     log.info("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
 
@@ -425,11 +423,13 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Process placeholders in sink type configurations
         String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
         for (Monitor mon : _TC.getMON()) {
-            for (Sink s : mon.getSinks()) {
-                s.getConfiguration().entrySet().forEach(entry -> {
-                    if (entry.getValue() != null)
-                        entry.setValue( entry.getValue().replace("%{BROKER_URL}%", brokerUrlForClients) );
-                });
+            if (mon.getSinks()!=null) {
+                for (Sink s : mon.getSinks()) {
+                    s.getConfiguration().entrySet().forEach(entry -> {
+                        if (entry.getValue() != null)
+                            entry.setValue(entry.getValue().replace("%{BROKER_URL}%", brokerUrlForClients));
+                    });
+                }
             }
         }
 

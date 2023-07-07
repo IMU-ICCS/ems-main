@@ -4,7 +4,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @lombok.Data
@@ -12,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Feature extends NamedElement {
-    protected List<Attribute> attributes = new ArrayList<>();
-    protected List<Feature> subFeatures = new ArrayList<>();
+    protected List<Attribute> attributes;
+    protected List<Feature> subFeatures;
 }
