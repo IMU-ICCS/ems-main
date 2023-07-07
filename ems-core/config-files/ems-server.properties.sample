@@ -26,6 +26,7 @@ jasypt.encryptor.ivGeneratorClassname = org.jasypt.iv.NoIvGenerator
 
 ### Misc
 spring.output.ansi.enabled=ALWAYS
+spring.jackson.default-property-inclusion=non_null
 
 
 ################################################################################
