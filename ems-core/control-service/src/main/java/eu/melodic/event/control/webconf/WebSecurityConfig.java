@@ -9,7 +9,7 @@
 
 package eu.melodic.event.control.webconf;
 
-import eu.melodic.event.control.properties.StaticResourceProperties;
+//import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.properties.WebSecurityProperties;
 import eu.melodic.event.control.util.jwt.JwtTokenService;
 import eu.melodic.event.util.PasswordUtil;
@@ -33,6 +33,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,7 +64,7 @@ public class WebSecurityConfig implements InitializingBean {
     public static final String ROLE_API_KEY = "ROLE_API_KEY";
     public static final String ROLE_OTP = "ROLE_OTP";
 
-    private final StaticResourceProperties staticResourceProperties;
+    //private final StaticResourceProperties staticResourceProperties;
     private final WebSecurityProperties properties;
     private final PasswordUtil passwordUtil;
     private final JwtTokenService jwtTokenService;
@@ -251,7 +252,7 @@ public class WebSecurityConfig implements InitializingBean {
             log.warn("WebSecurityConfig: Authentication is disabled");
             // Authorize all requests
             httpSecurity
-                    .csrf().disable()
+                    .csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(
                             authorize -> authorize.anyRequest().permitAll());
             return httpSecurity.build();
@@ -259,24 +260,25 @@ public class WebSecurityConfig implements InitializingBean {
 
         // Common security settings
         httpSecurity
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
 
         // Add and Configure User Form authentication
         if (userFormAuthEnabled) {
             log.info("WebSecurityConfig: User form Authentication is enabled");
             httpSecurity
-                    .formLogin()
-                        .loginPage(loginPage).permitAll()
-                        .loginProcessingUrl(loginUrl).permitAll()
-                        .defaultSuccessUrl(loginSuccessUrl, false)
-                        .failureUrl(loginFailureUrl).permitAll()
-                        .and()
-                    .logout()
-                        .logoutUrl(logoutUrl).permitAll()
-                        .logoutSuccessUrl(logoutSuccessUrl).permitAll()
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID");
+                    .formLogin(formLogin -> formLogin
+                            .loginPage(loginPage).permitAll()
+                            .loginProcessingUrl(loginUrl).permitAll()
+                            .defaultSuccessUrl(loginSuccessUrl, false)
+                            .failureUrl(loginFailureUrl).permitAll()
+                    )
+                    .logout(logout -> logout
+                            .logoutUrl(logoutUrl).permitAll()
+                            .logoutSuccessUrl(logoutSuccessUrl).permitAll()
+                            .invalidateHttpSession(true)
+                            .deleteCookies("JSESSIONID")
+                    );
             log.debug("WebSecurityConfig: User form Authentication has been configured");
         }
 
@@ -375,8 +377,7 @@ public class WebSecurityConfig implements InitializingBean {
 
     public Filter jwtAuthorizationFilter() {
         return (servletRequest, servletResponse, filterChain) -> {
-            if (servletRequest instanceof HttpServletRequest) {
-                HttpServletRequest req = (HttpServletRequest) servletRequest;
+            if (servletRequest instanceof HttpServletRequest req) {
 
                 // Get JWT token from Authorization header
                 String jwtValue = req.getHeader(JwtTokenService.HEADER_STRING);
@@ -437,8 +438,8 @@ public class WebSecurityConfig implements InitializingBean {
         return (servletRequest, servletResponse, filterChain) -> {
             log.trace("apiKeyAuthenticationFilter: BEGIN: request={}", servletRequest);
             if (StringUtils.isNotBlank(apiKeyValue)) {
-                if (servletRequest instanceof HttpServletRequest && servletResponse instanceof HttpServletResponse) {
-                    HttpServletRequest request = (HttpServletRequest) servletRequest;
+                if (servletRequest instanceof HttpServletRequest request && servletResponse instanceof HttpServletResponse) {
+
                     log.trace("apiKeyAuthenticationFilter: http-request={}", request);
                     String apiKey = request.getHeader(apiKeyRequestHeader);
                     log.debug("apiKeyAuthenticationFilter: Request Header API Key: {}={}", apiKeyRequestHeader, passwordUtil.encodePassword(apiKey));
@@ -485,8 +486,8 @@ public class WebSecurityConfig implements InitializingBean {
         return (servletRequest, servletResponse, filterChain) -> {
             log.trace("OTPAuthenticationFilter: BEGIN: request={}", servletRequest);
             if (otpAuthEnabled) {
-                if (servletRequest instanceof HttpServletRequest && servletResponse instanceof HttpServletResponse) {
-                    HttpServletRequest request = (HttpServletRequest) servletRequest;
+                if (servletRequest instanceof HttpServletRequest request && servletResponse instanceof HttpServletResponse) {
+
                     log.trace("OTPAuthenticationFilter: http-request={}", request);
                     String otp = request.getHeader(otpRequestHeader);
                     log.debug("OTPAuthenticationFilter: Request Header OTP: {}={}", otpRequestHeader, passwordUtil.encodePassword(otp));
