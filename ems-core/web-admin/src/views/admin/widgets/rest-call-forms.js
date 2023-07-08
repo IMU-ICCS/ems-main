@@ -21,6 +21,7 @@ export const FORM_TYPE_OPTIONS = [
                 { 'id': 'get-cons', 'text': 'Constraint Thresholds', 'url': '/translator/constraintThresholds/{appId}', 'method': 'GET', 'form': 'app-id-form' },
                 { 'id': 'get-tl-mc', 'text': 'Top-Level Metric Contexts', 'url': '/translator/getTopLevelNodesMetricContexts/{appId}', 'method': 'GET', 'form': 'app-id-form' },
 
+                { 'id': 'get-logger-level', 'text': 'Get All Loggers', 'url': '/actuator/loggers', 'method': 'GET', 'form': '' },
                 { 'id': 'get-logger-level', 'text': 'Get Logger Level', 'url': '/actuator/loggers/{logger}', 'method': 'GET', 'form': 'logger-form' },
                 { 'id': 'set-logger-level', 'text': 'Set Logger Level', 'url': '/actuator/loggers/{logger}', 'method': 'POST', 'form': 'logger-form' },
 
