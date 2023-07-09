@@ -12,6 +12,7 @@ package eu.melodic.event.common.collector.prometheus;
 import eu.melodic.event.common.collector.AbstractEndpointCollectorProperties;
 import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import java.util.Set;
 
 @Slf4j
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Configuration
 @ConfigurationProperties(prefix = EmsConstant.EMS_PROPERTIES_PREFIX + "collector.prometheus")
 public class PrometheusCollectorProperties extends AbstractEndpointCollectorProperties {

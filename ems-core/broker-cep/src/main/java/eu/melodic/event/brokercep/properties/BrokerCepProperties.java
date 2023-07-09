@@ -13,6 +13,7 @@ import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -101,6 +102,7 @@ public class BrokerCepProperties implements InitializingBean {
     }
     @Data
     @ToString(callSuper = true)
+    @EqualsAndHashCode(callSuper = true)
     public static class MessageInterceptorConfig extends MessageInterceptorSpec {
         private String destination;
     }

@@ -1,6 +1,7 @@
 package eu.melodic.event.translate.model;
 
 import eu.melodic.event.translate.dag.DAGNode;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -15,6 +16,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class LogicalConstraint extends CompositeConstraint {
     private LogicalOperatorType logicalOperator;
+    @Builder.Default
     private List<Constraint> constraints = new ArrayList<>();
 
     //XXX:TODO: Try to remove

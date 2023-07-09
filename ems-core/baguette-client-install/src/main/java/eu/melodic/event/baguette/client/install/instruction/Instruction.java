@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Getter(onMethod = @__(@JsonProperty))
 public class Instruction extends AbstractInstructionsBase {
     private INSTRUCTION_TYPE taskType;

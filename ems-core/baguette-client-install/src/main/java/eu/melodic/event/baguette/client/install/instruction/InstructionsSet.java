@@ -10,12 +10,14 @@
 package eu.melodic.event.baguette.client.install.instruction;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.*;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class InstructionsSet extends AbstractInstructionsBase {
     private String os;
     private String description;

@@ -225,13 +225,13 @@ public class EventForwarder implements InitializingBean, Runnable {
     @RequiredArgsConstructor
     protected static class EventForwardTask {
         @NonNull private final BrokerCepStatementSubscriber sender;
-        @NonNull private final boolean localPublish;
+        private final boolean localPublish;
         @NonNull private final GroupingConfiguration.BrokerConnectionConfig brokerConnectionConfig;
         @NonNull private final String topic;
         @NonNull private final Map<String,Object> eventMap;
         private final Runnable success;
         private final Runnable failure;
-        @NonNull private final long creation = System.currentTimeMillis();
+        private final long creation = System.currentTimeMillis();
 
         private long lastRetryStart;
         private long lastRetryEnd;

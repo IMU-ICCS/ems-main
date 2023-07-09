@@ -11,6 +11,7 @@ package eu.melodic.event.baguette.client;
 
 import eu.melodic.event.common.client.SshClientProperties;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import org.springframework.context.annotation.PropertySource;
 import java.util.List;
 
 @Data
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @Configuration
 @ConfigurationProperties
 @PropertySource(value = {
@@ -27,7 +30,6 @@ import java.util.List;
 		"file:${MELODIC_CONFIG_DIR}/baguette-client.yml",
 		"file:${MELODIC_CONFIG_DIR}/baguette-client.properties"
 }, ignoreResourceNotFound = true)
-@ToString(callSuper = true)
 public class BaguetteClientProperties extends SshClientProperties {
 	private boolean exitCommandAllowed = false;
 	private int killDelay = 5;

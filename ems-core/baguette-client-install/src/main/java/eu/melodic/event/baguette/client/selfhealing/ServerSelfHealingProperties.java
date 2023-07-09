@@ -12,6 +12,7 @@ package eu.melodic.event.baguette.client.selfhealing;
 import eu.melodic.event.common.recovery.SelfHealingProperties;
 import eu.melodic.event.common.selfhealing.SelfHealingManager;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Data
 @ToString(callSuper=true)
+@EqualsAndHashCode(callSuper = true)
 @Configuration
 public class ServerSelfHealingProperties extends SelfHealingProperties implements InitializingBean {
 	private SelfHealingManager.MODE mode = SelfHealingManager.MODE.INCLUDED;

@@ -1,5 +1,6 @@
 package eu.melodic.event.translate.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -12,5 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MeasurableAttribute extends Attribute {
+    @Builder.Default
     private List<Sensor> sensors = new ArrayList<>();
 }

@@ -77,7 +77,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter
     private boolean echoOn = false;
 
-    @Getter private String clientId;
+    private String clientId;
     @Getter private String clientBrokerUrl;
     @Getter private String clientBrokerUsername;
     @Getter private String clientBrokerPassword;
@@ -102,13 +102,13 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     @Getter @Setter
     private boolean closeConnection = false;
 
-    private Map<String,Object> inputsMap = new HashMap<>();
-    private EventBus<String,Object,Object> eventBus;
+    private final Map<String,Object> inputsMap = new HashMap<>();
+    private final EventBus<String,Object,Object> eventBus;
     @Getter
     private Exception lastException;
     @Getter
-    private NodeRegistry nodeRegistry;
-    @Getter @Setter
+    private final NodeRegistry nodeRegistry;
+    @Setter
     private NodeRegistryEntry nodeRegistryEntry;
 
     @Getter

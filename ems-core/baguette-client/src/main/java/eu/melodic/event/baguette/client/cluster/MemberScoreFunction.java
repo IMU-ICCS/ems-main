@@ -27,7 +27,7 @@ public class MemberScoreFunction implements Function<Member, Double> {
     private final String formula;
     private final double defaultScore;
     private final Properties argumentDefaults;
-    private boolean throwExceptions = false;
+    private boolean throwExceptions;
 
     public MemberScoreFunction(String formula) {
         this(formula, -1, new Properties(), false);

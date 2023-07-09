@@ -1,5 +1,6 @@
 package eu.melodic.event.translate.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -17,5 +18,6 @@ public class Window extends Feature {
     private WindowSizeType sizeType;
     private long measurementSize;
     private long timeSize;
+    @Builder.Default
     private List<WindowProcessing> processings = new ArrayList<>();
 }

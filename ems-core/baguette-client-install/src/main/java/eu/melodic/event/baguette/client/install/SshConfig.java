@@ -21,6 +21,7 @@ import lombok.ToString;
 @ToString(exclude = {"password", "privateKey"})
 public class SshConfig {
     private String host;
+    @Builder.Default
     private int port = 22;
     private String username;
     private String password;

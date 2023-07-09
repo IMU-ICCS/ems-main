@@ -1,5 +1,6 @@
 package eu.melodic.event.translate.model;
 
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -16,6 +17,7 @@ public class MetricVariable extends Metric {
     private Component component;
     private boolean onNodeCandidates;
     private String formula;
+    @Builder.Default
     private List<Metric> componentMetrics = new ArrayList<>();
     private MetricContext metricContext;
 
