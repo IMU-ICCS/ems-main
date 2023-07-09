@@ -952,12 +952,12 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.warn("ControlServiceCoordinator.emsShutdown(): Not implemented");
     }
 
-    @Async
+    //@Async
     void emsExit() {
         emsExit(properties.getExitCode());
     }
 
-    @Async
+    //@Async
     void emsExit(int exitCode) {
         if (properties.isExitAllowed()) {
             // Signal SpringBootApp to exit
