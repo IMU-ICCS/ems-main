@@ -7,7 +7,7 @@
 # https://www.mozilla.org/en-US/MPL/2.0/
 #
 
-FROM eclipse-temurin:17.0.5_8-jre
+FROM eclipse-temurin:17.0.7_7-jre
 #FROM vegardit/graalvm-maven:latest-java17
 
 ENV BASEDIR /opt/ems-server
