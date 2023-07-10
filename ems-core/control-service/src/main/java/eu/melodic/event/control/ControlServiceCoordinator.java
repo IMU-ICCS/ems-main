@@ -53,11 +53,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -203,7 +198,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Async
     public void processAppModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo) {
-        _loackAndProcessModel(appModelId, cpModelId, requestInfo, "processAppModel()", () -> {
+        _lockAndProcessModel(appModelId, cpModelId, requestInfo, "processAppModel()", () -> {
             // Call '_processNewModels()' to do actual processing
             _processAppModels(appModelId, cpModelId, requestInfo);
             this.currentAppModelId = _normalizeModelId(appModelId);
@@ -213,7 +208,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Async
     public void processCpModel(String cpModelId, ControlServiceRequestInfo requestInfo) {
-        _loackAndProcessModel(null, cpModelId, requestInfo, "processCpModel()", () -> {
+        _lockAndProcessModel(null, cpModelId, requestInfo, "processCpModel()", () -> {
             // Call '_processCpModel()' to do actual processing
             _processCpModel(cpModelId, requestInfo);
             this.currentCpModelId = _normalizeModelId(cpModelId);
@@ -222,13 +217,13 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     @Async
     public void setConstants(@NonNull Map<String,Double> constants, ControlServiceRequestInfo requestInfo) {
-        _loackAndProcessModel(null, null, requestInfo, "processCpModel()", () -> {
+        _lockAndProcessModel(null, null, requestInfo, "processCpModel()", () -> {
             // Call '_processCpModel()' to do actual processing
             _setConstants(constants, requestInfo);
         });
     }
 
-    protected void _loackAndProcessModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo, String caller, Runnable callback) {
+    protected void _lockAndProcessModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo, String caller, Runnable callback) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
             String mesg = "ControlServiceCoordinator."+caller+": ERROR: Coordinator is in use. Exits immediately";
