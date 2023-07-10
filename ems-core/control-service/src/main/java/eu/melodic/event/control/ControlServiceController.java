@@ -43,9 +43,11 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -90,7 +92,7 @@ public class ControlServiceController {
                 applicationId, notificationUri, requestUuid);
 
         // Start translation and reconfiguration in a worker thread
-        coordinator.processNewModel(applicationId, null, notificationUri, requestUuid, jwtToken);
+        coordinator.processAppModel(applicationId, null, ControlServiceRequestInfo.create(notificationUri, requestUuid, jwtToken));
         log.debug("ControlServiceController.newAppModel()/camelModel: Model translation dispatched to a worker thread");
 
         return "OK";
@@ -112,7 +114,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newAppModel(): CP model id from request: {}", cpModelId);
 
         // Start translation and component reconfiguration in a worker thread
-        coordinator.processNewModel(appModelId, cpModelId, null, null, jwtToken);
+        coordinator.processAppModel(appModelId, cpModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.newAppModel(): Model translation dispatched to a worker thread");
 
         return "OK";
@@ -134,7 +136,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.newCpModel(): CP model id from request: {}", cpModelId);
 
         // Start CP model processing in a worker thread
-        coordinator.processCpModel(cpModelId, null, null, jwtToken);
+        coordinator.processCpModel(cpModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.newCpModel(): CP Model processing dispatched to a worker thread");
 
         return "OK";
@@ -154,7 +156,7 @@ public class ControlServiceController {
         log.info("ControlServiceController.setConstants(): Constants from request: {}", constants);
 
         // Start CP model processing in a worker thread
-        coordinator.setConstants(constants, null, null, jwtToken);
+        coordinator.setConstants(constants, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.setConstants(): Constants set");
 
         return "OK";

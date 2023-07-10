@@ -193,7 +193,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             log.info("===================================================================================================");
             log.info("ControlServiceCoordinator.preloadModels(): Preloading models: app-model={}, cp-model={}",
                     preloadAppModel, preloadCpModel);
-            processNewModel(preloadAppModel, preloadCpModel, null, null, null);
+            processAppModel(preloadAppModel, preloadCpModel, ControlServiceRequestInfo.EMPTY);
         } else {
             log.info("ControlServiceCoordinator.preloadModels(): No model to preload");
         }
@@ -202,67 +202,56 @@ public class ControlServiceCoordinator implements InitializingBean {
     // ------------------------------------------------------------------------------------------------------------
 
     @Async
-    public void processNewModel(String appModelId, String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
-        // Acquire lock of this coordinator
-        if (!inUse.compareAndSet(false, true)) {
-            String mesg = "ControlServiceCoordinator.processNewModel(): ERROR: Coordinator is in use. Method exits immediately";
-            log.warn(mesg);
-            if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(appModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
-            } else {
-                log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
-            }
-            return;
-        }
-
-        try {
+    public void processAppModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo) {
+        _loackAndProcessModel(appModelId, cpModelId, requestInfo, "processAppModel()", () -> {
             // Call '_processNewModels()' to do actual processing
-            _processNewModels(appModelId, cpModelId, notificationUri, requestUuid, jwtToken);
+            _processAppModels(appModelId, cpModelId, requestInfo);
             this.currentAppModelId = _normalizeModelId(appModelId);
             this.currentCpModelId = _normalizeModelId(cpModelId);
-        } catch (Exception ex) {
-            setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
-
-            String mesg = "ControlServiceCoordinator.processNewModel(): EXCEPTION: " + ex;
-            log.error(mesg, ex);
-            if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(appModelId, notificationUri, requestUuid, jwtToken, mesg, mesg);
-            } else {
-                log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
-            }
-        } finally {
-            // Release lock of this coordinator
-            inUse.compareAndSet(true, false);
-        }
+        });
     }
 
     @Async
-    public void processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
+    public void processCpModel(String cpModelId, ControlServiceRequestInfo requestInfo) {
+        _loackAndProcessModel(null, cpModelId, requestInfo, "processCpModel()", () -> {
+            // Call '_processCpModel()' to do actual processing
+            _processCpModel(cpModelId, requestInfo);
+            this.currentCpModelId = _normalizeModelId(cpModelId);
+        });
+    }
+
+    @Async
+    public void setConstants(@NonNull Map<String,Double> constants, ControlServiceRequestInfo requestInfo) {
+        _loackAndProcessModel(null, null, requestInfo, "processCpModel()", () -> {
+            // Call '_processCpModel()' to do actual processing
+            _setConstants(constants, requestInfo);
+        });
+    }
+
+    protected void _loackAndProcessModel(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo, String caller, Runnable callback) {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
-            String mesg = "ControlServiceCoordinator.processCpModel(): ERROR: Coordinator is in use. Method exits immediately";
+            String mesg = "ControlServiceCoordinator."+caller+": ERROR: Coordinator is in use. Exits immediately";
             log.warn(mesg);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(null, notificationUri, requestUuid, jwtToken, mesg, mesg);
+                sendErrorNotification(appModelId, requestInfo, mesg, mesg);
             } else {
-                log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
+                log.warn("ControlServiceCoordinator."+caller+": Skipping ESB notification due to configuration");
             }
             return;
         }
 
         try {
-            // Call '_processCpModel()' to do actual processing
-            _processCpModel(cpModelId, notificationUri, requestUuid, jwtToken);
-            this.currentCpModelId = _normalizeModelId(cpModelId);
+            callback.run();
         } catch (Exception ex) {
             setCurrentEmsState(EMS_STATE.ERROR, ex.getMessage());
 
-            String mesg = "ControlServiceCoordinator.processCpModel(): EXCEPTION: " + ex;
+            String mesg = "ControlServiceCoordinator."+caller+": EXCEPTION: " + ex;
             log.error(mesg, ex);
             if (!properties.isSkipEsbNotification()) {
-                sendErrorNotification(null, notificationUri, requestUuid, jwtToken, mesg, mesg);
+                sendErrorNotification(appModelId, requestInfo, mesg, mesg);
             } else {
-                log.warn("ControlServiceCoordinator.processCpModel(): Skipping ESB notification due to configuration");
+                log.warn("ControlServiceCoordinator"+caller+": Skipping ESB notification due to configuration");
             }
         } finally {
             // Release lock of this coordinator
@@ -272,159 +261,299 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected void _processNewModels(String appModelId, String cpModelId, String notificationUri,
-                                     String requestUuid, String jwtToken)
+    protected void _processAppModels(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo)
     {
-        log.info("ControlServiceCoordinator.processNewModel(): BEGIN: app-model-id={}, cp-model-id={}, notification-uri={}, request-uuid={}", appModelId, cpModelId, notificationUri, requestUuid);
+        log.info("ControlServiceCoordinator.processAppModel(): BEGIN: app-model-id={}, cp-model-id={}, request-info={}", appModelId, cpModelId, requestInfo);
 
-        // Translate models into EPL rules etc
+        // Translate model into Translation Context (with EPL rules etc)
         TranslationContext _TC;
         if (!properties.isSkipTranslation()) {
-            setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating model");
-
-            log.info("ControlServiceCoordinator.processNewModel(): Model translation: model-id={}", appModelId);
-            _TC = translator.translate(appModelId);
-            log.debug("ControlServiceCoordinator.processNewModel(): Model translation: RESULTS: {}", _TC);
-
-            // serialize 'TranslationContext' to file
-            String fileName = properties.getTcSaveFile();
-            if (StringUtils.isNotBlank(fileName)) {
-                try {
-                    setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
-
-                    fileName = getTcFileName(appModelId, fileName);
-                    if (Paths.get(fileName).toFile().exists()) {
-                        log.warn("ControlServiceCoordinator.processNewModel(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
-                    }
-
-                    // Store _TC in a file
-                    log.debug("ControlServiceCoordinator.processNewModel(): Start serializing _TC data in file: {}", fileName);
-                    com.google.gson.Gson gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
-                    java.io.Writer writer = new java.io.FileWriter(fileName);
-                    gson.toJson(_TC, writer);
-                    writer.close();
-                    log.debug("ControlServiceCoordinator.processNewModel(): Serialized _TC data in file: {}", fileName);
-                    log.info("ControlServiceCoordinator.processNewModel(): Saved translation data in file: {}", fileName);
-
-                } catch (java.io.IOException ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
-                }
-            }
-
+            _TC = translateAppModelAndStore(appModelId);
         } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping translation due to configuration");
-
-            // unserialize 'TranslationContext' from file
-            String fileName = properties.getTcLoadFile();
-            if (StringUtils.isNotBlank(fileName)) {
-                setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
-
-                try {
-                    fileName = getTcFileName(appModelId, fileName);
-                    if (! Paths.get(fileName).toFile().exists()) {
-                        log.error("ControlServiceCoordinator.processNewModel(): The specified Translation Context file does not exist: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
-                        throw new IllegalArgumentException("The specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile() + ", file-name=" + fileName);
-                    }
-                    log.info("ControlServiceCoordinator.processNewModel(): Loading translator data from file: {}", fileName);
-                    log.debug("ControlServiceCoordinator.processNewModel(): Start deserializing _TC data from file: {}", fileName);
-                    java.io.Reader reader = new java.io.FileReader(fileName);
-                    com.google.gson.Gson gson = new GsonBuilder()
-                            .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
-                            .create();
-                    _TC = gson.fromJson(reader, TranslationContext.class);
-                    reader.close();
-                    log.debug("ControlServiceCoordinator.processNewModel(): Deserialized _TC data from file: {}", fileName);
-
-                    // Print resulting Translation Context
-                    translator.printResults(_TC, null);
-                } catch (java.io.IOException ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
-                    throw new IllegalArgumentException("Failed to load translation data from file: " + fileName, ex);
-                }
-            } else {
-                log.error("ControlServiceCoordinator.processNewModel(): No translation context file has been set");
-                throw new IllegalArgumentException("No translation context file has been set");
-            }
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping translation due to configuration");
+            _TC = loadStoredTranslationContext(appModelId);
         }
 
-        // Retrieve Metric Variable Values (MVV) from CP model
+        // Retrieve Metric Variable Values (MVV) from CP model - i.e. constants
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
-            if (StringUtils.isNotBlank(cpModelId)) {
-                setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving MVVs from CP model");
-
-                try {
-                    log.info("ControlServiceCoordinator.processNewModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
-
-                    // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
-                    constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
-                    log.info("ControlServiceCoordinator.processNewModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
-
-                } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
-                }
-            } else {
-                log.error("ControlServiceCoordinator.processNewModel(): No CP model have been provided");
-            }
+            constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.INITIALIZING);
         } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping MVV retrieval due to configuration");
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping MVV retrieval due to configuration");
         }
 
         // (Re-)Configure Broker and CEP
         String upperwareGrouping = properties.getUpperwareGrouping();
         if (!properties.isSkipBrokerCep()) {
-            setCurrentEmsState(EMS_STATE.INITIALIZING, "initializing Broker-CEP");
-
-            try {
-                // Initializing Broker-CEP module if necessary
-                if (brokerCep == null) {
-                    log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Initializing...");
-                    brokerCep = applicationContext.getBean(BrokerCepService.class);
-                    log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Initializing...ok");
-                }
-
-                // Get event types for GLOBAL grouping (i.e. that of Upperware)
-                log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Upperware grouping: {}", upperwareGrouping);
-                Set<String> eventTypeNames = _TC.getG2T().get(upperwareGrouping);
-                log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Configuration of Event Types: {}", eventTypeNames);
-                if (eventTypeNames == null || eventTypeNames.size() == 0)
-                    throw new RuntimeException("Broker-CEP: No event types for GLOBAL grouping");
-
-                // Clear any previous event types, statements or function definitions and register the new ones
-                brokerCep.clearState();
-                brokerCep.addEventTypes(eventTypeNames, EventMap.getPropertyNames(), EventMap.getPropertyClasses());
-                //brokerCep.addEventTypes( eventTypeNames, eu.melodic.event.brokercep.event.MetricEvent.class );
-
-                log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Constants: {}", constants);
-                brokerCep.setConstants(constants);
-
-                log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Function definitions: {}", _TC.getFunctionDefinitions());
-                brokerCep.addFunctionDefinitions(_TC.getFunctionDefinitions());
-
-                Map<String, Set<String>> ruleStatements = _TC.getG2R().get(upperwareGrouping);
-                log.info("ControlServiceCoordinator.processNewModel(): Broker-CEP: Configuration of EPL statements: {}", ruleStatements);
-                if (ruleStatements != null) {
-                    int cnt = 0;
-                    for (Map.Entry<String, Set<String>> topicRules : ruleStatements.entrySet()) {
-                        String topicName = topicRules.getKey();
-                        for (String rule : topicRules.getValue()) {
-                            brokerCep.getCepService().addStatementSubscriber(
-                                    new BrokerCepStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
-                            );
-                        }
-                    }
-                } else {
-                    log.warn("ControlServiceCoordinator.processNewModel(): Broker-CEP: No EPL statements found for GLOBAL grouping");
-                }
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while initializing Broker-CEP of Upperware: app-model-id={}", appModelId, ex);
-            }
+            configureBrokerCep(appModelId, _TC, constants, upperwareGrouping);
         } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping Broker-CEP setup due to configuration");
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping Broker-CEP setup due to configuration");
         }
 
         // Process placeholders in sink type configurations
         String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
+        processPlaceholdersInMonitors(_TC, brokerUrlForClients);
+
+        // (Re-)Configure Baguette server
+        if (!properties.isSkipBaguette()) {
+            configureBaguetteServer(appModelId, _TC, constants, upperwareGrouping);
+        } else {
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping Baguette Server setup due to configuration");
+        }
+
+        // Start/Stop Netdata collector
+        if (!properties.isSkipCollectors()) {
+            startNetdataCollector(appModelId);
+        } else {
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping Collectors setup due to configuration");
+        }
+
+        // (Re-)Configure MetaSolver
+        if (!properties.isSkipMetasolver()) {
+            configureMetaSolver(_TC, requestInfo.getJwtToken());
+        } else {
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping MetaSolver setup due to configuration");
+        }
+
+        // Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
+        log.info("ControlServiceCoordinator.processAppModel(): Cache translation results: app-model-id={}", appModelId);
+        appModelToTcCache.put(_normalizeModelId(appModelId), _TC);
+
+        // Notify ESB, if 'notificationUri' is provided
+        if (!properties.isSkipEsbNotification()) {
+            notifyESB(appModelId, requestInfo, EMS_STATE.INITIALIZING);
+        } else {
+            log.warn("ControlServiceCoordinator.processAppModel(): Skipping ESB notification due to configuration");
+        }
+
+        this.currentTC = _TC;
+        log.info("ControlServiceCoordinator.processAppModel(): END: app-model-id={}", appModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
+    }
+
+    protected void _processCpModel(String cpModelId, ControlServiceRequestInfo requestInfo) {
+        log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, request-info={}", cpModelId, requestInfo);
+        log.info("ControlServiceCoordinator._processCpModel(): Current app-model-id={}", currentAppModelId);
+        TranslationContext _TC = this.currentTC;
+
+        // Retrieve Metric Variable Values (MVV) from CP model
+        Map<String, Double> constants = new HashMap<>();
+        if (!properties.isSkipMvvRetrieve()) {
+            constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.RECONFIGURING);
+        } else {
+            log.warn("ControlServiceCoordinator._processCpModel(): Skipping MVV retrieval due to configuration");
+        }
+
+        // Set MVV constants in Broker-CEP and Baguette Server, and then notify ESB
+        _setConstants(constants, requestInfo);
+
+        log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
+    }
+
+    protected void _setConstants(@NonNull Map<String,Double> constants, ControlServiceRequestInfo requestInfo) {
+        log.info("ControlServiceCoordinator.setConstants(): BEGIN: constants={}, request-info={}", constants, requestInfo);
+        log.info("ControlServiceCoordinator.setConstants(): constants={}", constants);
+
+        // Retrieve Metric Variable Values (MVV) from CP model
+        if (properties.isSkipMvvRetrieve()) {
+            log.info("ControlServiceCoordinator.setConstants(): isSkipMvvRetrieve is true, but constants processing will continue");
+        }
+
+        // (Re-)Configure Broker and CEP
+        if (!properties.isSkipBrokerCep()) {
+            reconfigureBrokerCep(constants);
+        } else {
+            log.warn("ControlServiceCoordinator.setConstants(): Skipping Broker-CEP setup due to configuration");
+        }
+
+        // (Re-)Configure Baguette server
+        if (!properties.isSkipBaguette()) {
+            reconfigureBaguetteServer(constants);
+        } else {
+            log.warn("ControlServiceCoordinator.setConstants(): Skipping Baguette Server setup due to configuration");
+        }
+
+        // Notify ESB, if 'notificationUri' is provided
+        if (!properties.isSkipEsbNotification()) {
+            notifyESB(null, requestInfo, EMS_STATE.RECONFIGURING);
+        } else {
+            log.warn("ControlServiceCoordinator.setConstants(): Skipping ESB notification due to configuration");
+        }
+
+        log.info("ControlServiceCoordinator.setConstants(): END: constants={}", constants);
+
+        setCurrentEmsState(EMS_STATE.READY, null);
+    }
+
+    private TranslationContext translateAppModelAndStore(String appModelId) {
+        TranslationContext _TC;
+        setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating model");
+
+        log.info("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: model-id={}", appModelId);
+        _TC = translator.translate(appModelId);
+        log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: RESULTS: {}", _TC);
+
+        // serialize 'TranslationContext' to file
+        String fileName = properties.getTcSaveFile();
+        if (StringUtils.isNotBlank(fileName)) {
+            try {
+                setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
+
+                fileName = getTcFileName(appModelId, fileName);
+                if (Paths.get(fileName).toFile().exists()) {
+                    log.warn("ControlServiceCoordinator.translateAppModelAndStore(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
+                }
+
+                // Store _TC in a file
+                log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Start serializing _TC data in file: {}", fileName);
+                com.google.gson.Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                java.io.Writer writer = new java.io.FileWriter(fileName);
+                gson.toJson(_TC, writer);
+                writer.close();
+                log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Serialized _TC data in file: {}", fileName);
+                log.info("ControlServiceCoordinator.translateAppModelAndStore(): Saved translation data in file: {}", fileName);
+
+            } catch (IOException ex) {
+                log.error("ControlServiceCoordinator.translateAppModelAndStore(): FAILED to serialize _TC to file: {} : Exception: ", fileName, ex);
+            }
+        }
+        return _TC;
+    }
+
+    private TranslationContext loadStoredTranslationContext(String appModelId) {
+        TranslationContext _TC;
+
+        // deserialize 'TranslationContext' from file
+        String fileName = properties.getTcLoadFile();
+        if (StringUtils.isNotBlank(fileName)) {
+            setCurrentEmsState(EMS_STATE.INITIALIZING, "Loading translation context from file");
+
+            try {
+                fileName = getTcFileName(appModelId, fileName);
+                if (! Paths.get(fileName).toFile().exists()) {
+                    log.error("ControlServiceCoordinator.loadStoredTranslationContext(): The specified Translation Context file does not exist: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
+                    throw new IllegalArgumentException("The specified Translation Context file does not exist. Check property: control.tc-load-file=" + properties.getTcLoadFile() + ", file-name=" + fileName);
+                }
+                log.info("ControlServiceCoordinator.loadStoredTranslationContext(): Loading translator data from file: {}", fileName);
+                log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Start deserializing _TC data from file: {}", fileName);
+                java.io.Reader reader = new java.io.FileReader(fileName);
+                com.google.gson.Gson gson = new GsonBuilder()
+                        .registerTypeAdapter(Monitor.class, new TranslationContextMonitorGsonDeserializer())
+                        .create();
+                _TC = gson.fromJson(reader, TranslationContext.class);
+                reader.close();
+                log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Deserialized _TC data from file: {}", fileName);
+
+                // Print resulting Translation Context
+                translator.printResults(_TC, null);
+            } catch (IOException ex) {
+                log.error("ControlServiceCoordinator.loadStoredTranslationContext(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
+                throw new IllegalArgumentException("Failed to load translation data from file: " + fileName, ex);
+            }
+        } else {
+            log.error("ControlServiceCoordinator.loadStoredTranslationContext(): No translation context file has been set");
+            throw new IllegalArgumentException("No translation context file has been set");
+        }
+        return _TC;
+    }
+
+    private String getTcFileName(@NonNull String appModelId, @NonNull String fileName) {
+        appModelId = StringUtils.removeStart(appModelId, "/");
+        return String.format(fileName, appModelId.replaceAll("[^\\p{L}\\d]", "_"));
+    }
+
+    private Map<String, Double> retrieveConstantsFromCpModel(String cpModelId, TranslationContext _TC, EMS_STATE emsState) {
+        Map<String, Double> constants = Collections.emptyMap();
+        if (StringUtils.isNotBlank(cpModelId)) {
+            setCurrentEmsState(emsState, "Retrieving MVVs from CP model");
+
+            try {
+                log.info("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
+
+                // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
+                log.info("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Looking for MVV_CP's: {}", _TC.getCompositeMetricVariables());
+                constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
+                log.info("ControlServiceCoordinator.retrieveConstantsFromCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
+
+            } catch (Exception ex) {
+                log.error("ControlServiceCoordinator.retrieveConstantsFromCpModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
+            }
+        } else {
+            log.error("ControlServiceCoordinator.retrieveConstantsFromCpModel(): No CP model have been provided");
+        }
+        return constants;
+    }
+
+    private void configureBrokerCep(String appModelId, TranslationContext _TC, Map<String, Double> constants, String upperwareGrouping) {
+        setCurrentEmsState(EMS_STATE.INITIALIZING, "initializing Broker-CEP");
+
+        try {
+            // Initializing Broker-CEP module if necessary
+            if (brokerCep == null) {
+                log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Initializing...");
+                brokerCep = applicationContext.getBean(BrokerCepService.class);
+                log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Initializing...ok");
+            }
+
+            // Get event types for GLOBAL grouping (i.e. that of Upperware)
+            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Upperware grouping: {}", upperwareGrouping);
+            Set<String> eventTypeNames = _TC.getG2T().get(upperwareGrouping);
+            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of Event Types: {}", eventTypeNames);
+            if (eventTypeNames == null || eventTypeNames.size() == 0)
+                throw new RuntimeException("Broker-CEP: No event types for GLOBAL grouping");
+
+            // Clear any previous event types, statements or function definitions and register the new ones
+            brokerCep.clearState();
+            brokerCep.addEventTypes(eventTypeNames, EventMap.getPropertyNames(), EventMap.getPropertyClasses());
+
+            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Constants: {}", constants);
+            brokerCep.setConstants(constants);
+
+            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Function definitions: {}", _TC.getFunctionDefinitions());
+            brokerCep.addFunctionDefinitions(_TC.getFunctionDefinitions());
+
+            Map<String, Set<String>> ruleStatements = _TC.getG2R().get(upperwareGrouping);
+            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of EPL statements: {}", ruleStatements);
+            if (ruleStatements != null) {
+                int cnt = 0;
+                for (Map.Entry<String, Set<String>> topicRules : ruleStatements.entrySet()) {
+                    String topicName = topicRules.getKey();
+                    for (String rule : topicRules.getValue()) {
+                        brokerCep.getCepService().addStatementSubscriber(
+                                new BrokerCepStatementSubscriber("Subscriber_" + cnt++, topicName, rule, brokerCep, passwordUtil)
+                        );
+                    }
+                }
+            } else {
+                log.warn("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: No EPL statements found for GLOBAL grouping");
+            }
+        } catch (Exception ex) {
+            log.error("ControlServiceCoordinator.configureBrokerCep(): EXCEPTION while initializing Broker-CEP of Upperware: app-model-id={}", appModelId, ex);
+        }
+    }
+
+    private void reconfigureBrokerCep(Map<String, Double> constants) {
+        try {
+            setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Broker-CEP");
+
+            // Initializing Broker-CEP module if necessary
+            if (brokerCep == null) {
+                log.debug("ControlServiceCoordinator.reconfigureBrokerCep(): Broker-CEP: Initializing...");
+                brokerCep = applicationContext.getBean(BrokerCepService.class);
+                log.debug("ControlServiceCoordinator.reconfigureBrokerCep(): Broker-CEP: Initializing...ok");
+            }
+
+            log.info("ControlServiceCoordinator.reconfigureBrokerCep(): Passing constants to Broker-CEP: {}", constants);
+            brokerCep.setConstants(constants);
+        } catch (Exception ex) {
+            log.error("ControlServiceCoordinator.reconfigureBrokerCep(): EXCEPTION while initializing Broker-CEP with constants: constants={}", constants, ex);
+        }
+    }
+
+    private static void processPlaceholdersInMonitors(TranslationContext _TC, String brokerUrlForClients) {
         for (Monitor mon : _TC.getMON()) {
             if (mon.getSinks()!=null) {
                 for (Sink s : mon.getSinks()) {
@@ -435,307 +564,146 @@ public class ControlServiceCoordinator implements InitializingBean {
                 }
             }
         }
-
-        // (Re-)Configure Baguette server
-        if (!properties.isSkipBaguette()) {
-            setCurrentEmsState(EMS_STATE.INITIALIZING, "Initializing Baguette Server");
-
-            log.info("ControlServiceCoordinator.processNewModel(): Re-configuring Baguette Server: app-model-id={}", appModelId);
-            try {
-                baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting Baguette server: app-model-id={}", appModelId, ex);
-            }
-        } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping Baguette Server setup due to configuration");
-        }
-
-        // Start/Stop Top-Level collectors
-        if (!properties.isSkipCollectors()) {
-            if (netdataCollector!=null) {
-                log.info("ControlServiceCoordinator.processNewModel(): Stopping NetdataCollector: app-model-id={}", appModelId);
-                try {
-                    netdataCollector.stop();
-                } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while stopping NetdataCollector: app-model-id={}", appModelId, ex);
-                }
-            }
-            ServerCoordinator serverCoordinator = nodeRegistry.getCoordinator();
-            if (! serverCoordinator.supportsAggregators()) {
-                if (netdataCollector==null) {
-                    netdataCollector = applicationContext.getBean(ServerNetdataCollector.class);
-                }
-                log.info("ControlServiceCoordinator.processNewModel(): Starting NetdataCollector: app-model-id={}", appModelId);
-                try {
-                    netdataCollector.start();
-                } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): EXCEPTION while starting NetdataCollector: app-model-id={}", appModelId, ex);
-                }
-            } else {
-                log.info("ControlServiceCoordinator.processNewModel(): NetdataCollector is not needed (will not start it): app-model-id={}", appModelId);
-            }
-        } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping Collectors setup due to configuration");
-        }
-
-        // (Re-)Configure MetaSolver
-        if (!properties.isSkipMetasolver()) {
-            setCurrentEmsState(EMS_STATE.INITIALIZING, "Sending configuration to MetaSolver");
-
-            // Get scaling event and SLO topics from _TC
-            Set<String> scalingTopics = new HashSet<>();
-            scalingTopics.addAll(_TC.getE2A().keySet());
-            scalingTopics.addAll(_TC.getSLO());
-            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: scaling-topics: {}", scalingTopics);
-
-            // Get top-level metric topics from _TC
-            Set<String> metricTopics = _TC.getDAG().getTopLevelNodes().stream().filter(node -> !scalingTopics.contains(node.getElementName())).map(node -> node.getElementName()).collect(Collectors.toSet());
-            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration: metric-topics: {}", metricTopics);
-
-            // Prepare subscription configurations
-            //String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForConsumer() : null;
-            String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForClients() : null;
-            boolean usesAuthentication = brokerCep.getBrokerCepProperties().isAuthenticationEnabled();
-            String username = usesAuthentication ? brokerCep.getBrokerUsername() : null;
-            String password = usesAuthentication ? brokerCep.getBrokerPassword() : null;
-            String certificate = brokerCep.getBrokerCertificate();
-            log.debug("ControlServiceCoordinator.processNewModel(): Local Broker: uses-authentication={}, username={}, password={}, has-certificate={}",
-                    usesAuthentication, username, passwordUtil.encodePassword(password), StringUtils.isNotBlank(certificate));
-            log.trace("ControlServiceCoordinator.processNewModel(): Local Broker: broker-certificate={}", certificate);
-
-            if (StringUtils.isBlank(upperwareBrokerUrl)) {
-                log.warn("ControlServiceCoordinator.processNewModel(): No Broker URL has been specified or Broker-CEP module is deactivated");
-            }
-            List<Map> subscriptionConfigs = new ArrayList<>();
-            for (String t : scalingTopics)
-                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "SCALE"));
-            for (String t : metricTopics)
-                subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "MVV"));
-            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver subscriptions configuration: {}", subscriptionConfigs);
-
-            // Retrieve MVV to Current-Config MVV map
-            Map<String, String> mvvMap = _TC.getCompositeMetricVariables();
-            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver MVV configuration: {}", mvvMap);
-
-            // Prepare MetaSolver configuration
-            Map<String,Object> msConfig = new HashMap<>();
-            msConfig.put("subscriptions", subscriptionConfigs);
-            msConfig.put("mvv", mvvMap);
-
-            // POST configuration to MetaSolver
-            String metaSolverEndpoint = properties.getMetasolverConfigurationUrl();
-            com.google.gson.Gson gson = new com.google.gson.Gson();
-            String json = gson.toJson(msConfig);
-            log.debug("ControlServiceCoordinator.processNewModel(): MetaSolver configuration in JSON: {}", json);
-            if (StringUtils.isNotEmpty(metaSolverEndpoint)) {
-                try {
-                    log.info("ControlServiceCoordinator.processNewModel(): Calling MetaSolver: endpoint={}", metaSolverEndpoint);
-                    //String metaSolverResponse = restTemplate.postForObject(metaSolverEndpoint, json, String.class);
-                    /*
-                    HttpEntity<String> entity = createHttpEntity(String.class, json, jwtToken);
-                    final ResponseEntity<String> response = restTemplate.postForEntity(metaSolverEndpoint, entity, String.class);
-                    String metaSolverResponse = response.getBody();
-                    */
-                    ResponseEntity<String> response = webClient.post().
-                            uri(metaSolverEndpoint)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .header(HttpHeaders.AUTHORIZATION, jwtToken)
-                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                            .bodyValue(json)
-                            .retrieve()
-                            .toEntity(String.class)
-                            .block();
-                    String metaSolverResponse = (response!=null && response.getStatusCode().is2xxSuccessful()) ? response.getBody() : null;
-                    log.info("ControlServiceCoordinator.processNewModel(): MetaSolver response: endpoint={}, status={},  message={}",
-                            metaSolverEndpoint, response!=null ? response.getStatusCode() : null, metaSolverResponse);
-                } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator.processNewModel(): Failed to call MetaSolver: endpoint={}, EXCEPTION: ", metaSolverEndpoint, ex);
-                }
-            } else {
-                log.warn("ControlServiceCoordinator.processNewModel(): MetaSolver endpoint is empty. Skipping Metasolver configuration");
-            }
-
-        } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping MetaSolver setup due to configuration");
-        }
-
-        // Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
-        log.info("ControlServiceCoordinator.processNewModel(): Cache translation results: app-model-id={}", appModelId);
-        appModelToTcCache.put(_normalizeModelId(appModelId), _TC);
-
-        // Notify ESB, if 'notificationUri' is provided
-        if (!properties.isSkipEsbNotification()) {
-            if (StringUtils.isNotBlank(notificationUri)) {
-                setCurrentEmsState(EMS_STATE.INITIALIZING, "Notifying ESB");
-
-                notificationUri = notificationUri.trim();
-                log.info("ControlServiceCoordinator.processNewModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(appModelId, notificationUri, requestUuid, jwtToken);
-                log.info("ControlServiceCoordinator.processNewModel(): ESB notified: {}", notificationUri);
-            } else {
-                log.warn("ControlServiceCoordinator.processNewModel(): Notification URI is blank");
-            }
-        } else {
-            log.warn("ControlServiceCoordinator.processNewModel(): Skipping ESB notification due to configuration");
-        }
-
-        this.currentTC = _TC;
-        log.info("ControlServiceCoordinator.processNewModel(): END: app-model-id={}", appModelId);
-
-        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
-    private String getTcFileName(@NonNull String appModelId, @NonNull String fileName) {
-        appModelId = StringUtils.removeStart(appModelId, "/");
-        return String.format(fileName, appModelId.replaceAll("[^\\p{L}\\d]", "_"));
+    private void configureBaguetteServer(String appModelId, TranslationContext _TC, Map<String, Double> constants, String upperwareGrouping) {
+        setCurrentEmsState(EMS_STATE.INITIALIZING, "Initializing Baguette Server");
+
+        log.info("ControlServiceCoordinator.configureBaguetteServer(): Re-configuring Baguette Server: app-model-id={}", appModelId);
+        try {
+            baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
+        } catch (Exception ex) {
+            log.error("ControlServiceCoordinator.configureBaguetteServer(): EXCEPTION while starting Baguette server: app-model-id={}", appModelId, ex);
+        }
     }
 
-    protected void _processCpModel(String cpModelId, String notificationUri, String requestUuid, String jwtToken) {
-        log.info("ControlServiceCoordinator._processCpModel(): BEGIN: cp-model-id={}, notification-uri={}, request-uuid={}", cpModelId, notificationUri, requestUuid);
-        log.info("ControlServiceCoordinator._processCpModel(): Current app-model-id={}", currentAppModelId);
-        TranslationContext _TC = this.currentTC;
+    private void reconfigureBaguetteServer(Map<String, Double> constants) {
+        setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
 
-        // Retrieve Metric Variable Values (MVV) from CP model
-        Map<String, Double> constants = new HashMap<>();
-        if (!properties.isSkipMvvRetrieve()) {
-            if (StringUtils.isNotBlank(cpModelId)) {
-                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Retrieving MVVs from CP model");
-
-                try {
-                    log.info("ControlServiceCoordinator._processCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
-
-                    // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
-                    log.info("ControlServiceCoordinator._processCpModel(): Looking for MVV_CP's: {}", _TC.getCompositeMetricVariables());
-                    constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
-                    log.info("ControlServiceCoordinator._processCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
-
-                } catch (Exception ex) {
-                    log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
-                }
-            } else {
-                log.error("ControlServiceCoordinator._processCpModel(): No CP model have been provided");
-            }
-        } else {
-            log.warn("ControlServiceCoordinator._processCpModel(): Skipping MVV retrieval due to configuration");
+        log.info("ControlServiceCoordinator.reconfigureBaguetteServer(): Re-configuring Baguette Server with constants: {}", constants);
+        try {
+            baguette.sendConstants(constants);
+        } catch (Exception ex) {
+            log.error("ControlServiceCoordinator.reconfigureBaguetteServer(): EXCEPTION while configuring Baguette server: constants={}", constants, ex);
         }
-
-        // (Re-)Configure Broker and CEP
-        if (!properties.isSkipBrokerCep()) {
-            try {
-                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Broker-CEP");
-
-                // Initializing Broker-CEP module if necessary
-                if (brokerCep == null) {
-                    log.info("ControlServiceCoordinator._processCpModel(): Broker-CEP: Initializing...");
-                    brokerCep = applicationContext.getBean(BrokerCepService.class);
-                    log.info("ControlServiceCoordinator._processCpModel(): Broker-CEP: Initializing...ok");
-                }
-
-                log.info("ControlServiceCoordinator._processCpModel(): Passing constants to Broker-CEP: {}", constants);
-                brokerCep.setConstants(constants);
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while initializing Broker-CEP of Upperware: app-model-id={}", cpModelId, ex);
-            }
-        } else {
-            log.warn("ControlServiceCoordinator._processCpModel(): Skipping Broker-CEP setup due to configuration");
-        }
-
-        // (Re-)Configure Baguette server
-        if (!properties.isSkipBaguette()) {
-            setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
-
-            log.info("ControlServiceCoordinator._processCpModel(): Re-configuring Baguette Server with constants: {}", constants);
-            try {
-                baguette.sendConstants(constants);
-            } catch (Exception ex) {
-                log.error("ControlServiceCoordinator._processCpModel(): EXCEPTION while configuring Baguette server: cp-model-id={}", cpModelId, ex);
-            }
-        } else {
-            log.warn("ControlServiceCoordinator._processCpModel(): Skipping Baguette Server setup due to configuration");
-        }
-
-        // Notify ESB, if 'notificationUri' is provided
-        if (!properties.isSkipEsbNotification()) {
-            if (StringUtils.isNotBlank(notificationUri)) {
-                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Notifying ESB");
-
-                notificationUri = notificationUri.trim();
-                log.info("ControlServiceCoordinator._processCpModel(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(null, notificationUri, requestUuid, jwtToken);
-                log.info("ControlServiceCoordinator._processCpModel(): ESB notified: {}", notificationUri);
-            }
-        } else {
-            log.warn("ControlServiceCoordinator._processCpModel(): Skipping ESB notification due to configuration");
-        }
-
-        log.info("ControlServiceCoordinator._processCpModel(): END: cp-model-id={}", cpModelId);
-
-        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
-    public void setConstants(@NonNull Map<String,Double> constants, String notificationUri, String requestUuid, String jwtToken) {
-        log.info("ControlServiceCoordinator.setConstants(): BEGIN: constants={}, notification-uri={}, request-uuid={}", constants, notificationUri, requestUuid);
-        log.info("ControlServiceCoordinator.setConstants(): constants={}", constants);
-        TranslationContext _TC = this.currentTC;
-
-        // Retrieve Metric Variable Values (MVV) from CP model
-        if (properties.isSkipMvvRetrieve()) {
-            log.info("ControlServiceCoordinator.setConstants(): isSkipMvvRetrieve is true, but constants processing will continue");
-        }
-
-        // (Re-)Configure Broker and CEP
-        if (!properties.isSkipBrokerCep()) {
+    private void startNetdataCollector(String appModelId) {
+        // Stop any running Netdata collector instance
+        if (netdataCollector!=null) {
+            log.info("ControlServiceCoordinator.startNetdataCollector(): Stopping NetdataCollector: app-model-id={}", appModelId);
             try {
-                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Broker-CEP");
-
-                // Initializing Broker-CEP module if necessary
-                if (brokerCep == null) {
-                    log.info("ControlServiceCoordinator.setConstants(): Broker-CEP: Initializing...");
-                    brokerCep = applicationContext.getBean(BrokerCepService.class);
-                    log.info("ControlServiceCoordinator.setConstants(): Broker-CEP: Initializing...ok");
-                }
-
-                log.info("ControlServiceCoordinator.setConstants(): Passing constants to Broker-CEP: {}", constants);
-                brokerCep.setConstants(constants);
+                netdataCollector.stop();
             } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.setConstants(): EXCEPTION while initializing Broker-CEP with constants: constants={}", constants, ex);
+                log.error("ControlServiceCoordinator.startNetdataCollector(): EXCEPTION while stopping NetdataCollector: app-model-id={}", appModelId, ex);
             }
-        } else {
-            log.warn("ControlServiceCoordinator.setConstants(): Skipping Broker-CEP setup due to configuration");
         }
 
-        // (Re-)Configure Baguette server
-        if (!properties.isSkipBaguette()) {
-            setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
-
-            log.info("ControlServiceCoordinator.setConstants(): Re-configuring Baguette Server with constants: {}", constants);
+        // Starting new Netdata collector instance, if needed
+        ServerCoordinator serverCoordinator = nodeRegistry.getCoordinator();
+        if (! serverCoordinator.supportsAggregators()) {
+            if (netdataCollector==null) {
+                netdataCollector = applicationContext.getBean(ServerNetdataCollector.class);
+            }
+            log.info("ControlServiceCoordinator.startNetdataCollector(): Starting NetdataCollector: app-model-id={}", appModelId);
             try {
-                baguette.sendConstants(constants);
+                netdataCollector.start();
             } catch (Exception ex) {
-                log.error("ControlServiceCoordinator.setConstants(): EXCEPTION while configuring Baguette server: constants={}", constants, ex);
+                log.error("ControlServiceCoordinator.startNetdataCollector(): EXCEPTION while starting NetdataCollector: app-model-id={}", appModelId, ex);
             }
         } else {
-            log.warn("ControlServiceCoordinator.setConstants(): Skipping Baguette Server setup due to configuration");
+            log.info("ControlServiceCoordinator.startNetdataCollector(): NetdataCollector is not needed (will not start it): app-model-id={}", appModelId);
+        }
+    }
+
+    private void configureMetaSolver(TranslationContext _TC, String jwtToken) {
+        setCurrentEmsState(EMS_STATE.INITIALIZING, "Sending configuration to MetaSolver");
+
+        // Check that MetaSolver configuration URL has been set
+        if (StringUtils.isEmpty(properties.getMetasolverConfigurationUrl())) {
+            log.warn("ControlServiceCoordinator.configureMetaSolver(): MetaSolver endpoint is empty. Skipping Metasolver configuration");
+            return;
         }
 
-        // Notify ESB, if 'notificationUri' is provided
-        if (!properties.isSkipEsbNotification()) {
-            if (StringUtils.isNotBlank(notificationUri)) {
-                setCurrentEmsState(EMS_STATE.RECONFIGURING, "Notifying ESB");
+        // Get scaling event and SLO topics from _TC
+        Set<String> scalingTopics = new HashSet<>();
+        scalingTopics.addAll(_TC.getE2A().keySet());
+        scalingTopics.addAll(_TC.getSLO());
+        log.debug("ControlServiceCoordinator.configureMetaSolver(): MetaSolver configuration: scaling-topics: {}", scalingTopics);
 
-                notificationUri = notificationUri.trim();
-                log.info("ControlServiceCoordinator.setConstants(): Notifying ESB: {}", notificationUri);
-                sendSuccessNotification(null, notificationUri, requestUuid, jwtToken);
-                log.info("ControlServiceCoordinator.setConstants(): ESB notified: {}", notificationUri);
-            }
+        // Get top-level metric topics from _TC
+        Set<String> metricTopics = _TC.getDAG().getTopLevelNodes().stream()
+                .map(DAGNode::getElementName)
+                .filter(elementName -> !scalingTopics.contains(elementName))
+                .collect(Collectors.toSet());
+        log.debug("ControlServiceCoordinator.configureMetaSolver(): MetaSolver configuration: metric-topics: {}", metricTopics);
+
+        // Prepare subscription configurations
+        String upperwareBrokerUrl = brokerCep != null ? brokerCep.getBrokerCepProperties().getBrokerUrlForClients() : null;
+        boolean usesAuthentication = brokerCep.getBrokerCepProperties().isAuthenticationEnabled();
+        String username = usesAuthentication ? brokerCep.getBrokerUsername() : null;
+        String password = usesAuthentication ? brokerCep.getBrokerPassword() : null;
+        String certificate = brokerCep.getBrokerCertificate();
+        log.debug("ControlServiceCoordinator.configureMetaSolver(): Local Broker: uses-authentication={}, username={}, password={}, has-certificate={}",
+                usesAuthentication, username, passwordUtil.encodePassword(password), StringUtils.isNotBlank(certificate));
+        log.trace("ControlServiceCoordinator.configureMetaSolver(): Local Broker: broker-certificate={}", certificate);
+
+        if (StringUtils.isBlank(upperwareBrokerUrl)) {
+            log.warn("ControlServiceCoordinator.configureMetaSolver(): No Broker URL has been specified or Broker-CEP module is deactivated");
+        }
+        List<Map<String, String>> subscriptionConfigs = new ArrayList<>();
+        for (String t : scalingTopics)
+            subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "SCALE"));
+        for (String t : metricTopics)
+            subscriptionConfigs.add(_prepareSubscriptionConfig(upperwareBrokerUrl, username, password, certificate, t, "", "MVV"));
+        log.debug("ControlServiceCoordinator.configureMetaSolver(): MetaSolver subscriptions configuration: {}", subscriptionConfigs);
+
+        // Retrieve MVV to Current-Config MVV map
+        Map<String, String> mvvMap = _TC.getCompositeMetricVariables();
+        log.debug("ControlServiceCoordinator.configureMetaSolver(): MetaSolver MVV configuration: {}", mvvMap);
+
+        // Prepare MetaSolver configuration
+        Map<String,Object> msConfig = new HashMap<>();
+        msConfig.put("subscriptions", subscriptionConfigs);
+        msConfig.put("mvv", mvvMap);
+
+        // POST configuration to MetaSolver
+        String metaSolverEndpoint = properties.getMetasolverConfigurationUrl();
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        String json = gson.toJson(msConfig);
+        log.debug("ControlServiceCoordinator.configureMetaSolver(): MetaSolver configuration in JSON: {}", json);
+
+        try {
+            log.info("ControlServiceCoordinator.configureMetaSolver(): Calling MetaSolver: endpoint={}", metaSolverEndpoint);
+            ResponseEntity<String> response = webClient.post()
+                    .uri(metaSolverEndpoint)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, jwtToken)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .bodyValue(json)
+                    .retrieve()
+                    .toEntity(String.class)
+                    .block();
+            String metaSolverResponse = (response!=null && response.getStatusCode().is2xxSuccessful()) ? response.getBody() : null;
+            log.info("ControlServiceCoordinator.configureMetaSolver(): MetaSolver response: endpoint={}, status={},  message={}",
+                    metaSolverEndpoint, response!=null ? response.getStatusCode() : null, metaSolverResponse);
+        } catch (Exception ex) {
+            log.error("ControlServiceCoordinator.configureMetaSolver(): Failed to call MetaSolver: endpoint={}, EXCEPTION: ", metaSolverEndpoint, ex);
+        }
+    }
+
+    private void notifyESB(String appModelId, ControlServiceRequestInfo requestInfo, @NonNull EMS_STATE emsState) {
+        if (StringUtils.isNotBlank(requestInfo.getNotificationUri())) {
+            setCurrentEmsState(emsState, "Notifying ESB");
+
+            String notificationUri = requestInfo.getNotificationUri().trim();
+            log.info("ControlServiceCoordinator.notifyESB(): Notifying ESB: {}", notificationUri);
+            sendSuccessNotification(appModelId, requestInfo);
+            log.info("ControlServiceCoordinator.notifyESB(): ESB notified: {}", notificationUri);
         } else {
-            log.warn("ControlServiceCoordinator.setConstants(): Skipping ESB notification due to configuration");
+            log.warn("ControlServiceCoordinator.notifyESB(): Notification URI is blank");
         }
-
-        log.info("ControlServiceCoordinator.setConstants(): END: constants={}", constants);
-
-        setCurrentEmsState(EMS_STATE.READY, null);
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -973,21 +941,21 @@ public class ControlServiceCoordinator implements InitializingBean {
     // ESB notification methods
     // ------------------------------------------------------------------------------------------------------------
 
-    private void sendSuccessNotification(String applicationId, String notificationUri, String requestUuid, String jwtToken) {
+    private void sendSuccessNotification(String applicationId, ControlServiceRequestInfo requestInfo) {
         // Prepare success result notification
         NotificationResultImpl result = new NotificationResultImpl();
         result.setStatus(NotificationResult.StatusType.SUCCESS);
 
         // Prepare and send CamelModelNotification
         try {
-            sendAppModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+            sendAppModelNotification(applicationId, result, requestInfo);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private void sendErrorNotification(String applicationId, String notificationUri, String requestUuid,
-                                       String jwtToken, String errorCode, String errorDescription)
+    private void sendErrorNotification(String applicationId, ControlServiceRequestInfo requestInfo,
+                                       String errorCode, String errorDescription)
     {
         // Prepare error result notification
         NotificationResultImpl result = new NotificationResultImpl();
@@ -997,20 +965,19 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Prepare and send CamelModelNotification
         try {
-            sendAppModelNotification(applicationId, result, notificationUri, requestUuid, jwtToken);
+            sendAppModelNotification(applicationId, result, requestInfo);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private void sendAppModelNotification(String applicationId, NotificationResult result, String notificationUri,
-                                          String requestUuid, String jwtToken) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, CertificateException, UnrecoverableKeyException {
+    private void sendAppModelNotification(String applicationId, NotificationResult result, ControlServiceRequestInfo requestInfo) {
         // Create a new watermark
         Watermark watermark = new WatermarkImpl();
         watermark.setUser("EMS");
         watermark.setSystem("EMS");
         watermark.setDate(new java.util.Date());
-        String uuid = requestUuid!=null ? requestUuid : java.util.UUID.randomUUID().toString().toLowerCase();
+        String uuid = Objects.requireNonNullElse( requestInfo.getRequestUuid(), UUID.randomUUID().toString().toLowerCase() );
         watermark.setUuid(uuid);
 
         // Create a new CamelModelNotification
@@ -1020,10 +987,16 @@ public class ControlServiceCoordinator implements InitializingBean {
         request.setWatermark(watermark);
 
         // Send CamelModelNotification to ESB (Control Process)
-        sendAppModelNotification(request, notificationUri, jwtToken);
+        sendAppModelNotification(request, requestInfo);
     }
 
-    private void sendAppModelNotification(CamelModelNotificationRequest notification, String notificationUri, String jwtToken) {
+    private void sendAppModelNotification(CamelModelNotificationRequest notification, ControlServiceRequestInfo requestInfo) {
+        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   request-info={}", requestInfo);
+        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   request-JWTT={}", requestInfo.getJwtToken());
+        String notificationUri = requestInfo.getNotificationUri();
+        String requestUuid = requestInfo.getRequestUuid();
+        String jwtToken = requestInfo.getJwtToken();
+
         // Check if 'notificationUri' is blank
         if (StringUtils.isBlank(notificationUri)) {
             log.warn("ControlServiceCoordinator.sendAppModelNotification(): notificationUri not provided or is empty. No notification will be sent to ESB.");
@@ -1039,7 +1012,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
         esbUrl = esbUrl.trim();
 
-        // Fixing ESB url parts
+        // Fixing ESB URL parts
         if (esbUrl.endsWith("/")) {
             esbUrl = esbUrl.substring(0, esbUrl.length() - 1);
         }
@@ -1051,8 +1024,6 @@ public class ControlServiceCoordinator implements InitializingBean {
         String url = esbUrl + "/" + notificationUri;
         log.info("ControlServiceCoordinator.sendAppModelNotification(): Invoking ESB endpoint: {}", url);
         log.trace("ControlServiceCoordinator.sendAppModelNotification(): JWT token: {}", jwtToken);
-        //String responseStatus = restTemplate.postForEntity(url, notification, String.class).getStatusCode().toString();
-        //HttpEntity<CamelModelNotificationRequest> entity = createHttpEntity(CamelModelNotificationRequest.class, notification, jwtToken);
 
         ResponseEntity<String> response;
         response = webClient.post().
@@ -1061,68 +1032,11 @@ public class ControlServiceCoordinator implements InitializingBean {
                 .header(HttpHeaders.AUTHORIZATION, jwtToken)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header("X-Morphemic-Request-UUID", requestUuid)
                 .bodyValue(notification)
                 .retrieve()
                 .toEntity(String.class)
                 .block();
-
-        /*if (url.toLowerCase().startsWith("http:")) {
-            response = restTemplate.postForEntity(url, entity, String.class);
-        } else {
-
-            *//*TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
-            SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
-            SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
-                    NoopHostnameVerifier.INSTANCE);
-
-            Registry<ConnectionSocketFactory> socketFactoryRegistry =
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                            .register("https", sslsf)
-                            .register("http", new PlainConnectionSocketFactory())
-                            .build();
-
-            BasicHttpClientConnectionManager connectionManager =
-                    new BasicHttpClientConnectionManager(socketFactoryRegistry);
-            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
-                    .setConnectionManager(connectionManager).build();
-
-            HttpComponentsClientHttpRequestFactory requestFactory =
-                    new HttpComponentsClientHttpRequestFactory(httpClient);
-
-            response = new RestTemplate(requestFactory)
-                    .postForEntity(url, entity, String.class);*//*
-
-            // Load keystore and truststore
-            KeyStore keyStore = KeystoreUtil.readKeystore(
-                    properties.getSsl().getKeystoreFile(),
-                    properties.getSsl().getKeystoreType(),
-                    properties.getSsl().getKeystorePassword());
-            KeyStore trustStore = KeystoreUtil.readKeystore(
-                    properties.getSsl().getTruststoreFile(),
-                    properties.getSsl().getTruststoreType(),
-                    properties.getSsl().getTruststorePassword());
-
-            // Create SSL connection factory
-            SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
-                    new SSLContextBuilder()
-                            //.loadTrustMaterial(trustStore, new TrustSelfSignedStrategy())
-                            .loadTrustMaterial(trustStore, null)
-                            .loadKeyMaterial(keyStore, properties.getSsl().getKeystorePassword().toCharArray())
-                            .build(),
-                    new DefaultHostnameVerifier()
-            );
-
-            // Create HTTPS client
-            HttpClient httpClient = HttpClients.custom()
-                    .setSSLSocketFactory(socketFactory).build();
-            ClientHttpRequestFactory requestFactory =
-                    new HttpComponentsClientHttpRequestFactory(httpClient);
-
-            // Perform HTTPS call
-            RestTemplate restTemplate = new RestTemplate(requestFactory);
-            response = restTemplate
-                    .postForEntity(url, entity, String.class);
-        }*/
 
         if (response!=null) {
             String responseStatus = response.getStatusCode().toString();
