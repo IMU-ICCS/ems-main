@@ -170,10 +170,10 @@ public class ControlServiceController {
         Map<String, String> headers = Collections.list(request.getHeaderNames()).stream()
                 .collect(Collectors.toMap(h -> h, request::getHeader));
         log.warn("--------------  TEST endpoint: --------------------------------------------------------");
-        log.warn("--------------  TEST endpoint:     URL: {}", UriUtils.decode(path, StandardCharsets.UTF_8));
-        log.warn("--------------  TEST endpoint: headers: {}", headers);
-        log.warn("--------------  TEST endpoint:    body: {}", body);
-        log.warn("--------------  TEST endpoint:     JWT: {}", jwtToken);
+        log.warn("--------------  TEST endpoint: Verb/URL: {} {}", request.getMethod(), UriUtils.decode(path, StandardCharsets.UTF_8));
+        log.warn("--------------  TEST endpoint:  headers: {}", headers);
+        log.warn("--------------  TEST endpoint:     body: {}", body);
+        log.warn("--------------  TEST endpoint:      JWT: {}", jwtToken);
         return "OK";
     }*/
 

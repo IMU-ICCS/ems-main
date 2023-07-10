@@ -991,8 +991,6 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     private void sendAppModelNotification(CamelModelNotificationRequest notification, ControlServiceRequestInfo requestInfo) {
-        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   request-info={}", requestInfo);
-        log.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   request-JWTT={}", requestInfo.getJwtToken());
         String notificationUri = requestInfo.getNotificationUri();
         String requestUuid = requestInfo.getRequestUuid();
         String jwtToken = requestInfo.getJwtToken();
@@ -1032,7 +1030,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                 .header(HttpHeaders.AUTHORIZATION, jwtToken)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .header("X-Morphemic-Request-UUID", requestUuid)
+                .header("X-Request-UUID", requestUuid)
                 .bodyValue(notification)
                 .retrieve()
                 .toEntity(String.class)
