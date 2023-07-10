@@ -162,6 +162,21 @@ public class ControlServiceController {
         return "OK";
     }
 
+    /*@RequestMapping(value = "/test/**", method = {GET, POST})
+    public String test(HttpServletRequest request, @RequestBody(required = false) String body,
+                             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        String path = request.getRequestURI().split("/test/", 2)[1];
+        Map<String, String> headers = Collections.list(request.getHeaderNames()).stream()
+                .collect(Collectors.toMap(h -> h, request::getHeader));
+        log.warn("--------------  TEST endpoint: --------------------------------------------------------");
+        log.warn("--------------  TEST endpoint:     URL: {}", UriUtils.decode(path, StandardCharsets.UTF_8));
+        log.warn("--------------  TEST endpoint: headers: {}", headers);
+        log.warn("--------------  TEST endpoint:    body: {}", body);
+        log.warn("--------------  TEST endpoint:     JWT: {}", jwtToken);
+        return "OK";
+    }*/
+
     // ------------------------------------------------------------------------------------------------------------
 
     //XXX:TODO: MOVE TO A SERVICE (maybe in Translator?)
