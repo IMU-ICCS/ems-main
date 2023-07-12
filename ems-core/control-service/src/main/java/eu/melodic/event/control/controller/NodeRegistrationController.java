@@ -45,11 +45,11 @@ public class NodeRegistrationController {
 
     @RequestMapping(value = "/baguette/stopServer", method = {GET, POST})
     public String baguetteStopServer() {
-        log.info("ControlServiceController.baguetteStopServer(): Request received");
+        log.info("NodeRegistrationController.baguetteStopServer(): Request received");
 
         // Dispatch Baguette stop operation in a worker thread
         nodeRegistrationCoordinator.stopBaguette();
-        log.info("ControlServiceController.baguetteStopServer(): Baguette stop operation dispatched to a worker thread");
+        log.info("NodeRegistrationController.baguetteStopServer(): Baguette stop operation dispatched to a worker thread");
 
         return "OK";
     }
@@ -57,53 +57,53 @@ public class NodeRegistrationController {
     @RequestMapping(value = "/baguette/registerNode", method = POST,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public String baguetteRegisterNode(@RequestBody String jsonNode, HttpServletRequest request) throws Exception {
-        log.info("ControlServiceController.baguetteRegisterNode(): Invoked");
-        log.debug("ControlServiceController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
+        log.info("NodeRegistrationController.baguetteRegisterNode(): Invoked");
+        log.debug("NodeRegistrationController.baguetteRegisterNode(): Node json:\n{}", jsonNode);
 
         // Extract node information from json
         Type type = new TypeToken<Map<String, Object>>(){}.getType();
         Map<String,Object> nodeMap = new Gson().fromJson(jsonNode, type);
         String nodeId = (String) nodeMap.get("id");
-        log.info("ControlServiceController.baguetteRegisterNode(): node-id: {}", nodeId);
-        log.debug("ControlServiceController.baguetteRegisterNode(): Node information: map={}", nodeMap);
+        log.info("NodeRegistrationController.baguetteRegisterNode(): node-id: {}", nodeId);
+        log.debug("NodeRegistrationController.baguetteRegisterNode(): Node information: map={}", nodeMap);
 
         String response = nodeRegistrationCoordinator.registerNode(request, nodeMap,
                 coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId()));
 
-        log.info("ControlServiceController.baguetteRegisterNode(): Node registered: node-id: {}", nodeId);
-        log.debug("ControlServiceController.baguetteRegisterNode(): node: {}, json: {}", nodeId, response);
+        log.info("NodeRegistrationController.baguetteRegisterNode(): Node registered: node-id: {}", nodeId);
+        log.debug("NodeRegistrationController.baguetteRegisterNode(): node: {}, json: {}", nodeId, response);
         return response;
     }
 
     @RequestMapping(value = "/baguette/node/list", method = GET)
     public Collection<String> baguetteNodeList() throws Exception {
-        log.info("ControlServiceController.baguetteNodeList(): Invoked");
+        log.info("NodeRegistrationController.baguetteNodeList(): Invoked");
 
         Collection<String> addresses = coordinator.getBaguetteServer().getNodeRegistry().getNodeAddresses();
 
-        log.info("ControlServiceController.baguetteNodeList(): {}", addresses);
+        log.info("NodeRegistrationController.baguetteNodeList(): {}", addresses);
         return addresses;
     }
 
     @RequestMapping(value = "/baguette/node/reinstall/{ipAddress:.+}", method = {GET, POST},
             produces = MediaType.TEXT_PLAIN_VALUE)
     public String baguetteNodeReinstall(@PathVariable String ipAddress) throws Exception {
-        log.info("ControlServiceController.baguetteNodeReinstall(): Invoked");
-        log.info("ControlServiceController.baguetteNodeReinstall(): Node IP address: {}", ipAddress);
+        log.info("NodeRegistrationController.baguetteNodeReinstall(): Invoked");
+        log.info("NodeRegistrationController.baguetteNodeReinstall(): Node IP address: {}", ipAddress);
 
         // Get node info using IP address
         BaguetteServer baguette = coordinator.getBaguetteServer();
         NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
-        log.info("ControlServiceController.baguetteNodeReinstall(): Info for node at: ip-address={}, Node Info:\n{}",
+        log.info("NodeRegistrationController.baguetteNodeReinstall(): Info for node at: ip-address={}, Node Info:\n{}",
                 ipAddress, nodeInfo);
         if (nodeInfo==null) {
-            log.warn("ControlServiceController.baguetteNodeReinstall(): Not found pre-registered node with ip-address: {}", ipAddress);
+            log.warn("NodeRegistrationController.baguetteNodeReinstall(): Not found pre-registered node with ip-address: {}", ipAddress);
             return "NODE NOT FOUND: "+ipAddress;
         }
 
         // Continue processing according to ExecutionWare type
         String response;
-        log.info("ControlServiceController.baguetteNodeReinstall(): ExecutionWare: {}", properties.getExecutionware());
+        log.info("NodeRegistrationController.baguetteNodeReinstall(): ExecutionWare: {}", properties.getExecutionware());
         if (properties.getExecutionware() == ControlServiceProperties.ExecutionWare.CLOUDIATOR) {
             response = nodeRegistrationCoordinator.getClientInstallationInstructions(nodeInfo);
         } else {
@@ -111,19 +111,19 @@ public class NodeRegistrationController {
                     coordinator.getTranslationContextOfAppModel(coordinator.getCurrentAppModelId()));
         }
 
-        log.info("ControlServiceController.baguetteNodeReinstall(): node ip-address: {}, response: {}", ipAddress, response);
+        log.info("NodeRegistrationController.baguetteNodeReinstall(): node ip-address: {}, response: {}", ipAddress, response);
         return response;
     }
 
     @RequestMapping(value = "/baguette/getNodeInfoByAddress/{ipAddress:.+}", method = {GET, POST},
             produces = MediaType.APPLICATION_JSON_VALUE)
     public NodeRegistryEntry baguetteGetNodeInfoByAddress(@PathVariable String ipAddress) throws Exception {
-        log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
+        log.info("NodeRegistrationController.baguetteGetNodeInfoByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
         NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
 
-        log.info("ControlServiceController.baguetteGetNodeInfoByAddress(): Info for node at: ip-address={}, Node Info:\n{}",
+        log.info("NodeRegistrationController.baguetteGetNodeInfoByAddress(): Info for node at: ip-address={}, Node Info:\n{}",
                 ipAddress, nodeInfo);
         return nodeInfo;
     }
@@ -131,13 +131,13 @@ public class NodeRegistrationController {
     @RequestMapping(value = "/baguette/getNodeNameByAddress/{ipAddress:.+}", method = {GET, POST},
             produces = MediaType.TEXT_PLAIN_VALUE)
     public String baguetteGetNodeNameByAddress(@PathVariable String ipAddress) throws Exception {
-        log.info("ControlServiceController.baguetteGetNodeNameByAddress(): ip-address={}", ipAddress);
+        log.info("NodeRegistrationController.baguetteGetNodeNameByAddress(): ip-address={}", ipAddress);
 
         BaguetteServer baguette = coordinator.getBaguetteServer();
         NodeRegistryEntry nodeInfo = baguette.getNodeRegistry().getNodeByAddress(ipAddress);
         String nodeName = nodeInfo!=null ? nodeInfo.getPreregistration().get("name") : null;
 
-        log.info("ControlServiceController.baguetteGetNodeNameByAddress(): Name of node at: ip-address={}, Node name: {}",
+        log.info("NodeRegistrationController.baguetteGetNodeNameByAddress(): Name of node at: ip-address={}, Node name: {}",
                 ipAddress, nodeName);
         return nodeName;
     }

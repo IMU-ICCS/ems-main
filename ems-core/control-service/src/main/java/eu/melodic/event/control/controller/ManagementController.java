@@ -41,7 +41,7 @@ public class ManagementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<String> listClients() {
         List<String> clients = coordinator.clientList();
-        log.info("ControlServiceController.listClients(): {}", clients);
+        log.info("ManagementController.listClients(): {}", clients);
         return clients;
     }
 
@@ -49,19 +49,19 @@ public class ManagementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Map<String, String>> listClientMaps() {
         Map<String, Map<String, String>> clients = coordinator.clientMap();
-        log.info("ControlServiceController.listClientMaps(): {}", clients);
+        log.info("ManagementController.listClientMaps(): {}", clients);
         return clients;
     }
 
     @RequestMapping(value = "/client/command/{clientId}/{command:.+}", method = GET)
     public String clientCommand(@PathVariable String clientId, @PathVariable String command) {
-        log.info("ControlServiceController.clientCommand(): PARAMS: client={}, command={}", clientId, command);
+        log.info("ManagementController.clientCommand(): PARAMS: client={}, command={}", clientId, command);
         return coordinator.clientCommandSend(clientId, command);
     }
 
     @RequestMapping(value = "/cluster/command/{clusterId}/{command:.+}", method = GET)
     public String clusterCommand(@PathVariable String clusterId, @PathVariable String command) {
-        log.info("ControlServiceController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
+        log.info("ManagementController.clusterCommand(): PARAMS: cluster={}, command={}", clusterId, command);
         return coordinator.clusterCommandSend(clusterId, command);
     }
 
@@ -71,19 +71,19 @@ public class ManagementController {
 
     @RequestMapping(value = "/event/generate-start/{clientId}/{topicName}/{interval}/{lowerValue}/{upperValue}", method = GET)
     public String startEventGeneration(@PathVariable String clientId, @PathVariable String topicName, @PathVariable long interval, @PathVariable double lowerValue, @PathVariable double upperValue) {
-        log.info("ControlServiceController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
+        log.info("ManagementController.startEventGeneration(): PARAMS: client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
         return coordinator.eventGenerationStart(clientId, topicName, interval, lowerValue, upperValue);
     }
 
     @RequestMapping(value = "/event/generate-stop/{clientId}/{topicName}", method = GET)
     public String stopEventGeneration(@PathVariable String clientId, @PathVariable String topicName) {
-        log.info("ControlServiceController.stopEventGeneration(): PARAMS: client={}, topic={}", clientId, topicName);
+        log.info("ManagementController.stopEventGeneration(): PARAMS: client={}, topic={}", clientId, topicName);
         return coordinator.eventGenerationStop(clientId, topicName);
     }
 
     @RequestMapping(value = "/event/send/{clientId}/{topicName}/{value}", method = GET)
     public String sendEvent(@PathVariable String clientId, @PathVariable String topicName, @PathVariable double value) {
-        log.info("ControlServiceController.sendEvent(): PARAMS: client={}, topic={}, value={}", clientId, topicName, value);
+        log.info("ManagementController.sendEvent(): PARAMS: client={}, topic={}, value={}", clientId, topicName, value);
         return coordinator.eventLocalSend(clientId, topicName, value);
     }
 
@@ -93,7 +93,7 @@ public class ManagementController {
 
     @RequestMapping(value = "/ems/shutdown", method = {GET, POST})
     public String emsShutdown() {
-        log.info("ControlServiceController.emsShutdown(): Not implemented");
+        log.info("ManagementController.emsShutdown(): Not implemented");
         coordinator.emsShutdownServices();
         return "OK";
     }
@@ -102,25 +102,25 @@ public class ManagementController {
     public String emsExit(@PathVariable Optional<Integer> exitCode) {
         if (properties.isExitAllowed()) {
             int _exitCode = exitCode.orElse(properties.getExitCode());
-            log.info("ControlServiceController.emsExit(): exitCode={}", _exitCode);
+            log.info("ManagementController.emsExit(): exitCode={}", _exitCode);
             coordinator.emsShutdownServices();
             coordinator.emsExit(_exitCode);
             return "OK";
         } else {
-            log.info("ControlServiceController.emsExit(): Exiting EMS is not allowed");
+            log.info("ManagementController.emsExit(): Exiting EMS is not allowed");
             return "NOT ALLOWED";
         }
     }
 
     @RequestMapping(value = "/ems/status", method = {GET, POST}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> emsStatus() {
-        log.info("ControlServiceController.emsStatus(): Not implemented");
+        log.info("ManagementController.emsStatus(): Not implemented");
         return Collections.emptyMap();
     }
 
     @RequestMapping(value = "/ems/topology", method = {GET, POST}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> emsTopology() {
-        log.info("ControlServiceController.emsTopology(): Not implemented");
+        log.info("ManagementController.emsTopology(): Not implemented");
         return Collections.emptyMap();
     }
 

@@ -60,17 +60,17 @@ public class NodeRegistrationCoordinator implements InitializingBean {
     public void stopBaguette() {
         // Acquire lock of this coordinator
         if (!inUse.compareAndSet(false, true)) {
-            log.warn("ControlServiceCoordinator.stopBaguette(): ERROR: Coordinator is in use. Method exits immediately");
+            log.warn("NodeRegistrationCoordinator.stopBaguette(): ERROR: Coordinator is in use. Method exits immediately");
             return;
         }
 
         try {
             // Stop Baguette server
-            log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server...");
+            log.info("NodeRegistrationCoordinator.stopBaguette(): Stopping Baguette server...");
             baguetteServer.stopServer();
-            log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server... done");
+            log.info("NodeRegistrationCoordinator.stopBaguette(): Stopping Baguette server... done");
         } catch (Exception ex) {
-            log.error("ControlServiceCoordinator.stopBaguette(): EXCEPTION while stopping Baguette server: ", ex);
+            log.error("NodeRegistrationCoordinator.stopBaguette(): EXCEPTION while stopping Baguette server: ", ex);
         } finally {
             // Release lock of this coordinator
             inUse.compareAndSet(true, false);

@@ -28,7 +28,6 @@ public class ManagementCoordinator {
 
     private final ControlServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
-    private final ManagementCoordinator managementCoordinator;
     private final BaguetteServer baguetteServer;
 
     // ------------------------------------------------------------------------------------------------------------

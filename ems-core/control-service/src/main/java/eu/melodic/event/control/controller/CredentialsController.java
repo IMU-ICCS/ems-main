@@ -56,8 +56,8 @@ public class CredentialsController {
     @RequestMapping(value = "/broker/credentials", method = {GET,POST})
     public HttpEntity<Map> getBrokerCredentials(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.getBrokerCredentials(): BEGIN");
-        log.trace("ControlServiceController.getBrokerCredentials(): JWT token: {}", jwtToken);
+        log.info("CredentialsController.getBrokerCredentials(): BEGIN");
+        log.trace("CredentialsController.getBrokerCredentials(): JWT token: {}", jwtToken);
 
         // Retrieve sensor information
         String brokerClientsUrl = coordinator.getBrokerCep().getBrokerCepProperties().getBrokerUrlForClients();
@@ -72,7 +72,7 @@ public class CredentialsController {
         response.put("password", brokerPassword);
         response.put("certificate", brokerCertificatePem);
         HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
-        log.info("ControlServiceController.getBrokerCredentials(): Response: {}", response);
+        log.info("CredentialsController.getBrokerCredentials(): Response: {}", response);
 
         //return response;
         return entity;
@@ -84,8 +84,8 @@ public class CredentialsController {
     public HttpEntity<Map> getNodeCredentials(@PathVariable("ref") Optional<String> optRef,
                                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.getNodeCredentials(): BEGIN: ref={}", optRef);
-        log.trace("ControlServiceController.getNodeCredentials(): JWT token: {}", jwtToken);
+        log.info("CredentialsController.getNodeCredentials(): BEGIN: ref={}", optRef);
+        log.trace("CredentialsController.getNodeCredentials(): JWT token: {}", jwtToken);
 
         if (StringUtils.isBlank(optRef.orElse(null)))
             throw new IllegalArgumentException("The 'ref' parameter is mandatory");
@@ -93,7 +93,7 @@ public class CredentialsController {
         // Check if it is EMS server ref
         if (credentialsCoordinator.getReference().equals(optRef.get())) {
             if (coordinator.getBaguetteServer()==null || !coordinator.getBaguetteServer().isServerRunning()) {
-                log.warn("ControlServiceController.getNodeCredentials(): Baguette Server is not started");
+                log.warn("CredentialsController.getNodeCredentials(): Baguette Server is not started");
                 return null;
             }
 
@@ -109,7 +109,7 @@ public class CredentialsController {
             }
             String key = coordinator.getBaguetteServer().getServerPubkey();
 
-            log.debug("ControlServiceController.getNodeCredentials(): Retrieved EMS server connection info by reference: ref={}", optRef.get());
+            log.debug("CredentialsController.getNodeCredentials(): Retrieved EMS server connection info by reference: ref={}", optRef.get());
 
             // Prepare response
             Map<String,String> response = new HashMap<>();
@@ -119,7 +119,7 @@ public class CredentialsController {
             response.put("password", password);
             response.put("private-key", key);
             HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
-            log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+            log.debug("CredentialsController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
 
             return entity;
         }
@@ -129,7 +129,7 @@ public class CredentialsController {
         if (entry==null) {
             throw new IllegalArgumentException("Not found Node with reference: "+optRef.get());
         }
-        log.debug("ControlServiceController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef.get());
+        log.debug("CredentialsController.getNodeCredentials(): Retrieved node by reference: ref={}", optRef.get());
 
         // Prepare response
         Map<String,String> response = new HashMap<>();
@@ -139,7 +139,7 @@ public class CredentialsController {
         response.put("password", entry.getPreregistration().get("ssh.password"));
         response.put("private-key", entry.getPreregistration().get("ssh.key"));
         HttpEntity<Map> entity = coordinator.createHttpEntity(Map.class, response, jwtToken);
-        log.debug("ControlServiceController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
+        log.debug("CredentialsController.getNodeCredentials(): Response: ** Not shown because it contains credentials **");
 
         return entity;
     }
@@ -151,20 +151,20 @@ public class CredentialsController {
 
     @RequestMapping(value = "/ems/otp/new", method = {GET, POST})
     public String newOtp() {
-        log.info("ControlServiceController.newOtp(): BEGIN");
+        log.info("CredentialsController.newOtp(): BEGIN");
         String newOtp = webSecurityConfig.otpCreate();
-        log.debug("ControlServiceController.newOtp(): New OTP: {}", passwordUtil.encodePassword(newOtp));
+        log.debug("CredentialsController.newOtp(): New OTP: {}", passwordUtil.encodePassword(newOtp));
         return newOtp;
     }
 
     @RequestMapping(value = "/ems/otp/remove/{otp}", method = {GET, POST})
     public String removeOtp(@PathVariable String otp) {
-        log.info("ControlServiceController.removeOtp(): BEGIN");
+        log.info("CredentialsController.removeOtp(): BEGIN");
         if ("*".equals(otp))
             webSecurityConfig.otpClearCache();
         else
             webSecurityConfig.otpRemove(otp);
-        log.debug("ControlServiceController.removeOtp(): Removed OTP: {}", passwordUtil.encodePassword(otp));
+        log.debug("CredentialsController.removeOtp(): Removed OTP: {}", passwordUtil.encodePassword(otp));
         return "OK";
     }
 }
