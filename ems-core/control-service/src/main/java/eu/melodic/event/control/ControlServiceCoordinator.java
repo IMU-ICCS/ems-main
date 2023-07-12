@@ -142,19 +142,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.info("ControlServiceCoordinator: Effective translator: {}", translator.getClass().getName());
     }
 
-    public String getAppModelPath() {
-        return currentAppModelId;
-    }
-
-    public String getCpModelPath() {
-        return currentCpModelId;
-    }
-
     // ------------------------------------------------------------------------------------------------------------
-
-    public ControlServiceProperties getControlServiceProperties() {
-        return properties;
-    }
 
     public void setCurrentEmsState(@NonNull EMS_STATE newState, String message) {
         this.currentEmsState = newState;
@@ -716,6 +704,14 @@ public class ControlServiceCoordinator implements InitializingBean {
     // ------------------------------------------------------------------------------------------------------------
     // Translation information query methods
     // ------------------------------------------------------------------------------------------------------------
+
+    public String getAppModelPath() {
+        return currentAppModelId;
+    }
+
+    public String getCpModelPath() {
+        return currentCpModelId;
+    }
 
     public TranslationContext getTranslationContextOfAppModel(String appModelId) {
         return appModelToTcCache.get(_normalizeModelId(appModelId));
