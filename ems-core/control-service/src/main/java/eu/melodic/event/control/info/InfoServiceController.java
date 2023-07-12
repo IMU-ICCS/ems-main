@@ -13,6 +13,7 @@ package eu.melodic.event.control.info;
 //XXX: TODO: Temporarily disabled logviewer: import com.logviewer.logLibs.LogConfigurationLoader;
 //XXX: TODO: Temporarily disabled logviewer: import com.logviewer.springboot.LogViewerSpringBootConfig;
 import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.control.controller.ManagementCoordinator;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.QueryParam;
@@ -20,8 +21,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+//XXX: TODO: Temporarily disabled logviewer: import org.springframework.context.annotation.Bean;
+//XXX: TODO: Temporarily disabled logviewer: import org.springframework.context.annotation.Import;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.nio.file.Path;
+//XXX: TODO: Temporarily disabled logviewer: import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ public class InfoServiceController {
 
     private final InfoServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
+    private final ManagementCoordinator managementCoordinator;
     private final IEmsInfoService emsInfoService;
 
     /*XXX: TODO: Temporarily disabled logviewer
@@ -236,7 +238,7 @@ public class InfoServiceController {
         }
 
         // Add client info in results
-        Map<String, Map<String, String>> clientsInfo = coordinator.clientMap();
+        Map<String, Map<String, String>> clientsInfo = managementCoordinator.clientMap();
         for (Map.Entry<String, Object> entry : metrics.entrySet()) {
             Map<String, String> info = clientsInfo.get(entry.getKey());
             Object o = entry.getValue();

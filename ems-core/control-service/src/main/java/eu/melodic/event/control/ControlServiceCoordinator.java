@@ -26,7 +26,6 @@ import eu.melodic.event.translate.mvv.MetricVariableValuesService;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.dag.DAGNode;
-import eu.melodic.event.util.NetUtil;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.models.commons.NotificationResult;
 import eu.melodic.event.models.commons.NotificationResultImpl;
@@ -79,8 +78,6 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private final AtomicBoolean inUse = new AtomicBoolean();
     private final Map<String, TranslationContext> appModelToTcCache = new HashMap<>();
-
-    @Getter private final String reference = UUID.randomUUID().toString();
 
     @Getter private String currentAppModelId;
     @Getter private String currentCpModelId;
@@ -143,12 +140,6 @@ public class ControlServiceCoordinator implements InitializingBean {
         log.debug("ControlServiceCoordinator.getTranslator():  Translator implementation selected: {}", translator);
 
         log.info("ControlServiceCoordinator: Effective translator: {}", translator.getClass().getName());
-    }
-
-    public String getServerIpAddress() {
-        return (properties.getIpSetting() == ControlServiceProperties.IpSetting.DEFAULT_IP)
-                ? NetUtil.getDefaultIpAddress()
-                : NetUtil.getPublicIpAddress();
     }
 
     public String getAppModelPath() {
@@ -876,59 +867,6 @@ public class ControlServiceCoordinator implements InitializingBean {
 
 
     // ------------------------------------------------------------------------------------------------------------
-    // Baguette control methods
-    // ------------------------------------------------------------------------------------------------------------
-
-    @Async
-    public void stopBaguette() {
-        // Acquire lock of this coordinator
-        if (!inUse.compareAndSet(false, true)) {
-            log.warn("ControlServiceCoordinator.stopBaguette(): ERROR: Coordinator is in use. Method exits immediately");
-            return;
-        }
-
-        try {
-            // Stop Baguette server
-            log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server...");
-            baguetteServer.stopServer();
-            log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server... done");
-        } catch (Exception ex) {
-            log.error("ControlServiceCoordinator.stopBaguette(): EXCEPTION while stopping Baguette server: ", ex);
-        } finally {
-            // Release lock of this coordinator
-            inUse.compareAndSet(true, false);
-        }
-    }
-
-
-    // ------------------------------------------------------------------------------------------------------------
-    // Life-Cycle control methods
-    // ------------------------------------------------------------------------------------------------------------
-
-    void emsShutdown() {
-        /*log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS...");
-        log.info("ControlServiceCoordinator.emsShutdown(): Shutting down EMS... done");*/
-        log.warn("ControlServiceCoordinator.emsShutdown(): Not implemented");
-    }
-
-    //@Async
-    void emsExit() {
-        emsExit(properties.getExitCode());
-    }
-
-    //@Async
-    void emsExit(int exitCode) {
-        if (properties.isExitAllowed()) {
-            // Signal SpringBootApp to exit
-            log.info("ControlServiceCoordinator.emsExit(): Signaling exit...");
-            ControlServiceApplication.exitApp(exitCode, properties.getExitGracePeriod());
-            log.info("ControlServiceCoordinator.emsExit(): Signaling exit... done");
-        } else {
-            log.warn("ControlServiceCoordinator.emsExit(): Exit is not allowed");
-        }
-    }
-
-    // ------------------------------------------------------------------------------------------------------------
     // ESB notification methods
     // ------------------------------------------------------------------------------------------------------------
 
@@ -1048,137 +986,6 @@ public class ControlServiceCoordinator implements InitializingBean {
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         return headers;
-    }
-
-
-    // ------------------------------------------------------------------------------------------------------------
-    // Event Generation and Debugging methods
-    // ------------------------------------------------------------------------------------------------------------
-
-    private final static String EVENT_LOG_OK = "OK";
-    private final static String EVENT_LOG_ERROR = "ERROR";
-    private final static String BAGUETTE_DISABLED = "BAGUETTE SERVER IS DISABLED";
-    private final static String BAGUETTE_NOT_RUNNING = "BAGUETTE SERVER IS NOT RUNNING";
-
-    private String eventLogEnd(String method, String result) {
-        log.debug("ControlServiceCoordinator.{}(): END: result={}", method, result);
-        return result;
-    }
-
-    private String eventSendCommandToClient(String method, String clientId, String command) {
-        // Check status
-        if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
-        if (!baguetteServer.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
-
-        // Send command
-        if (clientId.equals("0")) {
-            if (command.startsWith("SEND-")) {
-                try {
-                    String[] part = command.split(" ");
-                    String topicName = part[1].trim();
-                    String value = part[2].trim();
-                    eu.melodic.event.brokercep.event.EventMap event = new eu.melodic.event.brokercep.event.EventMap(Double.parseDouble(value), 3, System.currentTimeMillis());
-                    brokerCep.publishEvent(null, topicName, event);
-                } catch (Exception ex) {
-                    log.debug("ControlServiceCoordinator.{}(): EXCEPTION: command: {}, exception: ", method, command, ex);
-                    // Log error
-                    return eventLogEnd(method, EVENT_LOG_ERROR);
-                }
-            } else {
-                log.debug("ControlServiceCoordinator.{}(): ERROR: Unsupported command for client-id=0 : {}", method, command);
-                // Log error
-                return eventLogEnd(method, EVENT_LOG_ERROR);
-            }
-        } else if ("*".equals(clientId))
-            baguetteServer.sendToActiveClients(command);
-        else
-            baguetteServer.sendToClient("#"+clientId, command);
-
-        // Log success
-        return eventLogEnd(method, EVENT_LOG_OK);
-    }
-
-
-    // Public API for event debugging
-    public String eventGenerationStart(String clientId, String topicName, long interval, double lowerValue, double upperValue) {
-        log.debug("ControlServiceCoordinator.eventGenerationStart(): client={}, topic={}, interval={}, value-range=[{},{}]", clientId, topicName, interval, lowerValue, upperValue);
-        String command = String.format(java.util.Locale.ROOT, "GENERATE-EVENTS-START %s %d %f %f", topicName, interval, lowerValue, upperValue);
-        return eventSendCommandToClient("eventGenerationStart", clientId, command);
-    }
-
-    public String eventGenerationStop(String clientId, String topicName) {
-        log.debug("ControlServiceCoordinator.eventGenerationStop(): client={}, topic={}", clientId, topicName);
-        String command = String.format(java.util.Locale.ROOT, "GENERATE-EVENTS-STOP %s", topicName);
-        return eventSendCommandToClient("eventGenerationStop", clientId, command);
-    }
-
-    public String eventLocalSend(String clientId, String topicName, double value) {
-        log.debug("ControlServiceCoordinator.eventLocalSend(): BEGIN: client={}, topic={}, value={}", clientId, topicName, value);
-        String command = String.format(java.util.Locale.ROOT, "SEND-LOCAL-EVENT %s %f", topicName, value);
-        return eventSendCommandToClient("eventLocalSend", clientId, command);
-    }
-
-    public String eventRemoteSend(String clientId, String brokerUrl, String topicName, double value) {
-        log.debug("ControlServiceCoordinator.eventRemoteSend(): BEGIN: client={}, broker-url={}, topic={}, value={}", clientId, brokerUrl, topicName, value);
-        String command = String.format(java.util.Locale.ROOT, "SEND-EVENT %s %s %f", brokerUrl, topicName, value);
-        return eventSendCommandToClient("eventRemoteSend", clientId, command);
-    }
-
-    // ------------------------------------------------------------------------------------------------------------
-
-    public List<String> clientList() {
-        log.debug("ControlServiceCoordinator.clientList(): BEGIN:");
-        return baguetteServer.isServerRunning() ? baguetteServer.getActiveClients() : Collections.emptyList();
-    }
-
-    public Map<String, Map<String, String>> clientMap() {
-        log.debug("ControlServiceCoordinator.clientMap(): BEGIN:");
-        return baguetteServer.isServerRunning() ? baguetteServer.getActiveClientsMap() : Collections.emptyMap();
-    }
-
-    public List<String> passiveClientList() {
-        log.debug("ControlServiceCoordinator.passiveClientList(): BEGIN:");
-        return baguetteServer.isServerRunning() ? baguetteServer.getPassiveNodes() : Collections.emptyList();
-    }
-
-    public Map<String, Map<String, String>> passiveClientMap() {
-        log.debug("ControlServiceCoordinator.passiveClientMap(): BEGIN:");
-        return baguetteServer.isServerRunning() ? baguetteServer.getPassiveNodesMap() : Collections.emptyMap();
-    }
-
-    public List<String> allClientList() {
-        log.debug("ControlServiceCoordinator.allClientList(): BEGIN:");
-        return baguetteServer.isServerRunning() ? baguetteServer.getAllNodes() : Collections.emptyList();
-    }
-
-    public Map<String, Map<String, String>> allClientMap() {
-        log.debug("ControlServiceCoordinator.allClientMap(): BEGIN:");
-        return baguetteServer.isServerRunning() ? baguetteServer.getAllNodesMap() : Collections.emptyMap();
-    }
-
-    public String clientCommandSend(String clientId, String command) {
-        log.debug("ControlServiceCoordinator.clientCommandSend(): BEGIN: client={}, command={}", clientId, command);
-        return eventSendCommandToClient("clientCommandSend", clientId, command);
-    }
-
-    public String clusterCommandSend(String clusterId, String command) {
-        log.debug("ControlServiceCoordinator.clusterCommandSend(): BEGIN: cluster={}, command={}", clusterId, command);
-        return sendCommandToCluster("clusterCommandSend", clusterId, command);
-    }
-
-    private String sendCommandToCluster(String method, String clusterId, String command) {
-        // Check status
-        if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
-        if (!baguetteServer.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
-
-        // Send command
-        if ("*".equals(clusterId))
-            baguetteServer.sendToActiveClusters(command);
-        else
-            baguetteServer.sendToCluster(clusterId, command);
-
-        // Log success
-        return eventLogEnd(method, EVENT_LOG_OK);
     }
 
     // ------------------------------------------------------------------------------------------------------------

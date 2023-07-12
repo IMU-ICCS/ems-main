@@ -100,7 +100,7 @@ public class ControlServiceApplication {
         };
     }
 
-    synchronized static void exitApp(int exitCode, long gracePeriod) {
+    public synchronized static void exitApp(int exitCode, long gracePeriod) {
         if (exitTimer==null) {
             // Wait for 'gracePeriod' seconds before forcing JVM to exit
             log.info("ControlServiceApplication.exitApp(): Wait for {}sec before exit", gracePeriod);

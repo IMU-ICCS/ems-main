@@ -13,6 +13,9 @@ import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.common.misc.SystemResourceMonitor;
 import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.control.controller.CredentialsCoordinator;
+import eu.melodic.event.control.controller.ManagementCoordinator;
+import eu.melodic.event.control.controller.NodeRegistrationCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.control.properties.StaticResourceProperties;
@@ -46,6 +49,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final ControlServiceProperties controlServiceProperties;
     private final InfoServiceProperties infoServiceProperties;
     private final ControlServiceCoordinator controlServiceCoordinator;
+    private final CredentialsCoordinator credentialsCoordinator;
+    private final ManagementCoordinator managementCoordinator;
+    private final NodeRegistrationCoordinator nodeRegistrationCoordinator;
     private final StaticResourceProperties staticResourceProperties;
     private final WebSecurityProperties webSecurityProperties;
 
@@ -85,7 +91,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         log.debug("clearClientMetricValues(): BEGIN");
         synchronized (currentClientMetricsVersion) {
             currentClientMetrics = null;
-            controlServiceCoordinator.clientCommandSend("*", "CLEAR-STATS");
+            managementCoordinator.clientCommandSend("*", "CLEAR-STATS");
         }
         log.debug("clearClientMetricValues(): END");
     }
@@ -123,10 +129,10 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
         Map<String,Object> metrics = new LinkedHashMap<>();
 
-        metrics.put("ip-address", controlServiceCoordinator.getServerIpAddress());
+        metrics.put("ip-address", nodeRegistrationCoordinator.getServerIpAddress());
         metrics.put("public-ip-address", NetUtil.getPublicIpAddress());
         metrics.put("default-ip-address", NetUtil.getDefaultIpAddress());
-        metrics.put("reference", controlServiceCoordinator.getReference());
+        metrics.put("reference", credentialsCoordinator.getReference());
 
         // Collect JVM and System resource metrics for EMS server
         Map<String,Object> systemInfo = new LinkedHashMap<>();
@@ -212,12 +218,12 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
         // Collect Baguette-Client metrics and topology
         Map<String,Object> baguetteServerInfo = new LinkedHashMap<>();
-        baguetteServerInfo.put("active-clients-list", controlServiceCoordinator.clientList());
-        baguetteServerInfo.put("active-clients-map", controlServiceCoordinator.clientMap());
-        baguetteServerInfo.put("passive-clients-list", controlServiceCoordinator.passiveClientList());
-        baguetteServerInfo.put("passive-clients-map", controlServiceCoordinator.passiveClientMap());
-        baguetteServerInfo.put("all-clients-list", controlServiceCoordinator.allClientList());
-        baguetteServerInfo.put("all-clients-map", controlServiceCoordinator.allClientMap());
+        baguetteServerInfo.put("active-clients-list", managementCoordinator.clientList());
+        baguetteServerInfo.put("active-clients-map", managementCoordinator.clientMap());
+        baguetteServerInfo.put("passive-clients-list", managementCoordinator.passiveClientList());
+        baguetteServerInfo.put("passive-clients-map", managementCoordinator.passiveClientMap());
+        baguetteServerInfo.put("all-clients-list", managementCoordinator.allClientList());
+        baguetteServerInfo.put("all-clients-map", managementCoordinator.allClientMap());
         metrics.put(BAGUETTE_SERVER_INFO_PROVIDER, baguetteServerInfo);
 
         // Destinations per grouping and min/max grouping
@@ -284,7 +290,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
         Map<String,Object> clientMetrics = new LinkedHashMap<>();
 
         // Collecting EMS clients' metrics
-        List<String> clientIds = controlServiceCoordinator.clientList();
+        List<String> clientIds = managementCoordinator.clientList();
         log.trace("updateClientMetricValues(): active-baguette-clients: {}", clientIds);
         for (String clientId : clientIds.stream().map(s->s.split(" ")[0]).toList()) {
             /*log.trace("updateClientMetricValues(): Requesting metrics from client: {}", clientId);
