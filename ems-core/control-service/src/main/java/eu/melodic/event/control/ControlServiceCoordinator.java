@@ -64,7 +64,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final ControlServiceProperties properties;
-    private final BaguetteServer baguette;
+    @Getter private final BaguetteServer baguetteServer;
     private final NodeRegistry nodeRegistry;
     private final WebClient webClient;
     private final PasswordUtil passwordUtil;
@@ -566,7 +566,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         log.info("ControlServiceCoordinator.configureBaguetteServer(): Re-configuring Baguette Server: app-model-id={}", appModelId);
         try {
-            baguette.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
+            baguetteServer.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
         } catch (Exception ex) {
             log.error("ControlServiceCoordinator.configureBaguetteServer(): EXCEPTION while starting Baguette server: app-model-id={}", appModelId, ex);
         }
@@ -577,7 +577,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         log.info("ControlServiceCoordinator.reconfigureBaguetteServer(): Re-configuring Baguette Server with constants: {}", constants);
         try {
-            baguette.sendConstants(constants);
+            baguetteServer.sendConstants(constants);
         } catch (Exception ex) {
             log.error("ControlServiceCoordinator.reconfigureBaguetteServer(): EXCEPTION while configuring Baguette server: constants={}", constants, ex);
         }
@@ -879,10 +879,6 @@ public class ControlServiceCoordinator implements InitializingBean {
     // Baguette control methods
     // ------------------------------------------------------------------------------------------------------------
 
-    public BaguetteServer getBaguetteServer() {
-        return baguette;
-    }
-
     @Async
     public void stopBaguette() {
         // Acquire lock of this coordinator
@@ -894,7 +890,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         try {
             // Stop Baguette server
             log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server...");
-            baguette.stopServer();
+            baguetteServer.stopServer();
             log.info("ControlServiceCoordinator.stopBaguette(): Stopping Baguette server... done");
         } catch (Exception ex) {
             log.error("ControlServiceCoordinator.stopBaguette(): EXCEPTION while stopping Baguette server: ", ex);
@@ -1072,7 +1068,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private String eventSendCommandToClient(String method, String clientId, String command) {
         // Check status
         if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
-        if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
+        if (!baguetteServer.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
 
         // Send command
         if (clientId.equals("0")) {
@@ -1094,9 +1090,9 @@ public class ControlServiceCoordinator implements InitializingBean {
                 return eventLogEnd(method, EVENT_LOG_ERROR);
             }
         } else if ("*".equals(clientId))
-            baguette.sendToActiveClients(command);
+            baguetteServer.sendToActiveClients(command);
         else
-            baguette.sendToClient("#"+clientId, command);
+            baguetteServer.sendToClient("#"+clientId, command);
 
         // Log success
         return eventLogEnd(method, EVENT_LOG_OK);
@@ -1132,32 +1128,32 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     public List<String> clientList() {
         log.debug("ControlServiceCoordinator.clientList(): BEGIN:");
-        return baguette.isServerRunning() ? baguette.getActiveClients() : Collections.emptyList();
+        return baguetteServer.isServerRunning() ? baguetteServer.getActiveClients() : Collections.emptyList();
     }
 
     public Map<String, Map<String, String>> clientMap() {
         log.debug("ControlServiceCoordinator.clientMap(): BEGIN:");
-        return baguette.isServerRunning() ? baguette.getActiveClientsMap() : Collections.emptyMap();
+        return baguetteServer.isServerRunning() ? baguetteServer.getActiveClientsMap() : Collections.emptyMap();
     }
 
     public List<String> passiveClientList() {
         log.debug("ControlServiceCoordinator.passiveClientList(): BEGIN:");
-        return baguette.isServerRunning() ? baguette.getPassiveNodes() : Collections.emptyList();
+        return baguetteServer.isServerRunning() ? baguetteServer.getPassiveNodes() : Collections.emptyList();
     }
 
     public Map<String, Map<String, String>> passiveClientMap() {
         log.debug("ControlServiceCoordinator.passiveClientMap(): BEGIN:");
-        return baguette.isServerRunning() ? baguette.getPassiveNodesMap() : Collections.emptyMap();
+        return baguetteServer.isServerRunning() ? baguetteServer.getPassiveNodesMap() : Collections.emptyMap();
     }
 
     public List<String> allClientList() {
         log.debug("ControlServiceCoordinator.allClientList(): BEGIN:");
-        return baguette.isServerRunning() ? baguette.getAllNodes() : Collections.emptyList();
+        return baguetteServer.isServerRunning() ? baguetteServer.getAllNodes() : Collections.emptyList();
     }
 
     public Map<String, Map<String, String>> allClientMap() {
         log.debug("ControlServiceCoordinator.allClientMap(): BEGIN:");
-        return baguette.isServerRunning() ? baguette.getAllNodesMap() : Collections.emptyMap();
+        return baguetteServer.isServerRunning() ? baguetteServer.getAllNodesMap() : Collections.emptyMap();
     }
 
     public String clientCommandSend(String clientId, String command) {
@@ -1173,13 +1169,13 @@ public class ControlServiceCoordinator implements InitializingBean {
     private String sendCommandToCluster(String method, String clusterId, String command) {
         // Check status
         if (properties.isSkipBaguette()) return eventLogEnd(method, BAGUETTE_DISABLED);
-        if (!baguette.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
+        if (!baguetteServer.isServerRunning()) return eventLogEnd(method, BAGUETTE_NOT_RUNNING);
 
         // Send command
         if ("*".equals(clusterId))
-            baguette.sendToActiveClusters(command);
+            baguetteServer.sendToActiveClusters(command);
         else
-            baguette.sendToCluster(clusterId, command);
+            baguetteServer.sendToCluster(clusterId, command);
 
         // Log success
         return eventLogEnd(method, EVENT_LOG_OK);
