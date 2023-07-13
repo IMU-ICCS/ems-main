@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.control.webconf;
+package eu.melodic.event.control.controller;
 
 import eu.melodic.event.util.StrUtil;
 import lombok.AccessLevel;

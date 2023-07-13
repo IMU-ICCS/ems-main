@@ -12,7 +12,7 @@ package eu.melodic.event.control.info;
 import eu.melodic.event.baguette.server.ClientShellCommand;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.common.misc.SystemResourceMonitor;
-import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.controller.CredentialsCoordinator;
 import eu.melodic.event.control.controller.ManagementCoordinator;
 import eu.melodic.event.control.controller.NodeRegistrationCoordinator;

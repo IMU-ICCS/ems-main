@@ -11,7 +11,6 @@ package eu.melodic.event.control.controller;
 
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.baguette.server.properties.BaguetteServerProperties;
-import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.webconf.WebSecurityConfig;
 import eu.melodic.event.util.CredentialsMap;

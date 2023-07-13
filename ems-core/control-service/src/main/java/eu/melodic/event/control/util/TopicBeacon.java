@@ -14,7 +14,7 @@ import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
-import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.TopicBeaconProperties;
 import eu.melodic.event.translate.model.MetricContext;
 import lombok.RequiredArgsConstructor;

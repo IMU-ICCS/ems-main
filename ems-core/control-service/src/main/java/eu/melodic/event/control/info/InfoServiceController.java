@@ -12,7 +12,7 @@ package eu.melodic.event.control.info;
 //XXX: TODO: Temporarily disabled logviewer: import com.logviewer.data2.LogFormat;
 //XXX: TODO: Temporarily disabled logviewer: import com.logviewer.logLibs.LogConfigurationLoader;
 //XXX: TODO: Temporarily disabled logviewer: import com.logviewer.springboot.LogViewerSpringBootConfig;
-import eu.melodic.event.control.ControlServiceCoordinator;
+import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.controller.ManagementCoordinator;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import jakarta.servlet.http.HttpServletRequest;

@@ -7,7 +7,7 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.control;
+package eu.melodic.event.control.controller;
 
 import com.google.gson.GsonBuilder;
 import eu.melodic.event.baguette.server.BaguetteServer;

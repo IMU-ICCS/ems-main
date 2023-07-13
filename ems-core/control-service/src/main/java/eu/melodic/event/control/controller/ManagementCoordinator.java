@@ -11,7 +11,6 @@ package eu.melodic.event.control.controller;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
 import eu.melodic.event.control.ControlServiceApplication;
-import eu.melodic.event.control.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
