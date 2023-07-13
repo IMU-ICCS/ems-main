@@ -15,6 +15,7 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.controller.ControlServiceCoordinator;
+import eu.melodic.event.control.controller.TranslationResultsCoordinator;
 import eu.melodic.event.control.properties.TopicBeaconProperties;
 import eu.melodic.event.translate.model.MetricContext;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class TopicBeacon implements InitializingBean {
     private final TopicBeaconProperties properties;
 
     private final ControlServiceCoordinator coordinator;
+    private final TranslationResultsCoordinator translationResultsCoordinator;
     private final BrokerCepService brokerCepService;
     private final TaskScheduler scheduler;
 
@@ -147,7 +149,7 @@ public class TopicBeacon implements InitializingBean {
         log.trace("Topic Beacon: transmitPredictionInfo: current-app-model-id: {}", modelId);
         //Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
         //log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
-        Set<MetricContext> metricContexts = coordinator.getMetricContextsForPrediction(modelId);
+        Set<MetricContext> metricContexts = translationResultsCoordinator.getMetricContextsForPrediction(modelId);
         log.debug("Topic Beacon: transmitPredictionInfo: Metric Contexts for prediction: {}", metricContexts);
 
         // Convert to Translator-to-Forecasting Methods event format
@@ -191,7 +193,7 @@ public class TopicBeacon implements InitializingBean {
         String modelId = coordinator.getCurrentAppModelId();
         log.trace("Topic Beacon: transmitSloViolatorInfo: current-app-model-id: {}", modelId);
         //List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
-        Map<String, Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
+        Map<String, Object> sloMetricDecompositions = translationResultsCoordinator.getSLOMetricDecomposition(modelId);
         log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
 
         // Skip event sending if payload is empty
