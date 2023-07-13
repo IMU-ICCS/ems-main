@@ -10,7 +10,6 @@
 package eu.melodic.event.translate.dag;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.model.NamedElement;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
@@ -29,13 +28,14 @@ import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class DAG {
     // Graph-related fields
     @JsonIgnore
-    private transient TranslationContext _TC;
+    private transient Function<NamedElement, String> fullNameProvider = NamedElement::getName;
     private DirectedAcyclicGraph<DAGNode, DAGEdge> _graph;
     @JsonIgnore
     private transient DAGNode _root;
@@ -49,8 +49,8 @@ public class DAG {
         // let everything 'null'
     }
 
-    public DAG(TranslationContext _TC) {
-        this._TC = _TC;
+    public DAG(Function<NamedElement,String> fullNameProvider) {
+        this.fullNameProvider = fullNameProvider;
         _graph = new DirectedAcyclicGraph<>(DAGEdge.class);
         _root = new DAGNode();
         _graph.addVertex(_root);
@@ -130,7 +130,7 @@ public class DAG {
         }
         boolean newNode = false;
         if (node == null) {
-            String fullName = (effectiveFullName == null || effectiveFullName.trim().isEmpty()) ? _TC.getFullName(elem) : effectiveFullName.trim();
+            String fullName = (effectiveFullName == null || effectiveFullName.trim().isEmpty()) ? fullNameProvider.apply(elem) : effectiveFullName.trim();
 
             if (!_nameToNodesMapping.containsKey(fullName)) {
 
@@ -174,7 +174,7 @@ public class DAG {
         log.debug("DAG.addNode(): cached-node={}", node);
         boolean newNode = false;
         if (node == null) {
-            String fullName = _TC.getFullName(elem);
+            String fullName = fullNameProvider.apply(elem);
 
             if (!_nameToNodesMapping.containsKey(fullName)) {
 
@@ -348,7 +348,7 @@ public class DAG {
         exporter.setVertexAttributeProvider(node -> {
             LinkedHashMap<String, Attribute> vertexAttributes = new LinkedHashMap<>();
             String label;
-            if (node.element != null) {
+            if (node.getName() != null) {
                 if (node.getGrouping() != null) {
                     label = String.format("%s\n[%s]", node.getName(), node.getGrouping());
                 } else {

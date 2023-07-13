@@ -133,7 +133,7 @@ public class TranslationContext implements Serializable {
     public TranslationContext(boolean initializeDag, String modelName) {
         // Initialize fields
         this.modelName = modelName;
-        this.DAG = initializeDag ? new DAG(this) : new DAG();
+        this.DAG = initializeDag ? new DAG(this::getFullName) : new DAG();
 
         // Element-to-Full-Name staff
         this.E2N = new HashMap<>();
