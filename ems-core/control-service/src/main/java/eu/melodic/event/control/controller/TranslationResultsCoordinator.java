@@ -247,7 +247,8 @@ public class TranslationResultsCoordinator {
         while (!q.isEmpty()) {
             DAGNode node = q.pop();
             if (node.getElement() instanceof MetricContext) {
-                tcMetricsOfTopLevelNodes.add(node.getMetricContext());
+                MetricContext metricContext = (node.getElement() instanceof MetricContext mc) ? mc : null;
+                tcMetricsOfTopLevelNodes.add(metricContext);
             } else {
                 Set<DAGNode> children = _tc.getDAG().getNodeChildren(node);
                 if (children!=null) q.addAll(children);

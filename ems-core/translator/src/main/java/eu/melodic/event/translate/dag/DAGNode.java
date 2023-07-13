@@ -10,71 +10,43 @@
 package eu.melodic.event.translate.dag;
 
 import eu.melodic.event.translate.Grouping;
-import eu.melodic.event.translate.model.MetricContext;
 import eu.melodic.event.translate.model.NamedElement;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class DAGNode {
+@Getter
+@RequiredArgsConstructor
+public class DAGNode implements Serializable {
     private final static AtomicLong counter = new AtomicLong();
-    final NamedElement element;
-    final String elementName;
-    private final long _id = counter.getAndIncrement();
-    private final String _name;
-    private final String _toString;
-    private final MetricContext metricContext;
+
+    private final long id;
+    private final String name;
+    private final NamedElement element;
+    private final String elementName;
     private Grouping grouping;
 
     DAGNode() {
+        id = counter.getAndIncrement();
         element = null;
         elementName = null;
-        _name = null;
-        _toString = "NODE <ROOT>";
-        metricContext = null;
+        name = null;
     }
 
-    public DAGNode(NamedElement elem, String fullName) {
-        if (elem == null) throw new IllegalArgumentException("Argument #1 cannot be null");
-        if (fullName == null) throw new IllegalArgumentException("Argument #2 cannot be null");
+    public DAGNode(@NonNull NamedElement elem, @NonNull String fullName) {
+        id = counter.getAndIncrement();
         element = elem;
         elementName = element.getName();
-        _name = fullName;
-        _toString = String.format("NODE %s", _name);
-
-        if (elem instanceof MetricContext mc) {
-            metricContext = mc;
-        } else
-            metricContext = null;
-    }
-
-    public long getId() {
-        return _id;
-    }
-
-    public String getName() {
-        return _name;
-    }
-
-    public Grouping getGrouping() {
-        return grouping;
+        name = fullName;
     }
 
     public DAGNode setGrouping(Grouping g) {
         grouping = g;
         return this;
-    }
-
-    public NamedElement getElement() {
-        return element;
-    }
-
-    public String getElementName() {
-        //return element!=null? element.getName() : null;
-        return elementName;
-    }
-
-    public MetricContext getMetricContext() {
-        return metricContext;
     }
 
     public int hashCode() {
@@ -86,6 +58,6 @@ public class DAGNode {
     }
 
     public String toString() {
-        return _toString;
+        return "NODE "+ Objects.requireNonNullElse(name, "<ROOT>");
     }
 }

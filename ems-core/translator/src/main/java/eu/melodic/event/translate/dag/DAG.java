@@ -85,7 +85,7 @@ public class DAG {
 
     public Set<DAGNode> getLeafNodes() {
         Iterator<DAGNode> it = _graph.iterator();
-        Set<DAGNode> leafs = new HashSet<DAGNode>();
+        Set<DAGNode> leafs = new HashSet<>();
         it.forEachRemaining(node -> {
             if (node != _root && _graph.outgoingEdgesOf(node).isEmpty()) {
                 leafs.add(node);
@@ -96,13 +96,13 @@ public class DAG {
 
     public Set<DAGNode> getParentNodes(DAGNode node) {
         Set<DAGEdge> edges = _graph.incomingEdgesOf(node);
-        return edges.stream().map(edge -> edge.getSource()).collect(Collectors.toSet());
+        return edges.stream().map(DAGEdge::getSource).collect(Collectors.toSet());
     }
 
     public Set<DAGNode> getNodeChildren(DAGNode node) {
         try {
             //log.debug("DAG.getNodeChildren(): node={}", node);
-            Set<DAGNode> children = _graph.outgoingEdgesOf(node).stream().map(edge -> edge.getTarget()).collect(java.util.stream.Collectors.toSet());
+            Set<DAGNode> children = _graph.outgoingEdgesOf(node).stream().map(DAGEdge::getTarget).collect(java.util.stream.Collectors.toSet());
             //log.debug("DAG.getNodeChildren(): parent={}, children={}", node, children);
             return children;
         } catch (IllegalArgumentException iae) {

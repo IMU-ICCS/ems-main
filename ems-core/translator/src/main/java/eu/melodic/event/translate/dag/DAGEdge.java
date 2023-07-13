@@ -9,19 +9,21 @@
 
 package eu.melodic.event.translate.dag;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jgrapht.graph.DefaultEdge;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+@RequiredArgsConstructor
 public class DAGEdge extends DefaultEdge {
     private final static AtomicLong edgeCounter = new AtomicLong();
 
+    @Getter
     private final long id;
-    private final String _toString;
 
     public DAGEdge() {
         id = edgeCounter.getAndIncrement();
-        _toString = "EDGE #" + id;
     }
 
     public DAGNode getSource() {
@@ -41,6 +43,6 @@ public class DAGEdge extends DefaultEdge {
     }
 
     public String toString() {
-        return _toString;
+        return "EDGE #" + id;
     }
 }
