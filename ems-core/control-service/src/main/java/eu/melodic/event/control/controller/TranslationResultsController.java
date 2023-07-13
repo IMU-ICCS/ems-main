@@ -36,25 +36,6 @@ public class TranslationResultsController {
     // Monitor methods
     // ------------------------------------------------------------------------------------------------------------
 
-    //XXX:TODO: MOVE TO A SERVICE (maybe in Translator?)
-    private List<KeyValuePair> convertToKeyValuePairList(Map<String,String> map) {
-        return map.entrySet().stream()
-                .map(e -> {
-                    KeyValuePair pair = new KeyValuePairImpl();
-                    pair.setKey(e.getKey());
-                    pair.setValue(e.getValue());
-                    return pair;
-                })
-                .toList();
-    }
-
-    private Interval convertInterval(eu.melodic.event.translate.model.Interval interval) {
-        Interval i = new IntervalImpl();
-        i.setUnit(Interval.UnitType.valueOf( interval.getUnit().name() ));
-        i.setPeriod(interval.getPeriod());
-        return i;
-    }
-
     @RequestMapping(value = "/monitors", method = POST)
     public HttpEntity<MonitorsDataResponse> getMonitors(@RequestBody MonitorsDataRequestImpl request,
                                                         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -68,67 +49,14 @@ public class TranslationResultsController {
         String requestUuid = watermark.getUuid();
         log.info("ControlServiceController.getMonitors(): Request info: app-id={}, watermark={}, request-id={}", applicationId, watermark, requestUuid);
 
-        // Retrieve sensor information
-        List<eu.melodic.event.translate.model.Monitor> monitors = translationResultsCoordinator.getMonitorsOfAppModel(applicationId);
-
         // Update watermark
         watermark.setUser("EMS");
         watermark.setSystem("EMS");
         watermark.setDate(new java.util.Date());
 
-        // Print debug info about sensors
-        if (log.isDebugEnabled()) {
-            log.warn("ControlServiceController.getMonitors(): Printing monitors for Request: {}", requestUuid);
-            monitors.forEach(m -> {
-                log.warn("ControlServiceController.getMonitors():     Monitor: metric/topic={}, component={}, additional-properties={}",
-                        m.getMetric(), m.getComponent(), m.getAdditionalProperties());
-                eu.melodic.event.translate.model.Sensor s = m.getSensor();
-                log.warn("ControlServiceController.getMonitors():       Sensor: {}", s);
-                if (s.isPushSensor())
-                    log.warn("ControlServiceController.getMonitors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
-                else
-                    log.warn("ControlServiceController.getMonitors():       PullSensor: class-name={}, interval={}, configuration={}",
-                            m.getSensor().getPullSensor().getClassName(), m.getSensor().getPullSensor().getInterval(), m.getSensor().getPullSensor().getConfiguration());
-            });
-        }
-
-        // Prepare monitors list
-        List<Monitor> responseMonitors = monitors.stream().map(m -> {
-            // Sensor
-            Sensor sensor;
-            if (m.getSensor().isPullSensor()) {
-                PullSensor pullSensor = new PullSensorImpl();
-                sensor = new Sensor(pullSensor);
-                pullSensor.setClassName(m.getSensor().getPullSensor().getClassName());
-                pullSensor.setConfiguration( convertToKeyValuePairList(m.getSensor().getPullSensor().getConfiguration()) );
-                pullSensor.setInterval( convertInterval(m.getSensor().getPullSensor().getInterval()) );
-            } else if (m.getSensor().isPushSensor()) {
-                PushSensor pushSensor = new PushSensorImpl();
-                sensor = new Sensor(pushSensor);
-                pushSensor.setPort(m.getSensor().getPushSensor().getPort());
-            } else {
-                log.error("ControlServiceController.getMonitors():       ERROR: Sensor is neither PullSensor or PushSensor: {}", m.getSensor());
-                throw new IllegalArgumentException("ERROR: Sensor is neither PullSensor or PushSensor: "+m.getSensor());
-            }
-
-            // Sinks
-            List<Sink> sinks = m.getSinks()==null
-                    ? null
-                    : m.getSinks().stream().map(s -> {
-                Sink sink = new SinkImpl();
-                sink.setType(Sink.TypeType.valueOf(s.getType().toString()));
-                sink.setConfiguration(convertToKeyValuePairList(s.getConfiguration()));
-                return sink;
-            }).toList();
-
-            // Monitor
-            Monitor mon = new MonitorImpl();
-            mon.setComponent(m.getComponent());
-            mon.setMetric(m.getMetric());
-            mon.setSensor(sensor);
-            mon.setSinks(sinks);
-            return mon;
-        }).toList();
+        // Retrieve sensor information
+        List<eu.melodic.event.translate.model.Monitor> monitors = translationResultsCoordinator.getMonitorsOfAppModel(applicationId);
+        List<Monitor> responseMonitors = translationResultsCoordinator.convertMonitorsForMessage(monitors);
 
         // Prepare response
         MonitorsDataResponse response = new MonitorsDataResponseImpl();

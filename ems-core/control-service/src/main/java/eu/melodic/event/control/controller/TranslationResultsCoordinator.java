@@ -9,9 +9,12 @@
 
 package eu.melodic.event.control.controller;
 
+import eu.melodic.event.models.interfaces.*;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.translate.dag.DAGNode;
 import eu.melodic.event.translate.model.*;
+import eu.melodic.event.translate.model.Monitor;
+import eu.melodic.event.translate.model.Sensor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +31,87 @@ public class TranslationResultsCoordinator {
     private final ControlServiceCoordinator coordinator;
 
     // ------------------------------------------------------------------------------------------------------------
-    // Translation information query methods
+    // Conversion of Monitors list from Model to Interface objects
+    // ------------------------------------------------------------------------------------------------------------
+
+    public List<eu.melodic.event.models.interfaces.Monitor> convertMonitorsForMessage(List<eu.melodic.event.translate.model.Monitor> monitors) {
+        // Print debug info about sensors
+        if (log.isDebugEnabled()) {
+            log.warn("TranslationResultsCoordinator.getMonitors(): Printing monitors");
+            monitors.forEach(m -> {
+                log.warn("TranslationResultsCoordinator.getMonitors():     Monitor: metric/topic={}, component={}, additional-properties={}",
+                        m.getMetric(), m.getComponent(), m.getAdditionalProperties());
+                Sensor s = m.getSensor();
+                log.warn("TranslationResultsCoordinator.getMonitors():       Sensor: {}", s);
+                if (s.isPushSensor())
+                    log.warn("TranslationResultsCoordinator.getMonitors():       PushSensor: port={}", m.getSensor().getPushSensor().getPort());
+                else
+                    log.warn("TranslationResultsCoordinator.getMonitors():       PullSensor: class-name={}, interval={}, configuration={}",
+                            m.getSensor().getPullSensor().getClassName(), m.getSensor().getPullSensor().getInterval(), m.getSensor().getPullSensor().getConfiguration());
+            });
+        }
+
+        // Prepare monitors list
+        List<eu.melodic.event.models.interfaces.Monitor> responseMonitors = monitors.stream().map(m -> {
+            // Sensor
+            eu.melodic.event.models.interfaces.Sensor sensor;
+            if (m.getSensor().isPullSensor()) {
+                eu.melodic.event.models.interfaces.PullSensor pullSensor = new PullSensorImpl();
+                sensor = new eu.melodic.event.models.interfaces.Sensor(pullSensor);
+                pullSensor.setClassName(m.getSensor().getPullSensor().getClassName());
+                pullSensor.setConfiguration( convertToKeyValuePairList(m.getSensor().getPullSensor().getConfiguration()) );
+                pullSensor.setInterval( convertInterval(m.getSensor().getPullSensor().getInterval()) );
+            } else if (m.getSensor().isPushSensor()) {
+                eu.melodic.event.models.interfaces.PushSensor pushSensor = new PushSensorImpl();
+                sensor = new eu.melodic.event.models.interfaces.Sensor(pushSensor);
+                pushSensor.setPort(m.getSensor().getPushSensor().getPort());
+            } else {
+                log.error("TranslationResultsCoordinator.getMonitors():       ERROR: Sensor is neither PullSensor or PushSensor: {}", m.getSensor());
+                throw new IllegalArgumentException("ERROR: Sensor is neither PullSensor or PushSensor: "+m.getSensor());
+            }
+
+            // Sinks
+            List<eu.melodic.event.models.interfaces.Sink> sinks = m.getSinks()==null
+                    ? null
+                    : m.getSinks().stream().map(s -> {
+                eu.melodic.event.models.interfaces.Sink sink = new SinkImpl();
+                sink.setType(eu.melodic.event.models.interfaces.Sink.TypeType.valueOf(s.getType().toString()));
+                sink.setConfiguration(convertToKeyValuePairList(s.getConfiguration()));
+                return sink;
+            }).toList();
+
+            // Monitor
+            eu.melodic.event.models.interfaces.Monitor mon = new MonitorImpl();
+            mon.setComponent(m.getComponent());
+            mon.setMetric(m.getMetric());
+            mon.setSensor(sensor);
+            mon.setSinks(sinks);
+            return mon;
+        }).toList();
+
+        return responseMonitors;
+    }
+
+    private List<KeyValuePair> convertToKeyValuePairList(Map<String,String> map) {
+        return map.entrySet().stream()
+                .map(e -> {
+                    KeyValuePair pair = new KeyValuePairImpl();
+                    pair.setKey(e.getKey());
+                    pair.setValue(e.getValue());
+                    return pair;
+                })
+                .toList();
+    }
+
+    private eu.melodic.event.models.interfaces.Interval convertInterval(eu.melodic.event.translate.model.Interval interval) {
+        eu.melodic.event.models.interfaces.Interval i = new IntervalImpl();
+        i.setUnit(eu.melodic.event.models.interfaces.Interval.UnitType.valueOf( interval.getUnit().name() ));
+        i.setPeriod(interval.getPeriod());
+        return i;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Translation results query methods
     // ------------------------------------------------------------------------------------------------------------
 
     public List<Monitor> getMonitorsOfAppModel(String appModelId) {
