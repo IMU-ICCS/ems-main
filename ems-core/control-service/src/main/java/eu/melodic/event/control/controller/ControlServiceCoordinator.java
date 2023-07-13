@@ -387,6 +387,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (StringUtils.isNotBlank(fileName)) {
             try {
                 setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
+                _TC.prepareForSerialization();
 
                 fileName = getTcFileName(appModelId, fileName);
                 if (Paths.get(fileName).toFile().exists()) {
@@ -431,6 +432,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                         .create();
                 _TC = gson.fromJson(reader, TranslationContext.class);
                 reader.close();
+                _TC.updateAfterSerialization();
                 log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Deserialized _TC data from file: {}", fileName);
 
                 // Print resulting Translation Context

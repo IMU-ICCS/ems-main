@@ -327,12 +327,33 @@ public class DAG {
     }
 
     // ====================================================================================================================================================
-    // Traverse graph methods
+    // Traverse, query and modify graph methods
 
     public void traverseDAG(java.util.function.Consumer<? super DAGNode> action) {
         log.debug("DAG.traverseDAG(): Traversing graph: Begin");
         _graph.iterator().forEachRemaining(action);
         log.debug("DAG.traverseDAG(): Traversing graph: End");
+    }
+
+    public Set<DAGNode> getAllDAGNodes() {
+        return _graph.vertexSet();
+    }
+
+    public Set<DAGEdge> getAllDAGEdges() {
+        return _graph.edgeSet();
+    }
+
+    public void clearDAG() {
+        _graph.removeAllEdges(_graph.edgeSet());
+        _graph.removeAllVertices(_graph.vertexSet());
+    }
+
+    public void addDAGNode(DAGNode node) {
+        _graph.addVertex(node);
+    }
+
+    public void addDAGEdge(DAGNode src, DAGNode trg) {
+        _graph.addEdge(src, trg);
     }
 
     // ====================================================================================================================================================

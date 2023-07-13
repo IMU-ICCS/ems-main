@@ -35,7 +35,8 @@ public class TranslationContext implements Serializable {
     // Decomposition DAG
     @Getter
     @JsonIgnore
-    private final transient DAG DAG;
+    private transient DAG DAG;
+    private Dag dag;                        // Used for serialization
 
     // Event-to-Action map
     @Getter
@@ -626,5 +627,55 @@ public class TranslationContext implements Serializable {
 
     public Set<String> getLoadAnnotatedMetricsSet() {
         return new HashSet<>(loadAnnotatedMetricsSet);
+    }
+
+    // ====================================================================================================================================================
+
+    public void prepareForSerialization() {
+        this.dag = convertToSerializableDag(this.DAG);
+    }
+
+    public void updateAfterSerialization() {
+        if (DAG!=null) {
+            DAG.clearDAG();
+        } else {
+            DAG = new DAG(this::getFullName);
+        }
+        convertToDAG(this.dag, this.DAG);
+    }
+
+    public static Dag convertToSerializableDag(DAG dag) {
+        return new Dag(
+                dag.getAllDAGNodes(),
+                dag.getAllDAGEdges().stream()
+                        .map(edge->new Edge(edge.getId(), edge.getSource().getId(), edge.getTarget().getId()))
+                        .collect(Collectors.toSet())
+        );
+    }
+
+    public static void convertToDAG(Dag sourceDag, DAG targetDAG) {
+        final Map<Long, DAGNode> vertices = new HashMap<>();
+        sourceDag.getNodes().forEach(node -> {
+            targetDAG.addDAGNode(node);
+            vertices.put(node.getId(), node);
+        });
+        sourceDag.getEdges().forEach(edge -> {
+            DAGNode src = vertices.get(edge.getSourceId());
+            DAGNode trg = vertices.get(edge.getTargetId());
+            targetDAG.addDAGEdge(src, trg);
+        });
+    }
+
+    @lombok.Data
+    public static class Edge implements Serializable {
+        private final long id;
+        private final long sourceId;
+        private final long targetId;
+    }
+
+    @lombok.Data
+    public static class Dag implements Serializable {
+        private final Set<DAGNode> nodes;
+        private final Set<Edge> edges;
     }
 }
