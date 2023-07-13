@@ -21,7 +21,7 @@
 
     <properties>
         <!-- Dependencies versions -->
-        <jgrapht.version>1.4.0</jgrapht.version>
+        <jgrapht.version>1.5.2</jgrapht.version>
         <graphviz-java.version>0.18.1</graphviz-java.version>
     </properties>
 
@@ -68,6 +68,11 @@
             <groupId>guru.nidi</groupId>
             <artifactId>graphviz-java-all-j2v8</artifactId>
             <version>${graphviz-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
