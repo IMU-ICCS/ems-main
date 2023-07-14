@@ -69,11 +69,6 @@
             <artifactId>graphviz-java-all-j2v8</artifactId>
             <version>${graphviz-java.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
