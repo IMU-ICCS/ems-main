@@ -19,20 +19,21 @@ import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
-import eu.melodic.event.translate.NoopTranslator;
-import eu.melodic.event.translate.Translator;
-import eu.melodic.event.translate.model.*;
-import eu.melodic.event.translate.mvv.MetricVariableValuesService;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
-import eu.melodic.event.translate.TranslationContext;
-import eu.melodic.event.translate.dag.DAGNode;
-import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.models.commons.NotificationResult;
 import eu.melodic.event.models.commons.NotificationResultImpl;
 import eu.melodic.event.models.commons.Watermark;
 import eu.melodic.event.models.commons.WatermarkImpl;
 import eu.melodic.event.models.services.CamelModelNotificationRequest;
 import eu.melodic.event.models.services.CamelModelNotificationRequestImpl;
+import eu.melodic.event.translate.NoopTranslator;
+import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.Translator;
+import eu.melodic.event.translate.dag.DAGNode;
+import eu.melodic.event.translate.model.Monitor;
+import eu.melodic.event.translate.model.Sink;
+import eu.melodic.event.translate.mvv.MetricVariableValuesService;
+import eu.melodic.event.util.PasswordUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -263,7 +264,11 @@ public class ControlServiceCoordinator implements InitializingBean {
         // Retrieve Metric Variable Values (MVV) from CP model - i.e. constants
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
-            constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.INITIALIZING);
+            if (StringUtils.isNotBlank(cpModelId)) {
+                constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.INITIALIZING);
+            } else {
+                log.warn("ControlServiceCoordinator.processAppModel(): No CP model have been provided");
+            }
         } else {
             log.warn("ControlServiceCoordinator.processAppModel(): Skipping MVV retrieval due to configuration");
         }

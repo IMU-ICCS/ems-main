@@ -36,7 +36,9 @@ public class TranslationContext implements Serializable {
     @Getter
     @JsonIgnore
     private transient DAG DAG;
-    private Dag dag;                        // Used for serialization
+    @Getter @Setter
+    @JsonIgnore
+    private transient Dag dagForSerialization;                        // Used for serialization
 
     // Event-to-Action map
     @Getter
@@ -632,7 +634,7 @@ public class TranslationContext implements Serializable {
     // ====================================================================================================================================================
 
     public void prepareForSerialization() {
-        this.dag = convertToSerializableDag(this.DAG);
+        setDagForSerialization(TranslationContext.convertToSerializableDag(getDAG()));
     }
 
     public void updateAfterSerialization() {
@@ -641,7 +643,7 @@ public class TranslationContext implements Serializable {
         } else {
             DAG = new DAG(this::getFullName);
         }
-        convertToDAG(this.dag, this.DAG);
+        convertToDAG(this.dagForSerialization, this.DAG);
     }
 
     public static Dag convertToSerializableDag(DAG dag) {

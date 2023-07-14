@@ -137,7 +137,7 @@ public class TranslationResultsCoordinator {
         final Deque<DAGNode> q = new ArrayDeque<>(_tc.getDAG().getTopLevelNodes());
         while (!q.isEmpty()) {
             DAGNode node = q.pop();
-            if (node.getGrouping()== Grouping.GLOBAL) {
+            if (node.getGrouping()==Grouping.GLOBAL) {
                 nodes.add(node);
                 q.addAll(_tc.getDAG().getNodeChildren(node));
             }
