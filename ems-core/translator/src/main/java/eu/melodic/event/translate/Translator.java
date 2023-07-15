@@ -11,5 +11,4 @@ package eu.melodic.event.translate;
 
 public interface Translator {
     TranslationContext translate(String modelPath);
-    void printResults(TranslationContext translationContext, String exportName);
 }

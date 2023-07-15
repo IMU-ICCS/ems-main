@@ -21,9 +21,4 @@ public class NoopTranslator implements Translator {
         log.warn("NoopTranslator: Call to 'translate': model-path={}", modelPath);
         return new TranslationContext(modelPath);
     }
-
-    public void printResults(TranslationContext translationContext, String exportName) {
-        log.warn("NoopTranslator: Call to 'printResults': export-name={}", exportName);
-        log.warn("NoopTranslator: Call to 'printResults': TC={}", translationContext);
-    }
 }

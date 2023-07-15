@@ -28,6 +28,7 @@ import eu.melodic.event.models.services.CamelModelNotificationRequest;
 import eu.melodic.event.models.services.CamelModelNotificationRequestImpl;
 import eu.melodic.event.translate.NoopTranslator;
 import eu.melodic.event.translate.TranslationContext;
+import eu.melodic.event.translate.TranslationContextPrinter;
 import eu.melodic.event.translate.Translator;
 import eu.melodic.event.translate.dag.DAGNode;
 import eu.melodic.event.translate.model.Monitor;
@@ -71,6 +72,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private final List<Translator> translatorImplementations;
     private Translator translator;                      // Will be populated in 'afterPropertiesSet()'
+    private final TranslationContextPrinter translationContextPrinter;
 
     private final List<MetricVariableValuesService> mvvServiceImplementations;
     private MetricVariableValuesService mvvService;     // Will be populated in 'afterPropertiesSet()'
@@ -261,6 +263,9 @@ public class ControlServiceCoordinator implements InitializingBean {
             _TC = loadStoredTranslationContext(appModelId);
         }
 
+        // Print resulting Translation Context
+        translationContextPrinter.printResults(_TC, null);
+
         // Retrieve Metric Variable Values (MVV) from CP model - i.e. constants
         Map<String, Double> constants = new HashMap<>();
         if (!properties.isSkipMvvRetrieve()) {
@@ -439,9 +444,6 @@ public class ControlServiceCoordinator implements InitializingBean {
                 reader.close();
                 _TC.updateAfterSerialization();
                 log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Deserialized _TC data from file: {}", fileName);
-
-                // Print resulting Translation Context
-                translator.printResults(_TC, null);
             } catch (IOException ex) {
                 log.error("ControlServiceCoordinator.loadStoredTranslationContext(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
                 throw new IllegalArgumentException("Failed to load translation data from file: " + fileName, ex);

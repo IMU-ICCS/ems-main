@@ -35,8 +35,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 
     @ExceptionHandler(Throwable.class)
     private ResponseEntity<ErrorType> handleAnyException(Throwable ex, WebRequest request) {
-        log.warn("RestControllerExceptionHandler: EXCEPTION: {}", ex.getMessage());
-        log.debug("RestControllerExceptionHandler: EXCEPTION:\n", ex);
+        log.error("RestControllerExceptionHandler: EXCEPTION: ", ex);
         if (ex instanceof RestControllerException subEx) {
             HttpStatus httpStatus = HttpStatus.resolve(subEx.getStatusCode());
             if (httpStatus!=null) {
