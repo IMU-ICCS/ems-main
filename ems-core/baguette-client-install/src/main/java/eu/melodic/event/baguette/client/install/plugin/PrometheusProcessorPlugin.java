@@ -61,8 +61,8 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
 
                 log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR: component={}, metric={}", taskCounter, componentName, metricName);
                 if (monitor.getSensor().isPullSensor()) {
-                    if (monitor.getSensor().getPullSensor().getConfiguration()!=null) {
-                        Map<String, String> config = monitor.getSensor().getPullSensor().getConfiguration();
+                    if (monitor.getSensor().pullSensor().getConfiguration()!=null) {
+                        Map<String, String> config = monitor.getSensor().pullSensor().getConfiguration();
                         log.trace("PrometheusProcessorPlugin: Task #{}: MONITOR with PULL SENSOR: config: {}", taskCounter, config);
 
                         // Get Prometheus related settings
@@ -80,7 +80,7 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
                                 found = true;
 
                                 // Get monitor interval
-                                Interval interval = monitor.getSensor().getPullSensor().getInterval();
+                                Interval interval = monitor.getSensor().pullSensor().getInterval();
                                 if (interval != null) {
                                     int period = interval.getPeriod();
                                     TimeUnit unit = TimeUnit.SECONDS;

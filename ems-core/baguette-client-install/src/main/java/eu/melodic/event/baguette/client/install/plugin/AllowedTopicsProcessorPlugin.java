@@ -56,10 +56,10 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
                 Map<String,String> sensorConfig = null;
                 if (monitor.getSensor().isPullSensor()) {
                     // Pull Sensor
-                    sensorConfig = monitor.getSensor().getPullSensor().getConfiguration();
+                    sensorConfig = monitor.getSensor().pullSensor().getConfiguration();
                 } else {
                     // Push Sensor
-                    sensorConfig = monitor.getSensor().getPushSensor().getAdditionalProperties();
+                    sensorConfig = monitor.getSensor().pushSensor().getAdditionalProperties();
                 }
 
                 // Process Destination aliases, if specified in configuration
