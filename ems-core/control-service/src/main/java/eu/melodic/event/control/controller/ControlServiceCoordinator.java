@@ -264,7 +264,11 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Print resulting Translation Context
-        translationContextPrinter.printResults(_TC, null);
+        try {
+            translationContextPrinter.printResults(_TC, null);
+        } catch (Exception e) {
+            log.error("ControlServiceCoordinator._processAppModel(): EXCEPTION while printing Translation results: ", e);
+        }
 
         // Retrieve Metric Variable Values (MVV) from CP model - i.e. constants
         Map<String, Double> constants = new HashMap<>();
