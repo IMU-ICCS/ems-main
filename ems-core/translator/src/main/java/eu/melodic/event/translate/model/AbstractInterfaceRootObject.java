@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.util.Map;
 
 @lombok.Data
@@ -11,5 +12,5 @@ import java.util.Map;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public abstract class AbstractInterfaceRootObject extends AbstractRootObject {
-    protected Map<String, Object> additionalProperties;
+    protected Map<String, Serializable> additionalProperties;
 }

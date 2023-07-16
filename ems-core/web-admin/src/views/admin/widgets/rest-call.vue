@@ -349,7 +349,7 @@ export default {
             this.$nextTick(() => {
                 $('#restCallResult').html('<span style="color: grey;"><i class="fas fa-spinner fa-spin"></i> Contacting EMS server...</span>');
                 $.ajax({
-                    url: url,
+                    url: url.replace(/\/+$/, ''),
                     type: method,
                     contentType: 'application/json',
                     data: body,

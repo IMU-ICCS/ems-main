@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @lombok.Data
@@ -19,5 +18,5 @@ public class Window extends Feature {
     private long measurementSize;
     private long timeSize;
     @Builder.Default
-    private List<WindowProcessing> processings = new ArrayList<>();
+    private List<WindowProcessing> processings = null;
 }

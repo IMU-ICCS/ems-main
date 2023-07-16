@@ -776,7 +776,7 @@ export default {
         },
 
         updateClusterStats() {
-            if (!this.treeData) return;
+            if (!this.treeData || !this.treeData.children) return;
             for (const zoneObj of this.treeData.children) {
                 let zoneId = zoneObj.id;
                 if (!this.clientStatsTimeseries[zoneId]) {
