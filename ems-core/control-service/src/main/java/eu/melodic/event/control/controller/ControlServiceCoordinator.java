@@ -120,7 +120,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private void initMvvService() {
         // Initialize MVV service
-        log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service implementations: {}", mvvServiceImplementations);
+        log.debug("ControlServiceCoordinator.initMvvService():  MVV service implementations: {}", mvvServiceImplementations);
         if (mvvServiceImplementations.size() == 1) {
             mvvService = mvvServiceImplementations.get(0);
         } else if (mvvServiceImplementations.isEmpty()) {
@@ -131,13 +131,13 @@ public class ControlServiceCoordinator implements InitializingBean {
                     .findAny()
                     .orElse(new NoopMetricVariableValuesServiceImpl());
         }
-        log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service implementation selected: {}", mvvService);
+        log.debug("ControlServiceCoordinator.initMvvService():  MVV service implementation selected: {}", mvvService);
         mvvService.init();
-        log.debug("ControlServiceCoordinator.afterPropertiesSet():  MVV service initialized");
+        log.debug("ControlServiceCoordinator.initMvvService():  MVV service initialized");
     }
 
     private void initTranslator() {
-        log.debug("ControlServiceCoordinator.getTranslator():  Translator implementations: {}", translatorImplementations);
+        log.debug("ControlServiceCoordinator.initTranslator():  Translator implementations: {}", translatorImplementations);
         if (translatorImplementations.size() == 1) {
             translator = translatorImplementations.get(0);
         } else if (translatorImplementations.isEmpty()) {
@@ -148,9 +148,9 @@ public class ControlServiceCoordinator implements InitializingBean {
                     .findAny()
                     .orElse(new NoopTranslator());
         }
-        log.debug("ControlServiceCoordinator.getTranslator():  Translator implementation selected: {}", translator);
+        log.debug("ControlServiceCoordinator.initTranslator():  Translator implementation selected: {}", translator);
 
-        log.info("ControlServiceCoordinator: Effective translator: {}", translator.getClass().getName());
+        log.info("ControlServiceCoordinator.initTranslator(): Effective translator: {}", translator.getClass().getName());
     }
 
     // ------------------------------------------------------------------------------------------------------------
@@ -260,14 +260,14 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     protected void _processAppModels(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo)
     {
-        log.info("ControlServiceCoordinator.processAppModel(): BEGIN: app-model-id={}, cp-model-id={}, request-info={}", appModelId, cpModelId, requestInfo);
+        log.info("ControlServiceCoordinator._processAppModel(): BEGIN: app-model-id={}, cp-model-id={}, request-info={}", appModelId, cpModelId, requestInfo);
 
-        // Translate model into Translation Context (with EPL rules etc)
+        // Translate model into Translation Context (with EPL rules etc.)
         TranslationContext _TC;
         if (!properties.isSkipTranslation()) {
             _TC = translateAppModelAndStore(appModelId);
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping translation due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping translation due to configuration");
             _TC = loadStoredTranslationContext(appModelId);
         }
 
@@ -296,10 +296,10 @@ public class ControlServiceCoordinator implements InitializingBean {
             if (StringUtils.isNotBlank(cpModelId)) {
                 constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.INITIALIZING);
             } else {
-                log.warn("ControlServiceCoordinator.processAppModel(): No CP model have been provided");
+                log.warn("ControlServiceCoordinator._processAppModel(): No CP model have been provided");
             }
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping MVV retrieval due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping MVV retrieval due to configuration");
         }
 
         // (Re-)Configure Broker and CEP
@@ -307,7 +307,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (!properties.isSkipBrokerCep()) {
             configureBrokerCep(appModelId, _TC, constants, upperwareGrouping);
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping Broker-CEP setup due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping Broker-CEP setup due to configuration");
         }
 
         // Process placeholders in sink type configurations
@@ -318,36 +318,36 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (!properties.isSkipBaguette()) {
             configureBaguetteServer(appModelId, _TC, constants, upperwareGrouping);
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping Baguette Server setup due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping Baguette Server setup due to configuration");
         }
 
         // Start/Stop Netdata collector
         if (!properties.isSkipCollectors()) {
             startNetdataCollector(appModelId);
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping Collectors setup due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping Collectors setup due to configuration");
         }
 
         // (Re-)Configure MetaSolver
         if (!properties.isSkipMetasolver()) {
             configureMetaSolver(_TC, requestInfo.getJwtToken());
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping MetaSolver setup due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping MetaSolver setup due to configuration");
         }
 
         // Cache _TC in order to reply to Adapter queries about component-to-sensor mappings and sensor-configuration
-        log.info("ControlServiceCoordinator.processAppModel(): Cache translation results: app-model-id={}", appModelId);
+        log.info("ControlServiceCoordinator._processAppModel(): Cache translation results: app-model-id={}", appModelId);
         appModelToTcCache.put(_normalizeModelId(appModelId), _TC);
 
         // Notify ESB, if 'notificationUri' is provided
         if (!properties.isSkipEsbNotification()) {
             notifyESB(appModelId, requestInfo, EMS_STATE.INITIALIZING);
         } else {
-            log.warn("ControlServiceCoordinator.processAppModel(): Skipping ESB notification due to configuration");
+            log.warn("ControlServiceCoordinator._processAppModel(): Skipping ESB notification due to configuration");
         }
 
         this.currentTC = _TC;
-        log.info("ControlServiceCoordinator.processAppModel(): END: app-model-id={}", appModelId);
+        log.info("ControlServiceCoordinator._processAppModel(): END: app-model-id={}", appModelId);
 
         setCurrentEmsState(EMS_STATE.READY, null);
     }
@@ -412,6 +412,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         final TranslationContext _TC;
         setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating model");
 
+        // Translate application model into a TranslationContext object
         log.info("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: model-id={}", appModelId);
         _TC = translator.translate(appModelId);
         log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: RESULTS: {}", _TC);
@@ -433,8 +434,8 @@ public class ControlServiceCoordinator implements InitializingBean {
         if (StringUtils.isNotBlank(fileName)) {
             try {
                 setCurrentEmsState(EMS_STATE.INITIALIZING, "Storing translation context to file");
-                _TC.prepareForSerialization();
 
+                // Get TC file name
                 fileName = getTcFileName(appModelId, fileName);
                 if (Paths.get(fileName).toFile().exists()) {
                     log.warn("ControlServiceCoordinator.translateAppModelAndStore(): The specified Translation Context file already exists. Its contents will be overwritten: tc-file-pattern={}, tc-file={}", properties.getTcLoadFile(), fileName);
@@ -446,6 +447,10 @@ public class ControlServiceCoordinator implements InitializingBean {
                 java.io.Writer writer = new java.io.FileWriter(fileName);
                 gson.toJson(_TC, writer);
                 writer.close();
+
+//                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+//                mapper.writeValue(Paths.get(fileName+".yml").toFile(), _TC);
+
                 log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Serialized _TC data in file: {}", fileName);
                 log.info("ControlServiceCoordinator.translateAppModelAndStore(): Saved translation data in file: {}", fileName);
 
@@ -478,7 +483,6 @@ public class ControlServiceCoordinator implements InitializingBean {
                         .create();
                 _TC = gson.fromJson(reader, TranslationContext.class);
                 reader.close();
-                _TC.updateAfterSerialization();
                 log.debug("ControlServiceCoordinator.loadStoredTranslationContext(): Deserialized _TC data from file: {}", fileName);
             } catch (IOException ex) {
                 log.error("ControlServiceCoordinator.loadStoredTranslationContext(): FAILED to deserialize _TC from file: {} : Exception: ", fileName, ex);
