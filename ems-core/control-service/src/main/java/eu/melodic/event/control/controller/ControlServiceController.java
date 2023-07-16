@@ -10,7 +10,6 @@
 package eu.melodic.event.control.controller;
 
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.models.interfaces.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +28,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @Slf4j
@@ -146,6 +146,34 @@ public class ControlServiceController {
         log.warn("--------------  TEST endpoint:      JWT: {}", jwtToken);
         return "OK";
     }*/
+
+    // ---------------------------------------------------------------------------------------------------
+    // Translator results methods
+    // ---------------------------------------------------------------------------------------------------
+
+    @RequestMapping(value = "/translator/currentCamelModel", method = {GET,POST})
+    public String getCurrentAppModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("TranslationResultsController.getCurrentAppModel(): Received request");
+        log.trace("TranslationResultsController.getCurrentAppModel(): JWT token: {}", jwtToken);
+
+        String currentAppModelId = coordinator.getCurrentAppModelId();
+        log.info("TranslationResultsController.getCurrentAppModel(): Current App model: {}", currentAppModelId);
+
+        return currentAppModelId;
+    }
+
+    @RequestMapping(value = "/translator/currentCpModel", method = {GET,POST})
+    public String getCurrentCpModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
+    {
+        log.info("TranslationResultsController.getCurrentCpModel(): Received request");
+        log.trace("TranslationResultsController.getCurrentCpModel(): JWT token: {}", jwtToken);
+
+        String currentCpModelId = coordinator.getCurrentCpModelId();
+        log.info("TranslationResultsController.getCurrentCpModel(): Current CP model: {}", currentCpModelId);
+
+        return currentCpModelId;
+    }
 
     // ---------------------------------------------------------------------------------------------------
     // Helper methods
