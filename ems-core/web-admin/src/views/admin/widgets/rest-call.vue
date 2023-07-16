@@ -21,7 +21,7 @@
                                     :aria-describedby="'restEndpointHelp_'+uid"
                                     v-on:change="changeForm"
                             >
-                                <option v-for="opt in additionalOptions()" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
+                                <option v-for="opt in getAllRestCallOptions()" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
                             </select>
                             <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
                         </div>
@@ -171,7 +171,7 @@ export default {
         }
     },
     methods: {
-        additionalOptions() {
+        getAllRestCallOptions() {
             // If additional REST Call commands and forms are provided,
             // merge them with the default...
             if (this.sseRef && this.sseRef.trim()!=='' && this.$root.$refs[this.sseRef]) {
