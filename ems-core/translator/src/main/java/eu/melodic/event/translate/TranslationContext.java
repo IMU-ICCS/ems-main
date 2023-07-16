@@ -36,9 +36,6 @@ public class TranslationContext implements Serializable {
     @Getter
     @JsonIgnore
     private transient DAG DAG;
-    @Getter @Setter
-    @JsonIgnore
-    private transient Dag dagForSerialization;                        // Used for serialization
 
     // Event-to-Action map
     @Getter
@@ -121,6 +118,9 @@ public class TranslationContext implements Serializable {
     @Getter @Setter
     protected String fullNamePattern;                                   // all options: {TYPE}, {CAMEL}, {MODEL}, {ELEM}, {HASH}, {COUNT}
 
+    @Getter
+    protected final Map<String, Object> additionalResults = new LinkedHashMap<>();
+
     @JsonIgnore
     private final transient Gson gson = new Gson();                     // Used when cloning
     /*@JsonIgnore                                                       // Alternative: clone with Jackson instead of Gson
@@ -144,7 +144,7 @@ public class TranslationContext implements Serializable {
         this.fullNamePattern = "{ELEM}";
     }
 
-    public TranslationContext(TranslationContext _TC, boolean initializeDag) {
+    /*public TranslationContext(TranslationContext _TC, boolean initializeDag) {
         this(initializeDag, _TC.modelName);
 
         // Comment out 'this(...)' constructor and uncomment the following lines
@@ -190,8 +190,8 @@ public class TranslationContext implements Serializable {
     @SneakyThrows
     protected <T> T deepCopy(T object, Class<T> type) {
         return gson.fromJson(gson.toJson(object, type), type);
-        /*return objectMapper.readValue(
-                objectMapper.writeValueAsString(object), type);*/
+        *//*return objectMapper.readValue(
+                objectMapper.writeValueAsString(object), type);*//*
     }
 
     protected <T> T cloneObject(T obj) {
@@ -238,7 +238,7 @@ public class TranslationContext implements Serializable {
                         e -> cloneObject(e.getKey()),
                         e -> cloneMapSet(e.getValue())
                 ));
-    }
+    }*/
 
     // ====================================================================================================================================================
     // Copy/Getter methods
@@ -632,8 +632,17 @@ public class TranslationContext implements Serializable {
     }
 
     // ====================================================================================================================================================
+    // Additional results helper methods
 
-    public void prepareForSerialization() {
+    public <T> T getAdditionalResultsAs(String key, Class<T> clazz) {
+        Object result = getAdditionalResults().get(key);
+        if (result==null) return null;
+        return clazz.cast(result);
+    }
+
+    // ====================================================================================================================================================
+
+    /*public void prepareForSerialization() {
         setDagForSerialization(TranslationContext.convertToSerializableDag(getDAG()));
     }
 
@@ -679,5 +688,5 @@ public class TranslationContext implements Serializable {
     public static class Dag implements Serializable {
         private final Set<DAGNode> nodes;
         private final Set<Edge> edges;
-    }
+    }*/
 }
