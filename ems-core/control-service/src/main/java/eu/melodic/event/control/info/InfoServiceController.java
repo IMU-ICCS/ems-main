@@ -14,6 +14,7 @@ package eu.melodic.event.control.info;
 //XXX: TODO: Temporarily disabled logviewer: import com.logviewer.springboot.LogViewerSpringBootConfig;
 import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.controller.ManagementCoordinator;
+import eu.melodic.event.control.plugin.WebAdminPlugin;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.QueryParam;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 //XXX: TODO: Temporarily disabled logviewer: import org.springframework.context.annotation.Bean;
 //XXX: TODO: Temporarily disabled logviewer: import org.springframework.context.annotation.Import;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,12 +43,20 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 //XXX: TODO: Temporarily disabled logviewer: @Import(LogViewerSpringBootConfig.class)
-public class InfoServiceController {
+public class InfoServiceController implements InitializingBean {
 
     private final InfoServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
     private final ManagementCoordinator managementCoordinator;
     private final IEmsInfoService emsInfoService;
+    private final List<WebAdminPlugin> webAdminPlugins;
+    private List<Map<String, String>> restCallCommands;
+    private Map<String, Map<String, List<WebAdminPlugin.RestCallFormField>>> restCallForms;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        initAdditionalRestCommands();
+    }
 
     /*XXX: TODO: Temporarily disabled logviewer
     @Bean
@@ -213,6 +223,7 @@ public class InfoServiceController {
 
         addMetricsFromEnvVars(metrics);
         addAuthenticationInfo(metrics, userDetails);
+        addRestCallCommands(metrics);
 
         metrics.put(".stream-id", sid);
         metrics.put(".sequence", sequence);
@@ -309,6 +320,49 @@ public class InfoServiceController {
             String username = userDetails.getUsername();
             metrics.put(".authentication-username", username);
             log.debug("addAuthenticationInfo: Adding username from session: {}", username);
+        }
+    }
+
+    private void initAdditionalRestCommands() {
+        if (webAdminPlugins==null) return;
+        final List<Map<String,String>> commandsList = new ArrayList<>();
+        final Set<WebAdminPlugin.RestCallForm> formsSet = new HashSet<>();
+        webAdminPlugins.stream().filter(Objects::nonNull).forEach(plugin->{
+            List<WebAdminPlugin.RestCallCommand> cmdList = plugin.restCallCommands();
+            if (cmdList!=null) {
+                commandsList.addAll(
+                        cmdList.stream().filter(Objects::nonNull).map(cmd-> Map.of(
+                                "id", cmd.getId(),
+                                "text", cmd.getText(),
+                                "url", cmd.getUrl(),
+                                "method", cmd.getMethod(),
+                                "form", (cmd.getForm()!=null && StringUtils.isNotBlank(cmd.getForm().getId()))
+                                        ? cmd.getForm().getId() : cmd.getFormId(),
+                                "priority", Integer.toString(cmd.getPriority())
+                        )).toList()
+                );
+                formsSet.addAll( cmdList.stream()
+                        .filter(Objects::nonNull)
+                        .map(WebAdminPlugin.RestCallCommand::getForm)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet())
+                );
+            }
+        });
+        restCallCommands = commandsList;
+        restCallForms = formsSet.stream().collect(Collectors.toMap(
+                WebAdminPlugin.RestCallForm::getId,
+                f -> Collections.singletonMap("fields", f.getFields())
+        ));
+    }
+
+    private void addRestCallCommands(Map<String, Object> metrics) {
+        log.debug("addRestCallCommands: rest-call-commands: {}", restCallCommands);
+        log.debug("addRestCallCommands:    rest-call-forms: {}", restCallForms);
+        if (restCallCommands!=null && restCallForms!=null) {
+            metrics.put(".rest-call-commands", restCallCommands);
+            metrics.put(".rest-call-forms", restCallForms);
+            log.debug("addRestCallCommands: Added rest-call commands and forms");
         }
     }
 }

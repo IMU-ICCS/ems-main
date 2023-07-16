@@ -21,7 +21,7 @@
                                     :aria-describedby="'restEndpointHelp_'+uid"
                                     v-on:change="changeForm"
                             >
-                                <option v-for="opt in options" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
+                                <option v-for="opt in additionalOptions()" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
                             </select>
                             <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
                         </div>
@@ -171,6 +171,30 @@ export default {
         }
     },
     methods: {
+        additionalOptions() {
+            // If additional REST Call commands and forms are provided,
+            // merge them with the default...
+            if (this.sseRef && this.sseRef.trim()!=='' && this.$root.$refs[this.sseRef]) {
+                let emsSse = this.$root.$refs[this.sseRef];
+                if (emsSse.modelValue && emsSse.modelValue.data && emsSse.modelValue.data.ems) {
+                    let emsData = emsSse.modelValue.data.ems;
+                    let newForms = { ...emsData['.rest-call-forms'], ...FORM_SPECS };
+                    let newCmds = [ ...emsData['.rest-call-commands'], ...FORM_TYPE_OPTIONS ];
+                    newCmds.sort((a,b) => parseInt(a.priority??'0') - parseInt(b.priority??'0'));
+
+                    if ((newForms && newCmds) && (newForms!=null && newCmds!=null)) {
+                        this.form = newForms;
+                        this.options = newCmds;
+                        return newCmds;
+                    }
+                }
+            }
+
+            // Default options and forms
+            this.form = FORM_SPECS;
+            this.options = FORM_TYPE_OPTIONS;
+            return FORM_TYPE_OPTIONS;
+        },
         switchToForm(form, data) {
             if (!confirm('Update REST call pane?')) return;
 
