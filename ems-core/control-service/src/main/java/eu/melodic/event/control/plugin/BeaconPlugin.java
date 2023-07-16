@@ -7,9 +7,14 @@
  * https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-package eu.melodic.event.util;
+package eu.melodic.event.control.plugin;
 
-public interface Plugin {
-    default void start() {}
-    default void stop() {}
+import eu.melodic.event.control.util.TopicBeacon;
+import eu.melodic.event.util.Plugin;
+
+/**
+ * TopicBeacon plugin
+ */
+public interface BeaconPlugin extends Plugin {
+    void transmit(TopicBeacon.BeaconContext context);
 }

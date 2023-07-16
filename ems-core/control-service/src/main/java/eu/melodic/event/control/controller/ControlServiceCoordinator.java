@@ -17,7 +17,10 @@ import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.BrokerCepStatementSubscriber;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.collector.netdata.ServerNetdataCollector;
+import eu.melodic.event.control.plugin.PostTranslationPlugin;
+import eu.melodic.event.control.plugin.TranslationContextPlugin;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.control.util.TopicBeacon;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
 import eu.melodic.event.models.commons.NotificationResult;
@@ -72,6 +75,8 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     private final List<Translator> translatorImplementations;
     private Translator translator;                      // Will be populated in 'afterPropertiesSet()'
+    private final List<PostTranslationPlugin> postTranslationPlugins;
+    private final List<TranslationContextPlugin> translationContextPlugins;
     private final TranslationContextPrinter translationContextPrinter;
 
     private final List<MetricVariableValuesService> mvvServiceImplementations;
@@ -108,6 +113,9 @@ public class ControlServiceCoordinator implements InitializingBean {
                 throw new IllegalArgumentException("Model translation will be skipped (see property control.skip-translation), but no Translation Context file or pattern has been set. Check property: control.tc-load-file");
             log.warn("Model translation will be skipped, and a Translation Context file will be used: tc-file-pattern={}", properties.getTcLoadFile());
         }
+
+        log.debug("ControlServiceCoordinator.afterPropertiesSet():    Post-translation plugins: {}", postTranslationPlugins);
+        log.debug("ControlServiceCoordinator.afterPropertiesSet():  TranslationContext plugins: {}", translationContextPlugins);
     }
 
     private void initMvvService() {
@@ -263,6 +271,18 @@ public class ControlServiceCoordinator implements InitializingBean {
             _TC = loadStoredTranslationContext(appModelId);
         }
 
+        // Run TranslationContext plugins
+        if (translationContextPlugins!=null && translationContextPlugins.size()>0) {
+            log.info("ControlServiceCoordinator._processAppModel(): Running {} TranslationContext plugins", translationContextPlugins.size());
+            translationContextPlugins.stream().filter(Objects::nonNull).forEach(plugin -> {
+                log.debug("ControlServiceCoordinator._processAppModel(): Calling TranslationContext plugin: {}", plugin.getClass().getName());
+                plugin.processTranslationContext(_TC);
+                log.debug("ControlServiceCoordinator._processAppModel(): RESULTS after running TranslationContext plugin: {}\n{}", plugin.getClass().getName(), _TC);
+            });
+        } else {
+            log.info("ControlServiceCoordinator._processAppModel(): No TranslationContext plugins found");
+        }
+
         // Print resulting Translation Context
         try {
             translationContextPrinter.printResults(_TC, null);
@@ -389,14 +409,26 @@ public class ControlServiceCoordinator implements InitializingBean {
     }
 
     private TranslationContext translateAppModelAndStore(String appModelId) {
-        TranslationContext _TC;
+        final TranslationContext _TC;
         setCurrentEmsState(EMS_STATE.INITIALIZING, "Retrieving and translating model");
 
         log.info("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: model-id={}", appModelId);
         _TC = translator.translate(appModelId);
         log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Model translation: RESULTS: {}", _TC);
 
-        // serialize 'TranslationContext' to file
+        // Run post-translation plugins
+        if (postTranslationPlugins!=null && postTranslationPlugins.size()>0) {
+            log.info("ControlServiceCoordinator.translateAppModelAndStore(): Running {} post-translation plugins", postTranslationPlugins.size());
+            postTranslationPlugins.stream().filter(Objects::nonNull).forEach(plugin -> {
+                log.debug("ControlServiceCoordinator.translateAppModelAndStore(): Calling post-translation plugin: {}", plugin.getClass().getName());
+                plugin.processTranslationResults(_TC, applicationContext.getBean(TopicBeacon.class));
+                log.debug("ControlServiceCoordinator.translateAppModelAndStore(): RESULTS after running post-translation plugin: {}\n{}", plugin.getClass().getName(), _TC);
+            });
+        } else {
+            log.info("ControlServiceCoordinator.translateAppModelAndStore(): No post-translation plugins found");
+        }
+
+        // Serialize and store 'TranslationContext' in a file
         String fileName = properties.getTcSaveFile();
         if (StringUtils.isNotBlank(fileName)) {
             try {

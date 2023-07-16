@@ -15,9 +15,10 @@ import eu.melodic.event.baguette.server.NodeRegistryEntry;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.control.controller.ControlServiceCoordinator;
-import eu.melodic.event.control.controller.TranslationResultsCoordinator;
+import eu.melodic.event.control.plugin.BeaconPlugin;
 import eu.melodic.event.control.properties.TopicBeaconProperties;
-import eu.melodic.event.translate.model.MetricContext;
+import eu.melodic.event.translate.TranslationContext;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,22 +30,22 @@ import org.springframework.stereotype.Service;
 import javax.jms.JMSException;
 import java.io.Serializable;
 import java.time.Duration;
-import java.time.temporal.ValueRange;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @EnableScheduling
 @RequiredArgsConstructor
 public class TopicBeacon implements InitializingBean {
+    @Getter
     private final TopicBeaconProperties properties;
 
     private final ControlServiceCoordinator coordinator;
-    private final TranslationResultsCoordinator translationResultsCoordinator;
     private final BrokerCepService brokerCepService;
     private final TaskScheduler scheduler;
+    private final BeaconContext beaconContext = new BeaconContext(this);
+    private final List<BeaconPlugin> beaconPlugins;
 
     private Gson gson;
     private String previousModelId = "";
@@ -87,14 +88,33 @@ public class TopicBeacon implements InitializingBean {
         return s;
     }
 
+    public long getModelVersion() {
+        return modelVersion.get();
+    }
+
+    public String toJson(Object o) {
+        return gson.toJson(o);
+    }
+
     public void transmitInfo() throws JMSException {
         log.debug("Topic Beacon: Start transmitting info: {}", new Date());
         updateModelVersion();
+
+        // Call standard transmit methods
         transmitHeartbeat();
         transmitThresholdInfo();
         transmitInstanceInfo();
-        transmitPredictionInfo();
-        transmitSloViolatorInfo();
+
+        // Call Beacon plugins
+        beaconPlugins.stream().filter(Objects::nonNull).forEach(plugin -> {
+            try {
+                log.debug("Topic Beacon: Calling Beacon plugin: {}", plugin.getClass().getName());
+                plugin.transmit(beaconContext);
+            } catch (Throwable t) {
+                log.error("Topic Beacon: EXCEPTION in Beacon plugin: {}\n", plugin.getClass().getName(), t);
+            }
+        });
+
         log.debug("Topic Beacon: Completed transmitting info: {}", new Date());
     }
 
@@ -142,78 +162,6 @@ public class TopicBeacon implements InitializingBean {
         }
     }
 
-    public void transmitPredictionInfo() {
-        if (emptyIfNull(properties.getPredictionTopics()).isEmpty()) return;
-
-        String modelId = coordinator.getCurrentAppModelId();
-        log.trace("Topic Beacon: transmitPredictionInfo: current-app-model-id: {}", modelId);
-        //Set<String> topLevelMetrics = coordinator.getGlobalGroupingMetrics(modelId);
-        //log.debug("Topic Beacon: transmitPredictionInfo: DAG Global-Level Metrics: {}", topLevelMetrics);
-        Set<MetricContext> metricContexts = translationResultsCoordinator.getMetricContextsForPrediction(modelId);
-        log.debug("Topic Beacon: transmitPredictionInfo: Metric Contexts for prediction: {}", metricContexts);
-
-        // Convert to Translator-to-Forecasting Methods event format
-        final long currVersion = modelVersion.get();
-        final ValueRange allowedPredictionRateRange =
-                ValueRange.of(properties.getPredictionMinAllowedRate(), properties.getPredictionMaxAllowedRate());
-        List<HashMap<String, Object>> payload = metricContexts.stream().map(mc -> {
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("metric", mc.getName());
-            map.put("component", mc.getComponent());
-            map.put("level", 3);
-            map.put("version", currVersion);
-            map.put("publish_rate",
-                    mc.getSchedule()!=null && allowedPredictionRateRange.isValidValue(mc.getSchedule().getIntervalInMillis())
-                            ? mc.getSchedule().getIntervalInMillis()
-                            : properties.getPredictionRate());
-            return map;
-        }).collect(Collectors.toList());
-        log.debug("Topic Beacon: Transmitting Prediction info: Metric Contexts in event format: {}", payload);
-
-        // Skip event sending if payload is empty
-        if (payload.size()==0) {
-            log.debug("Topic Beacon: transmitSloViolatorInfo: Payload is empty. Not sending event");
-            return;
-        }
-
-        String eventPayload = gson.toJson(payload);
-
-        log.debug("Topic Beacon: Transmitting Prediction info: event={}, topics={}", eventPayload, properties.getPredictionTopics());
-        try {
-            sendMessageToTopics(eventPayload, properties.getPredictionTopics());
-        } catch (JMSException e) {
-            log.error("Topic Beacon: EXCEPTION while transmitting Prediction info: event={}, topics={}, exception: ",
-                    eventPayload, properties.getPredictionTopics(), e);
-        }
-    }
-
-    public void transmitSloViolatorInfo() {
-        if (emptyIfNull(properties.getSloViolationDetectorTopics()).isEmpty()) return;
-
-        String modelId = coordinator.getCurrentAppModelId();
-        log.trace("Topic Beacon: transmitSloViolatorInfo: current-app-model-id: {}", modelId);
-        //List<Object> sloMetricDecompositions = coordinator.getSLOMetricDecomposition(modelId);
-        Map<String, Object> sloMetricDecompositions = translationResultsCoordinator.getSLOMetricDecomposition(modelId);
-        log.debug("Topic Beacon: transmitSloViolatorInfo: SLO metric decompositions: {}", sloMetricDecompositions);
-
-        // Skip event sending if payload is empty
-        if (sloMetricDecompositions.get("constraints") == null || ((List<?>) sloMetricDecompositions.get("constraints")).size() == 0) {
-            log.debug("Topic Beacon: transmitSloViolatorInfo: Payload is empty. Not sending event");
-            return;
-        }
-
-        sloMetricDecompositions.put("version", modelVersion.get());
-        String eventPayload = gson.toJson(sloMetricDecompositions);
-
-        log.debug("Topic Beacon: Transmitting SLO Violator info: event={}, topics={}", eventPayload, properties.getSloViolationDetectorTopics());
-        try {
-            sendMessageToTopics(eventPayload, properties.getSloViolationDetectorTopics());
-        } catch (JMSException e) {
-            log.error("Topic Beacon: EXCEPTION while transmitting SLO Violator info: event={}, topics={}, exception: ",
-                    eventPayload, properties.getSloViolationDetectorTopics(), e);
-        }
-    }
-
     // ------------------------------------------------------------------------
 
     private void sendEventToTopics(String message, Set<String> topics) throws JMSException {
@@ -247,5 +195,39 @@ public class TopicBeacon implements InitializingBean {
             previousModelId = modelId;
         }
         return versionChanged;
+    }
+
+    @RequiredArgsConstructor
+    public static class BeaconContext {
+        @Getter
+        private final TopicBeacon topicBeacon;
+
+        public TopicBeaconProperties getProperties() {
+            return topicBeacon.properties;
+        }
+
+        public String getCurrentAppModelId() {
+            return topicBeacon.coordinator.getCurrentAppModelId();
+        }
+
+        public TranslationContext getTranslationContextOfAppModel(String modelId) {
+            return topicBeacon.coordinator.getTranslationContextOfAppModel(modelId);
+        }
+
+        public long getModelVersion() {
+            return topicBeacon.modelVersion.get();
+        }
+
+        public String toJson(Object payload) {
+            return topicBeacon.toJson(payload);
+        }
+
+        public void sendEventToTopics(String event, Set<String> topics) throws JMSException {
+            topicBeacon.sendEventToTopics(event, topics);
+        }
+
+        public void sendMessageToTopics(Serializable event, Set<String> topics) throws JMSException {
+            topicBeacon.sendMessageToTopics(event, topics);
+        }
     }
 }
