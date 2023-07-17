@@ -21,7 +21,7 @@
                                     :aria-describedby="'restEndpointHelp_'+uid"
                                     v-on:change="changeForm"
                             >
-                                <option v-for="opt in getAllRestCallOptions()" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
+                                <option v-for="opt in options" v-bind:value="opt.id" :key="opt.id">{{opt.text}}</option>
                             </select>
                             <!--<small :id="'restEndpointHelp_'+uid" class="form-text text-muted">Select an EMS Rest API endpoint to call.</small>-->
                         </div>
@@ -156,6 +156,8 @@ export default {
     mounted: function() {
         this.changeForm({ target: { value: 'new-camel' }});
         this.$root[this.rootId] = this;
+
+        this.waitForEmsDataAndUpdateOptions();
     },
     computed: {
         username() {
@@ -171,7 +173,27 @@ export default {
         }
     },
     methods: {
-        getAllRestCallOptions() {
+        waitForEmsDataAndUpdateOptions() {
+            console.log('>>>>>> waitForEmsDataAndUpdateOptions');
+            if (this.sseRef && this.sseRef.trim()!=='')
+            if (this.$root.$refs[this.sseRef])
+            if (this.$root.$refs[this.sseRef].modelValue)
+            if (this.$root.$refs[this.sseRef].modelValue.data)
+            if (this.$root.$refs[this.sseRef].modelValue.data.ems)
+            if (this.$root.$refs[this.sseRef].modelValue.data.ems['.version']) {
+                try {
+                    let v = parseInt(this.$root.$refs[this.sseRef].modelValue.data.ems['.version']);
+                    if (v>0) {
+                        this.updateRestCallOptions();
+                        return;
+                    }
+                } catch (e) {
+                    console.error('rest-call: waitForEmsDataAndUpdateOptions: EXCEPTION: ', e);
+                }
+            }
+            setTimeout(this.waitForEmsDataAndUpdateOptions, 1000);
+        },
+        updateRestCallOptions() {
             // If additional REST Call commands and forms are provided,
             // merge them with the default...
             if (this.sseRef && this.sseRef.trim()!=='' && this.$root.$refs[this.sseRef]) {
@@ -195,6 +217,7 @@ export default {
             this.options = FORM_TYPE_OPTIONS;
             return FORM_TYPE_OPTIONS;
         },
+
         switchToForm(form, data) {
             if (!confirm('Update REST call pane?')) return;
 
