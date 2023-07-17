@@ -68,7 +68,7 @@ public class ControlServiceController {
         return "OK";
     }
 
-    @RequestMapping(value = "/camelModelJson", method = POST,
+    @RequestMapping(value = "/appModelJson", method = POST,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public String newAppModel(@RequestBody String requestStr,
                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
@@ -78,7 +78,7 @@ public class ControlServiceController {
 
         // Use Gson to get model id's from request body (in JSON format)
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
-        String appModelId = Optional.ofNullable(jobj.get("camel-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
+        String appModelId = Optional.ofNullable(jobj.get("app-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
         String cpModelId = Optional.ofNullable(jobj.get("cp-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
         log.info("ControlServiceController.newAppModel(): App model id from request: {}", appModelId);
         log.info("ControlServiceController.newAppModel(): CP model id from request: {}", cpModelId);
@@ -151,7 +151,7 @@ public class ControlServiceController {
     // Translator results methods
     // ---------------------------------------------------------------------------------------------------
 
-    @RequestMapping(value = "/translator/currentCamelModel", method = {GET,POST})
+    @RequestMapping(value = "/translator/currentAppModel", method = {GET,POST})
     public String getCurrentAppModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
         log.info("TranslationResultsController.getCurrentAppModel(): Received request");

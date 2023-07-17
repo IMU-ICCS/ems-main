@@ -18,7 +18,21 @@ import java.util.List;
  * WebAdmin plugin
  */
 public interface WebAdminPlugin extends Plugin {
-    List<RestCallCommand> restCallCommands();
+    RestCallCommandGroup restCallCommands();
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    class RestCallCommandGroup {
+        @NonNull
+        private String id;
+        @NonNull
+        private String text;
+        private int priority;
+        private boolean disabled;
+        @Singular
+        private List<RestCallCommand> commands;
+    }
 
     @Getter
     @Builder
@@ -34,6 +48,7 @@ public interface WebAdminPlugin extends Plugin {
         private String formId;
         private RestCallForm form;
         private int priority;
+        private boolean disabled;
     }
 
     @Getter

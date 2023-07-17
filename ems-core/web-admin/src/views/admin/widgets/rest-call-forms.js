@@ -8,43 +8,80 @@
  */
 
 export const FORM_TYPE_OPTIONS = [
-                { 'id': 'new-camel', 'text': 'Send CAMEL model request', 'url': '/camelModel', 'method': 'POST', 'form': 'camel-form', 'priority': -1008 },
-                { 'id': 'new-cp', 'text': 'Send CP model request', 'url': '/cpModelJson', 'method': 'POST', 'form': 'cp-form', 'priority': -1007 },
-                { 'id': 'const', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/cpConstants', 'method': 'POST', 'form': '', 'priority': -1006 },
-                { 'id': 'new-vm', 'text': 'Register Node', 'url': '/baguette/registerNode', 'method': 'POST', 'form': 'vm-form', 'priority': -1005 },
-                { 'id': 'vm-list', 'text': 'Node IP addresses', 'url': '/baguette/node/list', 'method': 'GET', 'form': '', 'priority': -1004 },
-                { 'id': 'vm-reinstall', 'text': 'Reinstall Node', 'url': '/baguette/node/reinstall/{ip-address}', 'method': 'GET', 'form': 'vm-reinstall', 'priority': -1003 },
-                { 'id': 'get-camel', 'text': 'Current CAMEL model', 'url': '/translator/currentCamelModel', 'method': 'GET', 'form': '', 'priority': -1002 },
-                { 'id': 'get-cp', 'text': 'Current CP model', 'url': '/translator/currentCpModel', 'method': 'GET', 'form': '', 'priority': -1001 },
+        {
+            'id': 'basic-api-group',
+            'text': 'Basic API - Model Translation',
+            'priority': -1000,
+            'options': [
+                { 'id': 'new-app-model', 'text': 'Send App. model request', 'url': '/camelModel', 'method': 'POST', 'form': 'app-model-form', 'priority': 1 },
+                { 'id': 'new-cp-model', 'text': 'Send CP model request', 'url': '/cpModelJson', 'method': 'POST', 'form': 'cp-model-form', 'priority': 2 },
+                { 'id': 'constants-update', 'text': 'Set constants (add name-value pairs in Payload)', 'url': '/cpConstants', 'method': 'POST', 'form': '', 'priority': 3 },
+                { 'id': 'get-app-model', 'text': 'Current App. model', 'url': '/translator/currentAppModel', 'method': 'GET', 'form': '', 'priority': 4 },
+                { 'id': 'get-cp-model', 'text': 'Current CP model', 'url': '/translator/currentCpModel', 'method': 'GET', 'form': '', 'priority': 5 },
+            ]
+        },
 
-                { 'id': 'get-all-logger-levels', 'text': 'Get All Loggers', 'url': '/actuator/loggers', 'method': 'GET', 'form': '', 'priority': 1001 },
-                { 'id': 'get-logger-level', 'text': 'Get Logger Level', 'url': '/actuator/loggers/{logger}', 'method': 'GET', 'form': 'logger-form', 'priority': 1002 },
-                { 'id': 'set-logger-level', 'text': 'Set Logger Level', 'url': '/actuator/loggers/{logger}', 'method': 'POST', 'form': 'logger-form', 'priority': 1003 },
+        {
+            'id': 'topology-group',
+            'text': 'Topology',
+            'priority': 1,
+            'options': [
+                { 'id': 'new-vm', 'text': 'Register Node', 'url': '/baguette/registerNode', 'method': 'POST', 'form': 'vm-form', 'priority': 1 },
+                { 'id': 'vm-list', 'text': 'Node IP addresses', 'url': '/baguette/node/list', 'method': 'GET', 'form': '', 'priority': 2 },
+                { 'id': 'vm-reinstall', 'text': 'Reinstall Node', 'url': '/baguette/node/reinstall/{ip-address}', 'method': 'GET', 'form': 'vm-reinstall', 'priority': 3 },
 
-                { 'id': 'get-cred', 'text': 'EMS server Broker credentials', 'url': '/broker/credentials', 'method': 'GET', 'form': '', 'priority': 1004 },
-                { 'id': 'get-ref', 'text': 'VM credentials by Ref', 'url': '/baguette/ref/{ref}', 'method': 'GET', 'form': 'ref-form', 'priority': 1005 },
+                { 'id': 'topology-group-sep1', 'text': '-', 'disabled': true, 'priority': 4 },
 
-                { 'id': 'client-list', 'text': 'Client list', 'url': '/client/list', 'method': 'GET', 'form': '', 'priority': 1006 },
-                { 'id': 'client-map', 'text': 'Client map', 'url': '/client/list/map', 'method': 'GET', 'form': '', 'priority': 1007 },
-                { 'id': 'node-info', 'text': 'Node Info by IP address', 'url': '/baguette/getNodeInfoByAddress/{ip-address}', 'method': 'GET', 'form': 'ip-form', 'priority': 1008 },
-                { 'id': 'node-name', 'text': 'Node Name by IP address', 'url': '/baguette/getNodeNameByAddress/{ip-address}', 'method': 'GET', 'form': 'ip-form', 'priority': 1009 },
+                { 'id': 'client-list', 'text': 'Client list', 'url': '/client/list', 'method': 'GET', 'form': '', 'priority': 11 },
+                { 'id': 'client-map', 'text': 'Client map', 'url': '/client/list/map', 'method': 'GET', 'form': '', 'priority': 12 },
+                { 'id': 'node-info', 'text': 'Node Info by IP address', 'url': '/baguette/getNodeInfoByAddress/{ip-address}', 'method': 'GET', 'form': 'ip-form', 'priority': 13 },
+                { 'id': 'node-name', 'text': 'Node Name by IP address', 'url': '/baguette/getNodeNameByAddress/{ip-address}', 'method': 'GET', 'form': 'ip-form', 'priority': 14 },
+            ]
+        },
 
-                { 'id': 'new-otp', 'text': 'New OTP', 'url': '/ems/otp/new', 'method': 'GET', 'form': '', 'priority': 1010 },
-                { 'id': 'del-otp', 'text': 'Delete OTP', 'url': '/ems/otp/remove/{otp}', 'method': 'GET', 'form': 'otp-form', 'priority': 1011 },
+        {
+            'id': 'credentials-group',
+            'text': 'Credentials',
+            'priority': 1001,
+            'options': [
+                { 'id': 'get-cred', 'text': 'EMS server Broker credentials', 'url': '/broker/credentials', 'method': 'GET', 'form': '', 'priority': 1 },
+                { 'id': 'get-ref', 'text': 'VM credentials by Ref', 'url': '/baguette/ref/{ref}', 'method': 'GET', 'form': 'ref-form', 'priority': 2 },
+                { 'id': 'new-otp', 'text': 'New OTP', 'url': '/ems/otp/new', 'method': 'GET', 'form': '', 'priority': 3 },
+                { 'id': 'del-otp', 'text': 'Delete OTP', 'url': '/ems/otp/remove/{otp}', 'method': 'GET', 'form': 'otp-form', 'priority': 4 },
+            ]
+        },
 
-                { 'id': 'd-stop-baguette', 'text': 'DEBUG - Stop Baguette Server', 'url': '/baguette/stopServer', 'method': 'GET', 'form': '', 'priority': 1012 },
-                { 'id': 'd-shutdown', 'text': 'DEBUG - EMS server shutdown', 'url': '/ems/shutdown', 'method': 'GET', 'form': '', 'priority': 1013 },
-                { 'id': 'd-exit', 'text': 'DEBUG - EMS server shutdown and Exit', 'url': '/ems/exit', 'method': 'GET', 'form': '', 'priority': 1014 },
-                { 'id': 'd-restart', 'text': 'DEBUG - EMS server shutdown and Restart', 'url': '/ems/exit/99', 'method': 'GET', 'form': '', 'priority': 1015 },
+        {
+            'id': 'observability-group',
+            'text': 'Observability',
+            'priority': 1002,
+            'options': [
+                { 'id': 'get-all-logger-levels', 'text': 'Get All Loggers', 'url': '/actuator/loggers', 'method': 'GET', 'form': '', 'priority': 1 },
+                { 'id': 'get-logger-level', 'text': 'Get Logger Level', 'url': '/actuator/loggers/{logger}', 'method': 'GET', 'form': 'logger-form', 'priority': 2 },
+                { 'id': 'set-logger-level', 'text': 'Set Logger Level', 'url': '/actuator/loggers/{logger}', 'method': 'POST', 'form': 'logger-form', 'priority': 3 },
 
-                { 'id': 'health', 'text': 'Health check', 'url': '/health', 'method': 'GET', 'form': '', 'priority': 1016 }
-            ];
+                { 'id': 'health', 'text': 'Health check', 'url': '/health', 'method': 'GET', 'form': '', 'priority': 4 }
+            ]
+        },
+
+        {
+            'id': 'debug-group',
+            'text': 'Debug calls',
+            'priority': 1003,
+            'options': [
+                { 'id': 'd-stop-baguette', 'text': 'Stop Baguette Server', 'url': '/baguette/stopServer', 'method': 'GET', 'form': '', 'priority': 1 },
+                { 'id': 'd-shutdown', 'text': 'EMS server shutdown', 'url': '/ems/shutdown', 'method': 'GET', 'form': '', 'priority': 2 },
+                { 'id': 'd-exit', 'text': 'EMS server shutdown and Exit', 'url': '/ems/exit', 'method': 'GET', 'form': '', 'priority': 3 },
+                { 'id': 'd-restart', 'text': 'EMS server shutdown and Restart', 'url': '/ems/exit/99', 'method': 'GET', 'form': '', 'priority': 4 }
+            ]
+        }
+    ];
 
 export const FORM_SPECS = {
                 '': { 'fields': [] },
-                'camel-form': {
+                'app-model-form': {
                     'fields': [
-                        { 'name': 'applicationId', 'text': 'CAMEL model path' },
+                        { 'name': 'applicationId', 'text': 'App. model path' },
                         { 'name': 'notificationURI', 'text': 'Notification URI' },
                         { 'name': 'watermark.user', 'text': '-- User', 'defaultValue': function(_this) { return ('authUsername' in _this) ? _this.authUsername : ('username' in _this) ? _this.username : 'unknown'; } },
                         { 'name': 'watermark.system', 'text': '-- System', 'defaultValue': 'Ems-Web-Admin' },
@@ -52,7 +89,7 @@ export const FORM_SPECS = {
                         { 'name': 'watermark.date', 'text': '-- Date', 'defaultValue': function() { return new Date().getTime(); } },
                     ],
                 },
-                'cp-form': {
+                'cp-model-form': {
                     'fields': [
                         { 'name': 'cp-model-id', 'text': 'CP model path' },
                     ]

@@ -50,7 +50,7 @@ public class InfoServiceController implements InitializingBean {
     private final ManagementCoordinator managementCoordinator;
     private final IEmsInfoService emsInfoService;
     private final List<WebAdminPlugin> webAdminPlugins;
-    private List<Map<String, String>> restCallCommands;
+    private List<Object> restCallCommands;
     private Map<String, Map<String, List<WebAdminPlugin.RestCallFormField>>> restCallForms;
 
     @Override
@@ -325,22 +325,29 @@ public class InfoServiceController implements InitializingBean {
 
     private void initAdditionalRestCommands() {
         if (webAdminPlugins==null) return;
-        final List<Map<String,String>> commandsList = new ArrayList<>();
+        final List<Object> commandGroups = new ArrayList<>();
         final Set<WebAdminPlugin.RestCallForm> formsSet = new HashSet<>();
         webAdminPlugins.stream().filter(Objects::nonNull).forEach(plugin->{
-            List<WebAdminPlugin.RestCallCommand> cmdList = plugin.restCallCommands();
-            if (cmdList!=null) {
-                commandsList.addAll(
-                        cmdList.stream().filter(Objects::nonNull).map(cmd-> Map.of(
+            WebAdminPlugin.RestCallCommandGroup commandGroup = plugin.restCallCommands();
+            List<WebAdminPlugin.RestCallCommand> cmdList = commandGroup.getCommands();
+            if (cmdList!=null && cmdList.size()>0 && StringUtils.isNotBlank(commandGroup.getId())) {
+                commandGroups.add( Map.of(
+                        "id", commandGroup.getId(),
+                        "text", commandGroup.getText(),
+                        "priority", commandGroup.getPriority(),
+                        "disabled", Boolean.toString(commandGroup.isDisabled()),
+                        "options", cmdList.stream().filter(Objects::nonNull).map(cmd -> Map.of(
                                 "id", cmd.getId(),
                                 "text", cmd.getText(),
                                 "url", cmd.getUrl(),
                                 "method", cmd.getMethod(),
-                                "form", (cmd.getForm()!=null && StringUtils.isNotBlank(cmd.getForm().getId()))
+                                "form", (cmd.getForm() != null && StringUtils.isNotBlank(cmd.getForm().getId()))
                                         ? cmd.getForm().getId() : cmd.getFormId(),
-                                "priority", Integer.toString(cmd.getPriority())
+                                "priority", Integer.toString(cmd.getPriority()),
+                                "disabled", Boolean.toString(cmd.isDisabled())
                         )).toList()
-                );
+
+                ) );
                 formsSet.addAll( cmdList.stream()
                         .filter(Objects::nonNull)
                         .map(WebAdminPlugin.RestCallCommand::getForm)
@@ -349,7 +356,7 @@ public class InfoServiceController implements InitializingBean {
                 );
             }
         });
-        restCallCommands = commandsList;
+        restCallCommands = commandGroups;
         restCallForms = formsSet.stream().collect(Collectors.toMap(
                 WebAdminPlugin.RestCallForm::getId,
                 f -> Collections.singletonMap("fields", f.getFields())
