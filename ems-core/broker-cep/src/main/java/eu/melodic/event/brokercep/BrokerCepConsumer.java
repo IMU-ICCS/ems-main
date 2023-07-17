@@ -56,6 +56,8 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
     private final TaskScheduler scheduler;
     private boolean shuttingDown;
 
+    private final EventCache eventCache;
+
     @Override
     public void afterPropertiesSet() {
         initialize();
@@ -178,7 +180,6 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
         logMessage(message);
 
         // Record message
-
         if (brokerConfig.getEventRecorder()!=null)
             brokerConfig.getEventRecorder().recordRegisteredEvent(message);
 
@@ -197,8 +198,10 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
                     EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
                     copyEventProperties(message, eventMap);
                     cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
+                    eventCache.cacheEvent(eventMap, eventMap.getEventProperties(), messageDestination.getPhysicalName());
                 } else {
                     cepService.handleEvent(mesg.getObject());
+                    eventCache.cacheEvent(mesg.getObject(), null, messageDestination.getPhysicalName());
                 }
                 objectEventCounter.incrementAndGet();
             } else if (message instanceof ActiveMQTextMessage) {
@@ -213,6 +216,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
                 copyEventProperties(message, eventMap);
                 log.trace("BrokerCepConsumer.onMessage(): event-map={}", eventMap);
                 cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
+                eventCache.cacheEvent(eventMap, eventMap.getEventProperties(), messageDestination.getPhysicalName());
                 textEventCounter.incrementAndGet();
             } else {
                 otherEventCounter.incrementAndGet();

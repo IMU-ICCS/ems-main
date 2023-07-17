@@ -86,6 +86,8 @@ public class BrokerCepProperties implements InitializingBean {
 
     private EventRecorderProperties eventRecorder = new EventRecorderProperties();
 
+    private int eventCacheSize = 1000;
+
     @Data
     public static class Usage {
         private Memory memory = new Memory();
