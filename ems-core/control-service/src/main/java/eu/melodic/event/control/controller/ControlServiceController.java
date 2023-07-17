@@ -154,11 +154,11 @@ public class ControlServiceController {
     @RequestMapping(value = "/translator/currentAppModel", method = {GET,POST})
     public String getCurrentAppModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("TranslationResultsController.getCurrentAppModel(): Received request");
-        log.trace("TranslationResultsController.getCurrentAppModel(): JWT token: {}", jwtToken);
+        log.info("ControlServiceController.getCurrentAppModel(): Received request");
+        log.trace("ControlServiceController.getCurrentAppModel(): JWT token: {}", jwtToken);
 
         String currentAppModelId = coordinator.getCurrentAppModelId();
-        log.info("TranslationResultsController.getCurrentAppModel(): Current App model: {}", currentAppModelId);
+        log.info("ControlServiceController.getCurrentAppModel(): Current App model: {}", currentAppModelId);
 
         return currentAppModelId;
     }
@@ -166,11 +166,11 @@ public class ControlServiceController {
     @RequestMapping(value = "/translator/currentCpModel", method = {GET,POST})
     public String getCurrentCpModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("TranslationResultsController.getCurrentCpModel(): Received request");
-        log.trace("TranslationResultsController.getCurrentCpModel(): JWT token: {}", jwtToken);
+        log.info("ControlServiceController.getCurrentCpModel(): Received request");
+        log.trace("ControlServiceController.getCurrentCpModel(): JWT token: {}", jwtToken);
 
         String currentCpModelId = coordinator.getCurrentCpModelId();
-        log.info("TranslationResultsController.getCurrentCpModel(): Current CP model: {}", currentCpModelId);
+        log.info("ControlServiceController.getCurrentCpModel(): Current CP model: {}", currentCpModelId);
 
         return currentCpModelId;
     }
