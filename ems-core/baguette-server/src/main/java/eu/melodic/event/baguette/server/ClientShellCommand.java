@@ -9,6 +9,7 @@
 
 package eu.melodic.event.baguette.server;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.common.recovery.RecoveryConstant;
@@ -106,8 +107,8 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
     private final EventBus<String,Object,Object> eventBus;
     @Getter
     private Exception lastException;
-    @Getter
-    private final NodeRegistry nodeRegistry;
+    @JsonIgnore
+    private final transient NodeRegistry nodeRegistry;
     @Setter
     private NodeRegistryEntry nodeRegistryEntry;
 
@@ -122,6 +123,11 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
         this.clientAddressOverrideAllowed = allowClientOverrideItsAddress;
         this.eventBus = eventBus;
         this.nodeRegistry = registry;
+    }
+
+    @JsonIgnore
+    public NodeRegistry getNodeRegistry() {
+        return nodeRegistry;
     }
 
     public void setSession(ServerSession session) {

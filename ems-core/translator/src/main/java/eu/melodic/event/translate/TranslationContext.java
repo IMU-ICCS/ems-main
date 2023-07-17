@@ -244,12 +244,14 @@ public class TranslationContext implements Serializable {
     // Copy/Getter methods
 
     public Map<String, Set<String>> getG2T() {
+        if (G2T==null) return Collections.emptyMap();
         HashMap<String, Set<String>> newMap = new HashMap<>();
         G2T.forEach((key, value) -> newMap.put(key, new HashSet<>(value)));
         return newMap;
     }
 
     public Map<String, Map<String, Set<String>>> getG2R() {
+        if (G2R==null) return Collections.emptyMap();
         Map<String, Map<String, Set<String>>> newGroupingsMap = new HashMap<>();    // groupings
         G2R.forEach((key, value) -> {
             Map<String, Set<String>> newTopicsMap = new HashMap<>();            // topics per grouping
@@ -264,26 +266,34 @@ public class TranslationContext implements Serializable {
     }
 
     public MetricContext getMetricContextForMetric(Metric m) {
+        if (M2MC==null) return null;
         Set<MetricContext> set = M2MC.get(m);
         return set == null ? null : set.iterator().next();
     }
 
     public Set<MetricConstraint> getMetricConstraints() {
-        return new HashSet<>(metricConstraints);
+        return metricConstraints!=null ? new HashSet<>(metricConstraints) : Collections.emptySet();
     }
 
     public Set<LogicalConstraint> getLogicalConstraints() {
-        return new HashSet<>(logicalConstraints);
+        return logicalConstraints!=null ? new HashSet<>(logicalConstraints) : Collections.emptySet();
     }
 
     public boolean isMVV(String name) {
-        for (String mvv : MVV) if (mvv.equals(name)) return true;
+        if (MVV==null)
+            return false;;
+        for (String mvv : MVV)
+            if (mvv.equals(name)) return true;
         return false;
     }
 
-    public Set<String> getMVV() { return new HashSet<>(MVV); }
+    public Set<String> getMVV() {
+        return MVV!=null ? new HashSet<>(MVV) : Collections.emptySet();
+    }
 
-    public Map<String,String> getCompositeMetricVariables() { return new HashMap<>(MvvCP); }
+    public Map<String,String> getCompositeMetricVariables() {
+        return MvvCP!=null ? new HashMap<>(MvvCP) : Collections.emptyMap();
+    }
 
     // ====================================================================================================================================================
     // Map- and Set-related helper methods
@@ -496,6 +506,7 @@ public class TranslationContext implements Serializable {
     }
 
     public Map<String, Map<String, Set<String>>> getTopicConnections() {
+        if (topicConnections==null) return Collections.emptyMap();
         if (needsRefresh) {
             log.debug("TranslationContext.getTopicConnections(): Topic connections need refresh");
             topicConnections.clear();
@@ -613,7 +624,7 @@ public class TranslationContext implements Serializable {
     // Function-Definition-related helper methods
 
     public Set<FunctionDefinition> getFunctionDefinitions() {
-        return new HashSet<>(FUNC);
+        return FUNC!=null ? new HashSet<>(FUNC) : Collections.emptySet();
     }
 
     // ====================================================================================================================================================
@@ -628,13 +639,14 @@ public class TranslationContext implements Serializable {
     }
 
     public Set<String> getLoadAnnotatedMetricsSet() {
-        return new HashSet<>(loadAnnotatedMetricsSet);
+        return loadAnnotatedMetricsSet!=null ? new HashSet<>(loadAnnotatedMetricsSet) : Collections.emptySet();
     }
 
     // ====================================================================================================================================================
     // Additional results helper methods
 
     public <T> T getAdditionalResultsAs(String key, Class<T> clazz) {
+        if (getAdditionalResults()==null) return null;
         Object result = getAdditionalResults().get(key);
         if (result==null) return null;
         return clazz.cast(result);

@@ -18,8 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class NodeRegistryEntry {
     public enum STATE { PREREGISTERED, IGNORE_NODE, INSTALLING, NOT_INSTALLED, INSTALLED, INSTALL_ERROR,
         WAITING_REGISTRATION, REGISTERING, REGISTERED, REGISTRATION_ERROR, DISCONNECTED, EXITING, EXITED, NODE_FAILED
@@ -41,6 +41,11 @@ public class NodeRegistryEntry {
     @Getter private transient Map<String, String> registration = new LinkedHashMap<>();
     @JsonIgnore
     @Getter @Setter private transient IClusterZone clusterZone;
+
+    @JsonIgnore
+    public BaguetteServer getBaguetteServer() {
+        return baguetteServer;
+    }
 
     public String getNodeId() {
         return getPreregistration().get("id");
