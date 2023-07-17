@@ -41,6 +41,7 @@ public class ServerCollectorContext implements CollectorContext {
 
     @Override
     public Set<Serializable> getNodesWithoutClient() {
+        if (nodeRegistry==null || nodeRegistry.getCoordinator()==null) return null;
         return nodeRegistry.getCoordinator().supportsAggregators()
                 ? Collections.emptySet()
                 : nodeRegistry.getNodes().stream()
