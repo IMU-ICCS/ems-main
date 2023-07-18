@@ -10,13 +10,17 @@
 package eu.melodic.event.control.controller;
 
 import eu.melodic.event.baguette.server.BaguetteServer;
+import eu.melodic.event.brokercep.BrokerCepService;
+import eu.melodic.event.brokerclient.event.EventGenerator;
 import eu.melodic.event.control.ControlServiceApplication;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +29,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ManagementCoordinator {
 
+    private final ApplicationContext applicationContext;
     private final ControlServiceProperties properties;
     private final ControlServiceCoordinator coordinator;
+    private final BrokerCepService brokerCepService;
     private final BaguetteServer baguetteServer;
+
+    private final Map<String, EventGenerator> eventGenerators = new HashMap<>();
 
     // ------------------------------------------------------------------------------------------------------------
     // Life-Cycle control methods
@@ -83,14 +91,41 @@ public class ManagementCoordinator {
                     eu.melodic.event.brokercep.event.EventMap event = new eu.melodic.event.brokercep.event.EventMap(Double.parseDouble(value), 3, System.currentTimeMillis());
                     coordinator.getBrokerCep().publishEvent(null, topicName, event);
                 } catch (Exception ex) {
-                    log.debug("ManagementCoordinator.{}(): EXCEPTION: command: {}, exception: ", method, command, ex);
+                    log.warn("ManagementCoordinator.{}(): EXCEPTION: command: {}, exception: ", method, command, ex);
                     // Log error
-                    return eventLogEnd(method, EVENT_LOG_ERROR);
+                    return eventLogEnd(method, EVENT_LOG_ERROR+": "+method+": "+ex.getMessage());
+                }
+            } else if (command.startsWith("GENERATE-EVENTS-START")) {
+                String[] args = command.split("[ \t\r\n]+");
+                String destination = args[1].trim();
+                long interval = Long.parseLong(args[2].trim());
+                double lower = Double.parseDouble(args[3].trim());
+                double upper = Double.parseDouble(args[4].trim());
+                if (eventGenerators.get(destination) == null) {
+                    EventGenerator generator = applicationContext.getBean(EventGenerator.class);
+                    generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrlForClients());
+                    generator.setBrokerUsername(brokerCepService.getBrokerUsername());
+                    generator.setBrokerPassword(brokerCepService.getBrokerPassword());
+                    generator.setDestinationName(destination);
+                    generator.setLevel(1);
+                    generator.setInterval(interval);
+                    generator.setLowerValue(lower);
+                    generator.setUpperValue(upper);
+                    eventGenerators.put(destination, generator);
+                    generator.start();
+                }
+
+            } else if (command.startsWith("GENERATE-EVENTS-STOP")) {
+                String[] args = command.split("[ \t\r\n]+");
+                String destination = args[1].trim();
+                EventGenerator generator = eventGenerators.remove(destination);
+                if (generator != null) {
+                    generator.stop();
                 }
             } else {
-                log.debug("ManagementCoordinator.{}(): ERROR: Unsupported command for client-id=0 : {}", method, command);
+                log.warn("ManagementCoordinator.{}(): ERROR: Unsupported command for client-id=0 : {}", method, command);
                 // Log error
-                return eventLogEnd(method, EVENT_LOG_ERROR);
+                return eventLogEnd(method, EVENT_LOG_ERROR+": "+method+": "+command);
             }
         } else if ("*".equals(clientId))
             baguetteServer.sendToActiveClients(command);

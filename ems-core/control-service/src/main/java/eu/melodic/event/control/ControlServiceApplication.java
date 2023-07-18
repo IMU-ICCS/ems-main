@@ -43,6 +43,7 @@ import java.util.TimerTask;
                 "eu.melodic.event.baguette.client.selfhealing", "eu.melodic.event.brokercep",
                 "eu.melodic.event.control", "eu.melodic.event.translate",
                 "eu.melodic.event.common", "eu.melodic.event.util",
+                "eu.melodic.event.brokerclient",
                 "${scan.packages}"
         },
         exclude = { SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class } )
