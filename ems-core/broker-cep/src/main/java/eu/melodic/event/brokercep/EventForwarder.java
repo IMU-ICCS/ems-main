@@ -187,6 +187,13 @@ public class EventForwarder implements InitializingBean, Runnable {
             // Run successful event send callback
             runIfNotNull(task.getSuccess());
 
+        } catch (IllegalArgumentException ex) {
+            // Event with errors
+            log.error("- Event contains errors. Will not retry to send it: Error while sending event: subscriber={}, forward-to-groupings={}, topic={}, retry={}, duration={}ms, payload={}, exception: ",
+                    senderName, task.getBrokerConnectionConfig(), topic, task.getRetries() - 1, task.getTotalDuration(), eventMap, ex);
+
+            runIfNotNull(task.getFailure());
+
         } catch (Exception ex) {
             // Increase retry count and log failed event send
             task.increaseRetries();

@@ -90,7 +90,8 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         put(TIMESTAMP_NAME, System.currentTimeMillis());
     }*/
 
-    public EventMap(Map<String, ?> map) {
+    public EventMap(Map<String, Object> map) {
+        checkEvent(map);
         map.forEach((k, v) -> {
             log.trace("EventMap.<init>: key={}, value={}", k, v);
             this.put(k, v);
@@ -100,22 +101,26 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
             if (properties!=null && properties.size()>0)
                 setEventProperties(new LinkedHashMap<>(properties));
         }
+        checkEvent();
     }
 
     public EventMap(double metricValue) {
         put(METRIC_VALUE_NAME, metricValue);
         put(TIMESTAMP_NAME, System.currentTimeMillis());
+        checkEvent();
     }
 
     public EventMap(double metricValue, long timestamp) {
         put(METRIC_VALUE_NAME, metricValue);
         put(TIMESTAMP_NAME, timestamp);
+        checkEvent();
     }
 
     public EventMap(double metricValue, int level, long timestamp) {
         put(METRIC_VALUE_NAME, metricValue);
         put(LEVEL_NAME, level);
         put(TIMESTAMP_NAME, timestamp);
+        checkEvent();
     }
 
 
@@ -145,7 +150,26 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         }
         return eventMap;
         */
-        return gson.fromJson(s, EventMap.class);
+        EventMap eventMap = gson.fromJson(s, EventMap.class);
+        eventMap.checkEvent();
+        return eventMap;
+    }
+
+    public void checkEvent() {
+        checkEvent(this);
+    }
+
+    public static void checkEvent(Map<String, Object> map) {
+        // Check metric value
+        Object m = map.get(METRIC_VALUE_NAME);
+        if (m==null) throw new IllegalArgumentException("Argument does not contain a 'metricValue'");
+        if (!(m instanceof Number n)) throw new IllegalArgumentException("Argument contains a non-numeric 'metricValue' : "+m);
+        else {
+            double d = n.doubleValue();
+            if (Double.isInfinite(d) || Double.isNaN(d)) throw new IllegalArgumentException("Argument contains NaN or Infinite 'metricValue' : "+m);
+        }
+        // Check level value
+        // Check timestamp value
     }
 
 

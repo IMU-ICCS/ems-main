@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep;
 
 import eu.melodic.event.brokercep.cep.StatementSubscriber;
+import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.util.GroupingConfiguration;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.AllArgsConstructor;
@@ -42,6 +43,7 @@ public class BrokerCepStatementSubscriber implements StatementSubscriber {
 
     public void update(Map<String, Object> eventMap) {
         log.trace("BrokerCepStatementSubscriber.update(): INPUT: {}", eventMap);
+        EventMap.checkEvent(eventMap);
         publishToLocalBroker(eventMap);
         forwardToGroupings(eventMap);
     }

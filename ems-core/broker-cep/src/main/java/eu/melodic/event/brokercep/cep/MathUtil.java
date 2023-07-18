@@ -215,7 +215,6 @@ public class MathUtil {
 
         // Get argument names
         Set<String> argNames = extractArgNames(e);
-        boolean genSyntax;
 
         // Define expression arguments with user provided values
         //e.removeAllArguments();
@@ -230,12 +229,28 @@ public class MathUtil {
                 throw ex;
             }
         }
-        genSyntax = e.checkSyntax();
-        if (!genSyntax) throw new IllegalArgumentException("Syntax error in expression: " + e.getErrorMessage());
+        boolean genSyntax = e.checkSyntax();
+        if (!genSyntax)
+            throw new IllegalArgumentException("Syntax error in expression: " + e.getErrorMessage());
 
         // Calculate result
         double result = e.calculate();
         log.debug("MathUtil: Result={}, computing-time={}, error={}", result, e.getComputingTime(), e.getErrorMessage());
+
+        if (Double.isInfinite(result) || Double.isNaN(result)) {
+            log.warn("MathUtil: ------------------------------------------------------------------------");
+            log.warn("MathUtil: Result is NaN or Infinite: result={}", result);
+            log.warn("MathUtil: Context:          formula: {}", formula);
+            log.warn("MathUtil: Context:         args-map: {}", argsMap);
+            log.warn("MathUtil: Context:        constants: {}", constants.entrySet().stream().collect(Collectors.toMap(
+                    Map.Entry::getKey, x->x.getValue().getConstantValue()
+            )));
+            log.warn("MathUtil: Context:        functions: {}", functions.entrySet().stream().collect(Collectors.toMap(
+                    Map.Entry::getKey, x->x.getValue().getFunctionExpressionString()
+            )));
+            log.warn("MathUtil: ------------------------------------------------------------------------");
+            throw new IllegalStateException("MathUtil.eval result is NaN or Infinite: "+result);
+        }
 
         return result;
     }

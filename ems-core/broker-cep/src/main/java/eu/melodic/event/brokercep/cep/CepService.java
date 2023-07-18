@@ -124,6 +124,7 @@ public class CepService implements InitializingBean {
      */
     public void handleEvent(Map<String, Object> event, String eventType) {
         log.debug("CepService.handleEvent(): type={}, event={}", eventType, event.toString());
+        EventMap.checkEvent(event);
         epService.getEPRuntime().sendEvent(event, eventType);
     }
 
@@ -132,7 +133,7 @@ public class CepService implements InitializingBean {
      */
     public void handleEvent(String event, String eventType) {
         log.debug("CepService.handleEvent(): type={}, event={}", eventType, event);
-        EventMap eventMap = gson.fromJson(event, EventMap.class);
+        EventMap eventMap = EventMap.parseEventMap(event);
         log.trace("CepService.handleEvent(): event-map={}", eventMap);
         epService.getEPRuntime().sendEvent(eventMap, eventType);
     }
@@ -142,6 +143,7 @@ public class CepService implements InitializingBean {
      */
     public void handleEvent(Object event) {
         log.debug("CepService.handleEvent(): event={}", event);
+        if (event instanceof Map m) EventMap.checkEvent(m);
         epService.getEPRuntime().sendEvent(event);
     }
 
