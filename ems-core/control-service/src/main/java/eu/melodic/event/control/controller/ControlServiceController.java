@@ -14,6 +14,7 @@ import eu.melodic.event.models.interfaces.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -61,6 +62,12 @@ public class ControlServiceController {
         log.info("ControlServiceController.newAppModel(): Request info: app-id={}, notification-uri={}, request-id={}",
                 applicationId, notificationUri, requestUuid);
 
+        // Check parameters
+        if (StringUtils.isBlank(applicationId)) {
+            log.warn("ControlServiceController.newAppModel(): Request does not contain an application id");
+            throw new RestControllerException(400, "Request does not contain an application id");
+        }
+
         // Start translation and reconfiguration in a worker thread
         coordinator.processAppModel(applicationId, null, ControlServiceRequestInfo.create(notificationUri, requestUuid, jwtToken));
         log.debug("ControlServiceController.newAppModel()/camelModel: Model translation dispatched to a worker thread");
@@ -83,6 +90,12 @@ public class ControlServiceController {
         log.info("ControlServiceController.newAppModel(): App model id from request: {}", appModelId);
         log.info("ControlServiceController.newAppModel(): CP model id from request: {}", cpModelId);
 
+        // Check parameters
+        if (StringUtils.isBlank(appModelId)) {
+            log.warn("ControlServiceController.newAppModel(): Request does not contain an app. model id");
+            throw new RestControllerException(400, "Request does not contain an application id");
+        }
+
         // Start translation and component reconfiguration in a worker thread
         coordinator.processAppModel(appModelId, cpModelId, ControlServiceRequestInfo.create(null, null, jwtToken));
         log.debug("ControlServiceController.newAppModel(): Model translation dispatched to a worker thread");
@@ -104,6 +117,12 @@ public class ControlServiceController {
         com.google.gson.JsonObject jobj = new com.google.gson.Gson().fromJson(requestStr, com.google.gson.JsonObject.class);
         String cpModelId = Optional.ofNullable(jobj.get("cp-model-id")).map(je -> stripQuotes(je.toString())).orElse(null);
         log.info("ControlServiceController.newCpModel(): CP model id from request: {}", cpModelId);
+
+        // Check parameters
+        if (StringUtils.isBlank(cpModelId)) {
+            log.warn("ControlServiceController.newCpModel(): Request does not contain a CP model id");
+            throw new RestControllerException(400, "Request does not contain a CP model id");
+        }
 
         // Start CP model processing in a worker thread
         coordinator.processCpModel(cpModelId, ControlServiceRequestInfo.create(null, null, jwtToken));

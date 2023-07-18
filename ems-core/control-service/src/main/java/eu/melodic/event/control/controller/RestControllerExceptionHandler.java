@@ -35,18 +35,21 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 
     @ExceptionHandler(Throwable.class)
     private ResponseEntity<ErrorType> handleAnyException(Throwable ex, WebRequest request) {
-        log.error("RestControllerExceptionHandler: EXCEPTION: ", ex);
+        log.warn("RestControllerExceptionHandler: EXCEPTION: context-path={}, error={}", request.getContextPath(), ex.getMessage());
+        log.debug("RestControllerExceptionHandler: EXCEPTION: context-path={}, error={}\n", request.getContextPath(), ex.getMessage(), ex);
+
+        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR; //BAD_REQUEST;
         if (ex instanceof RestControllerException subEx) {
-            HttpStatus httpStatus = HttpStatus.resolve(subEx.getStatusCode());
+            httpStatus = HttpStatus.resolve(subEx.getStatusCode());
             if (httpStatus!=null) {
-                // Return exception-specific response
-                ErrorType error = new ErrorType(httpStatus, ex);
-                return new ResponseEntity<>(error, error.getReason());
-            }
+                if (httpStatus.is5xxServerError()) {
+                    log.error("RestControllerExceptionHandler: EXCEPTION: context-path={}\n", request.getContextPath(), ex);
+                }
+            } else
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR; //BAD_REQUEST;
         }
 
-        // Return '400 Bad Request' response
-        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+        // Return error response
         ErrorType error = new ErrorType(httpStatus, ex);
         return new ResponseEntity<>(error, error.getReason());
     }
