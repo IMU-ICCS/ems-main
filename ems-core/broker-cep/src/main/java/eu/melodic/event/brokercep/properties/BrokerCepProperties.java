@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep.properties;
 
+import eu.melodic.event.brokercep.EventCache;
 import eu.melodic.event.brokercep.event.EventRecorder;
 import eu.melodic.event.util.EmsConstant;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
@@ -86,7 +87,7 @@ public class BrokerCepProperties implements InitializingBean {
 
     private EventRecorderProperties eventRecorder = new EventRecorderProperties();
 
-    private int eventCacheSize = 1000;
+    private int eventCacheSize = EventCache.DEFAULT_EVENT_CACHE_SIZE;
 
     @Data
     public static class Usage {

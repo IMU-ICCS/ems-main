@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class EventCache implements InitializingBean {
+    public final static int DEFAULT_EVENT_CACHE_SIZE = 10;
+
     private final BrokerCepProperties properties;
     private final AtomicLong cacheCounter = new AtomicLong(0);
     private ArrayBlockingQueue<CacheEntry> messageCache;
@@ -33,7 +35,7 @@ public class EventCache implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         int s = properties!=null ? properties.getEventCacheSize() : -1;
-        if (s<0) s = 1000;
+        if (s<0) s = DEFAULT_EVENT_CACHE_SIZE;
         messageCache = new ArrayBlockingQueue<>(s);
     }
 
