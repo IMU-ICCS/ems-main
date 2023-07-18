@@ -208,6 +208,10 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
         return Long.parseLong(removeQuotes(v));
     }
 
+    public Map<String,Object> getPayload() {
+        return new LinkedHashMap<>(this);
+    }
+
     public String toString() {
         return getEventProperties()!=null
                 ? "{ payload: "+super.toString() + ", properties: " + getEventProperties().toString() + " }"
