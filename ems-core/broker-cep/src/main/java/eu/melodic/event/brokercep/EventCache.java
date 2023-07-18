@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class EventCache implements InitializingBean {
-    public final static int DEFAULT_EVENT_CACHE_SIZE = 10;
+    public final static int DEFAULT_EVENT_CACHE_SIZE = 100;
 
     private final BrokerCepProperties properties;
     private final AtomicLong cacheCounter = new AtomicLong(0);
