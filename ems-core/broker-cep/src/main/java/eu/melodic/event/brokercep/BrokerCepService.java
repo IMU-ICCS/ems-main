@@ -56,6 +56,7 @@ public class BrokerCepService {
     private BrokerCepConsumer brokerCepBridge;
     @Getter
     private CepService cepService;
+    private EventCache eventCache;
 
     private Gson gson;
 
@@ -430,6 +431,8 @@ public class BrokerCepService {
         bcepStats.put("count-total-events-object", BrokerCepConsumer.getObjectEventCounter());
         bcepStats.put("count-total-events-other", BrokerCepConsumer.getOtherEventCounter());
         bcepStats.put("count-total-events-failures", BrokerCepConsumer.getEventFailuresCounter());
+
+        bcepStats.put("latest-events", eventCache.asList());
 
         return bcepStats;
     }

@@ -9,6 +9,7 @@
 
 package eu.melodic.event.brokercep;
 
+import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +72,7 @@ public class EventCache implements InitializingBean {
                 return;
             }
         }
-        entry.payload = event.toString();
+        entry.payload = (event instanceof EventMap e) ? e.getPayload().toString() : event.toString();
         entry.properties = properties.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey, p -> p.getValue()!=null ? p.getValue().toString() : ""
         ));

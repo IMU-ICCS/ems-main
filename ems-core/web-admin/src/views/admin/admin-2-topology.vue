@@ -379,15 +379,12 @@
 
         <div class="col-6">
             <Card bodyClasses="p-0"
-                  header="&nbsp;Client Locations (with JVectormap)"
-                  icon="fas fa-map"
+                  header="&nbsp;Latest EMS server events"
+                  icon="fas fa-envelope"
                   footer="..."
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
-                <JVectorMap height="425px"
-                            :options="{ /*backgroundColor:'navy'*/ }"
-                            :markers="clientMarkers"
-                ></JVectorMap>
+                <LatestEvents :emsData="modelValue" :height=" '410px' "/>
             </Card>
         </div>
         <!-- /.col-6 -->
@@ -410,9 +407,9 @@ import 'vue3-blocks-tree/dist/vue3-blocks-tree.css';
 
 import ActionsList from './widgets/node-actions-list';
 
-import JVectorMap from '@/components/jvectormap/jvectormap.vue';
-
 import LeafletMap from '@/components/leaflet-map/leaflet-map.vue';
+
+import LatestEvents from './widgets/latest-events.vue';
 
 import countryCoords from './country-coordinates.js';
 
@@ -422,7 +419,7 @@ const TIME_WINDOW_LENGTH = 5*60;  // seconds
 
 export default {
     name: 'Admin Dashboard',
-    components: { Card, Sparkline, VueBlocksTree, JVectorMap, LeafletMap, ActionsList },
+    components: { Card, Sparkline, VueBlocksTree, LatestEvents, LeafletMap, ActionsList },
     props: {
         modelValue: Object,
         clientStats: Object,
