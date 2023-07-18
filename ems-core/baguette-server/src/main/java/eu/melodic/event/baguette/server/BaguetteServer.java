@@ -158,15 +158,15 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         if (server == null) {
             eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
 
-            log.info("BaguetteServer.startServer(): Starting SSH server instance...");
+            log.info("BaguetteServer.startServer(): Starting SSH server...");
             nodeRegistry.setCoordinator(coordinator);
             Sshd server = new Sshd();
             server.start(config, coordinator, eventBus, nodeRegistry);
             server.setNodeRegistry(getNodeRegistry());
             this.server = server;
-            log.info("BaguetteServer.startServer(): Starting SSH server instance... done");
+            log.info("BaguetteServer.startServer(): Starting SSH server... done");
         } else {
-            log.warn("BaguetteServer.startServer(): An SSH server instance is already running");
+            log.info("BaguetteServer.startServer(): SSH server is already running");
         }
     }
 
@@ -174,13 +174,13 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         if (server != null) {
             eventBus.unsubscribe(RecoveryConstant.SELF_HEALING_RECOVERY_GIVE_UP, this);
 
-            log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server...");
+            log.info("BaguetteServer.setServerConfiguration(): stopping SSH server...");
             server.stop();
             this.server = null;
             nodeRegistry.setCoordinator(null);
-            log.info("BaguetteServer.setServerConfiguration(): stopping running instance of SSH server... done");
+            log.info("BaguetteServer.setServerConfiguration(): stopping SSH server... done");
         } else {
-            log.warn("BaguetteServer.stop(): No SSH server instance is running");
+            log.info("BaguetteServer.stop(): No SSH server instance is running");
         }
     }
 
@@ -224,7 +224,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
             BrokerCepService brokerCepService)
             throws IOException
     {
-        log.info("BaguetteServer.setTopologyConfiguration(): BEGIN");
+        log.debug("BaguetteServer.setTopologyConfiguration(): BEGIN");
 
         // Set new configuration
         this.groupingTopicsMap = _TC.getG2T();
@@ -237,14 +237,14 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         this.brokerCepService = brokerCepService;
 
         // Print new configuration
-        log.info("BaguetteServer.setTopologyConfiguration(): Grouping-to-Topics (G2T): {}", groupingTopicsMap);
-        log.info("BaguetteServer.setTopologyConfiguration(): Grouping-to-Rules (G2R): {}", groupingRulesMap);
-        log.info("BaguetteServer.setTopologyConfiguration(): Topic-Connections: {}", topicConnections);
-        log.info("BaguetteServer.setTopologyConfiguration(): Constants: {}", constants);
-        log.info("BaguetteServer.setTopologyConfiguration(): Function-Definitions: {}", functionDefinitions);
-        log.info("BaguetteServer.setTopologyConfiguration(): Upperware-grouping: {}", upperwareGrouping);
-        log.info("BaguetteServer.setTopologyConfiguration(): Upperware-broker-url: {}", upperwareBrokerUrl);
-        log.info("BaguetteServer.setTopologyConfiguration(): Broker-credentials: username={}, password={}",
+        log.debug("BaguetteServer.setTopologyConfiguration(): Grouping-to-Topics (G2T): {}", groupingTopicsMap);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Grouping-to-Rules (G2R): {}", groupingRulesMap);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Topic-Connections: {}", topicConnections);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Constants: {}", constants);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Function-Definitions: {}", functionDefinitions);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Upperware-grouping: {}", upperwareGrouping);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Upperware-broker-url: {}", upperwareBrokerUrl);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Broker-credentials: username={}, password={}",
                 brokerCepService.getBrokerUsername(), passwordUtil.encodePassword(brokerCepService.getBrokerPassword()));
 
         // Stop any running instance of SSH server
@@ -253,13 +253,13 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         // Clear node registry
         nodeRegistry.clearNodes();
 
-        log.info("BaguetteServer.setTopologyConfiguration(): Baguette server configuration: {}", config);
-        log.info("BaguetteServer.setTopologyConfiguration(): Baguette Server credentials: {}", config.getCredentials());
+        log.debug("BaguetteServer.setTopologyConfiguration(): Baguette server configuration: {}", config);
+        log.debug("BaguetteServer.setTopologyConfiguration(): Baguette Server credentials: {}", config.getCredentials());
 
         // Initialize server coordinator
-        log.info("BaguetteServer.setTopologyConfiguration(): Initializing Baguette protocol coordinator...");
+        log.debug("BaguetteServer.setTopologyConfiguration(): Initializing Baguette protocol coordinator...");
         ServerCoordinator coordinator = createServerCoordinator(config, _TC, upperwareGrouping);
-        log.info("BaguetteServer.setTopologyConfiguration(): Coordinator: {}", coordinator.getClass().getName());
+        log.debug("BaguetteServer.setTopologyConfiguration(): Coordinator: {}", coordinator.getClass().getName());
         coordinator.initialize(
                 _TC,
                 upperwareGrouping,
@@ -275,7 +275,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         // Start a new instance of SSH server
         startServer(coordinator);
 
-        log.info("BaguetteServer.setTopologyConfiguration(): END");
+        log.debug("BaguetteServer.setTopologyConfiguration(): END");
     }
 
     protected static ServerCoordinator createServerCoordinator(BaguetteServerProperties config, TranslationContext _TC, String upperwareGrouping) {

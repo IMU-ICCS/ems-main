@@ -171,7 +171,7 @@ public class BrokerAdvisoryWatcher implements MessageListener, InitializingBean,
 			// Subscribe to topic
 			if (isAdd) {
 				String topicName = destination.getPhysicalName();
-				log.info("BrokerAdvisoryWatcher.onMessage(): Subscribing to topic: {}", topicName);
+				log.debug("BrokerAdvisoryWatcher.onMessage(): Subscribing to topic: {}", topicName);
 
 				MessageConsumer consumer = session.createConsumer(destination);
 				consumer.setMessageListener(this);

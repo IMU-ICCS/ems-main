@@ -51,7 +51,7 @@ public class ControlServiceController {
     public String newAppModel(@RequestBody CamelModelRequestImpl request,
                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.newAppModel(): Received request: {}", request);
+        log.debug("ControlServiceController.newAppModel(): Received request: {}", request);
         log.trace("ControlServiceController.newAppModel(): JWT token: {}", jwtToken);
 
         // Get information from request
@@ -73,7 +73,7 @@ public class ControlServiceController {
     public String newAppModel(@RequestBody String requestStr,
                               @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.newAppModel(): Received request: {}", requestStr);
+        log.debug("ControlServiceController.newAppModel(): Received request: {}", requestStr);
         log.trace("ControlServiceController.newAppModel()/camelModelJson: JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
@@ -97,7 +97,7 @@ public class ControlServiceController {
     public String newCpModel(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.newCpModel(): Received request: {}", requestStr);
+        log.debug("ControlServiceController.newCpModel(): Received request: {}", requestStr);
         log.trace("ControlServiceController.newCpModel(): JWT token: {}", jwtToken);
 
         // Use Gson to get model id's from request body (in JSON format)
@@ -117,7 +117,7 @@ public class ControlServiceController {
     public String setConstants(@RequestBody String requestStr,
                              @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.setConstants(): Received request: {}", requestStr);
+        log.debug("ControlServiceController.setConstants(): Received request: {}", requestStr);
         log.trace("ControlServiceController.setConstants(): JWT token: {}", jwtToken);
 
         // Use Gson to get constants from request body (in JSON format)
@@ -154,7 +154,7 @@ public class ControlServiceController {
     @RequestMapping(value = "/translator/currentAppModel", method = {GET,POST})
     public String getCurrentAppModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.getCurrentAppModel(): Received request");
+        log.debug("ControlServiceController.getCurrentAppModel(): Received request");
         log.trace("ControlServiceController.getCurrentAppModel(): JWT token: {}", jwtToken);
 
         String currentAppModelId = coordinator.getCurrentAppModelId();
@@ -166,7 +166,7 @@ public class ControlServiceController {
     @RequestMapping(value = "/translator/currentCpModel", method = {GET,POST})
     public String getCurrentCpModel(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String jwtToken)
     {
-        log.info("ControlServiceController.getCurrentCpModel(): Received request");
+        log.debug("ControlServiceController.getCurrentCpModel(): Received request");
         log.trace("ControlServiceController.getCurrentCpModel(): JWT token: {}", jwtToken);
 
         String currentCpModelId = coordinator.getCurrentCpModelId();

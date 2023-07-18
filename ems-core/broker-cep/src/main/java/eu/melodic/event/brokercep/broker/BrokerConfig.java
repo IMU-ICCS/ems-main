@@ -462,7 +462,7 @@ public class BrokerConfig implements InitializingBean {
         // Create connection factory based on Broker URL scheme
         final ActiveMQConnectionFactory connectionFactory;
         if (brokerUrl.startsWith("ssl")) {
-            log.info("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
+            log.debug("BrokerConfig: Creating new SSL connection factory instance: url={}", brokerUrl);
             final ActiveMQSslConnectionFactory sslConnectionFactory = new ActiveMQSslConnectionFactory(brokerUrl);
             try {
                 sslConnectionFactory.setTrustStore(properties.getSsl().getTruststoreFile());
@@ -478,7 +478,7 @@ public class BrokerConfig implements InitializingBean {
                 throw new Error(theException);
             }
         } else {
-            log.info("BrokerConfig: Creating new non-SSL connection factory instance: url={}", brokerUrl);
+            log.debug("BrokerConfig: Creating new non-SSL connection factory instance: url={}", brokerUrl);
             connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
         }
 

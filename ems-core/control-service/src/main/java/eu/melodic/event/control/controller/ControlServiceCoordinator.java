@@ -296,7 +296,7 @@ public class ControlServiceCoordinator implements InitializingBean {
             if (StringUtils.isNotBlank(cpModelId)) {
                 constants = retrieveConstantsFromCpModel(cpModelId, _TC, EMS_STATE.INITIALIZING);
             } else {
-                log.warn("ControlServiceCoordinator._processAppModel(): No CP model have been provided");
+                log.warn("ControlServiceCoordinator._processAppModel(): No CP model has been provided");
             }
         } else {
             log.warn("ControlServiceCoordinator._processAppModel(): Skipping MVV retrieval due to configuration");
@@ -379,7 +379,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         // Retrieve Metric Variable Values (MVV) from CP model
         if (properties.isSkipMvvRetrieve()) {
-            log.info("ControlServiceCoordinator.setConstants(): isSkipMvvRetrieve is true, but constants processing will continue");
+            log.warn("ControlServiceCoordinator.setConstants(): isSkipMvvRetrieve is true, but constants processing will continue");
         }
 
         // (Re-)Configure Broker and CEP
@@ -506,12 +506,12 @@ public class ControlServiceCoordinator implements InitializingBean {
             setCurrentEmsState(emsState, "Retrieving MVVs from CP model");
 
             try {
-                log.info("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
+                log.debug("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Retrieving MVVs from CP model: cp-model-id={}", cpModelId);
 
                 // Retrieve constant names from '_TC.MVV_CP' and values from a given CP model
-                log.info("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Looking for MVV_CP's: {}", _TC.getCompositeMetricVariables());
+                log.debug("ControlServiceCoordinator.retrieveConstantsFromCpModel(): Looking for MVV_CP's: {}", _TC.getCompositeMetricVariables());
                 constants = mvvService.getMatchingMetricVariableValues(cpModelId, _TC);
-                log.info("ControlServiceCoordinator.retrieveConstantsFromCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
+                log.debug("ControlServiceCoordinator.retrieveConstantsFromCpModel(): MVVs retrieved from CP model: cp-model-id={}, MVVs={}", cpModelId, constants);
 
             } catch (Exception ex) {
                 log.error("ControlServiceCoordinator.retrieveConstantsFromCpModel(): EXCEPTION while retrieving MVVs from CP model: cp-model-id={}", cpModelId, ex);
@@ -534,9 +534,9 @@ public class ControlServiceCoordinator implements InitializingBean {
             }
 
             // Get event types for GLOBAL grouping (i.e. that of Upperware)
-            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Upperware grouping: {}", upperwareGrouping);
+            log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Upperware grouping: {}", upperwareGrouping);
             Set<String> eventTypeNames = _TC.getG2T().get(upperwareGrouping);
-            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of Event Types: {}", eventTypeNames);
+            log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of Event Types: {}", eventTypeNames);
             if (eventTypeNames == null || eventTypeNames.size() == 0)
                 throw new RuntimeException("Broker-CEP: No event types for GLOBAL grouping");
 
@@ -544,14 +544,14 @@ public class ControlServiceCoordinator implements InitializingBean {
             brokerCep.clearState();
             brokerCep.addEventTypes(eventTypeNames, EventMap.getPropertyNames(), EventMap.getPropertyClasses());
 
-            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Constants: {}", constants);
+            log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Constants: {}", constants);
             brokerCep.setConstants(constants);
 
-            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Function definitions: {}", _TC.getFunctionDefinitions());
+            log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Function definitions: {}", _TC.getFunctionDefinitions());
             brokerCep.addFunctionDefinitions(_TC.getFunctionDefinitions());
 
             Map<String, Set<String>> ruleStatements = _TC.getG2R().get(upperwareGrouping);
-            log.info("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of EPL statements: {}", ruleStatements);
+            log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Configuration of EPL statements: {}", ruleStatements);
             if (ruleStatements != null) {
                 int cnt = 0;
                 for (Map.Entry<String, Set<String>> topicRules : ruleStatements.entrySet()) {
@@ -562,6 +562,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                         );
                     }
                 }
+                log.debug("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: Added {} EPL statements", cnt);
             } else {
                 log.warn("ControlServiceCoordinator.configureBrokerCep(): Broker-CEP: No EPL statements found for GLOBAL grouping");
             }
@@ -581,7 +582,7 @@ public class ControlServiceCoordinator implements InitializingBean {
                 log.debug("ControlServiceCoordinator.reconfigureBrokerCep(): Broker-CEP: Initializing...ok");
             }
 
-            log.info("ControlServiceCoordinator.reconfigureBrokerCep(): Passing constants to Broker-CEP: {}", constants);
+            log.debug("ControlServiceCoordinator.reconfigureBrokerCep(): Passing constants to Broker-CEP: {}", constants);
             brokerCep.setConstants(constants);
         } catch (Exception ex) {
             log.error("ControlServiceCoordinator.reconfigureBrokerCep(): EXCEPTION while initializing Broker-CEP with constants: constants={}", constants, ex);
@@ -604,7 +605,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private void configureBaguetteServer(String appModelId, TranslationContext _TC, Map<String, Double> constants, String upperwareGrouping) {
         setCurrentEmsState(EMS_STATE.INITIALIZING, "Initializing Baguette Server");
 
-        log.info("ControlServiceCoordinator.configureBaguetteServer(): Re-configuring Baguette Server: app-model-id={}", appModelId);
+        log.debug("ControlServiceCoordinator.configureBaguetteServer(): Re-configuring Baguette Server: app-model-id={}", appModelId);
         try {
             baguetteServer.setTopologyConfiguration(_TC, constants, upperwareGrouping, brokerCep);
         } catch (Exception ex) {
@@ -615,7 +616,7 @@ public class ControlServiceCoordinator implements InitializingBean {
     private void reconfigureBaguetteServer(Map<String, Double> constants) {
         setCurrentEmsState(EMS_STATE.RECONFIGURING, "Reconfiguring Baguette Server");
 
-        log.info("ControlServiceCoordinator.reconfigureBaguetteServer(): Re-configuring Baguette Server with constants: {}", constants);
+        log.debug("ControlServiceCoordinator.reconfigureBaguetteServer(): Re-configuring Baguette Server with constants: {}", constants);
         try {
             baguetteServer.sendConstants(constants);
         } catch (Exception ex) {
@@ -733,9 +734,9 @@ public class ControlServiceCoordinator implements InitializingBean {
             setCurrentEmsState(emsState, "Notifying ESB");
 
             String notificationUri = requestInfo.getNotificationUri().trim();
-            log.info("ControlServiceCoordinator.notifyESB(): Notifying ESB: {}", notificationUri);
+            log.debug("ControlServiceCoordinator.notifyESB(): Notifying ESB: {}", notificationUri);
             sendSuccessNotification(appModelId, requestInfo);
-            log.info("ControlServiceCoordinator.notifyESB(): ESB notified: {}", notificationUri);
+            log.debug("ControlServiceCoordinator.notifyESB(): ESB notified: {}", notificationUri);
         } else {
             log.warn("ControlServiceCoordinator.notifyESB(): Notification URI is blank");
         }
@@ -863,7 +864,10 @@ public class ControlServiceCoordinator implements InitializingBean {
 
         if (response!=null) {
             String responseStatus = response.getStatusCode().toString();
-            log.info("ControlServiceCoordinator.sendAppModelNotification(): ESB endpoint invoked: {}, status={}, message={}", url, responseStatus, response.getBody());
+            if (response.getStatusCode().is2xxSuccessful())
+                log.info("ControlServiceCoordinator.sendAppModelNotification(): ESB endpoint invoked: {}, status={}, message={}", url, responseStatus, response.getBody());
+            else
+                log.info("ControlServiceCoordinator.sendAppModelNotification(): ESB endpoint invoked: {}, status={}, message={}", url, responseStatus, response.getBody());
         } else {
             log.warn("ControlServiceCoordinator.sendAppModelNotification(): ESB endpoint invoked: {}, response is NULL", url);
         }

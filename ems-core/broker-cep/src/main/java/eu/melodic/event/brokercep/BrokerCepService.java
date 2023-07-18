@@ -65,7 +65,7 @@ public class BrokerCepService {
     }
 
     public synchronized void clearState() {
-        log.info("BrokerCepService.clearState(): Clearing Broker-CEP state...");
+        log.debug("BrokerCepService.clearState(): Clearing Broker-CEP state...");
 
         // Clear CEP service state
         cepService.clearStatements();
@@ -83,12 +83,12 @@ public class BrokerCepService {
             for (ObjectName q : queues) {
                 String name = q.getCanonicalName();
                 bv.removeQueue(name);
-                log.info("BrokerCepService.clearState(): Queue removed: {}", name);
+                log.debug("BrokerCepService.clearState(): Queue removed: {}", name);
             }
             for (ObjectName t : topics) {
                 String name = t.getCanonicalName();
                 bv.removeTopic(name);
-                log.info("BrokerCepService.clearState(): Topic removed: {}", name);
+                log.debug("BrokerCepService.clearState(): Topic removed: {}", name);
             }
 
             //XXX: remove JMX tests
@@ -133,26 +133,26 @@ public class BrokerCepService {
                         }
                     });*/
 
-            log.info("BrokerCepService.clearState(): Broker-CEP state cleared");
+            log.debug("BrokerCepService.clearState(): Broker-CEP state cleared");
         } catch (Exception ex) {
             log.error("BrokerCepService.clearState(): Failed to clear Broker state: ", ex);
         }
 
         // Reset Broker-CEP Consumer connection and session
         brokerCepBridge.initialize();
-        log.info("BrokerCepService.clearState(): Broker-CEP Consumer has been re-initialized");
+        log.debug("BrokerCepService.clearState(): Broker-CEP Consumer has been re-initialized");
     }
 
     public synchronized void addEventTypes(Set<String> eventTypeNames, String[] eventPropertyNames, Class[] eventPropertyTypes) {
         log.info("BrokerCepService.addEventTypes(): Adding event types: {}", eventTypeNames);
         eventTypeNames.forEach(name -> addEventType(name, eventPropertyNames, eventPropertyTypes));
-        log.info("BrokerCepService.addEventTypes(): Adding event types: ok");
+        log.debug("BrokerCepService.addEventTypes(): Adding event types: ok");
     }
 
     public synchronized void addEventTypes(Set<String> eventTypeNames, Class eventType) {
         log.info("BrokerCepService.addEventTypes(): Adding event types: {}", eventTypeNames);
         eventTypeNames.forEach(name -> addEventType(name, eventType));
-        log.info("BrokerCepService.addEventTypes(): Adding event types: ok");
+        log.debug("BrokerCepService.addEventTypes(): Adding event types: ok");
     }
 
     public synchronized void addEventType(String eventTypeName, String[] eventPropertyNames, Class[] eventPropertyTypes) {
@@ -162,7 +162,7 @@ public class BrokerCepService {
 
         // Register a new event type in Esper (cep engine)
         cepService.addEventType(eventTypeName, eventPropertyNames, eventPropertyTypes);
-        log.info("BrokerCepService.addEventType(): New event type registered: {}", eventTypeName);
+        log.debug("BrokerCepService.addEventType(): New event type registered: {}", eventTypeName);
     }
 
     public synchronized void addEventType(String eventTypeName, Class eventType) {
@@ -172,7 +172,7 @@ public class BrokerCepService {
 
         // Register a new event type in Esper (cep engine)
         cepService.addEventType(eventTypeName, eventType);
-        log.info("BrokerCepService.addEventType(): New event type registered: {}", eventTypeName);
+        log.debug("BrokerCepService.addEventType(): New event type registered: {}", eventTypeName);
     }
 
     public void setConstant(String constName, double constValue) {
@@ -183,13 +183,13 @@ public class BrokerCepService {
     public void setConstants(Map<String, Double> constants) {
         log.info("BrokerCepService.setConstants(): Add/Set constants: {}", constants);
         cepService.setConstants(constants);
-        log.info("BrokerCepService.setConstants(): Add/Set constants: ok");
+        log.debug("BrokerCepService.setConstants(): Add/Set constants: ok");
     }
 
     public void addFunctionDefinitions(Set<FunctionDefinition> definitions) {
         log.info("BrokerCepService.addFunctionDefinitions(): Adding function definitions: {}", definitions);
-        definitions.forEach(def -> addFunctionDefinition(def));
-        log.info("BrokerCepService.addFunctionDefinitions(): Adding function definitions: ok");
+        definitions.forEach(this::addFunctionDefinition);
+        log.debug("BrokerCepService.addFunctionDefinitions(): Adding function definitions: ok");
     }
 
     public void addFunctionDefinition(FunctionDefinition definition) {

@@ -100,7 +100,7 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         }
         if (properties.getDelay()<0) properties.setDelay(0);
 
-        log.info("Collectors::{}: configuration: {}", collectorId, properties);
+        log.debug("Collectors::{}: configuration: {}", collectorId, properties);
 
         // Subscribe for SELF-HEALING plugin GIVE_UP events
         eventBus.subscribe(RecoveryConstant.SELF_HEALING_RECOVERY_COMPLETED, this);
