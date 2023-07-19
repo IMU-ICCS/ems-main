@@ -103,7 +103,7 @@ public class ManagementCoordinator {
                 double upper = Double.parseDouble(args[4].trim());
                 if (eventGenerators.get(destination) == null) {
                     EventGenerator generator = applicationContext.getBean(EventGenerator.class);
-                    generator.setBrokerUrl(brokerCepService.getBrokerCepProperties().getBrokerUrlForClients());
+                    //generator.setBrokerUrl(null);
                     generator.setBrokerUsername(brokerCepService.getBrokerUsername());
                     generator.setBrokerPassword(brokerCepService.getBrokerPassword());
                     generator.setDestinationName(destination);
