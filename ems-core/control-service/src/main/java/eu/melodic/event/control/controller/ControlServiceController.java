@@ -10,7 +10,7 @@
 package eu.melodic.event.control.controller;
 
 import com.google.gson.reflect.TypeToken;
-import eu.melodic.event.models.interfaces.*;
+import eu.melodic.models.interfaces.CamelModelRequestImpl;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
