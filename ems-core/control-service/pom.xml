@@ -70,7 +70,7 @@
             <version>${jjwt.version}</version>
         </dependency>
 
-        <!--XXX: Dependency for authorization client -->
+        <!--XXX:SPLIT: Dependency for authorization client -->
         <!--<dependency>
             <groupId>eu.melodic.security.authorization</groupId>
             <artifactId>authorization-service-client</artifactId>
