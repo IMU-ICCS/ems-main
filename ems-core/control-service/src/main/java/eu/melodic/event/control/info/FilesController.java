@@ -54,7 +54,7 @@ public class FilesController {
         this.properties = properties;
         List<Path> tmp = properties.getFiles().getRoots();
         this.roots = (tmp!=null) ? tmp : Collections.emptyList();
-        log.info("FilesController: File roots: {}", roots);
+        log.debug("FilesController: File roots: {}", roots);
     }
 
     @GetMapping("/files")

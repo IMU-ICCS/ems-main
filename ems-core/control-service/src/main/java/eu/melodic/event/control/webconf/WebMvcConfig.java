@@ -62,7 +62,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
             if (ArrayUtils.isEmpty(authPathsProtected)) authPathsProtected = DEFAULT_PATHS_PROTECTED;
             if (ArrayUtils.isEmpty(authPathsExcluded)) authPathsExcluded = DEFAULT_PATHS_EXCLUDED;
-            log.warn("WebMvcConfig.addInterceptors(): Authorization check: paths-protected={}, paths-excluded={}",
+            log.debug("WebMvcConfig.addInterceptors(): Authorization check: paths-protected={}, paths-excluded={}",
                     authPathsProtected, authPathsExcluded);
 
             /*XXX:SPLIT:

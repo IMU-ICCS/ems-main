@@ -143,11 +143,11 @@ public class PrometheusProcessorPlugin implements InstallationContextProcessorPl
 
     @Override
     public void start() {
-        log.info("PrometheusProcessorPlugin: start()");
+        log.debug("PrometheusProcessorPlugin: start()");
     }
 
     @Override
     public void stop() {
-        log.info("PrometheusProcessorPlugin: stop()");
+        log.debug("PrometheusProcessorPlugin: stop()");
     }
 }

@@ -105,11 +105,11 @@ public class AllowedTopicsProcessorPlugin implements InstallationContextProcesso
 
     @Override
     public void start() {
-        log.info("AllowedTopicsProcessorPlugin: start()");
+        log.debug("AllowedTopicsProcessorPlugin: start()");
     }
 
     @Override
     public void stop() {
-        log.info("AllowedTopicsProcessorPlugin: stop()");
+        log.debug("AllowedTopicsProcessorPlugin: stop()");
     }
 }

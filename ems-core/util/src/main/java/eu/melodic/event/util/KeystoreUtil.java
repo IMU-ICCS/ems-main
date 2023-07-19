@@ -424,7 +424,7 @@ public class KeystoreUtil {
     public static void initializeKeystoresAndCertificate(IKeystoreAndCertificateProperties properties, PasswordUtil passwordUtil) throws Exception {
         if (passwordUtil==null)
             passwordUtil = PasswordUtil.getInstance();
-        log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate...");
+        log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate...");
         log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Key pair and Certificate settings:");
         log.debug("    Keystore file: {}", properties.getKeystoreFile());
         log.debug("    Keystore type: {}", properties.getKeystoreType());
@@ -537,6 +537,6 @@ public class KeystoreUtil {
                     .getEntryCertificateAsPEM(properties.getKeyEntryName());
             log.debug("    Certificate (PEM):\n{}", certPemStr);
         }
-        log.info("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate... done");
+        log.debug("KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate... done");
     }
 }

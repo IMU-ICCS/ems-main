@@ -71,7 +71,7 @@ public class PasswordUtil implements InitializingBean {
 
     public void setPasswordEncoder(PasswordEncoder pe) {
         passwordEncoder = pe;
-        log.info("PasswordUtil.setPasswordEncoder(): PasswordEncoder set to: {}", passwordEncoder.getClass().getName());
+        log.debug("PasswordUtil.setPasswordEncoder(): PasswordEncoder set to: {}", passwordEncoder.getClass().getName());
     }
 
     public void setPasswordEncoder(String passwordEncoderClassName) {
@@ -80,7 +80,7 @@ public class PasswordUtil implements InitializingBean {
 
     public static PasswordEncoder createPasswordEncoder(String passwordEncoderClassName) {
         if (StringUtils.isBlank(passwordEncoderClassName)) {
-            log.warn("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
+            log.debug("Password encoder class name is empty. Default instance of PasswordEncoder will be created");
             return passwordEncoderSupplier.get();
         }
 

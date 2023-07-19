@@ -40,7 +40,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
         /*String faviconContext = properties.getFaviconContext();
         String faviconPath = properties.getFaviconPath();
         if(StringUtils.isNotBlank(faviconPath)) {
-            log.info("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
+            log.debug("Serving favicon.ico from: {} --> {}", faviconContext, faviconPath);
             registry
                     .addResourceHandler(faviconContext)
                     .addResourceLocations(faviconPath);
@@ -49,7 +49,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
         String resourceContext = properties.getResourceContext();
         List<String> resourcePath = properties.getResourcePath();
         if (resourcePath != null && resourcePath.size() > 0) {
-            log.info("Serving static content from: {} --> {}", resourceContext, resourcePath);
+            log.debug("Serving static content from: {} --> {}", resourceContext, resourcePath);
             registry
                     .addResourceHandler(resourceContext)
                     .addResourceLocations(resourcePath.toArray(new String[0]));
@@ -58,7 +58,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
         String logsContext = properties.getLogsContext();
         List<String> logsPath = properties.getLogsPath();
         if (logsPath != null && logsPath.size() > 0) {
-            log.info("Serving logs from: {} --> {}", logsContext, logsPath);
+            log.debug("Serving logs from: {} --> {}", logsContext, logsPath);
             registry
                     .addResourceHandler(logsContext)
                     .addResourceLocations(logsPath.toArray(new String[0]));
@@ -72,7 +72,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
         // Remains for backward compatibility (of properties file)
         String resourceRedirect = properties.getRedirect();
         if (StringUtils.isNotBlank(resourceRedirect)) {
-            log.info("Redirecting / to: {}", resourceRedirect);
+            log.debug("Redirecting / to: {}", resourceRedirect);
             registry
                     .addViewController("/")
                     .setViewName("redirect:" + resourceRedirect);
@@ -85,7 +85,7 @@ public class StaticResourceConfiguration implements WebMvcConfigurer, Initializi
                 if (StringUtils.isNotBlank(context) && StringUtils.isNotBlank(redirect)) {
                     context = context.trim();
                     redirect = redirect.trim();
-                    log.info("Redirecting {} to: {}", context, redirect);
+                    log.debug("Redirecting {} to: {}", context, redirect);
                     registry
                             .addViewController(context)
                             .setViewName("redirect:" + redirect);

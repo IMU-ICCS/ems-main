@@ -112,8 +112,9 @@ public class EventRecorder extends LinkedHashMap<String, Object> implements Runn
                 .replace("%S", getSuffix());
         this.recordWriter = new BufferedWriter(new FileWriter(recordFile));
 
-        log.info("EventRecorder: Record format: {}", recordFormat);
-        log.info("EventRecorder: Record file:   {}", recordFile);
+        //log.info("EventRecorder: Record format: {}", recordFormat);
+        //log.info("EventRecorder: Record file:   {}", recordFile);
+        log.info("EventRecorder: Record format: {},  Record file: {}", recordFormat, recordFile);
 
         if (recordFormat==FORMAT.CSV) {
             csvPrinter = new CSVPrinter(recordWriter, CSVFormat.DEFAULT

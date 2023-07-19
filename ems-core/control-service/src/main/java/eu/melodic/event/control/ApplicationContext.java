@@ -47,7 +47,7 @@ public class ApplicationContext {
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setDaemon(true);
-        log.info("ApplicationContext: taskScheduler: NEW INSTANCE CREATED: {}", taskExecutor);
+        log.debug("ApplicationContext: taskScheduler: NEW INSTANCE CREATED: {}", taskExecutor);
         return taskExecutor;
     }
 }

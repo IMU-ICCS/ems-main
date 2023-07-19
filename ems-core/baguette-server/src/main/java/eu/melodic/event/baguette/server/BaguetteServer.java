@@ -72,7 +72,7 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         String genPassword = RandomStringUtils.randomAlphanumeric(32, 64);
         CredentialsMap credentials = config.getCredentials();
         credentials.put(genUsername, genPassword, true);
-        log.info("BaguetteServer.afterPropertiesSet(): Generated new Baguette Server username/password: username={}, password={}",
+        log.info("BaguetteServer: Generated new username/password: username={}, password={}",
                 genUsername, credentials.getPasswordEncoder()!=null
                         ? credentials.getPasswordEncoder().encode(genPassword)
                         : passwordUtil.encodePassword(genPassword));

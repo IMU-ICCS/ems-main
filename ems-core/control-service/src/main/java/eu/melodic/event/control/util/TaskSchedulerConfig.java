@@ -27,7 +27,7 @@ public class TaskSchedulerConfig {
     @Bean
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         int threadPoolSize = properties.getTaskScheduler().getThreadPoolSize();
-        log.info("TaskSchedulerConfig: TaskScheduler thread pool size: {}", threadPoolSize);
+        log.debug("TaskSchedulerConfig: TaskScheduler thread pool size: {}", threadPoolSize);
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
         threadPoolTaskScheduler.setPoolSize(threadPoolSize);
         return threadPoolTaskScheduler;

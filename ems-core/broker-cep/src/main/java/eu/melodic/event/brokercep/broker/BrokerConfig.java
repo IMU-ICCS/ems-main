@@ -164,7 +164,7 @@ public class BrokerConfig implements InitializingBean {
 
     private void initializeKeyPairAndCert() throws Exception {
         log.debug("BrokerConfig.initializeKeyAndCert(): BrokerCepProperties: {}", properties);
-        log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
+        log.debug("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...");
         KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
 
         log.trace("BrokerConfig.initializeKeyAndCert(): Retrieving certificate for Broker-SSL: file={}, type={}, password={}, alias={}...",
@@ -180,7 +180,7 @@ public class BrokerConfig implements InitializingBean {
                 properties.getSsl().getKeystoreFile(), properties.getSsl().getKeystoreType(),
                 passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()),
                 properties.getSsl().getKeyEntryName(), this.brokerCert);
-        log.info("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
+        log.debug("BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done");
     }
 
     private void _initializeEventRecorder() throws IOException {
@@ -266,7 +266,7 @@ public class BrokerConfig implements InitializingBean {
 
         // Create new broker service instance
         String brokerUrl = getBrokerUrl();
-        log.info("BrokerConfig: Creating new Broker Service instance: url={}", brokerUrl);
+        log.debug("BrokerConfig: Creating new Broker Service instance: url={}", brokerUrl);
 
         SslBrokerService brokerService = new SslBrokerService();;
         brokerService.setBrokerName(getBrokerName());
@@ -285,7 +285,7 @@ public class BrokerConfig implements InitializingBean {
             for (String url : properties.getBrokerUrlList()) {
                 if (StringUtils.isNotBlank(url)) {
                     String num = (i==1 ? "st" : (i==2 ? "nd" : "rd"));
-                    log.info("BrokerConfig: {}{} connector: {}", i++, num, url);
+                    log.debug("BrokerConfig: {}{} connector: {}", i++, num, url);
                     if (isSecureUrl(url))
                         // Add an SSL broker connector
                         brokerService.addSslConnector(url, keystore, truststore, null);
@@ -305,7 +305,7 @@ public class BrokerConfig implements InitializingBean {
         }
 
         // Configure broker service instance
-        log.info("BrokerConfig: Broker configuration: persistence={}, use-jmx={}, advisory-support={}, use-shutdown-hook={}",
+        log.debug("BrokerConfig: Broker configuration: persistence={}, use-jmx={}, advisory-support={}, use-shutdown-hook={}",
                 properties.isBrokerPersistenceEnabled(), properties.isBrokerUsingJmx(), properties.isBrokerAdvisorySupportEnabled(), properties.isBrokerUsingShutdownHook());
         brokerService.setPersistent(properties.isBrokerPersistenceEnabled());
         brokerService.setUseJmx(properties.isBrokerUsingJmx());
@@ -318,7 +318,7 @@ public class BrokerConfig implements InitializingBean {
         // Change the JMX connector port
         if (properties.getManagementConnectorPort() > 0) {
             if (brokerService.getManagementContext() != null) {
-                log.info("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getManagementConnectorPort());
+                log.debug("BrokerConfig.createBrokerService(): Setting connector port to: {}", properties.getManagementConnectorPort());
                 brokerService.getManagementContext().setConnectorPort(properties.getManagementConnectorPort());
             }
         }
@@ -355,10 +355,10 @@ public class BrokerConfig implements InitializingBean {
             final MemoryUsage memoryUsage = new MemoryUsage();
             if (memHeapPercent > 0) {
                 memoryUsage.setPercentOfJvmHeap(memHeapPercent);
-                log.info("BrokerConfig: Limiting Broker Service instance memory usage to {}% of JVM heap size", memHeapPercent);
+                log.debug("BrokerConfig: Limiting Broker Service instance memory usage to {}% of JVM heap size", memHeapPercent);
             } else {
                 memoryUsage.setUsage(memSize);
-                log.info("BrokerConfig: Limiting Broker Service instance memory usage to {} bytes", memSize);
+                log.debug("BrokerConfig: Limiting Broker Service instance memory usage to {} bytes", memSize);
             }
             final SystemUsage systemUsage = new SystemUsage();
             systemUsage.setMemoryUsage(memoryUsage);
@@ -384,7 +384,7 @@ public class BrokerConfig implements InitializingBean {
             return;
         }
 
-        log.info("BrokerConfig: Message interceptors initializing...");
+        log.debug("BrokerConfig: Message interceptors initializing...");
         List<BrokerCepProperties.MessageInterceptorSpec> interceptorSpecs = properties.getMessageInterceptors()
                 .stream()
                 .map(c -> (BrokerCepProperties.MessageInterceptorSpec)c)
@@ -392,16 +392,16 @@ public class BrokerConfig implements InitializingBean {
         List<AbstractMessageInterceptor> interceptors = InterceptorHelper.newInstance()
                 .initializeInterceptors(registry, applicationContext,
                         properties.getMessageInterceptorsSpecs(), interceptorSpecs);
-        log.info("BrokerConfig: Message interceptors initialized");
+        log.debug("BrokerConfig: Message interceptors initialized");
 
         // register interceptors
-        log.info("BrokerConfig: Registering message interceptors...");
+        log.debug("BrokerConfig: Registering message interceptors...");
         interceptors.forEach(i -> {
             String destinationPattern = ((BrokerCepProperties.MessageInterceptorConfig) i.getInterceptorSpec()).getDestination();
             registry.addMessageInterceptorForTopic(destinationPattern, i);
             log.debug("BrokerConfig: - Registered message interceptor with spec.: {}", i.getInterceptorSpec());
         });
-        log.info("BrokerConfig: Registering message interceptors... done");
+        log.debug("BrokerConfig: Registering message interceptors... done");
     }
 
     private boolean isSecureUrl(String url) {

@@ -89,9 +89,9 @@ public class ControlServiceApplication {
                         log.debug("TomcatServletWebServerFactory: Keystore password: {}", passwordUtil.encodePassword(properties.getSsl().getKeystorePassword()));
                         log.debug("TomcatServletWebServerFactory: Truststore password: {}", passwordUtil.encodePassword(properties.getSsl().getTruststorePassword()));
 
-                        log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate...");
+                        log.debug("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate...");
                         KeystoreUtil.initializeKeystoresAndCertificate(properties.getSsl(), passwordUtil);
-                        log.info("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate... done");
+                        log.debug("TomcatServletWebServerFactory: Initializing HTTPS keystore, truststore and certificate... done");
                     } catch (Exception e) {
                         log.error("TomcatServletWebServerFactory: EXCEPTION while initializing HTTPS keystore, truststore and certificate:\n", e);
                     }

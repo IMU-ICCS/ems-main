@@ -30,7 +30,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
 
     @Override
     public void afterPropertiesSet() {
-        log.info("RestControllerExceptionHandler initialized");
+        log.debug("RestControllerExceptionHandler initialized");
     }
 
     @ExceptionHandler(Throwable.class)

@@ -58,9 +58,9 @@ public class ClientRecoveryPlugin implements InitializingBean, EventBus.EventCon
         log.debug("ClientRecoveryPlugin: recovery-delay={}, recovery-instructions-file (for baguette)={}", clientRecoveryDelay, recoveryInstructionsFile);
 
         eventBus.subscribe(CLIENT_EXIT_TOPIC, this);
-        log.info("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
+        log.debug("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_EXITED events");
         eventBus.subscribe(CLIENT_REGISTERED_TOPIC, this);
-        log.info("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_REGISTERED events");
+        log.debug("ClientRecoveryPlugin: Subscribed for BAGUETTE_SERVER_CLIENT_REGISTERED events");
 
         log.trace("ClientRecoveryPlugin: clientInstallationProperties: {}", clientInstallationProperties);
         log.trace("ClientRecoveryPlugin: baguetteServer: {}", baguetteServer);

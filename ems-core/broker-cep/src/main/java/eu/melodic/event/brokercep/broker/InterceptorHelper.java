@@ -30,7 +30,7 @@ public class InterceptorHelper {
                                       Map<String, BrokerCepProperties.MessageInterceptorSpec> specs,
                                       List<BrokerCepProperties.MessageInterceptorSpec> interceptorSpecs)
     {
-        log.info("InterceptorHelper: Initialize interceptors...");
+        log.debug("InterceptorHelper: Initialize interceptors...");
 
         List<AbstractMessageInterceptor> interceptors = new ArrayList<>();
         interceptorSpecs
@@ -38,7 +38,7 @@ public class InterceptorHelper {
                     AbstractMessageInterceptor interceptor = initializeInterceptor(registry, applicationContext, specs, spec);
                     interceptors.add(interceptor);
                 });
-        log.info("InterceptorHelper: Initialize interceptors... done");
+        log.debug("InterceptorHelper: Initialize interceptors... done");
         return interceptors;
     }
 
@@ -105,7 +105,7 @@ public class InterceptorHelper {
         interceptor.setMessageInterceptorSpecs(specs);
         interceptor.setInterceptorSpec(interceptorSpec);
         interceptor.initialized();
-        log.info("InterceptorHelper: Message interceptor initialized: {}", interceptorSpec);
+        log.debug("InterceptorHelper: Message interceptor initialized: {}", interceptorSpec);
 
         return interceptor;
     }

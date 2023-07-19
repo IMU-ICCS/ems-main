@@ -164,11 +164,11 @@ public class WebSecurityConfig implements InitializingBean {
         if (permittedUrls==null) permittedUrls = new String[0];
 
         if (securityEnabled && userFormAuthEnabled) {
-            log.info("afterPropertiesSet: Admin Username: {}", username);
-            log.info("afterPropertiesSet: Admin Password: {}", passwordUtil.encodePassword(password));
+            log.debug("afterPropertiesSet: Admin Username: {}", username);
+            log.debug("afterPropertiesSet: Admin Password: {}", passwordUtil.encodePassword(password));
         }
         if (securityEnabled && apiKeyAuthEnabled) {
-            log.info("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
+            log.debug("afterPropertiesSet: API Key: {}", passwordUtil.encodePassword(apiKeyValue));
         }
         if (printSampleJwt) {
             try {
@@ -219,7 +219,7 @@ public class WebSecurityConfig implements InitializingBean {
                     .password(passwordEncoder().encode(password))
                     .authorities(ROLE_USER_FORM)
                     .build();
-            log.info("WebSecurityConfig: User Form Admin credentials have been set: username={}", username);
+            log.debug("WebSecurityConfig: User Form Admin credentials have been set: username={}", username);
         } else {
             userDetails = User.builder().build();
             log.warn("WebSecurityConfig: No Form Admin credentials provided");
@@ -265,7 +265,7 @@ public class WebSecurityConfig implements InitializingBean {
 
         // Add and Configure User Form authentication
         if (userFormAuthEnabled) {
-            log.info("WebSecurityConfig: User form Authentication is enabled");
+            log.debug("WebSecurityConfig: User form Authentication is enabled");
             httpSecurity
                     .formLogin(formLogin -> formLogin
                             .loginPage(loginPage).permitAll()
@@ -286,21 +286,21 @@ public class WebSecurityConfig implements InitializingBean {
         Class<? extends Filter> lastAuthFilterClass = UsernamePasswordAuthenticationFilter.class;
         Filter f;
         if (apiKeyAuthEnabled) {
-            log.info("WebSecurityConfig: API-Key Authentication is enabled");
+            log.debug("WebSecurityConfig: API-Key Authentication is enabled");
             httpSecurity
                     .addFilterAfter(f=apiKeyAuthenticationFilter(), lastAuthFilterClass);
             lastAuthFilterClass = f.getClass();
             log.debug("WebSecurityConfig: API-Key Authentication filter added");
         }
         if (jwtAuthEnabled) {
-            log.info("WebSecurityConfig: JWT-Token Authentication is enabled");
+            log.debug("WebSecurityConfig: JWT-Token Authentication is enabled");
             httpSecurity
                     .addFilterAfter(f=jwtAuthorizationFilter(), lastAuthFilterClass);
             lastAuthFilterClass = f.getClass();
             log.debug("WebSecurityConfig: JWT-Token Authentication filter added");
         }
         if (otpAuthEnabled) {
-            log.info("WebSecurityConfig: OTP Authentication is enabled");
+            log.debug("WebSecurityConfig: OTP Authentication is enabled");
             httpSecurity
                     .addFilterAfter(f=otpAuthenticationFilter(), lastAuthFilterClass);
             lastAuthFilterClass = f.getClass();
