@@ -63,7 +63,7 @@ export default {
     computed: {
         events: function() {
             if (!this.emsData || !this.emsData['broker-cep'] || !this.emsData['broker-cep']['latest-events']) return [];
-            return this.emsData['broker-cep']['latest-events'];
+            return [...this.emsData['broker-cep']['latest-events']].reverse();
         }
     },
     methods: {
