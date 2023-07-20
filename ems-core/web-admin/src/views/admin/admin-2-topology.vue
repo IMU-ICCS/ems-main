@@ -381,10 +381,9 @@
             <Card bodyClasses="p-0"
                   header="&nbsp;Latest EMS server events"
                   icon="fas fa-envelope"
-                  footer="..."
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
-                <LatestEvents :emsData="modelValue" :height=" '410px' "/>
+                <LatestEvents :emsData="modelValue" :height="415"/>
             </Card>
         </div>
         <!-- /.col-6 -->

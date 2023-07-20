@@ -72,7 +72,7 @@ public class EventCache implements InitializingBean {
                 return;
             }
         }
-        entry.payload = (event instanceof EventMap e) ? e.getPayload().toString() : event.toString();
+        entry.payload = event;
         entry.properties = properties.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey, p -> p.getValue()!=null ? p.getValue().toString() : ""
         ));
@@ -80,7 +80,7 @@ public class EventCache implements InitializingBean {
 
     @RequiredArgsConstructor
     public static class CacheEntry {
-        public String payload;
+        public Object payload;
         public Map<String, String> properties;
         public final String destination;
         public final long counter;

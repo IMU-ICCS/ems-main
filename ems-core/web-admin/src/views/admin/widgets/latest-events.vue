@@ -7,66 +7,116 @@
   ~ https://www.mozilla.org/en-US/MPL/2.0/
   -->
 <template>
-    <table class="table table-striped table-sm"
-           :style=" 'width: 100% !important; height: '+this.height+' !important; display: block; overflow-x: scroll; overflow-y: scroll;' "
-    >
-        <thead>
-        <tr>
-            <th>
-                <div class="row">
-                    <div class="col-1">Id</div>
-                    <div class="col-2">Topic</div>
-                    <div class="col-4">Payload</div>
-                    <div class="col-3">properties</div>
-                    <div class="col-2">Timestamp</div>
-                </div>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(event) of events" :key="event.id">
-            <td class="align-middle">
-                <div class="row">
-                    <div class="col-1">
-                        {{event.counter}}
-                    </div>
-                    <div class="col-2">
-                        {{event.destination}}
-                    </div>
-                    <div class="col-4">
-                        {{event.payload}}
-                    </div>
-                    <div class="col-3">
-                        {{event.properties}}
-                    </div>
-                    <div class="col-2">
-                        {{new Date(event.timestamp).toISOString().replace('T',' ').substring(0,19)}}
+    <div style="margin: 10px;">
+        <EasyDataTable
+                :headers="headers"
+                :items="items"
+                alternating
+                border-cell
+                :filter-options="filterOptions"
+                buttons-pagination
+                :hide-rows-per-page="true"
+                multi-sort
+                :rows-per-page="5"
+                :table-height="height"
+        >
+            <template #header-destination="header">
+                <div class="filter-column">
+                    <i class="fas fa-filter" @click.stop="showDestinationFilter=!showDestinationFilter" />
+                    {{ header.text }}
+                    <div class="filter-menu filter-destination-menu" v-if="showDestinationFilter">
+                        <select
+                                class="destination-selector"
+                                v-model="destinationCriteria"
+                                name="destination"
+                        >
+                            <option value="*">
+                                (all)
+                            </option>
+                            <option v-for="d in destinations" :key="d" :value="d">
+                                {{d}}
+                            </option>
+                        </select>
                     </div>
                 </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+            </template>
+
+            <template #item-payload="{ payload }">
+                <table>
+                    <tr v-for="(value, key) of payload" :key="key">
+                        <td align="right" style="padding: 0px 10px; font-weight: bold;">{{key}}:</td>
+                        <td><em>{{ key!=='timestamp' ? value : new Date(value).toISOString().replace('T',' ') }}</em></td>
+                    </tr>
+                </table>
+            </template>
+            <template #item-properties="{ properties }">
+                <table>
+                    <tr v-for="(value, key) of properties" :key="key">
+                        <td align="right" style="padding: 0px 10px; font-weight: bold;">{{key}}:</td>
+                        <td><em>{{value}}</em></td>
+                    </tr>
+                </table>
+            </template>
+            <template #item-timestamp="{ timestamp }"> {{new Date(timestamp).toISOString().replace('T',' ')}} </template>
+        </EasyDataTable>
+    </div>
 </template>
 
 <script>
 //const $ = require('jquery');
 
+import EasyDataTable from 'vue3-easy-data-table';
+import 'vue3-easy-data-table/dist/style.css';
+
 export default {
     name: 'Latest Events widget',
     props: {
         emsData: Object,
-        height: String,
+        height: Number,
+    },
+    data() {
+        return {
+            headers: [
+              { text: "Count", value: "counter", sortable: true, width: 20 },
+              { text: "Topic", value: "destination", sortable: true },
+              { text: "Payload", value: "payload", sortable: true },
+              { text: "Properties", value: "properties", sortable: true },
+              { text: "Timestamp", value: "timestamp", sortable: true, width: 50 },
+            ],
+            destinationCriteria: '*'
+        };
     },
     components: {
+        EasyDataTable
     },
     computed: {
-        events: function() {
+        items: function() {
             if (!this.emsData || !this.emsData['broker-cep'] || !this.emsData['broker-cep']['latest-events']) return [];
             return [...this.emsData['broker-cep']['latest-events']].reverse();
+        },
+        destinations: function() {
+            return [ ...new Set(this.items.map(i => i.destination)) ].sort();
+        },
+        filterOptions: function() {
+            return [ {
+                field: 'destination',
+                comparison: this.destinationCriteria=='*' ? '!=' : '=',
+                criteria: this.destinationCriteria,
+            } ];
         }
     },
     methods: {
+        isJson(str) {
+            try {
+                JSON.parse(str);
+            } catch (e) {
+                return false;
+            }
+            return true;
+        },
+        makeMap(payloadStr) {
+            return JSON.parse(payloadStr.replace('=',':'));
+        }
     },
 }
 </script>
