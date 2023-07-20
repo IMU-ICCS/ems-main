@@ -20,6 +20,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.control.properties.StaticResourceProperties;
 import eu.melodic.event.control.properties.WebSecurityProperties;
+import eu.melodic.event.control.util.EventBusCache;
 import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.GROUPING;
@@ -59,6 +60,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final SystemInfoProvider systemInfoProvider;
     private final BrokerCepService brokerCepService;
     private final SystemResourceMonitor systemResourceMonitor;
+    private final EventBusCache eventBusCache;
 
     @Override
     public void clearServerMetricValues() {
@@ -211,6 +213,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             authMap.put("form-authentication-enabled",  webSecurityProperties.getFormAuthentication().isEnabled());
             controlServiceInfo.put("prop-authentication-methods", authMap);
         }
+        controlServiceInfo.put("latest-bus-events", eventBusCache.asList());
         metrics.put(CONTROL_INFO_PROVIDER, controlServiceInfo);
 
         // Collect Broker-CEP metrics

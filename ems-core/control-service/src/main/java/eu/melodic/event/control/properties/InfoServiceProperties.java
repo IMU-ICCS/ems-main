@@ -9,6 +9,7 @@
 
 package eu.melodic.event.control.properties;
 
+import eu.melodic.event.control.util.EventBusCache;
 import eu.melodic.event.util.EmsConstant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,9 @@ public class InfoServiceProperties implements InitializingBean {
     private FileExplorerProperties files = new FileExplorerProperties();
 
     private List<Path> logViewerFiles = Collections.emptyList();
+
+    private boolean eventBusCacheEnabled = true;
+    private int eventBusCacheSize = EventBusCache.DEFAULT_EVENT_BUS_CACHE_SIZE;
 
     @Override
     public void afterPropertiesSet() {

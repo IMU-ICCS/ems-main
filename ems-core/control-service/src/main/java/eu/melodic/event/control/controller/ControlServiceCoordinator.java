@@ -23,6 +23,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.util.TopicBeacon;
 import eu.melodic.event.control.util.TranslationContextMonitorGsonDeserializer;
 import eu.melodic.event.control.util.mvv.NoopMetricVariableValuesServiceImpl;
+import eu.melodic.event.util.EventBus;
 import eu.melodic.models.commons.NotificationResult;
 import eu.melodic.models.commons.NotificationResultImpl;
 import eu.melodic.models.commons.Watermark;
@@ -66,12 +67,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ControlServiceCoordinator implements InitializingBean {
 
+    public final static String COORDINATOR_STATUS_TOPIC = "COORDINATOR_STATUS_TOPIC";
+
     private final ApplicationContext applicationContext;
     private final ControlServiceProperties properties;
     @Getter private final BaguetteServer baguetteServer;
     private final NodeRegistry nodeRegistry;
     private final WebClient webClient;
     private final PasswordUtil passwordUtil;
+    private final EventBus<String,Object,Object> eventBus;
 
     private final List<Translator> translatorImplementations;
     private Translator translator;                      // Will be populated in 'afterPropertiesSet()'
@@ -171,6 +175,12 @@ public class ControlServiceCoordinator implements InitializingBean {
         this.currentEmsState = newState;
         this.currentEmsStateMessage = message;
         this.currentEmsStateChangeTimestamp = System.currentTimeMillis();
+
+        eventBus.send(COORDINATOR_STATUS_TOPIC, Map.of(
+                "state", newState,
+                "message", Objects.requireNonNullElse(message, ""),
+                "timestamp", currentEmsStateChangeTimestamp
+        ), this);
     }
 
     // ------------------------------------------------------------------------------------------------------------

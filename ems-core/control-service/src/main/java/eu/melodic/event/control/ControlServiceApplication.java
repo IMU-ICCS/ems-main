@@ -10,7 +10,9 @@
 package eu.melodic.event.control;
 
 import com.ulisesbocchio.jasyptspringboot.environment.StandardEncryptableEnvironment;
+import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.properties.ControlServiceProperties;
+import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -77,6 +80,11 @@ public class ControlServiceApplication {
 
         long initEndTime = System.currentTimeMillis();
         log.info("EMS server initialized in {}ms", initEndTime-initStartTime);
+        applicationContext.getBean(EventBus.class).send(ControlServiceCoordinator.COORDINATOR_STATUS_TOPIC, Map.of(
+                "state", "EMS STARTED",
+                "message", "EMS server initialized in "+(initEndTime-initStartTime)+"ms",
+                "timestamp", System.currentTimeMillis()
+        ), ControlServiceApplication.class);
     }
 
     @Bean
