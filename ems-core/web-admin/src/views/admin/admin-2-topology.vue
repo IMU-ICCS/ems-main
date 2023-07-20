@@ -379,11 +379,21 @@
 
         <div class="col-6">
             <Card bodyClasses="p-0"
-                  header="&nbsp;Latest EMS server events"
-                  icon="fas fa-envelope"
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >
-                <LatestEvents :emsData="modelValue" :height="415"/>
+                <template v-slot:header>
+                    <div class="float-left" style="width: 20px;">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h5 class="card-title m-0">&nbsp;Latest EMS server events</h5>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button class="btn btn-outline-primary btn-xs" :class="{ 'btn-primary': latestEventsMode=='metric' }"
+                        @click="latestEventsMode='metric'">Metric</button>
+                    <button class="btn btn-outline-primary btn-xs" :class="{ 'btn-primary': latestEventsMode=='bus' }"
+                        @click="latestEventsMode='bus'">Internal Bus</button>
+                </template>
+
+                <LatestEvents :emsData="modelValue" :mode="latestEventsMode" :height="415"/>
             </Card>
         </div>
         <!-- /.col-6 -->
@@ -445,7 +455,8 @@ export default {
             dataWindow: 60,
             defaultChartGridValues: {
                 l0: [0, 0]
-            }
+            },
+            latestEventsMode: 'metric'
         };
     },
     watch: {

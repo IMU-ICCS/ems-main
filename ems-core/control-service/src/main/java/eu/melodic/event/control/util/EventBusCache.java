@@ -71,7 +71,7 @@ public class EventBusCache implements InitializingBean, EventBus.EventConsumer<S
                 while (messageCache.remainingCapacity() == 0)
                     messageCache.poll();
                 entry = new EventBusCache.CacheEntry(
-                        topic, message, sender,
+                        topic, message, Map.of("sender", sender),
                         cacheCounter.getAndIncrement(),
                         System.currentTimeMillis());
                 if (!messageCache.offer(entry)) {
@@ -91,15 +91,15 @@ public class EventBusCache implements InitializingBean, EventBus.EventConsumer<S
                     .collect(Collectors.toMap(
                             e -> ((String) e.getKey()), Map.Entry::getValue
                     ));
-            cacheEvent(topic, map, sender!=null ? sender.getClass() : null);
+            cacheEvent(topic, map, sender!=null ? sender.getClass().getSimpleName() : null);
         }
     }
 
     @RequiredArgsConstructor
     public static class CacheEntry {
-        public final String topic;
-        public final Map<String,Object> message;
-        public final Object sender;
+        public final String destination;
+        public final Map<String,Object> payload;
+        public final Map<String,Object> properties;
         public final long counter;
         public final long timestamp;
     }

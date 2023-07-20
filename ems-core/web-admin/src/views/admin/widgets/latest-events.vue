@@ -70,21 +70,23 @@
 import EasyDataTable from 'vue3-easy-data-table';
 import 'vue3-easy-data-table/dist/style.css';
 
+const HEADERS = [
+                  { text: "Count", value: "counter", sortable: true, width: 20 },
+                  { text: "Topic", value: "destination", sortable: true },
+                  { text: "Payload", value: "payload", sortable: true, width: 300 },
+                  { text: "Properties", value: "properties", sortable: true },
+                  { text: "Timestamp", value: "timestamp", sortable: true, width: 50 },
+                ];
+
 export default {
     name: 'Latest Events widget',
     props: {
         emsData: Object,
+        mode: { type: String, default: 'metric' },
         height: Number,
     },
     data() {
         return {
-            headers: [
-              { text: "Count", value: "counter", sortable: true, width: 20 },
-              { text: "Topic", value: "destination", sortable: true },
-              { text: "Payload", value: "payload", sortable: true },
-              { text: "Properties", value: "properties", sortable: true },
-              { text: "Timestamp", value: "timestamp", sortable: true, width: 50 },
-            ],
             destinationCriteria: '*'
         };
     },
@@ -92,9 +94,24 @@ export default {
         EasyDataTable
     },
     computed: {
+        headers: function() {
+            return HEADERS;
+        },
         items: function() {
-            if (!this.emsData || !this.emsData['broker-cep'] || !this.emsData['broker-cep']['latest-events']) return [];
-            return [...this.emsData['broker-cep']['latest-events']];
+            if (this.mode=='metric') {
+                if (!this.emsData || !this.emsData['broker-cep'] || !this.emsData['broker-cep']['latest-events']) return [];
+                return [...this.emsData['broker-cep']['latest-events']];
+            } else
+            if (this.mode=='bus') {
+                if (!this.emsData || !this.emsData['control'] || !this.emsData['control']['latest-bus-events']) return [];
+                let map = [...this.emsData['control']['latest-bus-events']];
+                map.forEach(item => {
+                    if (item.properties && item.properties.sender)
+                        item.properties.sender = item.properties.sender.split('$')[0];
+                });
+                return map;
+            }
+            return [];
         },
         destinations: function() {
             return [ ...new Set(this.items.map(i => i.destination)) ].sort();

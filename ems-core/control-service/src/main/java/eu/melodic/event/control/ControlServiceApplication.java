@@ -84,7 +84,7 @@ public class ControlServiceApplication {
                 "state", "EMS STARTED",
                 "message", "EMS server initialized in "+(initEndTime-initStartTime)+"ms",
                 "timestamp", System.currentTimeMillis()
-        ), ControlServiceApplication.class);
+        ), applicationContext.getBean(ControlServiceApplication.class));
     }
 
     @Bean
