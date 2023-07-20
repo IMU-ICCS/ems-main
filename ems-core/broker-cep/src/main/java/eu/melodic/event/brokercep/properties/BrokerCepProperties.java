@@ -87,6 +87,7 @@ public class BrokerCepProperties implements InitializingBean {
 
     private EventRecorderProperties eventRecorder = new EventRecorderProperties();
 
+    private boolean eventCacheEnabled = true;
     private int eventCacheSize = EventCache.DEFAULT_EVENT_CACHE_SIZE;
 
     @Data

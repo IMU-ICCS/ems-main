@@ -9,7 +9,6 @@
 
 package eu.melodic.event.brokercep;
 
-import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -32,16 +32,21 @@ public class EventCache implements InitializingBean {
     private final BrokerCepProperties properties;
     private final AtomicLong cacheCounter = new AtomicLong(0);
     private ArrayBlockingQueue<CacheEntry> messageCache;
+    private boolean enabled;
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        enabled = properties==null  || properties.isEventCacheEnabled();
+        if (properties!=null && properties.getEventCacheSize()==0) enabled = false;
+        if (!enabled) return;
+
         int s = properties!=null ? properties.getEventCacheSize() : -1;
         if (s<0) s = DEFAULT_EVENT_CACHE_SIZE;
         messageCache = new ArrayBlockingQueue<>(s);
     }
 
     public List<CacheEntry> asList() {
-        return new ArrayList<>(messageCache);
+        return enabled ? new ArrayList<>(messageCache) : Collections.emptyList();
     }
 
     public synchronized void clearCache() {
@@ -49,11 +54,13 @@ public class EventCache implements InitializingBean {
     }
 
     public synchronized void clearCache(boolean resetCounter) {
+        if (!enabled) return;
         messageCache.clear();
         cacheCounter.set(0);
     }
 
     public void cacheEvent(Object event, Map<String,Object> properties, String destination) {
+        if (!enabled) return;
         CacheEntry entry;
         synchronized (cacheCounter) {
             try {
@@ -64,11 +71,11 @@ public class EventCache implements InitializingBean {
                         cacheCounter.getAndIncrement(),
                         System.currentTimeMillis());
                 if (!messageCache.offer(entry)) {
-                    log.warn("BrokerCepConsumer.cacheEvent: Failed to cache event. Cache is full: size={}", messageCache.size());
+                    log.warn("EventCache.cacheEvent: Failed to cache event. Cache is full: size={}", messageCache.size());
                     return;
                 }
             } catch (Throwable e) {
-                log.warn("BrokerCepConsumer.cacheEvent: Exception while caching event: ", e);
+                log.warn("EventCache.cacheEvent: Exception while caching event: ", e);
                 return;
             }
         }
