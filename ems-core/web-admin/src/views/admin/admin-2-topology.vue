@@ -338,7 +338,7 @@
     <div class="row">
         <div class="col-6">
             <Card bodyClasses="p-0"
-                  header="&nbsp;Client Locations (with Leaflet)"
+                  header="&nbsp;Client Locations"
                   icon="fas fa-map"
                   :hasCollapse="true" :hasMaximize="true" :hasRemove="true"
             >

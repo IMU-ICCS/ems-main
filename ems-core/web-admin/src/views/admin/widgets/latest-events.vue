@@ -16,6 +16,8 @@
                 :filter-options="filterOptions"
                 buttons-pagination
                 :hide-rows-per-page="true"
+                sort-by="counter"
+                sort-type="desc"
                 multi-sort
                 :rows-per-page="5"
                 :table-height="height"
@@ -92,7 +94,7 @@ export default {
     computed: {
         items: function() {
             if (!this.emsData || !this.emsData['broker-cep'] || !this.emsData['broker-cep']['latest-events']) return [];
-            return [...this.emsData['broker-cep']['latest-events']].reverse();
+            return [...this.emsData['broker-cep']['latest-events']];
         },
         destinations: function() {
             return [ ...new Set(this.items.map(i => i.destination)) ].sort();
@@ -106,17 +108,6 @@ export default {
         }
     },
     methods: {
-        isJson(str) {
-            try {
-                JSON.parse(str);
-            } catch (e) {
-                return false;
-            }
-            return true;
-        },
-        makeMap(payloadStr) {
-            return JSON.parse(payloadStr.replace('=',':'));
-        }
     },
 }
 </script>

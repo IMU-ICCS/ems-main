@@ -28,6 +28,16 @@
     <script src="assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE App -->
     <script src="assets/js/adminlte.min.js"></script>
+
+    <script>
+        $(function() {
+            let inp = $("input[name='username']");
+            if (inp.val().trim()==='')
+                inp.focus();
+            else
+                $('.btn-primary').focus();
+        });
+    </script>
   </head>
   <body class="hold-transition login-page">
     <div style="position: absolute; top: 0; left: 0; bottom: 0; right: 0; background-image: url('assets/img/circuit-board-5907811_1920-bw.png'); opacity: .05;"></div>
