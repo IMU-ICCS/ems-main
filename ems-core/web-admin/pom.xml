@@ -35,6 +35,7 @@
             </activation>
             <build>
                 <plugins>
+
                     <!-- Remove previous files from /public_resources -->
                     <plugin>
                         <artifactId>maven-clean-plugin</artifactId>
@@ -54,6 +55,13 @@
                                     <directory>${project.basedir}/dist</directory>
                                     <includes>
                                         <include>**/*</include>
+                                    </includes>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                                <fileset>
+                                    <directory>${project.basedir}</directory>
+                                    <includes>
+                                        <include>.env</include>
                                     </includes>
                                     <followSymlinks>false</followSymlinks>
                                 </fileset>
@@ -102,7 +110,6 @@
                         <executions>
                             <execution>
                                 <id>create-env-file</id>
-                                <!-- here the phase you need -->
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
@@ -162,6 +169,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>
