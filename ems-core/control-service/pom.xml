@@ -32,20 +32,10 @@
         <docker.controlServiceJar>${project.build.finalName}.jar</docker.controlServiceJar>
         <docker.esperJar>esper-${esper.version}.jar</docker.esperJar>
 
-        <!-- com.spotify docker-maven-plugin properties-->
-        <!--
-        <docker.push>false</docker.push>
-        <docker.repository></docker.repository>
-        <docker.imagePrefix></docker.imagePrefix>
-        <docker.imageName></docker.imageName>
-        <docker.imageTag></docker.imageTag>
-        -->
-        <docker.imageName>ems-server</docker.imageName>
-
         <!-- io.fabricat8 docker-maven-plugin properties -->
         <docker-maven-plugin.version>0.39.1</docker-maven-plugin.version>
         <docker-maven-plugin.imageName>ems-server</docker-maven-plugin.imageName>
-        <!--<docker-image-tag>2022-devel</docker-image-tag>-->
+        <!--<docker-image-tag>${revision}</docker-image-tag>-->
         <!--<build-description></build-description>-->
 
         <!-- EMS server main class -->
@@ -95,12 +85,6 @@
             <groupId>eu.melodic.event</groupId>
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
-            <!--<exclusions>
-                <exclusion>
-                    <groupId>eu.melodic.cdo</groupId>
-                    <artifactId>client</artifactId>
-                </exclusion>
-            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>eu.melodic.event</groupId>
@@ -137,7 +121,6 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <!-- Spring Boot Actuator  -->
-        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -560,22 +543,6 @@
             </plugin>
 
             <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.10</version>
-                <configuration>
-                    <resources>
-                        <!-- Added in order to prevent copying 'control-service.jar' to docker context dir. (We have already copied it) -->
-                        <resource>
-                            <targetPath>/bin</targetPath>
-                            <directory>${project.basedir}/../bin/</directory>
-                            <include>run.sh</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
                 <configuration>
@@ -635,18 +602,6 @@
                             </execution>
                         </executions>
                     </plugin>-->
-
-                    <!-- Turn off com.spotify:docker-maven-plugin (same as 'without-docker' profile -->
-                    <plugin>
-                        <groupId>com.spotify</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>execution</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
 
                     <!-- Rename docker context folder to 'docker-context'. Remove previous if exists. -->
                     <plugin>
