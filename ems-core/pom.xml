@@ -34,9 +34,6 @@
         <java.version>17</java.version>
         <maven.compiler.release>17</maven.compiler.release>
 
-        <!-- Authorization client version -->
-        <!--XXX:SPLIT: <authorization.version>4.5.0-SNAPSHOT</authorization.version>-->
-
         <!-- Versions for common plugins -->
         <source-plugin.version>2.4</source-plugin.version>
         <maven-compiler.version>3.11.0</maven-compiler.version>

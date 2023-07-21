@@ -9,26 +9,19 @@
 
 package eu.melodic.event.control.webconf;
 
-import eu.melodic.event.control.properties.ControlServiceProperties;
-//XXX:SPLIT: import eu.melodic.security.authorization.client.AuthorizationServiceTomcatInterceptor;
-//XXX:SPLIT: import eu.melodic.security.authorization.util.properties.AuthorizationServiceClientProperties;
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -39,42 +32,9 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-@ComponentScan(basePackages={"eu.melodic.security.authorization.util.properties"})
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
-    public final static String[] DEFAULT_PATHS_PROTECTED = { "/**" };
-    public final static String[] DEFAULT_PATHS_EXCLUDED = { };
-
-//XXX:SPLIT:    private final AuthorizationServiceClientProperties authProperties;
-    private final ControlServiceProperties controlServiceProperties;
     private final ApplicationContext applicationContext;
-
-    @Override
-    public void addInterceptors(@NonNull InterceptorRegistry registry) {
-        // Add authorization interceptor (if configured)
-        boolean authEnabled = controlServiceProperties.getAuthorization().isEnabled();
-        String[] authPathsProtected = controlServiceProperties.getAuthorization().getPathsProtected().toArray(new String[0]);
-        String[] authPathsExcluded = controlServiceProperties.getAuthorization().getPathsExcluded().toArray(new String[0]);
-        if (!authEnabled /*XXX:SPLIT: || authProperties.getPdp().isDisabled()*/) {
-            log.warn("WebMvcConfig.addInterceptors(): Authorization check is disabled");
-        } else {
-            log.info("WebMvcConfig.addInterceptors(): Authorization check is enabled");
-
-            if (ArrayUtils.isEmpty(authPathsProtected)) authPathsProtected = DEFAULT_PATHS_PROTECTED;
-            if (ArrayUtils.isEmpty(authPathsExcluded)) authPathsExcluded = DEFAULT_PATHS_EXCLUDED;
-            log.debug("WebMvcConfig.addInterceptors(): Authorization check: paths-protected={}, paths-excluded={}",
-                    authPathsProtected, authPathsExcluded);
-
-            /*XXX:SPLIT:
-            log.debug("WebMvcConfig.addInterceptors(): Authorization properties: {}", authProperties);
-            registry
-                    .addInterceptor(AuthorizationServiceTomcatInterceptor.getSingleton(authProperties))
-                    .addPathPatterns(authPathsProtected)
-                    .excludePathPatterns(authPathsExcluded)
-            ;*/
-            log.debug("WebMvcConfig.addInterceptors(): Registered Authorization interceptor");
-        }
-    }
 
     @Override
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {

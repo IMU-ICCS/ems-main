@@ -9,7 +9,6 @@
 
 package eu.melodic.event.control.properties;
 
-import eu.melodic.event.control.webconf.WebMvcConfig;
 import eu.melodic.event.util.KeystoreAndCertificateProperties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.Min;
-import java.util.Arrays;
-import java.util.List;
 
 import static eu.melodic.event.util.EmsConstant.EMS_PROPERTIES_PREFIX;
 
@@ -78,7 +75,6 @@ public class ControlServiceProperties {
     private KeystoreAndCertificateProperties ssl;
 
     private TaskSchedulerProperties taskScheduler = new TaskSchedulerProperties();
-    private AuthorizationProperties authorization = new AuthorizationProperties();
 
     @Data
     public static class Preload {
@@ -90,12 +86,5 @@ public class ControlServiceProperties {
     public static class TaskSchedulerProperties {
         @Min(1)
         private int threadPoolSize = 2;
-    }
-
-    @Data
-    public static class AuthorizationProperties {
-        private boolean enabled = true;
-        private List<String> pathsProtected = Arrays.asList(WebMvcConfig.DEFAULT_PATHS_PROTECTED);
-        private List<String> pathsExcluded = Arrays.asList(WebMvcConfig.DEFAULT_PATHS_EXCLUDED);
     }
 }

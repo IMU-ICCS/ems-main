@@ -197,6 +197,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             taskSchedulerMap.put("thread-pool-size",  taskSchedulerProperties.getThreadPoolSize());
             controlServiceInfo.put("prop-task-scheduler", taskSchedulerMap);
         }
+        /*XXX:SPLIT: authorization info
         if (controlServiceProperties!=null && controlServiceProperties.getAuthorization()!=null) {
             ControlServiceProperties.AuthorizationProperties authorizationProperties = controlServiceProperties.getAuthorization();
             Map<String,Object> authMap = new LinkedHashMap<>();
@@ -204,7 +205,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             authMap.put("paths-protected",  authorizationProperties.getPathsProtected());
             authMap.put("paths-excluded",  authorizationProperties.getPathsExcluded());
             controlServiceInfo.put("prop-authorization", authMap);
-        }
+        }*/
         if (webSecurityProperties!=null) {
             Map<String,Object> authMap = new LinkedHashMap<>();
             authMap.put("jwt-authentication-enabled",  webSecurityProperties.getJwtAuthentication().isEnabled());
