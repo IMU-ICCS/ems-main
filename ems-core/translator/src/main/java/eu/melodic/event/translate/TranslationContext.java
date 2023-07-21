@@ -435,16 +435,18 @@ public class TranslationContext implements Serializable {
     }
 
     public void addLogicalConstraint(LogicalConstraint logicalConstraint, List<DAGNode> nodeList) {
+        String name = logicalConstraint.getName();
+
         // Check there is a logical operator
         LogicalOperatorType op = logicalConstraint.getLogicalOperator();
         if (op==null)
-            throw new IllegalArgumentException("Logical Constraint '"+logicalConstraint.getName()+"' has no operator specified");
+            throw new IllegalArgumentException("Logical Constraint '"+name+"' has no operator specified");
 
         // Check there are child constraints
         List<String> childConstraintNames = logicalConstraint.getConstraints()
                 .stream().map(NamedElement::getName).toList();
         if (childConstraintNames.size()==0)
-            throw new IllegalArgumentException("Logical Constraint '"+logicalConstraint.getName()+"' has no child constraints");
+            throw new IllegalArgumentException("Logical Constraint '"+name+"' has no child constraints");
 
         // Set node list
         logicalConstraint.setConstraintNodes(nodeList);
@@ -461,14 +463,14 @@ public class TranslationContext implements Serializable {
         Constraint thenConstraint = ifThenConstraint.getThen();
         Constraint elseConstraint = ifThenConstraint.getElse();
         if (ifConstraint==null || thenConstraint==null)
-            throw new IllegalArgumentException("If-Then-Else Constraint '"+ifConstraint.getName()+"' has no IF or no THEN constraint");
+            throw new IllegalArgumentException("If-Then-Else Constraint '"+name+"' has no IF or no THEN constraint");
         String ifConstraintName = ifConstraint.getName();
         String thenConstraintName = thenConstraint.getName();
         if (StringUtils.isBlank(ifConstraintName) || StringUtils.isBlank(thenConstraintName))
-            throw new IllegalArgumentException("IF or THEN constraint in If-Then-Else constraint'"+ifConstraint.getName()+"' has no name");
+            throw new IllegalArgumentException("IF or THEN constraint in If-Then-Else constraint'"+name+"' has no name");
         String elseConstraintName = elseConstraint != null ? elseConstraint.getName() : null;
         if (elseConstraint!=null && StringUtils.isBlank(elseConstraintName))
-            throw new IllegalArgumentException("ELSE constraint in If-Then-Else constraint'"+ifConstraint.getName()+"' has no name");
+            throw new IllegalArgumentException("ELSE constraint in If-Then-Else constraint'"+name+"' has no name");
 
         // Add if-then-else constraint information
         ifThenConstraints.add(ifThenConstraint);
@@ -506,7 +508,6 @@ public class TranslationContext implements Serializable {
     }
 
     public Map<String, Map<String, Set<String>>> getTopicConnections() {
-        if (topicConnections==null) return Collections.emptyMap();
         if (needsRefresh) {
             log.debug("TranslationContext.getTopicConnections(): Topic connections need refresh");
             topicConnections.clear();
@@ -567,16 +568,19 @@ public class TranslationContext implements Serializable {
         String elemType = _getElementType(elem);
         log.trace("  getFullName:   elem-type={}", elemType);
         log.trace("  getFullName:   elem-eContainer={}", elem.getContainer());
-//        String modelName = elem.getContainer().getName();
-//        log.trace("  getFullName:   model-name={}", modelName);
-//        log.trace("  getFullName:   elem-eContainer-eContainer={}", elem.getContainer().getContainer());
-//        String camelName = elem.getContainer().getContainer().getName();
-//        log.trace("  getFullName:   camel-name={}", camelName);
+        String modelName = elem.getContainer()!=null
+                ? elem.getContainer().getName() : null;
+        log.trace("  getFullName:   model-name={}", modelName);
+        log.trace("  getFullName:   elem-eContainer-eContainer={}",
+                elem.getContainer()!=null ? elem.getContainer().getContainer() : null);
+        String camelName = elem.getContainer()!=null && elem.getContainer().getContainer()!=null
+                ? elem.getContainer().getContainer().getName() : null;
+        log.trace("  getFullName:   camel-name={}", camelName);
 
         fullName = fullNamePattern
                 .replace("{TYPE}", elemType)
-//                .replace("{CAMEL}", camelName)
-//                .replace("{MODEL}", modelName)
+                .replace("{CAMEL}", Objects.requireNonNullElse(camelName, "C"))
+                .replace("{MODEL}", Objects.requireNonNullElse(modelName, "M"))
                 .replace("{ELEM}", elemName)
                 .replace("{HASH}", Integer.toString(elemName.hashCode()))
                 .replace("{COUNT}", Long.toString(elementsCount.getAndIncrement()))
@@ -624,7 +628,7 @@ public class TranslationContext implements Serializable {
     // Function-Definition-related helper methods
 
     public Set<FunctionDefinition> getFunctionDefinitions() {
-        return FUNC!=null ? new HashSet<>(FUNC) : Collections.emptySet();
+        return new HashSet<>(FUNC);
     }
 
     // ====================================================================================================================================================
@@ -639,7 +643,7 @@ public class TranslationContext implements Serializable {
     }
 
     public Set<String> getLoadAnnotatedMetricsSet() {
-        return loadAnnotatedMetricsSet!=null ? new HashSet<>(loadAnnotatedMetricsSet) : Collections.emptySet();
+        return new HashSet<>(loadAnnotatedMetricsSet);
     }
 
     // ====================================================================================================================================================
