@@ -268,8 +268,7 @@ public class ControlServiceCoordinator implements InitializingBean {
 
     // ------------------------------------------------------------------------------------------------------------
 
-    protected void _processAppModels(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo)
-    {
+    protected void _processAppModels(String appModelId, String cpModelId, ControlServiceRequestInfo requestInfo) {
         log.info("ControlServiceCoordinator._processAppModel(): BEGIN: app-model-id={}, cp-model-id={}, request-info={}", appModelId, cpModelId, requestInfo);
 
         // Translate model into Translation Context (with EPL rules etc.)
@@ -321,8 +320,10 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Process placeholders in sink type configurations
-        String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
-        processPlaceholdersInMonitors(_TC, brokerUrlForClients);
+        if (brokerCep!=null && brokerCep.getBrokerCepProperties()!=null) {
+            String brokerUrlForClients = brokerCep.getBrokerCepProperties().getBrokerUrlForClients();
+            processPlaceholdersInMonitors(_TC, brokerUrlForClients);
+        }
 
         // (Re-)Configure Baguette server
         if (!properties.isSkipBaguette()) {
@@ -332,7 +333,7 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
 
         // Start/Stop Netdata collector
-        if (!properties.isSkipCollectors()) {
+        if (!properties.isSkipCollectors() && !properties.isSkipBaguette() && nodeRegistry!=null) {
             startNetdataCollector(appModelId);
         } else {
             log.warn("ControlServiceCoordinator._processAppModel(): Skipping Collectors setup due to configuration");

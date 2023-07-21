@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
  * Registered function implementations reside in CepEvalFunction and CepEvalAggregator classes.
  * This class is instantiated automatically by Spring-Boot (no need for explicit instantiation)
  */
-@Service
 @Slf4j
+@Service
 public class CepExtensions {
 
     // Register Single-Row Functions methods
