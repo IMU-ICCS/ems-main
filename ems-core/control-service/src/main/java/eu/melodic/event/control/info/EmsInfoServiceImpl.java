@@ -16,6 +16,7 @@ import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.controller.CredentialsCoordinator;
 import eu.melodic.event.control.controller.ManagementCoordinator;
 import eu.melodic.event.control.controller.NodeRegistrationCoordinator;
+import eu.melodic.event.control.plugin.EmsInfoPlugin;
 import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.control.properties.InfoServiceProperties;
 import eu.melodic.event.control.properties.StaticResourceProperties;
@@ -62,6 +63,8 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     private final SystemResourceMonitor systemResourceMonitor;
     private final EventBusCache eventBusCache;
 
+    private final List<EmsInfoPlugin> emsInfoPlugins;
+
     @Override
     public void clearServerMetricValues() {
         log.debug("clearServerMetricValues(): BEGIN");
@@ -69,6 +72,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             systemInfoProvider.clearMetricValues();
             brokerCepService.clearBrokerCepStatistics();
             currentServerMetrics = null;
+
+            // Call clear on EmsInfoPlugin's
+            callClearOnPlugins();
         }
         log.debug("clearServerMetricValues(): END");
     }
@@ -259,6 +265,9 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             translatorInfo.put("export-files", _TC.getExportFiles());
         }
 
+        // Call EmsInfoPlugin's to add information
+        callUpdateInfoOnPlugins(metrics);
+
         log.debug("updateServerMetricValues(): Collected server metrics: {}", metrics);
 
         synchronized (currentServerMetricsVersion) {
@@ -273,6 +282,34 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
             }
             log.debug("updateServerMetricValues(): END");
         }
+    }
+
+    private void callClearOnPlugins() {
+        log.debug("callClearOnPlugins(): BEGIN: Calling clear on EMS info plugins: {}", emsInfoPlugins);
+        emsInfoPlugins.forEach(plugin -> {
+            try {
+                log.trace("callClearOnPlugins():  - Calling clear on plugin: {}", plugin);
+                plugin.clearInfo();
+                log.trace("callClearOnPlugins():    Plugin clear completed: {}", plugin);
+            } catch (Exception e) {
+                log.warn("callClearOnPlugins():     EXCEPTION while calling lear on plugin: {}\n", plugin, e);
+            }
+        });
+        log.debug("callClearOnPlugins(): END: Calling clear on EMS info plugins");
+    }
+
+    private void callUpdateInfoOnPlugins(Map<String, Object> metrics) {
+        log.debug("callUpdateInfoOnPlugins(): BEGIN: Calling EMS info plugins: {}", emsInfoPlugins);
+        emsInfoPlugins.forEach(plugin -> {
+            try {
+                log.trace("callUpdateInfoOnPlugins():  - Calling plugin: {}", plugin);
+                plugin.updateInfo(metrics);
+                log.trace("callUpdateInfoOnPlugins():    Plugin completed: {}, metrics={}", plugin, metrics);
+            } catch (Exception e) {
+                log.warn("callUpdateInfoOnPlugins():     EXCEPTION while calling plugin: {}\n", plugin, e);
+            }
+        });
+        log.debug("callUpdateInfoOnPlugins(): END: Calling EMS info plugins");
     }
 
     protected void updateClientMetricValues() {
