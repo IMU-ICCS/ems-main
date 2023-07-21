@@ -44,6 +44,7 @@ public interface WebAdminPlugin extends Plugin {
         private String text;
         @NonNull
         private String url;
+        @Builder.Default
         private String method = "GET";
         private String formId;
         private RestCallForm form;
