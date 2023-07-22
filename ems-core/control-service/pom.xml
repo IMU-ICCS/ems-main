@@ -21,7 +21,7 @@
 
     <properties>
         <hawtio.version>2.17.0</hawtio.version>
-        <spring.boot.admin.version>3.0.0-M8</spring.boot.admin.version>  <!-- XXX: NOTE: This is not GA release -->
+        <spring.boot.admin.version>3.1.3</spring.boot.admin.version>
         <micrometer.registry.prometheus.version>1.10.2</micrometer.registry.prometheus.version>
         <springdoc.version>2.0.2</springdoc.version>
         <jjwt.version>0.11.5</jjwt.version>
@@ -132,12 +132,11 @@
             <version>${micrometer.registry.prometheus.version}</version>
         </dependency>
         <!-- Spring Boot Admin client  -->
-        <!-- XXX: Causes 'BeanPostProcessorChecker' warnings -->
-        <!--<dependency>
+        <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
             <version>${spring.boot.admin.version}</version>
-        </dependency>-->
+        </dependency>
         <!-- Jasypt Spring Boot starter  -->
         <dependency>
             <groupId>com.github.ulisesbocchio</groupId>
@@ -213,7 +212,7 @@
             <!-- Remove previous files from /public_resources -->
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>remove-old-public-resources</id>
@@ -447,7 +446,7 @@
 
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.1</version>
                 <executions>
                     <!-- Copy Web Admin distribution files to /public_resources -->
                     <execution>
@@ -577,6 +576,8 @@
                             <files>
                                 <file>../.dev-local-docker-image-build</file>
                             </files>
+                            <outputFile/>
+                            <properties/>
                         </configuration>
                     </plugin>
                     <!--<plugin>

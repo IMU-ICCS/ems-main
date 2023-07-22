@@ -237,7 +237,7 @@
                     </executions>
                     <configuration>
                         <outputDirectory>${project.build.directory}</outputDirectory>
-                        <!--<format>{0,number}</format>-->
+                        <!--<format>{0,number,integer}</format>-->
                         <timestampFormat>yyyy-MM-dd HH:mm:ss.SSSZ</timestampFormat>
                         <revisionOnScmFailure>${project.version}</revisionOnScmFailure>
                         <!--<revisionOnScmFailure>unknownbuild</revisionOnScmFailure>-->

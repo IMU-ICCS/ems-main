@@ -260,12 +260,8 @@ public class BaguetteServer implements InitializingBean, EventBus.EventConsumer<
         log.debug("BaguetteServer.setTopologyConfiguration(): Initializing Baguette protocol coordinator...");
         ServerCoordinator coordinator = createServerCoordinator(config, _TC, upperwareGrouping);
         log.debug("BaguetteServer.setTopologyConfiguration(): Coordinator: {}", coordinator.getClass().getName());
-        coordinator.initialize(
-                _TC,
-                upperwareGrouping,
-                this,
-//XXX: TODO: implement a useful EP Network callback, capable to notify EMS when EPN is ready
-                () -> {
+        coordinator.initialize(_TC, upperwareGrouping, this, () ->
+                {
                     log.info("****************************************");
                     log.info("****  MONITORING TOPOLOGY IS READY  ****");
                     log.info("****************************************");

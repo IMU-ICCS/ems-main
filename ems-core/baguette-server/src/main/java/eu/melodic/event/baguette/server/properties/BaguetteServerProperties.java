@@ -35,24 +35,23 @@ import java.util.Map;
 public class BaguetteServerProperties implements InitializingBean {
     public void afterPropertiesSet() {
         log.debug("BaguetteServerProperties: {}", this);
+        checkConfig();
     }
 
-    /*XXX: TODO: Add combinatorial properties check
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        log.warn("!!!!!!!!!!!!  BaguetteServerProperties: {}", this);
-
+    private void checkConfig() {
         // Check that either coordinator class or id is provided
-        if (coordinatorClass==null && StringUtils.isBlank(coordinatorId))
-            throw new IllegalArgumentException("Either coordinator class or id must be provided");
-        if (StringUtils.isNotBlank(coordinatorId)) {
-            CoordinatorConfig cc = getCoordinatorConfig().get(coordinatorId);
-            if (cc==null)
-                throw new IllegalArgumentException("Not found coordinator configuration with id: "+coordinatorId);
-            if (cc.getCoordinatorClass()==null)
-                throw new IllegalArgumentException("No coordinator class in configuration with id: "+coordinatorId);
+        if (coordinatorClass==null && (coordinatorId==null || coordinatorId.size()==0))
+            throw new IllegalArgumentException("Either coordinator class or coordinator id must be provided");
+        if (coordinatorId!=null && coordinatorId.size()>0) {
+            coordinatorId.forEach(id -> {
+                CoordinatorConfig cc = getCoordinatorConfig().get(id);
+                if (cc==null)
+                    throw new IllegalArgumentException("Not found coordinator configuration with id: "+id);
+                if (cc.getCoordinatorClass()==null)
+                    throw new IllegalArgumentException("No coordinator class in configuration with id: "+id);
+            });
         }
-    }*/
+    }
 
     private Class<ServerCoordinator> coordinatorClass;
     private Map<String,String> coordinatorParameters = new HashMap<>();
