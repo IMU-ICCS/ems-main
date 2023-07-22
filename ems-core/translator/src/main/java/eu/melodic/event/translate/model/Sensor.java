@@ -14,7 +14,6 @@ public class Sensor extends Component {
     private String configurationStr;
     private boolean isPush;
 
-    //XXX:TODO: Try to remove???
     public Map<String, String> additionalProperties;
 
     public boolean isPullSensor() {

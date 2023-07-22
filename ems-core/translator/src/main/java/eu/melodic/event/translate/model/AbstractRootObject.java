@@ -11,11 +11,6 @@ import java.io.Serializable;
 @SuperBuilder
 @NoArgsConstructor
 public abstract class AbstractRootObject implements Serializable {
-//XXX:TODO: Add @objectId too?
-//    private final static AtomicLong _counter = new AtomicLong(0);
-//
-//    @JsonProperty("@objectId")
-//    private final long _objectId = _counter.getAndIncrement();
     @JsonProperty("@objectClass")
     private final String _objectClass = getClass().getName();
 
