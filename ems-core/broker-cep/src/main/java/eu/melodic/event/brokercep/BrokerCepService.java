@@ -91,48 +91,6 @@ public class BrokerCepService {
                 log.debug("BrokerCepService.clearState(): Topic removed: {}", name);
             }
 
-            //XXX: remove JMX tests
-            /*ConnectionContext cc = brokerService.getAdminConnectionContext();
-            ActiveMQDestination dest[] = brokerService.getRegionBroker().getDestinations();
-            long removeDelay = 1;
-            for (ActiveMQDestination d : dest) {
-                if (d.getQualifiedName().indexOf("://ActiveMQ.")<0) {
-                    String name = d.getDestinationTypeAsString() + " " + d.getQualifiedName();
-                    brokerService.getRegionBroker().removeDestination(null, d, removeDelay);
-                    log.info("BrokerCepService.clearState(): Destination removed: {}", name);
-                }
-            }*/
-
-            //XXX: remove JMX tests
-            /*log.warn(">>>>>>>>>>> MBeans: {}", brokerService.getManagementContext().getMBeanServer().queryMBeans(null, null));*/
-/*            String topicMBeanNames = "org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName()
-                            +",destinationType=Topic,destinationName=*";
-            Set<ObjectInstance> instances = brokerService.getManagementContext()
-                    .getMBeanServer().queryMBeans(new ObjectName(topicMBeanNames), null);*/
-            /*log.warn(">>>>>>>>>>> TopicViews: {}", instances);*/
-            /*for (ObjectInstance oi: instances) {
-                log.warn("---->  oi: {} -> {} -> {}", oi.getObjectName(), oi.getClassName(), oi.getObjectName().getKeyProperty("destinationName"));
-            }*/
-
-/*            ObjectName brokerNameQuery =
-                    new ObjectName("org.apache.activemq:type=Broker,brokerName="+properties.getBrokerName());
-            instances.stream()
-                    .map(ObjectInstance::getObjectName)
-                    .map(objName -> objName.getKeyProperty("destinationName"))
-                    .filter(name -> ! name.startsWith("ActiveMQ."))
-                    .peek(topicName -> log.warn("---->  {}", topicName))
-                    .forEach(topicName -> {
-                        try {
-                            brokerService.getManagementContext().getMBeanServer()
-                                    .invoke(brokerNameQuery,
-                                            "removeTopic",
-                                            new String[]{topicName},
-                                            new String[]{"java.lang.String"});
-                        } catch (Exception e) {
-                            log.error("Exception while deleting topic: {} -> {}", topicName, e);
-                        }
-                    });*/
-
             log.debug("BrokerCepService.clearState(): Broker-CEP state cleared");
         } catch (Exception ex) {
             log.error("BrokerCepService.clearState(): Failed to clear Broker state: ", ex);
