@@ -9,7 +9,5 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MetricConstraint extends UnaryConstraint {
-    //XXX:TODO: Try to remove
-    private String metric;
     private MetricContext metricContext;
 }

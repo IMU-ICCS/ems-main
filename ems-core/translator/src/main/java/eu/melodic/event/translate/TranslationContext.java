@@ -427,7 +427,6 @@ public class TranslationContext implements Serializable {
         metricConstraints.add(
                 MetricConstraint.builder()
                         .name(uc.getName())
-                        .metric(metricName)
                         .comparisonOperator(op)
                         .threshold(uc.getThreshold())
                         .build()
@@ -447,9 +446,6 @@ public class TranslationContext implements Serializable {
                 .stream().map(NamedElement::getName).toList();
         if (childConstraintNames.size()==0)
             throw new IllegalArgumentException("Logical Constraint '"+name+"' has no child constraints");
-
-        // Set node list
-        logicalConstraint.setConstraintNodes(nodeList);
 
         // Add logical constraint information
         logicalConstraints.add(logicalConstraint);

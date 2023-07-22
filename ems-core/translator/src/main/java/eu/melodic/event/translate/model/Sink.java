@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @lombok.Data
@@ -21,9 +20,4 @@ public class Sink extends AbstractInterfaceRootObject {
     private String component;
     @Builder.Default
     private Map<String, String> configuration = new HashMap<>();
-
-    //XXX:TODO: Try to remove
-    private Sensor sensor;
-    //XXX:TODO: Try to remove
-    private List<Sink> sinks;
 }
