@@ -27,7 +27,7 @@ public class NodeRegistryEntry {
     @Getter private final String ipAddress;
     @Getter private final String clientId;
     @JsonIgnore
-    @Getter private final transient BaguetteServer baguetteServer;
+    private final transient BaguetteServer baguetteServer;
     @Getter private String hostname;
     @Getter private STATE state = null;
     @Getter private Date stateLastUpdate;
