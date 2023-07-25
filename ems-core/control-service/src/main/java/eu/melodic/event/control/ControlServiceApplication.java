@@ -15,6 +15,7 @@ import eu.melodic.event.control.properties.ControlServiceProperties;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.KeystoreUtil;
 import eu.melodic.event.util.PasswordUtil;
+import eu.melodic.event.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
@@ -80,11 +81,12 @@ public class ControlServiceApplication {
 
         long initEndTime = System.currentTimeMillis();
         log.info("EMS server initialized in {}ms", initEndTime-initStartTime);
-        applicationContext.getBean(EventBus.class).send(ControlServiceCoordinator.COORDINATOR_STATUS_TOPIC, Map.of(
-                "state", "EMS STARTED",
-                "message", "EMS server initialized in "+(initEndTime-initStartTime)+"ms",
-                "timestamp", System.currentTimeMillis()
-        ), applicationContext.getBean(ControlServiceApplication.class));
+        StrUtil.castToEventBusStringObjectObject(applicationContext.getBean(EventBus.class))
+                .send(ControlServiceCoordinator.COORDINATOR_STATUS_TOPIC, Map.of(
+                        "state", "EMS STARTED",
+                        "message", "EMS server initialized in "+(initEndTime-initStartTime)+"ms",
+                        "timestamp", System.currentTimeMillis()
+                ), applicationContext.getBean(ControlServiceApplication.class));
     }
 
     @Bean

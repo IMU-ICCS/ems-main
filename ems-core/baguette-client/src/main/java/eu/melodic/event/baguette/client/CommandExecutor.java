@@ -765,8 +765,12 @@ public class CommandExecutor {
     protected synchronized void setConstants(String configStr) {
         try {
             log.debug("Received serialization of Constants: {}", configStr);
-            HashMap all = (HashMap) SerializationUtil.deserializeFromString(configStr);
-            Map<String, Double> constants = (Map<String, Double>) all.get("constants");
+            Map<String, Object> all = StrUtil.castToMapStringObject(
+                    SerializationUtil.deserializeFromString(configStr));
+            Map<String, Double> constants = StrUtil.castToMapStringObject(all.get("constants"))
+                    .entrySet().stream().collect(Collectors.toMap(
+                            Map.Entry::getKey, y -> (Double) y.getValue()
+                    ));
             log.debug("Received Constants: {}", constants);
 
             if (activeGrouping != null) {
@@ -1078,7 +1082,7 @@ public class CommandExecutor {
         sendEvent(connectionStr, destination, event);
     }
 
-    public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map event, boolean createDestination) {
+    public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map<String, Object> event, boolean createDestination) {
         if (log.isTraceEnabled())
             log.trace("sendEvent(): connection-string={}, destination={}, create-destination={}, destination-exists={}, event={}",
                     connectionStr, destination, createDestination, brokerCepService.destinationExists(destination), event);
@@ -1093,7 +1097,7 @@ public class CommandExecutor {
         return result;
     }
 
-    public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map event) {
+    public CollectorContext.PUBLISH_RESULT sendEvent(String connectionStr, String destination, Map<String, Object> event) {
         try {
             log.debug("sendEvent(): Sending event: connection={}, destination={}, event={}", connectionStr, destination, event);
             brokerCepService.publishEvent(connectionStr, destination, event);

@@ -15,10 +15,12 @@ import eu.melodic.event.baguette.server.ServerCoordinator;
 import eu.melodic.event.translate.TranslationContext;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class ServerCoordinatorTimeWin implements ServerCoordinator {
+    private final ServerCoordinatorTimeWin LOCK = this;
     private BaguetteServer server;
     private Runnable callback;
     private boolean started;
@@ -27,7 +29,7 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
     private Thread timeout;
     private int numClients;
     private int phase;
-    private Vector<ClientShellCommand> clients;
+    private List<ClientShellCommand> clients;
     private ClientShellCommand broker;
     private int readyClients;
     private String brokerCfgIpAddressCmd;
@@ -37,7 +39,7 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
         this.server = server;
         this.registrationWindow = server.getConfiguration().getRegistrationWindow();
         this.callback = callback;
-        this.clients = new Vector<>();
+        this.clients = new ArrayList<>();
     }
 
     public BaguetteServer getServer() {
@@ -61,9 +63,9 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
                         }
                         log.info("ServerCoordinatorTimeWin: REGISTRATION PERIOD ENDS");
 
-                        Vector<ClientShellCommand> registeredIntime;
-                        synchronized (clients) {
-                            registeredIntime = (Vector<ClientShellCommand>) clients.clone();
+                        List<ClientShellCommand> registeredIntime;
+                        synchronized (LOCK) {
+                            registeredIntime = new ArrayList<>(clients);
                         }
                         if (registeredIntime.size() > 0) {
                             startPhase1(registeredIntime);
@@ -121,7 +123,7 @@ public class ServerCoordinatorTimeWin implements ServerCoordinator {
         log.info("ServerCoordinatorTimeWin: unregister: {} clients registered", numClients);
     }
 
-    protected synchronized void startPhase1(Vector<ClientShellCommand> registeredIntime) {
+    protected synchronized void startPhase1(List<ClientShellCommand> registeredIntime) {
         if (phase != 0) return;
         log.info("ServerCoordinatorTimeWin: Phase #1");
         phase = 1;

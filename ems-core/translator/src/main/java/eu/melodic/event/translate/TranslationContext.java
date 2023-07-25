@@ -298,6 +298,7 @@ public class TranslationContext implements Serializable {
     // ====================================================================================================================================================
     // Map- and Set-related helper methods
 
+    @SuppressWarnings("unchecked")
     protected void _addPair(Map map, Object key, Object value) {
         Set valueSet = (Set) map.get(key);
         if (valueSet == null) {

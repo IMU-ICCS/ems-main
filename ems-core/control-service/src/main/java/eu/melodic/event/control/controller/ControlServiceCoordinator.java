@@ -884,9 +884,9 @@ public class ControlServiceCoordinator implements InitializingBean {
         }
     }
 
-    public <T> HttpEntity<T> createHttpEntity(Class<T> notifType, Object notification, String jwtToken) {
+    public <T> HttpEntity<T> createHttpEntity(Class<T> notificationType, Object notification, String jwtToken) {
         HttpHeaders headers = createHttpHeaders(jwtToken);
-        return new HttpEntity<T>((T)notification, headers);
+        return new HttpEntity<T>(notificationType.cast(notification), headers);
     }
 
     private HttpHeaders createHttpHeaders(String jwtToken) {

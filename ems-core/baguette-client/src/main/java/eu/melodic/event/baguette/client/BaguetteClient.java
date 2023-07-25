@@ -48,10 +48,9 @@ public class BaguetteClient implements ApplicationRunner {
     private final ClusterManagerProperties clusterManagerProperties;
     private final ConfigurableApplicationContext applicationContext;
 
-    private final List<Class<? extends Collector>> DEFAULT_COLLECTORS_LIST = Collections.<Class<? extends Collector>>unmodifiableList(new ArrayList<Class<? extends Collector>>() {{
-        add(NetdataCollector.class);
-        //add(PrometheusCollector.class);
-    }});
+    private final List<Class<? extends Collector>> DEFAULT_COLLECTORS_LIST = List.of(
+        NetdataCollector.class//, PrometheusCollector.class
+    );
 
     @Getter
     private final List<Collector> collectorsList = new ArrayList<>();

@@ -1,10 +1,10 @@
 package eu.melodic.models.resources;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import eu.melodic.event.util.StrUtil;
 import eu.melodic.models.interfaces.PullSensor;
 import eu.melodic.models.interfaces.PushSensor;
 import eu.melodic.models.interfaces.Sensor;
@@ -26,9 +26,9 @@ public class SensorDeserializer extends StdDeserializer<Sensor> {
     return map.keySet().containsAll(Arrays.asList("className","configuration","interval"));
   }
 
-  public Sensor deserialize(JsonParser jsonParser, DeserializationContext jsonContext) throws IOException, JsonProcessingException {
+  public Sensor deserialize(JsonParser jsonParser, DeserializationContext jsonContext) throws IOException {
     ObjectMapper mapper  = new ObjectMapper();
-    Map<String, Object> map = mapper.readValue(jsonParser, Map.class);
+    Map<String, Object> map = StrUtil.castToMapStringObject( mapper.readValue(jsonParser, Map.class) );
     if ( looksLikePushSensor(map) ) return new Sensor(mapper.convertValue(map, PushSensor.class));
     if ( looksLikePullSensor(map) ) return new Sensor(mapper.convertValue(map, PullSensor.class));
     throw new IOException("Can't figure out type of object" + map);

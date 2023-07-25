@@ -13,8 +13,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -197,11 +195,13 @@ public class StrUtil {
                         if (result!=null) {
                             typeName = result.getClass().getSimpleName();
                         } else {
-                            List<T> dummy = new ArrayList<>(0);
+                            /*List<T> dummy = new ArrayList<>(0);
                             Type[] actualTypeArguments = ((ParameterizedType) dummy.getClass().getGenericSuperclass()).getActualTypeArguments();
                             Type clazz = actualTypeArguments[0];
                             Class<T> theClass = (Class<T>) clazz.getClass();
                             typeName = theClass.getSimpleName();
+                            */
+                            typeName = "unknown_type";
                         }
                         formatter = String.format("StrConverter: Invalid %s value: str=%s, Exception: ", typeName, str);
                     }
@@ -297,11 +297,21 @@ public class StrUtil {
     // Object Map-to-String Map conversion methods
     // ------------------------------------------------------------------------
 
+    @SuppressWarnings("unchecked")
+    public static Map<String,Object> castToMapStringObject(Object o) {
+        return (Map<String,Object>) o;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static EventBus<String,Object,Object> castToEventBusStringObjectObject(Object o) {
+        return (EventBus<String,Object,Object>) o;
+    }
+
     public static Map<String,Object> deepStringifyMap(Map<String,Object> inputMap) {
         Map<String,Object> outMap = new LinkedHashMap<>();
         for (Map.Entry<String,Object> entry : inputMap.entrySet()) {
             if (entry.getValue()!=null && entry.getValue() instanceof Map) {
-                Map<String,Object> tmpMap = deepStringifyMap((Map<String,Object>) entry.getValue());
+                Map<String,Object> tmpMap = deepStringifyMap(castToMapStringObject(entry.getValue()));
                 outMap.put(entry.getKey(), tmpMap);
             } else {
                 outMap.put(entry.getKey(), entry.getValue()!=null ? entry.getValue().toString() : null);
@@ -323,7 +333,7 @@ public class StrUtil {
                     ? entry.getKey()
                     : (entry.getKey()!=null) ? prefix+"."+entry.getKey() : prefix;
             if (entry.getValue()!=null && entry.getValue() instanceof Map) {
-                Map tmpMap = deepFlattenMap((Map) entry.getValue(), newKey);
+                Map<String, String> tmpMap = deepFlattenMap(castToMapStringObject(entry.getValue()), newKey);
                 outMap.putAll(tmpMap);
             } else {
                 outMap.put(newKey, entry.getValue()!=null ? entry.getValue().toString() : null);

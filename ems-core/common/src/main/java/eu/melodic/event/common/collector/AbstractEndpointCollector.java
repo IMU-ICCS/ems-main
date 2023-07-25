@@ -207,6 +207,11 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
                 prefix + BASE_NODE_FAILED);
     }
 
+    @SuppressWarnings("unchecked")
+    protected Class<? extends AbstractEndpointCollector<T>> getCollectorClass() {
+        return (Class<? extends AbstractEndpointCollector<T>>) getClass();
+    }
+
     protected void registerInternalEvents(@NonNull String collectionStartEvent,
                                           @NonNull String collectionEndEvent,
                                           @NonNull String collectionErrorEvent,
@@ -224,14 +229,14 @@ public abstract class AbstractEndpointCollector<T> implements InitializingBean, 
         collectorEvents.put(EVENT_NODE_FAILED, nodeFailedEvent);
         log.debug("Collectors::{}: registerInternalEvents: BEFORE REGISTRATION: collector-class={}, events={}", collectorId, getClass(), collectorEvents);
 
-        Class<? extends AbstractEndpointCollector<T>> clazz = (Class<? extends AbstractEndpointCollector<T>>) getClass();
+        Class<? extends AbstractEndpointCollector<T>> clazz = getCollectorClass();
         nodeToNodeEventsMap.put(clazz, collectorEvents);
         log.debug("Collectors::{}: registerInternalEvents: AFTER REGISTRATION: collector-class={}, events={}", collectorId, clazz, collectorEvents);
     }
 
     private Map<String, String> getInternalEvents() {
         log.debug("Collectors::{}: getInternalEvents: BEGIN: collector-class={}", collectorId, getClass());
-        Class<? extends AbstractEndpointCollector<T>> clazz = (Class<? extends AbstractEndpointCollector<T>>) getClass();
+        Class<? extends AbstractEndpointCollector<T>> clazz = getCollectorClass();
         Map<String, String> collectorEvents = nodeToNodeEventsMap.get(clazz);
         log.debug("Collectors::{}: getInternalEvents: END: collector-class={}, events={}", collectorId, clazz, collectorEvents);
         return collectorEvents;

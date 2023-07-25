@@ -13,10 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import eu.melodic.event.baguette.server.coordinator.cluster.IClusterZone;
 import eu.melodic.event.common.recovery.RecoveryConstant;
-import eu.melodic.event.util.ClientConfiguration;
-import eu.melodic.event.util.EventBus;
-import eu.melodic.event.util.GroupingConfiguration;
-import eu.melodic.event.util.SerializationUtil;
+import eu.melodic.event.util.*;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -399,7 +396,7 @@ public class ClientShellCommand implements Command, Runnable, SessionAware {
             String statsStr = line.substring("-STATS:".length());
             Object statsObj = SerializationUtil.deserializeFromString(statsStr);
             if (statsObj instanceof Map) {
-                Map<String, Object> statsMap = (Map<String, Object>) statsObj;
+                Map<String, Object> statsMap = StrUtil.castToMapStringObject(statsObj);
                 statsMap.put("_received_at_server_timestamp", System.currentTimeMillis());
                 log.debug("{}--> Client STATS received: {}", getId(), statsMap);
                 this.clientStatistics = statsMap;

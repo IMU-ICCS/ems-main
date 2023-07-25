@@ -16,6 +16,7 @@ import eu.melodic.event.control.controller.ControlServiceCoordinator;
 import eu.melodic.event.control.controller.ManagementCoordinator;
 import eu.melodic.event.control.plugin.WebAdminPlugin;
 import eu.melodic.event.control.properties.InfoServiceProperties;
+import eu.melodic.event.util.StrUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.QueryParam;
 import lombok.NonNull;
@@ -254,7 +255,8 @@ public class InfoServiceController implements InitializingBean {
             Map<String, String> info = clientsInfo.get(entry.getKey());
             Object o = entry.getValue();
             if (o instanceof Map) {
-                ((Map)o).put("client-info", info);
+                StrUtil.castToMapStringObject(o)
+                        .put("client-info", info);
             }
         }
 

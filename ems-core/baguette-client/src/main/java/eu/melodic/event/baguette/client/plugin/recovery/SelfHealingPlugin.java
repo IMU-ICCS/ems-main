@@ -16,6 +16,7 @@ import eu.melodic.event.common.recovery.*;
 import eu.melodic.event.util.EventBus;
 import eu.melodic.event.util.PasswordUtil;
 import eu.melodic.event.util.Plugin;
+import eu.melodic.event.util.StrUtil;
 import io.atomix.cluster.ClusterMembershipEvent;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -178,7 +179,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         }
 
         // Get paused node address
-        Object addressValue = ((Map) message).getOrDefault("address", null);
+        Object addressValue = StrUtil.castToMapStringObject(message).getOrDefault("address", null);
         log.debug("SelfHealingPlugin: processNetdataNodeFailedEvent(): node-address={}", addressValue);
         if (addressValue==null) {
             log.warn("SelfHealingPlugin: processNetdataNodeFailedEvent(): Node address is missing. Cannot recover node. Initial message: {}", message);
@@ -218,7 +219,7 @@ public class SelfHealingPlugin implements Plugin, InitializingBean, EventBus.Eve
         }
 
         // Get resumed node address
-        String nodeAddress = ((Map) message).getOrDefault("address", "").toString();
+        String nodeAddress = StrUtil.castToMapStringObject(message).getOrDefault("address", "").toString();
         log.debug("SelfHealingPlugin: processNetdataNodeOkEvent(): node-address={}", nodeAddress);
         /*if (StringUtils.isBlank(nodeAddress)) {
             log.warn("SelfHealingPlugin: processNetdataNodeOkEvent(): Node address is missing. Initial message: {}", message);

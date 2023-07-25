@@ -26,6 +26,7 @@ import eu.melodic.event.translate.TranslationContext;
 import eu.melodic.event.util.FunctionDefinition;
 import eu.melodic.event.util.GROUPING;
 import eu.melodic.event.util.NetUtil;
+import eu.melodic.event.util.StrUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +90,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
 
     public Map<String,Object> getServerMetricValuesFor(@NonNull String key) {
         log.debug("getServerMetricValuesFor(): BEGIN: key={}", key);
-        return (Map<String,Object>) getServerMetricValues().get(key);
+        return StrUtil.castToMapStringObject(getServerMetricValues().get(key));
     }
 
     // ------------------------------------------------------------------------
@@ -115,7 +116,7 @@ public class EmsInfoServiceImpl implements IEmsInfoService {
     @Override
     public Map<String,Object> getClientMetricValues(@NonNull String clientId) {
         log.debug("getClientMetricValues(): BEGIN: clientId={}", clientId);
-        return (Map<String,Object>) getClientMetricValues().get(clientId);
+        return StrUtil.castToMapStringObject(getClientMetricValues().get(clientId));
     }
 
     // ------------------------------------------------------------------------

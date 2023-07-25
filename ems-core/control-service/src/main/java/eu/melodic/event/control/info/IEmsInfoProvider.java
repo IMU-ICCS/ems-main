@@ -9,6 +9,8 @@
 
 package eu.melodic.event.control.info;
 
+import eu.melodic.event.util.StrUtil;
+
 import java.util.Map;
 
 public interface IEmsInfoProvider {
@@ -17,6 +19,6 @@ public interface IEmsInfoProvider {
     default Map<String,Object> getMetricValues() { return null; }
 
     default Map<String,Object> getMetricValuesFor(String key) {
-        return (Map<String,Object>) getMetricValues().get(key);
+        return StrUtil.castToMapStringObject(getMetricValues().get(key));
     }
 }
