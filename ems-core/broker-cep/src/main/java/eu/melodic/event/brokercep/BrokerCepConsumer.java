@@ -13,6 +13,7 @@ import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.melodic.event.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
@@ -186,16 +187,15 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
         // Handle message
         try {
             log.trace("BrokerCepConsumer.onMessage(): {}", message);
-            if (message instanceof ActiveMQObjectMessage) {
-                ActiveMQObjectMessage mesg = (ActiveMQObjectMessage) message;
+            if (message instanceof ActiveMQObjectMessage mesg) {
                 ActiveMQDestination messageDestination = mesg.getDestination();
                 log.debug("BrokerCepConsumer.onMessage(): Message received: source={}, payload={}",
                         messageDestination.getPhysicalName(), mesg.getObject());
 
                 // Send message to Esper
                 if (mesg.getObject() instanceof Map) {
-                    //cepService.handleEvent((Map<String, Object>) mesg.getObject(), messageDestination.getPhysicalName());
-                    EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
+                    //cepService.handleEvent(StrUtil.castToMapStringObject(mesg.getObject()), messageDestination.getPhysicalName());
+                    EventMap eventMap = new EventMap(StrUtil.castToMapStringObject(mesg.getObject()));
                     copyEventProperties(message, eventMap);
                     cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
                     eventCache.cacheEvent(eventMap, eventMap.getEventProperties(), messageDestination.getPhysicalName());
@@ -204,8 +204,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
                     eventCache.cacheEvent(mesg.getObject(), null, messageDestination.getPhysicalName());
                 }
                 objectEventCounter.incrementAndGet();
-            } else if (message instanceof ActiveMQTextMessage) {
-                ActiveMQTextMessage mesg = (ActiveMQTextMessage) message;
+            } else if (message instanceof ActiveMQTextMessage mesg) {
                 ActiveMQDestination messageDestination = mesg.getDestination();
                 log.debug("BrokerCepConsumer.onMessage(): Message received: source={}, payload={}, mime={}",
                         messageDestination.getPhysicalName(), mesg.getText(), mesg.getJMSXMimeType());
@@ -269,7 +268,8 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
         log.debug("BrokerCepConsumer.copyEventProperties(): BEGIN: message={}, event={}", message, eventMap);
 
         // Copy message properties to event map
-        Collections.list((Enumeration<String>) message.getPropertyNames()).forEach(n -> {
+        Collections.list((Enumeration<?>) message.getPropertyNames()).forEach(s -> {
+            String n = s.toString();
             log.trace("BrokerCepConsumer.copyEventProperties(): Copying property: message={}, event={}, property={}", message, eventMap, n);
             try {
                 String v = message.getStringProperty(n);

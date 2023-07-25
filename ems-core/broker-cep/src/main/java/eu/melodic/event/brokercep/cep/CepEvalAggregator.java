@@ -12,6 +12,7 @@ package eu.melodic.event.brokercep.cep;
 import com.espertech.esper.collection.Pair;
 import com.espertech.esper.epl.agg.aggregator.AggregationMethod;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -171,7 +172,7 @@ public class CepEvalAggregator implements AggregationMethod {
                     Object firstInPair = ((Pair)currentEntry).getFirst();
                     log.trace("CepEvalAggregator.getValue():  First: {} -- {}", pair.getFirst().getClass().getName(), pair.getFirst());
                     log.trace("CepEvalAggregator.getValue(): Second: {} -- {}", pair.getSecond().getClass().getName(), pair.getSecond());
-                    if (firstInPair instanceof EventMap || firstInPair instanceof HashMap)
+                    if (firstInPair instanceof HashMap)
                         currentEntry = firstInPair;
                 }
 
@@ -179,7 +180,7 @@ public class CepEvalAggregator implements AggregationMethod {
                 if (EventMap.class.isAssignableFrom(currentEntry.getClass())) {
                     lists.get(i).add((EventMap) currentEntry);
                 } else if (HashMap.class.isAssignableFrom(currentEntry.getClass())) {
-                    EventMap eventMap = new EventMap((HashMap) currentEntry);
+                    EventMap eventMap = new EventMap(StrUtil.castToMapStringObject(currentEntry));
                     lists.get(i).add(eventMap);
                 } else {
                     log.error("CepEvalAggregator.getValue(): ERROR: Event type is not supported: {}, Event:\n{}",

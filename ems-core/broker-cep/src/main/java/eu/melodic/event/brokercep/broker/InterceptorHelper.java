@@ -42,6 +42,7 @@ public class InterceptorHelper {
         return interceptors;
     }
 
+    @SuppressWarnings("unchecked")
     public AbstractMessageInterceptor initializeInterceptor(final MessageInterceptorRegistry registry,
                                       ApplicationContext applicationContext,
                                       Map<String, BrokerCepProperties.MessageInterceptorSpec> specs,
@@ -49,9 +50,9 @@ public class InterceptorHelper {
     {
         log.debug("InterceptorHelper: Initializing message interceptor with spec.: {}", interceptorSpec);
         String interceptorClassName = interceptorSpec.getClassName();
-        Class<AbstractMessageInterceptor> interceptorClass = null;
+        Class<? extends AbstractMessageInterceptor> interceptorClass;
         try {
-            interceptorClass = (Class<AbstractMessageInterceptor>) Class.forName(interceptorClassName);
+            interceptorClass = (Class<? extends AbstractMessageInterceptor>) Class.forName(interceptorClassName);
         } catch (ClassNotFoundException e) {
             log.error("InterceptorHelper: Error while registering message interceptor: {}. Exception: ", interceptorSpec, e);
             throw new RuntimeException(e);

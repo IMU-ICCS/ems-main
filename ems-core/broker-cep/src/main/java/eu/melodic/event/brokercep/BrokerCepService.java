@@ -14,10 +14,7 @@ import eu.melodic.event.brokercep.broker.BrokerConfig;
 import eu.melodic.event.brokercep.cep.CepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
-import eu.melodic.event.util.FunctionDefinition;
-import eu.melodic.event.util.KeystoreUtil;
-import eu.melodic.event.util.NetUtil;
-import eu.melodic.event.util.PasswordUtil;
+import eu.melodic.event.util.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -193,7 +190,7 @@ public class BrokerCepService {
                 properties.getBrokerUrl(), connBrokerUrl, connectionString, destinationName, event);
         if (!connBrokerUrl.equals(properties.getBrokerUrl())) return false;
 
-        Class eventClass = event.getClass();
+        Class<? extends Serializable> eventClass = event.getClass();
         log.debug("BrokerCepService._publishLocalEvent(): It is local event. Skipping publish through broker: connection={}, destination={}, payload-class={}, payload={}",
                 connectionString, destinationName, eventClass.getName(), event);
         if (String.class.isAssignableFrom(eventClass)) {
@@ -201,7 +198,7 @@ public class BrokerCepService {
             cepService.handleEvent((String) event, destinationName);
         } else if (Map.class.isAssignableFrom(eventClass)) {
             log.debug("BrokerCepService._publishLocalEvent(): Map event...");
-            cepService.handleEvent((Map) event, destinationName);
+            cepService.handleEvent(StrUtil.castToMapStringObject(event), destinationName);
         } else {
             log.debug("BrokerCepService._publishLocalEvent(): Object event...");
             cepService.handleEvent(event);

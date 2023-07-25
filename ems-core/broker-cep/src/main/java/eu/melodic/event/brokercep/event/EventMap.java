@@ -10,6 +10,7 @@
 package eu.melodic.event.brokercep.event;
 
 import com.google.gson.Gson;
+import eu.melodic.event.util.StrUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -127,7 +128,7 @@ public class EventMap extends LinkedHashMap<String, Object> implements Serializa
     // Convert Object to EventMap
     public static EventMap toEventMap(@NonNull Object o) {
         if (o instanceof EventMap) return (EventMap) o;
-        if (o instanceof Map) return new EventMap((Map) o);
+        if (o instanceof Map) return new EventMap(StrUtil.castToMapStringObject(o) );
         return parseEventMap(o.toString());
     }
 

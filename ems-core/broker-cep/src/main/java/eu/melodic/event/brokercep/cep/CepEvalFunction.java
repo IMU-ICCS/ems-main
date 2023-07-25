@@ -11,6 +11,7 @@ package eu.melodic.event.brokercep.cep;
 
 import com.espertech.esper.collection.Pair;
 import eu.melodic.event.brokercep.event.EventMap;
+import eu.melodic.event.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -77,7 +78,7 @@ public class CepEvalFunction {
         return _eval(formula, streamNames, pair1, pair2, pair3, pair4);
     }
 
-    public static double _eval(String formula, String streamNames, Pair<Object,String>... pairs) {
+    public static double _eval(String formula, String streamNames, Pair... pairs) {
         log.debug(">> ---------------------------------------------------------------------------");
         log.debug(">> eval(Pair):   formula: {}", formula);
         log.debug(">> eval(Pair):   streams: {}", streamNames);
@@ -99,7 +100,7 @@ public class CepEvalFunction {
             if (eventObj instanceof EventMap)
                 value = ((EventMap)eventObj).getMetricValue();
             else if (eventObj instanceof Map)
-                value = (double) ((Map)eventObj).get("metricValue");
+                value = (double) (StrUtil.castToMapStringObject(eventObj)).get("metricValue");
             else if (eventObj instanceof Double)
                 value = (double) eventObj;
             else

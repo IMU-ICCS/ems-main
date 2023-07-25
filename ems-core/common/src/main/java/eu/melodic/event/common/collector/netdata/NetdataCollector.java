@@ -39,6 +39,7 @@ public class NetdataCollector extends AbstractEndpointCollector<HashMap> {
     protected NetdataCollectorProperties properties;
     protected RestTemplate restTemplate = new RestTemplate();
 
+    @SuppressWarnings("unchecked")
     public NetdataCollector(String id, NetdataCollectorProperties properties, CollectorContext collectorContext, TaskScheduler taskScheduler, EventBus<String,Object,Object> eventBus) {
         super(id, properties, collectorContext, taskScheduler, eventBus);
         this.properties = properties;

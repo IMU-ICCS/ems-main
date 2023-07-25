@@ -37,7 +37,8 @@ public class PluginManager implements InitializingBean {
         log.info("PluginManager: Started");
     }
 
-    public void initializePlugins(Class<? extends Plugin>...pluginClasses) {
+    @SafeVarargs
+    public final void initializePlugins(Class<? extends Plugin>... pluginClasses) {
         initializePlugins(Arrays.asList(pluginClasses));
     }
 

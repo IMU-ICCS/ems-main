@@ -39,6 +39,7 @@ public class PrometheusCollector extends AbstractEndpointCollector<String> {
     private boolean addTagsAsEventProperties;
     private boolean addTagsInEventPayload;
 
+    @SuppressWarnings("unchecked")
     public PrometheusCollector(String id, PrometheusCollectorProperties properties, CollectorContext collectorContext, TaskScheduler taskScheduler, EventBus<String,Object,Object> eventBus) {
         super(id, properties, collectorContext, taskScheduler, eventBus);
         this.properties = properties;

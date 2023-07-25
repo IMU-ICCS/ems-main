@@ -12,6 +12,7 @@ package eu.melodic.event.brokercep.broker.interceptor;
 import eu.melodic.event.brokercep.BrokerCepService;
 import eu.melodic.event.brokercep.event.EventMap;
 import eu.melodic.event.brokercep.properties.BrokerCepProperties;
+import eu.melodic.event.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
@@ -149,18 +150,14 @@ public class MessageForwarderInterceptor extends AbstractMessageInterceptor {
                 log.trace("MessageForwarderInterceptor.messageToEvent(): message: {}", message);
                 Map<String, Object> eventProperties = message.getProperties();
                 log.trace("MessageForwarderInterceptor.messageToEvent(): event-properties: {}", eventProperties);
-                if (message instanceof ActiveMQObjectMessage) {
-                    ActiveMQObjectMessage mesg = (ActiveMQObjectMessage) message;
-
+                if (message instanceof ActiveMQObjectMessage mesg) {
                     if (mesg.getObject() instanceof Map) {
-                        EventMap eventMap = new EventMap((Map<String, Object>) mesg.getObject());
+                        EventMap eventMap = new EventMap(StrUtil.castToMapStringObject(mesg.getObject()));
                         if (eventProperties!=null) eventMap.putAll(eventProperties);
                         log.trace("MessageForwarderInterceptor.messageToEvent(): event-map: {}", eventMap);
                         return eventMap;
                     }
-                } else if (message instanceof ActiveMQTextMessage) {
-                    ActiveMQTextMessage mesg = (ActiveMQTextMessage) message;
-
+                } else if (message instanceof ActiveMQTextMessage mesg) {
                     // Send message to Esper
                     EventMap eventMap = EventMap.parseEventMap(mesg.getText());
                     if (eventProperties!=null) eventMap.putAll(eventProperties);
