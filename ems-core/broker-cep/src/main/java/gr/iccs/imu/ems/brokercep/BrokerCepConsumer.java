@@ -198,10 +198,12 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
                     EventMap eventMap = new EventMap(StrUtil.castToMapStringObject(mesg.getObject()));
                     copyEventProperties(message, eventMap);
                     cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
-                    eventCache.cacheEvent(eventMap, eventMap.getEventProperties(), messageDestination.getPhysicalName());
+                    eventCache.cacheEvent(eventMap, messageDestination.getPhysicalName());
                 } else {
-                    cepService.handleEvent(mesg.getObject());
-                    eventCache.cacheEvent(mesg.getObject(), null, messageDestination.getPhysicalName());
+                    if (mesg.getObject()!=null) {
+                        cepService.handleEvent(mesg.getObject());
+                        eventCache.cacheEvent(mesg.getObject(), null, messageDestination.getPhysicalName());
+                    }
                 }
                 objectEventCounter.incrementAndGet();
             } else if (message instanceof ActiveMQTextMessage mesg) {
@@ -215,7 +217,7 @@ public class BrokerCepConsumer implements MessageListener, InitializingBean, App
                 copyEventProperties(message, eventMap);
                 log.trace("BrokerCepConsumer.onMessage(): event-map={}", eventMap);
                 cepService.handleEvent(eventMap, messageDestination.getPhysicalName());
-                eventCache.cacheEvent(eventMap, eventMap.getEventProperties(), messageDestination.getPhysicalName());
+                eventCache.cacheEvent(eventMap, messageDestination.getPhysicalName());
                 textEventCounter.incrementAndGet();
             } else {
                 otherEventCounter.incrementAndGet();

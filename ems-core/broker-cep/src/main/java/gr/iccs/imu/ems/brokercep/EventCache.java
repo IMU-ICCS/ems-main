@@ -9,12 +9,15 @@
 
 package gr.iccs.imu.ems.brokercep;
 
+import gr.iccs.imu.ems.brokercep.event.EventMap;
 import gr.iccs.imu.ems.brokercep.properties.BrokerCepProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +62,10 @@ public class EventCache implements InitializingBean {
         cacheCounter.set(0);
     }
 
+    public void cacheEvent(EventMap eventMap, String destination) {
+        cacheEvent(eventMap, eventMap.getEventProperties(), destination);
+    }
+
     public void cacheEvent(Object event, Map<String,Object> properties, String destination) {
         if (!enabled) return;
         CacheEntry entry;
@@ -85,8 +92,9 @@ public class EventCache implements InitializingBean {
         ));
     }
 
+    @ToString
     @RequiredArgsConstructor
-    public static class CacheEntry {
+    public static class CacheEntry implements Serializable {
         public Object payload;
         public Map<String, String> properties;
         public final String destination;
