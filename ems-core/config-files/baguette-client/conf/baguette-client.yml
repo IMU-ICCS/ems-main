@@ -11,9 +11,9 @@
 ###                     EMS - Baguette Client properties                     ###
 ################################################################################
 
-#password-encoder-class: eu.melodic.event.util.password.AsterisksPasswordEncoder
-#password-encoder-class: eu.melodic.event.util.password.IdentityPasswordEncoder
-#password-encoder-class: eu.melodic.event.util.password.PresentPasswordEncoder
+#password-encoder-class: gr.iccs.imu.ems.util.password.AsterisksPasswordEncoder
+#password-encoder-class: gr.iccs.imu.ems.util.password.IdentityPasswordEncoder
+#password-encoder-class: gr.iccs.imu.ems.util.password.PresentPasswordEncoder
 
 ### Jasypt encryptor settings (using old settings until encrypted texts are updated)
 jasypt:
@@ -75,7 +75,7 @@ server-password: ${BAGUETTE_SERVER_PASSWORD}
 # Collectors settings
 # -----------------------------------------------------------------------------
 
-#collector-classes: eu.melodic.event.baguette.client.collector.netdata.NetdataCollector
+#collector-classes: gr.iccs.imu.ems.baguette.client.collector.netdata.NetdataCollector
 
 collector:
   netdata:
@@ -134,9 +134,9 @@ cluster:
 
   tls:
     enabled: true
-    #keystore: ${MELODIC_CONFIG_DIR}/cluster.jks
+    #keystore: ${EMS_CONFIG_DIR}/cluster.jks
     #keystore-password: atomix
-    #truststore: ${MELODIC_CONFIG_DIR}/cluster.jks
+    #truststore: ${EMS_CONFIG_DIR}/cluster.jks
     #truststore-password: atomix
     keystore-dir: conf
 
@@ -178,17 +178,17 @@ brokercep:
 
   ssl:
     # Key store settings
-    keystore-file: ${MELODIC_CONFIG_DIR}/client-broker-keystore.p12
+    keystore-file: ${EMS_CONFIG_DIR}/client-broker-keystore.p12
     keystore-type: PKCS12
     keystore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
 
     # Trust store settings
-    truststore-file: ${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
+    truststore-file: ${EMS_CONFIG_DIR}/client-broker-truststore.p12
     truststore-type: PKCS12
     truststore-password: 'ENC(ISMbn01HVPbtRPkqm2Lslg==)'  # melodic
 
     # Certificate settings
-    certificate-file: ${MELODIC_CONFIG_DIR}/client-broker.crt
+    certificate-file: ${EMS_CONFIG_DIR}/client-broker.crt
 
     # key generation settings
     key-entry-generate: IF-IP-CHANGED
@@ -214,7 +214,7 @@ brokercep:
   # Message interceptors
   message-interceptors:
     - destination: '>'
-      className: 'eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor'
+      className: 'gr.iccs.imu.ems.brokercep.broker.interceptor.SequentialCompositeInterceptor'
       params:
         - '#SourceAddressMessageUpdateInterceptor'
         - '#MessageForwarderInterceptor'
@@ -222,11 +222,11 @@ brokercep:
 
   message-interceptors-specs:
     SourceAddressMessageUpdateInterceptor:
-      className: eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
+      className: gr.iccs.imu.ems.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
     MessageForwarderInterceptor:
-      className: eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
+      className: gr.iccs.imu.ems.brokercep.broker.interceptor.MessageForwarderInterceptor
     NodePropertiesMessageUpdateInterceptor:
-      className: eu.melodic.event.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
+      className: gr.iccs.imu.ems.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
 
   # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
   #message-forward-destinations:

@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=eu.melodic.event.common.plugin.PluginManager
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=plugin.gr.iccs.imu.ems.common.PluginManager

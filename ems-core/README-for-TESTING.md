@@ -17,7 +17,7 @@ We distinguish between ***Resource-Limited (RL)*** nodes and ***Normal or Non-RL
     * it has 2GB of RAM or less, or
     * it has Total Disk space 1GB or less, or
     * its architecture name starts with `ARM`  (it will normally be `x86_64`).
-    * Thresholds can be changed in `eu.melodic.event.baguette-client-install.properties` file.
+    * Thresholds can be changed in `gr.iccs.imu.ems.baguette-client-install.properties` file.
 
 
 We also distinguish between ***Monitoring Topologies***:
@@ -345,7 +345,7 @@ We distinguish between monitoring topologies:
     *<p align="center">Normal node: EMS client restarts</p>*
     ```
     Starting baguette client...
-    MELODIC_CONFIG_DIR=/opt/baguette-client/conf
+    EMS_CONFIG_DIR=/opt/baguette-client/conf
     LOG_FILE=/opt/baguette-client/logs/output.txt
       ____                         _   _          _____ _ _            _
      |  _ \                       | | | |        / ____| (_)          | |
@@ -643,7 +643,7 @@ We distinguish between monitoring topologies:
      OUT> Baguette client is not running
      OUT> ubuntu@3866738cb0f4:~$ /opt/baguette-client/bin/run.sh
      OUT> Starting baguette client...
-     OUT> MELODIC_CONFIG_DIR=/opt/baguette-client/conf
+     OUT> EMS_CONFIG_DIR=/opt/baguette-client/conf
      OUT> LOG_FILE=/opt/baguette-client/logs/output.txt
      OUT> Baguette client PID:   973
     VmNodeRecoveryTask: redirectSshOutput(): Connection closed: id=OUT
@@ -661,7 +661,7 @@ We distinguish between monitoring topologies:
     *<p align="center">Normal node: EMS client restarts</p>*
     ```
     Starting baguette client...
-    MELODIC_CONFIG_DIR=/opt/baguette-client/conf
+    EMS_CONFIG_DIR=/opt/baguette-client/conf
     LOG_FILE=/opt/baguette-client/logs/output.txt
       ____                         _   _          _____ _ _            _
      |  _ \                       | | | |        / ____| (_)          | |
@@ -675,8 +675,8 @@ We distinguish between monitoring topologies:
     No active profile set, falling back to default profiles: default
     loadCachedClientId: Used cached Client Id: null
     Password encoder class name is empty. Default instance of PasswordEncoder will be created
-    PasswordUtil.setPasswordEncoder(): PasswordEncoder set to: eu.melodic.event.util.password.AsterisksPasswordEncoder
-    PasswordUtil: Initialized default Password Encoder: eu.melodic.event.util.password.AsterisksPasswordEncoder
+    PasswordUtil.setPasswordEncoder(): PasswordEncoder set to: password.gr.iccs.imu.ems.util.AsterisksPasswordEncoder
+    PasswordUtil: Initialized default Password Encoder: password.gr.iccs.imu.ems.util.AsterisksPasswordEncoder
     BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...
     KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate
     BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done
@@ -861,7 +861,7 @@ We distinguish between monitoring topologies:
      OUT> Baguette client is not running
      OUT> ubuntu@581d745be52c:~$ /opt/baguette-client/bin/run.sh
      OUT> Starting baguette client...
-     OUT> MELODIC_CONFIG_DIR=/opt/baguette-client/conf
+     OUT> EMS_CONFIG_DIR=/opt/baguette-client/conf
      OUT> LOG_FILE=/opt/baguette-client/logs/output.txt
      OUT> Baguette client PID:  1242
     VmNodeRecoveryTask: redirectSshOutput(): Connection closed: id=OUT
@@ -876,7 +876,7 @@ We distinguish between monitoring topologies:
     *<p align="center">Normal node: Old Aggregator restarts as a plain Normal node</p>*
     ```
     Starting baguette client...
-    MELODIC_CONFIG_DIR=/opt/baguette-client/conf
+    EMS_CONFIG_DIR=/opt/baguette-client/conf
     LOG_FILE=/opt/baguette-client/logs/output.txt
       ____                         _   _          _____ _ _            _
      |  _ \                       | | | |        / ____| (_)          | |
@@ -890,8 +890,8 @@ We distinguish between monitoring topologies:
     No active profile set, falling back to default profiles: default
     loadCachedClientId: Used cached Client Id: null
     Password encoder class name is empty. Default instance of PasswordEncoder will be created
-    PasswordUtil.setPasswordEncoder(): PasswordEncoder set to: eu.melodic.event.util.password.AsterisksPasswordEncoder
-    PasswordUtil: Initialized default Password Encoder: eu.melodic.event.util.password.AsterisksPasswordEncoder
+    PasswordUtil.setPasswordEncoder(): PasswordEncoder set to: password.gr.iccs.imu.ems.util.AsterisksPasswordEncoder
+    PasswordUtil: Initialized default Password Encoder: password.gr.iccs.imu.ems.util.AsterisksPasswordEncoder
     BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL...
     KeystoreUtil.initializeKeystoresAndCertificate(): Initializing keystores and certificate
     BrokerConfig.initializeKeyAndCert(): Initializing keystore, truststore and certificate for Broker-SSL... done

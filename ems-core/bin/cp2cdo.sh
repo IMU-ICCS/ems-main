@@ -11,7 +11,7 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=${BASEDIR}/config-files; export MELODIC_CONFIG_DIR; fi
+if [[ -z $EMS_CONFIG_DIR ]]; then EMS_CONFIG_DIR=${BASEDIR}/config-files; export EMS_CONFIG_DIR; fi
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=${BASEDIR}/config-files; export PAASAGE_CONFIG_DIR; fi
 
 # Copy dependencies if missing
@@ -23,7 +23,7 @@ if [[ -f ${BASEDIR}/control-service/pom.xml ]]; then
     fi
 fi
 
-java -classpath "control-service/target/classes;control-service/target/dependency/*" eu.melodic.event.control.util.CpModelHelper $*
+java -classpath "control-service/target/classes;control-service/target/dependency/*" gr.iccs.imu.ems.control.util.CpModelHelper $*
 # Usage: cp2cdo <file> <cdo-resource>
 
 cd ${PREVWORKDIR}

@@ -11,7 +11,7 @@ FROM eclipse-temurin:17.0.7_7-jre
 #FROM vegardit/graalvm-maven:latest-java17
 
 ENV BASEDIR /opt/ems-server
-ENV MELODIC_CONFIG_DIR ${BASEDIR}/config
+ENV EMS_CONFIG_DIR ${BASEDIR}/config
 ENV PAASAGE_CONFIG_DIR ${BASEDIR}/config
 
 ENV BIN_DIR ${BASEDIR}/bin
@@ -44,7 +44,7 @@ RUN mkdir ${LOGS_DIR}
 RUN bash -c 'chmod +rx ${BIN_DIR}/*.sh'
 
 # RUN ln -s ${JARS_DIR}/broker-client-jar-with-dependencies.jar ${PUBLIC_DIR}/broker-client.jar
-# RUN ln -s ${CONFIG_DIR}/eu.melodic.event.brokerclient.properties ${PUBLIC_DIR}/eu.melodic.event.brokerclient.properties
+# RUN ln -s ${CONFIG_DIR}/gr.iccs.imu.ems.brokerclient.properties ${PUBLIC_DIR}/gr.iccs.imu.ems.brokerclient.properties
 # RUN ln -s ${BIN_DIR}/client.sh ${PUBLIC_DIR}/client.sh
 # RUN ln -s ${LOGS_DIR} ${PUBLIC_DIR}/logs
 

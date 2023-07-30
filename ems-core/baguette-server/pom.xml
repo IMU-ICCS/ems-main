@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>eu.melodic.event</groupId>
+		<groupId>gr.iccs.imu.ems</groupId>
         <artifactId>ems-core</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -21,13 +21,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>eu.melodic.event</groupId>
+			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>broker-cep</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>eu.melodic.event</groupId>
+			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>translator</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -39,7 +39,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>eu.melodic.event</groupId>
+			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>common</artifactId>
 			<version>${project.version}</version>
 		</dependency>

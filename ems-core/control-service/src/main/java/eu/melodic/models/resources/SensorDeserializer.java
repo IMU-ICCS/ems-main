@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import eu.melodic.event.util.StrUtil;
+import gr.iccs.imu.ems.util.StrUtil;
 import eu.melodic.models.interfaces.PullSensor;
 import eu.melodic.models.interfaces.PushSensor;
 import eu.melodic.models.interfaces.Sensor;

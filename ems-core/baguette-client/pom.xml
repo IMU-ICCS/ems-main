@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>eu.melodic.event</groupId>
+		<groupId>gr.iccs.imu.ems</groupId>
         <artifactId>ems-core</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -25,17 +25,17 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>eu.melodic.event</groupId>
+			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>broker-cep</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>eu.melodic.event</groupId>
+			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>broker-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>eu.melodic.event</groupId>
+			<groupId>gr.iccs.imu.ems</groupId>
 			<artifactId>common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -146,7 +146,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<mainClass>eu.melodic.event.baguette.client.BaguetteClient</mainClass>
+					<mainClass>gr.iccs.imu.ems.baguette.client.BaguetteClient</mainClass>
 					<executable>maven</executable>
 				</configuration>
 			</plugin>

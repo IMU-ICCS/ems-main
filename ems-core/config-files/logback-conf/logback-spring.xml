@@ -11,16 +11,16 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
     <!-- ems -->
-    <logger name="eu.melodic.event" level="INFO"/>
-    <logger name="eu.melodic.event.control" level="INFO"/>
-    <logger name="eu.melodic.event.baguette.server" level="INFO"/>
-    <logger name="eu.melodic.event.baguette.client.install" level="INFO"/>
-    <logger name="eu.melodic.event.brokercep" level="INFO"/>
-    <logger name="eu.melodic.event.common" level="INFO"/>
-    <logger name="eu.melodic.event.brokerclient" level="INFO"/>
-    <logger name="eu.melodic.event.translate" level="INFO"/>
-    <logger name="eu.melodic.event.util" level="INFO"/>
-    <logger name="eu.melodic.event.util.NetUtil" level="INFO"/>
+    <logger name="gr.iccs.imu.ems" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.control" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.baguette.server" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.baguette.client.install" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.brokercep" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.common" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.brokerclient" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.translate" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.util" level="INFO"/>
+    <logger name="gr.iccs.imu.ems.util.NetUtil" level="INFO"/>
     <logger name="com.ulisesbocchio.jasyptspringboot" level="WARN"/>
     <logger name="org.apache.catalina.core.AprLifecycleListener" level="ERROR"/>
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>

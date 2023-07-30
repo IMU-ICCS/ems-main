@@ -12,14 +12,14 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; export MELODIC_CONFIG_DIR; fi
+if [[ -z $EMS_CONFIG_DIR ]]; then EMS_CONFIG_DIR=$BASEDIR/config-files; export EMS_CONFIG_DIR; fi
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 if [[ -z $JARS_DIR ]]; then JARS_DIR=$BASEDIR/control-service/target; export JARS_DIR; fi
 if [[ -z $LOGS_DIR ]]; then LOGS_DIR=$BASEDIR/logs; export LOGS_DIR; fi
 if [[ -z $PUBLIC_DIR ]]; then PUBLIC_DIR=$BASEDIR/public_resources; export PUBLIC_DIR; fi
 
 # Import MULE certificate
-#MULE_CERT=$MELODIC_CONFIG_DIR/mule-server.crt
+#MULE_CERT=$EMS_CONFIG_DIR/mule-server.crt
 #if [[ -f ${MULE_CERT} ]]; then
 #    echo "importing mule certificate"
 #    keytool -noprompt -storepass changeit -import -alias mule -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -file ${MULE_CERT}
@@ -46,15 +46,15 @@ export JASYPT_PASSWORD
 
 # Check EMS configuration
 if [[ -z "$EMS_SECRETS_FILE" ]]; then
-  EMS_SECRETS_FILE=$MELODIC_CONFIG_DIR/secrets.properties
+  EMS_SECRETS_FILE=$EMS_CONFIG_DIR/secrets.properties
 fi
 if [[ -z "$EMS_CONFIG_LOCATION" ]]; then
-  EMS_CONFIG_LOCATION=classpath:rule-templates.yml,optional:file:$MELODIC_CONFIG_DIR/ems-server.yml,optional:file:$MELODIC_CONFIG_DIR/ems-server.properties,optional:file:$MELODIC_CONFIG_DIR/ems.yml,optional:file:$MELODIC_CONFIG_DIR/ems.properties,optional:file:$EMS_SECRETS_FILE
+  EMS_CONFIG_LOCATION=classpath:rule-templates.yml,optional:file:$EMS_CONFIG_DIR/ems-server.yml,optional:file:$EMS_CONFIG_DIR/ems-server.properties,optional:file:$EMS_CONFIG_DIR/ems.yml,optional:file:$EMS_CONFIG_DIR/ems.properties,optional:file:$EMS_SECRETS_FILE
 fi
 
 # Check logger configuration
 if [[ -z "$LOG_CONFIG_FILE" ]]; then
-    LOG_CONFIG_FILE=$MELODIC_CONFIG_DIR/logback-conf/logback-spring.xml
+    LOG_CONFIG_FILE=$EMS_CONFIG_DIR/logback-conf/logback-spring.xml
 fi
 if [[ -z "$LOG_FILE" ]]; then
     LOG_FILE=$LOGS_DIR/ems.log
@@ -62,9 +62,9 @@ if [[ -z "$LOG_FILE" ]]; then
 fi
 
 # Waiting CDO to come up...
-if [[ -z ${EMS_SKIP_WAIT_CDO+x} ]] && [[ -f $MELODIC_CONFIG_DIR/wait-for-cdo.sh ]]; then
+if [[ -z ${EMS_SKIP_WAIT_CDO+x} ]] && [[ -f $EMS_CONFIG_DIR/wait-for-cdo.sh ]]; then
     echo "Waiting CDO server to start..."
-    $MELODIC_CONFIG_DIR/wait-for-cdo.sh
+    $EMS_CONFIG_DIR/wait-for-cdo.sh
 fi
 
 # Set shell encoding to UTF-8 (in order to display banner correctly)
@@ -85,7 +85,7 @@ JAVA_ADD_OPENS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.bas
 java -version
 echo "LANG=$LANG"
 #locale
-echo "MELODIC_CONFIG_DIR=${MELODIC_CONFIG_DIR}"
+echo "EMS_CONFIG_DIR=${EMS_CONFIG_DIR}"
 echo "EMS_CONFIG_LOCATION=${EMS_CONFIG_LOCATION}"
 echo "IP address=`hostname -I`"
 echo "Starting EMS server..."
@@ -116,7 +116,7 @@ done
 echo "EMS server exited"
 
 # Extra parameters
-# e.g. --spring.config.location=$MELODIC_CONFIG_DIR
+# e.g. --spring.config.location=$EMS_CONFIG_DIR
 # e.g. --spring.config.name=application.properties
 
 cd $PREVWORKDIR

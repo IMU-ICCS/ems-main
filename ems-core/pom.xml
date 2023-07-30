@@ -20,7 +20,7 @@
 
     <name>Event Management System</name>
 
-    <groupId>eu.melodic.event</groupId>
+    <groupId>gr.iccs.imu.ems</groupId>
     <artifactId>ems-core</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>

@@ -11,9 +11,9 @@
 ###                     EMS - Baguette Client properties                     ###
 ################################################################################
 
-#password-encoder-class = eu.melodic.event.util.password.AsterisksPasswordEncoder
-#password-encoder-class = eu.melodic.event.util.password.IdentityPasswordEncoder
-#password-encoder-class = eu.melodic.event.util.password.PresentPasswordEncoder
+#password-encoder-class = password.gr.iccs.imu.ems.util.AsterisksPasswordEncoder
+#password-encoder-class = password.gr.iccs.imu.ems.util.IdentityPasswordEncoder
+#password-encoder-class = password.gr.iccs.imu.ems.util.PresentPasswordEncoder
 
 ### Jasypt encryptor settings (using old settings until encrypted texts are updated)
 jasypt.encryptor.algorithm = PBEWithMD5AndDES
@@ -62,7 +62,7 @@ server-password = ${BAGUETTE_SERVER_PASSWORD}
 # Collectors settings
 # -----------------------------------------------------------------------------
 
-#collector-classes = eu.melodic.event.baguette.client.collector.netdata.NetdataCollector
+#collector-classes = netdata.collector.gr.iccs.imu.ems.baguette.client.NetdataCollector
 
 collector.netdata.enable = true
 collector.netdata.delay = 10000
@@ -116,9 +116,9 @@ cluster.election-on-join=false
 #cluster.pgName=data
 
 cluster.tls.enabled=true
-#cluster.tls.keystore=${MELODIC_CONFIG_DIR}/cluster.jks
+#cluster.tls.keystore=${EMS_CONFIG_DIR}/cluster.jks
 #cluster.tls.keystore-password=atomix
-#cluster.tls.truststore=${MELODIC_CONFIG_DIR}/cluster.jks
+#cluster.tls.truststore=${EMS_CONFIG_DIR}/cluster.jks
 #cluster.tls.truststore-password=atomix
 cluster.tls.keystore-dir=conf
 
@@ -154,17 +154,17 @@ brokercep.broker-url-for-clients = ${brokercep.broker-protocol}://${EMS_CLIENT_A
 # Must be a public IP address
 
 # Key store
-brokercep.ssl.keystore-file = ${MELODIC_CONFIG_DIR}/client-broker-keystore.p12
+brokercep.ssl.keystore-file = ${EMS_CONFIG_DIR}/client-broker-keystore.p12
 brokercep.ssl.keystore-type = PKCS12
 #brokercep.ssl.keystore-password = melodic
 brokercep.ssl.keystore-password = ENC(ISMbn01HVPbtRPkqm2Lslg==)
 # Trust store
-brokercep.ssl.truststore-file = ${MELODIC_CONFIG_DIR}/client-broker-truststore.p12
+brokercep.ssl.truststore-file = ${EMS_CONFIG_DIR}/client-broker-truststore.p12
 brokercep.ssl.truststore-type = PKCS12
 #brokercep.ssl.truststore-password = melodic
 brokercep.ssl.truststore-password = ENC(ISMbn01HVPbtRPkqm2Lslg==)
 # Certificate
-brokercep.ssl.certificate-file = ${MELODIC_CONFIG_DIR}/client-broker.crt
+brokercep.ssl.certificate-file = ${EMS_CONFIG_DIR}/client-broker.crt
 # Key-and-Cert data
 brokercep.ssl.key-entry-generate = IF-IP-CHANGED
 brokercep.ssl.key-entry-name = ${EMS_CLIENT_ADDRESS}
@@ -188,14 +188,14 @@ brokercep.broker-using-shutdown-hook = false
 
 # Message interceptors
 brokercep.message-interceptors[0].destination = >
-brokercep.message-interceptors[0].className = eu.melodic.event.brokercep.broker.interceptor.SequentialCompositeInterceptor
+brokercep.message-interceptors[0].className = interceptor.broker.gr.iccs.imu.ems.brokercep.SequentialCompositeInterceptor
 brokercep.message-interceptors[0].params[0] = #SourceAddressMessageUpdateInterceptor
 brokercep.message-interceptors[0].params[1] = #MessageForwarderInterceptor
 brokercep.message-interceptors[0].params[2] = #NodePropertiesMessageUpdateInterceptor
 
-brokercep.message-interceptors-specs.SourceAddressMessageUpdateInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.SourceAddressMessageUpdateInterceptor
-brokercep.message-interceptors-specs.MessageForwarderInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.MessageForwarderInterceptor
-brokercep.message-interceptors-specs.NodePropertiesMessageUpdateInterceptor.className = eu.melodic.event.brokercep.broker.interceptor.NodePropertiesMessageUpdateInterceptor
+brokercep.message-interceptors-specs.SourceAddressMessageUpdateInterceptor.className = interceptor.broker.gr.iccs.imu.ems.brokercep.SourceAddressMessageUpdateInterceptor
+brokercep.message-interceptors-specs.MessageForwarderInterceptor.className = interceptor.broker.gr.iccs.imu.ems.brokercep.MessageForwarderInterceptor
+brokercep.message-interceptors-specs.NodePropertiesMessageUpdateInterceptor.className = interceptor.broker.gr.iccs.imu.ems.brokercep.NodePropertiesMessageUpdateInterceptor
 
 # Message forward destinations (MessageForwarderInterceptor must be included in 'message-interceptors' property)
 #brokercep.message-forward-destinations[0].connection-string = tcp://localhost:51515

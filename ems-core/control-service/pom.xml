@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>eu.melodic.event</groupId>
+        <groupId>gr.iccs.imu.ems</groupId>
         <artifactId>ems-core</artifactId>
         <version>${revision}</version>
     </parent>
@@ -39,7 +39,7 @@
         <!--<build-description></build-description>-->
 
         <!-- EMS server main class -->
-        <start-class>eu.melodic.event.control.ControlServiceApplication</start-class>
+        <start-class>gr.iccs.imu.ems.control.ControlServiceApplication</start-class>
     </properties>
 
     <dependencies>
@@ -62,37 +62,37 @@
 
         <!-- Dependencies on other EMS modules -->
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>baguette-server</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>baguette-client-install</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>broker-cep</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>translator</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>eu.melodic.event</groupId>
+            <groupId>gr.iccs.imu.ems</groupId>
             <artifactId>broker-client</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -277,7 +277,7 @@
                 <configuration>
                     <excludes>
                         <exclude>
-                            <groupId>eu.melodic.event</groupId>
+                            <groupId>gr.iccs.imu.ems</groupId>
                             <artifactId>baguette-client</artifactId>
                         </exclude>
                         <exclude>
@@ -320,7 +320,7 @@
                                     <outputDirectory>${project.build.directory}</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>eu.melodic.event</groupId>
+                                    <groupId>gr.iccs.imu.ems</groupId>
                                     <artifactId>baguette-client</artifactId>
                                     <version>${project.version}</version>
                                     <type>tgz</type>
@@ -408,11 +408,11 @@
                                     <destinationFile>../public_resources/resources/broker-client.jar</destinationFile>
                                 </fileSet>
                                 <!--
-                                  "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
+                                  "gr.iccs.imu.ems.brokerclient.properties" FILE HAS BEEN REMOVED!!
                                 -->
                                 <!--<fileSet>
-                                    <sourceFile>../broker-client/eu.melodic.event.brokerclient.properties</sourceFile>
-                                    <destinationFile>../public_resources/resources/eu.melodic.event.brokerclient.properties</destinationFile>
+                                    <sourceFile>../broker-client/gr.iccs.imu.ems.brokerclient.properties</sourceFile>
+                                    <destinationFile>../public_resources/resources/gr.iccs.imu.ems.brokerclient.properties</destinationFile>
                                 </fileSet>-->
                                 <fileSet>
                                     <sourceFile>${project.basedir}/src/main/resources/public/client.sh</sourceFile>
@@ -521,12 +521,12 @@
                                     <filtering>false</filtering>
                                 </resource>
                                 <!--
-                                  "eu.melodic.event.brokerclient.properties" FILE HAS BEEN REMOVED!!
+                                  "gr.iccs.imu.ems.brokerclient.properties" FILE HAS BEEN REMOVED!!
                                 -->
                                 <!--<resource>
                                     <targetPath>${project.build.directory}/docker/config</targetPath>
                                     <directory>${project.basedir}/../broker-client</directory>
-                                    <include>eu.melodic.event.brokerclient.properties</include>
+                                    <include>gr.iccs.imu.ems.brokerclient.properties</include>
                                     <filtering>false</filtering>
                                 </resource>-->
                                 <resource>

@@ -11,7 +11,7 @@
 PREVWORKDIR=`pwd`
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
 cd ${BASEDIR}
-if [[ -z $MELODIC_CONFIG_DIR ]]; then MELODIC_CONFIG_DIR=$BASEDIR/config-files; export MELODIC_CONFIG_DIR; fi
+if [[ -z $EMS_CONFIG_DIR ]]; then EMS_CONFIG_DIR=$BASEDIR/config-files; export EMS_CONFIG_DIR; fi
 if [[ -z $PAASAGE_CONFIG_DIR ]]; then PAASAGE_CONFIG_DIR=$BASEDIR/config-files; export PAASAGE_CONFIG_DIR; fi
 
 # Get IP addresses
@@ -58,9 +58,9 @@ START_DATE=-1d
 VALIDITY=3650
 DN="CN=ems,OU=Information Management Unit (IMU),O=Institute of Communication and Computer Systems (ICCS),L=Athens,ST=Attika,C=GR"
 EXT_SAN="SAN=dns:localhost,ip:127.0.0.1,ip:${DEFAULT_IP},ip:${PUBLIC_IP}"
-KEYSTORE=${MELODIC_CONFIG_DIR}/broker-keystore.p12
-TRUSTSTORE=${MELODIC_CONFIG_DIR}/broker-truststore.p12
-CERTIFICATE=${MELODIC_CONFIG_DIR}/broker.crt
+KEYSTORE=${EMS_CONFIG_DIR}/broker-keystore.p12
+TRUSTSTORE=${EMS_CONFIG_DIR}/broker-truststore.p12
+CERTIFICATE=${EMS_CONFIG_DIR}/broker.crt
 KEYSTORE_TYPE=PKCS12
 KEYSTORE_PASS=melodic
 

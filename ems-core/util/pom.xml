@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>eu.melodic.event</groupId>
+        <groupId>gr.iccs.imu.ems</groupId>
         <artifactId>ems-core</artifactId>
         <version>${revision}</version>
     </parent>
@@ -81,7 +81,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>eu.melodic.event.util.NetUtil</mainClass>
+                            <mainClass>gr.iccs.imu.ems.util.NetUtil</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -12,14 +12,14 @@ setlocal
 set PWD=%~dp0
 cd %PWD%..
 set BASEDIR=%cd%
-IF NOT DEFINED MELODIC_CONFIG_DIR set MELODIC_CONFIG_DIR=%BASEDIR%\config-files
+IF NOT DEFINED EMS_CONFIG_DIR set EMS_CONFIG_DIR=%BASEDIR%\config-files
 IF NOT DEFINED PAASAGE_CONFIG_DIR set PAASAGE_CONFIG_DIR=%BASEDIR%\config-files
 IF NOT DEFINED JARS_DIR set JARS_DIR=%BASEDIR%\control-service\target
 IF NOT DEFINED LOGS_DIR set LOGS_DIR=%BASEDIR%\logs
 IF NOT DEFINED PUBLIC_DIR set PUBLIC_DIR=%BASEDIR%\public_resources
 
 :: Import MULE certificate
-::set MULE_CERT=%MELODIC_CONFIG_DIR%\mule-server.crt
+::set MULE_CERT=%EMS_CONFIG_DIR%\mule-server.crt
 ::if exist %MULE_CERT% (
 ::    echo importing mule certificate
 ::    keytool -noprompt -storepass changeit -import -alias mule -keystore "%JAVA_HOME%\jre\lib\security\cacerts" -file %MULE_CERT%
@@ -43,15 +43,15 @@ if "%JASYPT_PASSWORD%"=="" (
 
 :: Check EMS configuration
 if "%EMS_SECRETS_FILE%"=="" (
-    set EMS_SECRETS_FILE=%MELODIC_CONFIG_DIR%\secrets.properties
+    set EMS_SECRETS_FILE=%EMS_CONFIG_DIR%\secrets.properties
 )
 if "%EMS_CONFIG_LOCATION%"=="" (
-    set EMS_CONFIG_LOCATION=classpath:rule-templates.yml,optional:file:%MELODIC_CONFIG_DIR%\ems-server.yml,optional:file:%MELODIC_CONFIG_DIR%\ems-server.properties,optional:file:%MELODIC_CONFIG_DIR%\ems.yml,optional:file:%MELODIC_CONFIG_DIR%\ems.properties,optional:file:%EMS_SECRETS_FILE%
+    set EMS_CONFIG_LOCATION=classpath:rule-templates.yml,optional:file:%EMS_CONFIG_DIR%\ems-server.yml,optional:file:%EMS_CONFIG_DIR%\ems-server.properties,optional:file:%EMS_CONFIG_DIR%\ems.yml,optional:file:%EMS_CONFIG_DIR%\ems.properties,optional:file:%EMS_SECRETS_FILE%
 )
 
 :: Check logger configuration
 if "%LOG_CONFIG_FILE%"=="" (
-    set LOG_CONFIG_FILE=%MELODIC_CONFIG_DIR%\logback-conf\logback-spring.xml
+    set LOG_CONFIG_FILE=%EMS_CONFIG_DIR%\logback-conf\logback-spring.xml
 )
 echo Using logback config.: %LOG_CONFIG_FILE%
 if "%LOG_FILE%"=="" (
@@ -59,9 +59,9 @@ if "%LOG_FILE%"=="" (
 )
 
 :: Waiting CDO to come up...
-IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %MELODIC_CONFIG_DIR%\wait-for-cdo.bat (
+IF NOT DEFINED EMS_SKIP_WAIT_CDO   IF EXIST %EMS_CONFIG_DIR%\wait-for-cdo.bat (
     echo "Waiting CDO server to start..."
-    %MELODIC_CONFIG_DIR%\wait-for-cdo.bat
+    %EMS_CONFIG_DIR%\wait-for-cdo.bat
 )
 
 :: Set shell encoding to UTF-8 (in order to display banner correctly)
@@ -75,7 +75,7 @@ set JAVA_ADD_OPENS=--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.
 
 java -version
 chcp
-echo MELODIC_CONFIG_DIR=%MELODIC_CONFIG_DIR%
+echo EMS_CONFIG_DIR=%EMS_CONFIG_DIR%
 echo EMS_CONFIG_LOCATION=%EMS_CONFIG_LOCATION%
 echo IP address:
 ipconfig  | findstr "/C:IPv4 Address"
@@ -105,7 +105,7 @@ if errorlevel %RESTART_EXIT_CODE% (
 )
 echo EMS server exited
 
-rem e.g. --spring.config.location=%MELODIC_CONFIG_DIR%\
+rem e.g. --spring.config.location=%EMS_CONFIG_DIR%\
 rem e.g. --spring.config.name=application.properties
 
 cd %PWD%
